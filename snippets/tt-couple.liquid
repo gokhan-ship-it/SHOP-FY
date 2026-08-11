@@ -74,24 +74,74 @@
     --tt-s1 .. --tt-s6   Iliski bosluklari. Eyebrow -> baslik mesafesi
                          ekran buyudu diye acilmaz.
     --tt-content-max     Satir uzunlugu siniri.
-    --tt-btn-*           48px dokunma hedefi minimumu.
+    --tt-btn-*           Dokunma hedefi ekran boyutuyla degismez;
+                         padding'den gelen 47px her yerde ayni.
     --tt-card-radius,
     --tt-card-pad        Kart orani ekran genisliginden bagimsiz.
     Renk tokenlari       Kontrast ekran boyutuyla degismez.
     -lh / -ls / -w       Oran boyuttan bagimsiz (h1/h2 lh disinda).
+
+  ---------------------------------------------------------------
+  3. TUR: REFERANS OLCUMU (Apple Watch Ultra 3 mobil yakalama)
+
+  GoFullPage cikti tek parcaya birlestirildi (680px genislik) ve
+  piksel piksel olculdu. Yakalama olcegi global navigasyondan
+  cozuldu: siyah nav 82px, Apple'in kucuk kirilma noktasindaki
+  gercek degeri 48px -> olcek 1.71, yani yakalama ~398px'lik bir
+  telefona denk. Asagidaki degerler o telefona indirgenmis hali.
+
+    kenar boslugu      %6.25 (metin sol kenari x=43-48 / 680)
+    bolum ust padding  90px   (zemin baslangici -> ilk icerik)
+    bolum alt padding  91px   (son satir -> zemin bitisi)
+    H2                 40-45px, satir araligi 1.10-1.12
+    govde              ~17px, satir araligi ~1.32
+    caption            ~14px  (govdenin 0.82 kati)
+    eyebrow            ~15-17px, 600
+    H2 / govde orani   2.4 - 2.6
+    eyebrow -> H2      ~10px kutu boslugu
+    H2 -> govde        ~15px kutu boslugu
+    buton              yukseklik 35px, yan padding 17.5px (=h/2),
+                       yaricap hap (h/2), etiket govdeden kucuk
+    istatistik sayisi  ~33px 600
+
+  Px'ler kopyalanmadi; sadece oranlar tasindi. Bizim tabanimiz
+  390px'lik ekran ve daha uzun Turkce metinler oldugu icin H2
+  40px'e degil 34px'e cikarildi (govdenin 2.0 kati), bolum
+  padding'i 90'a degil 60'a cekildi.
+
+  Temanin kendi olculeri de dogrulandi (sections/apple-slayt.liquid):
+  bolum padding 48/48, eyebrow alti 8px, baslik alti 10px, baslik
+  blogu alti 24px, kart ici padding 22px, kart yaricapi 28px.
+  Bu tur bunlarin uzerine tek bir ritim yaziyor.
 {%- endcomment -%}
 <style>
   .tt-couple-page {
     /* --- Tipografi: mobil (varsayilan) ---------------------------- */
     --tt-f-h1-size: 38px;       --tt-f-h1-lh: 1.06;       --tt-f-h1-ls: -0.022em;    --tt-f-h1-w: 600;
-    --tt-f-h2-size: 30px;       --tt-f-h2-lh: 1.10;       --tt-f-h2-ls: -0.018em;    --tt-f-h2-w: 600;
+    {%- comment -%}
+      H2 sabit punto degil: 8.6vw, 30 ile 36 arasinda kelepceli.
+      390px'te 33.5px cikiyor (govdenin ~2.0 kati). Sabit 34px
+      yazilmamasinin sebebi dar telefonlar: 320-360px'te bizim
+      Turkce basliklarimiz 4 satira dusuyordu. Alt sinir 2. turdeki
+      degerin (30px) altina inmiyor, ust sinir 768'e yaklasirken
+      masaustu olcegiyle catismasin diye 36px.
+    {%- endcomment -%}
+    --tt-f-h2-size: clamp(30px, 8.6vw, 36px);
+    --tt-f-h2-lh: 1.08;         --tt-f-h2-ls: -0.021em;   --tt-f-h2-w: 600;
     --tt-f-h3-size: 21px;       --tt-f-h3-lh: 1.20;       --tt-f-h3-ls: -0.012em;    --tt-f-h3-w: 600;
 
     --tt-f-eyebrow-size: 15px;  --tt-f-eyebrow-lh: 1.30;  --tt-f-eyebrow-ls: 0.02em;   --tt-f-eyebrow-w: 600;
 
-    --tt-f-body-lg-size: 18px;  --tt-f-body-lg-lh: 1.42;  --tt-f-body-lg-ls: -0.008em; --tt-f-body-lg-w: 600;
-    --tt-f-body-size: 16px;     --tt-f-body-lh: 1.50;     --tt-f-body-ls: 0;           --tt-f-body-w: 400;
-    --tt-f-caption-size: 13px;  --tt-f-caption-lh: 1.38;  --tt-f-caption-ls: 0;        --tt-f-caption-w: 400;
+    --tt-f-body-lg-size: 19px;  --tt-f-body-lg-lh: 1.38;  --tt-f-body-lg-ls: -0.008em; --tt-f-body-lg-w: 600;
+    --tt-f-body-size: 17px;     --tt-f-body-lh: 1.45;     --tt-f-body-ls: -0.003em;    --tt-f-body-w: 400;
+    {%- comment -%}
+      Kart ici govde. Bolum govdesiyle ayni olamaz: kart genisligi
+      ekranin %82'si ve yazi cogu kartta gorselin uzerinde duruyor.
+      Apple da ayni ayrimi yapiyor (ana metin 17, kart metni 14-15).
+      Yalnizca mobil blokta kullaniliyor.
+    {%- endcomment -%}
+    --tt-f-body-sm-size: 15px;  --tt-f-body-sm-lh: 1.45;  --tt-f-body-sm-ls: 0;       --tt-f-body-sm-w: 400;
+    --tt-f-caption-size: 13px;  --tt-f-caption-lh: 1.35;  --tt-f-caption-ls: 0;        --tt-f-caption-w: 400;
 
     /* --- Renk: acik zemin ----------------------------------------- */
     --tt-c-ink: #1d1d1f;
@@ -110,22 +160,40 @@
     --tt-s4: 16px;
     --tt-s5: 24px;
     --tt-s6: 32px;
-    --tt-s7: 48px;
+    --tt-s7: 60px;
     --tt-s8: 64px;
     --tt-s9: 80px;
 
     /* --- Layout ---------------------------------------------------- */
-    --tt-page-pad: 20px;
-    --tt-card-pad: 20px;
-    --tt-card-radius: 18px;
+    {%- comment -%}
+      Kenar boslugu artik sabit degil, ekranla birlikte buyuyor.
+      Apple kucuk kirilma noktasinda %6.25 kullaniyor; 6vw ona cok
+      yakin. Alt sinir 20px (dar telefonda metin daralmasin), ust
+      sinir 26px (768'e yaklasirken bosluk sismesin).
+        360px -> 21.6   390px -> 23.4   430px -> 25.8
+    {%- endcomment -%}
+    --tt-page-pad: clamp(20px, 6vw, 26px);
+    --tt-card-pad: 22px;
+    --tt-card-radius: 20px;
     --tt-content-max: 36em;
 
     /* --- Buton ----------------------------------------------------- */
-    --tt-btn-h: 48px;
-    --tt-btn-radius: 24px;
+    {%- comment -%}
+      Yukseklik artik min-height ile degil dikey padding ile kuruluyor:
+      16px x 1.2 = 19.2 + 2 x 14 = 47.2px. Sebep: min-height yalnizca
+      buton flex/grid ise yaziyi ortalar; display'i bilinmeyen bir
+      ogede yaziyi tepeye yapistirma riski var. Padding her display
+      degerinde ayni sonucu veriyor ve 44px dokunma hedefinin uzerinde
+      kaliyor.
+      Yan padding / yukseklik = 0.5 -> Apple'in orani.
+      Yaricap hap: 999px, yukseklik degisse de hap kalir.
+    {%- endcomment -%}
+    --tt-btn-radius: 999px;
     --tt-btn-pad-x: 24px;
+    --tt-btn-pad-y: 14px;
     --tt-btn-font: 16px;
     --tt-btn-weight: 500;
+    --tt-btn-gap: 8px;
   }
 
   @media (min-width: 768px) {
@@ -151,63 +219,26 @@
 
   {%- comment -%}
     ================================================================
-    §2.1 HIZALAMA
+    HIZALAMA -- 3. TURDE GERI ALINDI
 
-    Bu turda TEK degisken hizalama. Font boyutu, line-height, renk,
-    bosluk ve butonlara BILEREK dokunulmadi.
+    2. turda bolum alt basliklari ve kart ici metin sola dayanmisti
+    (§2.1). Kullanici bunu istemedi: govde metinleri ortali olacak.
 
-    Ortali KALANLAR (kural yazilmadi, oldugu gibi birakildi):
-      butun eyebrow'lar, butun H1/H2'ler, butonlar,
-      karsilastirma tablosunun sutun basliklari.
+    Bu yuzden buradaki text-align: left kurallarinin TAMAMI silindi.
+    Sonuc:
+      - Masaustu: temanin kendi hizasina geri donuyor (bolum
+        ayarindaki "Baslik hizasi" ne diyorsa o). Yani 2. turden
+        onceki hali.
+      - Mobil: asagidaki mobil blokta text-align: center ile
+        acikca sabitleniyor -- bolum ayari "sol" olsa bile telefonda
+        ortali duruyor.
 
-    Zaten sola hizali oldugu icin kural yazilmayanlar:
-      .uc-title / .uc-desc (use-case kartlari)
-      .ak-kart-bas / .ak-kart-metin (avantaj kartlari)
-      .mk-ust / .mk-alt / .mk-alinti / .mk-isim (mozaik kart ici)
-      .ai-comparison-feature-title-* (karsilastirma ozellik satirlari)
-      .ho-ad / .ho-durum / .ho-final (hediye omru liste)
-    Brief §0: "Mevcut deger zaten hedefe yakinsa degistirme."
+    Kalan tek kural satir uzunlugu siniri (--tt-content-max) ve onu
+    ortalayan margin-inline: auto. Ortali metinde blok genisligini
+    sinirlamak sart: sinirsiz birakilirsa uzun satirlar hem okunmaz
+    hem de ortalama gorsel olarak dagilir.
     ================================================================
   {%- endcomment -%}
-
-  {%- comment -%}
-    Bolum alt basliklari ve govde: ortali -> sola.
-    Blok ortada kalir (margin auto), metin sola okunur -- brief §2.1
-    "sola hizali ama konteyner ortali".
-    .ay-alt ve .cb-bas-alt su an bos ayar tasiyor; kural dogru olsun
-    diye yazildi, gorsel etkisi yok.
-  {%- endcomment -%}
-  #MainContent.tt-couple-page .gh-alt,
-  #MainContent.tt-couple-page .ay-alt,
-  #MainContent.tt-couple-page .cb-bas-alt,
-  #MainContent.tt-couple-page .vs-alt,
-  #MainContent.tt-couple-page .ho-alt,
-  #MainContent.tt-couple-page .as-alt,
-  #MainContent.tt-couple-page .mk-metin {
-    text-align: left;
-  }
-
-  {%- comment -%}
-    Karsilastirma blogunun alt basligi. Blok kendi CSS'ini sinif adinin
-    sonuna block.id ekleyerek kapsiyor (.ai-comparison-subtitle-<id>);
-    id degeri render aninda uretildigi ve onceden bilinemedigi icin
-    oznitelik seciciyle hedefleniyor. Ozgulluk (1,2,0), blogun kurali
-    (0,1,0) -- rahat yeniyor.
-    Ayni blok dosyasi baska sablonlarda da kullaniliyor ama bu kural
-    .tt-couple-page altinda oldugu icin oraya sizmiyor.
-  {%- endcomment -%}
-  #MainContent.tt-couple-page [class*="ai-comparison-subtitle-"] {
-    text-align: left;
-  }
-
-  {%- comment -%}
-    Kart ici metin: ortali -> sola.
-    .ay-kart mobilde ortali, >=750px'te zaten sola (masaustu_duzen
-    "yan" varsayilani). Tek kural ikisini de sola sabitliyor.
-  {%- endcomment -%}
-  #MainContent.tt-couple-page .ay-kart {
-    text-align: left;
-  }
 
   {%- comment -%}
     Satir uzunlugu siniri. Olcum: gercek Turkce govde metniyle 16px'te
@@ -224,21 +255,16 @@
       .as-alt   ebeveyn 720px @19px ~71
       .ay-kmetin 34em ~68
       .ai-comparison-subtitle-* 46ch ~48
+
+    margin-inline: auto -> metin ortali oldugu icin blok da ortada
+    durmali. Mobilde 36em zaten ekrandan genis, yani bu sinir pratikte
+    yalnizca masaustunde is goruyor; mobilde sadece ortalama kaliyor.
   {%- endcomment -%}
   #MainContent.tt-couple-page .gh-alt,
   #MainContent.tt-couple-page .ay-alt,
   #MainContent.tt-couple-page .ho-alt,
   #MainContent.tt-couple-page .mk-metin {
     max-width: var(--tt-content-max);
-  }
-
-  {%- comment -%}
-    .gh-alt'ta "margin: 0" var, auto YOK -- ortalanmasi yalnizca
-    .gh-ic'in flex hizasindan geliyordu. Metin sola donunce blok da
-    sola yapisirdi. Diger uc seciciede kosullu margin-left/right: auto
-    zaten var ve kosul su an saglaniyor.
-  {%- endcomment -%}
-  #MainContent.tt-couple-page .gh-alt {
     margin-inline: auto;
   }
 
@@ -265,6 +291,18 @@
     gorseller, layout yapisi, .tt-tk-* / .tt-fb-* / .tt-kart-* /
     .tt-kol-*. !important yok. Masaustu hic etkilenmiyor -- butun
     blok max-width: 767px icinde.
+
+    3. TURDE BU BLOKTA DEGISENLER:
+      - govde 16 -> 17px, satir araligi 1.50 -> 1.45
+      - kart ici govde ayri tokena tasindi (15px)
+      - H2 30 -> clamp(30, 8.6vw, 36) = 390px'te 33.5px,
+        satir araligi 1.10 -> 1.08, text-wrap: balance
+      - bolum padding 48 -> 60px
+      - kenar boslugu sabit 20px -> clamp(20px, 6vw, 26px)
+      - hizalama: govde metinleri ortali (text-align: center)
+      - dikey ritim: eyebrow alti / baslik alti / kart ici bosluklar
+        tek merdivene baglandi
+      - buton yuksekligi min-height yerine dikey padding ile
     ================================================================
   {%- endcomment -%}
   @media (max-width: 767px) {
@@ -328,6 +366,12 @@
       line-height: var(--tt-f-h2-lh);
       letter-spacing: var(--tt-f-h2-ls);
       font-weight: var(--tt-f-h2-w);
+      {%- comment -%}
+        Baslik buyudugu ve ortali durdugu icin satir bolunmesi
+        onemli hale geldi: balance son satirda tek kelime birakmiyor.
+        Desteklemeyen tarayici bildirimi yok sayiyor, kayip yok.
+      {%- endcomment -%}
+      text-wrap: balance;
     }
 
     {%- comment -%}
@@ -351,30 +395,51 @@
       font-weight: var(--tt-f-h3-w);
     }
 
-    /* Bolum alt basligi / govde */
+    {%- comment -%}
+      Bolum alt basligi / govde.
+      17px: Apple'in mobil govdesiyle ayni orana denk geliyor
+      (govde / ekran genisligi ~ %4.3). 1.45 satir araligi Apple'in
+      olculen 1.32'sinden acik; Turkce'de kelimeler uzun oldugu icin
+      bilerek biraz daha nefesli birakildi.
+
+      text-align: center -> kullanici istegi. Bolum ayari "sol" olsa
+      bile telefonda ortali. margin-inline: auto ile blok da ortada;
+      max-width kurali yukarida, media disinda.
+    {%- endcomment -%}
     #MainContent.tt-couple-page .vs-alt,
     #MainContent.tt-couple-page .ho-alt,
     #MainContent.tt-couple-page .as-alt,
     #MainContent.tt-couple-page .mk-metin,
     #MainContent.tt-couple-page .ay-alt,
     #MainContent.tt-couple-page .gh-alt,
+    #MainContent.tt-couple-page .cb-bas-alt,
     #MainContent.tt-couple-page [class*="ai-comparison-subtitle-"] {
       font-size: var(--tt-f-body-size);
       line-height: var(--tt-f-body-lh);
       letter-spacing: var(--tt-f-body-ls);
       font-weight: var(--tt-f-body-w);
+      text-align: center;
+      margin-inline: auto;
+      text-wrap: pretty;
     }
 
-    /* Kart ici govde */
+    {%- comment -%}
+      Kart ici govde 15px. Bolum govdesinden kucuk olmasinin sebebi
+      kartin dar olmasi (ekranin %82'si) ve cogu kartta yazinin
+      gorselin uzerinde durmasi. Apple da ayni ayrimi yapiyor.
+      Hizasi kartin kendi tasarimindan geliyor -- burada
+      degistirilmiyor.
+    {%- endcomment -%}
     #MainContent.tt-couple-page .vs-card-text,
     #MainContent.tt-couple-page .ak-kart-metin,
     #MainContent.tt-couple-page .as-kart-alt,
     #MainContent.tt-couple-page .ay-kmetin,
     #MainContent.tt-couple-page .ak-pop-metin,
     #MainContent.tt-couple-page [class*="ai-comparison-feature-title-"] {
-      font-size: var(--tt-f-body-size);
-      line-height: var(--tt-f-body-lh);
-      font-weight: var(--tt-f-body-w);
+      font-size: var(--tt-f-body-sm-size);
+      line-height: var(--tt-f-body-sm-lh);
+      letter-spacing: var(--tt-f-body-sm-ls);
+      font-weight: var(--tt-f-body-sm-w);
     }
 
     /* Caption / kucuk etiket */
@@ -410,6 +475,59 @@
       color: var(--tt-c-ink-2);
     }
 
+    {%- comment -%}
+      ------------------------------------------------------------
+      DIKEY RITIM  (bu tur eklendi)
+
+      Olculen mevcut durum (sections/apple-slayt.liquid, kardes
+      bolumler ayni kalibi kullaniyor):
+        eyebrow alti     8px
+        baslik alti     10px
+        baslik blogu alti 24px
+        kart basligi alti 6px
+
+      Apple'in ayni yerlerdeki kutu bosluklari: ~10 / ~15 / daha
+      genis / ~8. Baslik 34px'e cikinca 8 ve 10 fazla sikisik
+      kaliyordu; hepsi tek merdivene baglandi:
+        eyebrow -> H2        s3 (12px)
+        H2 -> govde          s4 (16px)
+        baslik blogu -> icerik s6 (32px)
+        kart basligi -> metin s2 (8px)
+
+      Bunlar margin; ebeveyni flex + gap olan bir bolumde bosluk
+      toplanabilir. Degerler mevcut degerlere yakin secildi (fark
+      4-6px), yani en kotu durumda bolum biraz daha nefesli olur,
+      bozulmaz. Hero (.gh-*) disarida: .gh-ic flex ve baslik JS ile
+      olcekleniyor.
+      ------------------------------------------------------------
+    {%- endcomment -%}
+    #MainContent.tt-couple-page .as-etiket,
+    #MainContent.tt-couple-page .ay-etiket,
+    #MainContent.tt-couple-page [class*="uc-eyebrow-"] {
+      margin-block: 0 var(--tt-s3);
+    }
+
+    #MainContent.tt-couple-page .vs-alt,
+    #MainContent.tt-couple-page .ho-alt,
+    #MainContent.tt-couple-page .as-alt,
+    #MainContent.tt-couple-page .ay-alt,
+    #MainContent.tt-couple-page .mk-metin {
+      margin-block: var(--tt-s4) 0;
+    }
+
+    #MainContent.tt-couple-page .as-ust,
+    #MainContent.tt-couple-page .ak-ust,
+    #MainContent.tt-couple-page .ay-ust {
+      margin-bottom: var(--tt-s6);
+    }
+
+    #MainContent.tt-couple-page .as-kart-alt,
+    #MainContent.tt-couple-page .ak-kart-metin,
+    #MainContent.tt-couple-page .ay-kmetin,
+    #MainContent.tt-couple-page .vs-card-text {
+      margin-block: var(--tt-s2) 0;
+    }
+
     /* --- Kart olculeri: tek yaricap ailesi ---------------------- */
     #MainContent.tt-couple-page .ak-kart,
     #MainContent.tt-couple-page .as-kart,
@@ -428,17 +546,28 @@
     {%- comment -%}
       .cb-buton BILEREK DISARIDA: o bir buton degil, icinde 40px'lik
       .cb-kolye dairesi kayan 52px'lik sürgü rayi. radius 99px hap
-      gorunumu isin kendisi; 24px'e cekmek bileseni bozardi.
+      gorunumu isin kendisi; hap disina cikarmak bileseni bozardi.
+
+      Yukseklik min-height yerine dikey padding'den geliyor:
+        16 x 1.2 = 19.2  +  2 x 14 = 47.2px
+      min-height yalnizca buton flex/grid ise yaziyi ortalar; padding
+      her display degerinde ayni sonucu veriyor. 44px dokunma
+      hedefinin uzerinde.
+      Yan padding / yukseklik = 0.51 -> Apple'in olculen orani (0.5).
+      Etiket / yukseklik = 0.34; Apple'da 0.40 ama oradaki buton 35px,
+      burada 47px. Etiketi 19px'e cikarmak butonu tipografinin geri
+      kalanindan (H3 21px) ayirt edilemez hale getirirdi.
     {%- endcomment -%}
     #MainContent.tt-couple-page .mk-cta,
     #MainContent.tt-couple-page [class*="ai-comparison-button-"] {
-      min-height: var(--tt-btn-h);
       padding-inline: var(--tt-btn-pad-x);
+      padding-block: var(--tt-btn-pad-y);
       font-size: var(--tt-btn-font);
       font-weight: var(--tt-btn-weight);
       line-height: 1.2;
       letter-spacing: 0;
       border-radius: var(--tt-btn-radius);
+      gap: var(--tt-btn-gap);
     }
   }
 </style>
