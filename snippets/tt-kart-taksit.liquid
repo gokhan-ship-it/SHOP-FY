@@ -1,0 +1,9 @@
+{%- if product.available and settings.tt_kart_aylik != blank -%}
+{%- if product.price_varies -%}{%- assign tt_taban = product.price_min -%}{%- else -%}{%- assign tt_taban = product.price -%}{%- endif -%}
+{%- assign tt_adet = settings.tt_kart_taksit | default: 3 -%}
+{%- assign tt_carpan = settings.tt_oran | times: 1.0 | divided_by: 100.0 | plus: 1 -%}
+{%- assign tt_aylik = tt_taban | times: tt_carpan | divided_by: tt_adet -%}
+{%- capture tt_para -%}{%- render 'tt-para', kurus: tt_aylik -%}{%- endcapture -%}
+{%- assign tt_metin = settings.tt_kart_aylik | replace: '{ADET}', tt_adet | replace: '{TUTAR}', tt_para -%}
+<p class="tt-kart-aylik" data-tt-kart-aylik data-tt-kart-fiyat="{{ tt_taban }}" data-tt-kart-adet="{{ tt_adet }}">{{ tt_metin }}</p>
+{%- endif -%}
