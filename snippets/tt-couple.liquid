@@ -1,0 +1,102 @@
+{%- comment -%}
+  COUPLE SAYFASI — TASARIM TOKEN KATMANI (brief §1)
+
+  Yalnizca templates/page.couple-daha-fazla-bilgial.json sablonunda
+  yukleniyor; layout/theme.liquid icinde template.suffix kapisiyla
+  cagriliyor. Baska hicbir sayfa bu dosyayi indirmiyor.
+
+  BU DOSYA HICBIR BILESENE STIL UYGULAMAZ.
+  Icinde tek bir font-size, margin, padding ya da renk KURALI yok --
+  sadece degisken TANIMI var. Bilesenlere uygulama brief §2 (global
+  kurallar) ve §7 (bolum bolum) asamalarinda yapilacak.
+
+  ---------------------------------------------------------------
+  KAPSAM: neden <main>, neden <body> degil
+
+  Tokenlar .tt-couple-page uzerinde tanimli; o sinif da
+  <main class="main-content" id="MainContent"> uzerinde.
+
+  Body'ye konmadi cunku taksit modali kendini body'nin dogrudan altina
+  tasiyor (assets/taksit-tablosu.js > panelBul: document.body
+  .appendChild). Sarmalayici body'de olsaydi bu katmanin tokenlari
+  modale de miras kalirdi. <main> secilince taksit modali, header ve
+  footer kapsamin TAMAMEN disinda kaliyor. Footer zaten brief'te
+  kapsam disi.
+
+  ---------------------------------------------------------------
+  DOKUNULMAYAN SISTEMLER (brief §0)
+
+  .tt-tk-*   taksit modali
+  .tt-fb-*   urun sayfasi fiyat blogu
+  .tt-kart-* koleksiyon karti fiyat blogu
+  .tt-kol-*  koleksiyon indirim seridi
+
+  Bu katman onlarin kullandigi hicbir degisken adini tanimlamiyor ve
+  hicbir secicisine kural yazmiyor. Kullandiklari tek tema degiskeni
+  --color-foreground; bu dosyada o ad gecmiyor.
+
+  !important kullanilmadi (brief §0).
+
+  ---------------------------------------------------------------
+  --tt-card-radius NEDEN FARKLI ADLI
+
+  Brief §1'de bu token "--card-radius" olarak geciyor. O ad temada
+  ZATEN TANIMLI: snippets/css-variables.liquid icinde :root uzerinde
+  (--card-radius: var(--rounded-card)) ve assets/theme.css onu 14 ayri
+  yerde okuyor. Ayni adi burada tanimlamak -- biz hicbir sey uygulamasak
+  bile -- sayfadaki kartlarin kose yuvarlakligini degistirirdi, cunku
+  degisken miras yoluyla butun alt agaca iner.
+
+  Kalan 51 token adi temanin hicbir dosyasinda tanimli degil
+  (theme.css, css-variables.liquid, custom-tt.css, ttn-sistem.css,
+  collection.css, product-bundle.css, cart.css tarandi), o yuzden
+  brief'teki adlariyla duruyorlar.
+{%- endcomment -%}
+<style>
+  .tt-couple-page {
+    /* --- Tipografi ------------------------------------------------ */
+    --f-h1-size: 38px;       --f-h1-lh: 1.06;       --f-h1-ls: -0.022em;   --f-h1-w: 600;
+    --f-h2-size: 30px;       --f-h2-lh: 1.10;       --f-h2-ls: -0.018em;   --f-h2-w: 600;
+    --f-h3-size: 21px;       --f-h3-lh: 1.20;       --f-h3-ls: -0.012em;   --f-h3-w: 600;
+
+    --f-eyebrow-size: 15px;  --f-eyebrow-lh: 1.30;  --f-eyebrow-ls: 0.02em;  --f-eyebrow-w: 600;
+
+    --f-body-lg-size: 18px;  --f-body-lg-lh: 1.42;  --f-body-lg-ls: -0.008em; --f-body-lg-w: 600;
+    --f-body-size: 16px;     --f-body-lh: 1.50;     --f-body-ls: 0;          --f-body-w: 400;
+    --f-caption-size: 13px;  --f-caption-lh: 1.38;  --f-caption-ls: 0;       --f-caption-w: 400;
+
+    /* --- Renk: acik zemin ----------------------------------------- */
+    --c-ink: #1d1d1f;
+    --c-ink-2: #6e6e73;
+    --c-ink-3: #86868b;
+
+    /* --- Renk: koyu zemin ----------------------------------------- */
+    --c-ink-dark: #f5f5f7;
+    --c-ink-2-dark: #a1a1a6;
+    --c-ink-3-dark: #86868b;
+
+    /* --- Bosluk merdiveni ----------------------------------------- */
+    --s1: 4px;
+    --s2: 8px;
+    --s3: 12px;
+    --s4: 16px;
+    --s5: 24px;
+    --s6: 32px;
+    --s7: 48px;
+    --s8: 64px;
+    --s9: 80px;
+
+    /* --- Layout ---------------------------------------------------- */
+    --page-pad: 20px;
+    --card-pad: 20px;
+    --tt-card-radius: 18px;   /* brief'te --card-radius; ad cakismasi icin degisti */
+    --content-max: 36em;
+
+    /* --- Buton ----------------------------------------------------- */
+    --btn-h: 48px;
+    --btn-radius: 24px;
+    --btn-pad-x: 24px;
+    --btn-font: 16px;
+    --btn-weight: 500;
+  }
+</style>
