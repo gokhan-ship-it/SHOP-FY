@@ -1,5 +1,5 @@
 {%- comment -%}
-  COUPLE SAYFASI — TASARIM TOKEN KATMANI (brief §1)
+  COUPLE SAYFASI — TASARIM TOKEN KATMANI (brief §1, tokenlar revizyonu)
 
   Yalnizca templates/page.couple-daha-fazla-bilgial.json sablonunda
   yukleniyor; layout/theme.liquid icinde template.suffix kapisiyla
@@ -38,65 +38,119 @@
   !important kullanilmadi (brief §0).
 
   ---------------------------------------------------------------
-  --tt-card-radius NEDEN FARKLI ADLI
+  NEDEN HEPSI --tt- ON EKLI
 
-  Brief §1'de bu token "--card-radius" olarak geciyor. O ad temada
-  ZATEN TANIMLI: snippets/css-variables.liquid icinde :root uzerinde
-  (--card-radius: var(--rounded-card)) ve assets/theme.css onu 14 ayri
-  yerde okuyor. Ayni adi burada tanimlamak -- biz hicbir sey uygulamasak
-  bile -- sayfadaki kartlarin kose yuvarlakligini degistirirdi, cunku
-  degisken miras yoluyla butun alt agaca iner.
+  Ilk surumde adlar brief'teki sade halleriyle yazilmisti ve iclerinden
+  biri -- --card-radius -- temada zaten tanimli cikti
+  (snippets/css-variables.liquid, :root; assets/theme.css onu 14 yerde
+  okuyor). Degiskenler miras yoluyla butun alt agaca indigi icin, biz
+  hicbir sey uygulamasak bile o ad sayfadaki kartlarin kose
+  yuvarlakligini degistiriyordu.
 
-  Kalan 51 token adi temanin hicbir dosyasinda tanimli degil
-  (theme.css, css-variables.liquid, custom-tt.css, ttn-sistem.css,
-  collection.css, product-bundle.css, cart.css tarandi), o yuzden
-  brief'teki adlariyla duruyorlar.
+  Ayni risk --card-pad, --btn-h, --page-pad, --s1..--s9 gibi jenerik
+  adlarin hepsi icin acikti: bir tema guncellemesi ya da yeni bir
+  uygulama CSS'i her an ayni adi tanimlayabilir. Bu yuzden 52 tokenin
+  tamami --tt- on ekine tasindi.
+
+  Tarama kapsami: theme.css, css-variables.liquid, custom-tt.css,
+  ttn-sistem.css, collection.css, product-bundle.css, cart.css,
+  apps.css, gp-global.css. 52 addan hicbiri hicbirinde tanimli degil.
+
+  TEK UYARI: --tt- on eki bu temada %100 tekel degil. GemPages
+  (gp-global.css) --tt-tablet ve --tt-mobile adlarini kullaniyor --
+  stylesheet'te tanimlamiyor, elementin inline style attribute'una
+  yaziyor ve yalnizca .gps.gpsi altinda okuyor. Bizim 52 adimizla
+  ortusmuyorlar, ama ileride --tt-tablet / --tt-mobile adlari
+  KULLANILMAMALI.
+
+  ---------------------------------------------------------------
+  MASAUSTU OLCEGI
+
+  Tek kirilma noktasi: 768px. Ara kademe yok.
+
+  Bilincli olarak SABIT kalanlar:
+    --tt-s1 .. --tt-s6   Iliski bosluklari. Eyebrow -> baslik mesafesi
+                         ekran buyudu diye acilmaz; acilirsa ogeler
+                         birbirinden kopar.
+    --tt-content-max     Satir uzunlugu siniri. Ekran buyuyunce satir
+                         uzamamali, blok ortada kalmali.
+    --tt-btn-*           48px dokunma hedefi minimumu.
+    --tt-card-radius,
+    --tt-card-pad        Kart orani ekran genisliginden bagimsiz.
+    Renk tokenlari       Kontrast ekran boyutuyla degismez.
+    -lh / -ls / -w       Oran boyuttan bagimsiz. Yalnizca h1/h2'de
+                         line-height buyuk puntoda hafif sikiliyor.
 {%- endcomment -%}
 <style>
   .tt-couple-page {
-    /* --- Tipografi ------------------------------------------------ */
-    --f-h1-size: 38px;       --f-h1-lh: 1.06;       --f-h1-ls: -0.022em;   --f-h1-w: 600;
-    --f-h2-size: 30px;       --f-h2-lh: 1.10;       --f-h2-ls: -0.018em;   --f-h2-w: 600;
-    --f-h3-size: 21px;       --f-h3-lh: 1.20;       --f-h3-ls: -0.012em;   --f-h3-w: 600;
+    /* --- Tipografi: mobil (varsayilan) ---------------------------- */
+    --tt-f-h1-size: 38px;       --tt-f-h1-lh: 1.06;       --tt-f-h1-ls: -0.022em;    --tt-f-h1-w: 600;
+    --tt-f-h2-size: 30px;       --tt-f-h2-lh: 1.10;       --tt-f-h2-ls: -0.018em;    --tt-f-h2-w: 600;
+    --tt-f-h3-size: 21px;       --tt-f-h3-lh: 1.20;       --tt-f-h3-ls: -0.012em;    --tt-f-h3-w: 600;
 
-    --f-eyebrow-size: 15px;  --f-eyebrow-lh: 1.30;  --f-eyebrow-ls: 0.02em;  --f-eyebrow-w: 600;
+    --tt-f-eyebrow-size: 15px;  --tt-f-eyebrow-lh: 1.30;  --tt-f-eyebrow-ls: 0.02em;   --tt-f-eyebrow-w: 600;
 
-    --f-body-lg-size: 18px;  --f-body-lg-lh: 1.42;  --f-body-lg-ls: -0.008em; --f-body-lg-w: 600;
-    --f-body-size: 16px;     --f-body-lh: 1.50;     --f-body-ls: 0;          --f-body-w: 400;
-    --f-caption-size: 13px;  --f-caption-lh: 1.38;  --f-caption-ls: 0;       --f-caption-w: 400;
+    --tt-f-body-lg-size: 18px;  --tt-f-body-lg-lh: 1.42;  --tt-f-body-lg-ls: -0.008em; --tt-f-body-lg-w: 600;
+    --tt-f-body-size: 16px;     --tt-f-body-lh: 1.50;     --tt-f-body-ls: 0;           --tt-f-body-w: 400;
+    --tt-f-caption-size: 13px;  --tt-f-caption-lh: 1.38;  --tt-f-caption-ls: 0;        --tt-f-caption-w: 400;
 
     /* --- Renk: acik zemin ----------------------------------------- */
-    --c-ink: #1d1d1f;
-    --c-ink-2: #6e6e73;
-    --c-ink-3: #86868b;
+    --tt-c-ink: #1d1d1f;
+    --tt-c-ink-2: #6e6e73;
+    --tt-c-ink-3: #86868b;
 
     /* --- Renk: koyu zemin ----------------------------------------- */
-    --c-ink-dark: #f5f5f7;
-    --c-ink-2-dark: #a1a1a6;
-    --c-ink-3-dark: #86868b;
+    --tt-c-ink-dark: #f5f5f7;
+    --tt-c-ink-2-dark: #a1a1a6;
+    --tt-c-ink-3-dark: #86868b;
 
-    /* --- Bosluk merdiveni ----------------------------------------- */
-    --s1: 4px;
-    --s2: 8px;
-    --s3: 12px;
-    --s4: 16px;
-    --s5: 24px;
-    --s6: 32px;
-    --s7: 48px;
-    --s8: 64px;
-    --s9: 80px;
+    /* --- Bosluk merdiveni: mobil ---------------------------------- */
+    --tt-s1: 4px;
+    --tt-s2: 8px;
+    --tt-s3: 12px;
+    --tt-s4: 16px;
+    --tt-s5: 24px;
+    --tt-s6: 32px;
+    --tt-s7: 48px;
+    --tt-s8: 64px;
+    --tt-s9: 80px;
 
     /* --- Layout ---------------------------------------------------- */
-    --page-pad: 20px;
-    --card-pad: 20px;
-    --tt-card-radius: 18px;   /* brief'te --card-radius; ad cakismasi icin degisti */
-    --content-max: 36em;
+    --tt-page-pad: 20px;
+    --tt-card-pad: 20px;
+    --tt-card-radius: 18px;
+    --tt-content-max: 36em;
 
     /* --- Buton ----------------------------------------------------- */
-    --btn-h: 48px;
-    --btn-radius: 24px;
-    --btn-pad-x: 24px;
-    --btn-font: 16px;
-    --btn-weight: 500;
+    --tt-btn-h: 48px;
+    --tt-btn-radius: 24px;
+    --tt-btn-pad-x: 24px;
+    --tt-btn-font: 16px;
+    --tt-btn-weight: 500;
+  }
+
+  {%- comment -%}
+    Masaustu: tek kirilma noktasi. Yalnizca 13 token degisiyor,
+    kalan 39'u mobil degerinde kaliyor (gerekcesi yukarida).
+  {%- endcomment -%}
+  @media (min-width: 768px) {
+    .tt-couple-page {
+      /* Tipografi buyur */
+      --tt-f-h1-size: 52px;       --tt-f-h1-lh: 1.05;
+      --tt-f-h2-size: 40px;       --tt-f-h2-lh: 1.08;
+      --tt-f-h3-size: 26px;
+      --tt-f-eyebrow-size: 17px;
+      --tt-f-body-lg-size: 21px;
+      --tt-f-body-size: 17px;
+      --tt-f-caption-size: 14px;
+
+      /* Buyuk bosluklar buyur, kucukler sabit kalir */
+      --tt-s7: 64px;
+      --tt-s8: 80px;
+      --tt-s9: 120px;
+
+      /* Layout */
+      --tt-page-pad: 40px;
+    }
   }
 </style>
