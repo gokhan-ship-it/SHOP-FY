@@ -241,4 +241,204 @@
   #MainContent.tt-couple-page .gh-alt {
     margin-inline: auto;
   }
+
+  {%- comment -%}
+    ================================================================
+    MOBIL OLCU NORMALIZASYONU  (<= 767px)
+
+    Amac Apple'i taklit etmek degil, ayni olcusel disiplini kurmak:
+    tek kenar boslugu, tek bolum ritmi, tek tipografik olcek, tek
+    yaricap ailesi, tek buton metrigi, uc gri tonu.
+
+    Olculen mevcut dagilim (mobil):
+      kenar boslugu   16 / 15.6 / 20 px
+      bolum padding   19.5 / 24 / 32 / 35.2 / 40 / 48 px
+      H2              24px/700 (cogu) ile 30px/600 (as-bas)
+      eyebrow         10.9 / 13 / 16 px, 500-600 arasi
+      govde           15 / 16 / 17 px
+      kart basligi    14.8 / 17 / 19 / 21 px
+      kart yaricapi   14 / 16 / 18 / 20 / 28 px
+      kart padding    9 / 9.6 / 14 / 20 / 22 / 24 px
+      buton           37.1px h / 12.9px  ve  43.2px h / 12px / ls 1px
+
+    DOKUNULMAYANLAR: gradientler, metin icerikleri, section sirasi,
+    gorseller, layout yapisi, .tt-tk-* / .tt-fb-* / .tt-kart-* /
+    .tt-kol-*. !important yok. Masaustu hic etkilenmiyor -- butun
+    blok max-width: 767px icinde.
+    ================================================================
+  {%- endcomment -%}
+  @media (max-width: 767px) {
+
+    /* Kenar boslugu: tek deger */
+    #MainContent.tt-couple-page .vs-inner,
+    #MainContent.tt-couple-page .ho-inner,
+    #MainContent.tt-couple-page .ak-ust,
+    #MainContent.tt-couple-page .ak-serit,
+    #MainContent.tt-couple-page .ak-oklar,
+    #MainContent.tt-couple-page .as-ust,
+    #MainContent.tt-couple-page .as-serit,
+    #MainContent.tt-couple-page .as-ilerleme,
+    #MainContent.tt-couple-page .mk-inner,
+    #MainContent.tt-couple-page .ay-ust,
+    #MainContent.tt-couple-page .cb-ic,
+    #MainContent.tt-couple-page [class*="uc-heading-"],
+    #MainContent.tt-couple-page [class*="uc-eyebrow-"],
+    #MainContent.tt-couple-page [class*="ugc-gallery-heading-"],
+    #MainContent.tt-couple-page [class*="ai-comparison-container-"] {
+      padding-inline: var(--tt-page-pad);
+    }
+
+    /* Bolum dikey ritmi: tek deger (bolumler arasi 2 x s7) */
+    #MainContent.tt-couple-page .vs-root,
+    #MainContent.tt-couple-page .ho-root,
+    #MainContent.tt-couple-page .ak-kok,
+    #MainContent.tt-couple-page .as-kok,
+    #MainContent.tt-couple-page .mk-root,
+    #MainContent.tt-couple-page [class*="uc-inner-"],
+    #MainContent.tt-couple-page [class*="ai-comparison-container-"] {
+      padding-block: var(--tt-s7);
+    }
+
+    /* --- Tipografi: tek olcek ---------------------------------- */
+
+    /* Eyebrow / etiket */
+    #MainContent.tt-couple-page .as-etiket,
+    #MainContent.tt-couple-page .ay-etiket,
+    #MainContent.tt-couple-page .gh-etiket,
+    #MainContent.tt-couple-page [class*="uc-eyebrow-"],
+    #MainContent.tt-couple-page [class*="ai-comparison-category-"] {
+      font-size: var(--tt-f-eyebrow-size);
+      line-height: var(--tt-f-eyebrow-lh);
+      letter-spacing: var(--tt-f-eyebrow-ls);
+      font-weight: var(--tt-f-eyebrow-w);
+    }
+
+    /* Bolum basligi (H2) */
+    #MainContent.tt-couple-page .vs-head,
+    #MainContent.tt-couple-page .ho-head,
+    #MainContent.tt-couple-page .ak-bas,
+    #MainContent.tt-couple-page .as-bas,
+    #MainContent.tt-couple-page .mk-head,
+    #MainContent.tt-couple-page .ay-bas-metin,
+    #MainContent.tt-couple-page .cb-bas-yazi,
+    #MainContent.tt-couple-page [class*="uc-heading-"],
+    #MainContent.tt-couple-page [class*="ugc-gallery-heading-"],
+    #MainContent.tt-couple-page [class*="ai-comparison-title-"] {
+      font-size: var(--tt-f-h2-size);
+      line-height: var(--tt-f-h2-lh);
+      letter-spacing: var(--tt-f-h2-ls);
+      font-weight: var(--tt-f-h2-w);
+    }
+
+    {%- comment -%}
+      Hero basligi (.gh-bas) BILEREK DISARIDA BIRAKILDI.
+      Punto su an min(33px, 6vw) + white-space: nowrap ve section'in
+      kendi JS'i basligi tek satira sigacak sekilde ayrica olcekliyor.
+      Sabit bir font-size vermek nowrap ile birlesince tasmaya ya da
+      JS ile catismaya yol acar. Hero tipografisi ayri ele alinmali.
+    {%- endcomment -%}
+
+    /* Kart / slayt basligi (H3) */
+    #MainContent.tt-couple-page .vs-card-title,
+    #MainContent.tt-couple-page .ak-kart-bas,
+    #MainContent.tt-couple-page .as-kart-bas,
+    #MainContent.tt-couple-page .ay-kbas,
+    #MainContent.tt-couple-page [class*="uc-title-"],
+    #MainContent.tt-couple-page [class*="ai-comparison-product-title-"] {
+      font-size: var(--tt-f-h3-size);
+      line-height: var(--tt-f-h3-lh);
+      letter-spacing: var(--tt-f-h3-ls);
+      font-weight: var(--tt-f-h3-w);
+    }
+
+    /* Bolum alt basligi / govde */
+    #MainContent.tt-couple-page .vs-alt,
+    #MainContent.tt-couple-page .ho-alt,
+    #MainContent.tt-couple-page .as-alt,
+    #MainContent.tt-couple-page .mk-metin,
+    #MainContent.tt-couple-page .ay-alt,
+    #MainContent.tt-couple-page .gh-alt,
+    #MainContent.tt-couple-page [class*="ai-comparison-subtitle-"] {
+      font-size: var(--tt-f-body-size);
+      line-height: var(--tt-f-body-lh);
+      letter-spacing: var(--tt-f-body-ls);
+      font-weight: var(--tt-f-body-w);
+    }
+
+    /* Kart ici govde */
+    #MainContent.tt-couple-page .vs-card-text,
+    #MainContent.tt-couple-page .ak-kart-metin,
+    #MainContent.tt-couple-page .as-kart-alt,
+    #MainContent.tt-couple-page .ay-kmetin,
+    #MainContent.tt-couple-page .ak-pop-metin,
+    #MainContent.tt-couple-page [class*="ai-comparison-feature-title-"] {
+      font-size: var(--tt-f-body-size);
+      line-height: var(--tt-f-body-lh);
+      font-weight: var(--tt-f-body-w);
+    }
+
+    /* Caption / kucuk etiket */
+    #MainContent.tt-couple-page .ho-ipucu,
+    #MainContent.tt-couple-page .ho-eksen span,
+    #MainContent.tt-couple-page .mk-rol,
+    #MainContent.tt-couple-page .vs-ph,
+    #MainContent.tt-couple-page [class*="uc-desc-"],
+    #MainContent.tt-couple-page [class*="uc-navlabel-"],
+    #MainContent.tt-couple-page [class*="ugc-gallery-rating-text-"],
+    #MainContent.tt-couple-page [class*="ugc-gallery-rating-number-"] {
+      font-size: var(--tt-f-caption-size);
+      line-height: var(--tt-f-caption-lh);
+      letter-spacing: var(--tt-f-caption-ls);
+    }
+
+    /* --- Metin tonlari ------------------------------------------ */
+    /* Koyu zeminde govde #86868b siyah uzerinde soluk kaliyordu */
+    #MainContent.tt-couple-page .ak-kart-metin,
+    #MainContent.tt-couple-page .vs-alt,
+    #MainContent.tt-couple-page .as-kart-alt,
+    #MainContent.tt-couple-page [class*="uc-desc-"],
+    #MainContent.tt-couple-page [class*="uc-eyebrow-"],
+    #MainContent.tt-couple-page [class*="ai-comparison-subtitle-"] {
+      color: var(--tt-c-ink-2-dark);
+    }
+
+    /* Acik zeminde ikincil metin */
+    #MainContent.tt-couple-page .ho-alt,
+    #MainContent.tt-couple-page .as-alt,
+    #MainContent.tt-couple-page .mk-metin,
+    #MainContent.tt-couple-page .as-etiket {
+      color: var(--tt-c-ink-2);
+    }
+
+    /* --- Kart olculeri: tek yaricap ailesi ---------------------- */
+    #MainContent.tt-couple-page .ak-kart,
+    #MainContent.tt-couple-page .as-kart,
+    #MainContent.tt-couple-page .mk-kart,
+    #MainContent.tt-couple-page [class*="ai-comparison-feature-card-"] {
+      border-radius: var(--tt-card-radius);
+    }
+
+    #MainContent.tt-couple-page .ak-kart,
+    #MainContent.tt-couple-page .as-yazi,
+    #MainContent.tt-couple-page [class*="ai-comparison-feature-card-"] {
+      padding: var(--tt-card-pad);
+    }
+
+    /* --- Butonlar: tek metrik ----------------------------------- */
+    {%- comment -%}
+      .cb-buton BILEREK DISARIDA: o bir buton degil, icinde 40px'lik
+      .cb-kolye dairesi kayan 52px'lik sürgü rayi. radius 99px hap
+      gorunumu isin kendisi; 24px'e cekmek bileseni bozardi.
+    {%- endcomment -%}
+    #MainContent.tt-couple-page .mk-cta,
+    #MainContent.tt-couple-page [class*="ai-comparison-button-"] {
+      min-height: var(--tt-btn-h);
+      padding-inline: var(--tt-btn-pad-x);
+      font-size: var(--tt-btn-font);
+      font-weight: var(--tt-btn-weight);
+      line-height: 1.2;
+      letter-spacing: 0;
+      border-radius: var(--tt-btn-radius);
+    }
+  }
 </style>
