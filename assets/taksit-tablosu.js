@@ -794,16 +794,51 @@
      izgaranin ustune konuldugu icin JS'in izgarayi bulmasi gerekmiyor)
      ve her kartin fiyat blogunun indirimli hali.
   --------------------------------------------------------------- */
+  /* Izgara benzeri kapsayici mi? Grid her zaman; flex ise ancak birden
+     cok urun karti tasiyorsa (karusel, yatay serit) sayiyoruz -- kartin
+     kendi ic sarmalayicilari da flex, onlar izgara degil. */
+  function izgaraMi(el) {
+    if (!el || el.nodeType !== 1) return false;
+    var d = window.getComputedStyle(el).display;
+    if (d === 'grid' || d === 'inline-grid') return true;
+    if (d === 'flex' || d === 'inline-flex') return el.querySelectorAll('.product-card').length > 1;
+    return false;
+  }
+
+  /* Bu kapsayici DOGRUDAN urun karti hucreleri tasiyor mu? Seridin kendisi
+     sayilmaz, yoksa eklendikten sonra kendi varligi testi bozar. */
+  function kartKapsayicisi(el) {
+    if (!izgaraMi(el)) return false;
+    var c = el.children;
+    for (var i = 0; i < c.length; i++) {
+      if (c[i].hasAttribute('data-tt-kol')) continue;
+      if (c[i].classList.contains('product-card') || c[i].querySelector('.product-card')) return true;
+    }
+    return false;
+  }
+
   /* Serit sayfada YOKSA ilk urun izgarasinin ustune bir kez eklenir;
-     varsa (sablona elle konmussa) ikincisi olusturulmaz. */
+     varsa (sablona elle konmussa) ikincisi olusturulmaz.
+
+     IZGARANIN DISINA, KARDES OLARAK basiliyor. Onceden konum
+     kart.parentNode.parentNode diye SEVIYE SAYARAK bulunuyordu; tema
+     karti fazladan bir sarmalayiciya koydugunda o hesap bir seviye
+     sasiyor ve serit izgaranin COCUGU olarak doguyordu. Grid onu urun
+     karti sanip tek sutun genisligine sikistiriyor, "500 TL indirim
+     kodunuz aktif" dort satira boluniyordu. Artik seviye sayilmiyor:
+     kapsayici hesaplanmis display'den bulunuyor. */
   function seritYuvasi() {
     var v = document.querySelector('[data-tt-kol]');
     if (v) return v;
     var ilk = document.querySelector('[data-tt-kart-fb]');
     if (!ilk) return null;
     var kart = ilk.closest('.product-card') || ilk.parentNode;
-    var hucre = kart && kart.parentNode;
-    var izgara = hucre && hucre.parentNode;
+
+    var el = kart, izgara = null, adim = 0;
+    while (el && el.parentNode && adim++ < 8) {
+      if (kartKapsayicisi(el.parentNode)) { izgara = el.parentNode; break; }
+      el = el.parentNode;
+    }
     if (!izgara || !izgara.parentNode) return null;
 
     var d = document.createElement('div');
@@ -813,6 +848,14 @@
                   '<span class="tt-kol-metin" data-tt-kol-metin></span>' +
                   '<span class="tt-kol-saat" data-tt-kol-saat></span></div>';
     izgara.parentNode.insertBefore(d, izgara);
+
+    /* Emniyet: ic ice izgaralarda ustteki de kart tasiyor olabilir.
+       Serit hala bir kart kapsayicisinin icindeyse bir seviye disari
+       cikariyoruz -- boylece hicbir izgaranin cocugu olarak kalmiyor. */
+    var kacis = 0;
+    while (d.parentNode && d.parentNode.parentNode && kartKapsayicisi(d.parentNode) && kacis++ < 4) {
+      d.parentNode.parentNode.insertBefore(d, d.parentNode);
+    }
     return d;
   }
 
