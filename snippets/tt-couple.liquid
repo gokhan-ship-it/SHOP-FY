@@ -1,5 +1,5 @@
 {%- comment -%}
-  COUPLE SAYFASI — TASARIM TOKEN KATMANI + §2.1 HIZALAMA
+  COUPLE SAYFASI — MOBIL TASARIM KATMANI (token + olcu + ritim)
 
   Yalnizca templates/page.couple-daha-fazla-bilgial.json sablonunda
   yukleniyor; layout/theme.liquid icinde template.suffix kapisiyla
@@ -8,7 +8,7 @@
   =================================================================
   !! BAGIMLILIK: #MainContent !!
 
-  Asagidaki butun §2.1 kurallari su secici tabanina dayaniyor:
+  Asagidaki butun kurallar su secici tabanina dayaniyor:
 
       #MainContent.tt-couple-page
 
@@ -19,8 +19,8 @@
 
   etiketinin HEM id="MainContent" HEM .tt-couple-page tasimasi
   gerekiyor. Tema guncellemesi bu id'yi degistirirse ya da kaldirirsa
-  BUTUN §2.1 KURALLARI SESSIZCE OLUR -- hata vermez, sadece hizalama
-  eski haline doner. Boyle bir durumda once theme.liquid'deki <main>
+  BUTUN KURALLAR SESSIZCE OLUR -- hata vermez, sayfa temanin
+  kendi olculerine geri doner. Boyle bir durumda once theme.liquid'deki <main>
   etiketine bak.
 
   id neden gerekli: section'lar kendi CSS'lerini
@@ -106,7 +106,7 @@
 
   Px'ler kopyalanmadi; sadece oranlar tasindi. Bizim tabanimiz
   390px'lik ekran ve daha uzun Turkce metinler oldugu icin H2
-  40px'e degil 34px'e cikarildi (govdenin 2.0 kati), bolum
+  40px'e degil ~33.5px'e cikarildi (govdenin 2.0 kati), bolum
   padding'i 90'a degil 60'a cekildi.
 
   Temanin kendi olculeri de dogrulandi (sections/apple-slayt.liquid):
