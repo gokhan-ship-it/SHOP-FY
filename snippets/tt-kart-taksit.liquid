@@ -1,9 +1,64 @@
-{%- if product.available and settings.tt_kart_aylik != blank -%}
-{%- if product.price_varies -%}{%- assign tt_taban = product.price_min -%}{%- else -%}{%- assign tt_taban = product.price -%}{%- endif -%}
-{%- assign tt_adet = settings.tt_kart_taksit | default: 3 -%}
-{%- assign tt_carpan = settings.tt_oran | times: 1.0 | divided_by: 100.0 | plus: 1 -%}
-{%- assign tt_aylik = tt_taban | times: tt_carpan | divided_by: tt_adet -%}
-{%- capture tt_para -%}{%- render 'tt-para', kurus: tt_aylik -%}{%- endcapture -%}
-{%- assign tt_metin = settings.tt_kart_aylik | replace: '{ADET}', tt_adet | replace: '{TUTAR}', tt_para -%}
-<p class="tt-kart-aylik" data-tt-kart-aylik data-tt-kart-fiyat="{{ tt_taban }}" data-tt-kart-adet="{{ tt_adet }}">{{ tt_metin }}</p>
+{%- comment -%}
+  KOLEKSIYON KARTI FIYAT BLOGU — indirim katmani.
+  Referans: kart-fiyat-versiyon-b.html
+
+  Karttaki AYLIK TAKSIT SATIRI KALDIRILDI. Taksit bilgisi yalnizca urun
+  sayfasinda ve taksit modalinde kaliyor.
+
+  Iki durum var:
+    DURUM 1  gecerli kod var   -> etiket + yesil tutar + ustu cizili fiyat
+    DURUM 2  kod yok / dolmus  -> temanin kendi .price satiri, tek satir
+
+  ILK BOYAMA HEP DURUM 2. Bu blok [hidden] basiliyor; taksit-tablosu.js
+  cerezleri okuyup (wlo-codebar-code / -counter / -time) kodun gecerli
+  oldugunu dogrularsa aciyor ve temanin .price satirini gizliyor. Sure
+  dolunca sessizce geri aliniyor, sayfa yenilenmiyor.
+  Boylece kod gecersizken ETIKET, YESIL TUTAR ve CIZGI ekrana hic girmez.
+
+  NEDEN TUTAR BURADA HESAPLANIYOR:
+  Indirim tutari tema ayarindan geliyor, istemci deposundan degil. Liquid'de
+  hesaplayip tt-para ile bicimlendirince JS'in para bicimlendirmesi ya da
+  varsayilan bir tutar tutmasi gerekmiyor.
+
+  NEDEN NORMAL FIYATI DA BIZ BASIYORUZ:
+  Magazanin para bicimi Ingilizce gruplama uretiyor ("4,299.00TL"), yesil
+  tutar ise tt-para ile Turkce ("3.799,00 TL"). Ikisi ayni blokta yan yana
+  gelmesin diye Durum 1'de temanin .price satiri gizleniyor ve ucu de
+  buradan Turkce bicimde cikiyor. Durum 2'de temanin satiri oldugu gibi
+  kaliyor -- urun sayfasi ve modal etkilenmiyor.
+
+  Indirim urun fiyatina ESIT ya da ondan BUYUKSE blok hic basilmaz; o
+  kartta indirim gosterilmez (yanlis/negatif rakam yerine hic gostermemek).
+{%- endcomment -%}
+{%- liquid
+  assign tt_goster = false
+
+  if product.available and settings.tt_indirim_aktif
+    if product.price_varies
+      assign tt_taban = product.price_min
+    else
+      assign tt_taban = product.price
+    endif
+
+    assign tt_ind = settings.tt_indirim_tutar | times: 100 | round
+
+    if tt_ind > 0 and tt_ind < tt_taban
+      assign tt_goster = true
+      assign tt_net = tt_taban | minus: tt_ind
+    endif
+  endif
+-%}
+{%- if tt_goster -%}
+  {%- assign tt_etiket = settings.tt_kart_etiket | default: 'İndirim kodu ile' -%}
+  <p class="tt-kart-fiyat" data-tt-kart-fb data-tt-kart-fiyat="{{ tt_taban }}" hidden>
+    <span class="tt-kart-etiket">{{ tt_etiket }}</span>
+    <span class="tt-kart-yeni">{%- render 'tt-para', kurus: tt_net -%}</span>
+    <span class="tt-kart-eski">
+      {%- comment -%} "Itibaren" on eki yalnizca cizili satirda; yesil satirda tekrarlanmaz. {%- endcomment -%}
+      {%- if product.price_varies -%}
+        <span class="tt-kart-on">{{ settings.tt_kart_itibaren | default: 'İtibaren' }}</span>
+      {% endif -%}
+      {%- render 'tt-para', kurus: tt_taban -%}
+    </span>
+  </p>
 {%- endif -%}
