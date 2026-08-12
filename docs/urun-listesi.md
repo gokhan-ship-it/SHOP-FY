@@ -246,3 +246,40 @@ Yeni içeriği:
 Yan etki: /pages/boyutlar adresine doğrudan girilirse artık yalnızca bu
 cümle görünür. Sayfa hiçbir menüde bağlı değil, tek işi popup'a yedek
 metin sağlamak.
+
+---
+
+# Kadın / Erkek koleksiyonları eski GemPages şablonundaydı (12 Ağustos 2026)
+
+Tema yayına alındıktan sonra Kadın/Erkek bağlantıları eski GemPages
+tasarımlarını açıyordu. Sebep: iki koleksiyonun `templateSuffix` değeri
+hâlâ GemPages şablonlarını gösteriyordu. Temada bu koleksiyonlar için
+hazır yeni şablonlar zaten vardı.
+
+| Koleksiyon | Handle | Eski suffix | Yeni suffix |
+|---|---|---|---|
+| Kadınlar İçin Zaman Kapsülleri | zaman-kapsulu-kolyeler | gp-template-583723167416058439 | zaman-kapsulu-kolyeler |
+| Erkekler İçin Zaman Kapsülleri | zaman-kapsulu-bileklik | gp-template-584541422976238346 | zaman-kapsulu-bileklik |
+
+`collection.zaman-kapsulu-kolyeler.json` içeriği tek tek okunup doğrulandı:
+sayfa-zemini · apple-local-nav · nasil-calisir-serit · apple-baslik ·
+main-collection · urun-alt-cta -- yani yeni tasarım.
+`collection.zaman-kapsulu-bileklik.json` aynı adlandırma ve boyut düzeninde
+olduğu için aynı tur olduğu kabul edildi, içeriği ayrıca açılmadı.
+
+Geri almak gerekirse tek yapılacak `templateSuffix` değerini yukarıdaki
+eski değere döndürmek.
+
+## Hâlâ GemPages şablonunda kalanlar
+
+| Koleksiyon | Suffix | Not |
+|---|---|---|
+| Zaman Kapsülü Künyeler | gp-template-584544637289497354 | Temada karşılığı olan yeni bir şablon yok |
+| Ömür Boyu Garantili Çelik Zaman Kapsülleri | gp-template-584541422976238346 | İçinde 0 ürün var |
+
+## Kullanılmayan şablonlar
+
+`collection.couple-koleksiyon.json` ve
+`collection.couple-zaman-kapsulleri.json` temada duruyor ama hiçbir
+koleksiyon bunlara bağlı değil. "Couple", "Couple Collection" ve
+"Couple Zaman Kapsülleri" koleksiyonları varsayılan şablonu kullanıyor.
