@@ -341,7 +341,7 @@
 
     {%- comment -%}
       Eyebrow / etiket.
-      Listeye 4. turda .cb-etiket, .ak-etiket, .mk-etiket, .ho-etiket,
+      Listeye 4. turda .ak-etiket, .mk-etiket, .ho-etiket ve
       .vs-etiket eklendi: bolumler ayni adlandirma kalibini kullaniyor
       (<onek>-etiket) ama hepsinin kaynagini tek tek dogrulamak
       mumkun olmadi. Var olmayan bir secici hicbir sey yapmaz, o
@@ -350,7 +350,6 @@
     {%- endcomment -%}
     #MainContent.tt-couple-page .as-etiket,
     #MainContent.tt-couple-page .ay-etiket,
-    #MainContent.tt-couple-page .cb-etiket,
     #MainContent.tt-couple-page .ak-etiket,
     #MainContent.tt-couple-page .mk-etiket,
     #MainContent.tt-couple-page .ho-etiket,
@@ -393,7 +392,6 @@
     #MainContent.tt-couple-page .as-bas,
     #MainContent.tt-couple-page .mk-head,
     #MainContent.tt-couple-page .ay-bas-metin,
-    #MainContent.tt-couple-page .cb-bas-yazi,
     #MainContent.tt-couple-page [class*="uc-heading-"],
     #MainContent.tt-couple-page [class*="ugc-gallery-heading-"],
     #MainContent.tt-couple-page [class*="ai-comparison-title-"] {
@@ -408,6 +406,28 @@
       {%- endcomment -%}
       text-wrap: balance;
     }
+
+    {%- comment -%}
+      ------------------------------------------------------------
+      BULUSMA BOLUMU (.cb-*) TIPOGRAFIDEN CIKARILDI  (4. tur)
+
+      .cb-bas-yazi ve .cb-bas-alt 3. turde bu iki kuraldaydi.
+      Sonuc: bolumun kendi editor ayarlari ("Baslik boyutu (mobil)"
+      24px, "Aciklama boyutu (mobil)" 16px) hicbir ise yaramiyordu --
+      bizim seciciler (1,2,0) bolumun kendi kuralini (1,1,0) eziyordu.
+      Kullanici basligin tek satirda durmasini istiyor ve bunu
+      editorden ayarliyor; o yuzden bu iki oge tekrar bolumun
+      denetimine birakildi.
+
+      Bu bolumde bizim katmanimizdan kalan tek sey .cb-ic'in yan
+      boslugu (--tt-page-pad). Baslik/aciklama puntosu, satir
+      araligi ve hizasi artik tamamen editor ayarindan geliyor.
+
+      GENEL KURAL: bir bolumun editor ayarini geri istersen o
+      bolumun secicisini asagidaki listelerden cikarmak yeterli;
+      baska hicbir yerde yan etkisi olmuyor.
+      ------------------------------------------------------------
+    {%- endcomment -%}
 
     {%- comment -%}
       Hero basligi (.gh-bas) BILEREK DISARIDA BIRAKILDI.
@@ -447,7 +467,6 @@
     #MainContent.tt-couple-page .mk-metin,
     #MainContent.tt-couple-page .ay-alt,
     #MainContent.tt-couple-page .gh-alt,
-    #MainContent.tt-couple-page .cb-bas-alt,
     #MainContent.tt-couple-page [class*="ai-comparison-subtitle-"] {
       font-size: var(--tt-f-body-size);
       line-height: var(--tt-f-body-lh);
