@@ -417,3 +417,38 @@ kaldirilmasi).
     collections { nodes { title templateSuffix } }
 
 `gp-template-` ile baslayan her deger geri donmus demektir.
+
+---
+
+# Sepet ikonu /cart'a goturuyordu (12 Ağustos 2026)
+
+Header'daki sepet ikonu, sepette urun varken cekmece yerine /cart
+sayfasina goturuyordu. snippets/tt-sepet-cekmece.liquid'in ilk surumu
+yalnizca aria-controls="CartDrawer" tasiyan ogeleri yakaliyordu;
+magazada header'i yeniden yazan uygulama gomulusu oldugu icin oge
+degistirildiginde bu isaret kaybolabiliyor ve baglanti serbest
+kaliyordu.
+
+Yeni surumde iki olcutten biri yetiyor: aria-controls="CartDrawer" ya
+da adresi tam olarak sepet sayfasi olan herhangi bir <a>. Islem
+adresleri (/cart/add, /cart/change, /cart/checkout), dis alan adlari,
+yeni sekmede acilanlar ve degistirici tuslu tiklamalar disarida.
+
+NOT: Kok sebep birebir dogrulanamadi -- bu ortamdan canli sayfaya
+erisim yok (proxy texttonext.com'u engelliyor). Duzeltme, olasi
+sebeplerin hepsini kapsayacak sekilde genis tutuldu. Hala olmazsa
+siradaki adim, sayfada tiklamayi kimin ele gecirdigine bakmak
+(muhtemelen document uzerinde capture evresinde dinleyen bir uygulama).
+
+## Aktarim
+
+Tema yayinda oldugu icin yine kopya uzerinden:
+"Duzeltme 2 - sepet cekmecesi 2026-08-12"
+gid://shopify/OnlineStoreTheme/187518091584
+Dosya GitHub raw adresinden cektirildi (commit f8f12fa), md5 yerelle
+birebir esledi (ab1849aac844835b815d6ee1d6573e44).
+
+DIKKAT: themeDuplicate ASENKRON. Kopyalama bitmeden yapilan
+themeFilesUpsert sessizce kayboluyor (userErrors bos donuyor ama dosya
+eski kaliyor). Yukledikten sonra checksumMd5 ile DOGRULAMAK sart;
+eslesmezse upsert tekrarlanmali.
