@@ -58,6 +58,12 @@
     {%- endcomment -%}
     {%- if template.suffix == 'couple-daha-fazla-bilgial' -%}
       {%- render 'tt-couple' -%}
+      {%- comment -%}
+        Ayni katmanin devami. Ayri dosya olmasinin tek sebebi
+        tt-couple.liquid'in buyumesi; kapsam ayni, hemen ardindan
+        geldigi icin kaynak sirasi da dogru kaliyor.
+      {%- endcomment -%}
+      {%- render 'tt-couple-izgara' -%}
     {%- endif -%}
 
     {{ content_for_header }}

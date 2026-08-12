@@ -1,0 +1,101 @@
+{%- comment -%}
+  AVANTAJ KARTLARI: MOBILDE 2x2 IZGARA  (10. tur)
+
+  Bu dosya snippets/tt-couple.liquid'in devami. Ayri tutulmasinin
+  tek sebebi ana dosyanin buyumesi; kapsam ve mantik aynidir ve o
+  dosyayla ayni sayfada, ondan hemen sonra render ediliyor.
+
+  ------------------------------------------------------------------
+  Bolum mobilde yatay kayan bir seritti (.ak-serit: flex +
+  overflow-x: auto + scroll-snap). Sablonda dort kart var, yani
+  iki sutunda tam iki satir ediyor.
+
+  Serit gride donunce kartin iki olcusu birden kiriliyor, ikisi de
+  burada cozuluyor:
+    width: 264px      -> auto   (sabit genislik gridde tasar)
+    min-height: 288px -> 0      (iki sutunda 288 gereksiz uzun kutu
+                                 birakiyordu; yukseklik artik
+                                 icerikten geliyor, kartlar zaten
+                                 grid sayesinde satir icinde esit
+                                 yukseklikte)
+
+  Kart genisligi 390px ekranda (390 - 2x23.4 kenar - 12 bosluk) / 2
+  = ~166px'e dusuyor. Bu genislikte 22px padding + 21px baslik +
+  15px metin sikisiyordu; kart ici olculer orana gore kucultuldu:
+    padding   22 -> 16
+    ikon      32 -> 28, alt boslugu 28 -> 14
+    baslik    21 -> 16
+    metin     15 -> 13
+    dugme     36 -> 32
+    yaricap   20 -> 16
+
+  Oklar gizlendi: kaydirilacak bir sey kalmadi.
+
+  MASAUSTU DEGISMEDI: orada bolumun kendi "izgara" duzeni zaten
+  devrede (990px ve uzeri, sutun sayisi bolum ayarindan). Kurallar
+  bu yuzden max-width: 767px icinde.
+
+  Giris animasyonu (kartlar sagdan gelir) calismaya devam ediyor;
+  .ak-kok'ta overflow-x: clip oldugu icin gridde de yatay tasma
+  yaratmiyor.
+
+  OLCUM (Chromium, dort kartlik kurgu)
+    360px  2 sutun, kart 152x252/233, bolum 719px, tasma yok
+    390px  2 sutun, kart 166x233/213, bolum 685px, tasma yok
+    430px  2 sutun, kart 183x213,     bolum 632px, tasma yok
+    767px  2 sutun, tasma yok
+    768px  degismedi (bolumun kendi serit duzeni, oklar geri geldi)
+   1200px  degismedi
+
+  sections/avantaj-kartlari.liquid'e DOKUNULMADI.
+{%- endcomment -%}
+<style>
+  @media (max-width: 767px) {
+    #MainContent.tt-couple-page .ak-serit {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      overflow: visible;
+      scroll-snap-type: none;
+      padding-block: 2px;
+    }
+
+    #MainContent.tt-couple-page .ak-kart {
+      width: auto;
+      min-height: 0;
+      scroll-snap-align: none;
+      padding: 16px;
+      border-radius: 16px;
+    }
+
+    #MainContent.tt-couple-page .ak-ikon {
+      width: 28px;
+      height: 28px;
+      margin-bottom: 14px;
+    }
+
+    #MainContent.tt-couple-page .ak-kart-bas {
+      margin-bottom: 6px;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    #MainContent.tt-couple-page .ak-kart-metin {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    #MainContent.tt-couple-page .ak-alt {
+      padding-top: 12px;
+    }
+
+    #MainContent.tt-couple-page .ak-yuvarlak {
+      width: 32px;
+      height: 32px;
+    }
+
+    #MainContent.tt-couple-page .ak-oklar {
+      display: none;
+    }
+  }
+</style>
