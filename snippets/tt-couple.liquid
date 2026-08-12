@@ -746,6 +746,92 @@
       touch-action: pan-y;
     }
   }
+
+  {%- comment -%}
+    ==================================================================
+    VIDEO ISIK KUTUSU  (8. tur)
+
+    Mozaik kartlarindaki video, play'e basilinca kartin icinde
+    oynuyordu; kart kucuk oldugu icin izlenmiyordu. Artik tam ekrana
+    yakin bir katmanda aciliyor, sag ustte kapatma dugmesi var.
+
+    NEDEN #MainContent ALTINDA DEGIL: katman document.body'ye
+    ekleniyor. Sebebi mozaik kokunun animasyon icin transform
+    kullanabilmesi -- transform'lu bir ata, position: fixed'i kendine
+    baglar ve katman tam ekran olmaz. Body'ye tasiyinca bu risk yok.
+    Kapsam yine sayfaya ozel: bu dosya sadece couple sablonunda
+    yukleniyor, .tt-vid-* adlari da temada baska yerde gecmiyor.
+
+    Butun genisliklerde calisiyor (mobil + masaustu): kucuk kartta
+    video izlemek masaustunde de ayni sorun.
+    ==================================================================
+  {%- endcomment -%}
+  .tt-vid-kapak {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.92);
+    opacity: 0;
+    transition: opacity 220ms ease;
+  }
+
+  .tt-vid-kapak.is-acik {
+    opacity: 1;
+  }
+
+  {%- comment -%}
+    Dikey videolar yuksekligi, yatay olanlar genisligi dolduruyor;
+    ikisi de kirpilmiyor. Yaricap sayfanin kart ailesiyle ayni.
+  {%- endcomment -%}
+  .tt-vid-oynatici {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    border-radius: var(--tt-card-radius, 20px);
+    background: #000;
+  }
+
+  .tt-vid-kapat {
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top, 0px));
+    right: max(14px, env(safe-area-inset-right, 0px));
+    z-index: 1;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .tt-vid-kapat svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+
+  .tt-vid-kapat:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tt-vid-kapak {
+      transition: none;
+    }
+  }
 </style>
 
 {%- comment -%}
@@ -872,5 +958,181 @@
       tara();
     }
     document.addEventListener('shopify:section:load', tara);
+  })();
+</script>
+
+{%- comment -%}
+  ==================================================================
+  MOZAIK VIDEO KARTLARI: ISIK KUTUSU  (8. tur)
+
+  Bolumun kendi davranisi: play'e basilinca video KARTIN ICINDE
+  oynuyor, controls aciliyor, digerleri duruyor. Kart mozaikte
+  kucuk oldugu icin bu izlenebilir degildi.
+
+  Burada yapilan: play tiklamasi YAKALAMA (capture) evresinde
+  kesiliyor. document uzerindeki capture dinleyicisi, dugmenin
+  kendi dinleyicisinden ONCE calisiyor; stopPropagation ile olay
+  dugmeye hic ulasmiyor, yani bolumun ici oynatma yolu devreye
+  girmiyor. Bolum dosyasina dokunulmadi -- ayni bolum baska
+  sayfalarda eski haliyle calismaya devam ediyor.
+
+  Video KLONLANIYOR, tasinmiyor: <video> dugumunu DOM'dan sokup
+  tasimak bazi tarayicilarda oynatmayi sifirliyor. Derin klon
+  <source> cocuklarini ve poster'i da getiriyor; tarayici ayni
+  dosyayi onbellekten aliyor.
+
+  Ses: bolum videolari sesli oynatiyor (muted: false). play()
+  cagrisi kullanicinin tiklamasinin icinde oldugu icin tarayici
+  sesli oynatmaya izin veriyor.
+
+  Erisilebilirlik: role="dialog" + aria-modal, acilista odak
+  kapatma dugmesine gidiyor, Tab katmanin disina cikmiyor, Esc
+  kapatiyor, kapaninca odak basilan play dugmesine geri donuyor.
+  ==================================================================
+{%- endcomment -%}
+<script>
+  (function () {
+    'use strict';
+
+    var KAPAT_IKON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+    var kapak = null;      // acik katman
+    var sonDugme = null;   // odak buraya geri donecek
+    var eskiTasma = '';
+
+    function kapat() {
+      if (!kapak) return;
+      var k = kapak;
+      kapak = null;
+
+      var v = k.querySelector('video');
+      if (v) { try { v.pause(); } catch (e) {} }
+
+      k.classList.remove('is-acik');
+      document.documentElement.style.overflow = eskiTasma;
+
+      window.setTimeout(function () {
+        if (k.parentNode) k.parentNode.removeChild(k);
+      }, 220);
+
+      if (sonDugme) {
+        try { sonDugme.focus(); } catch (e) {}
+        sonDugme = null;
+      }
+    }
+
+    function ac(kaynak, dugme) {
+      if (kapak) kapat();
+      sonDugme = dugme || null;
+
+      var k = document.createElement('div');
+      k.className = 'tt-vid-kapak';
+      k.setAttribute('role', 'dialog');
+      k.setAttribute('aria-modal', 'true');
+      k.setAttribute('aria-label', 'Video');
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tt-vid-kapat';
+      btn.setAttribute('aria-label', 'Videoyu kapat');
+      btn.innerHTML = KAPAT_IKON;
+
+      var v = kaynak.cloneNode(true);
+      v.className = 'tt-vid-oynatici';
+      v.removeAttribute('style');
+      v.removeAttribute('width');
+      v.removeAttribute('height');
+      v.setAttribute('controls', 'controls');
+      v.setAttribute('playsinline', '');
+      v.setAttribute('webkit-playsinline', '');
+      v.muted = false;
+
+      k.appendChild(btn);
+      k.appendChild(v);
+      document.body.appendChild(k);
+
+      // Sayfa arkada kaymasin.
+      eskiTasma = document.documentElement.style.overflow || '';
+      document.documentElement.style.overflow = 'hidden';
+
+      // Sayfadaki butun videolar dursun (kart ici oynayan kalmasin).
+      var hepsi = document.querySelectorAll('video');
+      for (var i = 0; i < hepsi.length; i++) {
+        if (hepsi[i] !== v) { try { hepsi[i].pause(); } catch (e) {} }
+      }
+
+      kapak = k;
+
+      // Bir kare bekleyip gecisi tetikliyoruz.
+      if (window.requestAnimationFrame) {
+        requestAnimationFrame(function () { k.classList.add('is-acik'); });
+      } else {
+        k.classList.add('is-acik');
+      }
+
+      try { v.currentTime = 0; } catch (e) {}
+      var pr = v.play();
+      if (pr && pr.catch) pr.catch(function () {});
+
+      try { btn.focus(); } catch (e) {}
+
+      btn.addEventListener('click', kapat);
+
+      // Zemine tiklama kapatir; videonun ve dugmenin uzeri haric.
+      k.addEventListener('click', function (e) {
+        if (e.target === k) kapat();
+      });
+
+      // Odak katmanin disina cikmasin.
+      k.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab') return;
+        var odaklanabilir = k.querySelectorAll('button, video[controls]');
+        if (!odaklanabilir.length) return;
+        var ilk = odaklanabilir[0];
+        var son = odaklanabilir[odaklanabilir.length - 1];
+        if (e.shiftKey && document.activeElement === ilk) {
+          e.preventDefault();
+          son.focus();
+        } else if (!e.shiftKey && document.activeElement === son) {
+          e.preventDefault();
+          ilk.focus();
+        }
+      });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (!kapak) return;
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        e.preventDefault();
+        kapat();
+      }
+    });
+
+    {%- comment -%}
+      Capture evresi sart: dugmenin kendi click dinleyicisi bolumun
+      JS'inde ve dugumun uzerinde duruyor. document'te capture ile
+      dinleyip stopPropagation cagirinca olay oraya hic ulasmiyor.
+    {%- endcomment -%}
+    document.addEventListener('click', function (e) {
+      var kok = document.querySelector('#MainContent.tt-couple-page');
+      if (!kok) return;
+      var hedef = e.target;
+      if (!hedef || !hedef.closest) return;
+
+      var dugme = hedef.closest('[data-mk-play]');
+      if (!dugme || !kok.contains(dugme)) return;
+
+      var kart = dugme.closest('[data-mk-kart]');
+      var video = kart ? kart.querySelector('video') : null;
+      if (!video) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      ac(video, dugme);
+    }, true);
+
+    // Tema duzenleyicide bolum yeniden yuklenirse acik katman kalmasin.
+    document.addEventListener('shopify:section:load', function () { kapat(); });
+    document.addEventListener('shopify:section:unload', function () { kapat(); });
   })();
 </script>
