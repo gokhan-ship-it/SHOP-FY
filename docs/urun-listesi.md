@@ -320,3 +320,57 @@ Shopify tarafından yapılabilecek bir ayar yok.
 Kontrol sorgusu (aynısı tekrar bakmak için):
 `products(query: "-title:*Couple*") { nodes { title templateSuffix } }`
 -- `gp-template-` ile başlayan her değer geri dönmüş demektir.
+
+---
+
+# Kodlu fiyat hatasi ve duzeltme temasi (12 Ağustos 2026)
+
+## Hata
+
+Urun sayfasinda fiyatin altindaki serit "Kodunuzla ... TL" tutarini ve
+taksit satirini YANLIS hesapliyordu. Ornek: 2.199 TL urun + 500 TL kod
+icin "Kodunuzla 499,50 TL / Ayda 184,08 TL" yaziyordu; dogrusu 1.699 TL
+ve ayda ~626 TL.
+
+Kok sebep, assets/taksit-tablosu.js icindeki fbFiyat():
+
+    var el = document.querySelector('.price__regular');
+
+`.price__regular` sinifini iki yer birden basiyor:
+snippets/product-price.liquid (urun fiyati ve urun kartlari) ve
+sections/cart-drawer.liquid (sepet satirlari). Sepet cekmecesi layout'ta
+content_for_layout'tan ONCE render edildigi icin belge genelindeki ilk
+eslesme sepetteki satir oluyordu.
+
+Hatanin "kod varken ortaya cikmasi" tesadüf degil: cekmece
+.price__regular'i yalnizca `item.original_price != item.final_price`
+dalinda basiyor, yani satir indirimliyken -- tam da cark kodu aktifken.
+
+Taksit MODALI etkilenmemisti; o DOM'a bakmiyor (seciliKurus, Liquid'den
+gelen deger).
+
+## Duzeltme
+
+Arama artik blogun kendi bolumuyle sinirli:
+
+    var kap = (blok && blok.closest) ? blok.closest('.shopify-section') : null;
+    if (!kap) kap = document.getElementById('MainContent');
+    var el = kap ? kap.querySelector('.price__regular') : null;
+
+## Nasil aktarildi
+
+Tema yayina alindigi icin canli temaya dosya yazilamiyor (API bloke
+ediyor). Bu yuzden:
+
+1. themeDuplicate ile kopya olusturuldu:
+   "Duzeltme - kodlu fiyat 2026-08-12"
+   gid://shopify/OnlineStoreTheme/187517665600
+2. Dosya kopyaya themeFilesUpsert ile YUKLENDI -- icerik elle
+   aktarilmadi, `body: { type: URL, ... }` ile dogrudan GitHub raw
+   adresinden cektirildi (commit 6cbce59). Boylece 40 KB'lik dosyada
+   aktarim hatasi riski sifir; md5 yerel dosyayla birebir eslesti
+   (4ea236131dd95777421df8ea2d0a9a50).
+3. Yayinlama kullaniciya birakildi (themePublish API'de bloke).
+
+NOT: type: URL yontemi Shopify'in adresi cekebilmesine bagli, yani depo
+herkese acik oldugu surece calisiyor.
