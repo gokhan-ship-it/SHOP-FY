@@ -1,7 +1,7 @@
 {%- comment -%}
   COUPLE ZAMAN KAPSULU -- 3 ADIMLI ANIMASYONLU AKIS  (.tt-cak)
 
-  Yukleyin -> Bulusun -> Acilsin, 12 saniyelik dongu; son 1,5 saniyede
+  Yukleyin -> Bulusun -> Acilsin, 11 saniyelik dongu; son 1,4 saniyede
   cizgi basa doner ve "ve tekrarlayin" belirir.
 
   Nereden cagriliyor: snippets/tt-akis-seridi.liquid. O dosya artik bir
@@ -13,7 +13,7 @@
   ------------------------------------------------------------------
   YAPISI
 
-  Butun ritim tek degiskende: --tt-cak-sure (12s). Degistirince uc adim
+  Butun ritim tek degiskende: --tt-cak-sure (11s). Degistirince uc adim
   da senkron kalir; adimlarin gecikmeleri sureden turetiliyor
   (--tt-cak-g).
 
@@ -42,13 +42,15 @@
     1200px  uzun etiketler, masaustu olculeri degismedi
     ikisinde de animasyon donuyor, JS hatasi yok
     azaltilmis hareket: cizgi dolu, 3. durum yazisi gorunur
-    2. adim kare kare dogrulandi: 0 sn uzakta ve kucuk -> 1,44 sn'de
-    tam ust uste -> 1,7 sn'de tek kisi + kalp -> 3,4 sn'de basa donus
+    2. adim kare kare dogrulandi: 0 sn uzakta ve kucuk -> 1,05 sn'de
+    tam ust uste -> 1,3 sn'de tek kisi -> 1,65 sn'de kalp
+    kisi ikonu diger iki ikonla ayni cerceveyi dolduruyor
+    (kilit 14,8x15,8 / yukleme 14,8x14,3 / kisi 10,4x12,4 birim)
 {%- endcomment -%}
 <style>
   .tt-cak {
     /* ritim */
-    --tt-cak-sure: 12s;
+    --tt-cak-sure: 11s;
     /* renkler */
     --tt-cak-metin: #1d1d1f;
     --tt-cak-solgun: #86868b;
@@ -141,7 +143,17 @@
   .tt-cak-kisi-sag { transform-box: fill-box; transform-origin: center }
   .tt-cak-kisi-sol { animation: ttCakKisiSol var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
   .tt-cak-kisi-sag { animation: ttCakKisiSag var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
-  .tt-cak-kisi-tek { opacity: 0; animation: ttCakKisiTek var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
+  {%- comment -%}
+    Tek kisi ikisinden bir tik buyuk; devralma aninda boy farki
+    sicrama gibi gorunmesin diye .87'den girip normale buyuyor.
+    Ayaklar yerinde kalsin diye orijin alt-orta.
+  {%- endcomment -%}
+  .tt-cak-kisi-tek {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: ttCakKisiTek var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g);
+  }
   .tt-cak-kalp {
     opacity: 0;
     transform-box: fill-box;
@@ -168,9 +180,9 @@
   .tt-cak-dongu svg { width: 14px; height: 14px; display: block }
 
   {%- comment -%}
-    Zaman cizelgesi
-      0-3,4sn   1. adim   |  3,5-6,9sn   2. adim
-      7-10,4sn  3. adim   |  10,5-12sn   "ve tekrarlayin" + cizgi basa
+    Zaman cizelgesi (--tt-cak-sure = 11s)
+      0-3,1sn   1. adim   |  3,2-6,3sn   2. adim
+      6,4-9,5sn 3. adim   |  9,6-11sn    "ve tekrarlayin" + cizgi basa
   {%- endcomment -%}
   @keyframes ttCakDolgu {
     0%, 28.33%   { transform: scaleX(0) }
@@ -207,30 +219,34 @@
     Ikisi cercevenin iki ucundan ve hafif kucuk (0,82) baslar --
     kucukluk "uzakta" okumasini veriyor. Yaklastikca normal boya
     donuyorlar ve merkezde kafalari TAM ust uste biniyor: sol kisi
-    8,8 + 3,2 = 12, sag kisi 15,2 - 3,2 = 12. Tam o karede ikisi
+    8,4 + 3,6 = 12, sag kisi 15,6 - 3,6 = 12. Tam o karede ikisi
     soner, tek kisi acilir, kalp firlar.
+
+    Bulusma %12'den %9,5'e cekildi: adim suresi de 12s'ten 11s'e
+    indigi icin yaklasma 1,44 sn'den 1,05 sn'ye iniyor.
   {%- endcomment -%}
   @keyframes ttCakKisiSol {
-    0%           { transform: translateX(-5px) scale(.82);   opacity: 1 }
-    12%          { transform: translateX(3.2px) scale(1);    opacity: 1 }
-    15%, 28.33%  { transform: translateX(3.2px) scale(1);    opacity: 0 }
-    33%, 100%    { transform: translateX(-5px) scale(.82);   opacity: 1 }
+    0%           { transform: translateX(-3.8px) scale(.82); opacity: 1 }
+    9.5%         { transform: translateX(3.6px) scale(1);    opacity: 1 }
+    12%, 28.33%  { transform: translateX(3.6px) scale(1);    opacity: 0 }
+    33%, 100%    { transform: translateX(-3.8px) scale(.82); opacity: 1 }
   }
   @keyframes ttCakKisiSag {
-    0%           { transform: translateX(5px) scale(.82);    opacity: 1 }
-    12%          { transform: translateX(-3.2px) scale(1);   opacity: 1 }
-    15%, 28.33%  { transform: translateX(-3.2px) scale(1);   opacity: 0 }
-    33%, 100%    { transform: translateX(5px) scale(.82);    opacity: 1 }
+    0%           { transform: translateX(3.8px) scale(.82);  opacity: 1 }
+    9.5%         { transform: translateX(-3.6px) scale(1);   opacity: 1 }
+    12%, 28.33%  { transform: translateX(-3.6px) scale(1);   opacity: 0 }
+    33%, 100%    { transform: translateX(3.8px) scale(.82);  opacity: 1 }
   }
   @keyframes ttCakKisiTek {
-    0%, 12%      { opacity: 0 }
-    15%, 28.33%  { opacity: 1 }
-    31%, 100%    { opacity: 0 }
+    0%, 9.5%     { opacity: 0; transform: scale(.87) }
+    12%          { opacity: 1; transform: scale(.87) }
+    15%, 28.33%  { opacity: 1; transform: scale(1) }
+    31%, 100%    { opacity: 0; transform: scale(.87) }
   }
   @keyframes ttCakKalp {
-    0%, 13%      { opacity: 0; transform: scale(.35) translateY(2px) }
-    18%          { opacity: 1; transform: scale(1.12) translateY(0) }
-    21%, 28.33%  { opacity: 1; transform: scale(1) translateY(0) }
+    0%, 10.5%    { opacity: 0; transform: scale(.35) translateY(2px) }
+    15%          { opacity: 1; transform: scale(1.12) translateY(0) }
+    18%, 28.33%  { opacity: 1; transform: scale(1) translateY(0) }
     31%, 100%    { opacity: 0; transform: scale(.35) translateY(2px) }
   }
   @keyframes ttCakKanca {
@@ -316,18 +332,18 @@
         <span class="tt-cak-ikon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path class="tt-cak-kalp" fill="#e0364a" stroke="none"
-                  d="M12 8.4c-2.1-1.5-3.4-2.6-3.4-3.9 0-1.05.85-1.8 1.8-1.8.75 0 1.35.42 1.6.95.25-.53.85-.95 1.6-.95.95 0 1.8.75 1.8 1.8 0 1.3-1.3 2.4-3.4 3.9z"/>
+                  d="M12 7.2c-2.1-1.5-3.4-2.6-3.4-3.9 0-1.05.85-1.8 1.8-1.8.75 0 1.35.42 1.6.95.25-.53.85-.95 1.6-.95.95 0 1.8.75 1.8 1.8 0 1.3-1.3 2.4-3.4 3.9z"/>
             <g class="tt-cak-kisi-sol">
-              <circle cx="8.8" cy="12.6" r="2"/>
-              <path d="M5.6 19.6c0-1.77 1.43-3.2 3.2-3.2s3.2 1.43 3.2 3.2"/>
+              <circle cx="8.4" cy="12.8" r="2.7"/>
+              <path d="M3.9 21c0-2.49 2.01-4.5 4.5-4.5s4.5 2.01 4.5 4.5"/>
             </g>
             <g class="tt-cak-kisi-sag">
-              <circle cx="15.2" cy="12.6" r="2"/>
-              <path d="M12 19.6c0-1.77 1.43-3.2 3.2-3.2s3.2 1.43 3.2 3.2"/>
+              <circle cx="15.6" cy="12.8" r="2.7"/>
+              <path d="M11.1 21c0-2.49 2.01-4.5 4.5-4.5s4.5 2.01 4.5 4.5"/>
             </g>
             <g class="tt-cak-kisi-tek">
-              <circle cx="12" cy="12.5" r="2.3"/>
-              <path d="M8.1 19.6c0-2.15 1.75-3.9 3.9-3.9s3.9 1.75 3.9 3.9"/>
+              <circle cx="12" cy="11.7" r="3.1"/>
+              <path d="M6.8 21c0-2.87 2.32-5.2 5.2-5.2s5.2 2.32 5.2 5.2"/>
             </g>
           </svg>
         </span>
