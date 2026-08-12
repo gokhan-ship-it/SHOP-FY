@@ -19,8 +19,9 @@
            metin -> serit -> buton -> baglanti.
 
   Kart genisligi uc aralikta:
-      <600px    330px, dolgu 20, baslik 22px, buton tam genislik
-      600-899   min(90vw, 620px), dolgu 24, baslik 24px, buton inline
+      <600px    tam genislik (ekran - 32), dolgu 20, baslik 22px,
+                buton tam genislik
+      600-899   en fazla 620px, dolgu 24, baslik 24px, buton inline
       >=900     kart_en_d (varsayilan 860), dolgu 32, baslik 28px
 
   Alt metin 600px'in ALTINDA gizli. Telefonda uc satira dusup kartin
@@ -80,7 +81,8 @@
   kart genisleyince oran korunuyor.
 
   OLCUM (Chromium)
-    390px   tek sutun, kart 330, baslik 22, buton tam genislik
+    390px   tek sutun, kart 358, baslik 22, buton tam genislik
+    430px   tek sutun, kart 398
     768px   tek sutun, kart 620, baslik 24, buton inline
     1440px  iki sutun, kart 860, baslik 28, sutun araligi 48
     uc genislikte de yatay tasma yok, JS hatasi yok
@@ -117,9 +119,14 @@
   .ds-{{ sid }} *::before,
   .ds-{{ sid }} *::after { box-sizing: inherit; }
 
-  {%- comment -%} ---------- Kart ---------- {%- endcomment -%}
+  {%- comment -%}
+    ---------- Kart ----------
+    Telefonda kart 330px'te sabitlenince genis telefonlarda (430px)
+    iki yanda ~50px bosluk kaliyordu. Artik bolumun ic genisligini
+    (ekran - 32px) tamamen kullaniyor; ustteki kampanya bandi kartiyla
+    ayni kural, ikisi her genislikte hizali kaliyor.
+  {%- endcomment -%}
   .tt-cd-kart-{{ sid }} {
-    max-width: 330px;
     margin-inline: auto;
     padding: 20px;
     background: #0F0F10;
@@ -366,7 +373,7 @@
   {%- endcomment -%}
   @media (min-width: 600px) {
     .tt-cd-kart-{{ sid }} {
-      max-width: min(90vw, 620px);
+      max-width: 620px;
       padding: 24px;
     }
     .tt-cd-baslik-{{ sid }} { font-size: 24px; }
@@ -919,7 +926,7 @@
 
     { "type": "header", "content": "Bölüm" },
     { "type": "color", "id": "bolum_zemin", "label": "Bölüm zemini", "default": "#FFFFFF" },
-    { "type": "range", "id": "kart_en_d", "label": "Kart genişliği — masaüstü", "min": 620, "max": 1200, "step": 20, "unit": "px", "default": 860, "info": "Yalnızca 900px ve üzerinde geçerli. Altında kart 620px'te (tablet) ve 330px'te (telefon) sabit." },
+    { "type": "range", "id": "kart_en_d", "label": "Kart genişliği — masaüstü", "min": 620, "max": 1200, "step": 20, "unit": "px", "default": 860, "info": "Yalnızca 900px ve üzerinde geçerli. Altında kart 620px'te (tablet) ve tam genişlikte (telefon) görünür." },
     { "type": "range", "id": "dis_bosluk", "label": "Dikey boşluk — telefon", "min": 0, "max": 80, "step": 4, "unit": "px", "default": 24 },
     { "type": "range", "id": "dis_bosluk_d", "label": "Dikey boşluk — masaüstü", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 40 }
   ],

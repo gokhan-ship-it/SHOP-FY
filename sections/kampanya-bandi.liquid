@@ -20,8 +20,9 @@
    <900px  izgara yok; ogeler DOM sirasinda alt alta
 
   Kart olculeri:
-      <600px    330px, dolgu 20, radius 16, baslik 22, alt metin 14
-      600-899   min(90vw, 620px), dolgu 24, radius 20, baslik 24
+      <600px    tam genislik (ekran - 32), dolgu 20, radius 16,
+                baslik 22, alt metin 14
+      600-899   en fazla 620px, dolgu 24, radius 20, baslik 24
       >=900     kart_en_d (varsayilan 860), dolgu 32, radius 20, baslik 28
 
   Iki kutu HER genislikte yan yana kalir. Kutu tipografisi bilerek
@@ -59,11 +60,12 @@
   baska hicbir ogeye sizmiyor.
 
   OLCUM (Chromium)
-    390px   tek sutun, kart 330, baslik 22, kutu metni 11/12px
-    768px   tek sutun, kart 620, baslik 24, kutu metni 12/14px
+    390px   tek sutun, kart 358, baslik 22, kutu 147, metin 11/12px
+    430px   tek sutun, kart 398, kutu 167
+    768px   tek sutun, kart 620, baslik 24, kutu 272, metin 12/14px
     1440px  iki sutun, kart 860, baslik 28, sutun araligi 48
-    300-1440px arasi dokuz genislikte yatay tasma yok, kutular
-    hicbirinde alt alta inmiyor
+    320-1440px arasi on genislikte yatay tasma yok, kutular
+    hicbirinde alt alta inmiyor, iki kart her genislikte hizali
 {%- endcomment -%}
 
 {%- liquid
@@ -85,9 +87,15 @@
   .tt-cs-{{ sid }} *::before,
   .tt-cs-{{ sid }} *::after { box-sizing: inherit; }
 
-  {%- comment -%} ---------- Kart ---------- {%- endcomment -%}
+  {%- comment -%}
+    ---------- Kart ----------
+    Telefonda kart 330px'te sabitlenince genis telefonlarda (430px)
+    iki yanda ~50px bosluk kaliyor ve kart sayfanin ortasinda kucuk
+    bir kutu gibi duruyordu; icindeki iki kutu da o yuzden dar
+    kaliyordu. Artik bolumun ic genisligini (ekran - 32px) tamamen
+    kullaniyor.
+  {%- endcomment -%}
   .tt-cs-kart-{{ sid }} {
-    max-width: 330px;
     margin-inline: auto;
     padding: 20px;
     background: {{ s.kart_zemin }};
@@ -199,8 +207,13 @@
 
   {%- comment -%} ---------- Tablet: 600-899px ---------- {%- endcomment -%}
   @media (min-width: 600px) {
+    {%- comment -%}
+      Duz 620px: 90vw olsaydi 600px'te kart 540'a duser, yani 599px'teki
+      567px'ten geriye sicrardi. Kenar boslugu zaten bolumun kendi
+      16px'lik dolgusundan geliyor.
+    {%- endcomment -%}
     .tt-cs-kart-{{ sid }} {
-      max-width: min(90vw, 620px);
+      max-width: 620px;
       padding: 24px;
       border-radius: 20px;
     }
