@@ -642,7 +642,16 @@
   function fbFiyat(V, blok) {
     var id = new URLSearchParams(location.search).get('variant');
     if (id && V.varyantlar && V.varyantlar[id] != null) return V.varyantlar[id];
-    var el = document.querySelector('.price__regular');
+    /* Arama blogun KENDI bolumuyle sinirli. Belge genelinde arayinca
+       sepet cekmecesindeki satir fiyati urun fiyatinin onune geciyordu:
+       .price__regular sinifini hem snippets/product-price.liquid hem de
+       sections/cart-drawer.liquid basiyor ve cekmece DOM'da urunden
+       once geliyor. Cekmece o sinifi yalnizca satir indirimliyken
+       basiyor -- yani tam da indirim kodu aktifken. Sonuc: kodlu tutar
+       ve taksit satiri sepetteki bir urunun fiyatindan hesaplaniyordu. */
+    var kap = (blok && blok.closest) ? blok.closest('.shopify-section') : null;
+    if (!kap) kap = document.getElementById('MainContent');
+    var el = kap ? kap.querySelector('.price__regular') : null;
     if (el) {
       var n = paraCoz(el.textContent);
       if (isFinite(n) && n > 0) return Math.round(n * 100);
