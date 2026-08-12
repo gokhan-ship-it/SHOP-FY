@@ -42,9 +42,27 @@
       kapat dugmesi       [data-tt-cd-kapat]
       acan dugme          [data-tt-cd-ac]
 
-  Icerik SONRA gelecek; simdilik govdede tek satir yer tutucu var.
-  Temanin mevcut demo bolumune (couple-bulusma) dokunulmadi ve o
-  tetiklenmiyor.
+  ICERIK: pencere ilk acildiginda couple-bulusma demosu
+  /pages/couple-daha-fazla-bilgi-al sayfasindan CANLI cekiliyor.
+  Sayfa fetch ile aliniyor, DOMParser ile ayristirilip yalnizca
+  .couple-bulusma-section ogesi pencereye tasiniyor.
+
+  Neden boyle: demo 76 KB'lik bir bolum. Sablona eklenseydi koleksiyon
+  sayfasi her ziyarette o agirligi tasirdi. Bu yontemle butona
+  BASILANA kadar tek bayt inmiyor, basildiktan sonra da bir kez
+  indirilip saklaniyor.
+
+  Kaynak bolum ve sayfa DEGISTIRILMEDI; oradan yalnizca okunuyor.
+
+  Kritik ayrinti: innerHTML/importNode ile gelen <script> etiketleri
+  tarayici tarafindan CALISTIRILMAZ. Bu yuzden her biri yeni bir
+  <script> ogesiyle degistiriliyor. Demo bolumunun kendi JS'i hemen
+  calisan bir IIFE ve kok.cbKurulu bayragiyla korumali, yani ikinci
+  kez calistirilsa bile bozulmuyor.
+
+  Olculer once alindigi icin (mesafeOlc) enjeksiyon pencere ACILDIKTAN
+  sonra yapiliyor; kapali bir <dialog> icinde getBoundingClientRect
+  sifir dondurur.
 
   ------------------------------------------------------------------
   KAPSAM
@@ -67,6 +85,8 @@
     1440px  iki sutun, kart 860, baslik 28, sutun araligi 48
     uc genislikte de yatay tasma yok, JS hatasi yok
     modal: buton / X / zemin / ESC dogrulandi, focus butona donuyor
+    demo: tek sefer iniyor, kendi JS'i tam bir kez kuruluyor,
+          govde pencere genisligine yayiliyor (390 / 720)
 {%- endcomment -%}
 
 {%- liquid
@@ -469,6 +489,17 @@
     line-height: 1.5;
     color: #8A8A85;
   }
+  {%- comment -%}
+    Demo geldiginde govde pencerenin kenarlarina yayilir: bolumun
+    kendi dolgusu ve zemini var, ustune ikinci bir cerceve binmesin.
+    Negatif margin .tt-cd-ic'in dolgusunu (24px 20px 20px) geri aliyor.
+  {%- endcomment -%}
+  .tt-cd-panel-{{ sid }} .tt-cd-govde.is-demo {
+    margin: 0 -20px -20px;
+    border-radius: 0 0 20px 20px;
+    overflow: hidden;
+  }
+  .tt-cd-panel-{{ sid }} .tt-cd-govde.is-demo > * { margin: 0; }
 
   {%- comment -%} Mobilde alttan acilan sheet {%- endcomment -%}
   @media (max-width: 599px) {
@@ -590,9 +621,8 @@
 </div>
 
 {%- comment -%}
-  Demo penceresi. Icerigi SONRA gelecek; govde su an tek satir yer
-  tutucu tasiyor. Icerigi degistirmek icin .tt-cd-govde kabinin
-  icini doldurmak yeterli.
+  Demo penceresi. Govde acilista doldurulacak; markup'ta yalnizca
+  "yukleniyor" satiri var.
 {%- endcomment -%}
 <dialog
   class="tt-cd-panel-{{ sid }}"
@@ -615,7 +645,7 @@
     </div>
 
     <div class="tt-cd-govde" data-tt-cd-govde>
-      <p class="tt-cd-yer">İçerik buraya gelecek.</p>
+      <p class="tt-cd-yer">{{ s.modal_yukleniyor }}</p>
     </div>
   </div>
 </dialog>
@@ -735,6 +765,70 @@
       return sec;
     }
 
+    {%- comment -%}
+      Demo bir kez indirilip pencerede kaliyor; ikinci acilis anlik.
+      Istek basarisiz olursa govdede sayfaya giden bir baglanti
+      birakiliyor, pencere bos kalmiyor.
+    {%- endcomment -%}
+    var demoDurum = 0;   // 0 bekliyor, 1 iniyor, 2 tamam
+
+    function betikleriCalistir(kap) {
+      var eski = kap.querySelectorAll('script');
+      for (var i = 0; i < eski.length; i++) {
+        var yeni = document.createElement('script');
+        for (var j = 0; j < eski[i].attributes.length; j++) {
+          yeni.setAttribute(eski[i].attributes[j].name, eski[i].attributes[j].value);
+        }
+        yeni.text = eski[i].textContent;
+        eski[i].parentNode.replaceChild(yeni, eski[i]);
+      }
+    }
+
+    function demoYukle(govde) {
+      if (!govde || demoDurum) return;
+
+      var sayfa = {{ s.demo_sayfa | json }};
+      var secici = {{ s.demo_secici | json }};
+      if (!sayfa || !secici || !window.fetch || !window.DOMParser) return;
+
+      demoDurum = 1;
+      window.fetch(sayfa, { credentials: 'same-origin' })
+        .then(function (yanit) {
+          if (!yanit.ok) throw new Error('istek');
+          return yanit.text();
+        })
+        .then(function (metin) {
+          var belge = new DOMParser().parseFromString(metin, 'text/html');
+          var bolum = belge.querySelector(secici);
+          if (!bolum) throw new Error('bolum yok');
+
+          govde.innerHTML = '';
+          govde.className = govde.className + ' is-demo';
+          govde.appendChild(document.importNode(bolum, true));
+          betikleriCalistir(govde);
+
+          // Bolum olculerini acilis animasyonu bittikten sonra tazelesin.
+          window.setTimeout(function () {
+            window.dispatchEvent(new Event('resize'));
+          }, 60);
+
+          demoDurum = 2;
+        })
+        .catch(function () {
+          demoDurum = 0;
+          govde.innerHTML = '';
+          var p = document.createElement('p');
+          p.className = 'tt-cd-yer';
+          p.textContent = {{ s.modal_hata | json }} + ' ';
+          var a = document.createElement('a');
+          a.href = sayfa;
+          a.textContent = sayfa;
+          a.style.color = '#2997FF';
+          p.appendChild(a);
+          govde.appendChild(p);
+        });
+    }
+
     var oncekiTasma = null;
     function kilitle() {
       if (oncekiTasma !== null) return;
@@ -772,6 +866,7 @@
           p2.setAttribute('open', '');
         }
         kilitle();
+        demoYukle(p2.querySelector('[data-tt-cd-govde]'));
       }
     }, true);
 
@@ -807,9 +902,13 @@
     { "type": "text", "id": "etiket_4", "label": "4. etiket", "default": "Açın" },
     { "type": "text", "id": "dongu_metni", "label": "Döngü etiketi", "default": "ve Tekrarlayın" },
 
-    { "type": "header", "content": "Demo penceresi", "info": "Butonun açtığı pencere. İçeriği sonra eklenecek." },
+    { "type": "header", "content": "Demo penceresi", "info": "Butonun açtığı pencere. İçerik, aşağıdaki sayfadan butona basıldığı anda çekilir; o ana kadar sayfaya hiç yük binmez." },
     { "type": "text", "id": "modal_baslik", "label": "Pencere başlığı", "default": "Kendin dene" },
     { "type": "text", "id": "modal_kapat", "label": "Kapat düğmesi etiketi", "default": "Kapat", "info": "Ekran okuyucular için; ekranda görünmez." },
+    { "type": "text", "id": "demo_sayfa", "label": "Demonun alınacağı sayfa", "default": "/pages/couple-daha-fazla-bilgi-al", "info": "Mağaza içi yol olmalı (aynı alan adı)." },
+    { "type": "text", "id": "demo_secici", "label": "Demo bölümünün CSS seçicisi", "default": ".couple-bulusma-section", "info": "O sayfadaki eşleşen ilk öge pencereye taşınır." },
+    { "type": "text", "id": "modal_yukleniyor", "label": "Yükleniyor metni", "default": "Demo yükleniyor…" },
+    { "type": "text", "id": "modal_hata", "label": "Hata metni", "default": "Demo yüklenemedi. Sayfadan inceleyebilirsiniz:" },
 
     { "type": "header", "content": "Marka degradesi" },
     { "type": "color", "id": "deg_1", "label": "Degrade 1 (açık uç)", "default": "#E8632B" },
