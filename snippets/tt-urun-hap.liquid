@@ -1,0 +1,137 @@
+{%- comment -%}
+  "BOYUTLAR" VE "TAKSIT TABLOSU": ALTI CIZILI BAGLANTIDAN HAPA
+
+  Ikisi de bilgi acan ikincil eylem. Alti cizili metin olarak
+  duruyorlardi; iki sorun vardi:
+
+    1) Dokunma hedefi. Olculen yukseklik 14px yazida 16px. Hem Apple'in
+       hem W3C'nin tavsiyesi 44px.
+    2) Tiklanabilir alanin siniri belirsiz. Alti cizgi "bu bir link"
+       der ama nereye basilacagini gostermez.
+
+  Cozum hap bicimi. DOLU BUTON DEGIL: sayfadaki tek birincil eylem
+  "Sepete Ekle" ve taksit seridi onun hemen ustunde duruyor; bu ikisi
+  dolu butona cevrilseydi CTA ile ayni agirliga cikip hiyerarsiyi
+  bozardi.
+
+  ------------------------------------------------------------------
+  IKI FARKLI ZEMIN
+
+    .size-popup-link  beyaz zeminde durur -> ince gri cerceve, saydam
+    .tt-fb-link       gri seridin ICINDE durur -> beyaz dolgu, daha
+                      soluk cerceve. Koyu cerceveli olsaydi kutu
+                      icinde kutu gorunumu cikardi.
+
+  ------------------------------------------------------------------
+  DOKUNMA HEDEFI
+
+  Gorunen yukseklik ~30px'te kaliyor; 44px'e ::after ile konulan
+  gorunmez bir serit tamamliyor. Ayni yontem yerel nav dugmelerinde
+  de kullaniliyor. Serit tiklamayi topluyor ve gorunmez oldugu icin
+  duzeni etkilemiyor.
+
+  IKON ::before ile ve data URI olarak geliyor; renk SVG'nin icinde
+  sabit (currentColor bir data URI'de cozulmez). mask-image yerine
+  background-image tercih edildi, eski Safari'de de sorunsuz.
+
+  ------------------------------------------------------------------
+  KAPSAM
+
+  Butun genisliklerde gecerli: sorun olcu degil, dokunulabilirlik ve
+  okunurluk. Kapsam sinifi disaridan geliyor, varsayilan
+  .tt-urun-page -- yani yalnizca product.zaman-kapsulu sablonundaki
+  urunler. Sablon dosyasina ve bolum dosyalarina DOKUNULMADI.
+
+  OLCUM (Chromium, 390px, bolumun kendi kurallari da yuklu)
+    Boyutlar        93x30 px, alti cizgi yok, dokunma seridi 44px
+    Taksit tablosu  124x30 px, beyaz dolgu, dokunma seridi 44px
+    yatay tasma yok
+{%- endcomment -%}
+{%- assign kok = kok | default: '.tt-urun-page' -%}
+<style>
+  #MainContent{{ kok }} .size-popup-link,
+  #MainContent{{ kok }} .tt-fb-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.006em;
+    white-space: nowrap;
+    text-decoration: none;
+    color: #1d1d1f;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  {%- comment -%} Beyaz zeminde: saydam, ince gri cerceve {%- endcomment -%}
+  #MainContent{{ kok }} .size-popup-link {
+    border: 1px solid #d2d2d7;
+    background: transparent;
+  }
+
+  {%- comment -%} Gri seridin icinde: beyaz dolgu, daha soluk cerceve {%- endcomment -%}
+  #MainContent{{ kok }} .tt-fb-link {
+    border: 1px solid #e3e3e6;
+    background: #ffffff;
+  }
+
+  {%- comment -%} Ikonlar {%- endcomment -%}
+  #MainContent{{ kok }} .size-popup-link::before,
+  #MainContent{{ kok }} .tt-fb-link::before {
+    content: '';
+    flex: none;
+    width: 14px;
+    height: 14px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 14px 14px;
+  }
+
+  #MainContent{{ kok }} .size-popup-link::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M3 8h18v8H3z'/%3E%3Cpath d='M7 8v3M11 8v4M15 8v3M19 8v4'/%3E%3C/svg%3E");
+  }
+
+  #MainContent{{ kok }} .tt-fb-link::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round'%3E%3Crect x='2.5' y='5.5' width='19' height='13' rx='2.5'/%3E%3Cpath d='M2.5 10h19'/%3E%3C/svg%3E");
+  }
+
+  {%- comment -%}
+    Gorunmez dokunma seridi: gorunum 30px'te kalirken tiklanabilir
+    yukseklik 44px'e cikiyor.
+  {%- endcomment -%}
+  #MainContent{{ kok }} .size-popup-link::after,
+  #MainContent{{ kok }} .tt-fb-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #MainContent{{ kok }} .size-popup-link:hover {
+      border-color: #86868b;
+    }
+
+    #MainContent{{ kok }} .tt-fb-link:hover {
+      border-color: #c7c7cc;
+    }
+  }
+
+  #MainContent{{ kok }} .size-popup-link:active,
+  #MainContent{{ kok }} .tt-fb-link:active {
+    transform: scale(0.97);
+  }
+
+  #MainContent{{ kok }} .size-popup-link:focus-visible,
+  #MainContent{{ kok }} .tt-fb-link:focus-visible {
+    outline: 2px solid #0071e3;
+    outline-offset: 2px;
+  }
+</style>

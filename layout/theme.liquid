@@ -91,11 +91,15 @@
         taksit kartlari. Sayfanin tipografi/ritim katmani (tt-tekli)
         bilerek alinmadi -- urun sayfasinin kendi olculeri var.
 
+        Sonuncusu "Boyutlar" ve "Taksit tablosu" baglantilarini hap
+        bicimine cevirip dokunma hedefini 44px'e cikariyor.
+
         template.name kontrolu, ayni son eki tasiyan baska bir sayfa
         turu olusursa yanlislikla eslesmesin diye.
       {%- endcomment -%}
       {%- render 'tt-couple-izgara', kok: '.tt-urun-page' -%}
       {%- render 'tt-couple-banka', kok: '.tt-urun-page' -%}
+      {%- render 'tt-urun-hap' -%}
     {%- endif -%}
 
     {{ content_for_header }}
