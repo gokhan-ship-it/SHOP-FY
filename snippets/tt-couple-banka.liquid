@@ -1,0 +1,283 @@
+{%- comment -%}
+  ODEME KOLAYLIKLARI KARTINA BANKA LOGOLARI  (11. tur)
+
+  Avantaj kartlarindaki "Odeme kolayliklari" karti acilinca metnin
+  altina taksit yapilabilen kartlarin logolari basiliyor.
+
+  ------------------------------------------------------------------
+  LOGOLAR NEREDEN GELIYOR
+
+  Statik dosya degiller. PayTR'nin taksit tablosu harici bir script
+  etiketiyle cagriliyor ve kendi HTML'ini yaziyor; logolar o HTML'in
+  icinde: .taksit-tablosu-wrapper > .taksit-logo > img
+
+  Ayni yontem temada zaten var: assets/taksit-tablosu.js urun
+  sayfasinda bunu yapiyor. Buradaki kod onun kucultulmus hali --
+  o dosya IIFE icinde ve disariya bir API vermiyor, o yuzden
+  cagirilamiyor; sadece yaklasimi tekrarlaniyor.
+
+  NEDEN IFRAME: PayTR script'i document.write kullaniyor. Sayfa
+  yuklendikten sonra dogrudan calistirilirsa BUTUN belgeyi siler.
+  about:blank bir iframe ayni kaynakta oldugu icin icine yazip
+  DOM'unu okuyabiliyoruz.
+
+  ADRESLER GORELI OLABILIR: PayTR'nin verdigi img src'leri goreli
+  gelirse about:blank iframe'de cozulemez; magaza adresine gore
+  cozulup kirik cikar. Bu yuzden PayTR adresine gore
+  mutlaklastiriliyor (new URL(ham, ADRES)).
+
+  ------------------------------------------------------------------
+  DAVRANIS
+
+  - Istek pencere ILK acildiginda yapiliyor, sayfa yuklenirken degil.
+    Kart hic acilmazsa PayTR'ye hicbir istek gitmiyor.
+  - Sonuc bellekte tutuluyor; ikinci acilista tekrar istenmiyor.
+  - 12 saniye icinde cevap gelmezse ya da hic logo bulunamazsa
+    hicbir sey basilmiyor. Pencere metni her kosulda oldugu gibi
+    kaliyor -- yani bu katman tamamen "varsa iyi" kabilinden.
+  - Ayni pencereye iki kez basilmiyor.
+
+  TUTAR: PayTR tablosu tutara gore doner. Logolar tutardan bagimsiz
+  ama adres bir tutar istiyor; temsili olarak 2499.00 kullaniliyor
+  (magazanin ucretsiz kargo esigi).
+
+  KAPSAM: yalnizca #MainContent.tt-couple-page altindaki avantaj
+  kartlari. sections/avantaj-kartlari.liquid'e dokunulmadi; ayni
+  bolum baska sayfalarda oldugu gibi calisiyor.
+
+  ------------------------------------------------------------------
+  DOGRULAMA (Chromium + PayTR script'inin yerel taklidi)
+
+  Taklit, gercek tablonun yapisini birebir uretiyor (ayni sinif
+  adlari, goreli img src'leri, ayni logonun iki kez gecmesi).
+
+    1. acilis   5 logo basildi, adresler mutlaklastirildi,
+                blok baglantinin ustune girdi, PayTR'ye 1 istek
+    2. acilis   yine 5 logo, tek blok, YENI ISTEK YOK (onbellek)
+    kargo penceresi  hicbir sey basilmadi (anahtar kelime suzgeci)
+    iframe      isi bitince DOM'dan silindi
+  ------------------------------------------------------------------
+{%- endcomment -%}
+
+{%- liquid
+  assign paytr_token = '54f22a086406bbb943880dc40bea94befa339187782be5983e32d382ac3caded'
+  assign paytr_magaza = '693597'
+  assign paytr_tutar = '2499.00'
+  comment
+    Pencere bu kelimeyi tasiyorsa logolar oraya basiliyor. Kucuk
+    harfe cevrilip aranıyor, yani "Odeme Yollari" da "odeme
+    kolayliklari" da eslesiyor.
+  endcomment
+  assign anahtar = 'ödeme'
+  assign baslik = 'Taksit yapılabilen kartlar'
+-%}
+
+{%- if paytr_token != blank and paytr_magaza != blank -%}
+<style>
+  #MainContent.tt-couple-page .tt-banka {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  #MainContent.tt-couple-page .tt-banka-bas {
+    margin: 0 0 12px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #86868b;
+  }
+
+  {%- comment -%}
+    Logolar bankalarin kendi renkli PNG'leri ve cogu beyaz zemine
+    gore tasarlanmis. Koyu pencerede kaybolmasinlar diye her biri
+    beyaz bir hapin icinde duruyor; boylece hangi logo gelirse
+    gelsin okunur kaliyor.
+  {%- endcomment -%}
+  #MainContent.tt-couple-page .tt-banka-liste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  #MainContent.tt-couple-page .tt-banka-liste li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  #MainContent.tt-couple-page .tt-banka-liste img {
+    display: block;
+    height: 20px;
+    width: auto;
+    max-width: 92px;
+    object-fit: contain;
+  }
+</style>
+
+<script>
+  (function () {
+    'use strict';
+
+    var ADRES = 'https://www.paytr.com/odeme/taksit-tablosu/v2'
+      + '?token={{ paytr_token }}'
+      + '&merchant_id={{ paytr_magaza }}'
+      + '&amount={{ paytr_tutar }}'
+      + '&taksit=0&tumu=0';
+
+    var ANAHTAR = {{ anahtar | json }};
+    var BASLIK = {{ baslik | json }};
+    var ZAMAN_ASIMI = 12000;
+
+    var logolar = null;   // null = daha istenmedi, [] = istendi ama bulunamadi
+    var istekte = false;
+    var bekleyen = [];    // cevap gelene kadar biriken pencereler
+
+    function mutlak(ham) {
+      if (!ham) return null;
+      if (/^(https?:)?\/\//i.test(ham) || /^data:/i.test(ham)) return ham;
+      try { return new URL(ham, ADRES).href; } catch (e) { return null; }
+    }
+
+    function topla(belge) {
+      var img = belge.querySelectorAll('.taksit-tablosu-wrapper .taksit-logo img');
+      var goruldu = {};
+      var liste = [];
+      for (var i = 0; i < img.length; i++) {
+        var adres = mutlak(img[i].getAttribute('src'));
+        if (!adres || goruldu[adres]) continue;
+        goruldu[adres] = true;
+        liste.push(adres);
+      }
+      return liste;
+    }
+
+    function getir(bitti) {
+      var cerceve = document.createElement('iframe');
+      cerceve.setAttribute('aria-hidden', 'true');
+      cerceve.setAttribute('tabindex', '-1');
+      cerceve.style.cssText =
+        'position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none';
+      document.body.appendChild(cerceve);
+
+      var kapandi = false;
+      function bitirF(sonuc) {
+        if (kapandi) return;
+        kapandi = true;
+        window.clearTimeout(saat);
+        if (cerceve.parentNode) cerceve.parentNode.removeChild(cerceve);
+        bitti(sonuc);
+      }
+
+      var saat = window.setTimeout(function () { bitirF([]); }, ZAMAN_ASIMI);
+
+      var d;
+      try { d = cerceve.contentDocument; } catch (e) { bitirF([]); return; }
+      if (!d) { bitirF([]); return; }
+
+      d.open();
+      d.write(
+        '<!doctype html><html><head><meta charset="utf-8"></head><body>' +
+        '<div id="paytr_taksit_tablosu"></div>' +
+        '<scr' + 'ipt src="' + ADRES.replace(/"/g, '&quot;') + '"><\/scr' + 'ipt>' +
+        '</body></html>'
+      );
+      d.close();
+
+      // PayTR tabloyu yazana kadar bekliyoruz.
+      var deneme = 0;
+      (function bak() {
+        if (kapandi) return;
+        deneme++;
+        var kutu = null;
+        try { kutu = cerceve.contentDocument.querySelectorAll('.taksit-tablosu-wrapper'); } catch (e) {}
+        if (kutu && kutu.length) { bitirF(topla(cerceve.contentDocument)); return; }
+        if (deneme > 120) { bitirF([]); return; }
+        window.setTimeout(bak, 100);
+      })();
+    }
+
+    function bas(pencere) {
+      if (!pencere || !logolar || !logolar.length) return;
+      if (pencere.querySelector('.tt-banka')) return;
+
+      var kap = pencere.querySelector('.ak-pencere-ic') || pencere;
+
+      var blok = document.createElement('div');
+      blok.className = 'tt-banka';
+
+      var bas1 = document.createElement('p');
+      bas1.className = 'tt-banka-bas';
+      bas1.textContent = BASLIK;
+      blok.appendChild(bas1);
+
+      var ul = document.createElement('ul');
+      ul.className = 'tt-banka-liste';
+      for (var i = 0; i < logolar.length; i++) {
+        var li = document.createElement('li');
+        var im = document.createElement('img');
+        im.src = logolar[i];
+        im.alt = '';
+        im.loading = 'lazy';
+        im.decoding = 'async';
+        li.appendChild(im);
+        ul.appendChild(li);
+      }
+      blok.appendChild(ul);
+
+      // Varsa pencere baglantisinin ustune, yoksa en sona.
+      var bag = kap.querySelector('.ak-pop-bag');
+      if (bag && bag.parentNode === kap) kap.insertBefore(blok, bag);
+      else kap.appendChild(blok);
+    }
+
+    function uygun(pencere) {
+      var metin = (pencere.textContent || '') + ' ' + (pencere.getAttribute('aria-label') || '');
+      return metin.toLocaleLowerCase('tr').indexOf(ANAHTAR) !== -1;
+    }
+
+    function ele(pencere) {
+      if (!pencere || !uygun(pencere)) return;
+
+      if (logolar) { bas(pencere); return; }
+
+      if (bekleyen.indexOf(pencere) === -1) bekleyen.push(pencere);
+      if (istekte) return;
+      istekte = true;
+
+      getir(function (sonuc) {
+        logolar = sonuc || [];
+        for (var i = 0; i < bekleyen.length; i++) bas(bekleyen[i]);
+        bekleyen.length = 0;
+      });
+    }
+
+    {%- comment -%}
+      Bolumun kendi dinleyicisi "+" tiklamasinda pencereyi aciyor.
+      Biz de ayni tiklamayi KABARCIK evresinde dinliyoruz: bolumun
+      dinleyicisi once calisip pencereyi actigi icin, sira bize
+      geldiginde pencere zaten acik oluyor. Boylece bolumun akisina
+      hic karismiyoruz.
+    {%- endcomment -%}
+    document.addEventListener('click', function (e) {
+      var kok = document.querySelector('#MainContent.tt-couple-page');
+      if (!kok) return;
+      var hedef = e.target;
+      if (!hedef || !hedef.closest) return;
+
+      var dugme = hedef.closest('[data-ak-ac]');
+      if (!dugme || !kok.contains(dugme)) return;
+
+      var no = dugme.getAttribute('data-ak-ac');
+      var bolum = dugme.closest('.shopify-section') || kok;
+      var pencere = bolum.querySelector('[data-ak-pencere="' + no + '"]');
+      if (pencere) ele(pencere);
+    });
+  })();
+</script>
+{%- endif -%}
