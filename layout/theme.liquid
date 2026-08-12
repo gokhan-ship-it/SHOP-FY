@@ -143,6 +143,29 @@
       sections 'overlay-group'
     -%}
 
+    {%- comment -%}
+      ANASAYFA URUN CUBUGU
+
+      Couple koleksiyon sayfasindaki yapiskan urun cubugunun
+      (apple-local-nav) birebir aynisi, yalnizca anasayfada. Ayarlar
+      templates/collection.couple-urunler.json icindeki degerlerden
+      kopyalandi; bolum grubu dosyasi sections/tt-anasayfa-cubuk.json.
+
+      Neden bolum grubu: cubugu dogrudan templates/index.json'a yazmak
+      icin o dosyanin tamamini gondermek gerekiyor. index.json otomatik
+      uretiliyor ve 100 KB'in uzerinde; tema duzenleyicide es zamanli
+      yapilan degisikliklerin uzerine yazma riski var. Bolum grubu ayni
+      sonucu veriyor, duzenleyicide de normal bir bolum gibi gorunuyor
+      ve duzenlenebiliyor.
+
+      Anasayfa header'i icin ayrica bir sey yapilmadi: bolumun kendi
+      CSS'i header_modu aciktayken mod_gizle_secici'yi
+      ([id$='__header']) gizliyor.
+    {%- endcomment -%}
+    {%- if template.name == 'index' -%}
+      {% sections 'tt-anasayfa-cubuk' %}
+    {%- endif -%}
+
     <div class="page-container" id="PageContainer">
       <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' %} tt-urun-page{% endif %}" id="MainContent" role="main">
         {{ content_for_layout }}
