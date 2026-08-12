@@ -374,3 +374,46 @@ ediyor). Bu yuzden:
 
 NOT: type: URL yontemi Shopify'in adresi cekebilmesine bagli, yani depo
 herkese acik oldugu surece calisiyor.
+
+---
+
+# GemPages ikinci kez geri aldi -- TETIKLEYICI: TEMA YAYINLAMA (12 Ağustos 2026)
+
+Duzeltme temasi ("Duzeltme - kodlu fiyat 2026-08-12", 187517665600)
+yayina alinir alinmaz atamalar yine GemPages sablonlarina dondu.
+
+Onemli olan sey: geri donen kume ILK SEFERKIYLE BIREBIR AYNI --
+ayni 26 single, ayni 3 couple set urunu, ayni gp-template ID'leri, artı
+Kadin/Erkek koleksiyonlari. Rastgele bir senkronizasyon degil.
+
+Iki olayin ortak noktasi: her ikisi de bir TEMA YAYINLAMASININ hemen
+ardindan gerceklesti.
+
+  1. tur: calisma kopyasi yayina alindi -> geri donus
+  2. tur: duzeltme temasi yayina alindi  -> geri donus
+
+Yani GemPages, yeni bir tema yayinlandiginda kendi sayfalarini yeni
+canli temaya "yeniden kuruyor" ve bu sirada urun/koleksiyon
+templateSuffix degerlerini kendi uzerine aliyor.
+
+SONUC: Tema her yayinlandiginda bu is tekrar edecek. Shopify tarafinda
+alinacak bir onlem yok; kalici cozum GemPages icinde o urun ve
+koleksiyon sayfalarinin yayindan kaldirilmasi (ya da uygulamanin
+kaldirilmasi).
+
+## 2. turda geri alinanlar
+
+- 26 single -> `zaman-kapsulu` (1. turdakilerin aynisi)
+- 3 couple set -> `zaman-kapsulu-couple`
+  (Astor + Chloe · Noir + Chloe Charm · Vantablack + Taşlı Kilit)
+- 2 koleksiyon:
+  Kadınlar İçin Zaman Kapsülleri -> `zaman-kapsulu-kolyeler`
+  Erkekler İçin Zaman Kapsülleri -> `zaman-kapsulu-bileklik`
+
+## Kontrol sorgusu
+
+    products(query: "-title:*Couple*") { nodes { title templateSuffix } }
+    products(query: "title:*Couple*")  { nodes { title templateSuffix } }
+    collections { nodes { title templateSuffix } }
+
+`gp-template-` ile baslayan her deger geri donmus demektir.
