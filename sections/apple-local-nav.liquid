@@ -1,0 +1,1646 @@
+{%- comment -%}
+  Apple tarzi yapiskan yerel gezinme cubugu (local nav).
+
+  Iki calisma bicimi var:
+
+  1) Yerel gezinme (varsayilan)
+  - Cubuk sayfanin tepesinde gorunmez. Bolumun akistaki yeri ekranin
+    ustunden cikinca (yani hemen ustundeki bolum bitince) belirir.
+    Bu yuzden bolumu hero'nun hemen ALTINA yerlestirin.
+  - Belirdigi anda temanin kendi basligi gizlenir; ikisi ayni anda
+    ekranda durmaz. Yukari donuldugunde tam tersi olur.
+  - Tetikleme Intersection Observer ile; kaydirma olayi dinlenmiyor.
+
+  2) Baslik modu ("Sayfanin basligi olarak kullan")
+  - Cubuk sayfa acilir acilmaz gorunur ve hep orada kalir.
+  - Temanin kendi basligi bu sayfada CSS ile tamamen gizlenir; JS
+    beklenmedigi icin acilista buyuk basligin bir an gorunmesi olmaz.
+  - Basligin biraktigi bosluk cubuk yuksekligi kadar geri veriliyor,
+    boylece icerik cubugun altinda kalmiyor ve yerlesim kaymiyor.
+  - Bu modda esik / gozlemci calismaz, gerek yok.
+
+  Sagdaki "Satin Alin" dugmesi tiklaninca tek bir akici hareketle iki
+  baglantiya donusur (Kadin / Erkek). Disari tiklama, Esc ve zaman
+  asimi ile geri toplanir.
+
+  JS calismazsa cubuk hic gorunmez, sayfa normal calisir.
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+
+  assign alfa = s.zemin_saydam | divided_by: 100.0
+  assign c_zemin = s.zemin | color_modify: 'alpha', alfa
+
+  comment
+    Iki dugme de gercek baglanti; bos birakilirsa "#" yerine bolumun
+    kendisi gizlenmez, sadece link calismaz. Bu yuzden bos baglantida
+    dugme yine de basiliyor ama href verilmiyor.
+
+    bol_var, dugmenin hangi bicimde calisacagini belirliyor:
+
+    - Iki secenek metni de doluysa (bol_var = true) dugme eskisi gibi
+      calisir: basilinca ikiye bolunur, Kadin / Erkek baglantilari cikar.
+    - Ikisinden biri bosaltilirsa dugme tek baglantiya doner: artik
+      <button> degil <a> olarak basilir ve "Dugme baglantisi" ayarindaki
+      adrese gider. Bolunme animasyonu ve zaman asimi devreye girmez.
+
+    Boylece tek hedefli sayfalarda ("Urunu Ogren" gibi) kullaniciyi
+    gereksiz bir ara adima sokmuyoruz.
+  endcomment
+  assign bol_var = false
+  if s.bol_1_metni != blank and s.bol_2_metni != blank
+    assign bol_var = true
+  endif
+-%}
+
+{%- if s.aktif -%}
+<style>
+  /* Bolumun akistaki isareti: yuksekligi yok, yalnizca gozlemci hedefi */
+  #shopify-section-{{ sid }} { display: block; }
+
+  .aln-isaret-{{ sid }} {
+    display: block;
+    width: 100%;
+    height: 1px;
+    margin: -1px 0 0;
+    pointer-events: none;
+  }
+
+  /* --- cubuk --- */
+  .aln-{{ sid }} {
+    position: fixed;
+    left: 0;
+    right: 0;
+    {% if s.konum == 'alt' %}bottom: 0{% else %}top: 0{% endif %};
+    z-index: {{ s.z_kat }};
+    height: {{ s.bar_yuk_m }}px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 {{ s.yan_bosluk }}px;
+    {% if s.konum == 'alt' %}
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc({{ s.bar_yuk_m }}px + env(safe-area-inset-bottom, 0px));
+    {% endif %}
+    box-sizing: border-box;
+    background: {{ c_zemin }};
+    -webkit-backdrop-filter: blur({{ s.bulanik }}px) saturate(180%);
+    backdrop-filter: blur({{ s.bulanik }}px) saturate(180%);
+    {% if s.konum == 'alt' %}
+    border-top: 1px solid {{ s.kenar_rengi }};
+    {% else %}
+    border-bottom: 1px solid {{ s.kenar_rengi }};
+    {% endif %}
+
+    /* Gizli baslangic. JS gorunur yapana kadar tiklanamaz ve
+       ekran okuyucudan da gizli. */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY({% if s.konum == 'alt' %}8px{% else %}-8px{% endif %});
+    transition:
+      opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s linear 200ms;
+  }
+  .aln-{{ sid }} * { box-sizing: border-box; }
+
+  .aln-{{ sid }}.is-acik {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition:
+      opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s;
+  }
+
+  /* Buzlu cam desteklenmiyorsa yazi okunurlugu dussmesin diye
+     donuk zemine geciyoruz. */
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    .aln-{{ sid }} { background: {{ s.zemin }}; }
+  }
+
+  /* --- sol: logo + urun adi --- */
+  .aln-sol-{{ sid }} {
+    display: flex;
+    align-items: center;
+    gap: {{ s.logo_ara }}px;
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+
+  .aln-logo-{{ sid }} {
+    display: block;
+    flex: 0 0 auto;
+    line-height: 0;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .aln-logo-{{ sid }} img {
+    display: block;
+    height: {{ s.logo_yuk_m }}px;
+    width: auto;
+    max-width: 40vw;
+    object-fit: contain;
+  }
+  .aln-logo-{{ sid }}:focus-visible {
+    outline: 2px solid {{ s.ad_rengi }};
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .aln-ad-{{ sid }} {
+    margin: 0;
+    min-width: 0;
+    flex: 0 1 auto;
+    font-size: {{ s.ad_boyut_m }}px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: {{ s.ad_rengi }};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 1;
+    transition: opacity 160ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  {%- if s.baslik_m != blank %}
+  /* Telefon / masaustu karsiliklari. Varsayilan telefon; 750px'ten
+     itibaren masaustu metnine geciyor (bolumun diger kirilim noktasiyla
+     ayni). Ayar bos oldugunda bu kurallar hic basilmiyor. */
+  .aln-ad-d-{{ sid }} { display: none; }
+  @media (min-width: 750px) {
+    .aln-ad-m-{{ sid }} { display: none; }
+    .aln-ad-d-{{ sid }} { display: inline; }
+  }
+  {%- endif %}
+
+  /* Dar ekranda logo + ad + dugme yan yana sigmiyor. Hangisinin
+     cekilecegini magaza sahibi seciyor; "kirp" secilirse ikisi de
+     kalir ve ad ucnokta ile kisalir. */
+  {%- if s.dar_oncelik == 'ad' %}
+  .aln-{{ sid }}.is-dar .aln-ad-{{ sid }} { display: none; }
+  {%- endif %}
+  {%- if s.dar_oncelik == 'logo' %}
+  .aln-{{ sid }}.is-dar .aln-logo-{{ sid }} { display: none; }
+  {%- endif %}
+
+  /* --- sag: ikonlar + donusen dugme --- */
+  .aln-sag-{{ sid }} {
+    display: flex;
+    align-items: center;
+    gap: {{ s.ikon_ara }}px;
+    flex: 0 0 auto;
+  }
+
+  .aln-ust-{{ sid }} {
+    display: flex;
+    align-items: center;
+    gap: {{ s.ikon_ara }}px;
+  }
+
+  /* --- hamburger --- */
+  .aln-ham-{{ sid }} {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .aln-ham-{{ sid }} i {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    height: 1.8px;
+    border-radius: 2px;
+    background: currentColor;
+    transition:
+      transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      top 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .aln-ham-{{ sid }} i:nth-child(1) { top: 24%; }
+  .aln-ham-{{ sid }} i:nth-child(2) { top: 49%; transition: opacity 140ms cubic-bezier(0.4, 0, 0.2, 1); }
+  .aln-ham-{{ sid }} i:nth-child(3) { top: 74%; }
+  .aln-{{ sid }}.is-menu .aln-ham-{{ sid }} i:nth-child(1) { top: 49%; transform: rotate(45deg); }
+  .aln-{{ sid }}.is-menu .aln-ham-{{ sid }} i:nth-child(2) { opacity: 0; }
+  .aln-{{ sid }}.is-menu .aln-ham-{{ sid }} i:nth-child(3) { top: 49%; transform: rotate(-45deg); }
+
+  /* --- menu cekmecesi --- */
+  /* Baglantilar temanin kendi menusunden geliyor (link_list ayari), yani
+     eski header'daki menuyle ayni. Hepsi gercek <a>.
+
+     ONEMLI: Bu panel cubugun ICINDE degil, kardesi olarak duruyor.
+     Cubukta backdrop-filter var; backdrop-filter'li bir ogenin icindeki
+     "position: fixed" cocuklar ekrana degil O OGEYE gore konumlaniyor.
+     Panel cubugun icindeyken bu yuzden 52px yuksekliginde kaliyor ve
+     sayfa icerigi ustunde goruluyordu. */
+  .aln-menu-{{ sid }} {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: {{ s.bar_yuk_m }}px;
+    bottom: 0;
+    z-index: {{ s.z_kat | minus: 1 }};
+    box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px {{ s.yan_bosluk }}px {{ s.menu_alt_bosluk }}px;
+    background: {{ s.zemin }};
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition:
+      opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s linear 200ms;
+  }
+  .aln-menu-{{ sid }}.is-acik {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s;
+  }
+  .aln-menu-{{ sid }} ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  .aln-menu-{{ sid }} li { box-sizing: border-box; }
+  .aln-menu-{{ sid }} > ul > li + li { border-top: 1px solid {{ s.menu_ayirac }}; }
+  .aln-menu-{{ sid }} a {
+    display: block;
+    padding: 14px 0;
+    color: {{ s.ad_rengi }};
+    text-decoration: none;
+    font-size: {{ s.menu_boyut }}px;
+    font-weight: 500;
+    line-height: 1.3;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .aln-menu-{{ sid }} ul ul {
+    padding: 0 0 8px 14px;
+  }
+  .aln-menu-{{ sid }} ul ul a {
+    padding: 9px 0;
+    font-size: {{ s.menu_boyut | minus: 2 }}px;
+    font-weight: 400;
+    opacity: 0.72;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .aln-menu-{{ sid }} a:hover { opacity: 1; text-decoration: underline; }
+  }
+  /* Menu acikken sayfa kaymasin */
+  html.aln-kilit-{{ sid }},
+  html.aln-kilit-{{ sid }} body { overflow: hidden; }
+
+  .aln-ikon-{{ sid }} {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: {{ s.ikon_boyut }}px;
+    height: {{ s.ikon_boyut }}px;
+    color: {{ s.ad_rengi }};
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .aln-ikon-{{ sid }} svg { width: 100%; height: 100%; display: block; }
+  /* Gorunumu buyutmeden 44x44 dokunma hedefi */
+  .aln-ikon-{{ sid }}::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .aln-ikon-{{ sid }}:hover { opacity: 0.65; }
+  }
+  .aln-ikon-{{ sid }}:focus-visible {
+    outline: 2px solid {{ s.ad_rengi }};
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  .aln-rozet-{{ sid }} {
+    position: absolute;
+    top: -7px;
+    right: -9px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    {%- if s.rozet_degrade %}
+    background: linear-gradient(135deg, {{ s.cta_renk_1 }} 0%, {{ s.cta_renk_2 }} 50%, {{ s.cta_renk_3 }} 100%);
+    {%- else %}
+    background: {{ s.rozet_zemin }};
+    {%- endif %}
+    color: {{ s.rozet_yazi }};
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    pointer-events: none;
+  }
+  .aln-rozet-{{ sid }}[hidden] { display: none; }
+
+  /* --- arama katmani --- */
+  /* Ikon gercek bir /search baglantisi; JS varsa yerinde acilan alana
+     donusuyor. JS yoksa arama sayfasina gidiyor, yani her halukarda
+     calisiyor. Form gercek bir GET formu. */
+  .aln-ara-{{ sid }} {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0 {{ s.yan_bosluk }}px;
+    background: {{ s.zemin }};
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition:
+      opacity 180ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s linear 180ms;
+  }
+  .aln-{{ sid }}.is-arama .aln-ara-{{ sid }} {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 180ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s;
+  }
+  .aln-ara-{{ sid }} input[type="search"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 34px;
+    border: 0;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.12);
+    color: {{ s.ad_rengi }};
+    font-family: inherit;
+    font-size: {{ s.ad_boyut_m }}px;
+  }
+  .aln-ara-{{ sid }} input[type="search"]::placeholder { color: {{ s.ad_rengi }}; opacity: 0.5; }
+  .aln-ara-{{ sid }} input[type="search"]:focus-visible {
+    outline: 2px solid {{ s.ad_rengi }};
+    outline-offset: 1px;
+  }
+
+  /* --- sag: donusen dugme yuvasi --- */
+  /* Iki durum da mutlak konumlu ve sagdan sabit: yuva genisligi
+     degisirken icerik yer degistirmiyor, tek bir akici genisleme
+     goruntusu olusuyor. Yuksekligi sabit oldugu icin cubuk zipramiyor. */
+  .aln-yuva-{{ sid }} {
+    position: relative;
+    flex: 0 0 auto;
+    height: {{ s.dugme_yuk }}px;
+    transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .aln-cta-{{ sid }},
+  .aln-bol-{{ sid }} {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .aln-cta-{{ sid }} {
+    justify-content: center;
+    padding: 0 {{ s.dugme_yatay }}px;
+    border: 0;
+    border-radius: 999px;
+    background: {{ s.dugme_zemin }};
+    color: {{ s.dugme_yazi }};
+    font-family: inherit;
+    font-size: {{ s.dugme_boyut }}px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    opacity: 1;
+    transition:
+      opacity 120ms cubic-bezier(0.4, 0, 0.2, 1),
+      background-color 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .aln-cta-{{ sid }}:hover { background: {{ s.dugme_hover }}; }
+  }
+  .aln-cta-{{ sid }}:active { transform: scale(0.97); }
+  {%- if bol_var %}{% else %}
+  /* Tek baglanti modunda dugme <a> olarak basiliyor: tarayicinin
+     alti cizili mavi link bicimini geri aliyoruz. Bolunmeli modda bu
+     kural hic basilmiyor, cunku orada oge zaten <button>. */
+  .aln-cta-{{ sid }} { text-decoration: none; }
+  {%- endif %}
+
+  .aln-bol-{{ sid }} {
+    gap: {{ s.bol_ara }}px;
+    opacity: 0;
+    transform: scaleX(0.94);
+    transform-origin: right center;
+    pointer-events: none;
+    transition:
+      opacity 180ms cubic-bezier(0.4, 0, 0.2, 1) 120ms,
+      transform 180ms cubic-bezier(0.4, 0, 0.2, 1) 120ms;
+  }
+
+  .aln-{{ sid }}.is-bolundu .aln-cta-{{ sid }} {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .aln-{{ sid }}.is-bolundu .aln-bol-{{ sid }} {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .aln-btn-{{ sid }} {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 0 {{ s.bol_yatay }}px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: {{ s.dugme_boyut }}px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  /* Gorunumu buyutmeden dokunma hedefini 44px'e cikaran serit */
+  .aln-btn-{{ sid }}::after,
+  .aln-cta-{{ sid }}::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+  .aln-cta-{{ sid }} { position: relative; }
+
+  .aln-btn-{{ sid }}.is-dolu {
+    background: {{ s.dugme_zemin }};
+    color: {{ s.dugme_yazi }};
+    border: 1px solid {{ s.dugme_zemin }};
+  }
+  .aln-btn-{{ sid }}.is-cizgi {
+    background: transparent;
+    color: {{ s.cizgi_yazi }};
+    border: 1px solid {{ s.cizgi_kenar }};
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .aln-btn-{{ sid }}.is-dolu:hover {
+      background: {{ s.dugme_hover }};
+      border-color: {{ s.dugme_hover }};
+    }
+    .aln-btn-{{ sid }}.is-cizgi:hover {
+      background: {{ s.dugme_zemin }};
+      border-color: {{ s.dugme_zemin }};
+      color: {{ s.dugme_yazi }};
+    }
+  }
+  .aln-btn-{{ sid }}:active { transform: scale(0.97); }
+
+  .aln-cta-{{ sid }}:focus-visible,
+  .aln-btn-{{ sid }}:focus-visible {
+    outline: 2px solid {{ s.ad_rengi }};
+    outline-offset: 2px;
+  }
+
+  /* --- masaustu --- */
+  @media (min-width: 750px) {
+    .aln-{{ sid }} {
+      height: {{ s.bar_yuk_d }}px;
+      padding-left: {{ s.yan_bosluk_d }}px;
+      padding-right: {{ s.yan_bosluk_d }}px;
+      {% if s.konum == 'alt' %}
+      height: calc({{ s.bar_yuk_d }}px + env(safe-area-inset-bottom, 0px));
+      {% endif %}
+    }
+    .aln-ad-{{ sid }} { font-size: {{ s.ad_boyut_d }}px; }
+    .aln-logo-{{ sid }} img { height: {{ s.logo_yuk_d }}px; max-width: 22vw; }
+    .aln-menu-{{ sid }} {
+      top: {{ s.bar_yuk_d }}px;
+      padding-left: {{ s.yan_bosluk_d }}px;
+      padding-right: {{ s.yan_bosluk_d }}px;
+    }
+    .aln-ara-{{ sid }} {
+      padding-left: {{ s.yan_bosluk_d }}px;
+      padding-right: {{ s.yan_bosluk_d }}px;
+    }
+  }
+
+  /* --- tema basligini gizle --- */
+  /* Cubuk gorundugunde tema basligi ekrandan cekilir; ikisi ayni anda
+     durmaz. Baslik zaten sabit/yapiskan oldugu icin gizlenmesi akisi
+     etkilemez, yani yerlesim kaymasi olusmaz. */
+  {%- if s.header_gizle and s.konum == 'ust' and s.header_modu != true %}
+  .aln-header-gizli {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition:
+      opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s linear 200ms !important;
+  }
+  {%- endif %}
+
+  /* --- baslik modu --- */
+  /* Cubuk sayfanin basligi olarak calisir: acilistan itibaren gorunur,
+     temanin kendi basligi bu sayfada tamamen gizlenir. Gizleme JS ile
+     degil CSS ile yapiliyor; boylece acilista buyuk baslik bir an bile
+     gorunmuyor ve yerlesim kaymasi (CLS) olusmuyor.
+     Baslik akistan cikinca biraktigi bosluk, cubuk yuksekligi kadar
+     govdeye padding olarak geri veriliyor. */
+  {%- if s.header_modu %}
+    {%- if s.mod_gizle_secici != blank %}
+  {{ s.mod_gizle_secici }} { display: none !important; }
+    {%- endif %}
+
+  .aln-{{ sid }} {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  /* Iki durumlu sag taraf (Apple'daki gibi):
+     - sayfa tepesinde  : arama + sepet + menu ikonlari
+     - asagi kaydirinca : urun adi + degradeli dugme
+     Iki grup da mutlak konumlu ve sagdan sabit; sarmalayicinin genisligi
+     animasyonlu degistigi icin gecis tek bir akici hareket gibi goruluyor
+     ve cubugun yuksekligi hic degismiyor. */
+  .aln-sag-{{ sid }} {
+    position: relative;
+    display: block;
+    gap: 0;
+    height: {{ s.dugme_yuk }}px;
+    transition: width 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .aln-ust-{{ sid }},
+  .aln-yuva-{{ sid }} {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+  }
+  .aln-ust-{{ sid }} {
+    opacity: 1;
+    transition: opacity 160ms cubic-bezier(0.4, 0, 0.2, 1) 60ms;
+  }
+  .aln-yuva-{{ sid }} {
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 160ms cubic-bezier(0.4, 0, 0.2, 1),
+      width 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .aln-{{ sid }}.is-gecti .aln-ust-{{ sid }} {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 140ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .aln-{{ sid }}.is-gecti .aln-yuva-{{ sid }} {
+    opacity: 1;
+    pointer-events: auto;
+    transition:
+      opacity 160ms cubic-bezier(0.4, 0, 0.2, 1) 60ms,
+      width 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Urun adi da yalnizca kaydirilinca geliyor */
+  .aln-ad-{{ sid }} {
+    opacity: 0;
+    transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .aln-{{ sid }}.is-gecti .aln-ad-{{ sid }} { opacity: 1; }
+
+  body {
+    {%- if s.konum == 'alt' %}
+    padding-bottom: calc({{ s.bar_yuk_m }}px + env(safe-area-inset-bottom, 0px));
+    {%- else %}
+    padding-top: {{ s.bar_yuk_m }}px;
+    {%- endif %}
+  }
+  @media (min-width: 750px) {
+    body {
+      {%- if s.konum == 'alt' %}
+      padding-bottom: calc({{ s.bar_yuk_d }}px + env(safe-area-inset-bottom, 0px));
+      {%- else %}
+      padding-top: {{ s.bar_yuk_d }}px;
+      {%- endif %}
+    }
+  }
+  {%- endif %}
+
+  /* --- yerlesim: logo ortada --- */
+  /* Temanin kendi basligindaki duzen: solda menu, ortada logo, sagda
+     arama + sepet. Urun adi ve dugme bu modda hic gorunmuyor, yani
+     cubuk tek durumlu: kaydirinca ikonlar dugmeye donusmuyor.
+
+     Isaretleme degismedi. Dugme DOM'da duruyor ama gizli; JS acilista
+     yuva/cta/bol ucundan birini bulamazsa hic calismiyor (menu, arama
+     ve sepet sayaci da onunla birlikte olurdu). Bu yuzden kaldirmak
+     yerine gorunumden cikardik.
+
+     Logo ile menu ikonu akistan cikarildi: boylece iki yandaki
+     gruplarin genisligi farkli olsa da logo cubugun tam ortasinda
+     kaliyor. */
+  {%- if s.yerlesim == 'orta' %}
+  .aln-yuva-{{ sid }} { display: none !important; }
+  .aln-ad-{{ sid }} { display: none !important; }
+
+  .aln-{{ sid }} { justify-content: flex-end; }
+
+  .aln-sol-{{ sid }} {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    gap: 0;
+  }
+
+  .aln-{{ sid }} [data-aln-menu-ac] {
+    position: absolute;
+    left: {{ s.yan_bosluk }}px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Baslik modu sag tarafi mutlak konumlu iki duruma ceviriyor;
+     burada ona ihtiyac yok, normal akisa donduruyoruz. */
+  .aln-sag-{{ sid }} {
+    position: static;
+    display: flex;
+    align-items: center;
+    gap: {{ s.ikon_ara }}px;
+    width: auto !important;
+    height: auto;
+  }
+  .aln-ust-{{ sid }},
+  .aln-{{ sid }}.is-gecti .aln-ust-{{ sid }} {
+    position: static;
+    height: auto;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  @media (min-width: 750px) {
+    .aln-{{ sid }} [data-aln-menu-ac] { left: {{ s.yan_bosluk_d }}px; }
+  }
+  {%- endif %}
+
+  /* --- degradeli dugme --- */
+  /* Stil bloklarinin en sonunda duruyor: yukaridaki :hover kurallari
+     "background" kisayolunu kullandigi icin degradeyi silerdi, buradan
+     background-image ile geri veriyoruz. */
+  {%- if s.cta_degrade %}
+  .aln-{{ sid }} {
+    --aln-degrade: linear-gradient(
+      {{ s.cta_aci }}deg,
+      {{ s.cta_renk_1 }} 0%,
+      {{ s.cta_renk_2 }} 25%,
+      {{ s.cta_renk_3 }} 50%,
+      {{ s.cta_renk_2 }} 75%,
+      {{ s.cta_renk_1 }} 100%
+    );
+  }
+  .aln-cta-{{ sid }},
+  .aln-btn-{{ sid }}.is-dolu {
+    background-color: {{ s.cta_renk_3 }};
+    background-image: var(--aln-degrade);
+    background-size: 300% 100%;
+    background-position: 0% 50%;
+    border-color: transparent;
+    {%- if s.cta_hareket %}
+    /* Ileri geri suzulen degrade: desen simetrik oldugu icin
+       "alternate" ile eksiz donuyor, sicrama olmuyor. */
+    animation: aln-kay-{{ sid }} {{ s.cta_hareket_sure }}s ease-in-out infinite alternate;
+    {%- endif %}
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .aln-cta-{{ sid }}:hover,
+    .aln-btn-{{ sid }}.is-dolu:hover,
+    .aln-btn-{{ sid }}.is-cizgi:hover {
+      background-image: var(--aln-degrade);
+      background-size: 300% 100%;
+      border-color: transparent;
+      filter: brightness(1.12);
+    }
+  }
+  {%- if s.cta_hareket %}
+  @keyframes aln-kay-{{ sid }} {
+    from { background-position: 0% 50%; }
+    to   { background-position: 100% 50%; }
+  }
+  {%- endif %}
+
+  /* Yazi degradenin ve parlamanin ustunde kalsin */
+  .aln-cta-yazi-{{ sid }} { position: relative; z-index: 1; }
+
+  {%- if s.cta_parlama %}
+  /* Arada bir gecen isik seridi. ::after dokunma hedefi icin dolu,
+     bu yuzden ::before kullaniliyor ve tiklamayi engellemiyor. */
+  .aln-cta-{{ sid }}::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 999px;
+    pointer-events: none;
+    background-image: linear-gradient(
+      105deg,
+      rgba(255, 255, 255, 0) 42%,
+      rgba(255, 255, 255, 0.45) 50%,
+      rgba(255, 255, 255, 0) 58%
+    );
+    background-repeat: no-repeat;
+    background-size: 220% 100%;
+    background-position: 160% 0;
+    animation: aln-parla-{{ sid }} {{ s.cta_parlama_ara }}s ease-in-out infinite;
+  }
+  @keyframes aln-parla-{{ sid }} {
+    0%   { background-position: 160% 0; }
+    16%  { background-position: -60% 0; }
+    100% { background-position: -60% 0; }
+  }
+  {%- endif %}
+  {%- endif %}
+
+  @media (prefers-reduced-motion: reduce) {
+    .aln-{{ sid }},
+    .aln-{{ sid }}.is-acik,
+    .aln-yuva-{{ sid }},
+    .aln-cta-{{ sid }},
+    .aln-bol-{{ sid }},
+    .aln-btn-{{ sid }},
+    .aln-ad-{{ sid }},
+    .aln-sag-{{ sid }},
+    .aln-ust-{{ sid }},
+    .aln-menu-{{ sid }},
+    .aln-ham-{{ sid }} i,
+    .aln-header-gizli {
+      transition: none !important;
+    }
+    .aln-{{ sid }} { transform: none; }
+    .aln-bol-{{ sid }} { transform: none; }
+    .aln-cta-{{ sid }}:active,
+    .aln-btn-{{ sid }}:active { transform: none; }
+    /* Degrade kalir, hareket ve parlama durur */
+    .aln-cta-{{ sid }},
+    .aln-btn-{{ sid }}.is-dolu,
+    .aln-cta-{{ sid }}::before,
+    .aln-ara-{{ sid }} {
+      animation: none !important;
+      transition: none !important;
+    }
+    .aln-cta-{{ sid }}::before { display: none; }
+  }
+</style>
+
+<span class="aln-isaret-{{ sid }}" data-aln-isaret aria-hidden="true"></span>
+
+<div
+  class="aln-{{ sid }} aln-sabit-bar"
+  id="aln-{{ sid }}"
+  data-aln-kok
+  data-aln-esik="{{ s.esik_px }}"
+  data-aln-sure="{{ s.geri_sure }}"
+  data-aln-header="{{ s.header_secici | escape }}"
+  data-aln-gizle="{% if s.header_gizle and s.konum == 'ust' and s.header_modu != true %}1{% else %}0{% endif %}"
+  data-aln-mod="{% if s.header_modu %}1{% else %}0{% endif %}"
+  {% if s.header_modu %}role="banner"{% else %}aria-hidden="true"{% endif %}
+>
+  <div class="aln-sol-{{ sid }}" data-aln-sol>
+    {%- if s.logo != blank -%}
+      <a
+        class="aln-logo-{{ sid }}"
+        href="{{ s.logo_bag | default: routes.root_url }}"
+        data-aln-logo
+      >
+        <img
+          src="{{ s.logo | image_url: height: 120 }}"
+          alt="{{ s.logo.alt | default: shop.name | escape }}"
+          width="{{ s.logo.width }}"
+          height="{{ s.logo.height }}"
+          loading="eager"
+          fetchpriority="high"
+        >
+      </a>
+    {%- endif -%}
+
+    {%- if s.baslik != blank -%}
+      {%- comment -%}
+        Telefon icin ayri bir metin verilmisse iki karsiligi da basiyoruz
+        ve gorunmeyeni CSS ile kaldiriyoruz. Ayar bos birakilirsa tek
+        metin, eskisiyle birebir ayni sekilde basiliyor.
+
+        Bu isi tek bir <p> icinde yapmak onemli: darligiDenetle() adin
+        scrollWidth'ini olcuyor, gizlenen span display:none oldugu icin
+        olcume karismiyor -- yani genislik hesabi hep o an gorunen
+        metne gore calisiyor.
+      {%- endcomment -%}
+      {%- if s.baslik_m != blank -%}
+        <p class="aln-ad-{{ sid }}" data-aln-ad
+        ><span class="aln-ad-m-{{ sid }}">{{ s.baslik_m }}</span
+        ><span class="aln-ad-d-{{ sid }}">{{ s.baslik }}</span></p>
+      {%- else -%}
+        <p class="aln-ad-{{ sid }}" data-aln-ad>{{ s.baslik }}</p>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+
+  <div class="aln-sag-{{ sid }}" data-aln-sag>
+   <div class="aln-ust-{{ sid }}" data-aln-ust>
+    {%- if s.ara_goster -%}
+      <a
+        class="aln-ikon-{{ sid }}"
+        href="{{ routes.search_url }}"
+        data-aln-ara-ac
+        aria-label="{{ s.ara_yer_tutucu | escape }}"
+        aria-expanded="false"
+        aria-controls="aln-ara-{{ sid }}"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" aria-hidden="true" focusable="false">
+          <circle cx="10.8" cy="10.8" r="6.8"></circle>
+          <line x1="15.8" y1="15.8" x2="21" y2="21"></line>
+        </svg>
+      </a>
+    {%- endif -%}
+
+    {%- if s.sepet_goster -%}
+      <a
+        class="aln-ikon-{{ sid }}"
+        href="{{ routes.cart_url }}"
+        data-aln-sepet
+        data-aln-sepet-url="{{ routes.cart_url }}"
+        aria-label="{{ s.sepet_etiket | escape }}"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M6.2 7.6h11.6l1 12.4H5.2l1-12.4z"></path>
+          <path d="M9 7.6V6a3 3 0 0 1 6 0v1.6"></path>
+        </svg>
+        <span
+          class="aln-rozet-{{ sid }}"
+          data-aln-sayi
+          {% if cart.item_count == 0 and s.rozet_sifir_gizle %}hidden{% endif %}
+        >{{ cart.item_count }}</span>
+      </a>
+    {%- endif -%}
+
+    {%- if s.menu_goster -%}
+      <button
+        type="button"
+        class="aln-ikon-{{ sid }}"
+        data-aln-menu-ac
+        aria-label="{{ s.menu_etiket | escape }}"
+        aria-expanded="false"
+        aria-controls="aln-menu-{{ sid }}"
+        style="background:none;border:0;padding:0;cursor:pointer"
+      >
+        <span class="aln-ham-{{ sid }}" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+    {%- endif -%}
+   </div>
+
+    <div class="aln-yuva-{{ sid }}" data-aln-yuva>
+      {% if bol_var %}
+      <button
+        type="button"
+        class="aln-cta-{{ sid }}"
+        data-aln-cta
+        aria-expanded="false"
+        aria-controls="aln-bol-{{ sid }}"
+      ><span class="aln-cta-yazi-{{ sid }}">{{ s.cta_metni }}</span></button>
+
+      <div class="aln-bol-{{ sid }}" id="aln-bol-{{ sid }}" data-aln-bol>
+        <a
+          class="aln-btn-{{ sid }} is-dolu"
+          {% if s.bol_1_bag != blank %}href="{{ s.bol_1_bag }}"{% endif %}
+          data-aln-link
+        >{{ s.bol_1_metni }}</a>
+        <a
+          class="aln-btn-{{ sid }} is-cizgi"
+          {% if s.bol_2_bag != blank %}href="{{ s.bol_2_bag }}"{% endif %}
+          data-aln-link
+        >{{ s.bol_2_metni }}</a>
+      </div>
+      {% else %}
+      <a
+        class="aln-cta-{{ sid }}"
+        data-aln-cta
+        {% if s.cta_bag != blank %}href="{{ s.cta_bag }}"{% endif %}
+      ><span class="aln-cta-yazi-{{ sid }}">{{ s.cta_metni }}</span></a>
+
+      {% comment %}
+        Bos kap: JS basta "yuva / cta / bol" ucunu birden ariyor ve biri
+        eksikse hic calismiyor. Tek baglanti modunda bolunme yok ama kabi
+        DOM'da birakiyoruz ki cubugun geri kalani (gorunurluk, arama,
+        menu, sepet) aynen calismaya devam etsin.
+      {% endcomment %}
+      <div class="aln-bol-{{ sid }}" id="aln-bol-{{ sid }}" data-aln-bol></div>
+      {% endif %}
+    </div>
+  </div>
+
+  {%- if s.ara_goster -%}
+    <form
+      class="aln-ara-{{ sid }}"
+      id="aln-ara-{{ sid }}"
+      action="{{ routes.search_url }}"
+      method="get"
+      role="search"
+      data-aln-ara
+    >
+      <input type="hidden" name="options[prefix]" value="last">
+      <input
+        type="search"
+        name="q"
+        placeholder="{{ s.ara_yer_tutucu | escape }}"
+        aria-label="{{ s.ara_yer_tutucu | escape }}"
+        autocomplete="off"
+      >
+      <button
+        type="button"
+        class="aln-ikon-{{ sid }}"
+        data-aln-ara-kapat
+        aria-label="Kapat"
+        style="background:none;border:0;padding:0;cursor:pointer"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" aria-hidden="true" focusable="false">
+          <line x1="5.5" y1="5.5" x2="18.5" y2="18.5"></line>
+          <line x1="18.5" y1="5.5" x2="5.5" y2="18.5"></line>
+        </svg>
+      </button>
+    </form>
+  {%- endif -%}
+
+</div>
+
+{%- comment -%}
+  Menu paneli bilerek cubugun DISINDA: cubuktaki backdrop-filter,
+  icindeki sabit konumlu ogelerin ekrana gore degil cubuga gore
+  yerlesmesine sebep oluyor.
+{%- endcomment -%}
+{%- if s.menu_goster -%}
+    <nav
+      class="aln-menu-{{ sid }}"
+      id="aln-menu-{{ sid }}"
+      data-aln-menu
+      aria-label="{{ s.menu_etiket | escape }}"
+    >
+      <ul>
+        {%- for baglanti in s.menu.links -%}
+          <li>
+            <a href="{{ baglanti.url }}">{{ baglanti.title }}</a>
+            {%- if baglanti.links.size > 0 -%}
+              <ul>
+                {%- for alt in baglanti.links -%}
+                  <li><a href="{{ alt.url }}">{{ alt.title }}</a></li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+{%- endif -%}
+
+<script>
+  (function () {
+    var kok = document.getElementById('aln-{{ sid }}');
+    if (!kok) return;
+
+    var isaret = document.querySelector('#shopify-section-{{ sid }} [data-aln-isaret]');
+    var yuva = kok.querySelector('[data-aln-yuva]');
+    var cta = kok.querySelector('[data-aln-cta]');
+    var bol = kok.querySelector('[data-aln-bol]');
+    var ad = kok.querySelector('[data-aln-ad]');
+    var sol = kok.querySelector('[data-aln-sol]');
+    var sag = kok.querySelector('[data-aln-sag]');
+    var ust = kok.querySelector('[data-aln-ust]');
+    var menuAc = kok.querySelector('[data-aln-menu-ac]');
+    // Menu paneli cubugun disinda (bkz. stil dosyasindaki not)
+    var menu = document.querySelector('#shopify-section-{{ sid }} [data-aln-menu]');
+    var araAc = kok.querySelector('[data-aln-ara-ac]');
+    var araKapat = kok.querySelector('[data-aln-ara-kapat]');
+    var araForm = kok.querySelector('[data-aln-ara]');
+    var araGirdi = araForm ? araForm.querySelector('input[name="q"]') : null;
+    var sepetBag = kok.querySelector('[data-aln-sepet]');
+    var sayiEl = kok.querySelector('[data-aln-sayi]');
+    if (!yuva || !cta || !bol) return;
+
+    var azHareket = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var esik = parseInt(kok.getAttribute('data-aln-esik'), 10);
+    if (isNaN(esik)) esik = 0;
+    var geriSure = parseInt(kok.getAttribute('data-aln-sure'), 10);
+    if (isNaN(geriSure)) geriSure = 6;
+    var gizleAc = kok.getAttribute('data-aln-gizle') === '1';
+    var headerSecici = kok.getAttribute('data-aln-header') || '';
+    // Baslik modunda cubuk hep gorunur: gorunurluk CSS ile veriliyor,
+    // gozlemci kurulmuyor ve tema basligina hic dokunulmuyor.
+    var baslikModu = kok.getAttribute('data-aln-mod') === '1';
+
+    // acik = "bolumun akistaki yeri ekranin ustunden gecti mi".
+    // Baslik modunda cubuk zaten hep gorunur; bu degisken orada
+    // ikonlu durum ile dugmeli durum arasindaki gecisi yonetiyor.
+    var acik = false;
+    var bolundu = false;
+    var aramaAcik = false;
+    var menuAcik = false;
+    var sifirGizle = {% if s.rozet_sifir_gizle %}true{% else %}false{% endif %};
+    var geriSayac = null;
+    var headerEl = null;
+
+    /* --- tema basligi --- */
+
+    function headerBul() {
+      if (headerEl && document.documentElement.contains(headerEl)) return headerEl;
+      headerEl = null;
+      if (!headerSecici) return null;
+      var parcalar = headerSecici.split(',');
+      for (var i = 0; i < parcalar.length; i++) {
+        var el = null;
+        try { el = document.querySelector(parcalar[i].replace(/^\s+|\s+$/g, '')); } catch (e) { el = null; }
+        if (el && el.getBoundingClientRect().height > 0) { headerEl = el; return el; }
+      }
+      return null;
+    }
+
+    function headerAyarla(gizli) {
+      if (!gizleAc) return;
+      var h = headerBul();
+      if (!h) return;
+      h.classList.toggle('aln-header-gizli', gizli);
+    }
+
+    /* --- genislik olcumu --- */
+    /* Iki durum da mutlak konumlu ve her zaman DOM'da oldugu icin
+       genislikleri gorunur olmasalar da olculebiliyor. Yuvaya acik
+       piksel genislik veriyoruz ki gecis animasyonlanabilsin. */
+
+    function genisligiUygula() {
+      var hedef = bolundu ? bol.offsetWidth : cta.offsetWidth;
+      if (hedef > 0) yuva.style.width = hedef + 'px';
+      // Baslik modunda sag sarmalayici da iki durum arasinda genisliyor
+      if (baslikModu && sag && ust) {
+        var sagHedef = acik ? hedef : ust.offsetWidth;
+        if (sagHedef > 0) sag.style.width = sagHedef + 'px';
+      }
+    }
+
+    // Logo + ad + ikonlar + dugme cubuga sigmiyorsa ad yerini birakir.
+    // Bolunmus halde de bolunmemis halde de gecerli.
+    function darligiDenetle() {
+      if (!ad) return;
+      var kutu = kok.getBoundingClientRect();
+      if (!kutu.width) return;
+
+      // Dogal genisligi olcmek icin once adi geri getiriyoruz.
+      var dardi = kok.classList.contains('is-dar');
+      if (dardi) kok.classList.remove('is-dar');
+
+      var cs = window.getComputedStyle(kok);
+      var ic = kutu.width - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+
+      // Sol grubun DOGAL genisligi. sol.scrollWidth ise yaramaz: flex
+      // zaten adi kirptigi icin sarmalayici tasmis gorunmez. Bu yuzden
+      // adin scrollWidth'i (kirpilmamis metin genisligi) ile logonun
+      // gercek genisligini toplayip aradaki bosluklari ekliyoruz.
+      var solGen = ad.scrollWidth;
+      if (sol) {
+        var cocuklar = sol.children;
+        var solCs = window.getComputedStyle(sol);
+        var araBosluk = parseFloat(solCs.columnGap) || 0;
+        solGen = 0;
+        for (var i = 0; i < cocuklar.length; i++) {
+          var c = cocuklar[i];
+          solGen += (c === ad) ? c.scrollWidth : c.getBoundingClientRect().width;
+          if (i) solGen += araBosluk;
+        }
+      }
+      // Ikonlar da yer kapliyor: sag grubun yuva disinda kalan genisligi
+      var ikonGen = 0;
+      if (sag) {
+        ikonGen = Math.max(0, sag.getBoundingClientRect().width - yuva.getBoundingClientRect().width);
+      }
+      var dugmeGen = bolundu ? bol.offsetWidth : cta.offsetWidth;
+      var gerek = solGen + ikonGen + dugmeGen + 20; // gruplar arasi bosluk + emniyet payi
+
+      kok.classList.toggle('is-dar', gerek > ic);
+    }
+
+    function bolmeAyarla(ac) {
+      if (ac === bolundu) return;
+      bolundu = ac;
+      kok.classList.toggle('is-bolundu', ac);
+      cta.setAttribute('aria-expanded', ac ? 'true' : 'false');
+      darligiDenetle();
+      genisligiUygula();
+      geriSayacKur();
+    }
+
+    function geriSayacKur() {
+      if (geriSayac) { window.clearTimeout(geriSayac); geriSayac = null; }
+      if (!bolundu || geriSure <= 0) return;
+      geriSayac = window.setTimeout(function () {
+        bolmeAyarla(false);
+      }, geriSure * 1000);
+    }
+
+    /* --- gorunurluk --- */
+
+    function uygula(goster) {
+      if (goster === acik) return;
+      acik = goster;
+      // Iki durum arasindaki gecis (ikonlar <-> urun adi + dugme)
+      kok.classList.toggle('is-gecti', goster);
+      if (!baslikModu) {
+        // Yerel gezinme modunda cubugun kendisi gorunur/gizli oluyor
+        kok.classList.toggle('is-acik', goster);
+        kok.setAttribute('aria-hidden', goster ? 'false' : 'true');
+        headerAyarla(goster);
+      }
+      if (!goster) { bolmeAyarla(false); aramaAyarla(false); menuAyarla(false); }
+      darligiDenetle();
+      genisligiUygula();
+    }
+
+    /* --- tetikleme: Intersection Observer --- */
+    /* Isaret ogesi bolumun akistaki yerinde duruyor. Ekranin ustunden
+       cikinca cubuk belirir, geri girince kaybolur. Kaydirma olayi
+       dinlenmiyor; tarayici gozlemciyi kendi zamanlamasiyla calistiriyor,
+       bu yuzden hizli kaydirmada titreme olusmuyor. */
+
+    if (isaret && 'IntersectionObserver' in window) {
+      var goz = new IntersectionObserver(function (girisler) {
+        for (var i = 0; i < girisler.length; i++) {
+          // Asagidaki rootMargin sayesinde "kesisiyor" = isaret henuz
+          // ekranin ustunden cikmadi demek. Yani tek bir boolean yeterli.
+          uygula(!girisler[i].isIntersecting);
+        }
+      }, {
+        // Alt kenari cok buyuk bir degerle genisletiyoruz. Boylece isaret
+        // ekranin altindayken de "kesisiyor" sayilir ve durum yalnizca
+        // ust kenari gectiginde degisir. Bu onemli: dar bir gozlem
+        // bandinda, sayfa bir sicrayisla (ic bag, geri tusu, hizli fling)
+        // esigi atlarsa gozlemci hic tetiklenmiyordu.
+        rootMargin: esik + 'px 0px 100000px 0px',
+        threshold: 0
+      });
+      goz.observe(isaret);
+      kok.alnGoz = goz;
+    }
+
+    /* --- etkilesim --- */
+
+    /* --- dugmeye basma --- */
+    /* iOS'ta sayfa hala suzulurken (momentum scroll) yapilan ilk dokunus
+       yalnizca kaydirmayi durdurur, "click" olayi hic uretilmez. Bu yuzden
+       kullanicinin iki kez basmasi gerekiyordu. Cozum: dokunmayi touchend
+       ile kendimiz yakaliyoruz -- bu olay suzulme sirasinda da geliyor.
+       preventDefault sonrasindaki click'i bastiriyor, yine de zaman damgasi
+       ile ikinci bir tetiklemeye karsi koruma var. */
+
+    // Tek baglanti modunda dugme normal bir link: tiklamayi hic
+    // yakalamiyoruz, tarayici kendi isini yapiyor.
+    var tekBag = {% if bol_var %}false{% else %}true{% endif %};
+
+    function ctaBasildi() {
+      if (aramaAcik) aramaAyarla(false);
+      if (menuAcik) menuAyarla(false);
+      bolmeAyarla(!bolundu);
+    }
+
+    var dokunmaX = 0, dokunmaY = 0, dokunmaAn = 0, kaydi = false, sonDokunma = 0;
+
+    cta.addEventListener('touchstart', function (e) {
+      var t = e.touches[0];
+      if (!t) return;
+      dokunmaX = t.clientX; dokunmaY = t.clientY;
+      dokunmaAn = Date.now(); kaydi = false;
+    }, { passive: true });
+
+    cta.addEventListener('touchmove', function (e) {
+      var t = e.touches[0];
+      if (!t) return;
+      if (Math.abs(t.clientX - dokunmaX) > 10 || Math.abs(t.clientY - dokunmaY) > 10) kaydi = true;
+    }, { passive: true });
+
+    cta.addEventListener('touchend', function (e) {
+      if (tekBag) return;
+      if (kaydi || Date.now() - dokunmaAn > 700) return;
+      e.preventDefault();
+      sonDokunma = Date.now();
+      ctaBasildi();
+    }, { passive: false });
+
+    cta.addEventListener('click', function (e) {
+      if (tekBag) return;
+      e.preventDefault();
+      if (Date.now() - sonDokunma < 700) return; // dokunmayla zaten isledi
+      ctaBasildi();
+    });
+
+    /* --- menu --- */
+
+    function menuAyarla(ac) {
+      if (!menu || !menuAc) return;
+      if (ac === menuAcik) return;
+      menuAcik = ac;
+      kok.classList.toggle('is-menu', ac);
+      menu.classList.toggle('is-acik', ac);
+      menuAc.setAttribute('aria-expanded', ac ? 'true' : 'false');
+      document.documentElement.classList.toggle('aln-kilit-{{ sid }}', ac);
+      if (ac) {
+        aramaAyarla(false);
+        var ilk = menu.querySelector('a');
+        if (ilk) window.setTimeout(function () { ilk.focus(); }, 80);
+      }
+    }
+
+    if (menuAc && menu) {
+      menuAc.addEventListener('click', function (e) {
+        e.preventDefault();
+        menuAyarla(!menuAcik);
+      });
+      // Baglantiya basilinca cekmece kapansin (ayni sayfa ici baglar icin)
+      menu.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('a')) menuAyarla(false);
+      });
+    }
+
+    /* --- arama --- */
+    /* Ikon gercek bir /search baglantisi. JS varsa tiklama yerinde acilan
+       arama alanina donusuyor; JS yoksa arama sayfasina gidiyor. Form da
+       gercek bir GET formu, yani her iki durumda da calisiyor. */
+
+    function aramaAyarla(ac) {
+      if (!araForm || !araAc) return;
+      if (ac === aramaAcik) return;
+      aramaAcik = ac;
+      kok.classList.toggle('is-arama', ac);
+      araAc.setAttribute('aria-expanded', ac ? 'true' : 'false');
+      if (ac) {
+        bolmeAyarla(false);
+        if (araGirdi) window.setTimeout(function () { araGirdi.focus(); }, 60);
+      } else if (araGirdi) {
+        araGirdi.blur();
+      }
+    }
+
+    if (araAc && araForm) {
+      araAc.addEventListener('click', function (e) {
+        e.preventDefault();
+        aramaAyarla(!aramaAcik);
+      });
+    }
+    if (araKapat) {
+      araKapat.addEventListener('click', function () {
+        aramaAyarla(false);
+        if (araAc) araAc.focus();
+      });
+    }
+    if (araForm) {
+      // Bos aramada sayfayi bosuna yenileme
+      araForm.addEventListener('submit', function (e) {
+        if (!araGirdi || araGirdi.value.replace(/^\s+|\s+$/g, '') === '') {
+          e.preventDefault();
+          if (araGirdi) araGirdi.focus();
+        }
+      });
+    }
+
+    /* --- sepet sayaci --- */
+    /* Sayfa onbellekten gelebilir; sayiyi /cart.js ile tazeliyoruz. */
+
+    function sayiYaz(n) {
+      if (!sayiEl) return;
+      sayiEl.textContent = n;
+      if (sifirGizle && n === 0) sayiEl.setAttribute('hidden', '');
+      else sayiEl.removeAttribute('hidden');
+    }
+
+    function sepetTazele() {
+      if (!sayiEl || !sepetBag || !window.fetch) return;
+      var url = sepetBag.getAttribute('data-aln-sepet-url') || '/cart';
+      fetch(url + '.js', { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { if (j && typeof j.item_count === 'number') sayiYaz(j.item_count); })
+        .catch(function () {});
+    }
+
+    if (sayiEl) {
+      sepetTazele();
+      window.addEventListener('pageshow', function (e) { if (e.persisted) sepetTazele(); });
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) sepetTazele();
+      });
+      // Temalarin yaygin sepet olaylari
+      ['cart:updated', 'cart:refresh', 'cart:change', 'ajaxProduct:added', 'product:added']
+        .forEach(function (ad) { document.addEventListener(ad, sepetTazele); });
+    }
+
+    function disariTikla(e) {
+      if (kok.contains(e.target)) return;
+      // Menu paneli cubugun disinda; icine yapilan tiklama "disari" sayilmaz
+      if (menu && menu.contains(e.target)) return;
+      if (aramaAcik) aramaAyarla(false);
+      if (menuAcik) menuAyarla(false);
+      if (!bolundu) return;
+      bolmeAyarla(false);
+    }
+    function escBas(e) {
+      if (e.key !== 'Escape' && e.keyCode !== 27) return;
+      if (menuAcik) {
+        menuAyarla(false);
+        if (menuAc) menuAc.focus();
+        return;
+      }
+      if (aramaAcik) {
+        aramaAyarla(false);
+        if (araAc) araAc.focus();
+        return;
+      }
+      if (!bolundu) return;
+      bolmeAyarla(false);
+      cta.focus();
+    }
+    document.addEventListener('click', disariTikla);
+    document.addEventListener('keydown', escBas);
+
+    function olcumleriTazele() {
+      darligiDenetle();
+      genisligiUygula();
+    }
+    window.addEventListener('resize', olcumleriTazele);
+    window.addEventListener('orientationchange', olcumleriTazele);
+
+    // Yazi tipi gec yuklenirse dugme genisligi degisir
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(olcumleriTazele);
+    }
+    window.setTimeout(olcumleriTazele, 400);
+
+    olcumleriTazele();
+
+    /* --- tema editoru --- */
+
+    document.addEventListener('shopify:section:select', function (e) {
+      if (!e.detail || e.detail.sectionId !== '{{ sid }}') return;
+      uygula(true);
+    });
+    document.addEventListener('shopify:section:deselect', function (e) {
+      if (!e.detail || e.detail.sectionId !== '{{ sid }}') return;
+      uygula(false);
+    });
+    document.addEventListener('shopify:section:unload', function (e) {
+      if (!e.detail || e.detail.sectionId !== '{{ sid }}') return;
+      if (kok.alnGoz) { kok.alnGoz.disconnect(); kok.alnGoz = null; }
+      document.removeEventListener('click', disariTikla);
+      document.removeEventListener('keydown', escBas);
+      window.removeEventListener('resize', olcumleriTazele);
+      window.removeEventListener('orientationchange', olcumleriTazele);
+      if (geriSayac) window.clearTimeout(geriSayac);
+      headerAyarla(false);
+      document.documentElement.classList.remove('aln-kilit-{{ sid }}');
+    });
+  })();
+</script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Yapışkan Ürün Çubuğu",
+  "tag": "section",
+  "class": "apple-local-nav-section",
+  "settings": [
+    { "type": "checkbox", "id": "aktif", "label": "Çubuğu göster", "default": true },
+    {
+      "type": "select",
+      "id": "konum",
+      "label": "Ekrandaki yeri",
+      "info": "Çubuk ekrana sabitlenir; bölümün şablondaki sırası yalnızca ne zaman belireceğini belirler.",
+      "default": "ust",
+      "options": [
+        { "value": "ust", "label": "Üstte" },
+        { "value": "alt", "label": "Altta" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "yerlesim",
+      "label": "Yerleşim",
+      "info": "Logo ortada seçilirse ürün adı ve düğme gizlenir; çubukta yalnızca menü, logo, arama ve sepet kalır.",
+      "default": "sol",
+      "options": [
+        { "value": "sol", "label": "Logo solda, düğme sağda (ürün çubuğu)" },
+        { "value": "orta", "label": "Menü solda, logo ortada, ikonlar sağda" }
+      ]
+    },
+    { "type": "header", "content": "Başlık modu" },
+    {
+      "type": "checkbox",
+      "id": "header_modu",
+      "label": "Sayfanın başlığı olarak kullan",
+      "info": "Açıkken çubuk sayfa açılır açılmaz görünür ve hep kalır; temanın kendi başlığı bu sayfada gizlenir. Bu modda aşağıdaki belirme eşiği ve tema başlığı ayarları çalışmaz.",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "mod_gizle_secici",
+      "label": "Gizlenecek başlık (CSS seçicisi)",
+      "info": "Yalnızca başlık modunda kullanılır. Duyuru şeridini de gizlemek için sonuna , [id$='__announcement-bar'] ekleyin.",
+      "default": "[id$='__header']"
+    },
+    { "type": "header", "content": "İçerik" },
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "url", "id": "logo_bag", "label": "Logo bağlantısı", "info": "Boşsa ana sayfaya gider." },
+    { "type": "range", "id": "logo_yuk_m", "label": "Logo yüksekliği (mobil)", "min": 12, "max": 44, "step": 1, "unit": "px", "default": 22 },
+    { "type": "range", "id": "logo_yuk_d", "label": "Logo yüksekliği (masaüstü)", "min": 12, "max": 52, "step": 1, "unit": "px", "default": 24 },
+    { "type": "range", "id": "logo_ara", "label": "Logo ile ad arası", "min": 0, "max": 24, "step": 2, "unit": "px", "default": 10 },
+    {
+      "type": "select",
+      "id": "dar_oncelik",
+      "label": "Dar ekranda ne çekilsin",
+      "info": "Telefonda logo + ürün adı + düğme yan yana sığmıyor. Apple kendi sayfalarında kaydırınca logoyu kaldırıp sadece ürün adını bırakıyor.",
+      "default": "ad",
+      "options": [
+        { "value": "ad", "label": "Logo kalsın, ad çekilsin" },
+        { "value": "logo", "label": "Ad kalsın, logo çekilsin" },
+        { "value": "kirp", "label": "İkisi de kalsın, ad kısalsın" }
+      ]
+    },
+    { "type": "text", "id": "baslik", "label": "Ürün adı", "default": "Single Zaman Kapsülü" },
+    { "type": "text", "id": "baslik_m", "label": "Ürün adı — telefonda", "info": "Boş bırakılırsa telefonda da üstteki metin kullanılır. Uzun metinler telefonda logo ve düğmeyle birlikte sığmaz; buraya kısa bir karşılığını yazın." },
+    { "type": "text", "id": "cta_metni", "label": "Düğme metni", "default": "Ürünleri Gör" },
+    { "type": "url", "id": "cta_bag", "label": "Düğme bağlantısı", "info": "Yalnızca tek bağlantı modunda kullanılır: aşağıdaki iki seçenekten biri boş bırakılırsa düğme ikiye bölünmez, doğrudan buraya gider." },
+    { "type": "text", "id": "bol_1_metni", "label": "Sol seçenek", "default": "Kadın" },
+    { "type": "url", "id": "bol_1_bag", "label": "Sol seçenek bağlantısı" },
+    { "type": "text", "id": "bol_2_metni", "label": "Sağ seçenek", "default": "Erkek" },
+    { "type": "url", "id": "bol_2_bag", "label": "Sağ seçenek bağlantısı" },
+    {
+      "type": "range",
+      "id": "geri_sure",
+      "label": "Kendiliğinden toplanma süresi",
+      "info": "Seçim yapılmazsa düğmeler bu süre sonunda tek düğmeye döner. 0 = hiç toplanmasın.",
+      "min": 0,
+      "max": 15,
+      "step": 1,
+      "unit": "sn",
+      "default": 6
+    },
+    { "type": "header", "content": "İkonlar" },
+    { "type": "checkbox", "id": "ara_goster", "label": "Arama ikonu", "default": true },
+    { "type": "text", "id": "ara_yer_tutucu", "label": "Arama metni", "default": "Ara" },
+    { "type": "checkbox", "id": "sepet_goster", "label": "Sepet ikonu", "default": true },
+    { "type": "text", "id": "sepet_etiket", "label": "Sepet etiketi", "default": "Sepet" },
+    { "type": "checkbox", "id": "rozet_sifir_gizle", "label": "Sepet boşken sayıyı gizle", "default": true },
+    { "type": "checkbox", "id": "menu_goster", "label": "Hamburger menü", "default": true },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menü",
+      "info": "Temanın kendi başlığındaki menüyü seçin (Ana menü).",
+      "default": "main-menu"
+    },
+    { "type": "text", "id": "menu_etiket", "label": "Menü etiketi", "default": "Menü" },
+    { "type": "range", "id": "menu_boyut", "label": "Menü yazı boyutu", "min": 14, "max": 26, "step": 1, "unit": "px", "default": 18 },
+    { "type": "color", "id": "menu_ayirac", "label": "Menü ayırıcı çizgi", "default": "#2e2e30" },
+    { "type": "range", "id": "menu_alt_bosluk", "label": "Menü alt boşluğu", "min": 20, "max": 120, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "ikon_boyut", "label": "İkon boyutu", "min": 14, "max": 32, "step": 1, "unit": "px", "default": 20 },
+    { "type": "range", "id": "ikon_ara", "label": "İkonlar arası boşluk", "min": 4, "max": 28, "step": 2, "unit": "px", "default": 16 },
+    {
+      "type": "checkbox",
+      "id": "rozet_degrade",
+      "label": "Sepet sayısında degrade",
+      "info": "Açıkken düğmedeki degrade renkleri kullanılır.",
+      "default": true
+    },
+    { "type": "color", "id": "rozet_zemin", "label": "Sepet sayısı zemini (degrade kapalıyken)", "default": "#d6ff00" },
+    { "type": "color", "id": "rozet_yazi", "label": "Sepet sayısı yazısı", "default": "#000000" },
+    { "type": "header", "content": "Düğme degradesi" },
+    { "type": "checkbox", "id": "cta_degrade", "label": "Degradeli düğme", "default": true },
+    { "type": "color", "id": "cta_renk_1", "label": "Degrade rengi 1", "default": "#8fcbb0" },
+    { "type": "color", "id": "cta_renk_2", "label": "Degrade rengi 2", "default": "#599176" },
+    { "type": "color", "id": "cta_renk_3", "label": "Degrade rengi 3", "default": "#30614b" },
+    { "type": "range", "id": "cta_aci", "label": "Degrade açısı", "min": 0, "max": 360, "step": 10, "unit": "°", "default": 100 },
+    { "type": "checkbox", "id": "cta_hareket", "label": "Degrade yavaşça hareket etsin", "default": true },
+    {
+      "type": "range",
+      "id": "cta_hareket_sure",
+      "label": "Hareket süresi",
+      "info": "Bir gidiş-geliş bu kadar sürer. Büyük değer daha sakin.",
+      "min": 2, "max": 20, "step": 1, "unit": "sn", "default": 8
+    },
+    { "type": "checkbox", "id": "cta_parlama", "label": "Arada bir parlasın", "default": true },
+    {
+      "type": "range",
+      "id": "cta_parlama_ara",
+      "label": "Parlama aralığı",
+      "info": "Işık şeridi bu aralıkla bir kez geçer.",
+      "min": 2, "max": 15, "step": 1, "unit": "sn", "default": 5
+    },
+    { "type": "header", "content": "Ne zaman belirsin" },
+    {
+      "type": "range",
+      "id": "esik_px",
+      "label": "Belirme eşiği",
+      "info": "Bölümün akıştaki yeri ekranın üstünden çıkınca çubuk belirir. Bölümü hero'nun hemen altına koyun. Bu değer belirmeyi geciktirir.",
+      "min": 0,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "default": 0
+    },
+    { "type": "header", "content": "Tema başlığı" },
+    {
+      "type": "checkbox",
+      "id": "header_gizle",
+      "label": "Çubuk görünürken tema başlığı gizlensin",
+      "info": "İkisi aynı anda ekranda durmaz. Yalnızca çubuk üstteyken ve başlık modu kapalıyken geçerlidir.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "header_secici",
+      "label": "Tema başlığının CSS seçicisi",
+      "default": "header[is='sticky-header'], #shopify-section-header, header"
+    },
+    { "type": "header", "content": "Renkler" },
+    { "type": "color", "id": "zemin", "label": "Çubuk zemini", "default": "#161617" },
+    {
+      "type": "range",
+      "id": "zemin_saydam",
+      "label": "Zemin saydamlığı",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "%",
+      "default": 72
+    },
+    { "type": "range", "id": "bulanik", "label": "Buzlu cam yoğunluğu", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 20 },
+    { "type": "color", "id": "kenar_rengi", "label": "Kenarlık rengi", "default": "#2e2e30" },
+    { "type": "color", "id": "ad_rengi", "label": "Ürün adı rengi", "default": "#ffffff" },
+    { "type": "color", "id": "dugme_zemin", "label": "Düğme rengi", "default": "#30614b" },
+    { "type": "color", "id": "dugme_hover", "label": "Düğme üzerine gelince", "default": "#3b7359" },
+    { "type": "color", "id": "dugme_yazi", "label": "Düğme yazısı", "default": "#ffffff" },
+    { "type": "color", "id": "cizgi_kenar", "label": "Çizgili düğme kenarlığı", "default": "#599176" },
+    { "type": "color", "id": "cizgi_yazi", "label": "Çizgili düğme yazısı", "default": "#8fcbb0" },
+    { "type": "header", "content": "Ölçüler" },
+    { "type": "range", "id": "bar_yuk_m", "label": "Çubuk yüksekliği (mobil)", "min": 40, "max": 72, "step": 2, "unit": "px", "default": 52 },
+    { "type": "range", "id": "bar_yuk_d", "label": "Çubuk yüksekliği (masaüstü)", "min": 40, "max": 80, "step": 2, "unit": "px", "default": 56 },
+    { "type": "range", "id": "dugme_yuk", "label": "Düğme yüksekliği", "min": 28, "max": 48, "step": 1, "unit": "px", "default": 34 },
+    { "type": "range", "id": "dugme_yatay", "label": "Düğme yan boşluğu", "min": 10, "max": 36, "step": 2, "unit": "px", "default": 20 },
+    { "type": "range", "id": "bol_yatay", "label": "Bölünen düğme yan boşluğu", "min": 8, "max": 32, "step": 2, "unit": "px", "default": 18 },
+    { "type": "range", "id": "bol_ara", "label": "Bölünen düğmeler arası", "min": 4, "max": 20, "step": 2, "unit": "px", "default": 8 },
+    { "type": "range", "id": "dugme_boyut", "label": "Düğme yazı boyutu", "min": 12, "max": 18, "step": 1, "unit": "px", "default": 14 },
+    { "type": "range", "id": "ad_boyut_m", "label": "Ürün adı boyutu (mobil)", "min": 12, "max": 20, "step": 1, "unit": "px", "default": 15 },
+    { "type": "range", "id": "ad_boyut_d", "label": "Ürün adı boyutu (masaüstü)", "min": 12, "max": 22, "step": 1, "unit": "px", "default": 15 },
+    { "type": "range", "id": "yan_bosluk", "label": "Yan boşluk (mobil)", "min": 8, "max": 40, "step": 2, "unit": "px", "default": 20 },
+    { "type": "range", "id": "yan_bosluk_d", "label": "Yan boşluk (masaüstü)", "min": 8, "max": 80, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "z_kat", "label": "Katman (z-index)", "min": 100, "max": 2000, "step": 100, "unit": "z", "default": 1000 }
+  ],
+  "presets": [
+    { "name": "Yapışkan Ürün Çubuğu" }
+  ]
+}
+{% endschema %}
