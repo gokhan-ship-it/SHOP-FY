@@ -161,3 +161,63 @@ BOYUT YAZILMAYANLAR (kullanıcı "gerek yok" dedi; popup bunlarda genel
 "Boyutlar" sayfasına düşer):
 Aurora cocuk · Eight Stars White · Infinity Glow ·
 Klasik Zaman Kapsülü · Red Velvet Limited Edition
+
+---
+
+# Couple ürünlere toplu uygulama (12 Ağustos 2026)
+
+## 1) Şablon: `product.zaman-kapsulu-couple`
+
+Başlığında "Couple" geçen 37 üründen 35'inin `templateSuffix` değeri
+`zaman-kapsulu-couple` yapıldı. Vantablack Couple zaten bu şablondaydı.
+
+UYGULANMAYAN (1): **COUPLE ÜRÜN OLUSTUR** — `urun-listesi.md`'nin başında
+da not edildiği gibi bu bir ürün değil, kurgu/şablon ürünü. Kendi
+GemPages şablonu (`product.gp-template-588582642866193347.json`) var ve o
+şablon hem bu temada hem yayındaki temada gerçekten mevcut; üzerine
+yazmak çalışan bir düzeni bozardı.
+
+**Velor Couple** (taslak) de aynı GemPages şablonundaydı ama gerçek bir
+couple ürünü olduğu için değiştirildi. Geri alınmak istenirse tek yapılacak
+`templateSuffix` değerini `gp-template-588582642866193347` yapmak.
+
+Yayındaki temada (`186316849472`) `product.zaman-kapsulu-couple.json`
+bulunmuyor — single turundaki gibi, bu değişiklik canlı sitede hiçbir şeyi
+değiştirmiyor; ürünler orada varsayılan şablona düşmeye devam ediyor. Yeni
+düzen bu çalışma kopyası yayına alındığında devreye girecek.
+
+## 2) Boyutlar: `custom.boyutlar` metafield (rich_text_field)
+
+24 ürüne yazıldı. Değerler single kardeş modellerin metafield'larından
+alındı; yazmadan önce Chloe Couple, Gold Couple, Kral Zincir Couple ve
+Luna Couple açıklamaları tek tek okunup doğrulandı — dördü de birebir
+uyuştu (17+5 / 40+5 / 20 cm / 21 cm).
+
+| Ürün | Yazılan değer |
+|---|---|
+| Vantablack Couple, Lumin Couple | Zincir uzunluğu: 60 cm · Boyunda duruşu: 32 cm |
+| Aurora Couple | Zincir uzunluğu: 40 cm |
+| Gold, Ocean Blue, Rose Pink, Taşlıkilit Gold/Rose/White, White (hepsi Couple) | Zincir uzunluğu: 40+5 cm (ayarlanabilir) |
+| Chloe Couple (2 kayıt), Chloe Gold, Nora, Nova, Noir, Noir Bileklik (316L) — hepsi Couple | Ölçü: 17+5 cm (ayarlanabilir) |
+| Auron Couple | Ölçü: 18+5 cm (ayarlanabilir) |
+| Gemici Zincir, Gourmet Zincir, Luna (hepsi Couple) | Ölçü: 21 cm |
+| Kral Zincir Couple | Ölçü: 20 cm |
+| Astor Couple, Velor Couple | Ölçü: Ayarlanabilir, her bileğe uyumlu |
+
+BOYUT YAZILMAYANLAR:
+
+- **Eight Stars White Couple**, **Infinity Glow Couple** — single
+  sürümlerinde de yazılmamıştı (kullanıcı "gerek yok" demişti).
+- **10 ikili set ürünü** (Astor + Chloe, Kral + Classic Ocean Blue,
+  Kral + Infinity Charm, Lumin + Charm, Luna + Aurora, Luna + Infinity
+  Charm, Noir + Chloe Charm, Nova + Chloe, Vantablack + Taşlı Kilit,
+  Vantablack + Vera) — açıklamaları boş ya da yalnızca destek telefonu
+  içeriyor; hiçbirinde ölçü bilgisi yok. İki parçalı oldukları için
+  değerin iki satır olması gerekiyor. Kullanıcıdan bekleniyor.
+
+## 3) Not: "Boyutlar" sayfasındaki yönerge cümlesi müşteriye görünüyor
+
+Metafield'ı boş olan ürünlerde popup genel `pages/boyutlar` içeriğine
+düşüyor ve o sayfada "Bu içeriği Shopify admin → Online Store → Pages →
+Boyutlar sayfasından düzenleyebilirsiniz." cümlesi var. Bu cümle şu anda
+müşteriye görünüyor. Sayfa içeriği olduğu için dokunulmadı.
