@@ -1,0 +1,831 @@
+{%- comment -%}
+  Dongu Seridi - couple akisini dort adimda anlatan koyu kart.
+
+  Yapisi:
+    [logo] Ortak zaman kapsulu            Nasil calisir?
+    ---- ilerleme cubugu (4 dugum) ----
+    (dongu oku)  [ ↻ ve Tekrarlayin ]
+    Yukleyin  Bekleyin  Bulusun  Acin
+    ------------------------------------
+    [       Kendin dene →       ]   <- tam genislik, beyaz hap dugme
+              Detayli ogren         <- duz metin baglantisi
+
+  ALT BOLUM IKI DUZENLI
+
+  "Birincil buton metni" (dene_metni) doluyken yukaridaki yeni duzen
+  cizilir. Bos birakilirsa eski duzen -- solda durum metni, sagda hap
+  seklinde "Detayli ogren" baglantisi -- bayti bayta korunur; ilgili
+  CSS ve JS de hic basilmaz. Boylece bu section baska bir sablona
+  eklenirse orasi etkilenmez.
+
+  Buton bir <dialog> aciyor. Pencerenin ICERIGI HENUZ BAGLI DEGIL:
+  editordeki "Demo penceresi" basligindan ya sayfadaki bir ogenin CSS
+  secicisi (modal_secici) ya da duz HTML (modal_html) veriliyor.
+  Secici doluysa eslesen oge sayfa yuklenirken pencerenin icine
+  TASINIR -- kopyalanmadigi icin o bolumun kendi JS'i ve dinleyicileri
+  calismaya devam eder. Ornegin couple-bulusma bolumu bu sayfaya
+  eklenip secicisi verilirse tek satir kod yazmadan pencerede acilir.
+
+  Dongu vurgusu: son adima gectikten 1100ms sonra ok, ok ucu ve
+  ortadaki etiket sari olup etiket buyuyor; bir sonraki adimda
+  (basa donerken) eski haline geri aliniyor.
+
+  Ok SVG'si 298px: kartin ic genisligi (330 - 16 - 16) ile birebir.
+
+  Renk gecisi tek yerden: ok icin svg'ye color veriliyor, path
+  stroke'u ve ok ucunun fill'i currentColor. Boylece iki ogeyi ayri
+  ayri degil, tek gecisle boyuyoruz.
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+
+  comment
+    Marka degradesi tek yerden kuruluyor; dolgu, dugumler ve dugme
+    hover'i ayni degrade dizesini kullaniyor.
+
+    Metin ve SVG icin degrade kullanilamadigi (ve koyu zeminde
+    okunmasi gerektigi) icin ayri bir "vurgu" rengi var: degradenin
+    acik ucu. Koyu kirmizi uclar 11px metinde okunmuyordu.
+  endcomment
+  assign degrade = 'linear-gradient(' | append: s.deg_aci | append: 'deg, ' | append: s.deg_1 | append: ' 0%, ' | append: s.deg_2 | append: ' 50%, ' | append: s.deg_3 | append: ' 100%)'
+  assign parilti = s.deg_2 | color_modify: 'alpha', 0.22
+-%}
+
+{%- if s.aktif -%}
+<style>
+  .ds-{{ sid }} {
+    box-sizing: border-box;
+    width: 100%;
+    padding: {{ s.dis_bosluk }}px 16px;
+    background: {{ s.bolum_zemin }};
+  }
+  .ds-{{ sid }} *,
+  .ds-{{ sid }} *::before,
+  .ds-{{ sid }} *::after { box-sizing: inherit; }
+
+  .ds-kart-{{ sid }} {
+    max-width: 330px;
+    margin: 0 auto;
+    padding: 14px 16px 12px;
+    background: #0D0D0F;
+    border: 0.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: 26px;
+  }
+
+  /* --- ust satir --- */
+  .ds-ust-{{ sid }} {
+    display: flex;
+    align-items: center;
+  }
+  .ds-logo-{{ sid }} {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1C1C20;
+    border-radius: 8px;
+  }
+  .ds-logo-{{ sid }} img {
+    max-width: 100%;
+    max-height: 16px;
+    object-fit: contain;
+    display: block;
+  }
+  .ds-ustyazi-{{ sid }} {
+    margin: 0 0 0 9px;
+    font-size: 12px;
+    line-height: 1.2;
+    color: #F5F5F3;
+  }
+  /* Dokunma alani 44px; gorsel hizayi bozmamak icin dolgu kadar
+     negatif margin veriliyor. */
+  .ds-ustbag-{{ sid }} {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 12px 2px;
+    margin-top: -12px;
+    margin-bottom: -12px;
+    font-size: 12px;
+    line-height: 1.2;
+    color: #8A8A85;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 150ms ease;
+  }
+  .ds-ustbag-{{ sid }}:hover,
+  .ds-ustbag-{{ sid }}:focus-visible { color: #F5F5F3; }
+
+  /* --- ilerleme cubugu --- */
+  .ds-cubuk-{{ sid }} {
+    position: relative;
+    height: 12px;
+    margin-top: 16px;
+  }
+  .ds-ray-{{ sid }},
+  .ds-dolgu-{{ sid }} {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    height: 2px;
+    border-radius: 2px;
+  }
+  .ds-ray-{{ sid }} { background: #2A2A2E; }
+  .ds-dolgu-{{ sid }} {
+    right: auto;
+    width: 0;
+    background: {{ degrade }};
+    transition: width .5s ease;
+  }
+  .ds-dugumler-{{ sid }} {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ds-dugum-{{ sid }} {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #2A2A2E;
+    transition: background .35s ease, box-shadow .35s ease;
+  }
+  .ds-dugum-{{ sid }}.is-dolu { background: {{ degrade }}; }
+  .ds-dugum-{{ sid }}.is-aktif { box-shadow: 0 0 0 3px {{ parilti }}; }
+
+  /* --- dongu oku --- */
+  .ds-ok-{{ sid }} {
+    position: relative;
+  }
+  /* Cocuk birlestirici sart: etiketin icindeki yenileme ikonu da bu
+     kabin icinde bir <svg>. Genel "kap svg" secicisi onu da 298x38
+     yapip etiketi sisiriyor ve alttaki adim etiketlerini ortuyordu. */
+  .ds-ok-{{ sid }} > svg {
+    display: block;
+    width: 100%;
+    height: auto;          /* viewBox oranini korur: kart genisleyince ok da buyur */
+    color: #2A2A2E;
+    transition: color .35s ease;
+  }
+  .ds-ok-{{ sid }} > svg path { stroke: currentColor; }
+  .ds-ok-{{ sid }} > svg polygon { fill: currentColor; }
+  .ds-ok-{{ sid }}.is-dongu > svg { color: {{ s.vurgu }}; }
+
+  .ds-dongu-{{ sid }} {
+    position: absolute;
+    left: 50%;
+    top: 78.95%;           /* cizgi viewBox'ta y=30/38; ok olceklenince de uzerinde kalir */
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 8px;
+    background: #0D0D0F;
+    font-size: 11px;
+    line-height: 16px;
+    color: #4A4A4E;
+    white-space: nowrap;
+    transition:
+      color .35s ease,
+      transform .35s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  .ds-dongu-{{ sid }}.is-dongu {
+    color: {{ s.vurgu }};
+    transform: translate(-50%, -50%) scale(1.22);
+  }
+  .ds-yenile-{{ sid }} {
+    width: 11px;
+    height: 11px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* --- etiketler --- */
+  .ds-etiketler-{{ sid }} {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    text-align: center;
+  }
+  .ds-etiket-{{ sid }} {
+    font-size: 13px;
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+    color: #6E6E6A;
+    transition: color .35s ease;
+  }
+  .ds-etiket-{{ sid }}.is-aktif { color: #F5F5F3; }
+
+  /* --- alt satir --- */
+  .ds-alt-{{ sid }} {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.12);
+  }
+  .ds-durum-{{ sid }} {
+    margin: 0;
+    min-width: 0;
+    font-size: 11px;
+    line-height: 1.35;
+    color: #8A8A85;
+    /* Durum metinleri farkli uzunlukta; hap dugmeden sonra kimi metin
+       iki satira dusuyor. Iki satirlik yer bastan ayrilmazsa kart her
+       adimda zipliyor. */
+    min-height: 2.7em;
+    display: flex;
+    align-items: center;
+  }
+  /* Ince hap dugme: kapsul form, saydam zemin, hafif kenarlik.
+     Gorunur yukseklik ~31px kaliyor; 44px dokunma alani ::after ile
+     veriliyor, boylece dugme sismeden erisim kurali saglaniyor. */
+  .ds-altbag-{{ sid }} {
+    position: relative;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: {{ s.dugme_dolgu_y }}px {{ s.dugme_dolgu_x }}px;
+    font-size: 11px;
+    line-height: 1.2;
+    color: {{ s.dugme_yazi }};
+    background: transparent;
+    border: 1px solid {{ s.dugme_kenar }};
+    border-radius: 980px;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+  .ds-altbag-{{ sid }}::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+  .ds-altbag-{{ sid }}:hover,
+  .ds-altbag-{{ sid }}:focus-visible {
+    background: {{ degrade }};
+    border-color: transparent;
+    color: {{ s.dugme_hover_yazi }};
+  }
+  .ds-altok-{{ sid }} {
+    width: 11px;
+    height: 11px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  {%- if s.dene_metni != blank -%}
+  {%- comment -%}
+    ALT BOLUM - YENI DUZEN
+
+    Yalnizca "Birincil buton metni" doluyken cizilir. Bos birakilirsa
+    bu blogun tek bayti bile cikmaz ve bolum eski haliyle calisir --
+    bu section'i kullanan baska bir sablon varsa hic etkilenmez.
+
+    Duzen: ayirici cizginin altinda dikey iki oge.
+      1) tam genislik beyaz hap dugme (min 44px dokunma alani)
+      2) altinda 8px boslukla duz metin baglantisi
+  {%- endcomment -%}
+  .ds-alt2-{{ sid }} {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.12);
+  }
+  .ds-dene-{{ sid }} {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: #1C1C1E;
+    background: #FFFFFF;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: background-color 150ms ease, transform 150ms ease;
+  }
+  .ds-dene-{{ sid }}:hover { background: #EDEDEB; }
+  .ds-dene-{{ sid }}:active { transform: scale(0.985); }
+  .ds-dene-{{ sid }}:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 3px; }
+  /* Ok, alt baglantidaki okun aynisi; rengi currentColor oldugu icin
+     metinle birlikte koyu kaliyor. */
+  .ds-deneok-{{ sid }} {
+    width: 13px;
+    height: 13px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ds-altlink-{{ sid }} {
+    display: block;
+    margin-top: 8px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.3;
+    color: #8E8E93;
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+  .ds-altlink-{{ sid }}:hover,
+  .ds-altlink-{{ sid }}:focus-visible { color: #C7C7CC; }
+
+  {%- comment -%} Demo penceresi {%- endcomment -%}
+  .ds-modal-{{ sid }} {
+    width: min(560px, calc(100vw - 32px));
+    max-height: 88vh;
+    padding: 0;
+    border: 0;
+    border-radius: 26px;
+    background: #0D0D0F;
+    color: #F5F5F3;
+    overflow: hidden;
+  }
+  .ds-modal-{{ sid }}::backdrop { background: rgba(0, 0, 0, 0.62); }
+  .ds-mkutu-{{ sid }} {
+    position: relative;
+    max-height: 88vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ds-mkapat-{{ sid }} {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    color: #F5F5F3;
+    background: rgba(255, 255, 255, 0.10);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .ds-mkapat-{{ sid }}:hover { background: rgba(255, 255, 255, 0.18); }
+  .ds-mkapat-{{ sid }} svg {
+    width: 15px; height: 15px;
+    stroke: currentColor; fill: none;
+    stroke-width: 1.8; stroke-linecap: round;
+  }
+  {%- comment -%}
+    Ic bosluk sarmalayicida: pencereye hazir bir BOLUM tasindiginda
+    (modal_secici) o bolumun kendi olculeri var, ustune bir daha
+    dolgu binmemeli. JS tasima yaptiginda sarmalayici kaldiriliyor.
+  {%- endcomment -%}
+  .ds-micerik-{{ sid }} { padding: 56px 20px 24px; }
+  .ds-micerik-{{ sid }} p { margin: 0; font-size: 14px; line-height: 1.5; color: #8A8A85; }
+  .ds-mgovde-{{ sid }} > :not(.ds-micerik-{{ sid }}) { display: block; }
+  {%- endif -%}
+
+  /* --- masaustu ---
+     Kart 330px'te masaustunde cok kucuk kaliyordu. Dugum ve ray
+     olculeri bilerek degismiyor: JS'in dolgu hesabi (idx/3 - 10px)
+     11px dugume ve 5px ray kenar boslugua gore kurulu; buyutursek
+     dolgu dugum merkezleriyle hizasini kaybeder. */
+  @media (min-width: 750px) {
+    .ds-{{ sid }} { padding: {{ s.dis_bosluk_d }}px 20px; }
+    .ds-kart-{{ sid }} {
+      max-width: {{ s.kart_genislik_d }}px;
+      padding: 18px 22px 16px;
+    }
+    .ds-logo-{{ sid }} { width: 30px; height: 30px; }
+    .ds-logo-{{ sid }} img { max-height: 18px; }
+    .ds-ustyazi-{{ sid }} { font-size: 14px; margin-left: 11px; }
+    .ds-ustbag-{{ sid }} { font-size: 14px; }
+    .ds-cubuk-{{ sid }} { margin-top: 20px; }
+    .ds-dongu-{{ sid }} { font-size: 12px; }
+    .ds-etiket-{{ sid }} { font-size: 15px; }
+    .ds-durum-{{ sid }} { font-size: 13px; min-height: 1.35em; }
+    .ds-altbag-{{ sid }} { font-size: 13px; }
+    {%- if s.dene_metni != blank -%}
+    /* Masaustunde dugme tam genislige yayilmiyor: kartin icinde
+       ortalanip 320px'te duruyor. */
+    .ds-dene-{{ sid }} { max-width: 320px; margin-left: auto; margin-right: auto; }
+    {%- endif -%}
+  }
+
+  /* --- hareket azaltma: donme durur, her sey dolu gorunur --- */
+  @media (prefers-reduced-motion: reduce) {
+    .ds-dugum-{{ sid }} {
+      background: {{ degrade }};
+      box-shadow: none;
+      transition: none;
+    }
+    .ds-etiket-{{ sid }} { color: #F5F5F3; transition: none; }
+    .ds-dolgu-{{ sid }} { width: calc(100% - 10px); transition: none; }
+    .ds-ok-{{ sid }} > svg { color: {{ s.vurgu }}; transition: none; }
+    .ds-dongu-{{ sid }} {
+      color: {{ s.vurgu }};
+      transform: translate(-50%, -50%) scale(1);
+      transition: none;
+    }
+  }
+</style>
+
+<div class="ds-{{ sid }}">
+  <div class="ds-kart-{{ sid }}" id="ds-{{ sid }}" data-ds>
+
+    <div class="ds-ust-{{ sid }}">
+      <span class="ds-logo-{{ sid }}">
+        {%- if s.logo != blank -%}
+          <img
+            src="{{ s.logo | image_url: width: 120 }}"
+            alt="{{ shop.name | escape }}"
+            width="120"
+            height="120"
+            loading="lazy"
+          >
+        {%- endif -%}
+      </span>
+
+      {%- if s.ust_yazi != blank -%}
+        <p class="ds-ustyazi-{{ sid }}">{{ s.ust_yazi }}</p>
+      {%- endif -%}
+
+      {%- if s.ust_bag_metni != blank -%}
+        <a
+          class="ds-ustbag-{{ sid }}"
+          {% if s.hedef != blank %}href="{{ s.hedef }}"{% endif %}
+        >{{ s.ust_bag_metni }}</a>
+      {%- endif -%}
+    </div>
+
+    <div class="ds-cubuk-{{ sid }}">
+      <span class="ds-ray-{{ sid }}"></span>
+      <span class="ds-dolgu-{{ sid }}" data-ds-dolgu></span>
+      <span class="ds-dugumler-{{ sid }}">
+        {%- for i in (1..4) -%}
+          <span class="ds-dugum-{{ sid }}" data-ds-dugum></span>
+        {%- endfor -%}
+      </span>
+    </div>
+
+    <div class="ds-ok-{{ sid }}" data-ds-ok>
+      <svg viewBox="0 0 298 38" width="298" height="38" aria-hidden="true">
+        <path
+          d="M292 2 C292 26 292 30 268 30 L30 30 C6 30 6 26 6 8"
+          stroke-width="1.5"
+          fill="none"
+          stroke-linecap="round"
+        ></path>
+        <polygon points="2,11 6,3 10,11"></polygon>
+      </svg>
+
+      {%- if s.dongu_metni != blank -%}
+        <span class="ds-dongu-{{ sid }}" data-ds-dongu>
+          <svg class="ds-yenile-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 11a8 8 0 1 0-.6 4"></path>
+            <path d="M20 4v7h-7"></path>
+          </svg>
+          <span>{{ s.dongu_metni }}</span>
+        </span>
+      {%- endif -%}
+    </div>
+
+    <div class="ds-etiketler-{{ sid }}">
+      {%- for i in (1..4) -%}
+        {%- liquid
+          assign e_key = 'etiket_' | append: i
+          assign etiket = s[e_key]
+        -%}
+        <span class="ds-etiket-{{ sid }}" data-ds-etiket>{{ etiket }}</span>
+      {%- endfor -%}
+    </div>
+
+    {%- if s.dene_metni != blank -%}
+      {%- comment -%}
+        Yeni alt bolum. Durum metni satiri bilerek kaldirildi; onu
+        besleyen JS zaten null korumali (durum && metinler[idx]), o
+        yuzden adim animasyonu ve etiketler etkilenmiyor.
+      {%- endcomment -%}
+      {%- assign alt_url = s.alt_hedef | default: s.hedef -%}
+      <div class="ds-alt2-{{ sid }}">
+        <button
+          type="button"
+          class="ds-dene-{{ sid }}"
+          data-ds-dene
+          aria-haspopup="dialog"
+        >
+          <span>{{ s.dene_metni }}</span>
+          <svg class="ds-deneok-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 12h15"></path>
+            <path d="M13.5 6.5 19 12l-5.5 5.5"></path>
+          </svg>
+        </button>
+
+        {%- if s.alt_bag_metni != blank -%}
+          <a
+            class="ds-altlink-{{ sid }}"
+            {% if alt_url != blank %}href="{{ alt_url }}"{% endif %}
+          >{{ s.alt_bag_metni }}</a>
+        {%- endif -%}
+      </div>
+    {%- else -%}
+      <div class="ds-alt-{{ sid }}">
+        <p class="ds-durum-{{ sid }}" data-ds-durum>{{ s.durum_1 }}</p>
+
+        {%- if s.alt_bag_metni != blank -%}
+          <a
+            class="ds-altbag-{{ sid }}"
+            {% if s.hedef != blank %}href="{{ s.hedef }}"{% endif %}
+          >
+            <span>{{ s.alt_bag_metni }}</span>
+            <svg class="ds-altok-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 12h15"></path>
+              <path d="M13.5 6.5 19 12l-5.5 5.5"></path>
+            </svg>
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+  </div>
+</div>
+
+{%- if s.dene_metni != blank -%}
+  {%- comment -%}
+    Demo penceresi. Icerigi HENUZ BAGLANMADI: "Demo penceresi"
+    ayarlarindan ya sayfadaki bir ogenin CSS secicisi (modal_secici)
+    ya da duz HTML (modal_html) verilecek. Secici doluysa eslesen oge
+    sayfa yuklenirken pencerenin icine TASINIR (kopyalanmaz), boylece
+    bolumun kendi JS'i ve dinleyicileri oldugu gibi calismaya devam
+    eder.
+  {%- endcomment -%}
+  <dialog
+    class="ds-modal-{{ sid }}"
+    id="ds-modal-{{ sid }}"
+    aria-label="{{ s.modal_baslik | default: s.dene_metni | escape }}"
+  >
+    <div class="ds-mkutu-{{ sid }}">
+      <button type="button" class="ds-mkapat-{{ sid }}" data-ds-modal-kapat aria-label="Kapat">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6 18 18"></path>
+          <path d="M18 6 6 18"></path>
+        </svg>
+      </button>
+
+      <div class="ds-mgovde-{{ sid }}" data-ds-modal-govde>
+        <div class="ds-micerik-{{ sid }}" data-ds-modal-sarmal>
+          {%- if s.modal_html != blank -%}
+            {{ s.modal_html }}
+          {%- else -%}
+            <p>Demo içeriği henüz bağlanmadı. Tema editöründe bu bölümün
+            &ldquo;Demo penceresi&rdquo; başlığından içerik seçicisini ya da
+            HTML alanını doldurun.</p>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </dialog>
+{%- endif -%}
+
+<script>
+  (function () {
+    var kok = document.getElementById('ds-{{ sid }}');
+    if (!kok) return;
+
+    var dolgu = kok.querySelector('[data-ds-dolgu]');
+    var dugumler = kok.querySelectorAll('[data-ds-dugum]');
+    var etiketler = kok.querySelectorAll('[data-ds-etiket]');
+    var durum = kok.querySelector('[data-ds-durum]');
+    var okKap = kok.querySelector('[data-ds-ok]');
+    var donguEt = kok.querySelector('[data-ds-dongu]');
+    if (!dolgu || !dugumler.length) return;
+
+    var metinler = [
+      {{ s.durum_1 | json }},
+      {{ s.durum_2 | json }},
+      {{ s.durum_3 | json }},
+      {{ s.durum_4 | json }}
+    ];
+
+    var adet = dugumler.length;      // 4
+    var son = adet - 1;              // 3 -> dolgu orani i/3
+    var ADIM = 1800;
+    var VURGU = 1100;                // son adimdan sonra dongu vurgusu
+
+    var azHareket = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var idx = 0;
+    var sayac = null;
+    var vurguSayac = null;
+
+    function vurguAyarla(ac) {
+      if (okKap) okKap.classList.toggle('is-dongu', ac);
+      if (donguEt) donguEt.classList.toggle('is-dongu', ac);
+    }
+
+    function ciz(yeni) {
+      idx = yeni;
+
+      var oran = idx / son;
+      dolgu.style.width = 'calc(' + (oran * 100) + '% - ' + (oran * 10) + 'px)';
+
+      for (var i = 0; i < dugumler.length; i++) {
+        dugumler[i].classList.toggle('is-dolu', i <= idx);
+        dugumler[i].classList.toggle('is-aktif', i === idx);
+      }
+      for (var j = 0; j < etiketler.length; j++) {
+        etiketler[j].classList.toggle('is-aktif', j === idx);
+      }
+      if (durum && metinler[idx]) durum.textContent = metinler[idx];
+
+      // Vurgu her adim degisiminde once kapanir; yalnizca son adimda
+      // ve 1100ms gecikmeyle geri acilir.
+      if (vurguSayac) { window.clearTimeout(vurguSayac); vurguSayac = null; }
+      vurguAyarla(false);
+      if (idx === son) {
+        vurguSayac = window.setTimeout(function () { vurguAyarla(true); }, VURGU);
+      }
+    }
+
+    function ilerle() { ciz((idx + 1) % adet); }
+
+    function basla() {
+      if (sayac || azHareket) return;
+      sayac = window.setInterval(ilerle, ADIM);
+    }
+    function dur() {
+      if (sayac) { window.clearInterval(sayac); sayac = null; }
+      if (vurguSayac) { window.clearTimeout(vurguSayac); vurguSayac = null; }
+    }
+
+    if (azHareket) {
+      // CSS zaten dolu gorunumu veriyor; JS yalnizca metni son adima alir
+      if (durum && metinler[son]) durum.textContent = metinler[son];
+      return;
+    }
+
+    ciz(0);
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (girisler) {
+        girisler[0].isIntersecting ? basla() : dur();
+      }, { threshold: 0.25 }).observe(kok);
+    } else {
+      basla();
+    }
+
+    document.addEventListener('visibilitychange', function () {
+      document.hidden ? dur() : basla();
+    });
+  })();
+</script>
+
+{%- if s.dene_metni != blank -%}
+<script>
+  {%- comment -%}
+    Ayri bir IIFE: yukaridaki blok erken return'lerle dolu
+    (azaltilmis hareket, dugum yoksa...). Dugmenin onlardan
+    etkilenmemesi icin bagimsiz duruyor.
+  {%- endcomment -%}
+  (function () {
+    'use strict';
+
+    var dugme = document.querySelector('#ds-{{ sid }} [data-ds-dene]');
+    var modal = document.getElementById('ds-modal-{{ sid }}');
+    if (!dugme || !modal) return;
+
+    // Secici doluysa eslesen oge pencereye TASINIR; kopyalanmadigi
+    // icin ogenin kendi dinleyicileri korunur.
+    var secici = {{ s.modal_secici | json }};
+    if (secici) {
+      var kaynak = null;
+      try { kaynak = document.querySelector(secici); } catch (e) { kaynak = null; }
+      if (kaynak && !kaynak.contains(modal)) {
+        var govde = modal.querySelector('[data-ds-modal-govde]');
+        var sarmal = modal.querySelector('[data-ds-modal-sarmal]');
+        if (sarmal) sarmal.parentNode.removeChild(sarmal);
+        govde.appendChild(kaynak);
+        kaynak.hidden = false;
+      }
+    }
+
+    var acilabilir = typeof modal.showModal === 'function';
+    var kapat = modal.querySelector('[data-ds-modal-kapat]');
+
+    dugme.addEventListener('click', function () {
+      if (!acilabilir) {
+        // <dialog> desteklenmiyorsa ikincil baglantiya dusuyoruz.
+        var yedek = document.querySelector('#ds-{{ sid }} .ds-altlink-{{ sid }}');
+        if (yedek && yedek.getAttribute('href')) window.location.href = yedek.getAttribute('href');
+        return;
+      }
+      modal.showModal();
+    });
+
+    if (kapat) kapat.addEventListener('click', function () { modal.close(); });
+
+    // Zemine tiklayinca kapansin: hedef dialog'un kendisiyse tiklama
+    // ::backdrop uzerinde demektir.
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) modal.close();
+    });
+  })();
+</script>
+{%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Döngü Şeridi",
+  "tag": "section",
+  "class": "dongu-seridi-section",
+  "settings": [
+    { "type": "checkbox", "id": "aktif", "label": "Bölümü göster", "default": true },
+    { "type": "image_picker", "id": "logo", "label": "Marka logosu", "info": "Sol üstteki 26×26 kutuya sığar (en fazla 16px yükseklik)." },
+
+    { "type": "header", "content": "Üst satır" },
+    { "type": "text", "id": "ust_yazi", "label": "Üst satır metni", "default": "Ortak zaman kapsülü" },
+    { "type": "text", "id": "ust_bag_metni", "label": "Sağ üst bağlantı metni", "default": "Nasıl çalışır?" },
+    { "type": "url", "id": "hedef", "label": "Bağlantı hedefi", "info": "Hem sağ üstteki hem alttaki bağlantı buraya gider." },
+
+    { "type": "header", "content": "Adım etiketleri" },
+    { "type": "text", "id": "etiket_1", "label": "1. etiket", "default": "Yükleyin" },
+    { "type": "text", "id": "etiket_2", "label": "2. etiket", "default": "Bekleyin" },
+    { "type": "text", "id": "etiket_3", "label": "3. etiket", "default": "Buluşun" },
+    { "type": "text", "id": "etiket_4", "label": "4. etiket", "default": "Açın" },
+
+    { "type": "header", "content": "Durum metinleri" },
+    { "type": "text", "id": "durum_1", "label": "1. durum", "default": "İkiniz de fotoğraf, video ve not ekleyin" },
+    { "type": "text", "id": "durum_2", "label": "2. durum", "default": "Yükledikleriniz buluşana kadar bulanık kalır" },
+    { "type": "text", "id": "durum_3", "label": "3. durum", "default": "İki çip yan yana geldi" },
+    { "type": "text", "id": "durum_4", "label": "4. durum", "default": "Kapsül açıldı, uzaklaşınca tekrar kilitlenir" },
+
+    { "type": "header", "content": "Diğer metinler" },
+    { "type": "text", "id": "dongu_metni", "label": "Döngü etiketi", "default": "ve Tekrarlayın" },
+    { "type": "text", "id": "alt_bag_metni", "label": "Alt bağlantı metni", "default": "Detaylı öğren" },
+
+    { "type": "header", "content": "Alt bölüm" },
+    { "type": "text", "id": "dene_metni", "label": "Birincil buton metni", "default": "Kendin dene", "info": "Doldurulunca alt satır yeni düzene geçer: ayırıcı çizginin altında tam genişlik beyaz buton, altında düz metin bağlantısı. Boş bırakılırsa eski düzen (durum metni + hap düğme) aynen korunur." },
+    { "type": "url", "id": "alt_hedef", "label": "Alt bağlantı hedefi", "info": "Boş bırakılırsa yukarıdaki \"Bağlantı hedefi\" kullanılır." },
+
+    { "type": "header", "content": "Demo penceresi", "info": "Birincil butonun açtığı pencere." },
+    { "type": "text", "id": "modal_baslik", "label": "Pencere adı", "default": "Kendin dene", "info": "Ekran okuyucular için; ekranda görünmez." },
+    { "type": "text", "id": "modal_secici", "label": "İçerik seçicisi (CSS)", "info": "Sayfadaki bir bölümü pencereye taşır. Örn. #shopify-section-couple_bulusma. Eşleşen ilk öge kullanılır; boşsa aşağıdaki HTML gösterilir." },
+    { "type": "html", "id": "modal_html", "label": "Pencere içeriği (HTML)", "info": "Seçici boşken kullanılır." },
+
+    { "type": "header", "content": "Marka degradesi" },
+    { "type": "color", "id": "deg_1", "label": "Degrade 1 (açık uç)", "default": "#E8632B" },
+    { "type": "color", "id": "deg_2", "label": "Degrade 2 (orta)", "default": "#A32020" },
+    { "type": "color", "id": "deg_3", "label": "Degrade 3 (koyu uç)", "default": "#3B3F0E" },
+    { "type": "range", "id": "deg_aci", "label": "Degrade açısı", "min": 0, "max": 360, "step": 10, "unit": "deg", "default": 90 },
+    { "type": "color", "id": "vurgu", "label": "Vurgu (ok, döngü etiketi, düğme yazısı)", "info": "Degrade metinde kullanılamıyor; koyu zeminde okunması için degradenin açık ucunu verin.", "default": "#E8632B" },
+
+    { "type": "header", "content": "Alt düğme" },
+    { "type": "color", "id": "dugme_yazi", "label": "Düğme yazısı", "default": "#E8632B" },
+    { "type": "color", "id": "dugme_kenar", "label": "Düğme kenarlığı", "default": "#3A3A37" },
+    { "type": "color", "id": "dugme_hover_yazi", "label": "Üzerine gelince yazı", "default": "#FFFFFF" },
+    { "type": "range", "id": "dugme_dolgu_x", "label": "Düğme iç boşluk — yatay", "min": 8, "max": 28, "step": 1, "unit": "px", "default": 14 },
+    { "type": "range", "id": "dugme_dolgu_y", "label": "Düğme iç boşluk — dikey", "min": 4, "max": 16, "step": 1, "unit": "px", "default": 7 },
+
+    { "type": "header", "content": "Bölüm" },
+    { "type": "color", "id": "bolum_zemin", "label": "Bölüm zemini", "default": "#FFFFFF" },
+    { "type": "range", "id": "kart_genislik_d", "label": "Kart genişliği — masaüstü", "min": 330, "max": 900, "step": 10, "unit": "px", "default": 560 },
+    { "type": "range", "id": "dis_bosluk", "label": "Dikey boşluk — telefon", "min": 0, "max": 80, "step": 4, "unit": "px", "default": 24 },
+    { "type": "range", "id": "dis_bosluk_d", "label": "Dikey boşluk — masaüstü", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 40 }
+  ],
+  "presets": [
+    { "name": "Döngü Şeridi" }
+  ]
+}
+{% endschema %}
