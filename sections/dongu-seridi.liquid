@@ -23,6 +23,10 @@
       600-899   min(90vw, 620px), dolgu 24, baslik 24px, buton inline
       >=900     kart_en_d (varsayilan 860), dolgu 32, baslik 28px
 
+  Alt metin 600px'in ALTINDA gizli. Telefonda uc satira dusup kartin
+  yarisini yiyordu; baslik ve serit zaten ayni seyi soyluyor. Tablet
+  ve masaustunde duruyor.
+
   ------------------------------------------------------------------
   MODAL
 
@@ -153,6 +157,14 @@
     font-size: 15px;
     line-height: 1.5;
     color: #8E8E93;
+  }
+  {%- comment -%}
+    Telefonda alt metin uc satira dusup kartin yarisini yiyordu.
+    Basligi ve serit zaten ayni seyi soyluyor, o yuzden 600px'in
+    altinda hic gosterilmiyor; tablet ve masaustunde duruyor.
+  {%- endcomment -%}
+  @media (max-width: 599px) {
+    .tt-cd-altmetin-{{ sid }} { display: none; }
   }
 
   {%- comment -%} ---------- Serit sarmalayicisi ---------- {%- endcomment -%}
@@ -783,7 +795,7 @@
     { "type": "header", "content": "Sol sütun" },
     { "type": "text", "id": "ust_yazi", "label": "Etiket metni", "default": "Ortak zaman kapsülü", "info": "Ekranda büyük harfle görünür; yazdığınız hali değişmez." },
     { "type": "text", "id": "baslik", "label": "Başlık", "default": "Buluşana kadar kilitli." },
-    { "type": "textarea", "id": "alt_metin", "label": "Alt metin", "default": "İkiniz de yükleyin. Kapsüller yan yana geldiğinde açılır, uzaklaşınca yeniden kilitlenir." },
+    { "type": "textarea", "id": "alt_metin", "label": "Alt metin", "default": "İkiniz de yükleyin. Kapsüller yan yana geldiğinde açılır, uzaklaşınca yeniden kilitlenir.", "info": "Telefonda (600px altı) gösterilmez; tablet ve masaüstünde görünür." },
     { "type": "text", "id": "dene_metni", "label": "Buton metni", "default": "Kendin dene", "info": "Boş bırakılırsa buton hiç basılmaz." },
     { "type": "text", "id": "ust_bag_metni", "label": "Bağlantı metni", "default": "Nasıl çalışır?" },
     { "type": "url", "id": "hedef", "label": "Bağlantı hedefi" },
