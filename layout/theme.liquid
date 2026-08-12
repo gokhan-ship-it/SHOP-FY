@@ -84,6 +84,18 @@
       {%- render 'tt-couple-banka', kok: '.tt-tekli-page' -%}
       {%- render 'tt-aln-mavi', kok: '.tt-tekli-page' -%}
       {%- render 'tt-tekli-gorunum' -%}
+    {%- elsif template.name == 'product' and template.suffix == 'zaman-kapsulu' -%}
+      {%- comment -%}
+        Urun sayfasinda katmanin YALNIZCA avantaj kartlari parcasi:
+        mobilde 2x2 izgara ve "Odeme kolayliklari" penceresindeki
+        taksit kartlari. Sayfanin tipografi/ritim katmani (tt-tekli)
+        bilerek alinmadi -- urun sayfasinin kendi olculeri var.
+
+        template.name kontrolu, ayni son eki tasiyan baska bir sayfa
+        turu olusursa yanlislikla eslesmesin diye.
+      {%- endcomment -%}
+      {%- render 'tt-couple-izgara', kok: '.tt-urun-page' -%}
+      {%- render 'tt-couple-banka', kok: '.tt-urun-page' -%}
     {%- endif -%}
 
     {{ content_for_header }}
@@ -118,7 +130,7 @@
     -%}
 
     <div class="page-container" id="PageContainer">
-      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% endif %}" id="MainContent" role="main">
+      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% elsif template.name == 'product' and template.suffix == 'zaman-kapsulu' %} tt-urun-page{% endif %}" id="MainContent" role="main">
         {{ content_for_layout }}
       </main>
 
