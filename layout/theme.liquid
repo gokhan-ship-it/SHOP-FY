@@ -84,7 +84,7 @@
       {%- render 'tt-couple-banka', kok: '.tt-tekli-page' -%}
       {%- render 'tt-aln-mavi', kok: '.tt-tekli-page' -%}
       {%- render 'tt-tekli-gorunum' -%}
-    {%- elsif template.name == 'product' and template.suffix == 'zaman-kapsulu' -%}
+    {%- elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' -%}
       {%- comment -%}
         Urun sayfasinda katmanin YALNIZCA avantaj kartlari parcasi:
         mobilde 2x2 izgara ve "Odeme kolayliklari" penceresindeki
@@ -94,6 +94,8 @@
         Sonuncusu "Boyutlar" ve "Taksit tablosu" baglantilarini hap
         bicimine cevirip dokunma hedefini 44px'e cikariyor.
 
+        "contains" kullaniliyor ki hem product.zaman-kapsulu hem de
+        product.zaman-kapsulu-couple sablonlari ayni katmani alsin.
         template.name kontrolu, ayni son eki tasiyan baska bir sayfa
         turu olusursa yanlislikla eslesmesin diye.
       {%- endcomment -%}
@@ -134,7 +136,7 @@
     -%}
 
     <div class="page-container" id="PageContainer">
-      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% elsif template.name == 'product' and template.suffix == 'zaman-kapsulu' %} tt-urun-page{% endif %}" id="MainContent" role="main">
+      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' %} tt-urun-page{% endif %}" id="MainContent" role="main">
         {{ content_for_layout }}
       </main>
 
