@@ -1136,9 +1136,10 @@
           "type": "video",
           "settings": {
             "video": "shopify://files/videos/Her zamankinden farklı bir hediye💫.mp4",
+            "poster": "shopify://shop_images/555.jpg",
             "oran": "3 / 4",
-            "ust_yazi": "Ayşe & Mert",
-            "alt_yazi": "3. yıl dönümü",
+            "ust_yazi": "",
+            "alt_yazi": "",
             "karartma": 60
           }
         },
@@ -1159,7 +1160,7 @@
             "video": "shopify://files/videos/Çipler su geçiriyor mu Gelin birlikte test edelim🖤.mp4",
             "oran": "3 / 4",
             "ust_yazi": "",
-            "alt_yazi": "3. yıl dönümü",
+            "alt_yazi": "",
             "karartma": 60
           }
         },
@@ -1344,12 +1345,12 @@
             "ikon": "kart",
             "ikon_renk": "#2cd784",
             "baslik": "Ödeme kolaylıkları.",
-            "metin": "Tüm kredi kartlarına 3 taksit seçeneğiyle güvenle alışveriş yapın.",
+            "metin": "Seçili kredi kartlarına 3 taksit seçeneğiyle güvenle alışveriş yapın.",
             "eylem": "popup",
             "bag": "",
             "pop_etiket": "Ödeme Yolları",
             "pop_baslik": "Kolaylaştırılmış Ödeme Seçenekleri",
-            "pop_metin": "<p>Alışverişinizi daha esnek hale getirmek için <strong>tüm kredi kartlarına 3 taksit</strong> imkânı sunuyoruz.<br/><br/>Uygun taksit seçenekleri, <strong>ödeme sırasında kart bilgilerinizi girdikten sonra</strong> görüntülenir.<br/><br/>Böylece ödemenizi size en uygun şekilde tamamlayabilirsiniz.</p>",
+            "pop_metin": "<p>Alışverişinizi daha esnek hale getirmek için <strong>seçili kredi kartlarına 3 taksit</strong> imkânı sunuyoruz.<br/><br/>Uygun taksit seçenekleri, <strong>ödeme sırasında kart bilgilerinizi girdikten sonra</strong> görüntülenir.<br/><br/>Böylece ödemenizi size en uygun şekilde tamamlayabilirsiniz.</p>",
             "pop_bag_metni": "",
             "pop_bag": ""
           }
@@ -1392,7 +1393,7 @@
             "ikon": "kitap",
             "ikon_renk": "#ff9f0a",
             "baslik": "Kullanım kılavuzu.",
-            "metin": "Ürününüzü kullanmaya başlamak için gereken tüm adımları kurulumdan ilk kullanıma kadar sade ve anlaşılır şekilde anlatıyoruz.",
+            "metin": "Kurulumdan ilk kullanıma kadar sade ve anlaşılır şekilde anlatıyoruz.",
             "eylem": "popup",
             "bag": "",
             "pop_etiket": "Kurulum",
