@@ -24,8 +24,9 @@
       600-899   min(90vw, 620px), dolgu 24, radius 20, baslik 24
       >=900     kart_en_d (varsayilan 860), dolgu 32, radius 20, baslik 28
 
-  Iki kutu HER genislikte yan yana kalir; 320px altinda kutu metinleri
-  12px'e duser ama yine alt alta inmez.
+  Iki kutu HER genislikte yan yana kalir. Kutu tipografisi bilerek
+  metinden kucuk: telefonda 11/12px, 600px'ten itibaren 12/14px,
+  320px altinda 10/11px -- her durumda yan yana.
 
   ------------------------------------------------------------------
   ROZET
@@ -37,11 +38,15 @@
   ------------------------------------------------------------------
   PALET
 
-  Yalnizca dort renk: #FFFFFF (kart), #1C1C1E (baslik, rozet zemini,
+  Varsayilan dort renk: #FFFFFF (kart), #1C1C1E (baslik, rozet zemini,
   2. kutunun kenarligi), #86868B (etiket, alt metin, kutu ust satiri,
-  arti isareti), #D2D2D7 (1. kutunun kenarligi). Renkler bilerek ayar
-  degil. Tek istisna kartin etrafindaki bleed (dis_zemin); mevcut
-  sayfa gorunumu degismesin diye ayar olarak kaldi.
+  arti isareti), #D2D2D7 (1. kutunun kenarligi). Hepsi editorden
+  degistirilebiliyor.
+
+  Renk ayarlarinin kimlikleri BILEREK yeni (kart_zemin, baslik_rengi,
+  etiket_rengi, alt_renk...). Eski kimlikler (zemin, baslik_renk,
+  metin_renk...) sablonda kayitli oldugu icin kullanilsalardi eski
+  degerler yeni varsayilanlari bastirirdi.
 
   Indirimin nerede oldugu 2. kutunun koyu kenarligindan okunuyor;
   bordo/kirmizi kullanilmadi, o renk alttaki seritte mekanizmayi
@@ -54,10 +59,11 @@
   baska hicbir ogeye sizmiyor.
 
   OLCUM (Chromium)
-    390px   tek sutun, kart 330, baslik 22, kutular yan yana
-    768px   tek sutun, kart 620, baslik 24, kutular yan yana
+    390px   tek sutun, kart 330, baslik 22, kutu metni 11/12px
+    768px   tek sutun, kart 620, baslik 24, kutu metni 12/14px
     1440px  iki sutun, kart 860, baslik 28, sutun araligi 48
-    uc genislikte de yatay tasma yok
+    300-1440px arasi dokuz genislikte yatay tasma yok, kutular
+    hicbirinde alt alta inmiyor
 {%- endcomment -%}
 
 {%- liquid
@@ -84,7 +90,7 @@
     max-width: 330px;
     margin-inline: auto;
     padding: 20px;
-    background: #FFFFFF;
+    background: {{ s.kart_zemin }};
     border-radius: 16px;
   }
 
@@ -108,15 +114,15 @@
     line-height: 1.2;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #86868B;
+    color: {{ s.etiket_rengi }};
   }
   .tt-cs-rozet-{{ sid }} {
     display: inline-block;
     padding: 4px 10px;
     font-size: 11px;
     line-height: 1.3;
-    color: #FFFFFF;
-    background: #1C1C1E;
+    color: {{ s.rozet_yazi }};
+    background: {{ s.rozet_zemin }};
     border-radius: 999px;
     white-space: nowrap;
   }
@@ -127,20 +133,23 @@
     font-weight: 500;
     line-height: 1.2;
     letter-spacing: -0.02em;
-    color: #1C1C1E;
+    color: {{ s.baslik_rengi }};
   }
   .tt-cs-altmetin-{{ sid }} {
     margin: 10px 0 0;
     max-width: 34ch;
     font-size: 14px;
     line-height: 1.5;
-    color: #86868B;
+    color: {{ s.alt_renk }};
   }
 
   {%- comment -%}
     ---------- Sag sutun: iki kutu ----------
     Kutular flex: 1, arti isareti flex: none -- boylece iki kutu her
     zaman esit genislikte ve hicbir kirilmada alt alta inmiyor.
+
+    Tipografi bilerek basliktan ve alt metinden kucuk: bu kutular
+    mekanizmayi ozetliyor, sayfanin ana mesaji degil.
   {%- endcomment -%}
   .tt-cs-kutular-{{ sid }} {
     display: flex;
@@ -151,30 +160,30 @@
   .tt-cs-kutu-{{ sid }} {
     flex: 1;
     min-width: 0;
-    padding: 12px;
+    padding: 10px 8px;
     text-align: center;
-    border: 0.5px solid #D2D2D7;
+    border: 0.5px solid {{ s.kutu_kenar }};
     border-radius: 12px;
   }
-  .tt-cs-kutu-vurgu-{{ sid }} { border-color: #1C1C1E; }
+  .tt-cs-kutu-vurgu-{{ sid }} { border-color: {{ s.kutu_kenar_2 }}; }
   .tt-cs-kust-{{ sid }} {
     margin: 0;
-    font-size: 13px;
+    font-size: 11px;
     line-height: 1.3;
-    color: #86868B;
+    color: {{ s.kutu_ust_renk }};
   }
   .tt-cs-kalt-{{ sid }} {
-    margin: 3px 0 0;
-    font-size: 13px;
+    margin: 2px 0 0;
+    font-size: 12px;
     font-weight: 500;
     line-height: 1.3;
-    color: #1C1C1E;
+    color: {{ s.kutu_alt_renk }};
   }
   .tt-cs-arti-{{ sid }} {
     flex: none;
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1;
-    color: #86868B;
+    color: {{ s.kutu_ust_renk }};
   }
 
   {%- comment -%}
@@ -183,9 +192,9 @@
     yan yana kaliyor.
   {%- endcomment -%}
   @media (max-width: 319px) {
-    .tt-cs-kust-{{ sid }},
-    .tt-cs-kalt-{{ sid }} { font-size: 12px; }
-    .tt-cs-kutu-{{ sid }} { padding: 10px 8px; }
+    .tt-cs-kust-{{ sid }} { font-size: 10px; }
+    .tt-cs-kalt-{{ sid }} { font-size: 11px; }
+    .tt-cs-kutu-{{ sid }} { padding: 8px 6px; }
   }
 
   {%- comment -%} ---------- Tablet: 600-899px ---------- {%- endcomment -%}
@@ -199,8 +208,10 @@
     .tt-cs-baslik-{{ sid }} { font-size: 24px; }
     .tt-cs-altmetin-{{ sid }} { font-size: 15px; }
     .tt-cs-kutular-{{ sid }} { gap: 10px; margin-top: 24px; }
+    .tt-cs-kutu-{{ sid }} { padding: 12px; }
     .tt-cs-kust-{{ sid }} { font-size: 12px; }
     .tt-cs-kalt-{{ sid }} { font-size: 14px; }
+    .tt-cs-arti-{{ sid }} { font-size: 15px; }
   }
 
   {%- comment -%}
@@ -292,6 +303,18 @@
     { "type": "text", "id": "kutu1_alt", "label": "1. kutu — alt metin", "default": "Seçin" },
     { "type": "text", "id": "kutu2_ust", "label": "2. kutu — üst metin", "default": "2. ürün" },
     { "type": "text", "id": "kutu2_alt", "label": "2. kutu — alt metin", "default": "%50 indirim", "info": "İndirimin burada olduğu kutunun koyu kenarlığından belli oluyor." },
+
+    { "type": "header", "content": "Renkler", "info": "Varsayılanlar sayfanın paletiyle aynı." },
+    { "type": "color", "id": "kart_zemin", "label": "Kart zemini", "default": "#FFFFFF" },
+    { "type": "color", "id": "baslik_rengi", "label": "Başlık rengi", "default": "#1C1C1E" },
+    { "type": "color", "id": "etiket_rengi", "label": "Etiket rengi", "default": "#86868B" },
+    { "type": "color", "id": "alt_renk", "label": "Alt metin rengi", "default": "#86868B" },
+    { "type": "color", "id": "rozet_zemin", "label": "Rozet zemini", "default": "#1C1C1E" },
+    { "type": "color", "id": "rozet_yazi", "label": "Rozet yazısı", "default": "#FFFFFF" },
+    { "type": "color", "id": "kutu_kenar", "label": "1. kutu kenarlığı", "default": "#D2D2D7" },
+    { "type": "color", "id": "kutu_kenar_2", "label": "2. kutu kenarlığı", "default": "#1C1C1E", "info": "İndirimin hangi kutuda olduğunu bu kenarlık gösteriyor." },
+    { "type": "color", "id": "kutu_ust_renk", "label": "Kutu üst satırı ve artı işareti", "default": "#86868B" },
+    { "type": "color", "id": "kutu_alt_renk", "label": "Kutu alt satırı", "default": "#1C1C1E" },
 
     { "type": "header", "content": "Bölüm" },
     { "type": "range", "id": "kart_en_d", "label": "Kart genişliği — masaüstü", "min": 620, "max": 1200, "step": 20, "unit": "px", "default": 860, "info": "Yalnızca 900px ve üzerinde geçerli. Alttaki Döngü Şeridi kartıyla aynı değeri verin." },
