@@ -117,10 +117,25 @@ Kral Zincir · Lumin · Luna · Noir · Nora · Nova · Ocean Blue ·
 Red Velvet Limited Edition · Rose · Rose Pink · Santorin · Santorin Gold ·
 Taşlıkilit Gold · Taşlıkilit Rose · Taşlıkilit White · Velor (taslak) · White
 
-UYGULANMAYANLAR (kendi özel şablonları var, bilerek dokunulmadı):
-- Klasik Zaman Kapsülü — `klasik-zaman-kapsulu-urun`
-- Zaman Kapsülü Künye — `kunye`
-- Zaman Kapsülü Kolye Baget — arşivde
+Sonradan eklenenler (2. tur):
+- Zaman Kapsülü Künye — eski suffix `kunye`
+- Klasik Zaman Kapsülü — eski suffix `klasik-zaman-kapsulu-urun`
+
+  Önce "kendi özel şablonları var" diye bırakılmışlardı. Kontrol edilince
+  `templates/product.kunye.json` ve
+  `templates/product.klasik-zaman-kapsulu-urun.json` dosyalarının NE bu
+  temada NE de yayındaki temada bulunmadığı görüldü; yani ikisi de zaten
+  varsayılan `product.json` şablonuna düşüyordu. Özel bir düzen silinmedi.
+
+UYGULANMAYAN: Zaman Kapsülü Kolye Baget — arşivde.
+
+### templateSuffix'in kapsamı hakkında
+
+templateSuffix tema dosyası değil ÜRÜN verisidir; bütün temalar için
+ortaktır. Yayındaki temada (`186316849472`) `product.zaman-kapsulu.json`
+bulunmuyor, dolayısıyla bu değişiklik canlı sitede hiçbir şeyi
+degistirmiyor -- urunler orada varsayilan sablona dusmeye devam ediyor.
+Yeni duzen, bu calisma kopyasi yayina alindiginda devreye girecek.
 
 ## 2) Boyutlar: `custom.boyutlar` metafield (rich_text_field)
 
@@ -140,7 +155,9 @@ sayfasına düşüyor — yani kod değişikliği gerekmedi.
 | Kral Zincir | Ölçü: 20 cm |
 | Astor, Velor | Ölçü: Ayarlanabilir, her bileğe uyumlu |
 
-BOYUT BİLGİSİ BULUNAMAYANLAR (metafield boş bırakıldı, popup genel
+| Zaman Kapsülü Künye | Ölçü: 16 cm (kullanıcı verdi, 2. tur) |
+
+BOYUT YAZILMAYANLAR (kullanıcı "gerek yok" dedi; popup bunlarda genel
 "Boyutlar" sayfasına düşer):
-Aurora cocuk (açıklama boş) · Eight Stars White · Infinity Glow ·
-Klasik Zaman Kapsülü · Red Velvet Limited Edition · Zaman Kapsülü Künye (açıklama boş)
+Aurora cocuk · Eight Stars White · Infinity Glow ·
+Klasik Zaman Kapsülü · Red Velvet Limited Edition
