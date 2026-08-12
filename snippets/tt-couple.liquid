@@ -552,12 +552,30 @@
       margin-block: 0 var(--tt-s3);
     }
 
-    #MainContent.tt-couple-page .vs-alt,
     #MainContent.tt-couple-page .ho-alt,
     #MainContent.tt-couple-page .as-alt,
     #MainContent.tt-couple-page .ay-alt,
     #MainContent.tt-couple-page .mk-metin {
       margin-block: var(--tt-s4) 0;
+    }
+
+    {%- comment -%}
+      .vs-alt (video slaytinin alt basligi) AYRI: alt boslugu da var.
+
+      Diger bolumlerde alt baslik bir baslik sarmalayicisinin
+      (.as-ust / .ay-ust / .ak-ust) icinde duruyor ve "baslik blogu
+      -> icerik" mesafesini o sarmalayicinin margin-bottom'i
+      veriyor (s6 = 32px). Video slaytinda oyle bir sarmalayici yok:
+      alt basligin hemen ardindan gorsel geliyor, alt bosluk 0
+      olunca yazi gorsele yapisiyor (olculen ~10px).
+
+      Bu yuzden mesafe burada dogrudan alt basliga yaziliyor.
+      Referans .ho-* bolumu: ayni yerde ~40px. Kardes marjlar
+      birlesirse 32px, ebeveyn flex ise 32+10 = 42px cikiyor;
+      iki durumda da hedef araliktayiz.
+    {%- endcomment -%}
+    #MainContent.tt-couple-page .vs-alt {
+      margin-block: var(--tt-s4) var(--tt-s6);
     }
 
     #MainContent.tt-couple-page .as-ust,
