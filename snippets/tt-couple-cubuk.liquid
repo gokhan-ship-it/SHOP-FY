@@ -1,0 +1,91 @@
+{%- comment -%}
+  COUPLE "DAHA FAZLA BILGI AL" SAYFASI -- YAPISKAN CUBUGUN CTA'SI
+
+  Bu sayfadaki yapiskan cubukta (sections/apple-local-nav.liquid)
+  "Urunleri Gor" dugmesi tiklaninca ikiye bolunuyor: Kadin / Erkek.
+  Istenen davranis: hic bolunmesin, dogrudan couple urunleri
+  koleksiyonuna gitsin.
+
+  ------------------------------------------------------------------
+  NEDEN AYARDAN DEGIL DE BURADAN
+
+  Bolunme, bolumun "Sol secenek" ve "Sag secenek" ayarlari dolu oldugu
+  icin aciliyor (bol_var). Dogrusu o iki alani bosaltmak olurdu; ama o
+  degerler templates/page.couple-daha-fazla-bilgial.json icinde ve o
+  dosya otomatik uretilen ~78 KB'lik bir sablon. Tema API'si sablonu
+  yalnizca butunuyle yazmaya izin veriyor; bu da tema duzenleyicide es
+  zamanli yapilan degisikliklerin uzerine yazma riski demek. Bu yuzden
+  duzeltme, yalnizca bu sablona bagli kucuk bir katman olarak burada.
+  Kapisi layout/theme.liquid icinde.
+
+  Ayarlar bir gun duzenleyiciden bosaltilirsa cubuk zaten tek
+  baglantili hale gelir. Bu dosya o durumda da zararsiz calisir (dugme
+  <a> olsa da hedef yine asagidaki HEDEF olur), ama artik gereksizdir;
+  silinebilir.
+
+  ------------------------------------------------------------------
+  NEDEN YAKALAMA (CAPTURE) EVRESI
+
+  Bolumun kendi dinleyicileri dugmenin uzerinde ve kabarma evresinde
+  duruyor; touchend'de preventDefault cagirip ardindan gelen click'i de
+  bastiriyorlar. Belgeye capture evresinde baglanip stopPropagation
+  demek, kayit sirasindan bagimsiz olarak onlarin hic calismamasini
+  garantiliyor -- bolumun JS'ine dokunmadan.
+
+  Dugme DOM'da <button> olarak birakiliyor, <a> ile degistirilmiyor:
+  bolumun JS'i genislik hesabinda cta.offsetWidth'i olcuyor ve ogeyi
+  degistirsek o olcum 0 dondugu icin cubugun dar ekran yerlesimi
+  bozulurdu.
+{%- endcomment -%}
+<script>
+  (function () {
+    var HEDEF = '/collections/couple-urunler';
+
+    function dugmeyiBul(e) {
+      var h = e.target;
+      if (!h || !h.closest) return null;
+      return h.closest('[data-aln-cta]');
+    }
+
+    document.addEventListener('touchend', function (e) {
+      if (dugmeyiBul(e)) e.stopPropagation();
+    }, true);
+
+    document.addEventListener('click', function (e) {
+      if (!dugmeyiBul(e)) return;
+      e.stopPropagation();
+
+      // Ctrl/Cmd/Shift ile tiklama ya da orta tus: bolunmeyi yine
+      // engelliyoruz ama tarayicinin kendi davranisina karismiyoruz.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+
+      e.preventDefault();
+      window.location.href = HEDEF;
+    }, true);
+
+    // Bolunme artik hic acilmayacagi icin panel gorsel olarak da
+    // ulasilmaz; ama icindeki iki baglanti DOM'da duruyor (panel
+    // opacity:0 ile gizleniyor, display:none degil) ve ekran okuyucular
+    // onlari hala goruyor. Bu yuzden bosaltiliyor.
+    function temizle() {
+      var dugme = document.querySelector('[data-aln-cta]');
+      if (!dugme || dugme.tagName !== 'BUTTON') return;
+
+      dugme.removeAttribute('aria-expanded');
+      dugme.removeAttribute('aria-controls');
+      dugme.setAttribute('role', 'link');
+
+      var panel = document.querySelector('[data-aln-bol]');
+      if (panel) panel.innerHTML = '';
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', temizle);
+    } else {
+      temizle();
+    }
+
+    // Tema duzenleyicide bolum yeniden cizildiginde markup sifirlanir.
+    document.addEventListener('shopify:section:load', temizle);
+  })();
+</script>

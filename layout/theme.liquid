@@ -67,6 +67,11 @@
       {%- render 'tt-couple-eksen' -%}
       {%- render 'tt-couple-banka' -%}
       {%- render 'tt-aln-mavi' -%}
+      {%- comment -%}
+        Yapiskan cubuktaki "Urunleri Gor" dugmesi ikiye bolunmesin,
+        dogrudan couple koleksiyonuna gitsin. Gerekce dosyanin icinde.
+      {%- endcomment -%}
+      {%- render 'tt-couple-cubuk' -%}
     {%- elsif template.suffix == 'hediye-daha-fazla-bilgial' -%}
       {%- comment -%}
         Ayni katmanin tekli (hediye) surumu: yalnizca olcu tarafi --
