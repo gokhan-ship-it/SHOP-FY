@@ -146,7 +146,7 @@ sayfasına düşüyor — yani kod değişikliği gerekmedi.
 | Ürün | Yazılan değer |
 |---|---|
 | Vantablack, Lumin | Zincir uzunluğu: 60 cm · Boyunda duruşu: 32 cm |
-| Aurora | Zincir uzunluğu: 48 cm · Boyunda duruşu: 24 cm |
+| Aurora | Zincir uzunluğu: 40 cm  *(kullanıcı düzeltti; açıklamada 48 cm / 24 cm yazıyor)* |
 | Gold, Ocean Blue, Rose, Rose Pink, Taşlıkilit Gold/Rose/White, White | Zincir uzunluğu: 40+5 cm (ayarlanabilir) |
 | Chloe, Chloe Gold, Nora, Nova, Noir | Ölçü: 17+5 cm (ayarlanabilir) |
 | Santorin, Santorin Gold | Ölçü: 16+5 cm (ayarlanabilir) |
