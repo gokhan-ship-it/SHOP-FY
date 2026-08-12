@@ -34,11 +34,16 @@
   KAPSAM: butun sinif adlari tt-cak- onekli, temada baska yerde
   gecmiyor. Hicbir bolum ya da sablon dosyasina dokunulmadi.
 
-  OLCUM (Chromium)
-    390px   kisa etiketler (Yukleyin / Bulusun / Acilsin), tasma yok
-    1200px  uzun etiketler, tasma yok
+  OLCUM (Chromium, scrollWidth = innerWidth her genislikte)
+    360px   noktalar arasi 130px
+    390px   noktalar arasi 145px  (onceki daralmis surumde 108px)
+    430px   noktalar arasi 162px
+    kisa etiketler (Yukleyin / Bulusun / Acilsin), cakisma yok
+    1200px  uzun etiketler, masaustu olculeri degismedi
     ikisinde de animasyon donuyor, JS hatasi yok
     azaltilmis hareket: cizgi dolu, 3. durum yazisi gorunur
+    2. adim kare kare dogrulandi: 0 sn uzakta ve kucuk -> 1,44 sn'de
+    tam ust uste -> 1,7 sn'de tek kisi + kalp -> 3,4 sn'de basa donus
 {%- endcomment -%}
 <style>
   .tt-cak {
@@ -120,9 +125,29 @@
   }
   .tt-cak-kisa { display: none }
 
-  {%- comment -%} ikon ici mikro hareketler {%- endcomment -%}
-  .tt-cak-yaklas-sol { animation: ttCakYaklasSol var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
-  .tt-cak-yaklas-sag { animation: ttCakYaklasSag var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
+  {%- comment -%}
+    Ikon ici mikro hareketler.
+
+    2. adim: iki kisi uzaktan gelir, ust uste bininca TEK kisiye
+    doner ve kafalarinin ustunde kirmizi kalp belirir. Uc ayri oge
+    var (sol / sag / tek); merkezde el degistiriyorlar, boylece
+    "birlesme" tek bir sekil morphu gibi okunuyor.
+
+    Ikisi de kendi merkezinden olceklensin/buyusun diye
+    transform-box: fill-box; SVG'de varsayilan orijin viewBox'in
+    0,0 noktasidir, o yuzden bu satir olmadan sekiller kayar.
+  {%- endcomment -%}
+  .tt-cak-kisi-sol,
+  .tt-cak-kisi-sag { transform-box: fill-box; transform-origin: center }
+  .tt-cak-kisi-sol { animation: ttCakKisiSol var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
+  .tt-cak-kisi-sag { animation: ttCakKisiSag var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
+  .tt-cak-kisi-tek { opacity: 0; animation: ttCakKisiTek var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
+  .tt-cak-kalp {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ttCakKalp var(--tt-cak-sure) cubic-bezier(.34, 1.4, .5, 1) infinite var(--tt-cak-g);
+  }
   .tt-cak-kanca { animation: ttCakKanca var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
 
   .tt-cak-durumlar { position: relative; max-width: 520px; margin: 20px auto 0; min-height: 38px }
@@ -178,15 +203,35 @@
     89%, 96%     { opacity: 1; transform: translateY(0) scale(1.04) }
     99%, 100%    { opacity: 0; transform: translateY(-2px) scale(1) }
   }
-  @keyframes ttCakYaklasSol {
-    0%           { transform: translateX(-1.7px) }
-    7%, 28.33%   { transform: translateX(1.1px) }
-    33%, 100%    { transform: translateX(-1.7px) }
+  {%- comment -%}
+    Ikisi cercevenin iki ucundan ve hafif kucuk (0,82) baslar --
+    kucukluk "uzakta" okumasini veriyor. Yaklastikca normal boya
+    donuyorlar ve merkezde kafalari TAM ust uste biniyor: sol kisi
+    8,8 + 3,2 = 12, sag kisi 15,2 - 3,2 = 12. Tam o karede ikisi
+    soner, tek kisi acilir, kalp firlar.
+  {%- endcomment -%}
+  @keyframes ttCakKisiSol {
+    0%           { transform: translateX(-5px) scale(.82);   opacity: 1 }
+    12%          { transform: translateX(3.2px) scale(1);    opacity: 1 }
+    15%, 28.33%  { transform: translateX(3.2px) scale(1);    opacity: 0 }
+    33%, 100%    { transform: translateX(-5px) scale(.82);   opacity: 1 }
   }
-  @keyframes ttCakYaklasSag {
-    0%           { transform: translateX(1.7px) }
-    7%, 28.33%   { transform: translateX(-1.1px) }
-    33%, 100%    { transform: translateX(1.7px) }
+  @keyframes ttCakKisiSag {
+    0%           { transform: translateX(5px) scale(.82);    opacity: 1 }
+    12%          { transform: translateX(-3.2px) scale(1);   opacity: 1 }
+    15%, 28.33%  { transform: translateX(-3.2px) scale(1);   opacity: 0 }
+    33%, 100%    { transform: translateX(5px) scale(.82);    opacity: 1 }
+  }
+  @keyframes ttCakKisiTek {
+    0%, 12%      { opacity: 0 }
+    15%, 28.33%  { opacity: 1 }
+    31%, 100%    { opacity: 0 }
+  }
+  @keyframes ttCakKalp {
+    0%, 13%      { opacity: 0; transform: scale(.35) translateY(2px) }
+    18%          { opacity: 1; transform: scale(1.12) translateY(0) }
+    21%, 28.33%  { opacity: 1; transform: scale(1) translateY(0) }
+    31%, 100%    { opacity: 0; transform: scale(.35) translateY(2px) }
   }
   @keyframes ttCakKanca {
     0%           { transform: translateY(1.4px) }
@@ -201,12 +246,30 @@
   .tt-cak:not(.tt-cak--oynat) .tt-cak-etiket,
   .tt-cak:not(.tt-cak--oynat) .tt-cak-durum,
   .tt-cak:not(.tt-cak--oynat) .tt-cak-dongu,
-  .tt-cak:not(.tt-cak--oynat) .tt-cak-yaklas-sol,
-  .tt-cak:not(.tt-cak--oynat) .tt-cak-yaklas-sag,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-kisi-sol,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-kisi-sag,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-kisi-tek,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-kalp,
   .tt-cak:not(.tt-cak--oynat) .tt-cak-kanca { animation-play-state: paused }
 
+  {%- comment -%}
+    Mobil olculer.
+
+    --tt-cak-ic ray'in kendi ic boslugu; uc adim bu boslugun ICINE
+    yerlesiyor, yani deger buyudukce noktalar birbirine yaklasiyor.
+    Urun sutunu dar oldugu icin 15% ikonlari ic ice sokuyordu; 4%
+    ile ray sutunun neredeyse tamamini kullaniyor ve noktalar arasi
+    mesafe yaklasik yariya yakin artiyor.
+
+    --tt-cak-etiket-en adim kutusunun genisligi. Kutu noktanin
+    uzerinde ortalandigi icin ilk ve son adimda yarisi disari tasar;
+    ray ic boslugu kuculdukce bu tasma sayfaya yatay kaydirma
+    ekleyebilir. Bu yuzden kisa etiketlere (Yukleyin / Bulusun /
+    Acilsin) yetecek kadar daraltiliyor -- olculer Chromium'da
+    360px ve 390px'te dogrulandi, scrollWidth artmiyor.
+  {%- endcomment -%}
   @media (max-width: 600px) {
-    .tt-cak { --tt-cak-ic: 15%; --tt-cak-hat: 40px; --tt-cak-etiket-en: 92px; padding: 28px 20px 24px }
+    .tt-cak { --tt-cak-ic: 4%; --tt-cak-hat: 40px; --tt-cak-etiket-en: 66px; padding: 28px 20px 24px }
     .tt-cak-hat { height: 78px }
     .tt-cak-ikon { width: 22px; height: 22px; margin-bottom: 14px }
     .tt-cak-ikon svg { width: 22px; height: 22px }
@@ -224,6 +287,8 @@
     .tt-cak-adim--3 .tt-cak-etiket { color: var(--tt-cak-metin) }
     .tt-cak-adim--3 .tt-cak-nokta { background: var(--tt-cak-aktif); transform: scale(1.5); box-shadow: 0 0 0 5px var(--tt-cak-halka) }
     .tt-cak-durum--3 { opacity: 1 }
+    .tt-cak-kisi-sol, .tt-cak-kisi-sag { opacity: 0 }
+    .tt-cak-kisi-tek, .tt-cak-kalp { opacity: 1 }
   }
 </style>
 
@@ -249,9 +314,21 @@
 
       <div class="tt-cak-adim tt-cak-adim--2">
         <span class="tt-cak-ikon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-            <circle class="tt-cak-yaklas-sol" cx="9.6" cy="12" r="5.4"/>
-            <circle class="tt-cak-yaklas-sag" cx="14.4" cy="12" r="5.4"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path class="tt-cak-kalp" fill="#e0364a" stroke="none"
+                  d="M12 8.4c-2.1-1.5-3.4-2.6-3.4-3.9 0-1.05.85-1.8 1.8-1.8.75 0 1.35.42 1.6.95.25-.53.85-.95 1.6-.95.95 0 1.8.75 1.8 1.8 0 1.3-1.3 2.4-3.4 3.9z"/>
+            <g class="tt-cak-kisi-sol">
+              <circle cx="8.8" cy="12.6" r="2"/>
+              <path d="M5.6 19.6c0-1.77 1.43-3.2 3.2-3.2s3.2 1.43 3.2 3.2"/>
+            </g>
+            <g class="tt-cak-kisi-sag">
+              <circle cx="15.2" cy="12.6" r="2"/>
+              <path d="M12 19.6c0-1.77 1.43-3.2 3.2-3.2s3.2 1.43 3.2 3.2"/>
+            </g>
+            <g class="tt-cak-kisi-tek">
+              <circle cx="12" cy="12.5" r="2.3"/>
+              <path d="M8.1 19.6c0-2.15 1.75-3.9 3.9-3.9s3.9 1.75 3.9 3.9"/>
+            </g>
           </svg>
         </span>
         <span class="tt-cak-nokta"></span>
