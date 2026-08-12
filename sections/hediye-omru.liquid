@@ -1,0 +1,1919 @@
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+  assign yari = s.topuz_boyut | divided_by: 2.0
+  assign isaretler = '0,6,12,24,36,48,60' | split: ','
+
+  comment
+    Renk katmani. Once bolumun kendi ayarlari okunur, palet Apple ise
+    uzerine Apple degerleri yazilir. "Ozel" secilirse tek tek renk
+    ayarlari aynen gecerli olur - hicbiri silinmez.
+  endcomment
+  assign p_baslik_rengi = s.baslik_rengi
+  assign p_alt_rengi = s.alt_rengi
+  assign p_okuma_rengi = s.okuma_rengi
+  assign p_ray_rengi = s.ray_rengi
+  assign p_topuz_rengi = s.topuz_rengi
+  assign p_eksen_rengi = s.eksen_rengi
+  assign p_ipucu_rengi = s.ipucu_rengi
+  assign p_vurgu_rengi = s.vurgu_rengi
+  assign p_cubuk_rengi = s.cubuk_rengi
+  assign p_cubuk_zemin = s.cubuk_zemin
+  assign p_bitti_rengi = s.bitti_rengi
+  assign p_gorsel_zemin = s.gorsel_zemin
+  assign p_ad_rengi = s.ad_rengi
+  assign p_durum_rengi = s.durum_rengi
+  assign p_satir_zemin = s.satir_zemin
+  assign p_satir_kenarlik_rengi = s.satir_kenarlik_rengi
+  assign p_final_renk = s.final_renk
+  assign p_zemin_rengi = s.zemin_rengi
+
+  if s.palet == 'apple'
+    comment
+      Apple acik paleti: #f5f5f7 gri zemin, beyaz satirlar, #1d1d1f metin,
+      #6e6e73 ikincil gri, #d2d2d7 kenarlik, #0071e3 vurgu.
+    endcomment
+    assign p_zemin_rengi = '#f5f5f7'
+    assign p_satir_zemin = '#ffffff'
+    assign p_satir_kenarlik_rengi = '#d2d2d7'
+    assign p_gorsel_zemin = '#f5f5f7'
+    assign p_baslik_rengi = '#1d1d1f'
+    assign p_ad_rengi = '#1d1d1f'
+    assign p_okuma_rengi = '#1d1d1f'
+    assign p_final_renk = '#1d1d1f'
+    assign p_alt_rengi = '#6e6e73'
+    assign p_durum_rengi = '#6e6e73'
+    assign p_eksen_rengi = '#6e6e73'
+    assign p_ipucu_rengi = '#6e6e73'
+    assign p_ray_rengi = '#d2d2d7'
+    assign p_topuz_rengi = '#1d1d1f'
+    assign p_cubuk_rengi = '#1d1d1f'
+    assign p_cubuk_zemin = '#d2d2d7'
+    assign p_vurgu_rengi = '#0071e3'
+    assign p_bitti_rengi = '#d70015'
+  elsif s.palet == 'apple_gri'
+    comment
+      Apple koyu paleti, gri zemin uzerine.
+      Apple'in koyu sayfalarinda bolum zemini saf siyah degil; siyahi
+      kirmak icin gri bir katman kullaniliyor ve kartlar o grinin
+      uzerinde SIYAH duruyor (taban / yukseltilmis ayrimi).
+      Zemin  #1d1d1f  Apple'in kendi koyu grisi
+      Kart   #000000  gri zeminin uzerinde geri cekilen yuzey
+      Kutu   #1c1c1e  bir kademe yukarisi (iOS systemGray6 koyu)
+      Metin  #f5f5f7 birincil, #86868b ikincil
+      Ayrac  rgba(255,255,255,.10) -- koyuda duz gri yerine saydam
+      Vurgu  #0a84ff koyu modda parlatilmis mavi (#0071e3 siyah uzerinde
+             4.47:1 ile AA'nin altinda kaliyordu; bu 5.76:1)
+    endcomment
+    assign p_zemin_rengi = '#1d1d1f'
+    assign p_satir_zemin = '#000000'
+    assign p_satir_kenarlik_rengi = 'rgba(255, 255, 255, 0.10)'
+    assign p_gorsel_zemin = '#1c1c1e'
+    assign p_baslik_rengi = '#f5f5f7'
+    assign p_ad_rengi = '#f5f5f7'
+    assign p_okuma_rengi = '#f5f5f7'
+    assign p_final_renk = '#f5f5f7'
+    assign p_alt_rengi = '#86868b'
+    assign p_durum_rengi = '#86868b'
+    assign p_eksen_rengi = '#86868b'
+    assign p_ipucu_rengi = '#86868b'
+    assign p_ray_rengi = 'rgba(255, 255, 255, 0.18)'
+    assign p_topuz_rengi = '#f5f5f7'
+    assign p_cubuk_rengi = '#f5f5f7'
+    assign p_cubuk_zemin = 'rgba(255, 255, 255, 0.14)'
+    assign p_vurgu_rengi = '#0a84ff'
+    assign p_bitti_rengi = '#ff453a'
+  elsif s.palet == 'apple_siyah'
+    comment
+      Apple koyu paleti, siyah zemin uzerine. Gri paletin tersi:
+      orada zemin griydi ve satirlar siyaha ceker; burada zemin saf
+      siyah, satirlar YUKARI cikar (Apple'in taban / yukseltilmis
+      ayrimi). Boylece iki bolum yan yana geldiginde biri digerinin
+      negatifi gibi durur.
+      Zemin  #000000
+      Satir  #1d1d1f  siyahin bir kademe ustu
+      Gorsel #2c2c2e  satirin bir kademe ustu (iOS systemGray5 koyu)
+    endcomment
+    assign p_zemin_rengi = '#000000'
+    assign p_satir_zemin = '#1d1d1f'
+    assign p_satir_kenarlik_rengi = 'rgba(255, 255, 255, 0.10)'
+    assign p_gorsel_zemin = '#2c2c2e'
+    assign p_baslik_rengi = '#f5f5f7'
+    assign p_ad_rengi = '#f5f5f7'
+    assign p_okuma_rengi = '#f5f5f7'
+    assign p_final_renk = '#f5f5f7'
+    assign p_alt_rengi = '#86868b'
+    assign p_durum_rengi = '#86868b'
+    assign p_eksen_rengi = '#86868b'
+    assign p_ipucu_rengi = '#86868b'
+    assign p_ray_rengi = 'rgba(255, 255, 255, 0.18)'
+    assign p_topuz_rengi = '#f5f5f7'
+    assign p_cubuk_rengi = '#f5f5f7'
+    assign p_cubuk_zemin = 'rgba(255, 255, 255, 0.14)'
+    assign p_vurgu_rengi = '#0a84ff'
+    assign p_bitti_rengi = '#ff453a'
+  endif
+
+  comment
+    Hazir palet vurgu rengini de belirliyor. "Vurgu rengini kendim
+    secegim" isaretliyse paletin uzerine yeniden ayardaki renk yazilir;
+    bolumun geri kalani palette kalir. Varsayilan kapali oldugu icin
+    bu bolumu kullanan diger sablonlarin ciktisi hic degismez.
+  endcomment
+  if s.vurgu_ozel
+    assign p_vurgu_rengi = s.vurgu_rengi
+  endif
+
+  comment
+    Vurgu degradesi. Kapaliyken (varsayilan) hicbir sey degismiyor.
+    Acikken cubuk ve durum yazisi degradeye geciyor; degrade uygulanamayan
+    yerler (odak halkasi, kartin isimasi) degradenin orta rengini
+    kullaniyor ki uyumsuz iki renk yan yana gelmesin.
+  endcomment
+  if s.vurgu_degrade
+    assign p_vurgu_rengi = s.vurgu_d2
+  endif
+-%}
+{%- capture gorsel_sizes -%}
+(min-width: 750px) {{ s.gorsel_boyut_d }}px, {{ s.gorsel_boyut_m }}px
+{%- endcapture -%}
+<style>
+  #shopify-section-{{ sid }} .ho-root {
+    --ho-o: {{ s.mobil_olcek | divided_by: 100.0 }};
+    background: {{ p_zemin_rengi }};
+    padding-top: calc({{ s.p_top_m }}px * var(--ho-o));
+    padding-bottom: calc({{ s.p_bot_m }}px * var(--ho-o));
+  }
+  #shopify-section-{{ sid }} .ho-inner {
+    max-width: {{ s.max_w }}px;
+    margin: 0 auto;
+    padding-left: {{ s.edge_m }}px;
+    padding-right: {{ s.edge_m }}px;
+    box-sizing: border-box;
+    text-align: {{ s.hizalama }};
+  }
+  #shopify-section-{{ sid }} .ho-head {
+    margin: 0;
+    font-size: {{ s.bas_m }}px;
+    line-height: 1.15;
+    text-wrap: balance;
+    font-weight: {{ s.baslik_kalinligi }};
+    color: {{ p_baslik_rengi }};
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    visibility: visible !important;
+  }
+  #shopify-section-{{ sid }} .ho-alt {
+    margin: {{ s.alt_bos_m }}px 0 0;
+    font-size: {{ s.alt_m }}px;
+    line-height: 1.6;
+    color: {{ p_alt_rengi }};
+    max-width: 46em;
+    {%- if s.hizalama == 'center' %}
+    margin-left: auto;
+    margin-right: auto;
+    {%- endif %}
+  }
+
+  /* --- zaman cubugu --- */
+  #shopify-section-{{ sid }} .ho-zaman {
+    margin-top: calc({{ s.baslik_bosluk }}px * var(--ho-o));
+    text-align: left;
+  }
+  #shopify-section-{{ sid }} .ho-okuma {
+    display: block;
+    font-size: calc({{ s.okuma_boyut }}px * var(--ho-o));
+    line-height: 1.2;
+    font-weight: 700;
+    color: {{ p_okuma_rengi }};
+    margin-bottom: 4px;
+  }
+  #shopify-section-{{ sid }} .ho-ray {
+    position: relative;
+    {%- if s.ipucu_goster %}
+    margin-top: calc({{ s.ipucu_boyut }}px + 10px);
+    {%- endif %}
+  }
+  #shopify-section-{{ sid }} .ho-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: 44px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    touch-action: pan-y;
+    cursor: pointer;
+  }
+  #shopify-section-{{ sid }} .ho-slider::-webkit-slider-runnable-track {
+    height: {{ s.ray_kalinlik }}px;
+    border-radius: 999px;
+    background: {{ p_ray_rengi }};
+  }
+  #shopify-section-{{ sid }} .ho-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: {{ s.topuz_boyut }}px;
+    height: {{ s.topuz_boyut }}px;
+    border: 0;
+    border-radius: 999px;
+    background: {{ p_topuz_rengi }};
+    margin-top: calc(({{ s.ray_kalinlik }}px - {{ s.topuz_boyut }}px) / 2);
+  }
+  #shopify-section-{{ sid }} .ho-slider::-moz-range-track {
+    height: {{ s.ray_kalinlik }}px;
+    border-radius: 999px;
+    background: {{ p_ray_rengi }};
+  }
+  #shopify-section-{{ sid }} .ho-slider::-moz-range-thumb {
+    width: {{ s.topuz_boyut }}px;
+    height: {{ s.topuz_boyut }}px;
+    border: 0;
+    border-radius: 999px;
+    background: {{ p_topuz_rengi }};
+  }
+  #shopify-section-{{ sid }} .ho-slider:focus { outline: none; }
+  #shopify-section-{{ sid }} .ho-slider:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px {{ p_vurgu_rengi }};
+  }
+  #shopify-section-{{ sid }} .ho-slider:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 3px {{ p_vurgu_rengi }};
+  }
+
+  #shopify-section-{{ sid }} .ho-ipucu {
+    position: absolute;
+    bottom: calc(50% + {{ s.topuz_boyut }}px / 2 + 5px);
+    left: var(--ho-pos, 0px);
+    transform: translateX(-50%);
+    display: none;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    font-size: {{ s.ipucu_boyut }}px;
+    line-height: 1;
+    font-weight: 600;
+    color: {{ p_ipucu_rengi }};
+    pointer-events: none;
+    z-index: 2;
+  }
+  #shopify-section-{{ sid }} .ho-root.is-ipucu .ho-ipucu {
+    display: flex;
+    animation: ho-yanip-{{ sid }} {{ s.ipucu_hiz }}ms ease-in-out infinite;
+  }
+  #shopify-section-{{ sid }} .ho-ipucu svg {
+    width: 1.15em;
+    height: 1.15em;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  #shopify-section-{{ sid }} .ho-root.is-ipucu .ho-ipucu svg {
+    animation: ho-ok-{{ sid }} {{ s.ipucu_hiz }}ms ease-in-out infinite;
+  }
+  @keyframes ho-yanip-{{ sid }} {
+    0% { opacity: 1; }
+    50% { opacity: .3; }
+    100% { opacity: 1; }
+  }
+  @keyframes ho-ok-{{ sid }} {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(6px); }
+    100% { transform: translateX(0); }
+  }
+
+  #shopify-section-{{ sid }} .ho-eksen {
+    position: relative;
+    height: {{ s.eksen_boyut | plus: 6 }}px;
+    margin: 2px {{ yari }}px 0;
+  }
+  #shopify-section-{{ sid }} .ho-eksen span {
+    position: absolute;
+    top: 0;
+    font-size: {{ s.eksen_boyut }}px;
+    line-height: 1.2;
+    white-space: nowrap;
+    color: {{ p_eksen_rengi }};
+  }
+
+  /* --- satirlar --- */
+  #shopify-section-{{ sid }} .ho-list {
+    list-style: none;
+    margin: calc({{ s.liste_bosluk }}px * var(--ho-o)) 0 0;
+    padding: 0;
+    text-align: left;
+  }
+  #shopify-section-{{ sid }} .ho-row {
+    display: grid;
+    grid-template-columns: calc({{ s.gorsel_boyut_m }}px * var(--ho-o)) minmax(0, 1fr);
+    column-gap: calc({{ s.satir_ic }}px * var(--ho-o));
+    row-gap: 4px;
+    align-items: center;
+    padding: calc({{ s.satir_dolgu }}px * var(--ho-o));
+    border-radius: {{ s.satir_kose }}px;
+    background: {{ p_satir_zemin }};
+    {% if s.satir_kenarlik %}border: 1px solid {{ p_satir_kenarlik_rengi }};{% endif %}
+  }
+  #shopify-section-{{ sid }} .ho-row + .ho-row { margin-top: calc({{ s.satir_arasi }}px * var(--ho-o)); }
+  #shopify-section-{{ sid }} .ho-media {
+    position: relative;
+    grid-row: 1 / span 2;
+    width: calc({{ s.gorsel_boyut_m }}px * var(--ho-o));
+    aspect-ratio: 1;
+    border-radius: {{ s.gorsel_kose }}px;
+    overflow: hidden;
+    background: {{ p_gorsel_zemin }};
+    transition: filter {{ s.gecis_suresi }}ms linear, box-shadow 240ms ease;
+  }
+  #shopify-section-{{ sid }} .ho-row.is-kapsul .ho-media {
+    box-shadow: 0 0 calc(28px * var(--ho-parla, 0)) {{ p_vurgu_rengi | color_modify: 'alpha', 0.5 }};
+  }
+  #shopify-section-{{ sid }} .ho-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity {{ s.gecis_suresi }}ms linear;
+  }
+  #shopify-section-{{ sid }} .ho-img-orta,
+  #shopify-section-{{ sid }} .ho-img-eski { opacity: 0; }
+  #shopify-section-{{ sid }} .ho-media .placeholder-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  #shopify-section-{{ sid }} .ho-ad {
+    margin: 0 0 calc(6px * var(--ho-o));
+    font-size: calc({{ s.ad_boyut_m }}px * var(--ho-o));
+    line-height: 1.25;
+    font-weight: 600;
+    color: {{ p_ad_rengi }};
+  }
+  #shopify-section-{{ sid }} .ho-bar {
+    height: {{ s.cubuk_yukseklik }}px;
+    border-radius: 999px;
+    background: {{ p_cubuk_zemin }};
+    overflow: hidden;
+  }
+  #shopify-section-{{ sid }} .ho-bar-fill {
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: 999px;
+    background: {{ p_cubuk_rengi }};
+    transition: width {{ s.gecis_suresi }}ms linear, background-color 200ms ease;
+  }
+  #shopify-section-{{ sid }} .ho-row.is-bitti .ho-bar-fill { background: {{ p_bitti_rengi }}; }
+  #shopify-section-{{ sid }} .ho-row.is-kapsul .ho-bar-fill { background: {{ p_vurgu_rengi }}; }
+  #shopify-section-{{ sid }} .ho-durum {
+    grid-column: 2;
+    margin: 0;
+    font-size: calc({{ s.durum_boyut }}px * var(--ho-o));
+    line-height: 1.3;
+    color: {{ p_durum_rengi }};
+    font-variant-numeric: tabular-nums;
+    transition: color 200ms ease;
+  }
+  #shopify-section-{{ sid }} .ho-row.is-bitti .ho-durum { color: {{ p_bitti_rengi }}; }
+  #shopify-section-{{ sid }} .ho-row.is-kapsul .ho-durum {
+    color: {{ p_vurgu_rengi }};
+    font-weight: 600;
+  }
+
+  #shopify-section-{{ sid }} .ho-final {
+    margin: calc({{ s.final_bosluk }}px * var(--ho-o)) 0 0;
+    font-size: calc({{ s.final_boyut }}px * var(--ho-o));
+    line-height: 1.35;
+    font-weight: 700;
+    color: {{ p_final_renk }};
+    text-align: left;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 420ms ease, transform 420ms ease;
+  }
+  #shopify-section-{{ sid }} .ho-final.is-on {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .ho-root {
+      --ho-o: {{ s.masaustu_olcek | divided_by: 100.0 }};
+      padding-top: calc({{ s.p_top_d }}px * var(--ho-o));
+      padding-bottom: calc({{ s.p_bot_d }}px * var(--ho-o));
+    }
+    #shopify-section-{{ sid }} .ho-inner {
+      padding-left: {{ s.edge_d }}px;
+      padding-right: {{ s.edge_d }}px;
+    }
+    #shopify-section-{{ sid }} .ho-row {
+      grid-template-columns: calc({{ s.gorsel_boyut_d }}px * var(--ho-o)) minmax(0, 1fr) calc({{ s.durum_genislik }}px * var(--ho-o));
+      row-gap: 0;
+    }
+    #shopify-section-{{ sid }} .ho-media {
+      grid-row: auto;
+      width: calc({{ s.gorsel_boyut_d }}px * var(--ho-o));
+    }
+    #shopify-section-{{ sid }} .ho-ad { font-size: calc({{ s.ad_boyut_d }}px * var(--ho-o)); }
+    #shopify-section-{{ sid }} .ho-durum {
+      grid-column: 3;
+      text-align: right;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .ho-img,
+    #shopify-section-{{ sid }} .ho-media,
+    #shopify-section-{{ sid }} .ho-final,
+    #shopify-section-{{ sid }} .ho-bar-fill { transition: none; }
+    #shopify-section-{{ sid }} .ho-root.is-ipucu .ho-ipucu,
+    #shopify-section-{{ sid }} .ho-root.is-ipucu .ho-ipucu svg { animation: none; }
+  }
+
+  /* Baslik ve alt yazi ust bolumlerle ayni sistemde: kademeler 768 ve 1024,
+     satir yuksekligi 1.15 / 1.6. Yogunluk olcegine (--ho-o) bagli degiller ki
+     editordeki sayilar ekranda gorunen boyutla birebir olsun. */
+  @media (min-width: 768px) {
+    #shopify-section-{{ sid }} .ho-head { font-size: {{ s.bas_t }}px; }
+    #shopify-section-{{ sid }} .ho-alt {
+      margin-top: {{ s.alt_bos_d }}px;
+      font-size: {{ s.alt_d }}px;
+    }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ sid }} .ho-head { font-size: {{ s.bas_d }}px; }
+  }
+
+  {%- if s.anim_ac %}
+  /* Kaydirinca belirme. Gizleme yalnizca JS sinif ekledikten sonra
+     gecerli; JS calismazsa icerik gorunur kalir. Baslik kendi
+     !important kurallarini tasidigi icin ID ile nitelendi. */
+  #shopify-section-{{ sid }} .ho-root.ho-hazir [data-ho-anim] {
+    opacity: 0 !important;
+    transform: translateY({{ s.anim_mesafe }}px) !important;
+    transition:
+      opacity {{ s.anim_sure }}ms cubic-bezier(.16, 1, .3, 1),
+      transform {{ s.anim_sure }}ms cubic-bezier(.16, 1, .3, 1) !important;
+    transition-delay: var(--ho-gecikme, 0ms) !important;
+    will-change: opacity, transform;
+  }
+  #shopify-section-{{ sid }} .ho-root.ho-hazir [data-ho-anim].is-gorunur {
+    opacity: 1 !important;
+    transform: none !important;
+    will-change: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .ho-root.ho-hazir [data-ho-anim],
+    #shopify-section-{{ sid }} .ho-root.ho-hazir [data-ho-anim].is-gorunur {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+  {%- endif %}
+
+  {%- if s.vurgu_degrade %}
+  /* --- vurgu degradesi -------------------------------------------------
+     Blok en sonda duruyor: yukaridaki duz renkli .ho-bar-fill ve .ho-durum
+     kurallariyla ayni ozgullukte, sonra geldigi icin kazaniyor. */
+  #shopify-section-{{ sid }} .ho-row.is-kapsul .ho-bar-fill {
+    background: linear-gradient({{ s.vurgu_aci }}deg, {{ s.vurgu_d1 }} 0%, {{ s.vurgu_d2 }} 52%, {{ s.vurgu_d3 }} 100%);
+  }
+  /* Durum yazisina degrade UYGULANMIYOR, bilerek: degradenin koyu ucu
+     siyah kart uzerinde 1.36:1 kontrastla okunmaz hale geliyor (en acik
+     ucu bile 3.42:1, kucuk yazi icin AA'nin altinda). Cubuk bir grafik
+     oldugu icin degradeyi orada tutup yaziya okunur tek bir kirmizi
+     veriyoruz. */
+  #shopify-section-{{ sid }} .ho-row.is-kapsul .ho-durum {
+    color: {{ s.vurgu_yazi }};
+  }
+  {%- endif %}
+</style>
+
+<div
+  class="ho-root"
+  data-ho-root
+  data-ho-key="{{ sid }}"
+  data-max="{{ s.max_ay }}"
+  data-hedef="{{ s.ipucu_hedef }}"
+  data-ipucu="{% if s.ipucu_goster %}1{% else %}0{% endif %}"
+  data-sifir="{{ s.sifir_yazi | escape }}"
+  data-ay-kalip="{{ s.ay_kalibi | escape }}"
+  data-yil-kalip="{{ s.yil_kalibi | escape }}"
+  data-kapsul-bas="{{ s.kapsul_baslangic }}"
+  data-kapsul-artis="{{ s.kapsul_artis }}"
+  data-parla="{% if s.kapsul_parla %}1{% else %}0{% endif %}"
+  data-final-esik="{{ s.final_esik }}"
+  {% if s.anim_ac %}data-ho-anim-kok data-ho-ara="{{ s.anim_ara }}"{% endif %}
+>
+  <div class="ho-inner">
+    {%- if s.baslik != blank -%}
+      <{{ s.baslik_etiketi }} class="ho-head"{% if s.anim_ac %} data-ho-anim{% endif %}>{{ s.baslik }}</{{ s.baslik_etiketi }}>
+    {%- endif -%}
+    {%- if s.alt_yazi != blank -%}
+      <p class="ho-alt"{% if s.anim_ac %} data-ho-anim{% endif %}>{{ s.alt_yazi }}</p>
+    {%- endif -%}
+
+    <div class="ho-zaman"{% if s.anim_ac %} data-ho-anim{% endif %}>
+      <output class="ho-okuma" for="ho-slider-{{ sid }}" data-ho-okuma>{{ s.sifir_yazi }}</output>
+      <div class="ho-ray">
+        <span class="ho-ipucu" data-ho-ipucu aria-hidden="true">
+          {{ s.ipucu_yazi }}
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M4 12h15"/>
+            <path d="M13.5 6.5L19 12l-5.5 5.5"/>
+          </svg>
+        </span>
+        <input
+          type="range"
+          class="ho-slider"
+          id="ho-slider-{{ sid }}"
+          data-ho-slider
+          min="0"
+          max="{{ s.max_ay }}"
+          step="1"
+          value="0"
+          aria-label="{{ s.slider_etiketi | escape }}"
+          aria-valuetext="{{ s.sifir_yazi | escape }}"
+        >
+      </div>
+      <div class="ho-eksen">
+        {%- for isaret in isaretler -%}
+          {%- assign ay = isaret | plus: 0 -%}
+          {%- if ay <= s.max_ay -%}
+            {%- assign yuzde = ay | times: 100.0 | divided_by: s.max_ay -%}
+            {%- assign artik = ay | modulo: 12 -%}
+            {%- if ay == 0 -%}
+              {%- assign etiket = s.sifir_yazi -%}
+            {%- elsif ay >= 12 and artik == 0 -%}
+              {%- assign yil = ay | divided_by: 12 -%}
+              {%- assign etiket = s.yil_kalibi | replace: '{deger}', yil -%}
+            {%- else -%}
+              {%- assign etiket = s.ay_kalibi | replace: '{deger}', ay -%}
+            {%- endif -%}
+            <span
+              style="left: {{ yuzde }}%;{% if ay == 0 %} transform: none;{% elsif ay == s.max_ay %} transform: translateX(-100%);{% else %} transform: translateX(-50%);{% endif %}"
+            >{{ etiket }}</span>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+
+    {%- if section.blocks.size > 0 -%}
+      <ul class="ho-list" role="list">
+        {%- for block in section.blocks -%}
+          {%- assign b_alt = block.settings.ad | strip_html | escape -%}
+          {%- if block.type == 'kapsul' -%}
+            <li
+              class="ho-row is-kapsul"
+              data-ho-row
+              {% if s.anim_ac %}data-ho-anim{% endif %}
+              data-kapsul="1"
+              data-durumlar="{{ block.settings.durumlar | escape }}"
+              {{ block.shopify_attributes }}
+            >
+              <div class="ho-media" data-ho-media>
+                {%- if block.settings.gorsel != blank -%}
+                  {{
+                    block.settings.gorsel
+                    | image_url: width: 400
+                    | image_tag:
+                      class: 'ho-img',
+                      loading: 'lazy',
+                      decoding: 'async',
+                      widths: '96, 160, 240, 320, 400',
+                      sizes: gorsel_sizes,
+                      alt: b_alt
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- endif -%}
+              </div>
+              <div class="ho-main">
+                {%- if block.settings.ad != blank -%}
+                  <p class="ho-ad">{{ block.settings.ad }}</p>
+                {%- endif -%}
+                <div class="ho-bar"><span class="ho-bar-fill" data-ho-fill style="width: 0%"></span></div>
+              </div>
+              <p class="ho-durum" data-ho-durum></p>
+            </li>
+          {%- else -%}
+            <li
+              class="ho-row"
+              data-ho-row
+              {% if s.anim_ac %}data-ho-anim{% endif %}
+              data-omur="{{ block.settings.omur_ay | escape }}"
+              data-durumlar="{{ block.settings.durumlar | escape }}"
+              {{ block.shopify_attributes }}
+            >
+              <div class="ho-media" data-ho-media>
+                {%- if block.settings.gorsel_yeni != blank -%}
+                  {{
+                    block.settings.gorsel_yeni
+                    | image_url: width: 400
+                    | image_tag:
+                      class: 'ho-img ho-img-yeni',
+                      loading: 'lazy',
+                      decoding: 'async',
+                      widths: '96, 160, 240, 320, 400',
+                      sizes: gorsel_sizes,
+                      alt: b_alt
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- endif -%}
+                {%- if block.settings.gorsel_orta != blank -%}
+                  {{
+                    block.settings.gorsel_orta
+                    | image_url: width: 400
+                    | image_tag:
+                      class: 'ho-img ho-img-orta',
+                      loading: 'lazy',
+                      decoding: 'async',
+                      widths: '96, 160, 240, 320, 400',
+                      sizes: gorsel_sizes,
+                      alt: ''
+                  }}
+                {%- endif -%}
+                {%- if block.settings.gorsel_eski != blank -%}
+                  {{
+                    block.settings.gorsel_eski
+                    | image_url: width: 400
+                    | image_tag:
+                      class: 'ho-img ho-img-eski',
+                      loading: 'lazy',
+                      decoding: 'async',
+                      widths: '96, 160, 240, 320, 400',
+                      sizes: gorsel_sizes,
+                      alt: ''
+                  }}
+                {%- endif -%}
+              </div>
+              <div class="ho-main">
+                {%- if block.settings.ad != blank -%}
+                  <p class="ho-ad">{{ block.settings.ad }}</p>
+                {%- endif -%}
+                <div class="ho-bar"><span class="ho-bar-fill" data-ho-fill></span></div>
+              </div>
+              <p class="ho-durum" data-ho-durum></p>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if s.final_metin != blank -%}
+      <p class="ho-final" data-ho-final>{{ s.final_metin }}</p>
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+  (function () {
+    if (window.hoOmruReady) { window.hoOmruInit(); return; }
+    window.hoOmruReady = true;
+
+    var roots = [];
+
+    function reduce() {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function sayi(v, yedek) {
+      var n = parseFloat(String(v == null ? '' : v).replace(',', '.'));
+      return isFinite(n) ? n : yedek;
+    }
+
+    function sablon(metin, deger) {
+      return String(metin).split('{deger}').join(deger);
+    }
+
+    function asamalariOku(ham) {
+      var out = [];
+      var satirlar = String(ham || '').split('\n');
+      for (var i = 0; i < satirlar.length; i++) {
+        var l = satirlar[i].replace(/\r/g, '').trim();
+        if (!l) continue;
+        var p = l.indexOf('|');
+        if (p < 0) { out.push({ ay: 0, metin: l }); continue; }
+        out.push({ ay: sayi(l.slice(0, p), 0), metin: l.slice(p + 1).trim() });
+      }
+      out.sort(function (a, b) { return a.ay - b.ay; });
+      return out;
+    }
+
+    function asamaMetni(list, ay) {
+      var m = '';
+      for (var i = 0; i < list.length; i++) {
+        if (ay + 0.0001 >= list[i].ay) m = list[i].metin; else break;
+      }
+      return m;
+    }
+
+    function okunur(root, ay) {
+      if (ay <= 0) return root.hoSifir;
+      if (ay >= 12 && ay % 12 === 0) return sablon(root.hoYilKalip, ay / 12);
+      return sablon(root.hoAyKalip, ay);
+    }
+
+    function konum(root) {
+      var el = root.hoSlider;
+      var gen = el.clientWidth;
+      if (!gen) return;
+      var t = root.hoTopuz;
+      var oran = root.hoMax > 0 ? sayi(el.value, 0) / root.hoMax : 0;
+      var yer = t / 2 + oran * (gen - t);
+      if (root.hoIpucu) {
+        var y = root.hoIpucu.offsetWidth / 2;
+        if (y > 0 && gen > y * 2) yer = Math.min(Math.max(yer, y), gen - y);
+      }
+      root.hoRay.style.setProperty('--ho-pos', yer + 'px');
+    }
+
+    function ciz(root) {
+      var ay = sayi(root.hoSlider.value, 0);
+      var metin = okunur(root, ay);
+      root.hoSlider.setAttribute('aria-valuetext', metin);
+      if (root.hoOkuma) root.hoOkuma.textContent = metin;
+
+      for (var i = 0; i < root.hoRows.length; i++) {
+        var row = root.hoRows[i];
+        var fill = row.hoFill;
+        var durum = row.hoDurum;
+
+        if (row.hoKapsul) {
+          var d = Math.min(100, root.hoKapBas + ay * root.hoKapArtis);
+          if (fill) fill.style.width = d + '%';
+          if (durum) durum.textContent = sablon(asamaMetni(row.hoAsama, ay), Math.round(d));
+          if (root.hoParla) row.style.setProperty('--ho-parla', (d / 100).toFixed(3));
+          continue;
+        }
+
+        var omur = row.hoOmur;
+        var kalan = omur > 0 ? Math.max(0, 1 - ay / omur) : 0;
+        var eskime = 1 - kalan;
+
+        var kat = row.hoKatman || [];
+        if (kat.length === 1) {
+          kat[0].style.opacity = 1;
+        } else if (kat.length > 1) {
+          // eskime 0 -> ilk gorsel, 1 -> son gorsel; aradakiler carprazlanir
+          var yer = eskime * (kat.length - 1);
+          for (var q = 0; q < kat.length; q++) {
+            kat[q].style.opacity = Math.max(0, 1 - Math.abs(yer - q));
+          }
+        }
+
+        if (fill) fill.style.width = kalan * 100 + '%';
+        row.classList.toggle('is-bitti', kalan <= 0);
+        if (durum) {
+          var yuzde = kalan > 0 ? Math.max(1, Math.round(kalan * 100)) : 0;
+          durum.textContent = sablon(asamaMetni(row.hoAsama, ay), yuzde);
+        }
+      }
+
+      if (root.hoFinal) root.hoFinal.classList.toggle('is-on', ay >= root.hoFinalAy);
+      konum(root);
+    }
+
+    function ipucuKapat(root) {
+      root.hoIptal = true;
+      if (root.hoRaf) { cancelAnimationFrame(root.hoRaf); root.hoRaf = null; }
+      clearTimeout(root.hoBekle);
+      root.classList.remove('is-ipucu');
+    }
+
+    function yumusak(t) {
+      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    }
+
+    function tanitim(root) {
+      if (root.hoIptal || root.hoTanitildi) return;
+      root.hoTanitildi = true;
+      if (root.getAttribute('data-ipucu') !== '1') return;
+      if (reduce()) return;
+      try {
+        var anahtar = 'ho-ipucu-' + root.getAttribute('data-ho-key');
+        if (sessionStorage.getItem(anahtar)) return;
+        sessionStorage.setItem(anahtar, '1');
+      } catch (e) {}
+
+      var hedef = Math.max(1, Math.round(root.hoMax * sayi(root.getAttribute('data-hedef'), 25) / 100));
+
+      function faz(bas, son, sure, sonra) {
+        var t0 = 0;
+        function adim(ts) {
+          if (root.hoIptal) return;
+          if (!t0) t0 = ts;
+          var o = Math.min(1, (ts - t0) / sure);
+          root.hoSlider.value = String(Math.round(bas + (son - bas) * yumusak(o)));
+          ciz(root);
+          if (o < 1) { root.hoRaf = requestAnimationFrame(adim); }
+          else { root.hoRaf = null; if (sonra) sonra(); }
+        }
+        root.hoRaf = requestAnimationFrame(adim);
+      }
+
+      faz(0, hedef, 900, function () {
+        root.hoBekle = setTimeout(function () {
+          if (root.hoIptal) return;
+          faz(hedef, 0, 600);
+        }, 250);
+      });
+    }
+
+    function kur(root) {
+      if (!root || root.hoInited) return;
+      root.hoInited = true;
+      root.hoSlider = root.querySelector('[data-ho-slider]');
+      if (!root.hoSlider) return;
+      root.hoRay = root.querySelector('.ho-ray');
+      root.hoOkuma = root.querySelector('[data-ho-okuma]');
+      root.hoIpucu = root.querySelector('[data-ho-ipucu]');
+      root.hoFinal = root.querySelector('[data-ho-final]');
+      root.hoRows = root.querySelectorAll('[data-ho-row]');
+      root.hoMax = sayi(root.getAttribute('data-max'), 36);
+      root.hoTopuz = {{ s.topuz_boyut }};
+      root.hoSifir = root.getAttribute('data-sifir') || '';
+      root.hoAyKalip = root.getAttribute('data-ay-kalip') || '{deger}';
+      root.hoYilKalip = root.getAttribute('data-yil-kalip') || '{deger}';
+      root.hoKapBas = sayi(root.getAttribute('data-kapsul-bas'), 40);
+      root.hoKapArtis = sayi(root.getAttribute('data-kapsul-artis'), 1.7);
+      root.hoParla = root.getAttribute('data-parla') === '1';
+      root.hoFinalAy = root.hoMax * sayi(root.getAttribute('data-final-esik'), 85) / 100;
+      root.hoIptal = false;
+      if (root.getAttribute('data-ipucu') === '1') root.classList.add('is-ipucu');
+
+      for (var r = 0; r < root.hoRows.length; r++) {
+        var row = root.hoRows[r];
+        row.hoKapsul = row.getAttribute('data-kapsul') === '1';
+        row.hoOmur = sayi(row.getAttribute('data-omur'), 0);
+        row.hoAsama = asamalariOku(row.getAttribute('data-durumlar'));
+        row.hoFill = row.querySelector('[data-ho-fill]');
+        row.hoDurum = row.querySelector('[data-ho-durum]');
+        row.hoMedia = row.querySelector('[data-ho-media]');
+        row.hoYeni = row.querySelector('.ho-img-yeni');
+        row.hoOrta = row.querySelector('.ho-img-orta');
+        row.hoEski = row.querySelector('.ho-img-eski');
+        // Yalnizca dolu olan gorseller siraya girer. Bos slot varsa
+        // gecis kalanlar arasinda yapilir; satir hicbir anda bos kalmaz.
+        row.hoKatman = [];
+        if (row.hoYeni) row.hoKatman.push(row.hoYeni);
+        if (row.hoOrta) row.hoKatman.push(row.hoOrta);
+        if (row.hoEski) row.hoKatman.push(row.hoEski);
+      }
+
+      root.hoOnInput = function () { ipucuKapat(root); ciz(root); };
+      root.hoOnMudahale = function () { ipucuKapat(root); };
+      root.hoSlider.addEventListener('input', root.hoOnInput);
+      root.hoSlider.addEventListener('pointerdown', root.hoOnMudahale);
+      root.hoSlider.addEventListener('touchstart', root.hoOnMudahale, { passive: true });
+      root.hoSlider.addEventListener('keydown', root.hoOnMudahale);
+
+      root.hoOnResize = function () { konum(root); };
+      window.addEventListener('resize', root.hoOnResize);
+
+      ciz(root);
+
+      if ('IntersectionObserver' in window) {
+        var oran = 0.4;
+        var yuk = root.getBoundingClientRect().height;
+        if (yuk > window.innerHeight) {
+          oran = Math.max(0.05, (window.innerHeight * 0.6) / yuk);
+        }
+        root.hoGozlem = new IntersectionObserver(function (girisler) {
+          for (var i = 0; i < girisler.length; i++) {
+            if (girisler[i].isIntersecting) {
+              tanitim(root);
+              root.hoGozlem.disconnect();
+              root.hoGozlem = null;
+            }
+          }
+        }, { threshold: oran });
+        root.hoGozlem.observe(root);
+      }
+
+      roots.push(root);
+    }
+
+    function sok(root) {
+      if (!root || !root.hoSlider) return;
+      ipucuKapat(root);
+      root.hoSlider.removeEventListener('input', root.hoOnInput);
+      root.hoSlider.removeEventListener('pointerdown', root.hoOnMudahale);
+      root.hoSlider.removeEventListener('touchstart', root.hoOnMudahale);
+      root.hoSlider.removeEventListener('keydown', root.hoOnMudahale);
+      window.removeEventListener('resize', root.hoOnResize);
+      if (root.hoGozlem) { root.hoGozlem.disconnect(); root.hoGozlem = null; }
+      if (root.hoAnimGoz) { root.hoAnimGoz.disconnect(); root.hoAnimGoz = null; }
+      root.hoInited = false;
+      root.hoAnimKurulu = false;
+      var j = roots.indexOf(root);
+      if (j > -1) roots.splice(j, 1);
+    }
+
+    // --- Kaydirinca giris animasyonu ---
+    function animKur(root) {
+      if (!root || root.hoAnimKurulu) return;
+      root.hoAnimKurulu = true;
+
+      var ogeler = root.querySelectorAll('[data-ho-anim]');
+      if (!ogeler.length) return;
+
+      var ara = parseInt(root.getAttribute('data-ho-ara'), 10);
+      if (isNaN(ara)) ara = 90;
+
+      root.classList.add('ho-hazir');
+      for (var i = 0; i < ogeler.length; i++) {
+        ogeler[i].style.setProperty('--ho-gecikme', (i * ara) + 'ms');
+      }
+
+      var az = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (az || !('IntersectionObserver' in window)) {
+        for (var j = 0; j < ogeler.length; j++) ogeler[j].classList.add('is-gorunur');
+        return;
+      }
+
+      root.hoAnimGoz = new IntersectionObserver(function (girisler) {
+        for (var k = 0; k < girisler.length; k++) {
+          if (!girisler[k].isIntersecting) continue;
+          girisler[k].target.classList.add('is-gorunur');
+          root.hoAnimGoz.unobserve(girisler[k].target);
+        }
+      }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
+
+      for (var m = 0; m < ogeler.length; m++) root.hoAnimGoz.observe(ogeler[m]);
+    }
+
+    window.hoOmruInit = function (scope) {
+      var list = (scope || document).querySelectorAll('[data-ho-root]');
+      for (var i = 0; i < list.length; i++) kur(list[i]);
+      var anim = (scope || document).querySelectorAll('[data-ho-anim-kok]');
+      for (var j = 0; j < anim.length; j++) animKur(anim[j]);
+    };
+
+    document.addEventListener('shopify:section:load', function (e) { window.hoOmruInit(e.target); });
+    document.addEventListener('shopify:section:unload', function (e) {
+      var list = e.target.querySelectorAll('[data-ho-root]');
+      for (var i = 0; i < list.length; i++) sok(list[i]);
+    });
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { window.hoOmruInit(); });
+    } else {
+      window.hoOmruInit();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Hediye Ömrü",
+  "tag": "section",
+  "class": "hediye-omru-section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Giriş Animasyonu"
+    },
+    {
+      "type": "checkbox",
+      "id": "anim_ac",
+      "label": "Kaydırınca belirsin",
+      "info": "Başlık, alt yazı, zaman çizgisi ve satırlar ekrana girdikçe sırayla yükselerek görünür. Bir kez oynar.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "anim_mesafe",
+      "label": "Yükselme mesafesi",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "anim_sure",
+      "label": "Süre",
+      "min": 200,
+      "max": 1200,
+      "step": 50,
+      "unit": "ms",
+      "default": 600
+    },
+    {
+      "type": "range",
+      "id": "anim_ara",
+      "label": "Öğeler arası gecikme",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "unit": "ms",
+      "default": 80
+    },
+    {
+      "type": "select",
+      "id": "palet",
+      "label": "Renk paleti",
+      "info": "Apple paletlerinden biri seçiliyken aşağıdaki tek tek renk ayarları yok sayılır — ama silinmez. \"Özel\" seçtiğiniz anda kendi renkleriniz aynen geri gelir.",
+      "default": "ozel",
+      "options": [
+        {
+          "value": "apple",
+          "label": "Apple (açık ton)"
+        },
+        {
+          "value": "ozel",
+          "label": "Özel renkler"
+        },
+        {
+          "value": "apple_gri",
+          "label": "Apple (koyu — gri zemin)"
+        },
+        {
+          "value": "apple_siyah",
+          "label": "Apple (koyu — siyah zemin)"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Başlık"
+    },
+    {
+      "type": "text",
+      "id": "baslik",
+      "label": "Başlık",
+      "default": "Çoğu hediye biter. Bu, birikir."
+    },
+    {
+      "type": "text",
+      "id": "alt_yazi",
+      "label": "Alt başlık",
+      "info": "Boş bırakabilirsiniz.",
+      "default": "Zaman hediyelere aynı davranmıyor."
+    },
+    {
+      "type": "select",
+      "id": "baslik_etiketi",
+      "label": "Başlık etiketi (SEO)",
+      "default": "h2",
+      "options": [
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "p",
+          "label": "Normal metin"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "hizalama",
+      "label": "Başlık hizası",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Sola"
+        },
+        {
+          "value": "center",
+          "label": "Ortaya"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "baslik_kalinligi",
+      "label": "Başlık kalınlığı",
+      "default": "700",
+      "options": [
+        {
+          "value": "500",
+          "label": "Orta"
+        },
+        {
+          "value": "600",
+          "label": "Yarı kalın"
+        },
+        {
+          "value": "700",
+          "label": "Kalın"
+        },
+        {
+          "value": "800",
+          "label": "Çok kalın"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "baslik_rengi",
+      "label": "Başlık rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "bas_m",
+      "label": "Başlık boyutu (mobil)",
+      "info": "Video Hero başlığı mobilde 28px; bölüm başlıkları bir kademe altında durur.",
+      "min": 16,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "bas_t",
+      "label": "Başlık boyutu (tablet)",
+      "info": "768px ve üzeri.",
+      "min": 16,
+      "max": 56,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "bas_d",
+      "label": "Başlık boyutu (masaüstü)",
+      "info": "1024px ve üzeri.",
+      "min": 18,
+      "max": 72,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "color",
+      "id": "alt_rengi",
+      "label": "Alt başlık rengi",
+      "default": "#b9b9b9"
+    },
+    {
+      "type": "range",
+      "id": "alt_m",
+      "label": "Alt yazı boyutu (mobil)",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "alt_d",
+      "label": "Alt yazı boyutu (masaüstü)",
+      "min": 12,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "alt_bos_m",
+      "label": "Başlık ile alt yazı arası (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "alt_bos_d",
+      "label": "Başlık ile alt yazı arası (masaüstü)",
+      "info": "Video Hero'da bu boşluk 8px.",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "baslik_bosluk",
+      "label": "Başlık ile zaman çubuğu arası",
+      "min": 8,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "header",
+      "content": "Zaman Çubuğu"
+    },
+    {
+      "type": "range",
+      "id": "max_ay",
+      "label": "Çubuğun bitiş noktası",
+      "info": "Kaç aylık bir süreyi kapsasın.",
+      "min": 12,
+      "max": 60,
+      "step": 6,
+      "unit": "ay",
+      "default": 36
+    },
+    {
+      "type": "text",
+      "id": "slider_etiketi",
+      "label": "Ekran okuyucu etiketi",
+      "default": "Hediyeni aldıktan sonra geçen süre"
+    },
+    {
+      "type": "text",
+      "id": "sifir_yazi",
+      "label": "Başlangıç noktası yazısı",
+      "default": "1. gün"
+    },
+    {
+      "type": "text",
+      "id": "ay_kalibi",
+      "label": "Ay yazım kalıbı",
+      "info": "{deger} yerine ay sayısı gelir.",
+      "default": "{deger}. ay"
+    },
+    {
+      "type": "text",
+      "id": "yil_kalibi",
+      "label": "Yıl yazım kalıbı",
+      "info": "{deger} yerine yıl sayısı gelir. Tam yıllarda bu kalıp, arada kalan noktalarda ay kalıbı kullanılır.",
+      "default": "{deger}. yıl"
+    },
+    {
+      "type": "range",
+      "id": "okuma_boyut",
+      "label": "Süre yazısı boyutu",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "color",
+      "id": "okuma_rengi",
+      "label": "Süre yazısı rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "ray_kalinlik",
+      "label": "Ray kalınlığı",
+      "min": 2,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "color",
+      "id": "ray_rengi",
+      "label": "Ray rengi",
+      "default": "#333333"
+    },
+    {
+      "type": "range",
+      "id": "topuz_boyut",
+      "label": "Topuz boyutu",
+      "info": "Dokunma alanı her hâlükârda 44px yüksekliğindedir.",
+      "min": 14,
+      "max": 36,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "color",
+      "id": "topuz_rengi",
+      "label": "Topuz rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "eksen_rengi",
+      "label": "Eksen etiketleri rengi",
+      "default": "#7d7d7d"
+    },
+    {
+      "type": "range",
+      "id": "eksen_boyut",
+      "label": "Eksen etiketleri boyutu",
+      "min": 9,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Sürükleme İpucu"
+    },
+    {
+      "type": "checkbox",
+      "id": "ipucu_goster",
+      "label": "Sürükleme ipucu görünsün",
+      "info": "Kullanıcı çubuğa dokunana kadar yanıp söner, sonra kaybolur.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "ipucu_yazi",
+      "label": "İpucu yazısı",
+      "default": "Kaydır"
+    },
+    {
+      "type": "range",
+      "id": "ipucu_hiz",
+      "label": "Yanıp sönme hızı",
+      "min": 600,
+      "max": 2400,
+      "step": 100,
+      "unit": "ms",
+      "default": 1400
+    },
+    {
+      "type": "color",
+      "id": "ipucu_rengi",
+      "label": "İpucu rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "ipucu_boyut",
+      "label": "İpucu yazı boyutu",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "ipucu_hedef",
+      "label": "İpucunun ilerlediği nokta",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "%",
+      "default": 25
+    },
+    {
+      "type": "header",
+      "content": "Satırlar"
+    },
+    {
+      "type": "checkbox",
+      "id": "kapsul_parla",
+      "label": "Kapsül görseli zamanla parlasın",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "kapsul_baslangic",
+      "label": "Kapsülün başlangıç değeri",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "kapsul_artis",
+      "label": "Kapsülün aylık artışı",
+      "min": 0.1,
+      "max": 5,
+      "step": 0.1,
+      "unit": "%",
+      "default": 1.7
+    },
+    {
+      "type": "checkbox",
+      "id": "vurgu_ozel",
+      "label": "Vurgu rengini kendim seçeceğim",
+      "info": "Hazır palet seçiliyken bile aşağıdaki vurgu rengi geçerli olur.",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "vurgu_rengi",
+      "label": "Kapsül vurgu rengi",
+      "default": "#4ade80"
+    },
+    {
+      "type": "checkbox",
+      "id": "vurgu_degrade",
+      "label": "Vurgu rengi degradeli olsun",
+      "info": "Kapsül satırının çubuğu ve durum yazısı düz renk yerine degrade kullanır.",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "vurgu_d1",
+      "label": "Vurgu degradesi 1",
+      "default": "#c60303"
+    },
+    {
+      "type": "color",
+      "id": "vurgu_d2",
+      "label": "Vurgu degradesi 2",
+      "default": "#b21e3a"
+    },
+    {
+      "type": "color",
+      "id": "vurgu_d3",
+      "label": "Vurgu degradesi 3",
+      "default": "#4a0c16"
+    },
+    {
+      "type": "color",
+      "id": "vurgu_yazi",
+      "label": "Vurgu durum yazısı",
+      "info": "Degrade açıkken kapsül satırının durum yazısı. Degradenin koyu ucu yazıda okunmadığı için ayrı tutuluyor.",
+      "default": "#ff453a"
+    },
+    {
+      "type": "range",
+      "id": "vurgu_aci",
+      "label": "Vurgu degrade açısı",
+      "min": 0,
+      "max": 360,
+      "step": 5,
+      "unit": "°",
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "cubuk_rengi",
+      "label": "Ömür çubuğu rengi",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "color",
+      "id": "cubuk_zemin",
+      "label": "Ömür çubuğu zemini",
+      "default": "#2b2b2b"
+    },
+    {
+      "type": "color",
+      "id": "bitti_rengi",
+      "label": "Bitti rengi",
+      "default": "#e5484d"
+    },
+    {
+      "type": "range",
+      "id": "cubuk_yukseklik",
+      "label": "Ömür çubuğu kalınlığı",
+      "min": 3,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "gecis_suresi",
+      "label": "Geçiş yumuşatma süresi",
+      "info": "0 yaparsanız sürüklerken birebir anlık tepki verir.",
+      "min": 0,
+      "max": 400,
+      "step": 20,
+      "unit": "ms",
+      "default": 120
+    },
+    {
+      "type": "range",
+      "id": "gorsel_boyut_m",
+      "label": "Görsel boyutu (mobil)",
+      "min": 48,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "gorsel_boyut_d",
+      "label": "Görsel boyutu (masaüstü)",
+      "min": 64,
+      "max": 128,
+      "step": 4,
+      "unit": "px",
+      "default": 88
+    },
+    {
+      "type": "range",
+      "id": "gorsel_kose",
+      "label": "Görsel köşe yuvarlaklığı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "gorsel_zemin",
+      "label": "Görsel kutusu zemini",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "color",
+      "id": "ad_rengi",
+      "label": "Hediye adı rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "ad_boyut_m",
+      "label": "Hediye adı boyutu (mobil)",
+      "min": 12,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "ad_boyut_d",
+      "label": "Hediye adı boyutu (masaüstü)",
+      "min": 12,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "color",
+      "id": "durum_rengi",
+      "label": "Durum yazısı rengi",
+      "default": "#9a9a9a"
+    },
+    {
+      "type": "range",
+      "id": "durum_boyut",
+      "label": "Durum yazısı boyutu",
+      "min": 11,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "durum_genislik",
+      "label": "Durum sütunu genişliği (masaüstü)",
+      "min": 90,
+      "max": 260,
+      "step": 10,
+      "unit": "px",
+      "default": 190
+    },
+    {
+      "type": "color",
+      "id": "satir_zemin",
+      "label": "Satır zemini",
+      "default": "#141414"
+    },
+    {
+      "type": "checkbox",
+      "id": "satir_kenarlik",
+      "label": "Satır kenarlığı",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "satir_kenarlik_rengi",
+      "label": "Satır kenarlık rengi",
+      "default": "#2a2a2a"
+    },
+    {
+      "type": "range",
+      "id": "satir_kose",
+      "label": "Satır köşe yuvarlaklığı",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "satir_dolgu",
+      "label": "Satır iç boşluğu",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "satir_ic",
+      "label": "Görsel ile yazı arası",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "satir_arasi",
+      "label": "Satırlar arası boşluk",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "liste_bosluk",
+      "label": "Zaman çubuğu ile liste arası",
+      "min": 8,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Kapanış Cümlesi"
+    },
+    {
+      "type": "text",
+      "id": "final_metin",
+      "label": "Kapanış cümlesi",
+      "info": "Boş bırakırsanız hiç görünmez. Yazarsanız kullanıcı çubuğu sona yaklaştırdığında listenin altında yumuşakça belirir."
+    },
+    {
+      "type": "range",
+      "id": "final_esik",
+      "label": "Hangi noktada belirsin",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 85
+    },
+    {
+      "type": "color",
+      "id": "final_renk",
+      "label": "Kapanış cümlesi rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "final_boyut",
+      "label": "Kapanış cümlesi boyutu",
+      "min": 13,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 19
+    },
+    {
+      "type": "range",
+      "id": "final_bosluk",
+      "label": "Liste ile kapanış arası",
+      "min": 8,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Bölüm Görünümü"
+    },
+    {
+      "type": "range",
+      "id": "mobil_olcek",
+      "label": "Mobil yoğunluk",
+      "info": "Mobilde tüm bölümü küçültür; küçük değer = daha çok satır tek ekranda. Masaüstünü etkilemez.",
+      "min": 60,
+      "max": 110,
+      "step": 5,
+      "unit": "%",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "masaustu_olcek",
+      "label": "Masaüstü yoğunluk",
+      "info": "Masaüstünde tüm bölümü küçültür; küçük değer = bölümün tamamı tek ekrana sığar. Mobili etkilemez.",
+      "min": 60,
+      "max": 110,
+      "step": 5,
+      "unit": "%",
+      "default": 80
+    },
+    {
+      "type": "color_background",
+      "id": "zemin_rengi",
+      "label": "Bölüm arka planı",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "max_w",
+      "label": "İçerik genişliği",
+      "min": 600,
+      "max": 1400,
+      "step": 20,
+      "unit": "px",
+      "default": 900
+    },
+    {
+      "type": "range",
+      "id": "edge_m",
+      "label": "Kenar boşluğu (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "edge_d",
+      "label": "Kenar boşluğu (masaüstü)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "p_top_m",
+      "label": "Üst boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "p_bot_m",
+      "label": "Alt boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "p_top_d",
+      "label": "Üst boşluk (masaüstü)",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "p_bot_d",
+      "label": "Alt boşluk (masaüstü)",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "hediye",
+      "name": "Hediye",
+      "settings": [
+        {
+          "type": "text",
+          "id": "ad",
+          "label": "Hediye adı",
+          "default": "Hediye"
+        },
+        {
+          "type": "image_picker",
+          "id": "gorsel_yeni",
+          "label": "1. görsel — yeni hâli"
+        },
+        {
+          "type": "image_picker",
+          "id": "gorsel_orta",
+          "label": "2. görsel — yarı yolda",
+          "info": "İsteğe bağlı. Eklerseniz geçiş üç kademeli olur; parfümün yarılanması gibi durumlarda çok daha inandırıcı görünür."
+        },
+        {
+          "type": "image_picker",
+          "id": "gorsel_eski",
+          "label": "3. görsel — eskimiş hâli"
+        },
+        {
+          "type": "text",
+          "id": "omur_ay",
+          "label": "Ömür (ay)",
+          "info": "Görselin ve çubuğun tükenme hızı. Ondalık yazabilirsiniz: 0,5",
+          "default": "6"
+        },
+        {
+          "type": "textarea",
+          "id": "durumlar",
+          "label": "Durum yazıları",
+          "info": "Her satır: ay | yazı. O aydan itibaren bu yazı görünür. Eşikleri ömürle uyumlu tutun. Yüzde göstermek isterseniz {deger} yazın.",
+          "default": "0|Taze\n1|Solmaya başladı\n6|Soldu"
+        }
+      ]
+    },
+    {
+      "type": "kapsul",
+      "name": "Zaman Kapsülü",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "ad",
+          "label": "Ad",
+          "default": "Zaman Kapsülü"
+        },
+        {
+          "type": "image_picker",
+          "id": "gorsel",
+          "label": "Görsel",
+          "info": "Bu görsel değişmez, sabit kalır."
+        },
+        {
+          "type": "textarea",
+          "id": "durumlar",
+          "label": "Durum yazıları",
+          "info": "Her satır: ay | yazı. O aydan itibaren bu yazı görünür. Yüzde göstermek isterseniz {deger} yazın.",
+          "default": "0|Kilitlendi\n4|Daha anlamlı\n12|Daha da özel\n24|Anıları büyüyor\n36|Bir ömür saklanacak"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hediye Ömrü",
+      "blocks": [
+        {
+          "type": "hediye",
+          "settings": {
+            "ad": "Çiçek",
+            "omur_ay": "0,5",
+            "durumlar": "0|Taze\n1|Soldu"
+          }
+        },
+        {
+          "type": "hediye",
+          "settings": {
+            "ad": "Parfüm",
+            "omur_ay": "6",
+            "durumlar": "0|Dolu\n1|%{deger} kaldı\n6|Bitti"
+          }
+        },
+        {
+          "type": "hediye",
+          "settings": {
+            "ad": "Cüzdan",
+            "omur_ay": "24",
+            "durumlar": "0|Yepyeni\n1|Kullanılıyor\n12|Yıpranmaya başladı\n24|Yıprandı\n30|Çekmeceye kaldırıldı"
+          }
+        },
+        {
+          "type": "kapsul",
+          "settings": {
+            "ad": "Zaman Kapsülü",
+            "durumlar": "0|Kilitlendi\n4|Daha anlamlı\n12|Daha da özel\n24|Anıları büyüyor\n36|Bir ömür saklanacak"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
