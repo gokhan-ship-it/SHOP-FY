@@ -512,11 +512,14 @@
       color: var(--tt-c-ink-2-dark);
     }
 
-    /* Acik zeminde ikincil metin */
+    {%- comment -%}
+      Acik zeminde ikincil metin.
+      .as-alt ve .as-etiket 9. turda bu listeden CIKARILDI: kart
+      slaytinin zemini siyaha dondu, #6e6e73 orada okunmuyor.
+      Yeni renkleri dosyanin sonundaki koyu zemin blogunda.
+    {%- endcomment -%}
     #MainContent.tt-couple-page .ho-alt,
-    #MainContent.tt-couple-page .as-alt,
-    #MainContent.tt-couple-page .mk-metin,
-    #MainContent.tt-couple-page .as-etiket {
+    #MainContent.tt-couple-page .mk-metin {
       color: var(--tt-c-ink-2);
     }
 
@@ -830,6 +833,115 @@
   @media (prefers-reduced-motion: reduce) {
     .tt-vid-kapak {
       transition: none;
+    }
+  }
+
+  {%- comment -%}
+    ==================================================================
+    KART SLAYTI (.as-*): SIYAH ZEMIN  (9. tur)
+
+    Bolum #f5f5f7 zeminliydi, siyaha cekildi. Zemin degisince
+    bolumun kendi renk ayarlarinin bir kismi okunmaz hale geliyor;
+    hepsi burada karsiliklariyla degistiriliyor:
+
+      zemin          #f5f5f7 -> #000
+      baslik         #1d1d1f -> #f5f5f7   (siyahta gorunmuyordu)
+      etiket + alt   #6e6e73 -> #a1a1a6   (siyahta kontrast 3:1'in
+                                           altinda kaliyordu)
+      kart zemini    #e8e8ed -> #1c1c1e   (gorsel yuklenene kadar
+                                           beyaz kutu parliyordu)
+      aktif nokta    #1d1d1f -> #f5f5f7   (siyahta TAMAMEN kayipti)
+      pasif nokta    #c7c7cc -> beyaz %28
+      ok odak halkasi #1d1d1f -> #f5f5f7
+
+    DEGRADEYE DOKUNULMADI: basligin icindeki .as-bas-vurgu parcasi
+    kendi background-clip: text degradesini tasiyor. .as-bas'a
+    yazilan renk o span'i etkilemiyor -- degrade oldugu gibi kaliyor.
+
+    Kontrast (siyah uzerinde): #f5f5f7 ~19:1, #a1a1a6 ~9:1. Ikisi de
+    AA'nin uzerinde.
+
+    Butun genisliklerde: zemin rengi kirilma noktasina gore
+    degisemez, yoksa masaustunde beyaz mobilde siyah olurdu.
+    Kapsam yine sayfaya ozel (#MainContent.tt-couple-page); ayni
+    bolum baska sayfalarda acik zeminli kalmaya devam ediyor.
+    ==================================================================
+  {%- endcomment -%}
+  #MainContent.tt-couple-page .as-kok {
+    background-color: #000;
+  }
+
+  #MainContent.tt-couple-page .as-bas {
+    color: #f5f5f7;
+  }
+
+  #MainContent.tt-couple-page .as-etiket,
+  #MainContent.tt-couple-page .as-alt {
+    color: #a1a1a6;
+  }
+
+  #MainContent.tt-couple-page .as-kart {
+    background-color: #1c1c1e;
+  }
+
+  #MainContent.tt-couple-page .as-nokta {
+    background-color: rgba(255, 255, 255, 0.28);
+  }
+
+  #MainContent.tt-couple-page .as-nokta.is-etkin {
+    background-color: #f5f5f7;
+  }
+
+  #MainContent.tt-couple-page .as-ok:focus-visible,
+  #MainContent.tt-couple-page .as-nokta:focus-visible {
+    outline-color: #f5f5f7;
+  }
+
+  {%- comment -%}
+    ==================================================================
+    YEREL NAV CTA'SI ("Urunleri Gor"): DUZ APPLE MAVISI  (9. tur)
+
+    Bolumun kendi kurulumu: background-color = cta_renk_3,
+    background-image = 5 duraklı bordo degrade, ustune de
+    "aln-kay-<sid>" animasyonuyla ileri geri suzuluyor.
+
+    Istenen: degrade kalksin, duz Apple mavisi olsun, parlama
+    kalsin. O yuzden:
+      background-image: none  -> degrade gider
+      animation: none         -> degradeyi suzen kayma durur
+      background-color        -> #0071e3 (Apple'in dugme mavisi)
+
+    PARLAMA ETKILENMIYOR: isik seridi butonun kendisinde degil
+    ::before katmaninda ve kendi animasyonu var (aln-parla-<sid>).
+    Buradaki animation: none yalnizca ogenin kendi animasyonunu
+    kapatiyor, pseudo-element'inkini degil.
+
+    Hover: bolum hover'da degradeyi geri yaziyor ve
+    filter: brightness(1.12) uyguluyor; ikisi de eziliyor, yerine
+    Apple'in hover mavisi (#0077ed) geliyor.
+
+    HEDEF SINIF DEGIL OZNITELIK: sinif adi calisma aninda
+    section.id ile bitiyor (.aln-cta-<sid>) ve [class*="aln-cta-"]
+    yazsak butonun ICINDEKI etiketi de (.aln-cta-yazi-<sid>)
+    yakalardi. Etikete zemin rengi verilseydi parlama seridi yazinin
+    uzerinden gecerken kesilirdi. [data-aln-cta] yalnizca butonun
+    kendisinde (iki render dalinda da var).
+    Ozgulluk (1,1,0) > bolumun (0,1,0) ve (0,2,0) kurallari.
+    ==================================================================
+  {%- endcomment -%}
+  #MainContent.tt-couple-page [data-aln-cta] {
+    background-color: #0071e3;
+    background-image: none;
+    border-color: transparent;
+    animation: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #MainContent.tt-couple-page [data-aln-cta]:hover {
+      background-color: #0077ed;
+      background-image: none;
+      border-color: transparent;
+      filter: none;
     }
   }
 </style>
