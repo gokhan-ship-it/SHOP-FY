@@ -283,3 +283,40 @@ eski değere döndürmek.
 `collection.couple-zaman-kapsulleri.json` temada duruyor ama hiçbir
 koleksiyon bunlara bağlı değil. "Couple", "Couple Collection" ve
 "Couple Zaman Kapsülleri" koleksiyonları varsayılan şablonu kullanıyor.
+
+---
+
+# GemPages ürün şablonlarını geri almış (12 Ağustos 2026, akşam)
+
+Tema yayına alındıktan sonra single ürün sayfaları eski GemPages
+tasarımlarını açıyordu. Sebep tema değil: ürünlerin `templateSuffix`
+değerleri GemPages şablonlarına GERİ DÖNMÜŞTÜ.
+
+Bu dosyada daha önce (aynı gün) 31 single ürüne `zaman-kapsulu`
+uygulandığı kayıtlı. Kontrol edildiğinde yalnızca 5'i o değerde kalmıştı
+(Aurora cocuk · Klasik Zaman Kapsülü · Red Velvet · Taşlıkilit White ·
+Zaman Kapsülü Künye); kalan 26'sı `gp-template-6029...` gibi YENİ
+oluşturulmuş GemPages şablonlarını gösteriyordu. Couple tarafında da 3
+set ürünü geri dönmüştü.
+
+Geri döndürülenler (29):
+
+- Single -> `zaman-kapsulu` (26): Astor · Auron · Aurora · Chloe ·
+  Chloe Gold · Eight Stars White · Gemici Zincir · Gold · Gourmet Zincir ·
+  Infinity Glow · Kral Zincir · Lumin · Luna · Noir · Nora · Nova ·
+  Ocean Blue · Rose · Rose Pink · Santorin · Santorin Gold ·
+  Taşlıkilit Gold · Taşlıkilit Rose · Vantablack · Velor (taslak) · White
+- Couple -> `zaman-kapsulu-couple` (3): Astor + Chloe ·
+  Noir + Chloe Charm · Vantablack + Taşlı Kilit
+
+## Kalıcı çözüm gerekiyor
+
+Bu düzeltme kalıcı değil. GemPages uygulaması yayınlandığında /
+senkronize olduğunda ürünlerin şablon atamasını yeniden kendi üzerine
+alıyor. Tekrarını engellemek için GemPages tarafında o ürün sayfalarının
+yayından kaldırılması (ya da uygulamanın kaldırılması) gerekiyor;
+Shopify tarafından yapılabilecek bir ayar yok.
+
+Kontrol sorgusu (aynısı tekrar bakmak için):
+`products(query: "-title:*Couple*") { nodes { title templateSuffix } }`
+-- `gp-template-` ile başlayan her değer geri dönmüş demektir.
