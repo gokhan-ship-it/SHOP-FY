@@ -717,5 +717,160 @@
     #MainContent.tt-couple-page [class*="ai-comparison-subtitle-"] {
       margin-block: var(--tt-s4) var(--tt-s6);
     }
+
+    {%- comment -%}
+      ------------------------------------------------------------
+      VIDEO SLAYTI: OYNAT DUGMESI + GORSELDEN SURUKLEME  (7. tur)
+
+      1) .vs-toggle mobilde gizleniyor. Dugme DOM'da kaliyor
+         (bolumun JS'i onu ariyor: querySelector('[data-vs-toggle]')),
+         sadece gorunmuyor. Videolar zaten sessiz, dongude ve
+         bolum ekrana girince baslayip cikinca duruyor; duraklatma
+         dugmesi olmadan da davranis bozulmuyor.
+
+         Not: bolumun kendi ayarinda "Oynat dugmesini goster"
+         kutucugu var. Onu kapatmak dugmeyi masaustunde de kaldirir
+         ve DOM'dan tamamen cikarir -- tercih edilirse editorden.
+
+      2) touch-action: pan-y -> gorselin uzerinde parmak yatay
+         hareket ederse tarayici o hareketi kendi sayfa kaydirmasina
+         harcamiyor, asagidaki script'e birakiyor. Dikey kaydirma
+         (pan-y) aynen calisiyor.
+      ------------------------------------------------------------
+    {%- endcomment -%}
+    #MainContent.tt-couple-page .vs-toggle {
+      display: none;
+    }
+
+    #MainContent.tt-couple-page .vs-stage {
+      touch-action: pan-y;
+    }
   }
 </style>
+
+{%- comment -%}
+  ==================================================================
+  VIDEO SLAYTINI GORSELDEN DE SURUKLEYEBILME  (7. tur)
+
+  Sorun: slayt yalnizca kart seridinden (.vs-track) kaydiriliyordu.
+  Gorselin (.vs-stage) uzerinde parmak surunce hicbir sey olmuyordu.
+
+  Cozum: gorselin uzerindeki yatay surukleme, seridin scrollLeft
+  degerine birebir aktariliyor. Boylece bolumun KENDI mantigi
+  calismaya devam ediyor -- section'in scroll dinleyicisi zaten
+  seridi izleyip en yakin karta gore videoyu degistiriyor
+  (nearest() + show()). Yani burada slayt mantigi yeniden
+  yazilmiyor, sadece ikinci bir tutamak ekleniyor.
+
+  Parmak kaldirilinca en yakin kartin basina yumusak oturuluyor;
+  serit zaten scroll-snap-type: x mandatory tasiyor.
+
+  KAPSAM
+    - Yalnizca #MainContent.tt-couple-page altindaki .vs-root'lar.
+    - Yalnizca <= 767px (her dokunusta matchMedia ile bakiliyor).
+    - sections/video-slider-kapsul.liquid'e DOKUNULMADI; ayni bolum
+      hediye/event sayfalarinda da kullaniliyor, oralarda davranis
+      aynen eski haliyle kaliyor.
+
+  DIKKAT: bu snippet <head> icinde render ediliyor (theme.liquid
+  satir 60), yani script calistiginda <body> henuz yok. Bu yuzden
+  DOMContentLoaded bekleniyor. Tema duzenleyicide bolum yeniden
+  yuklenince dugum degistigi icin shopify:section:load'da tekrar
+  taraniyor; ayni dugume iki kez baglanmayi kok uzerindeki
+  ttVsSurukle bayragi engelliyor.
+  ==================================================================
+{%- endcomment -%}
+<script>
+  (function () {
+    'use strict';
+
+    var MOBIL = '(max-width: 767px)';
+    var ESIK = 8; // yatay mi dikey mi karari icin gereken piksel
+
+    function mobilMi() {
+      return !!(window.matchMedia && window.matchMedia(MOBIL).matches);
+    }
+
+    // Seridin sol kenarina en yakin kart. Bolumun kendi nearest()
+    // fonksiyonu kapali kapsamda oldugu icin ayni is burada tekrar
+    // yapiliyor; olcut de ayni: kartin sol kenari ile seridin sol
+    // kenari arasindaki mesafe.
+    function otur(ray) {
+      var rr = ray.getBoundingClientRect();
+      var pad = parseFloat(window.getComputedStyle(ray).paddingLeft) || 0;
+      var en = null;
+      var enFark = Infinity;
+      for (var i = 0; i < ray.children.length; i++) {
+        var kr = ray.children[i].getBoundingClientRect();
+        var fark = Math.abs(kr.left - rr.left - pad);
+        if (fark < enFark) { enFark = fark; en = ray.children[i]; }
+      }
+      if (!en) return;
+      var hedef = ray.scrollLeft + (en.getBoundingClientRect().left - rr.left - pad);
+      hedef = Math.max(0, Math.min(hedef, ray.scrollWidth - ray.clientWidth));
+      if (ray.scrollTo) ray.scrollTo({ left: hedef, behavior: 'smooth' });
+      else ray.scrollLeft = hedef;
+    }
+
+    function bagla(kok) {
+      if (kok.ttVsSurukle) return;
+      var sahne = kok.querySelector('.vs-stage');
+      var ray = kok.querySelector('[data-vs-track]');
+      if (!sahne || !ray) return;
+      kok.ttVsSurukle = true;
+
+      var x0 = 0, y0 = 0, kaydir0 = 0;
+      var basli = false;
+      var yon = 0; // 0 belirsiz, 1 yatay, 2 dikey
+
+      sahne.addEventListener('touchstart', function (e) {
+        basli = false;
+        if (!mobilMi() || e.touches.length !== 1) return;
+        // Serit kaydirilamiyorsa (tek kart) hic karisma.
+        if (ray.scrollWidth <= ray.clientWidth + 1) return;
+        x0 = e.touches[0].clientX;
+        y0 = e.touches[0].clientY;
+        kaydir0 = ray.scrollLeft;
+        basli = true;
+        yon = 0;
+      }, { passive: true });
+
+      sahne.addEventListener('touchmove', function (e) {
+        if (!basli || e.touches.length !== 1) return;
+        var dx = e.touches[0].clientX - x0;
+        var dy = e.touches[0].clientY - y0;
+        if (!yon) {
+          if (Math.abs(dx) < ESIK && Math.abs(dy) < ESIK) return;
+          // Ilk belirgin hareket yonu kararı belirliyor; sonradan
+          // degismiyor ki dikey kaydirma yarida kesilmesin.
+          yon = Math.abs(dx) > Math.abs(dy) ? 1 : 2;
+        }
+        if (yon !== 1) return;
+        if (e.cancelable) e.preventDefault();
+        ray.scrollLeft = kaydir0 - dx;
+      }, { passive: false });
+
+      function bitir() {
+        if (!basli) return;
+        basli = false;
+        if (yon === 1) otur(ray);
+        yon = 0;
+      }
+
+      sahne.addEventListener('touchend', bitir, { passive: true });
+      sahne.addEventListener('touchcancel', bitir, { passive: true });
+    }
+
+    function tara() {
+      var kokler = document.querySelectorAll('#MainContent.tt-couple-page .vs-root');
+      for (var i = 0; i < kokler.length; i++) bagla(kokler[i]);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', tara);
+    } else {
+      tara();
+    }
+    document.addEventListener('shopify:section:load', tara);
+  })();
+</script>
