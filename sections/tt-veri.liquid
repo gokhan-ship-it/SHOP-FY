@@ -1,0 +1,425 @@
+{%- comment -%}
+  TT-VERI — kullanim verisi bolumu
+
+  Isi tek bir itirazi curutmek: "yine cekmecede kalacak bir hediye."
+  Butun tasarim bu argumana hizmet ediyor; ana gereksinim dort rakamin
+  ayni ekranda, kaydirma gerektirmeden gorulebilmesi.
+
+  =================================================================
+  KENDI KENDINE YETERLI
+
+  Bu bolum hicbir dis kapsama bagimli degil: ne .tt-couple-page
+  sarmalayicisina, ne temanin tipografi degiskenlerine, ne de baska
+  bir bolumun CSS'ine. Butun seciciler .tt-veri kokunden basliyor,
+  font yigini burada tanimli. Baska bir sablona eklendiginde ayni
+  gorunuyor.
+
+  Ters yon de kapali: .tt-veri disinda hicbir sey secilmiyor, yani
+  bolum tema geneline sizmiyor. !important kullanilmadi.
+
+  Ad onegi temadaki kalibi izliyor: .tt-tk-* (taksit modali),
+  .tt-fb-* (urun fiyat blogu), .tt-kart-*, .tt-kol-*.
+  =================================================================
+
+  ILERI UYUMLULUK
+
+  Sayac yalnizca ustune binen bir katman. Rakamlar HTML'de zaten
+  dogru yazili; JS calismazsa, IntersectionObserver desteklenmiyorsa
+  ya da kullanici hareket azaltma istiyorsa bolum eksiksiz okunuyor.
+  Bu yuzden sayac "0'dan basla" degil, "son degeri gecici olarak
+  degistir" mantiginda kurulu.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign satirlar = section.blocks | where: 'type', 'veri'
+-%}
+
+{% style %}
+  .tt-veri {
+    background: #000;
+    padding: 64px 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  }
+
+  .tt-veri-ic {
+    max-width: 640px;
+    margin-inline: auto;
+  }
+
+  .tt-veri-ust {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0;
+    color: #86868b;
+  }
+
+  .tt-veri-baslik {
+    margin: 0 0 6px;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #f5f5f7;
+  }
+
+  .tt-veri-alt {
+    margin: 0 0 30px;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: #86868b;
+  }
+
+  /* dl'nin tarayici varsayilan marji sifirlaniyor. */
+  .tt-veri-liste {
+    margin: 0;
+  }
+
+  {%- comment -%}
+    Ayrac her satirin ustunde; son satir alta da bir tane koyuyor.
+    Boylece liste iki ucu kapali bir blok gibi okunuyor ve satir
+    sayisi degisince kural bozulmuyor.
+    Ayraclar .tt-veri-ic genisliginde, yani ekranin kenarina
+    dayanmiyorlar -- bolum padding'i disarida kaliyor.
+  {%- endcomment -%}
+  .tt-veri-satir {
+    padding: 20px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  .tt-veri-satir:last-child {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  .tt-veri-etiket {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: 0.06em;
+    color: #6e6e73;
+  }
+
+  {%- comment -%}
+    tabular-nums: dort rakam alt alta ayni izgaraya oturuyor ve
+    sayac calisirken genislik oynamiyor. Oge blok seviyesinde
+    oldugu icin ayrica min-width gerekmiyor.
+    dt'nin varsayilan marji da burada sifirlaniyor.
+  {%- endcomment -%}
+  .tt-veri-oran {
+    margin: 0;
+    font-size: 46px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #f5f5f7;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* dd'nin varsayilan 40px sol marji shorthand ile siliniyor. */
+  .tt-veri-cumle {
+    margin: 8px 0 0;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: 0;
+    color: #a1a1a6;
+  }
+
+  .tt-veri-dipnot {
+    margin: 18px 0 0;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: #6e6e73;
+  }
+
+  @media (min-width: 768px) {
+    .tt-veri {
+      padding: 96px 24px;
+    }
+    .tt-veri-ust {
+      font-size: 15px;
+    }
+    .tt-veri-baslik {
+      font-size: 44px;
+    }
+    .tt-veri-alt {
+      font-size: 17px;
+    }
+    .tt-veri-oran {
+      font-size: 56px;
+    }
+    .tt-veri-cumle {
+      font-size: 17px;
+    }
+  }
+{% endstyle %}
+
+<section class="tt-veri" data-tt-veri>
+  <div class="tt-veri-ic">
+    {%- if s.ustbaslik != blank -%}
+      <p class="tt-veri-ust">{{ s.ustbaslik }}</p>
+    {%- endif -%}
+
+    {%- if s.baslik != blank -%}
+      <h2 class="tt-veri-baslik">{{ s.baslik }}</h2>
+    {%- endif -%}
+
+    {%- if s.altbaslik != blank -%}
+      <p class="tt-veri-alt">{{ s.altbaslik }}</p>
+    {%- endif -%}
+
+    {%- if satirlar.size > 0 -%}
+      <dl class="tt-veri-liste">
+        {%- for blok in satirlar -%}
+          {%- assign b = blok.settings -%}
+          <div class="tt-veri-satir" {{ blok.shopify_attributes }}>
+            {%- if b.etiket != blank -%}
+              <p class="tt-veri-etiket">{{ b.etiket }}</p>
+            {%- endif -%}
+            {%- comment -%}
+              aria-label son degeri tasiyor: sayac calisirken metin
+              degisse bile ekran okuyucu dogru degeri okuyor.
+              aria-live BILEREK yok -- her ara adimi seslendirirdi.
+            {%- endcomment -%}
+            <dt class="tt-veri-oran" data-tt-veri-oran aria-label="{{ b.oran | strip_html | escape }}">
+              {{- b.oran -}}
+            </dt>
+            {%- if b.cumle != blank -%}
+              <dd class="tt-veri-cumle">{{ b.cumle }}</dd>
+            {%- else -%}
+              <dd class="tt-veri-cumle"></dd>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </dl>
+    {%- endif -%}
+
+    {%- if s.dipnot != blank -%}
+      <p class="tt-veri-dipnot">{{ s.dipnot }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+  (function () {
+    'use strict';
+
+    var SURE = 900;      // ms
+    var ARALIK = 80;     // rakamlar arasi gecikme, ms
+    var ESIK = 0.35;     // IntersectionObserver
+
+    function azHareket() {
+      return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
+
+    // ease-out (kubik): hizli baslar, hedefe yumusak oturur.
+    function yumusat(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    {%- comment -%}
+      Metni parcaliyoruz: "%94" -> onek "%", sayi 94, sonek "".
+      Boylece % isareti (ya da baska bir birim) sabit kalirken
+      yalnizca sayi degisiyor. Ondalik ayraci ne ise (virgul ya da
+      nokta) korunuyor.
+    {%- endcomment -%}
+    function coz(metin) {
+      var m = metin.match(/-?\d+(?:[.,]\d+)?/);
+      if (!m) return null;
+      var ham = m[0];
+      var ayrac = ham.indexOf(',') > -1 ? ',' : '.';
+      var basamak = 0;
+      var i = ham.indexOf(ayrac);
+      if (i > -1) basamak = ham.length - i - 1;
+      return {
+        onek: metin.slice(0, m.index),
+        sonek: metin.slice(m.index + ham.length),
+        hedef: parseFloat(ham.replace(',', '.')),
+        basamak: basamak,
+        ayrac: ayrac,
+        son: metin
+      };
+    }
+
+    function yaz(el, p, deger) {
+      var sayi = deger.toFixed(p.basamak);
+      if (p.ayrac === ',') sayi = sayi.replace('.', ',');
+      el.textContent = p.onek + sayi + p.sonek;
+    }
+
+    function say(el, p, gecikme) {
+      var t0 = null;
+      function adim(zaman) {
+        if (t0 === null) t0 = zaman;
+        var gecen = zaman - t0 - gecikme;
+        if (gecen < 0) { requestAnimationFrame(adim); return; }
+        var t = Math.min(gecen / SURE, 1);
+        yaz(el, p, p.hedef * yumusat(t));
+        if (t < 1) requestAnimationFrame(adim);
+        else el.textContent = p.son; // son karede birebir orijinal metin
+      }
+      requestAnimationFrame(adim);
+    }
+
+    function calistir(kok) {
+      var oranlar = kok.querySelectorAll('[data-tt-veri-oran]');
+      for (var i = 0; i < oranlar.length; i++) {
+        var p = coz(oranlar[i].textContent.trim());
+        if (!p) continue;
+        yaz(oranlar[i], p, 0);
+        say(oranlar[i], p, i * ARALIK);
+      }
+    }
+
+    function kur(kok) {
+      if (!kok || kok.ttVeriKurulu) return;
+      kok.ttVeriKurulu = true;
+
+      // Hareket azaltma ya da IntersectionObserver yoksa: HTML'deki
+      // degerler zaten dogru, hicbir sey yapmiyoruz.
+      if (azHareket() || !('IntersectionObserver' in window) || !window.requestAnimationFrame) return;
+
+      var goz = new IntersectionObserver(function (girisler) {
+        for (var i = 0; i < girisler.length; i++) {
+          if (!girisler[i].isIntersecting) continue;
+          goz.unobserve(girisler[i].target); // bir kez
+          goz.disconnect();
+          calistir(kok);
+        }
+      }, { threshold: ESIK });
+
+      goz.observe(kok);
+      kok.ttVeriGoz = goz;
+    }
+
+    function tara(kapsam) {
+      var alan = kapsam && kapsam.querySelectorAll ? kapsam : document;
+      var kokler = alan.querySelectorAll('[data-tt-veri]');
+      for (var i = 0; i < kokler.length; i++) kur(kokler[i]);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { tara(); });
+    } else {
+      tara();
+    }
+
+    document.addEventListener('shopify:section:load', function (e) { tara(e.target); });
+    document.addEventListener('shopify:section:unload', function (e) {
+      var kokler = e.target.querySelectorAll ? e.target.querySelectorAll('[data-tt-veri]') : [];
+      for (var i = 0; i < kokler.length; i++) {
+        if (kokler[i].ttVeriGoz) kokler[i].ttVeriGoz.disconnect();
+      }
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "TT Veri",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "text",
+      "id": "ustbaslik",
+      "label": "Üst başlık",
+      "default": "Neden unutulmuyor?"
+    },
+    {
+      "type": "text",
+      "id": "baslik",
+      "label": "Başlık",
+      "default": "Çünkü ilk gün bitmiyor."
+    },
+    {
+      "type": "text",
+      "id": "altbaslik",
+      "label": "Alt başlık",
+      "info": "Özne burada bir kez kuruluyor; satır cümlelerinde tekrar edilmiyor.",
+      "default": "Zaman Kapsülü kullananların davranış verisi."
+    },
+    {
+      "type": "text",
+      "id": "dipnot",
+      "label": "Dipnot (kaynak)",
+      "info": "ZORUNLU. Biçim: «<n> kullanıcı · <dönem> kullanım verisi». Gerçek ölçüm değeriyle doldurun; kaynaksız yüzdeler pazarlama dolgusu gibi okunur."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "veri",
+      "name": "Veri satırı",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "text",
+          "id": "etiket",
+          "label": "Etiket",
+          "info": "Noktasız.",
+          "default": "1. GÜN"
+        },
+        {
+          "type": "text",
+          "id": "oran",
+          "label": "Oran",
+          "info": "Sayaç animasyonu buradaki sayıyı bulup 0'dan yukarı sayar; % işareti sabit kalır.",
+          "default": "%94"
+        },
+        {
+          "type": "text",
+          "id": "cumle",
+          "label": "Cümle",
+          "info": "Geniş zaman, nokta ile biter.",
+          "default": "İlk 24 saat içinde ilk anısını yüklüyor."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "TT Veri",
+      "blocks": [
+        {
+          "type": "veri",
+          "settings": {
+            "etiket": "1. GÜN",
+            "oran": "%94",
+            "cumle": "İlk 24 saat içinde ilk anısını yüklüyor."
+          }
+        },
+        {
+          "type": "veri",
+          "settings": {
+            "etiket": "İLK 6 AY",
+            "oran": "%91",
+            "cumle": "Ortalama üç günde bir yeni anı ekliyor."
+          }
+        },
+        {
+          "type": "veri",
+          "settings": {
+            "etiket": "İLK 1 YIL",
+            "oran": "%76",
+            "cumle": "Kapsülünü açtıktan sonra yeni bir tarih için tekrar kilitliyor."
+          }
+        },
+        {
+          "type": "veri",
+          "settings": {
+            "etiket": "İLK 3 YIL",
+            "oran": "%69",
+            "cumle": "Üç yıl sonra hâlâ yeni anı ekliyor."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
