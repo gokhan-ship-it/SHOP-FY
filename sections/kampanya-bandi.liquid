@@ -1,0 +1,305 @@
+{%- comment -%}
+  Kampanya Bandi - "ikincisi yari fiyatina" karti.
+
+  ------------------------------------------------------------------
+  DUZEN
+
+  Hemen altindaki dongu seridi kartiyla (sections/dongu-seridi.liquid)
+  AYNI iskelet: ayni max-width, ayni dolgu, ayni radius, ayni
+  etiket/baslik/alt metin tipografisi, ayni kirilma noktalari. Iki
+  bolum birbirinin negatifi: burada beyaz kart siyah zemin uzerinde,
+  altta siyah kart beyaz zemin uzerinde.
+
+  Izgaranin IKI cocugu var, DOM sirasi mobil sirasiyla ayni:
+
+      .tt-cs-metin    etiket satiri (etiket + rozet) + baslik + alt metin
+      .tt-cs-kutular  [1. urun / Secin]  +  [2. urun / %50 indirim]
+
+  >=900px  iki sutun 1fr 1fr, sutun araligi 48px, dikeyde ortali,
+           metin SOLA hizali (eskiden ortaliydi)
+   <900px  izgara yok; ogeler DOM sirasinda alt alta
+
+  Kart olculeri:
+      <600px    330px, dolgu 20, radius 16, baslik 22, alt metin 14
+      600-899   min(90vw, 620px), dolgu 24, radius 20, baslik 24
+      >=900     kart_en_d (varsayilan 860), dolgu 32, radius 20, baslik 28
+
+  Iki kutu HER genislikte yan yana kalir; 320px altinda kutu metinleri
+  12px'e duser ama yine alt alta inmez.
+
+  ------------------------------------------------------------------
+  ROZET
+
+  Kampanya suresi rozette yaziyor ("30 Agustos'a kadar"). Sayac ya da
+  "son X gun" gibi belirsiz ifade bilerek YOK. Rozet metni bosaltilirsa
+  rozet hic render edilmez -- kampanya bitince ayari silmek yeterli.
+
+  ------------------------------------------------------------------
+  PALET
+
+  Yalnizca dort renk: #FFFFFF (kart), #1C1C1E (baslik, rozet zemini,
+  2. kutunun kenarligi), #86868B (etiket, alt metin, kutu ust satiri,
+  arti isareti), #D2D2D7 (1. kutunun kenarligi). Renkler bilerek ayar
+  degil. Tek istisna kartin etrafindaki bleed (dis_zemin); mevcut
+  sayfa gorunumu degismesin diye ayar olarak kaldi.
+
+  Indirimin nerede oldugu 2. kutunun koyu kenarligindan okunuyor;
+  bordo/kirmizi kullanilmadi, o renk alttaki seritte mekanizmayi
+  anlatiyor.
+
+  ------------------------------------------------------------------
+  KAPSAM
+
+  Butun secicilerin sonunda bolum kimligi var, yani bu CSS sayfadaki
+  baska hicbir ogeye sizmiyor.
+
+  OLCUM (Chromium)
+    390px   tek sutun, kart 330, baslik 22, kutular yan yana
+    768px   tek sutun, kart 620, baslik 24, kutular yan yana
+    1440px  iki sutun, kart 860, baslik 28, sutun araligi 48
+    uc genislikte de yatay tasma yok
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+-%}
+
+{%- if s.aktif -%}
+<style>
+  .tt-cs-{{ sid }} {
+    box-sizing: border-box;
+    width: 100%;
+    padding: {{ s.dis_bosluk_y }}px 16px;
+    {%- if s.dis_zemin != blank %}
+    background: {{ s.dis_zemin }};
+    {%- endif %}
+  }
+  .tt-cs-{{ sid }} *,
+  .tt-cs-{{ sid }} *::before,
+  .tt-cs-{{ sid }} *::after { box-sizing: inherit; }
+
+  {%- comment -%} ---------- Kart ---------- {%- endcomment -%}
+  .tt-cs-kart-{{ sid }} {
+    max-width: 330px;
+    margin-inline: auto;
+    padding: 20px;
+    background: #FFFFFF;
+    border-radius: 16px;
+  }
+
+  {%- comment -%}
+    ---------- Sol sutun ----------
+    Ilk ogenin ust boslugu bastan siliniyor: etiket satiri hem etiket
+    hem rozet bosken hic basilmiyor ve o durumda baslik en uste
+    geciyor.
+  {%- endcomment -%}
+  .tt-cs-metin-{{ sid }} > :first-child { margin-top: 0; }
+
+  .tt-cs-satir-{{ sid }} {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .tt-cs-etiket-{{ sid }} {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #86868B;
+  }
+  .tt-cs-rozet-{{ sid }} {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 11px;
+    line-height: 1.3;
+    color: #FFFFFF;
+    background: #1C1C1E;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .tt-cs-baslik-{{ sid }} {
+    margin: 16px 0 0;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: #1C1C1E;
+  }
+  .tt-cs-altmetin-{{ sid }} {
+    margin: 10px 0 0;
+    max-width: 34ch;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #86868B;
+  }
+
+  {%- comment -%}
+    ---------- Sag sutun: iki kutu ----------
+    Kutular flex: 1, arti isareti flex: none -- boylece iki kutu her
+    zaman esit genislikte ve hicbir kirilmada alt alta inmiyor.
+  {%- endcomment -%}
+  .tt-cs-kutular-{{ sid }} {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .tt-cs-kutu-{{ sid }} {
+    flex: 1;
+    min-width: 0;
+    padding: 12px;
+    text-align: center;
+    border: 0.5px solid #D2D2D7;
+    border-radius: 12px;
+  }
+  .tt-cs-kutu-vurgu-{{ sid }} { border-color: #1C1C1E; }
+  .tt-cs-kust-{{ sid }} {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.3;
+    color: #86868B;
+  }
+  .tt-cs-kalt-{{ sid }} {
+    margin: 3px 0 0;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #1C1C1E;
+  }
+  .tt-cs-arti-{{ sid }} {
+    flex: none;
+    font-size: 15px;
+    line-height: 1;
+    color: #86868B;
+  }
+
+  {%- comment -%}
+    ---------- Cok dar telefonlar ----------
+    320px altinda kutu metinleri bir kademe kuculuyor; duzen yine
+    yan yana kaliyor.
+  {%- endcomment -%}
+  @media (max-width: 319px) {
+    .tt-cs-kust-{{ sid }},
+    .tt-cs-kalt-{{ sid }} { font-size: 12px; }
+    .tt-cs-kutu-{{ sid }} { padding: 10px 8px; }
+  }
+
+  {%- comment -%} ---------- Tablet: 600-899px ---------- {%- endcomment -%}
+  @media (min-width: 600px) {
+    .tt-cs-kart-{{ sid }} {
+      max-width: min(90vw, 620px);
+      padding: 24px;
+      border-radius: 20px;
+    }
+    .tt-cs-rozet-{{ sid }} { padding: 5px 12px; font-size: 12px; }
+    .tt-cs-baslik-{{ sid }} { font-size: 24px; }
+    .tt-cs-altmetin-{{ sid }} { font-size: 15px; }
+    .tt-cs-kutular-{{ sid }} { gap: 10px; margin-top: 24px; }
+    .tt-cs-kust-{{ sid }} { font-size: 12px; }
+    .tt-cs-kalt-{{ sid }} { font-size: 14px; }
+  }
+
+  {%- comment -%}
+    ---------- Masaustu: >=900px, iki sutun ----------
+    Kutularin ust boslugu sifirlaniyor: artik metnin ALTINDA degil,
+    YANINDA duruyorlar.
+  {%- endcomment -%}
+  @media (min-width: 900px) {
+    .tt-cs-kart-{{ sid }} {
+      max-width: {{ s.kart_en_d }}px;
+      padding: 32px;
+    }
+    .tt-cs-izgara-{{ sid }} {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 48px;
+      align-items: center;
+    }
+    .tt-cs-baslik-{{ sid }} { font-size: 28px; }
+    .tt-cs-kutular-{{ sid }} { margin-top: 0; }
+  }
+</style>
+
+<div class="tt-cs-{{ sid }}">
+  <div class="tt-cs-kart-{{ sid }}">
+    <div class="tt-cs-izgara-{{ sid }}">
+
+      <div class="tt-cs-metin-{{ sid }}">
+        {%- if s.etiket != blank or s.rozet != blank -%}
+          <div class="tt-cs-satir-{{ sid }}">
+            {%- if s.etiket != blank -%}
+              <p class="tt-cs-etiket-{{ sid }}">{{ s.etiket }}</p>
+            {%- endif -%}
+
+            {%- comment -%}
+              Kampanya bitince rozet ayari bosaltiliyor ve rozet hic
+              basilmiyor; etiket satiri yalnizca etiketle kaliyor.
+            {%- endcomment -%}
+            {%- if s.rozet != blank -%}
+              <span class="tt-cs-rozet-{{ sid }}">{{ s.rozet }}</span>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- if s.baslik != blank -%}
+          <h2 class="tt-cs-baslik-{{ sid }}">{{ s.baslik }}</h2>
+        {%- endif -%}
+
+        {%- if s.alt_metin != blank -%}
+          <p class="tt-cs-altmetin-{{ sid }}">{{ s.alt_metin }}</p>
+        {%- endif -%}
+      </div>
+
+      <div class="tt-cs-kutular-{{ sid }}">
+        <div class="tt-cs-kutu-{{ sid }}">
+          <p class="tt-cs-kust-{{ sid }}">{{ s.kutu1_ust }}</p>
+          <p class="tt-cs-kalt-{{ sid }}">{{ s.kutu1_alt }}</p>
+        </div>
+
+        <span class="tt-cs-arti-{{ sid }}" aria-hidden="true">+</span>
+
+        <div class="tt-cs-kutu-{{ sid }} tt-cs-kutu-vurgu-{{ sid }}">
+          <p class="tt-cs-kust-{{ sid }}">{{ s.kutu2_ust }}</p>
+          <p class="tt-cs-kalt-{{ sid }}">{{ s.kutu2_alt }}</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Kampanya Bandı",
+  "tag": "section",
+  "class": "kampanya-bandi-section",
+  "settings": [
+    { "type": "checkbox", "id": "aktif", "label": "Bölümü göster", "default": true },
+
+    { "type": "header", "content": "Sol sütun" },
+    { "type": "text", "id": "etiket", "label": "Etiket metni", "default": "COUPLE SET", "info": "Ekranda büyük harfle görünür." },
+    { "type": "text", "id": "rozet", "label": "Rozet metni", "default": "30 Ağustos'a kadar", "info": "Boş bırakılırsa rozet hiç görünmez. Kampanya bitince burayı silmeniz yeterli." },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "İkincisi yarı fiyatına." },
+    { "type": "textarea", "id": "alt_metin", "label": "Alt metin", "default": "Beğendiğiniz iki ürünü seçin, Couple set olarak alın." },
+
+    { "type": "header", "content": "Sağ sütun — iki kutu" },
+    { "type": "text", "id": "kutu1_ust", "label": "1. kutu — üst metin", "default": "1. ürün" },
+    { "type": "text", "id": "kutu1_alt", "label": "1. kutu — alt metin", "default": "Seçin" },
+    { "type": "text", "id": "kutu2_ust", "label": "2. kutu — üst metin", "default": "2. ürün" },
+    { "type": "text", "id": "kutu2_alt", "label": "2. kutu — alt metin", "default": "%50 indirim", "info": "İndirimin burada olduğu kutunun koyu kenarlığından belli oluyor." },
+
+    { "type": "header", "content": "Bölüm" },
+    { "type": "range", "id": "kart_en_d", "label": "Kart genişliği — masaüstü", "min": 620, "max": 1200, "step": 20, "unit": "px", "default": 860, "info": "Yalnızca 900px ve üzerinde geçerli. Alttaki Döngü Şeridi kartıyla aynı değeri verin." },
+    { "type": "range", "id": "dis_bosluk_y", "label": "Bölüm dikey boşluğu", "min": 0, "max": 80, "step": 4, "unit": "px", "default": 32 },
+    { "type": "color", "id": "dis_zemin", "label": "Kartın etrafı (bölüm zemini)", "info": "Boş bırakılırsa sayfanın kendi zemini görünür." }
+  ],
+  "presets": [
+    { "name": "Kampanya Bandı" }
+  ]
+}
+{% endschema %}
