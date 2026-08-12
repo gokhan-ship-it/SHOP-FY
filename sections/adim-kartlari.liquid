@@ -1,0 +1,642 @@
+{%- comment -%}
+  Adim Kartlari - "Nasil Calisir?" adimlarini 2x2 (veya 1/3/4 sutunlu)
+  bir izgarada gosterir. Mevcut "adim-yigin" bolumunun alternatifidir;
+  o dosyaya hic dokunmaz, ayni icerikle farkli bir yerlesim sunar.
+
+  Her kart: medya (video ya da gorsel) -> numarali baslik -> aciklama.
+  Videolar yalnizca ekrana girince oynar, cikinca durur.
+  JS calismazsa kartlar gorunur kalir; sadece animasyon ve otomatik
+  oynatma devre disi olur.
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+
+  assign hiza_css = 'center'
+  if s.hiza == 'sol'
+    assign hiza_css = 'left'
+  endif
+
+  # --- renk paleti ---
+  # "ozel" secilirse asagidaki renk ayarlari aynen kullanilir.
+  assign c_zemin = s.bolum_zemin
+  assign c_bas = s.baslik_rengi
+  assign c_alt = s.alt_rengi
+  assign c_etiket = s.etiket_renk
+  assign c_kart = s.kart_zemin
+  assign c_kart_k = s.kart_kenar
+  assign c_kart_bas = s.kart_bas_renk
+  assign c_kart_metin = s.kart_metin_renk
+  assign c_num_z = s.num_zemin
+  assign c_num_y = s.num_yazi
+  assign c_medya_z = s.medya_zemin
+
+  if s.palet == 'apple_koyu'
+    assign c_zemin = '#000000'
+    assign c_bas = '#f5f5f7'
+    assign c_alt = '#86868b'
+    assign c_etiket = '#86868b'
+    assign c_kart = '#1d1d1f'
+    assign c_kart_k = 'rgba(255, 255, 255, 0.10)'
+    assign c_kart_bas = '#f5f5f7'
+    assign c_kart_metin = '#86868b'
+    assign c_num_z = '#d6ff00'
+    assign c_num_y = '#000000'
+    assign c_medya_z = '#0d0d0d'
+  elsif s.palet == 'apple_acik'
+    assign c_zemin = '#f5f5f7'
+    assign c_bas = '#1d1d1f'
+    assign c_alt = '#6e6e73'
+    assign c_etiket = '#6e6e73'
+    assign c_kart = '#ffffff'
+    assign c_kart_k = '#e8e8ed'
+    assign c_kart_bas = '#1d1d1f'
+    assign c_kart_metin = '#6e6e73'
+    assign c_num_z = '#d6ff00'
+    assign c_num_y = '#000000'
+    assign c_medya_z = '#f5f5f7'
+  endif
+
+  # Giris animasyonunun yonu
+  assign anim_x = 0
+  assign anim_y = s.anim_mesafe
+  if s.anim_yon == 'sagdan'
+    assign anim_x = s.anim_mesafe
+    assign anim_y = 0
+  elsif s.anim_yon == 'soldan'
+    assign anim_x = 0 | minus: s.anim_mesafe
+    assign anim_y = 0
+  endif
+-%}
+
+<style>
+  #shopify-section-{{ sid }} .ak2-kok {
+    background: {{ c_zemin }};
+    padding: {{ s.p_top_m }}px 0 {{ s.p_bot_m }}px;
+  }
+  #shopify-section-{{ sid }} .ak2-kok * { box-sizing: border-box; }
+
+  #shopify-section-{{ sid }} .ak2-ic {
+    max-width: {{ s.max_g }}px;
+    margin: 0 auto;
+    padding: 0 {{ s.kenar_m }}px;
+  }
+
+  /* --- baslik alani --- */
+  #shopify-section-{{ sid }} .ak2-basalan {
+    text-align: {{ hiza_css }};
+    margin-bottom: {{ s.bas_alt_bosluk_m }}px;
+  }
+  #shopify-section-{{ sid }} .ak2-etiket {
+    margin: 0 0 8px;
+    font-size: {{ s.etiket_boyut }}px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: {{ c_etiket }};
+  }
+  #shopify-section-{{ sid }} .ak2-bas {
+    margin: 0;
+    font-size: {{ s.bas_m }}px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: normal;
+    color: {{ c_bas }};
+    text-wrap: balance;
+  }
+  #shopify-section-{{ sid }} .ak2-alt {
+    margin: 10px 0 0;
+    font-size: {{ s.alt_m }}px;
+    line-height: 1.6;
+    color: {{ c_alt }};
+    text-wrap: balance;
+  }
+
+  /* --- izgara --- */
+  #shopify-section-{{ sid }} .ak2-izgara {
+    display: grid;
+    grid-template-columns: repeat({{ s.sutun_m }}, minmax(0, 1fr));
+    gap: {{ s.kart_ara_m }}px;
+    /* clip: donusen kartlari icerde tutar ama kaydirma kabi acmaz */
+    overflow-x: clip;
+  }
+
+  /* --- kart --- */
+  #shopify-section-{{ sid }} .ak2-kart {
+    display: flex;
+    flex-direction: column;
+    gap: {{ s.kart_ic_ara_m }}px;
+    padding: {{ s.kart_ic_m }}px;
+    border-radius: {{ s.kart_kose }}px;
+    background: {{ c_kart }};
+    border: 1px solid {{ c_kart_k }};
+    min-width: 0;
+  }
+
+  /* --- medya --- */
+  #shopify-section-{{ sid }} .ak2-medya {
+    position: relative;
+    width: 100%;
+    aspect-ratio: {{ s.medya_oran_g }} / {{ s.medya_oran_y }};
+    border-radius: {{ s.medya_kose }}px;
+    overflow: hidden;
+    {%- if s.medya_zemin_ac %}
+    background: {{ c_medya_z }};
+    {%- endif %}
+  }
+  #shopify-section-{{ sid }} .ak2-medya img,
+  #shopify-section-{{ sid }} .ak2-medya video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: {{ s.medya_kapla }};
+    display: block;
+  }
+
+  /* --- kart metni --- */
+  #shopify-section-{{ sid }} .ak2-kart-bas {
+    margin: 0;
+    font-size: {{ s.kart_bas_m }}px;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: normal;
+    color: {{ c_kart_bas }};
+    text-wrap: balance;
+  }
+  #shopify-section-{{ sid }} .ak2-kart-metin {
+    margin: 6px 0 0;
+    font-size: {{ s.kart_metin_m }}px;
+    line-height: 1.6;
+    color: {{ c_kart_metin }};
+  }
+  #shopify-section-{{ sid }} .ak2-kart-metin p { margin: 0; }
+  #shopify-section-{{ sid }} .ak2-kart-metin p + p { margin-top: 8px; }
+
+  /* --- numara --- */
+  {%- if s.num_stil == 'rozet' %}
+  #shopify-section-{{ sid }} .ak2-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: {{ s.num_cap }}px;
+    height: {{ s.num_cap }}px;
+    margin-bottom: 10px;
+    border-radius: 999px;
+    background: {{ c_num_z }};
+    color: {{ c_num_y }};
+    font-size: {{ s.num_boyut }}px;
+    font-weight: 700;
+    line-height: 1;
+    flex: 0 0 auto;
+  }
+  {%- elsif s.num_stil == 'satir_ici' %}
+  #shopify-section-{{ sid }} .ak2-num {
+    color: {{ c_num_z }};
+    font-weight: 700;
+  }
+  {%- endif %}
+
+  /* --- giris animasyonu --- */
+  {%- if s.anim_ac %}
+  /* Gizli baslangic yalnizca JS'in ekledigi "ak2-hazir" sinifi altinda
+     gecerli: JS calismazsa kartlar bastan gorunur kalir. */
+  #shopify-section-{{ sid }} .ak2-izgara.ak2-hazir .ak2-kart {
+    opacity: 0;
+    transform: translate3d({{ anim_x }}px, {{ anim_y }}px, 0);
+    transition:
+      opacity {{ s.anim_sure }}ms cubic-bezier(.33, 1, .68, 1),
+      transform {{ s.anim_sure }}ms cubic-bezier(.33, 1, .68, 1);
+    transition-delay: var(--ak2-gecikme, 0ms);
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+  }
+  #shopify-section-{{ sid }} .ak2-izgara.ak2-hazir .ak2-kart.is-gorunur {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  /* will-change'i gecis bitince birakiyoruz: acik kalirsa tarayici
+     kartlari gereksiz yere ayri katmanda tutar. */
+  #shopify-section-{{ sid }} .ak2-kart.anim-bitti { will-change: auto; }
+  {%- endif %}
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .ak2-izgara.ak2-hazir .ak2-kart,
+    #shopify-section-{{ sid }} .ak2-izgara.ak2-hazir .ak2-kart.is-gorunur {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* --- tablet / masaustu --- */
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .ak2-kok {
+      padding: {{ s.p_top_d }}px 0 {{ s.p_bot_d }}px;
+    }
+    #shopify-section-{{ sid }} .ak2-ic { padding: 0 {{ s.kenar_d }}px; }
+    #shopify-section-{{ sid }} .ak2-basalan { margin-bottom: {{ s.bas_alt_bosluk_d }}px; }
+    #shopify-section-{{ sid }} .ak2-bas { font-size: {{ s.bas_t }}px; }
+    #shopify-section-{{ sid }} .ak2-alt { font-size: {{ s.alt_d }}px; }
+    #shopify-section-{{ sid }} .ak2-izgara {
+      grid-template-columns: repeat({{ s.sutun_d }}, minmax(0, 1fr));
+      gap: {{ s.kart_ara_d }}px;
+    }
+    #shopify-section-{{ sid }} .ak2-kart {
+      gap: {{ s.kart_ic_ara_d }}px;
+      padding: {{ s.kart_ic_d }}px;
+    }
+    #shopify-section-{{ sid }} .ak2-kart-bas { font-size: {{ s.kart_bas_d }}px; }
+    #shopify-section-{{ sid }} .ak2-kart-metin { font-size: {{ s.kart_metin_d }}px; }
+  }
+
+  @media (min-width: 990px) {
+    #shopify-section-{{ sid }} .ak2-bas { font-size: {{ s.bas_d }}px; }
+  }
+
+  /* --- numarada degrade --- */
+  /* Stil bloklarinin en sonunda: hazir palet numara rengini kendi
+     sabitiyle eziyor, buradan degradeyi geri veriyoruz. */
+  {%- if s.num_degrade %}
+    {%- capture num_deg -%}
+linear-gradient({{ s.num_aci }}deg, {{ s.num_d1 }} 0%, {{ s.num_d2 }} 50%, {{ s.num_d3 }} 100%)
+    {%- endcapture -%}
+    {%- if s.num_stil == 'rozet' %}
+  #shopify-section-{{ sid }} .ak2-num {
+    background: {{ num_deg }};
+    color: {{ s.num_degrade_yazi }};
+  }
+    {%- else %}
+  /* Satir ici numara: degrade yazinin kendisine uygulaniyor.
+     line-height 1'de background-clip alt kuyruklari kirpiyor. */
+  #shopify-section-{{ sid }} .ak2-num {
+    display: inline-block;
+    background: {{ num_deg }};
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+    padding-bottom: 0.06em;
+  }
+    {%- endif %}
+  {%- endif %}
+</style>
+
+<div class="ak2-kok">
+  <div class="ak2-ic">
+    {%- if s.etiket != blank or s.baslik != blank or s.alt_metin != blank -%}
+      <div class="ak2-basalan">
+        {%- if s.etiket != blank -%}
+          <p class="ak2-etiket">{{ s.etiket }}</p>
+        {%- endif -%}
+        {%- if s.baslik != blank -%}
+          <{{ s.baslik_etiketi }} class="ak2-bas">{{ s.baslik }}</{{ s.baslik_etiketi }}>
+        {%- endif -%}
+        {%- if s.alt_metin != blank -%}
+          <p class="ak2-alt">{{ s.alt_metin }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="ak2-izgara" data-ak2-izgara>
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign v_d = block.settings.video
+          assign v_m = block.settings.video_mobil
+          if v_m == blank
+            assign v_m = v_d
+          endif
+          if v_d == blank
+            assign v_d = v_m
+          endif
+          assign gecikme = forloop.index0 | times: s.anim_ara
+        -%}
+        <div
+          class="ak2-kart"
+          style="--ak2-gecikme: {{ gecikme }}ms"
+          {{ block.shopify_attributes }}
+        >
+          {%- if v_d != blank or block.settings.gorsel != blank -%}
+            <div class="ak2-medya">
+              {%- if v_d != blank -%}
+                <video
+                  data-ak2-video
+                  {% if block.settings.gorsel != blank %}poster="{{ block.settings.gorsel | image_url: width: 900 }}"{% endif %}
+                  preload="metadata"
+                  muted
+                  loop
+                  playsinline
+                  disablepictureinpicture
+                  aria-label="{{ block.settings.baslik | strip_html | escape }}"
+                  data-ak2-src-d="{{ v_d.sources[1].url | default: v_d.sources[0].url }}"
+                  data-ak2-src-m="{{ v_m.sources[1].url | default: v_m.sources[0].url }}"
+                ></video>
+              {%- else -%}
+                {{
+                  block.settings.gorsel
+                  | image_url: width: 900
+                  | image_tag: loading: 'lazy', decoding: 'async', alt: block.settings.baslik | strip_html | escape
+                }}
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+
+          {%- if s.num_stil == 'rozet' and block.settings.numara != blank -%}
+            <span class="ak2-num" aria-hidden="true">{{ block.settings.numara }}</span>
+          {%- endif -%}
+
+          <div>
+            {%- if block.settings.baslik != blank -%}
+              <h3 class="ak2-kart-bas">
+                {%- if s.num_stil == 'satir_ici' and block.settings.numara != blank -%}
+                  <span class="ak2-num">{{ block.settings.numara }}.</span>
+                {%- endif -%}
+                {{ block.settings.baslik }}
+              </h3>
+            {%- endif -%}
+            {%- if block.settings.metin != blank -%}
+              <div class="ak2-kart-metin">{{ block.settings.metin }}</div>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var bolum = document.getElementById('shopify-section-{{ sid }}');
+    if (!bolum) return;
+    var izgara = bolum.querySelector('[data-ak2-izgara]');
+    if (!izgara) return;
+
+    var azHareket = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* --- video kaynaklari --- */
+    /* <source media="..."> video icinde calismadigi icin dogru kaynagi
+       burada seciyoruz; boylece gizli kirilimin videosu hic inmez. */
+    var genis = window.matchMedia && window.matchMedia('(min-width: 750px)').matches;
+    var videolar = izgara.querySelectorAll('[data-ak2-video]');
+    for (var i = 0; i < videolar.length; i++) {
+      var v = videolar[i];
+      var src = genis
+        ? v.getAttribute('data-ak2-src-d')
+        : (v.getAttribute('data-ak2-src-m') || v.getAttribute('data-ak2-src-d'));
+      if (src) v.src = src;
+      v.muted = true;
+    }
+
+    {%- if s.video_oto %}
+    /* --- gorununce oynat, cikinca durdur --- */
+    if (!azHareket && 'IntersectionObserver' in window) {
+      var vg = new IntersectionObserver(function (girisler) {
+        for (var a = 0; a < girisler.length; a++) {
+          var el = girisler[a].target;
+          if (girisler[a].isIntersecting) {
+            var p = el.play();
+            if (p && p.catch) p.catch(function () {});
+          } else {
+            el.pause();
+          }
+        }
+      }, { threshold: 0.25 });
+      for (var b = 0; b < videolar.length; b++) vg.observe(videolar[b]);
+    }
+    {%- endif %}
+
+    {%- if s.anim_ac %}
+    /* --- kartlarin sirayla belirmesi --- */
+    var kartlar = izgara.querySelectorAll('.ak2-kart');
+    if (kartlar.length && !azHareket) {
+      var goster = function (el) {
+        el.classList.add('is-gorunur');
+        el.addEventListener('transitionend', function bitti(e) {
+          if (e.propertyName !== 'transform') return;
+          el.classList.add('anim-bitti');
+          el.removeEventListener('transitionend', bitti);
+        });
+      };
+
+      izgara.classList.add('ak2-hazir');
+
+      if ('IntersectionObserver' in window) {
+        var ag = new IntersectionObserver(function (girisler, gozlemci) {
+          for (var c = 0; c < girisler.length; c++) {
+            if (!girisler[c].isIntersecting) continue;
+            // Iki kare bekliyoruz: gizli baslangic durumu bir kez
+            // boyansin ki gecis gercekten calissin.
+            window.requestAnimationFrame(function () {
+              window.requestAnimationFrame(function () {
+                for (var d = 0; d < kartlar.length; d++) goster(kartlar[d]);
+              });
+            });
+            gozlemci.unobserve(girisler[c].target);
+          }
+        }, { threshold: 0.15 });
+        ag.observe(izgara);
+      } else {
+        for (var e2 = 0; e2 < kartlar.length; e2++) goster(kartlar[e2]);
+      }
+    }
+    {%- endif %}
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Adım Kartları",
+  "tag": "section",
+  "class": "adim-kartlari-section",
+  "settings": [
+    { "type": "header", "content": "Renkler" },
+    {
+      "type": "select",
+      "id": "palet",
+      "label": "Renk paleti",
+      "info": "Hazır bir palet seçerseniz aşağıdaki tekil renk ayarları yok sayılır. Kendi renklerinizi kullanmak için “Özel”i seçin.",
+      "default": "apple_koyu",
+      "options": [
+        { "value": "apple_koyu", "label": "Apple — koyu" },
+        { "value": "apple_acik", "label": "Apple — açık" },
+        { "value": "ozel", "label": "Özel (aşağıdaki renkler)" }
+      ]
+    },
+    { "type": "color", "id": "bolum_zemin", "label": "Bölüm zemini", "default": "#000000" },
+    { "type": "color", "id": "baslik_rengi", "label": "Başlık", "default": "#f5f5f7" },
+    { "type": "color", "id": "alt_rengi", "label": "Alt metin", "default": "#86868b" },
+    { "type": "color", "id": "etiket_renk", "label": "Üst etiket", "default": "#86868b" },
+    { "type": "color", "id": "kart_zemin", "label": "Kart zemini", "default": "#1d1d1f" },
+    { "type": "color", "id": "kart_kenar", "label": "Kart kenarlığı", "default": "#3a3a3c" },
+    { "type": "color", "id": "kart_bas_renk", "label": "Kart başlığı", "default": "#f5f5f7" },
+    { "type": "color", "id": "kart_metin_renk", "label": "Kart metni", "default": "#86868b" },
+    { "type": "color", "id": "num_zemin", "label": "Numara rengi / zemini", "default": "#d6ff00" },
+    { "type": "checkbox", "id": "num_degrade", "label": "Numarada degrade", "default": false },
+    { "type": "color", "id": "num_d1", "label": "Degrade rengi 1", "default": "#8fcbb0" },
+    { "type": "color", "id": "num_d2", "label": "Degrade rengi 2", "default": "#599176" },
+    { "type": "color", "id": "num_d3", "label": "Degrade rengi 3", "default": "#30614b" },
+    { "type": "range", "id": "num_aci", "label": "Degrade açısı", "min": 0, "max": 360, "step": 5, "unit": "°", "default": 135 },
+    { "type": "color", "id": "num_degrade_yazi", "label": "Degrade rozette yazı", "default": "#ffffff" },
+    { "type": "color", "id": "num_yazi", "label": "Numara yazısı (rozet)", "default": "#000000" },
+    { "type": "color", "id": "medya_zemin", "label": "Medya zemini", "default": "#0d0d0d" },
+
+    { "type": "header", "content": "Başlık" },
+    { "type": "text", "id": "etiket", "label": "Üst etiket", "default": "Single Zaman Kapsülü" },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Nasıl Çalışır?" },
+    {
+      "type": "select",
+      "id": "baslik_etiketi",
+      "label": "Başlık etiketi (SEO)",
+      "default": "h2",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "p", "label": "Düz metin" }
+      ]
+    },
+    { "type": "textarea", "id": "alt_metin", "label": "Alt metin" },
+    {
+      "type": "select",
+      "id": "hiza",
+      "label": "Başlık hizalaması",
+      "default": "orta",
+      "options": [
+        { "value": "orta", "label": "Ortalı" },
+        { "value": "sol", "label": "Sola dayalı" }
+      ]
+    },
+
+    { "type": "header", "content": "Yerleşim" },
+    {
+      "type": "select",
+      "id": "sutun_m",
+      "label": "Sütun sayısı (mobil)",
+      "default": "2",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "sutun_d",
+      "label": "Sütun sayısı (masaüstü)",
+      "default": "2",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
+      ]
+    },
+    { "type": "range", "id": "kart_ara_m", "label": "Kartlar arası (mobil)", "min": 6, "max": 40, "step": 2, "unit": "px", "default": 12 },
+    { "type": "range", "id": "kart_ara_d", "label": "Kartlar arası (masaüstü)", "min": 8, "max": 64, "step": 2, "unit": "px", "default": 24 },
+    { "type": "range", "id": "max_g", "label": "En fazla genişlik", "min": 600, "max": 1600, "step": 20, "unit": "px", "default": 1120 },
+    { "type": "range", "id": "kenar_m", "label": "Kenar boşluğu (mobil)", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 16 },
+    { "type": "range", "id": "kenar_d", "label": "Kenar boşluğu (masaüstü)", "min": 0, "max": 80, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "bas_alt_bosluk_m", "label": "Başlık altı boşluk (mobil)", "min": 0, "max": 80, "step": 2, "unit": "px", "default": 24 },
+    { "type": "range", "id": "bas_alt_bosluk_d", "label": "Başlık altı boşluk (masaüstü)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "p_top_m", "label": "Üst boşluk (mobil)", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 48 },
+    { "type": "range", "id": "p_bot_m", "label": "Alt boşluk (mobil)", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 48 },
+    { "type": "range", "id": "p_top_d", "label": "Üst boşluk (masaüstü)", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 80 },
+    { "type": "range", "id": "p_bot_d", "label": "Alt boşluk (masaüstü)", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 80 },
+
+    { "type": "header", "content": "Kart" },
+    { "type": "range", "id": "kart_kose", "label": "Kart köşe yuvarlaklığı", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 20 },
+    { "type": "range", "id": "kart_ic_m", "label": "Kart iç boşluğu (mobil)", "min": 8, "max": 48, "step": 2, "unit": "px", "default": 16 },
+    { "type": "range", "id": "kart_ic_d", "label": "Kart iç boşluğu (masaüstü)", "min": 8, "max": 64, "step": 2, "unit": "px", "default": 28 },
+    { "type": "range", "id": "kart_ic_ara_m", "label": "Kart içi öğe arası (mobil)", "min": 4, "max": 40, "step": 2, "unit": "px", "default": 14 },
+    { "type": "range", "id": "kart_ic_ara_d", "label": "Kart içi öğe arası (masaüstü)", "min": 4, "max": 48, "step": 2, "unit": "px", "default": 20 },
+
+    { "type": "header", "content": "Medya" },
+    { "type": "range", "id": "medya_oran_g", "label": "Medya oranı — en", "min": 1, "max": 21, "step": 1, "default": 4 },
+    { "type": "range", "id": "medya_oran_y", "label": "Medya oranı — boy", "min": 1, "max": 21, "step": 1, "default": 3 },
+    {
+      "type": "select",
+      "id": "medya_kapla",
+      "label": "Medya sığdırma",
+      "default": "contain",
+      "options": [
+        { "value": "contain", "label": "Tamamı görünsün (contain)" },
+        { "value": "cover", "label": "Alanı doldursun (cover)" }
+      ]
+    },
+    { "type": "range", "id": "medya_kose", "label": "Medya köşe yuvarlaklığı", "min": 0, "max": 32, "step": 2, "unit": "px", "default": 14 },
+    { "type": "checkbox", "id": "medya_zemin_ac", "label": "Medya alanına zemin ver", "default": true },
+    { "type": "checkbox", "id": "video_oto", "label": "Videolar görününce oynasın", "default": true },
+
+    { "type": "header", "content": "Numara" },
+    {
+      "type": "select",
+      "id": "num_stil",
+      "label": "Numara gösterimi",
+      "default": "satir_ici",
+      "options": [
+        { "value": "satir_ici", "label": "Başlığın başında (1.)" },
+        { "value": "rozet", "label": "Yuvarlak rozet" },
+        { "value": "yok", "label": "Gösterme" }
+      ]
+    },
+    { "type": "range", "id": "num_boyut", "label": "Rozet yazı boyutu", "min": 10, "max": 24, "step": 1, "unit": "px", "default": 14 },
+    { "type": "range", "id": "num_cap", "label": "Rozet çapı", "min": 20, "max": 56, "step": 2, "unit": "px", "default": 32 },
+
+    { "type": "header", "content": "Tipografi" },
+    { "type": "range", "id": "etiket_boyut", "label": "Üst etiket", "min": 9, "max": 20, "step": 1, "unit": "px", "default": 12 },
+    { "type": "range", "id": "bas_m", "label": "Başlık (mobil)", "min": 16, "max": 48, "step": 1, "unit": "px", "default": 24 },
+    { "type": "range", "id": "bas_t", "label": "Başlık (tablet)", "min": 16, "max": 56, "step": 1, "unit": "px", "default": 28 },
+    { "type": "range", "id": "bas_d", "label": "Başlık (masaüstü)", "min": 16, "max": 64, "step": 1, "unit": "px", "default": 32 },
+    { "type": "range", "id": "alt_m", "label": "Alt metin (mobil)", "min": 12, "max": 24, "step": 1, "unit": "px", "default": 16 },
+    { "type": "range", "id": "alt_d", "label": "Alt metin (masaüstü)", "min": 12, "max": 28, "step": 1, "unit": "px", "default": 20 },
+    { "type": "range", "id": "kart_bas_m", "label": "Kart başlığı (mobil)", "min": 12, "max": 32, "step": 1, "unit": "px", "default": 17 },
+    { "type": "range", "id": "kart_bas_d", "label": "Kart başlığı (masaüstü)", "min": 12, "max": 40, "step": 1, "unit": "px", "default": 20 },
+    { "type": "range", "id": "kart_metin_m", "label": "Kart metni (mobil)", "min": 11, "max": 24, "step": 1, "unit": "px", "default": 15 },
+    { "type": "range", "id": "kart_metin_d", "label": "Kart metni (masaüstü)", "min": 11, "max": 26, "step": 1, "unit": "px", "default": 17 },
+
+    { "type": "header", "content": "Giriş Animasyonu" },
+    { "type": "checkbox", "id": "anim_ac", "label": "Kartlar sırayla belirsin", "default": true },
+    {
+      "type": "select",
+      "id": "anim_yon",
+      "label": "Geliş yönü",
+      "default": "yukari",
+      "options": [
+        { "value": "yukari", "label": "Aşağıdan yukarı" },
+        { "value": "sagdan", "label": "Sağdan sola" },
+        { "value": "soldan", "label": "Soldan sağa" }
+      ]
+    },
+    { "type": "range", "id": "anim_mesafe", "label": "Geliş mesafesi", "min": 0, "max": 80, "step": 2, "unit": "px", "default": 24 },
+    { "type": "range", "id": "anim_sure", "label": "Süre", "min": 200, "max": 1600, "step": 50, "unit": "ms", "default": 700 },
+    { "type": "range", "id": "anim_ara", "label": "Kartlar arası gecikme", "min": 0, "max": 400, "step": 10, "unit": "ms", "default": 90 }
+  ],
+  "blocks": [
+    {
+      "type": "adim",
+      "name": "Adım",
+      "settings": [
+        { "type": "text", "id": "numara", "label": "Numara", "default": "01" },
+        { "type": "text", "id": "baslik", "label": "Başlık" },
+        { "type": "richtext", "id": "metin", "label": "Açıklama" },
+        { "type": "image_picker", "id": "gorsel", "label": "Görsel", "info": "Video varsa kapak görseli olarak kullanılır." },
+        { "type": "video", "id": "video", "label": "Video (masaüstü)" },
+        { "type": "video", "id": "video_mobil", "label": "Video (mobil)" }
+      ]
+    }
+  ],
+  "max_blocks": 8,
+  "presets": [
+    {
+      "name": "Adım Kartları",
+      "blocks": [
+        { "type": "adim" },
+        { "type": "adim" },
+        { "type": "adim" },
+        { "type": "adim" }
+      ]
+    }
+  ]
+}
+{% endschema %}

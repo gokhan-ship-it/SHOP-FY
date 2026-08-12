@@ -66,6 +66,13 @@
       {%- render 'tt-couple-izgara' -%}
       {%- render 'tt-couple-eksen' -%}
       {%- render 'tt-couple-banka' -%}
+    {%- elsif template.suffix == 'hediye-daha-fazla-bilgial' -%}
+      {%- comment -%}
+        Ayni katmanin tekli (hediye) surumu: yalnizca olcu tarafi --
+        tipografik olcek, dikey ritim, kenar boslugu, buton metrigi.
+        Couple sayfasina ozel renk ve davranis kurallari alinmadi.
+      {%- endcomment -%}
+      {%- render 'tt-tekli' -%}
     {%- endif -%}
 
     {{ content_for_header }}
@@ -100,7 +107,7 @@
     -%}
 
     <div class="page-container" id="PageContainer">
-      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% endif %}" id="MainContent" role="main">
+      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% endif %}" id="MainContent" role="main">
         {{ content_for_layout }}
       </main>
 

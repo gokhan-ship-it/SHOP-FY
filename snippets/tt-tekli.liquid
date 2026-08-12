@@ -1,0 +1,439 @@
+{%- comment -%}
+  TEKLI (HEDIYE) "DAHA FAZLA BILGI AL" SAYFASI -- OLCU KATMANI
+
+  Kapsam: yalnizca template.suffix == 'hediye-daha-fazla-bilgial'.
+  Sarmalayici sinif <main id="MainContent"> uzerinde: .tt-tekli-page.
+  Baska hicbir sayfa bu dosyayi yuklemiyor.
+
+  ------------------------------------------------------------------
+  NE TASINDI, NE TASINMADI
+
+  Couple sayfasindaki katmanin (snippets/tt-couple.liquid) yalnizca
+  OLCU tarafi buraya alindi:
+
+    TASINAN
+      tipografik olcek (eyebrow / H2 / H3 / govde / kart govdesi /
+        alt yazi) ve satir araligi, harf araligi, kalinlik
+      dikey ritim (bolum ust-alt boslugu, eyebrow -> baslik,
+        baslik -> govde, baslik blogu -> icerik, kart basligi -> metin)
+      tek kenar boslugu (--tt-page-pad)
+      satir uzunlugu siniri (--tt-content-max)
+      kart yaricapi / kart ici padding
+      buton metrigi
+      govde metinlerinin ortalanmasi
+
+    TASINMADI (couple sayfasina ozel istekler)
+      renk degisiklikleri (kart slaytinin siyah zemini, mavi CTA)
+      avantaj kartlarinin 2x2 izgarasi
+      video isik kutusu, slayttan surukleme, oynat dugmesinin
+        gizlenmesi
+      taksit kartlari serisi
+
+  Yani bu dosya sayfanin GORUNUMUNU degil OLCUSUNU degistiriyor.
+
+  ------------------------------------------------------------------
+  BU SAYFAYA OZEL EKLER
+
+  Iki bolum couple sayfasinda yok, secici listelerine burada eklendi:
+    adim-kartlari  -> .ak2-*   (kok / ic / etiket / bas / alt /
+                                basalan / kart-bas / kart-metin / kart)
+    yakin-bakis    -> .yb-*    (root -- yan bosluk da onda / bas /
+                                metin)
+  Kart slayti (.as-*) bu sayfada yok; o seciciler alinmadi.
+
+  ------------------------------------------------------------------
+  NEDEN AYRI DOSYA
+
+  tt-couple.liquid tumuyle .tt-couple-page altina yazilmis ve icinde
+  yalnizca o sayfaya ait renk/davranis kurallari da var. Ortak bir
+  dosyaya cikarmak 1250 satirlik calisir durumdaki bir katmani
+  yeniden duzenlemek demekti. Iki dosya ayni degerleri tasiyor;
+  birinde olcu degisirse digeri elle esitlenmeli.
+
+  KURAL: bir bolumun editor ayarini geri istersen o bolumun
+  secicisini asagidaki listelerden cikarmak yeterli.
+
+  Masaustu hic etkilenmiyor: butun kurallar max-width: 767px icinde,
+  768px ve uzeri yalnizca token olcegini buyutuyor.
+{%- endcomment -%}
+<style>
+  .tt-tekli-page {
+    /* --- Tipografi: mobil (varsayilan) ---------------------------- */
+    --tt-f-h1-size: 38px;       --tt-f-h1-lh: 1.06;       --tt-f-h1-ls: -0.022em;    --tt-f-h1-w: 600;
+    {%- comment -%}
+      H2 sabit punto degil: 8.6vw, 30 ile 36 arasinda kelepceli.
+      390px'te 33.5px cikiyor (govdenin ~2.0 kati). Dar telefonlarda
+      Turkce basliklar 4 satira dusmesin diye alt sinir 30px.
+    {%- endcomment -%}
+    --tt-f-h2-size: clamp(30px, 8.6vw, 36px);
+    --tt-f-h2-lh: 1.08;         --tt-f-h2-ls: -0.021em;   --tt-f-h2-w: 600;
+    --tt-f-h3-size: 21px;       --tt-f-h3-lh: 1.20;       --tt-f-h3-ls: -0.012em;    --tt-f-h3-w: 600;
+
+    --tt-f-eyebrow-size: 15px;  --tt-f-eyebrow-lh: 1.30;  --tt-f-eyebrow-ls: 0.02em;   --tt-f-eyebrow-w: 600;
+
+    --tt-f-body-lg-size: 19px;  --tt-f-body-lg-lh: 1.38;  --tt-f-body-lg-ls: -0.008em; --tt-f-body-lg-w: 600;
+    --tt-f-body-size: 17px;     --tt-f-body-lh: 1.45;     --tt-f-body-ls: -0.003em;    --tt-f-body-w: 400;
+    {%- comment -%}
+      Kart ici govde bolum govdesinden kucuk: kart dar ve yazi cogu
+      kartta gorselin uzerinde duruyor.
+    {%- endcomment -%}
+    --tt-f-body-sm-size: 15px;  --tt-f-body-sm-lh: 1.45;  --tt-f-body-sm-ls: 0;       --tt-f-body-sm-w: 400;
+    --tt-f-caption-size: 13px;  --tt-f-caption-lh: 1.35;  --tt-f-caption-ls: 0;        --tt-f-caption-w: 400;
+
+    /* --- Bosluk merdiveni: mobil ---------------------------------- */
+    --tt-s1: 4px;
+    --tt-s2: 8px;
+    --tt-s3: 12px;
+    --tt-s4: 16px;
+    --tt-s5: 24px;
+    --tt-s6: 32px;
+    --tt-s7: 60px;
+    --tt-s8: 64px;
+    --tt-s9: 80px;
+
+    /* --- Layout ---------------------------------------------------- */
+    {%- comment -%}
+      Kenar boslugu ekranla birlikte buyuyor:
+        360px -> 21.6   390px -> 23.4   430px -> 25.8
+    {%- endcomment -%}
+    --tt-page-pad: clamp(20px, 6vw, 26px);
+    --tt-card-pad: 22px;
+    --tt-card-radius: 20px;
+    --tt-content-max: 36em;
+
+    /* --- Buton ----------------------------------------------------- */
+    {%- comment -%}
+      Yukseklik dikey padding'den: 16 x 1.2 = 19.2 + 2 x 14 = 47.2px.
+      min-height yalnizca buton flex/grid ise yaziyi ortalar; padding
+      her display degerinde ayni sonucu veriyor ve 44px dokunma
+      hedefinin uzerinde kaliyor.
+    {%- endcomment -%}
+    --tt-btn-radius: 999px;
+    --tt-btn-pad-x: 24px;
+    --tt-btn-pad-y: 14px;
+    --tt-btn-font: 16px;
+    --tt-btn-weight: 500;
+    --tt-btn-gap: 8px;
+  }
+
+  @media (min-width: 768px) {
+    .tt-tekli-page {
+      --tt-f-h1-size: 52px;       --tt-f-h1-lh: 1.05;
+      --tt-f-h2-size: 40px;       --tt-f-h2-lh: 1.08;
+      --tt-f-h3-size: 26px;
+      --tt-f-eyebrow-size: 17px;
+      --tt-f-body-lg-size: 21px;
+      --tt-f-body-size: 17px;
+      --tt-f-caption-size: 14px;
+
+      --tt-s7: 64px;
+      --tt-s8: 80px;
+      --tt-s9: 120px;
+
+      --tt-page-pad: 40px;
+    }
+  }
+
+  {%- comment -%}
+    Satir uzunlugu siniri. Olcum: 16px'te 36em = ~68 karakter; hedef
+    aralik 45-75. Metin ortali oldugu icin blok da ortada durmali.
+    Mobilde 36em zaten ekrandan genis, yani sinir pratikte
+    masaustunde is goruyor.
+  {%- endcomment -%}
+  #MainContent.tt-tekli-page .gh-alt,
+  #MainContent.tt-tekli-page .ay-alt,
+  #MainContent.tt-tekli-page .ho-alt,
+  #MainContent.tt-tekli-page .ak2-alt,
+  #MainContent.tt-tekli-page .mk-metin {
+    max-width: var(--tt-content-max);
+    margin-inline: auto;
+  }
+
+  @media (max-width: 767px) {
+
+    {%- comment -%}
+      Kenar boslugu: tek deger.
+      .yb-root ayri bir ic sarmalayici kullanmiyor, yan bosluk
+      dogrudan kokte duruyor; o yuzden hem burada hem asagidaki
+      dikey ritim listesinde geciyor.
+    {%- endcomment -%}
+    #MainContent.tt-tekli-page .vs-inner,
+    #MainContent.tt-tekli-page .ho-inner,
+    #MainContent.tt-tekli-page .ak-ust,
+    #MainContent.tt-tekli-page .ak-serit,
+    #MainContent.tt-tekli-page .ak-oklar,
+    #MainContent.tt-tekli-page .ak2-ic,
+    #MainContent.tt-tekli-page .yb-root,
+    #MainContent.tt-tekli-page .mk-inner,
+    #MainContent.tt-tekli-page .ay-ust,
+    #MainContent.tt-tekli-page .cb-ic,
+    #MainContent.tt-tekli-page [class*="uc-heading-"],
+    #MainContent.tt-tekli-page [class*="uc-eyebrow-"],
+    #MainContent.tt-tekli-page [class*="ugc-gallery-heading-"] {
+      padding-inline: var(--tt-page-pad);
+    }
+
+    /* Bolum dikey ritmi: tek deger (bolumler arasi 2 x s7) */
+    #MainContent.tt-tekli-page .vs-root,
+    #MainContent.tt-tekli-page .ho-root,
+    #MainContent.tt-tekli-page .ak-kok,
+    #MainContent.tt-tekli-page .ak2-kok,
+    #MainContent.tt-tekli-page .yb-root,
+    #MainContent.tt-tekli-page .mk-root,
+    #MainContent.tt-tekli-page [class*="uc-inner-"] {
+      padding-block: var(--tt-s7);
+    }
+
+    /* --- Tipografi: tek olcek ---------------------------------- */
+
+    /* Eyebrow / etiket */
+    #MainContent.tt-tekli-page .ay-etiket,
+    #MainContent.tt-tekli-page .ak-etiket,
+    #MainContent.tt-tekli-page .ak2-etiket,
+    #MainContent.tt-tekli-page .mk-etiket,
+    #MainContent.tt-tekli-page .ho-etiket,
+    #MainContent.tt-tekli-page .vs-etiket,
+    #MainContent.tt-tekli-page [class*="uc-eyebrow-"],
+    #MainContent.tt-tekli-page [class*="abs-etiket-"] {
+      font-size: var(--tt-f-eyebrow-size);
+      line-height: var(--tt-f-eyebrow-lh);
+      letter-spacing: var(--tt-f-eyebrow-ls);
+      font-weight: var(--tt-f-eyebrow-w);
+    }
+
+    {%- comment -%}
+      HERO ETIKETI AYRI: 13px.
+      Hero basligi (.gh-bas) mobilde min(33px, 6vw) + nowrap ile
+      kendini kucultuyor, 390px'te ~23px'e dusuyor. Genel etiket
+      olcusu 15px olunca oran 0.65'e cikiyor, yani etiket neredeyse
+      baslik kadar buyuk goruniyor. 13px'te oran 0.55 -- masaustuyle
+      ayni. Basligin kendisine dokunulmuyor: nowrap + bolumun kendi
+      JS olceklemesi var.
+    {%- endcomment -%}
+    #MainContent.tt-tekli-page .gh-etiket {
+      font-size: 13px;
+      line-height: 1.3;
+      letter-spacing: 0.03em;
+      font-weight: var(--tt-f-eyebrow-w);
+    }
+
+    /* Bolum basligi (H2) */
+    #MainContent.tt-tekli-page .vs-head,
+    #MainContent.tt-tekli-page .ho-head,
+    #MainContent.tt-tekli-page .ak-bas,
+    #MainContent.tt-tekli-page .ak2-bas,
+    #MainContent.tt-tekli-page .yb-bas,
+    #MainContent.tt-tekli-page .mk-head,
+    #MainContent.tt-tekli-page .ay-bas-metin,
+    #MainContent.tt-tekli-page [class*="uc-heading-"],
+    #MainContent.tt-tekli-page [class*="ugc-gallery-heading-"] {
+      font-size: var(--tt-f-h2-size);
+      line-height: var(--tt-f-h2-lh);
+      letter-spacing: var(--tt-f-h2-ls);
+      font-weight: var(--tt-f-h2-w);
+      {%- comment -%}
+        Baslik buyudugu ve ortali durdugu icin satir bolunmesi onemli
+        hale geliyor: balance son satirda tek kelime birakmiyor.
+      {%- endcomment -%}
+      text-wrap: balance;
+    }
+
+    {%- comment -%}
+      Bulusma bolumunun basligi (.cb-bas-yazi / .cb-bas-alt) BILEREK
+      DISARIDA: couple sayfasinda bu ikisi katmana alininca bolumun
+      kendi editor ayarlari ise yaramaz olmustu. Burada da bolumun
+      denetiminde birakiliyor; bu bolumden alinan tek sey .cb-ic'in
+      yan boslugu.
+
+      Hero basligi (.gh-bas) da disarida: nowrap + JS olcekleme.
+    {%- endcomment -%}
+
+    /* Kart / slayt basligi (H3) */
+    #MainContent.tt-tekli-page .vs-card-title,
+    #MainContent.tt-tekli-page .ak-kart-bas,
+    #MainContent.tt-tekli-page .ak2-kart-bas,
+    #MainContent.tt-tekli-page .ay-kbas,
+    #MainContent.tt-tekli-page [class*="uc-title-"] {
+      font-size: var(--tt-f-h3-size);
+      line-height: var(--tt-f-h3-lh);
+      letter-spacing: var(--tt-f-h3-ls);
+      font-weight: var(--tt-f-h3-w);
+    }
+
+    {%- comment -%}
+      Bolum alt basligi / govde. 17px + 1.45: Turkce'de kelimeler uzun
+      oldugu icin satir araligi Apple'in olculen 1.32'sinden acik.
+      text-align: center -> couple sayfasinda alinan karar; iki kardes
+      sayfa ayni dursun diye buraya da tasindi.
+    {%- endcomment -%}
+    #MainContent.tt-tekli-page .vs-alt,
+    #MainContent.tt-tekli-page .ho-alt,
+    #MainContent.tt-tekli-page .ak2-alt,
+    #MainContent.tt-tekli-page .mk-metin,
+    #MainContent.tt-tekli-page .ay-alt,
+    #MainContent.tt-tekli-page .gh-alt {
+      font-size: var(--tt-f-body-size);
+      line-height: var(--tt-f-body-lh);
+      letter-spacing: var(--tt-f-body-ls);
+      font-weight: var(--tt-f-body-w);
+      text-align: center;
+      margin-inline: auto;
+      text-wrap: pretty;
+    }
+
+    /* Kart ici govde */
+    #MainContent.tt-tekli-page .vs-card-text,
+    #MainContent.tt-tekli-page .ak-kart-metin,
+    #MainContent.tt-tekli-page .ak2-kart-metin,
+    #MainContent.tt-tekli-page .yb-metin,
+    #MainContent.tt-tekli-page .ay-kmetin,
+    #MainContent.tt-tekli-page .ak-pop-metin {
+      font-size: var(--tt-f-body-sm-size);
+      line-height: var(--tt-f-body-sm-lh);
+      letter-spacing: var(--tt-f-body-sm-ls);
+      font-weight: var(--tt-f-body-sm-w);
+    }
+
+    /* Caption / kucuk etiket */
+    #MainContent.tt-tekli-page .ho-ipucu,
+    #MainContent.tt-tekli-page .ho-eksen span,
+    #MainContent.tt-tekli-page .mk-rol,
+    #MainContent.tt-tekli-page .vs-ph,
+    #MainContent.tt-tekli-page [class*="uc-desc-"],
+    #MainContent.tt-tekli-page [class*="uc-navlabel-"],
+    #MainContent.tt-tekli-page [class*="ugc-gallery-rating-text-"],
+    #MainContent.tt-tekli-page [class*="ugc-gallery-rating-number-"] {
+      font-size: var(--tt-f-caption-size);
+      line-height: var(--tt-f-caption-lh);
+      letter-spacing: var(--tt-f-caption-ls);
+    }
+
+    {%- comment -%}
+      ------------------------------------------------------------
+      DIKEY RITIM
+
+      Bolumlerin kendi kalibinda olculen mevcut durum:
+        eyebrow alti      8px
+        baslik alti      10px
+        baslik blogu alti 24px
+        kart basligi alti 6px
+
+      Baslik 33.5px'e cikinca 8 ve 10 sikisik kaliyor; hepsi tek
+      merdivene baglandi:
+        eyebrow -> H2          s3 (12px)
+        H2 -> govde            s4 (16px)
+        baslik blogu -> icerik s6 (32px)
+        kart basligi -> metin  s2 (8px)
+
+      Bunlar margin; ebeveyni flex + gap olan bir bolumde bosluk
+      toplanabilir. Degerler mevcutlara yakin (fark 4-6px), yani en
+      kotu durumda bolum biraz daha nefesli olur, bozulmaz.
+      ------------------------------------------------------------
+    {%- endcomment -%}
+    #MainContent.tt-tekli-page .ay-etiket,
+    #MainContent.tt-tekli-page .ak2-etiket,
+    #MainContent.tt-tekli-page [class*="uc-eyebrow-"] {
+      margin-block: 0 var(--tt-s3);
+    }
+
+    #MainContent.tt-tekli-page .ho-alt,
+    #MainContent.tt-tekli-page .ak2-alt,
+    #MainContent.tt-tekli-page .ay-alt,
+    #MainContent.tt-tekli-page .mk-metin {
+      margin-block: var(--tt-s4) 0;
+    }
+
+    {%- comment -%}
+      .vs-alt AYRI: alt boslugu da var. Diger bolumlerde "baslik
+      blogu -> icerik" mesafesini sarmalayicinin margin-bottom'i
+      veriyor; video slaytinda oyle bir sarmalayici yok, alt basligin
+      hemen ardindan gorsel geliyor ve yazi gorsele yapisiyor.
+    {%- endcomment -%}
+    #MainContent.tt-tekli-page .vs-alt {
+      margin-block: var(--tt-s4) var(--tt-s6);
+    }
+
+    {%- comment -%}
+      Baslik blogu -> icerik. .yb-bas'in kendi sarmalayicisi yok,
+      basligin hemen ardindan kart geliyor; mesafe dogrudan basliga
+      yaziliyor.
+    {%- endcomment -%}
+    #MainContent.tt-tekli-page .ak-ust,
+    #MainContent.tt-tekli-page .ak2-basalan,
+    #MainContent.tt-tekli-page .ay-ust {
+      margin-bottom: var(--tt-s6);
+    }
+
+    #MainContent.tt-tekli-page .yb-bas {
+      margin-block: 0 var(--tt-s6);
+    }
+
+    #MainContent.tt-tekli-page .ak-kart-metin,
+    #MainContent.tt-tekli-page .ak2-kart-metin,
+    #MainContent.tt-tekli-page .ay-kmetin,
+    #MainContent.tt-tekli-page .vs-card-text {
+      margin-block: var(--tt-s2) 0;
+    }
+
+    /* --- Kart olculeri: tek yaricap ailesi ---------------------- */
+    {%- comment -%}
+      .yb-kart disarida: kart yaricapi ve ic padding'i bolumun kendi
+      ayarindan geliyor ve kartin icinde acilir-kapanir bir liste ile
+      gorsel yan yana duruyor; tek tip padding orayi bozardi.
+    {%- endcomment -%}
+    #MainContent.tt-tekli-page .ak-kart,
+    #MainContent.tt-tekli-page .ak2-kart,
+    #MainContent.tt-tekli-page .mk-kart {
+      border-radius: var(--tt-card-radius);
+    }
+
+    #MainContent.tt-tekli-page .ak-kart {
+      padding: var(--tt-card-pad);
+    }
+
+    /* --- Butonlar: tek metrik ----------------------------------- */
+    {%- comment -%}
+      .cb-buton BILEREK DISARIDA: o bir buton degil, icinde 40px'lik
+      .cb-kolye dairesi kayan 52px'lik surgu rayi.
+    {%- endcomment -%}
+    #MainContent.tt-tekli-page .mk-cta {
+      padding-inline: var(--tt-btn-pad-x);
+      padding-block: var(--tt-btn-pad-y);
+      font-size: var(--tt-btn-font);
+      font-weight: var(--tt-btn-weight);
+      line-height: 1.2;
+      letter-spacing: 0;
+      border-radius: var(--tt-btn-radius);
+      gap: var(--tt-btn-gap);
+    }
+
+    {%- comment -%}
+      ------------------------------------------------------------
+      KARSILASTIRMA BLOGU: SADECE DIKEY RITIM
+
+      Couple sayfasinda da yalnizca bu dort bosluk yaziliyor; blogun
+      ic olculeri (punto, kart padding, yaricap, gorsel boyutu, yan
+      bosluk, renkler, buton) iki sayfada da bloga birakiliyor.
+      Boylece iki sayfadaki blok ayni olcude kalirken ikisi de kendi
+      sayfa ritmine oturuyor.
+
+      Sinif adlari ai-comparison-<parca>-<block.id> kalibinda.
+      ------------------------------------------------------------
+    {%- endcomment -%}
+    #MainContent.tt-tekli-page [class*="ai-comparison-container-"] {
+      padding-block: var(--tt-s7);
+    }
+
+    #MainContent.tt-tekli-page [class*="ai-comparison-category-"] {
+      margin-block: 0 var(--tt-s3);
+    }
+
+    #MainContent.tt-tekli-page [class*="ai-comparison-title-"] {
+      margin-block: 0;
+    }
+
+    #MainContent.tt-tekli-page [class*="ai-comparison-subtitle-"] {
+      margin-block: var(--tt-s4) var(--tt-s6);
+    }
+  }
+</style>
