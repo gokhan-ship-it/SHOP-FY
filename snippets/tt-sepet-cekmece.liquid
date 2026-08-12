@@ -1,72 +1,77 @@
 {%- comment -%}
-  HEADER'DAKI SEPET IKONU CEKMECEYI ACSIN
+  SEPET: /cart SAYFASINA GITMEK YOK, HEP CEKMECE ACILSIN
 
   ------------------------------------------------------------------
-  DURUM
+  ISTEK
 
-  Ayarlar zaten dogru: settings.cart_type = "drawer", overlay grubunda
-  cart-drawer bolumu acik ve header'daki baglanti
-  aria-controls="CartDrawer" tasiyor. Yani tema bu ikonun cekmeceyi
-  acmasini soyluyor; href="/cart" yalnizca JS calismazsa devreye
-  girecek yedek.
-
-  Buna ragmen ikon /cart sayfasina goturuyor. Sebebi temanin baglama
-  yontemi: cekmece ogesi (ModalElement) dinleyiciyi connectedCallback
-  aninda, o an DOM'da olan dugumlere tek tek takiyor:
-
-      this.controls.forEach(b => b.addEventListener('click', ...))
-      get controls() { return [...document.querySelectorAll(
-        `[aria-controls="${this.id}"]`)] }
-
-  Dugme o andan SONRA degistirilirse (yapiskan header'in kendini
-  yeniden kurmasi, bir uygulamanin header'i sarmalayip yeniden
-  yazmasi, bolumun API ile yeniden render edilmesi) yeni dugumde
-  dinleyici olmaz ve tiklama baglantinin href'ine duser. Magazada
-  header'a dokunan uc uygulama gomulusu var.
+  "Sepet sayfasina hic yonlendirmesin, hep alttan sepeti acsin."
 
   ------------------------------------------------------------------
-  COZUM
+  ONCEKI SURUM VE NEDEN YETMEDI
 
-  Dinleyiciyi dugume degil BELGEYE takiyoruz, yakalama evresinde.
-  Boylece dugme kac kez degisirse degissin tiklama her zaman
-  yakalaniyor.
+  Ilk surum yalnizca aria-controls="CartDrawer" tasiyan ogeleri
+  yakaliyordu. Temanin header ikonu bunu tasiyor
+  (snippets/header-icons.liquid):
 
+      <a href="{{ routes.cart_url }}" class="cart-drawer-button"
+         is="magnet-link" aria-controls="CartDrawer" ...>
+
+  Buna ragmen ikon hala /cart'a goturuyordu. Magazada header'i
+  yeniden yazan uygulama gomulusu var; oge degistirildiginde ya da
+  sarmalandiginda aria-controls kaybolabiliyor, o zaman eski surum
+  hicbir sey yapmayip baglantiyi serbest birakiyordu.
+
+  Bu yuzden artik TEK bir isarete bagli degiliz. Iki olcutten biri
+  yeterli:
+
+    1. aria-controls="CartDrawer" tasiyan herhangi bir oge, ya da
+    2. adresi sepet sayfasi olan herhangi bir <a>
+
+  Ikincisi istegin birebir karsiligi: sepet sayfasina goturen ne
+  varsa cekmeceyi aciyor.
+
+  ------------------------------------------------------------------
+  SINIRLAR -- NELERE DOKUNULMUYOR
+
+  - /cart/add, /cart/change, /cart/clear, /cart/checkout gibi ISLEM
+    adresleri: yalnizca yol tam olarak /cart (ya da /tr/cart gibi dil
+    onekli hali) ise yakalaniyor.
+  - Baska alan adina giden baglantilar.
+  - target ile yeni sekmede acilanlar, indirme baglantilari.
+  - Ctrl/Cmd/Shift/Alt ile ya da orta tusla tiklama: tarayicinin
+    kendi davranisi korunuyor.
+  - Cekmece DOM'da yoksa (sepet sayfasinin kendisi, ya da
+    settings.cart_type "drawer" degilse) hicbir sey yapilmiyor,
+    baglanti kendi href'ine gidiyor. JS kapaliysa da ayni.
+
+  ------------------------------------------------------------------
+  NASIL
+
+  Dinleyici dugume degil BELGEYE, yakalama evresinde takili. Boylece
+  dugme kac kez degistirilirse degistirilsin tiklama yakalaniyor.
   Temanin kendi dinleyicisi hala duruyorsa cift tetikleme olmasin
-  diye stopPropagation cagriliyor: olay hedefe hic ulasmiyor, tek
-  kaynak bu dosya oluyor. Yapilan is temanin yaptiginin aynisi --
-  ayni ogenin ayni metotlari:
+  diye stopPropagation cagriliyor.
+
+  Yapilan is temanin yaptiginin aynisi -- ayni ogenin ayni metotlari:
 
       onButtonClick(event) {
         event.preventDefault();
         this.open ? this.hide() : this.show(event.currentTarget);
       }
 
-  YUKSELTME BEKLENIYOR: ozel oge (custom element) tanimlanmadan once
-  tiklanirsa cekmecenin show/hide metotlari henuz yoktur. Eskiden bu
-  durumda hicbir sey yapilmiyordu ve baglanti /cart'a gidiyordu.
-  Artik 2 saniyeye kadar 50ms araliklarla yukseltilmesi bekleniyor;
-  o sure icinde hazir olursa cekmece aciliyor, olmazsa sepet
-  sayfasina gidiliyor.
+  Kapatma yalnizca temanin kendi toggle'lari icin (aria-controls
+  tasiyanlar). Duz bir sepet baglantisi her zaman ACAR, kapatmaz --
+  yoksa cekmece acikken icindeki bir sepet baglantisina basmak onu
+  kapatirdi.
 
-  YEDEK KORUNUYOR: cekmece DOM'da hic yoksa hicbir sey yapilmiyor,
-  baglanti kendi href'ine gidiyor. JS kapaliysa da ayni.
+  YUKSELTME BEKLENIYOR: ozel oge tanimlanmadan once tiklanirsa
+  cekmecenin show/hide metotlari henuz yoktur. 2 saniyeye kadar 50ms
+  araliklarla bekleniyor; o sure icinde hazir olmazsa sepet sayfasina
+  gidiliyor.
 
-  KAPSAM: id'si CartDrawer olan ogeyi hedefleyen HER dugme --
-  header'daki ikon ve (acilirsa) mobil dock'taki sepet dugmesi.
-  Sinif adina degil aria-controls'e bakiliyor; sinif adlari tema
-  guncellemesinde degisebilir, aria-controls davranisin kendisi.
-  Cekmecenin kimligi sections/cart-drawer.liquid icinde dogrulandi:
-  <cart-drawer id="CartDrawer">.
-
-  AGIRLIK: satir ici ~0,6 KB, ek ag istegi yok, gorsel yok, hicbir
-  bolum yeniden render edilmiyor.
-
-  OLCUM (Chromium, temanin baglama yonteminin taklidiyle)
-    normal                       1. tik acti, 2. tik kapatti, cift
-                                 tetikleme yok
-    dugme sonradan degistirildi  yine acti/kapatti (asil hata bu)
-    cekmece DOM'da yok           baglanti /cart'a gitti (yedek)
-    oge gec yukseltildi          beklendi ve cekmece acildi
+  Cekmece once kimlikle (#CartDrawer), bulunamazsa etiket adiyla
+  (<cart-drawer>) araniyor -- kimlik bir tema guncellemesinde
+  degisirse davranis yine ayakta kalsin diye.
 
   sections/header.liquid, snippets/header-icons.liquid ve
   sections/cart-drawer.liquid dosyalarina DOKUNULMADI.
@@ -75,31 +80,58 @@
   (function () {
     'use strict';
 
-    document.addEventListener('click', function (e) {
-      var hedef = e.target;
-      if (!hedef || !hedef.closest) return;
+    var YEDEK = {{ routes.cart_url | json }};
 
-      var dugme = hedef.closest('[aria-controls="CartDrawer"]');
+    function cekmeceyiBul() {
+      return document.getElementById('CartDrawer') ||
+             document.querySelector('cart-drawer');
+    }
+
+    /* Yol tam olarak sepet sayfasi mi? /cart, /cart/ ve /tr/cart gibi
+       dil onekli haller evet; /cart/add gibi islem adresleri hayir. */
+    function sepetAdresiMi(a) {
+      if (a.hasAttribute('download')) return false;
+      var hedefPencere = a.getAttribute('target');
+      if (hedefPencere && hedefPencere !== '_self') return false;
+      var u;
+      try { u = new URL(a.href, location.href); } catch (e) { return false; }
+      if (u.origin !== location.origin) return false;
+      return /(^|\/)cart\/?$/.test(u.pathname);
+    }
+
+    function tetikleyiciBul(hedef) {
+      if (!hedef || !hedef.closest) return null;
+      var d = hedef.closest('[aria-controls="CartDrawer"]');
+      if (d) return d;
+      var a = hedef.closest('a[href]');
+      if (a && sepetAdresiMi(a)) return a;
+      return null;
+    }
+
+    document.addEventListener('click', function (e) {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (e.button !== 0) return;
+
+      var dugme = tetikleyiciBul(e.target);
       if (!dugme) return;
 
-      var cekmece = document.getElementById('CartDrawer');
-      // Cekmece DOM'da hic yoksa baglanti kendi isini yapsin.
+      var cekmece = cekmeceyiBul();
       if (!cekmece) return;
 
       e.preventDefault();
       e.stopPropagation();
 
-      // Ozel oge henuz yukseltilmemis olabilir; kisa sure bekleniyor.
+      var kapatabilir = dugme.hasAttribute('aria-controls');
       var deneme = 0;
+
       (function ac() {
         if (typeof cekmece.show === 'function') {
-          if (cekmece.hasAttribute('open')) cekmece.hide();
+          if (kapatabilir && cekmece.hasAttribute('open')) cekmece.hide();
           else cekmece.show(dugme);
           return;
         }
         if (deneme++ > 40) {
-          // ~2 sn'de yukseltilmediyse sepet sayfasina gidiyoruz.
-          window.location.href = dugme.getAttribute('href') || {{ routes.cart_url | json }};
+          window.location.href = dugme.getAttribute('href') || YEDEK;
           return;
         }
         window.setTimeout(ac, 50);
