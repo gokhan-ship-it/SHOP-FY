@@ -49,9 +49,22 @@
 
   sections/avantaj-kartlari.liquid'e DOKUNULMADI.
 {%- endcomment -%}
+{%- comment -%}
+  KAPSAM PARAMETRESI
+
+  Bu dosya iki sayfada da render ediliyor; hangi sarmalayici
+  sinifin altina yazacagi disaridan geliyor. Cagrilar
+  layout/theme.liquid icinde:
+
+    parametresiz          -> .tt-couple-page (varsayilan)
+    kok: '.tt-tekli-page' -> tekli (hediye) sayfasi
+
+  Kurallarin kendisi ayni; tek degisen kapsam.
+{%- endcomment -%}
+{%- assign kok = kok | default: '.tt-couple-page' -%}
 <style>
   @media (max-width: 767px) {
-    #MainContent.tt-couple-page .ak-serit {
+    #MainContent{{ kok }} .ak-serit {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
@@ -60,7 +73,7 @@
       padding-block: 2px;
     }
 
-    #MainContent.tt-couple-page .ak-kart {
+    #MainContent{{ kok }} .ak-kart {
       width: auto;
       min-height: 0;
       scroll-snap-align: none;
@@ -68,33 +81,33 @@
       border-radius: 16px;
     }
 
-    #MainContent.tt-couple-page .ak-ikon {
+    #MainContent{{ kok }} .ak-ikon {
       width: 28px;
       height: 28px;
       margin-bottom: 14px;
     }
 
-    #MainContent.tt-couple-page .ak-kart-bas {
+    #MainContent{{ kok }} .ak-kart-bas {
       margin-bottom: 6px;
       font-size: 16px;
       line-height: 1.25;
     }
 
-    #MainContent.tt-couple-page .ak-kart-metin {
+    #MainContent{{ kok }} .ak-kart-metin {
       font-size: 13px;
       line-height: 1.5;
     }
 
-    #MainContent.tt-couple-page .ak-alt {
+    #MainContent{{ kok }} .ak-alt {
       padding-top: 12px;
     }
 
-    #MainContent.tt-couple-page .ak-yuvarlak {
+    #MainContent{{ kok }} .ak-yuvarlak {
       width: 32px;
       height: 32px;
     }
 
-    #MainContent.tt-couple-page .ak-oklar {
+    #MainContent{{ kok }} .ak-oklar {
       display: none;
     }
   }

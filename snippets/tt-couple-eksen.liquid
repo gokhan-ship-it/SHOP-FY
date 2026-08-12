@@ -51,19 +51,32 @@
 
   sections/hediye-omru.liquid'e DOKUNULMADI.
 {%- endcomment -%}
+{%- comment -%}
+  KAPSAM PARAMETRESI
+
+  Bu dosya iki sayfada da render ediliyor; hangi sarmalayici
+  sinifin altina yazacagi disaridan geliyor. Cagrilar
+  layout/theme.liquid icinde:
+
+    parametresiz          -> .tt-couple-page (varsayilan)
+    kok: '.tt-tekli-page' -> tekli (hediye) sayfasi
+
+  Kurallarin kendisi ayni; tek degisen kapsam.
+{%- endcomment -%}
+{%- assign kok = kok | default: '.tt-couple-page' -%}
 <style>
   @media (max-width: 767px) {
-    #MainContent.tt-couple-page .ho-eksen span:nth-child(2) {
+    #MainContent{{ kok }} .ho-eksen span:nth-child(2) {
       margin-left: 7px;
     }
   }
 
   @media (max-width: 374px) {
-    #MainContent.tt-couple-page .ho-eksen span {
+    #MainContent{{ kok }} .ho-eksen span {
       font-size: 11px;
     }
 
-    #MainContent.tt-couple-page .ho-eksen span:nth-child(2) {
+    #MainContent{{ kok }} .ho-eksen span:nth-child(2) {
       margin-left: 10px;
     }
   }

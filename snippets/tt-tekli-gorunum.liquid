@@ -1,0 +1,393 @@
+{%- comment -%}
+  TEKLI (HEDIYE) SAYFASI -- GORUNUM/DAVRANIS KATMANI
+
+  Kapsam: #MainContent.tt-tekli-page. snippets/tt-tekli.liquid olcuyu
+  kuruyor, bu dosya couple sayfasindaki iki davranisi buraya tasiyor:
+
+    1) Video slaytinda oynat dugmesi gizli + gorselden surukleme
+    2) Mozaik video kartlari isik kutusunda aciliyor
+
+  ------------------------------------------------------------------
+  NEDEN KOPYA
+
+  Ayni iki blok snippets/tt-couple.liquid icinde de duruyor. Ortak bir
+  dosyaya cikarmak icin 1250 satirlik calisir durumdaki o katmani
+  bolmek gerekiyordu; kucuk snippetlerde (izgara / eksen / banka)
+  kapsam parametresi kullanildi, burada kopya tercih edildi.
+  Birinde davranis degisirse digeri elle esitlenmeli.
+
+  Bolum dosyalarina (video-slider-kapsul, mozaik-kartlar)
+  DOKUNULMADI; ayni bolumler baska sayfalarda eski haliyle calisiyor.
+{%- endcomment -%}
+<style>
+  @media (max-width: 767px) {
+    {%- comment -%}
+      Oynat dugmesi gizleniyor ama DOM'da kaliyor: bolumun kendi JS'i
+      onu ariyor (querySelector('[data-vs-toggle]')). Videolar zaten
+      sessiz, dongude ve bolum ekrana girince basliyor.
+
+      touch-action: pan-y -> gorselin uzerindeki YATAY hareketi
+      tarayici kendi kaydirmasina harcamiyor, asagidaki script'e
+      birakiyor. Dikey kaydirma aynen calisiyor.
+    {%- endcomment -%}
+    #MainContent.tt-tekli-page .vs-toggle {
+      display: none;
+    }
+
+    #MainContent.tt-tekli-page .vs-stage {
+      touch-action: pan-y;
+    }
+  }
+
+  {%- comment -%}
+    ISIK KUTUSU
+
+    Katman document.body'ye ekleniyor, o yuzden #MainContent altinda
+    degil: mozaik koku animasyon icin transform kullanabiliyor ve
+    transform'lu bir ata position: fixed'i kendine baglar, katman tam
+    ekran olmazdi. Kapsam yine sayfaya ozel -- bu dosya sadece tekli
+    sablonunda yukleniyor.
+
+    Butun genisliklerde calisiyor: kucuk kartta video izlemek
+    masaustunde de ayni sorun.
+  {%- endcomment -%}
+  .tt-vid-kapak {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.92);
+    opacity: 0;
+    transition: opacity 220ms ease;
+  }
+
+  .tt-vid-kapak.is-acik {
+    opacity: 1;
+  }
+
+  {%- comment -%}
+    Dikey videolar yuksekligi, yatay olanlar genisligi dolduruyor;
+    ikisi de kirpilmiyor. Yaricap sayfanin kart ailesiyle ayni.
+  {%- endcomment -%}
+  .tt-vid-oynatici {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    border-radius: var(--tt-card-radius, 20px);
+    background: #000;
+  }
+
+  .tt-vid-kapat {
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top, 0px));
+    right: max(14px, env(safe-area-inset-right, 0px));
+    z-index: 1;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .tt-vid-kapat svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+
+  .tt-vid-kapat:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tt-vid-kapak {
+      transition: none;
+    }
+  }
+</style>
+
+{%- comment -%}
+  ==================================================================
+  VIDEO SLAYTINI GORSELDEN DE SURUKLEYEBILME
+
+  Gorselin uzerindeki yatay surukleme, seridin scrollLeft degerine
+  birebir aktariliyor. Bolumun KENDI mantigi calismaya devam ediyor:
+  section'in scroll dinleyicisi seridi izleyip en yakin karta gore
+  videoyu degistiriyor. Yani slayt mantigi yeniden yazilmiyor,
+  sadece ikinci bir tutamak ekleniyor.
+
+  Bu snippet <head> icinde render edildigi icin script calistiginda
+  <body> henuz yok; DOMContentLoaded bekleniyor. Tema duzenleyicide
+  bolum yeniden yuklenince dugum degistigi icin shopify:section:load
+  ile tekrar taraniyor, ayni dugume iki kez baglanmayi kok uzerindeki
+  ttVsSurukle bayragi engelliyor.
+  ==================================================================
+{%- endcomment -%}
+<script>
+  (function () {
+    'use strict';
+
+    var MOBIL = '(max-width: 767px)';
+    var ESIK = 8; // yatay mi dikey mi karari icin gereken piksel
+
+    function mobilMi() {
+      return !!(window.matchMedia && window.matchMedia(MOBIL).matches);
+    }
+
+    // Seridin sol kenarina en yakin kart. Bolumun kendi nearest()
+    // fonksiyonu kapali kapsamda oldugu icin ayni is burada tekrar
+    // yapiliyor; olcut de ayni.
+    function otur(ray) {
+      var rr = ray.getBoundingClientRect();
+      var pad = parseFloat(window.getComputedStyle(ray).paddingLeft) || 0;
+      var en = null;
+      var enFark = Infinity;
+      for (var i = 0; i < ray.children.length; i++) {
+        var kr = ray.children[i].getBoundingClientRect();
+        var fark = Math.abs(kr.left - rr.left - pad);
+        if (fark < enFark) { enFark = fark; en = ray.children[i]; }
+      }
+      if (!en) return;
+      var hedef = ray.scrollLeft + (en.getBoundingClientRect().left - rr.left - pad);
+      hedef = Math.max(0, Math.min(hedef, ray.scrollWidth - ray.clientWidth));
+      if (ray.scrollTo) ray.scrollTo({ left: hedef, behavior: 'smooth' });
+      else ray.scrollLeft = hedef;
+    }
+
+    function bagla(kok) {
+      if (kok.ttVsSurukle) return;
+      var sahne = kok.querySelector('.vs-stage');
+      var ray = kok.querySelector('[data-vs-track]');
+      if (!sahne || !ray) return;
+      kok.ttVsSurukle = true;
+
+      var x0 = 0, y0 = 0, kaydir0 = 0;
+      var basli = false;
+      var yon = 0; // 0 belirsiz, 1 yatay, 2 dikey
+
+      sahne.addEventListener('touchstart', function (e) {
+        basli = false;
+        if (!mobilMi() || e.touches.length !== 1) return;
+        // Serit kaydirilamiyorsa (tek kart) hic karisma.
+        if (ray.scrollWidth <= ray.clientWidth + 1) return;
+        x0 = e.touches[0].clientX;
+        y0 = e.touches[0].clientY;
+        kaydir0 = ray.scrollLeft;
+        basli = true;
+        yon = 0;
+      }, { passive: true });
+
+      sahne.addEventListener('touchmove', function (e) {
+        if (!basli || e.touches.length !== 1) return;
+        var dx = e.touches[0].clientX - x0;
+        var dy = e.touches[0].clientY - y0;
+        if (!yon) {
+          if (Math.abs(dx) < ESIK && Math.abs(dy) < ESIK) return;
+          // Ilk belirgin hareket yonu karari belirliyor; sonradan
+          // degismiyor ki dikey kaydirma yarida kesilmesin.
+          yon = Math.abs(dx) > Math.abs(dy) ? 1 : 2;
+        }
+        if (yon !== 1) return;
+        if (e.cancelable) e.preventDefault();
+        ray.scrollLeft = kaydir0 - dx;
+      }, { passive: false });
+
+      function bitir() {
+        if (!basli) return;
+        basli = false;
+        if (yon === 1) otur(ray);
+        yon = 0;
+      }
+
+      sahne.addEventListener('touchend', bitir, { passive: true });
+      sahne.addEventListener('touchcancel', bitir, { passive: true });
+    }
+
+    function tara() {
+      var kokler = document.querySelectorAll('#MainContent.tt-tekli-page .vs-root');
+      for (var i = 0; i < kokler.length; i++) bagla(kokler[i]);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', tara);
+    } else {
+      tara();
+    }
+    document.addEventListener('shopify:section:load', tara);
+  })();
+</script>
+
+{%- comment -%}
+  ==================================================================
+  MOZAIK VIDEO KARTLARI: ISIK KUTUSU
+
+  Bolumun kendi davranisi: play'e basilinca video KARTIN ICINDE
+  oynuyor. Kart mozaikte kucuk oldugu icin izlenebilir degil.
+
+  Play tiklamasi YAKALAMA (capture) evresinde kesiliyor: document
+  uzerindeki capture dinleyicisi dugmenin kendi dinleyicisinden ONCE
+  calisiyor, stopPropagation ile olay dugmeye hic ulasmiyor.
+
+  Video KLONLANIYOR, tasinmiyor: video dugumunu DOM'dan sokup
+  tasimak bazi tarayicilarda oynatmayi sifirliyor. Derin klon
+  source cocuklarini ve poster'i da getiriyor.
+
+  Erisilebilirlik: role="dialog" + aria-modal, acilista odak kapatma
+  dugmesine gidiyor, Tab katmanin disina cikmiyor, Esc kapatiyor,
+  kapaninca odak basilan play dugmesine geri donuyor.
+  ==================================================================
+{%- endcomment -%}
+<script>
+  (function () {
+    'use strict';
+
+    var KAPAT_IKON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+    var kapak = null;      // acik katman
+    var sonDugme = null;   // odak buraya geri donecek
+    var eskiTasma = '';
+
+    function kapat() {
+      if (!kapak) return;
+      var k = kapak;
+      kapak = null;
+
+      var v = k.querySelector('video');
+      if (v) { try { v.pause(); } catch (e) {} }
+
+      k.classList.remove('is-acik');
+      document.documentElement.style.overflow = eskiTasma;
+
+      window.setTimeout(function () {
+        if (k.parentNode) k.parentNode.removeChild(k);
+      }, 220);
+
+      if (sonDugme) {
+        try { sonDugme.focus(); } catch (e) {}
+        sonDugme = null;
+      }
+    }
+
+    function ac(kaynak, dugme) {
+      if (kapak) kapat();
+      sonDugme = dugme || null;
+
+      var k = document.createElement('div');
+      k.className = 'tt-vid-kapak';
+      k.setAttribute('role', 'dialog');
+      k.setAttribute('aria-modal', 'true');
+      k.setAttribute('aria-label', 'Video');
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tt-vid-kapat';
+      btn.setAttribute('aria-label', 'Videoyu kapat');
+      btn.innerHTML = KAPAT_IKON;
+
+      var v = kaynak.cloneNode(true);
+      v.className = 'tt-vid-oynatici';
+      v.removeAttribute('style');
+      v.removeAttribute('width');
+      v.removeAttribute('height');
+      v.setAttribute('controls', 'controls');
+      v.setAttribute('playsinline', '');
+      v.setAttribute('webkit-playsinline', '');
+      v.muted = false;
+
+      k.appendChild(btn);
+      k.appendChild(v);
+      document.body.appendChild(k);
+
+      // Sayfa arkada kaymasin.
+      eskiTasma = document.documentElement.style.overflow || '';
+      document.documentElement.style.overflow = 'hidden';
+
+      // Sayfadaki butun videolar dursun (kart ici oynayan kalmasin).
+      var hepsi = document.querySelectorAll('video');
+      for (var i = 0; i < hepsi.length; i++) {
+        if (hepsi[i] !== v) { try { hepsi[i].pause(); } catch (e) {} }
+      }
+
+      kapak = k;
+
+      // Bir kare bekleyip gecisi tetikliyoruz.
+      if (window.requestAnimationFrame) {
+        requestAnimationFrame(function () { k.classList.add('is-acik'); });
+      } else {
+        k.classList.add('is-acik');
+      }
+
+      try { v.currentTime = 0; } catch (e) {}
+      var pr = v.play();
+      if (pr && pr.catch) pr.catch(function () {});
+
+      try { btn.focus(); } catch (e) {}
+
+      btn.addEventListener('click', kapat);
+
+      // Zemine tiklama kapatir; videonun ve dugmenin uzeri haric.
+      k.addEventListener('click', function (e) {
+        if (e.target === k) kapat();
+      });
+
+      // Odak katmanin disina cikmasin.
+      k.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab') return;
+        var odaklanabilir = k.querySelectorAll('button, video[controls]');
+        if (!odaklanabilir.length) return;
+        var ilk = odaklanabilir[0];
+        var son = odaklanabilir[odaklanabilir.length - 1];
+        if (e.shiftKey && document.activeElement === ilk) {
+          e.preventDefault();
+          son.focus();
+        } else if (!e.shiftKey && document.activeElement === son) {
+          e.preventDefault();
+          ilk.focus();
+        }
+      });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (!kapak) return;
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        e.preventDefault();
+        kapat();
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      var kok = document.querySelector('#MainContent.tt-tekli-page');
+      if (!kok) return;
+      var hedef = e.target;
+      if (!hedef || !hedef.closest) return;
+
+      var dugme = hedef.closest('[data-mk-play]');
+      if (!dugme || !kok.contains(dugme)) return;
+
+      var kart = dugme.closest('[data-mk-kart]');
+      var video = kart ? kart.querySelector('video') : null;
+      if (!video) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      ac(video, dugme);
+    }, true);
+
+    // Tema duzenleyicide bolum yeniden yuklenirse acik katman kalmasin.
+    document.addEventListener('shopify:section:load', function () { kapat(); });
+    document.addEventListener('shopify:section:unload', function () { kapat(); });
+  })();
+</script>

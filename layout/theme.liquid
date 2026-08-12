@@ -70,9 +70,18 @@
       {%- comment -%}
         Ayni katmanin tekli (hediye) surumu: yalnizca olcu tarafi --
         tipografik olcek, dikey ritim, kenar boslugu, buton metrigi.
-        Couple sayfasina ozel renk ve davranis kurallari alinmadi.
+        Couple sayfasina ozel RENK kurallari (siyah kart slayti, mavi
+        CTA) alinmadi.
+
+        Alttaki uc dosya couple'la ayni; kapsam sinifi parametreden
+        geliyor. Sonuncusu tekliye ozel: video slaytinin surukleme
+        davranisi ve mozaik isik kutusu.
       {%- endcomment -%}
       {%- render 'tt-tekli' -%}
+      {%- render 'tt-couple-izgara', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-couple-eksen', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-couple-banka', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-tekli-gorunum' -%}
     {%- endif -%}
 
     {{ content_for_header }}

@@ -36,10 +36,23 @@
   PayTR panelinde kapali bir aile varsa o satir silinmeli.
 
   ------------------------------------------------------------------
-  KAPSAM: yalnizca #MainContent.tt-couple-page altindaki avantaj
-  kartlari. sections/avantaj-kartlari.liquid'e dokunulmadi; ayni
-  bolum baska sayfalarda oldugu gibi calisiyor.
+  KAPSAM: yalnizca kapsam sinifinin altindaki avantaj kartlari.
+  sections/avantaj-kartlari.liquid'e dokunulmadi; ayni bolum baska
+  sayfalarda oldugu gibi calisiyor.
 {%- endcomment -%}
+{%- comment -%}
+  KAPSAM PARAMETRESI
+
+  Bu dosya iki sayfada da render ediliyor; hangi sarmalayici
+  sinifin altina yazacagi disaridan geliyor. Cagrilar
+  layout/theme.liquid icinde:
+
+    parametresiz          -> .tt-couple-page (varsayilan)
+    kok: '.tt-tekli-page' -> tekli (hediye) sayfasi
+
+  Kurallarin kendisi ayni; tek degisen kapsam.
+{%- endcomment -%}
+{%- assign kok = kok | default: '.tt-couple-page' -%}
 
 {%- liquid
   comment
@@ -56,20 +69,20 @@
 
 {%- if kartlar.size > 0 -%}
 <style>
-  #MainContent.tt-couple-page .tt-banka {
+  #MainContent{{ kok }} .tt-banka {
     margin-top: 20px;
     padding-top: 18px;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
   }
 
-  #MainContent.tt-couple-page .tt-banka-bas {
+  #MainContent{{ kok }} .tt-banka-bas {
     margin: 0 0 12px;
     font-size: 13px;
     line-height: 1.35;
     color: #86868b;
   }
 
-  #MainContent.tt-couple-page .tt-banka-liste {
+  #MainContent{{ kok }} .tt-banka-liste {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -83,7 +96,7 @@
     logo rozeti beyaz hapin icinde, cunku banka logolari renkli
     ve cogu beyaz zemine gore tasarlanmis.
   {%- endcomment -%}
-  #MainContent.tt-couple-page .tt-banka-liste li {
+  #MainContent{{ kok }} .tt-banka-liste li {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -97,13 +110,13 @@
     color: #f5f5f7;
   }
 
-  #MainContent.tt-couple-page .tt-banka-liste li.tt-banka-logo {
+  #MainContent{{ kok }} .tt-banka-liste li.tt-banka-logo {
     padding: 6px 10px;
     border-color: transparent;
     background: #fff;
   }
 
-  #MainContent.tt-couple-page .tt-banka-liste img {
+  #MainContent{{ kok }} .tt-banka-liste img {
     display: block;
     height: 20px;
     width: auto;
@@ -155,7 +168,7 @@
       var dugme = hedef.closest('[data-ak-ac]');
       if (!dugme) return;
 
-      var kok = document.querySelector('#MainContent.tt-couple-page');
+      var kok = document.querySelector('#MainContent{{ kok }}');
       if (!kok || !kok.contains(dugme)) return;
 
       var bolum = dugme.closest('.shopify-section') || kok;
