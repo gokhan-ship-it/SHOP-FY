@@ -221,3 +221,28 @@ Metafield'ı boş olan ürünlerde popup genel `pages/boyutlar` içeriğine
 düşüyor ve o sayfada "Bu içeriği Shopify admin → Online Store → Pages →
 Boyutlar sayfasından düzenleyebilirsiniz." cümlesi var. Bu cümle şu anda
 müşteriye görünüyor. Sayfa içeriği olduğu için dokunulmadı.
+
+## 4) "Boyutlar" sayfasının içeriği değiştirildi
+
+Yukarıdaki 3. maddedeki sorun kullanıcı onayıyla çözüldü: metafield'ı boş
+olan ürünlerde artık "Boyut belirtilmemiştir." yazıyor.
+
+Çözüm, tema dosyasına değil `pages/boyutlar` sayfasının içeriğine yapıldı.
+Sebep: yedek metin, `size_popup` bloğunun içindeki liquid'de gömülü ve o
+blok `templates/product.zaman-kapsulu.json` ile
+`templates/product.zaman-kapsulu-couple.json` içinde yaşıyor -- ikisi de
+~69 KB'lik otomatik üretilen dosyalar ve API onları yalnızca butunuyle
+yazmaya izin veriyor. Sayfa içeriğini değiştirmek aynı sonucu tek satırda
+veriyor; blok zaten önce metafield'a, sonra bu sayfaya bakıyor.
+
+Sayfanın ESKİ içeriği (geri almak gerekirse):
+
+    <p><strong>Zincir Uzunluğu:</strong> 60 cm<br><strong>Boyunda Duruşu:</strong> yaklaşık 32 cm</p><p>Bu içeriği Shopify admin → Online Store → Pages → Boyutlar sayfasından düzenleyebilirsiniz.</p>
+
+Yeni içeriği:
+
+    <p>Boyut belirtilmemiştir.</p>
+
+Yan etki: /pages/boyutlar adresine doğrudan girilirse artık yalnızca bu
+cümle görünür. Sayfa hiçbir menüde bağlı değil, tek işi popup'a yedek
+metin sağlamak.
