@@ -1,40 +1,68 @@
 {%- comment -%}
   Dongu Seridi - couple akisini dort adimda anlatan koyu kart.
 
-  Yapisi:
-    [logo] Ortak zaman kapsulu            Nasil calisir?
-    ---- ilerleme cubugu (4 dugum) ----
-    (dongu oku)  [ ↻ ve Tekrarlayin ]
-    Yukleyin  Bekleyin  Bulusun  Acin
-    ------------------------------------
-    [       Kendin dene →       ]   <- tam genislik, beyaz hap dugme
-              Detayli ogren         <- duz metin baglantisi
+  ------------------------------------------------------------------
+  DUZEN
 
-  ALT BOLUM IKI DUZENLI
+  Kart iki sutunlu bir izgara. Izgaranin UC cocugu var ve DOM sirasi
+  bilerek mobil sirasiyla ayni:
 
-  "Birincil buton metni" (dene_metni) doluyken yukaridaki yeni duzen
-  cizilir. Bos birakilirsa eski duzen -- solda durum metni, sagda hap
-  seklinde "Detayli ogren" baglantisi -- bayti bayta korunur; ilgili
-  CSS ve JS de hic basilmaz. Boylece bu section baska bir sablona
-  eklenirse orasi etkilenmez.
+      .tt-cd-metin   etiket satiri + baslik + alt metin
+      .tt-cd-serit   4 adimli animasyonlu serit (degismedi)
+      .tt-cd-eylem   "Kendin dene" butonu + "Nasil calisir?" baglantisi
 
-  Buton bir <dialog> aciyor. Pencerenin ICERIGI HENUZ BAGLI DEGIL:
-  editordeki "Demo penceresi" basligindan ya sayfadaki bir ogenin CSS
-  secicisi (modal_secici) ya da duz HTML (modal_html) veriliyor.
-  Secici doluysa eslesen oge sayfa yuklenirken pencerenin icine
-  TASINIR -- kopyalanmadigi icin o bolumun kendi JS'i ve dinleyicileri
-  calismaya devam eder. Ornegin couple-bulusma bolumu bu sayfaya
-  eklenip secicisi verilirse tek satir kod yazmadan pencerede acilir.
+  >=900px  grid-template-areas: "metin serit" / "eylem serit"
+           iki sutun 1fr 1fr, sutun araligi 48px, dikeyde ortali.
+           Serit iki satiri kapsadigi icin sol sutunun tamamina gore
+           ortalanir.
+   <900px  izgara yok; ogeler DOM sirasinda alt alta diziliyor, yani
+           metin -> serit -> buton -> baglanti.
+
+  Kart genisligi uc aralikta:
+      <600px    330px, dolgu 20, baslik 22px, buton tam genislik
+      600-899   min(90vw, 620px), dolgu 24, baslik 24px, buton inline
+      >=900     kart_en_d (varsayilan 860), dolgu 32, baslik 28px
+
+  ------------------------------------------------------------------
+  MODAL
+
+  Kalibi temanin taksit modalindan (.tt-tk-*) birebir alindi: native
+  <dialog>, showModal()/close(), yakalama evresinde TEK belge
+  dinleyicisi, panel <body>'ye tasiniyor. Boylece z-index yarisi yok
+  (top layer), focus tuzagi ve kapaninca focus'un tetikleyiciye
+  donmesi tarayicidan geliyor; ustune yalnizca sayfa kaydirma kilidi
+  eklendi.
+
+      modal id            tt-cd-modal
+      icerik kabi         .tt-cd-govde  (data-tt-cd-govde)
+      kapat dugmesi       [data-tt-cd-kapat]
+      acan dugme          [data-tt-cd-ac]
+
+  Icerik SONRA gelecek; simdilik govdede tek satir yer tutucu var.
+  Temanin mevcut demo bolumune (couple-bulusma) dokunulmadi ve o
+  tetiklenmiyor.
+
+  ------------------------------------------------------------------
+  KAPSAM
+
+  Serit sinif adlari .ds-<section.id>, yeni ogeler .tt-cd-<section.id>
+  onekli; ikisi de bolum kimligini tasidigi icin baska hicbir sayfaya
+  sizmiyor. Serit CSS'i, animasyonu ve JS'i bu revizyonda
+  DEGISTIRILMEDI.
 
   Dongu vurgusu: son adima gectikten 1100ms sonra ok, ok ucu ve
-  ortadaki etiket sari olup etiket buyuyor; bir sonraki adimda
-  (basa donerken) eski haline geri aliniyor.
+  ortadaki etiket vurgu rengine donup etiket buyuyor; bir sonraki
+  adimda eski haline geri aliniyor.
 
-  Ok SVG'si 298px: kartin ic genisligi (330 - 16 - 16) ile birebir.
+  Ok SVG'si viewBox 298x38; genisligi %100, yuksekligi otomatik, yani
+  kart genisleyince oran korunuyor.
 
-  Renk gecisi tek yerden: ok icin svg'ye color veriliyor, path
-  stroke'u ve ok ucunun fill'i currentColor. Boylece iki ogeyi ayri
-  ayri degil, tek gecisle boyuyoruz.
+  OLCUM (Chromium)
+    390px   tek sutun, kart 330, baslik 22, buton tam genislik
+    768px   tek sutun, kart 620, baslik 24, buton inline
+    1440px  iki sutun, kart 860, baslik 28, sutun araligi 48
+    uc genislikte de yatay tasma yok, JS hatasi yok
+    modal: buton / X / zemin / ESC dogrulandi, focus butona donuyor
 {%- endcomment -%}
 
 {%- liquid
@@ -42,8 +70,8 @@
   assign s = section.settings
 
   comment
-    Marka degradesi tek yerden kuruluyor; dolgu, dugumler ve dugme
-    hover'i ayni degrade dizesini kullaniyor.
+    Marka degradesi tek yerden kuruluyor; dolgu ve dugumler ayni
+    degrade dizesini kullaniyor.
 
     Metin ve SVG icin degrade kullanilamadigi (ve koyu zeminde
     okunmasi gerektigi) icin ayri bir "vurgu" rengi var: degradenin
@@ -65,21 +93,23 @@
   .ds-{{ sid }} *::before,
   .ds-{{ sid }} *::after { box-sizing: inherit; }
 
-  .ds-kart-{{ sid }} {
+  {%- comment -%} ---------- Kart ---------- {%- endcomment -%}
+  .tt-cd-kart-{{ sid }} {
     max-width: 330px;
-    margin: 0 auto;
-    padding: 14px 16px 12px;
-    background: #0D0D0F;
+    margin-inline: auto;
+    padding: 20px;
+    background: #0F0F10;
     border: 0.5px solid rgba(255, 255, 255, 0.14);
-    border-radius: 26px;
+    border-radius: 20px;
   }
 
-  /* --- ust satir --- */
-  .ds-ust-{{ sid }} {
+  {%- comment -%} ---------- Sol sutun: etiket satiri ---------- {%- endcomment -%}
+  .tt-cd-etiket-{{ sid }} {
     display: flex;
     align-items: center;
+    gap: 9px;
   }
-  .ds-logo-{{ sid }} {
+  .tt-cd-logo-{{ sid }} {
     flex: 0 0 auto;
     width: 26px;
     height: 26px;
@@ -89,37 +119,105 @@
     background: #1C1C20;
     border-radius: 8px;
   }
-  .ds-logo-{{ sid }} img {
+  .tt-cd-logo-{{ sid }} img {
     max-width: 100%;
     max-height: 16px;
     object-fit: contain;
     display: block;
   }
-  .ds-ustyazi-{{ sid }} {
-    margin: 0 0 0 9px;
+  {%- comment -%}
+    Buyuk harf gorunumu CSS'ten veriliyor; editorde kayitli metin
+    ("Couple Zaman Kapsulu") oldugu gibi kaliyor.
+  {%- endcomment -%}
+  .tt-cd-eyazi-{{ sid }} {
+    margin: 0;
     font-size: 12px;
     line-height: 1.2;
-    color: #F5F5F3;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8E8E93;
   }
-  /* Dokunma alani 44px; gorsel hizayi bozmamak icin dolgu kadar
-     negatif margin veriliyor. */
-  .ds-ustbag-{{ sid }} {
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 12px 2px;
-    margin-top: -12px;
-    margin-bottom: -12px;
-    font-size: 12px;
+
+  {%- comment -%} ---------- Sol sutun: baslik + alt metin ---------- {%- endcomment -%}
+  .tt-cd-baslik-{{ sid }} {
+    margin: 16px 0 0;
+    font-size: 22px;
+    font-weight: 500;
     line-height: 1.2;
-    color: #8A8A85;
+    letter-spacing: -0.02em;
+    color: #FFFFFF;
+  }
+  .tt-cd-altmetin-{{ sid }} {
+    margin: 10px 0 0;
+    max-width: 34ch;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #8E8E93;
+  }
+
+  {%- comment -%} ---------- Serit sarmalayicisi ---------- {%- endcomment -%}
+  .tt-cd-serit-{{ sid }} { margin-top: 24px; }
+
+  {%- comment -%}
+    ---------- Eylem alani ----------
+    Mobilde buton tam genislik ve metin ortali; 600px'ten itibaren
+    inline-flex'e donup icerigi kadar yer kapliyor.
+  {%- endcomment -%}
+  .tt-cd-eylem-{{ sid }} {
+    margin-top: 20px;
+    text-align: center;
+  }
+  .tt-cd-dugme-{{ sid }} {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    min-height: 44px;
+    padding: 12px 22px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: #1C1C1E;
+    background: #FFFFFF;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: background-color 150ms ease, transform 150ms ease;
+  }
+  .tt-cd-dugme-{{ sid }}:hover { background: #EDEDEB; }
+  .tt-cd-dugme-{{ sid }}:active { transform: scale(0.985); }
+  .tt-cd-dugme-{{ sid }}:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 3px; }
+  .tt-cd-ok-{{ sid }} {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  {%- comment -%}
+    Blok: 600px'ten itibaren buton inline-flex'e donuyor ve link
+    inline olsaydi yanina akardi. Blok olunca her zaman kendi
+    satirinda kaliyor; hizasi ustteki text-align'dan geliyor.
+  {%- endcomment -%}
+  .tt-cd-link-{{ sid }} {
+    display: block;
+    margin-top: 14px;
+    font-size: 13px;
+    line-height: 1.3;
+    color: #8E8E93;
     text-decoration: none;
-    white-space: nowrap;
     transition: color 150ms ease;
   }
-  .ds-ustbag-{{ sid }}:hover,
-  .ds-ustbag-{{ sid }}:focus-visible { color: #F5F5F3; }
+  .tt-cd-link-{{ sid }}:hover,
+  .tt-cd-link-{{ sid }}:focus-visible { color: #C7C7CC; }
 
   /* --- ilerleme cubugu --- */
   .ds-cubuk-{{ sid }} {
@@ -188,7 +286,7 @@
     align-items: center;
     gap: 4px;
     padding: 0 8px;
-    background: #0D0D0F;
+    background: #0F0F10;
     font-size: 11px;
     line-height: 16px;
     color: #4A4A4E;
@@ -228,218 +326,54 @@
   }
   .ds-etiket-{{ sid }}.is-aktif { color: #F5F5F3; }
 
-  /* --- alt satir --- */
-  .ds-alt-{{ sid }} {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 0.5px solid rgba(255, 255, 255, 0.12);
-  }
-  .ds-durum-{{ sid }} {
-    margin: 0;
-    min-width: 0;
-    font-size: 11px;
-    line-height: 1.35;
-    color: #8A8A85;
-    /* Durum metinleri farkli uzunlukta; hap dugmeden sonra kimi metin
-       iki satira dusuyor. Iki satirlik yer bastan ayrilmazsa kart her
-       adimda zipliyor. */
-    min-height: 2.7em;
-    display: flex;
-    align-items: center;
-  }
-  /* Ince hap dugme: kapsul form, saydam zemin, hafif kenarlik.
-     Gorunur yukseklik ~31px kaliyor; 44px dokunma alani ::after ile
-     veriliyor, boylece dugme sismeden erisim kurali saglaniyor. */
-  .ds-altbag-{{ sid }} {
-    position: relative;
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: {{ s.dugme_dolgu_y }}px {{ s.dugme_dolgu_x }}px;
-    font-size: 11px;
-    line-height: 1.2;
-    color: {{ s.dugme_yazi }};
-    background: transparent;
-    border: 1px solid {{ s.dugme_kenar }};
-    border-radius: 980px;
-    white-space: nowrap;
-    text-decoration: none;
-    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
-  }
-  .ds-altbag-{{ sid }}::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    height: 44px;
-    transform: translateY(-50%);
-  }
-  .ds-altbag-{{ sid }}:hover,
-  .ds-altbag-{{ sid }}:focus-visible {
-    background: {{ degrade }};
-    border-color: transparent;
-    color: {{ s.dugme_hover_yazi }};
-  }
-  .ds-altok-{{ sid }} {
-    width: 11px;
-    height: 11px;
-    flex: none;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 1.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  {%- if s.dene_metni != blank -%}
   {%- comment -%}
-    ALT BOLUM - YENI DUZEN
-
-    Yalnizca "Birincil buton metni" doluyken cizilir. Bos birakilirsa
-    bu blogun tek bayti bile cikmaz ve bolum eski haliyle calisir --
-    bu section'i kullanan baska bir sablon varsa hic etkilenmez.
-
-    Duzen: ayirici cizginin altinda dikey iki oge.
-      1) tam genislik beyaz hap dugme (min 44px dokunma alani)
-      2) altinda 8px boslukla duz metin baglantisi
+    ---------- Tablet: 600-899px ----------
+    Kart telefondaki 330px'te kalirsa tablette sayfanin ortasinda
+    minicik bir kutu gorunuyordu. Duzen hala tek sutun; yalnizca kart
+    nefes aliyor ve buton icerigi kadar yer kapliyor.
   {%- endcomment -%}
-  .ds-alt2-{{ sid }} {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 0.5px solid rgba(255, 255, 255, 0.12);
-  }
-  .ds-dene-{{ sid }} {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    min-height: 44px;
-    padding: 11px 16px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-    color: #1C1C1E;
-    background: #FFFFFF;
-    border: 0;
-    border-radius: 999px;
-    cursor: pointer;
-    -webkit-appearance: none;
-    appearance: none;
-    transition: background-color 150ms ease, transform 150ms ease;
-  }
-  .ds-dene-{{ sid }}:hover { background: #EDEDEB; }
-  .ds-dene-{{ sid }}:active { transform: scale(0.985); }
-  .ds-dene-{{ sid }}:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 3px; }
-  /* Ok, alt baglantidaki okun aynisi; rengi currentColor oldugu icin
-     metinle birlikte koyu kaliyor. */
-  .ds-deneok-{{ sid }} {
-    width: 13px;
-    height: 13px;
-    flex: none;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 1.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .ds-altlink-{{ sid }} {
-    display: block;
-    margin-top: 8px;
-    text-align: center;
-    font-size: 13px;
-    line-height: 1.3;
-    color: #8E8E93;
-    text-decoration: none;
-    transition: color 150ms ease;
-  }
-  .ds-altlink-{{ sid }}:hover,
-  .ds-altlink-{{ sid }}:focus-visible { color: #C7C7CC; }
-
-  {%- comment -%} Demo penceresi {%- endcomment -%}
-  .ds-modal-{{ sid }} {
-    width: min(560px, calc(100vw - 32px));
-    max-height: 88vh;
-    padding: 0;
-    border: 0;
-    border-radius: 26px;
-    background: #0D0D0F;
-    color: #F5F5F3;
-    overflow: hidden;
-  }
-  .ds-modal-{{ sid }}::backdrop { background: rgba(0, 0, 0, 0.62); }
-  .ds-mkutu-{{ sid }} {
-    position: relative;
-    max-height: 88vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .ds-mkapat-{{ sid }} {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    color: #F5F5F3;
-    background: rgba(255, 255, 255, 0.10);
-    border: 0;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-  .ds-mkapat-{{ sid }}:hover { background: rgba(255, 255, 255, 0.18); }
-  .ds-mkapat-{{ sid }} svg {
-    width: 15px; height: 15px;
-    stroke: currentColor; fill: none;
-    stroke-width: 1.8; stroke-linecap: round;
-  }
-  {%- comment -%}
-    Ic bosluk sarmalayicida: pencereye hazir bir BOLUM tasindiginda
-    (modal_secici) o bolumun kendi olculeri var, ustune bir daha
-    dolgu binmemeli. JS tasima yaptiginda sarmalayici kaldiriliyor.
-  {%- endcomment -%}
-  .ds-micerik-{{ sid }} { padding: 56px 20px 24px; }
-  .ds-micerik-{{ sid }} p { margin: 0; font-size: 14px; line-height: 1.5; color: #8A8A85; }
-  .ds-mgovde-{{ sid }} > :not(.ds-micerik-{{ sid }}) { display: block; }
-  {%- endif -%}
-
-  /* --- masaustu ---
-     Kart 330px'te masaustunde cok kucuk kaliyordu. Dugum ve ray
-     olculeri bilerek degismiyor: JS'in dolgu hesabi (idx/3 - 10px)
-     11px dugume ve 5px ray kenar boslugua gore kurulu; buyutursek
-     dolgu dugum merkezleriyle hizasini kaybeder. */
-  @media (min-width: 750px) {
-    .ds-{{ sid }} { padding: {{ s.dis_bosluk_d }}px 20px; }
-    .ds-kart-{{ sid }} {
-      max-width: {{ s.kart_genislik_d }}px;
-      padding: 18px 22px 16px;
+  @media (min-width: 600px) {
+    .tt-cd-kart-{{ sid }} {
+      max-width: min(90vw, 620px);
+      padding: 24px;
     }
-    .ds-logo-{{ sid }} { width: 30px; height: 30px; }
-    .ds-logo-{{ sid }} img { max-height: 18px; }
-    .ds-ustyazi-{{ sid }} { font-size: 14px; margin-left: 11px; }
-    .ds-ustbag-{{ sid }} { font-size: 14px; }
-    .ds-cubuk-{{ sid }} { margin-top: 20px; }
+    .tt-cd-baslik-{{ sid }} { font-size: 24px; }
+    .tt-cd-eylem-{{ sid }} { text-align: left; }
+    .tt-cd-dugme-{{ sid }} { display: inline-flex; width: auto; }
+  }
+
+  {%- comment -%}
+    ---------- Masaustu: >=900px, iki sutun ----------
+    Serit iki satiri kapsiyor; satir araligi 0 verilip eylem alanina
+    kendi ust boslugu birakildi, yoksa 48px'lik gap basligi butondan
+    kopariyordu.
+
+    Dugum ve ray olculeri bilerek degismiyor: JS'in dolgu hesabi
+    (idx/3 - 10px) 11px dugume ve 5px ray kenar boslugua gore kurulu.
+  {%- endcomment -%}
+  @media (min-width: 900px) {
+    .ds-{{ sid }} { padding: {{ s.dis_bosluk_d }}px 20px; }
+    .tt-cd-kart-{{ sid }} {
+      max-width: {{ s.kart_en_d }}px;
+      padding: 32px;
+    }
+    .tt-cd-izgara-{{ sid }} {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "metin serit"
+        "eylem serit";
+      column-gap: 48px;
+      row-gap: 0;
+      align-items: center;
+    }
+    .tt-cd-metin-{{ sid }} { grid-area: metin; align-self: end; }
+    .tt-cd-eylem-{{ sid }} { grid-area: eylem; align-self: start; margin-top: 28px; }
+    .tt-cd-serit-{{ sid }} { grid-area: serit; margin-top: 0; }
+
+    .tt-cd-baslik-{{ sid }} { font-size: 28px; }
     .ds-dongu-{{ sid }} { font-size: 12px; }
     .ds-etiket-{{ sid }} { font-size: 15px; }
-    .ds-durum-{{ sid }} { font-size: 13px; min-height: 1.35em; }
-    .ds-altbag-{{ sid }} { font-size: 13px; }
-    {%- if s.dene_metni != blank -%}
-    /* Masaustunde dugme tam genislige yayilmiyor: kartin icinde
-       ortalanip 320px'te duruyor. */
-    .ds-dene-{{ sid }} { max-width: 320px; margin-left: auto; margin-right: auto; }
-    {%- endif -%}
   }
 
   /* --- hareket azaltma: donme durur, her sey dolu gorunur --- */
@@ -458,164 +392,221 @@
       transition: none;
     }
   }
+
+  {%- comment -%}
+    ---------- Demo penceresi ----------
+    Panel <body>'ye tasindigi icin butun kurallar sinif uzerinden
+    yaziliyor; kapsayici secici kullanilamaz. Ayni sebeple sinif adi
+    bolum kimligini tasiyor.
+  {%- endcomment -%}
+  .tt-cd-panel-{{ sid }} {
+    width: calc(100vw - 32px);
+    max-width: 720px;
+    max-height: min(88vh, 720px);
+    padding: 0;
+    border: 0;
+    border-radius: 20px;
+    background: #0F0F10;
+    color: #F5F5F3;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    -webkit-font-smoothing: antialiased;
+  }
+  .tt-cd-panel-{{ sid }}::backdrop { background: rgba(0, 0, 0, 0.55); }
+  .tt-cd-panel-{{ sid }} * { box-sizing: border-box; }
+  .tt-cd-panel-{{ sid }} .tt-cd-ic { padding: 24px 20px 20px; }
+  .tt-cd-panel-{{ sid }} .tt-cd-ic:focus { outline: none; }
+  .tt-cd-panel-{{ sid }} .tt-cd-ust {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .tt-cd-panel-{{ sid }} .tt-cd-mbaslik {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.021em;
+    line-height: 1.18;
+    color: #F5F5F3;
+  }
+  .tt-cd-panel-{{ sid }} .tt-cd-kapat {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #C7C7CC;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background .15s ease;
+  }
+  .tt-cd-panel-{{ sid }} .tt-cd-kapat:hover { background: rgba(255, 255, 255, 0.20); }
+  .tt-cd-panel-{{ sid }} .tt-cd-kapat:focus-visible { outline: 2px solid #2997FF; outline-offset: 2px; }
+  .tt-cd-panel-{{ sid }} .tt-cd-govde { min-height: 80px; }
+  .tt-cd-panel-{{ sid }} .tt-cd-yer {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #8A8A85;
+  }
+
+  {%- comment -%} Mobilde alttan acilan sheet {%- endcomment -%}
+  @media (max-width: 599px) {
+    .tt-cd-panel-{{ sid }} {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      inset: auto 0 0 0;
+      max-height: 88vh;
+      border-radius: 20px 20px 0 0;
+    }
+    .tt-cd-panel-{{ sid }} .tt-cd-ic { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+  }
 </style>
 
 <div class="ds-{{ sid }}">
-  <div class="ds-kart-{{ sid }}" id="ds-{{ sid }}" data-ds>
+  <div class="tt-cd-kart-{{ sid }}" id="ds-{{ sid }}" data-ds>
+    <div class="tt-cd-izgara-{{ sid }}">
 
-    <div class="ds-ust-{{ sid }}">
-      <span class="ds-logo-{{ sid }}">
-        {%- if s.logo != blank -%}
-          <img
-            src="{{ s.logo | image_url: width: 120 }}"
-            alt="{{ shop.name | escape }}"
-            width="120"
-            height="120"
-            loading="lazy"
-          >
+      <div class="tt-cd-metin-{{ sid }}">
+        <div class="tt-cd-etiket-{{ sid }}">
+          <span class="tt-cd-logo-{{ sid }}">
+            {%- if s.logo != blank -%}
+              <img
+                src="{{ s.logo | image_url: width: 120 }}"
+                alt="{{ shop.name | escape }}"
+                width="120"
+                height="120"
+                loading="lazy"
+              >
+            {%- endif -%}
+          </span>
+
+          {%- if s.ust_yazi != blank -%}
+            <p class="tt-cd-eyazi-{{ sid }}">{{ s.ust_yazi }}</p>
+          {%- endif -%}
+        </div>
+
+        {%- if s.baslik != blank -%}
+          <h2 class="tt-cd-baslik-{{ sid }}">{{ s.baslik }}</h2>
         {%- endif -%}
-      </span>
 
-      {%- if s.ust_yazi != blank -%}
-        <p class="ds-ustyazi-{{ sid }}">{{ s.ust_yazi }}</p>
-      {%- endif -%}
-
-      {%- if s.ust_bag_metni != blank -%}
-        <a
-          class="ds-ustbag-{{ sid }}"
-          {% if s.hedef != blank %}href="{{ s.hedef }}"{% endif %}
-        >{{ s.ust_bag_metni }}</a>
-      {%- endif -%}
-    </div>
-
-    <div class="ds-cubuk-{{ sid }}">
-      <span class="ds-ray-{{ sid }}"></span>
-      <span class="ds-dolgu-{{ sid }}" data-ds-dolgu></span>
-      <span class="ds-dugumler-{{ sid }}">
-        {%- for i in (1..4) -%}
-          <span class="ds-dugum-{{ sid }}" data-ds-dugum></span>
-        {%- endfor -%}
-      </span>
-    </div>
-
-    <div class="ds-ok-{{ sid }}" data-ds-ok>
-      <svg viewBox="0 0 298 38" width="298" height="38" aria-hidden="true">
-        <path
-          d="M292 2 C292 26 292 30 268 30 L30 30 C6 30 6 26 6 8"
-          stroke-width="1.5"
-          fill="none"
-          stroke-linecap="round"
-        ></path>
-        <polygon points="2,11 6,3 10,11"></polygon>
-      </svg>
-
-      {%- if s.dongu_metni != blank -%}
-        <span class="ds-dongu-{{ sid }}" data-ds-dongu>
-          <svg class="ds-yenile-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 11a8 8 0 1 0-.6 4"></path>
-            <path d="M20 4v7h-7"></path>
-          </svg>
-          <span>{{ s.dongu_metni }}</span>
-        </span>
-      {%- endif -%}
-    </div>
-
-    <div class="ds-etiketler-{{ sid }}">
-      {%- for i in (1..4) -%}
-        {%- liquid
-          assign e_key = 'etiket_' | append: i
-          assign etiket = s[e_key]
-        -%}
-        <span class="ds-etiket-{{ sid }}" data-ds-etiket>{{ etiket }}</span>
-      {%- endfor -%}
-    </div>
-
-    {%- if s.dene_metni != blank -%}
-      {%- comment -%}
-        Yeni alt bolum. Durum metni satiri bilerek kaldirildi; onu
-        besleyen JS zaten null korumali (durum && metinler[idx]), o
-        yuzden adim animasyonu ve etiketler etkilenmiyor.
-      {%- endcomment -%}
-      {%- assign alt_url = s.alt_hedef | default: s.hedef -%}
-      <div class="ds-alt2-{{ sid }}">
-        <button
-          type="button"
-          class="ds-dene-{{ sid }}"
-          data-ds-dene
-          aria-haspopup="dialog"
-        >
-          <span>{{ s.dene_metni }}</span>
-          <svg class="ds-deneok-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 12h15"></path>
-            <path d="M13.5 6.5 19 12l-5.5 5.5"></path>
-          </svg>
-        </button>
-
-        {%- if s.alt_bag_metni != blank -%}
-          <a
-            class="ds-altlink-{{ sid }}"
-            {% if alt_url != blank %}href="{{ alt_url }}"{% endif %}
-          >{{ s.alt_bag_metni }}</a>
+        {%- if s.alt_metin != blank -%}
+          <p class="tt-cd-altmetin-{{ sid }}">{{ s.alt_metin }}</p>
         {%- endif -%}
       </div>
-    {%- else -%}
-      <div class="ds-alt-{{ sid }}">
-        <p class="ds-durum-{{ sid }}" data-ds-durum>{{ s.durum_1 }}</p>
 
-        {%- if s.alt_bag_metni != blank -%}
-          <a
-            class="ds-altbag-{{ sid }}"
-            {% if s.hedef != blank %}href="{{ s.hedef }}"{% endif %}
+      <div class="tt-cd-serit-{{ sid }}">
+        <div class="ds-cubuk-{{ sid }}">
+          <span class="ds-ray-{{ sid }}"></span>
+          <span class="ds-dolgu-{{ sid }}" data-ds-dolgu></span>
+          <span class="ds-dugumler-{{ sid }}">
+            {%- for i in (1..4) -%}
+              <span class="ds-dugum-{{ sid }}" data-ds-dugum></span>
+            {%- endfor -%}
+          </span>
+        </div>
+
+        <div class="ds-ok-{{ sid }}" data-ds-ok>
+          <svg viewBox="0 0 298 38" width="298" height="38" aria-hidden="true">
+            <path
+              d="M292 2 C292 26 292 30 268 30 L30 30 C6 30 6 26 6 8"
+              stroke-width="1.5"
+              fill="none"
+              stroke-linecap="round"
+            ></path>
+            <polygon points="2,11 6,3 10,11"></polygon>
+          </svg>
+
+          {%- if s.dongu_metni != blank -%}
+            <span class="ds-dongu-{{ sid }}" data-ds-dongu>
+              <svg class="ds-yenile-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 11a8 8 0 1 0-.6 4"></path>
+                <path d="M20 4v7h-7"></path>
+              </svg>
+              <span>{{ s.dongu_metni }}</span>
+            </span>
+          {%- endif -%}
+        </div>
+
+        <div class="ds-etiketler-{{ sid }}">
+          {%- for i in (1..4) -%}
+            {%- liquid
+              assign e_key = 'etiket_' | append: i
+              assign etiket = s[e_key]
+            -%}
+            <span class="ds-etiket-{{ sid }}" data-ds-etiket>{{ etiket }}</span>
+          {%- endfor -%}
+        </div>
+      </div>
+
+      <div class="tt-cd-eylem-{{ sid }}">
+        {%- if s.dene_metni != blank -%}
+          <button
+            type="button"
+            class="tt-cd-dugme-{{ sid }}"
+            data-tt-cd-ac
+            aria-haspopup="dialog"
+            aria-controls="tt-cd-modal"
           >
-            <span>{{ s.alt_bag_metni }}</span>
-            <svg class="ds-altok-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
+            <span>{{ s.dene_metni }}</span>
+            <svg class="tt-cd-ok-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 12h15"></path>
               <path d="M13.5 6.5 19 12l-5.5 5.5"></path>
             </svg>
-          </a>
+          </button>
+        {%- endif -%}
+
+        {%- if s.ust_bag_metni != blank -%}
+          <a
+            class="tt-cd-link-{{ sid }}"
+            {% if s.hedef != blank %}href="{{ s.hedef }}"{% endif %}
+          >{{ s.ust_bag_metni }}</a>
         {%- endif -%}
       </div>
-    {%- endif -%}
 
+    </div>
   </div>
 </div>
 
-{%- if s.dene_metni != blank -%}
-  {%- comment -%}
-    Demo penceresi. Icerigi HENUZ BAGLANMADI: "Demo penceresi"
-    ayarlarindan ya sayfadaki bir ogenin CSS secicisi (modal_secici)
-    ya da duz HTML (modal_html) verilecek. Secici doluysa eslesen oge
-    sayfa yuklenirken pencerenin icine TASINIR (kopyalanmaz), boylece
-    bolumun kendi JS'i ve dinleyicileri oldugu gibi calismaya devam
-    eder.
-  {%- endcomment -%}
-  <dialog
-    class="ds-modal-{{ sid }}"
-    id="ds-modal-{{ sid }}"
-    aria-label="{{ s.modal_baslik | default: s.dene_metni | escape }}"
-  >
-    <div class="ds-mkutu-{{ sid }}">
-      <button type="button" class="ds-mkapat-{{ sid }}" data-ds-modal-kapat aria-label="Kapat">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 6 18 18"></path>
-          <path d="M18 6 6 18"></path>
-        </svg>
-      </button>
-
-      <div class="ds-mgovde-{{ sid }}" data-ds-modal-govde>
-        <div class="ds-micerik-{{ sid }}" data-ds-modal-sarmal>
-          {%- if s.modal_html != blank -%}
-            {{ s.modal_html }}
-          {%- else -%}
-            <p>Demo içeriği henüz bağlanmadı. Tema editöründe bu bölümün
-            &ldquo;Demo penceresi&rdquo; başlığından içerik seçicisini ya da
-            HTML alanını doldurun.</p>
-          {%- endif -%}
-        </div>
-      </div>
+{%- comment -%}
+  Demo penceresi. Icerigi SONRA gelecek; govde su an tek satir yer
+  tutucu tasiyor. Icerigi degistirmek icin .tt-cd-govde kabinin
+  icini doldurmak yeterli.
+{%- endcomment -%}
+<dialog
+  class="tt-cd-panel-{{ sid }}"
+  id="tt-cd-modal"
+  data-tt-cd
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="tt-cd-mbaslik-{{ sid }}"
+>
+  <div class="tt-cd-ic" tabindex="-1">
+    <div class="tt-cd-ust">
+      <h2 class="tt-cd-mbaslik" id="tt-cd-mbaslik-{{ sid }}">{{ s.modal_baslik }}</h2>
+      <button
+        type="button"
+        class="tt-cd-kapat"
+        data-tt-cd-kapat
+        aria-label="{{ s.modal_kapat | default: 'Kapat' | escape }}"
+        autofocus
+      >✕</button>
     </div>
-  </dialog>
-{%- endif -%}
+
+    <div class="tt-cd-govde" data-tt-cd-govde>
+      <p class="tt-cd-yer">İçerik buraya gelecek.</p>
+    </div>
+  </div>
+</dialog>
 
 <script>
   (function () {
@@ -625,17 +616,9 @@
     var dolgu = kok.querySelector('[data-ds-dolgu]');
     var dugumler = kok.querySelectorAll('[data-ds-dugum]');
     var etiketler = kok.querySelectorAll('[data-ds-etiket]');
-    var durum = kok.querySelector('[data-ds-durum]');
     var okKap = kok.querySelector('[data-ds-ok]');
     var donguEt = kok.querySelector('[data-ds-dongu]');
     if (!dolgu || !dugumler.length) return;
-
-    var metinler = [
-      {{ s.durum_1 | json }},
-      {{ s.durum_2 | json }},
-      {{ s.durum_3 | json }},
-      {{ s.durum_4 | json }}
-    ];
 
     var adet = dugumler.length;      // 4
     var son = adet - 1;              // 3 -> dolgu orani i/3
@@ -667,7 +650,6 @@
       for (var j = 0; j < etiketler.length; j++) {
         etiketler[j].classList.toggle('is-aktif', j === idx);
       }
-      if (durum && metinler[idx]) durum.textContent = metinler[idx];
 
       // Vurgu her adim degisiminde once kapanir; yalnizca son adimda
       // ve 1100ms gecikmeyle geri acilir.
@@ -689,11 +671,8 @@
       if (vurguSayac) { window.clearTimeout(vurguSayac); vurguSayac = null; }
     }
 
-    if (azHareket) {
-      // CSS zaten dolu gorunumu veriyor; JS yalnizca metni son adima alir
-      if (durum && metinler[son]) durum.textContent = metinler[son];
-      return;
-    }
+    // Azaltilmis harekette CSS zaten dolu gorunumu veriyor.
+    if (azHareket) return;
 
     ciz(0);
 
@@ -711,58 +690,85 @@
   })();
 </script>
 
-{%- if s.dene_metni != blank -%}
 <script>
   {%- comment -%}
-    Ayri bir IIFE: yukaridaki blok erken return'lerle dolu
-    (azaltilmis hareket, dugum yoksa...). Dugmenin onlardan
-    etkilenmemesi icin bagimsiz duruyor.
+    Demo penceresi - taksit modalinin (assets/taksit-tablosu.js) ayni
+    kalibi:
+
+      * panel <body> altina tasiniyor, kopyasi varsa siliniyor
+      * acma/kapama native <dialog>: showModal() / close()
+      * TEK belge dinleyicisi, YAKALAMA evresinde -- temalar "#" ile
+        baslayan baglantilari yumusak kaydirma icin yakalayip
+        stopPropagation() cagirabiliyor, kabarma evresi o durumda hic
+        calismaz
+      * zemine tiklama: olayin hedefi dialog'un KENDISI ise tiklama
+        ::backdrop uzerindedir
+
+    showModal() focus tuzagini ve kapaninca focus'un tetikleyiciye
+    donmesini tarayicidan getiriyor; buraya yalnizca sayfa kaydirma
+    kilidi eklendi (close olayinda geri aliniyor, ESC dahil her
+    kapanis yolunu kapsar).
   {%- endcomment -%}
   (function () {
     'use strict';
 
-    var dugme = document.querySelector('#ds-{{ sid }} [data-ds-dene]');
-    var modal = document.getElementById('ds-modal-{{ sid }}');
-    if (!dugme || !modal) return;
-
-    // Secici doluysa eslesen oge pencereye TASINIR; kopyalanmadigi
-    // icin ogenin kendi dinleyicileri korunur.
-    var secici = {{ s.modal_secici | json }};
-    if (secici) {
-      var kaynak = null;
-      try { kaynak = document.querySelector(secici); } catch (e) { kaynak = null; }
-      if (kaynak && !kaynak.contains(modal)) {
-        var govde = modal.querySelector('[data-ds-modal-govde]');
-        var sarmal = modal.querySelector('[data-ds-modal-sarmal]');
-        if (sarmal) sarmal.parentNode.removeChild(sarmal);
-        govde.appendChild(kaynak);
-        kaynak.hidden = false;
+    function panelBul() {
+      var hepsi = document.querySelectorAll('dialog[data-tt-cd]');
+      if (!hepsi.length) return null;
+      var sec = document.querySelector('body > dialog[data-tt-cd]');
+      if (!sec) { sec = hepsi[0]; document.body.appendChild(sec); }
+      for (var i = 0; i < hepsi.length; i++) {
+        if (hepsi[i] !== sec && hepsi[i].parentNode) hepsi[i].parentNode.removeChild(hepsi[i]);
       }
+      return sec;
     }
 
-    var acilabilir = typeof modal.showModal === 'function';
-    var kapat = modal.querySelector('[data-ds-modal-kapat]');
+    var oncekiTasma = null;
+    function kilitle() {
+      if (oncekiTasma !== null) return;
+      oncekiTasma = document.documentElement.style.overflow;
+      document.documentElement.style.overflow = 'hidden';
+    }
+    function coz() {
+      if (oncekiTasma === null) return;
+      document.documentElement.style.overflow = oncekiTasma;
+      oncekiTasma = null;
+    }
 
-    dugme.addEventListener('click', function () {
-      if (!acilabilir) {
-        // <dialog> desteklenmiyorsa ikincil baglantiya dusuyoruz.
-        var yedek = document.querySelector('#ds-{{ sid }} .ds-altlink-{{ sid }}');
-        if (yedek && yedek.getAttribute('href')) window.location.href = yedek.getAttribute('href');
+    document.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!t || !t.closest) return;
+
+      if (t.closest('[data-tt-cd-kapat]')) {
+        var p1 = panelBul();
+        if (p1) p1.close();
         return;
       }
-      modal.showModal();
-    });
 
-    if (kapat) kapat.addEventListener('click', function () { modal.close(); });
+      if (t.tagName === 'DIALOG' && t.hasAttribute('data-tt-cd')) {
+        t.close();
+        return;
+      }
 
-    // Zemine tiklayinca kapansin: hedef dialog'un kendisiyse tiklama
-    // ::backdrop uzerinde demektir.
-    modal.addEventListener('click', function (e) {
-      if (e.target === modal) modal.close();
-    });
+      if (t.closest('[data-tt-cd-ac]')) {
+        e.preventDefault();
+        var p2 = panelBul();
+        if (!p2) return;
+        if (typeof p2.showModal === 'function') {
+          if (!p2.open) p2.showModal();
+        } else {
+          p2.setAttribute('open', '');
+        }
+        kilitle();
+      }
+    }, true);
+
+    // ESC, close() ve zemin -- hepsi bu olaydan geciyor.
+    document.addEventListener('close', function (e) {
+      if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-tt-cd')) coz();
+    }, true);
   })();
 </script>
-{%- endif -%}
 {%- endif -%}
 
 {% schema %}
@@ -772,55 +778,37 @@
   "class": "dongu-seridi-section",
   "settings": [
     { "type": "checkbox", "id": "aktif", "label": "Bölümü göster", "default": true },
-    { "type": "image_picker", "id": "logo", "label": "Marka logosu", "info": "Sol üstteki 26×26 kutuya sığar (en fazla 16px yükseklik)." },
+    { "type": "image_picker", "id": "logo", "label": "Marka logosu", "info": "Etiket satırındaki 26×26 kutuya sığar (en fazla 16px yükseklik)." },
 
-    { "type": "header", "content": "Üst satır" },
-    { "type": "text", "id": "ust_yazi", "label": "Üst satır metni", "default": "Ortak zaman kapsülü" },
-    { "type": "text", "id": "ust_bag_metni", "label": "Sağ üst bağlantı metni", "default": "Nasıl çalışır?" },
-    { "type": "url", "id": "hedef", "label": "Bağlantı hedefi", "info": "Hem sağ üstteki hem alttaki bağlantı buraya gider." },
+    { "type": "header", "content": "Sol sütun" },
+    { "type": "text", "id": "ust_yazi", "label": "Etiket metni", "default": "Ortak zaman kapsülü", "info": "Ekranda büyük harfle görünür; yazdığınız hali değişmez." },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Buluşana kadar kilitli." },
+    { "type": "textarea", "id": "alt_metin", "label": "Alt metin", "default": "İkiniz de yükleyin. Kapsüller yan yana geldiğinde açılır, uzaklaşınca yeniden kilitlenir." },
+    { "type": "text", "id": "dene_metni", "label": "Buton metni", "default": "Kendin dene", "info": "Boş bırakılırsa buton hiç basılmaz." },
+    { "type": "text", "id": "ust_bag_metni", "label": "Bağlantı metni", "default": "Nasıl çalışır?" },
+    { "type": "url", "id": "hedef", "label": "Bağlantı hedefi" },
 
     { "type": "header", "content": "Adım etiketleri" },
     { "type": "text", "id": "etiket_1", "label": "1. etiket", "default": "Yükleyin" },
     { "type": "text", "id": "etiket_2", "label": "2. etiket", "default": "Bekleyin" },
     { "type": "text", "id": "etiket_3", "label": "3. etiket", "default": "Buluşun" },
     { "type": "text", "id": "etiket_4", "label": "4. etiket", "default": "Açın" },
-
-    { "type": "header", "content": "Durum metinleri" },
-    { "type": "text", "id": "durum_1", "label": "1. durum", "default": "İkiniz de fotoğraf, video ve not ekleyin" },
-    { "type": "text", "id": "durum_2", "label": "2. durum", "default": "Yükledikleriniz buluşana kadar bulanık kalır" },
-    { "type": "text", "id": "durum_3", "label": "3. durum", "default": "İki çip yan yana geldi" },
-    { "type": "text", "id": "durum_4", "label": "4. durum", "default": "Kapsül açıldı, uzaklaşınca tekrar kilitlenir" },
-
-    { "type": "header", "content": "Diğer metinler" },
     { "type": "text", "id": "dongu_metni", "label": "Döngü etiketi", "default": "ve Tekrarlayın" },
-    { "type": "text", "id": "alt_bag_metni", "label": "Alt bağlantı metni", "default": "Detaylı öğren" },
 
-    { "type": "header", "content": "Alt bölüm" },
-    { "type": "text", "id": "dene_metni", "label": "Birincil buton metni", "default": "Kendin dene", "info": "Doldurulunca alt satır yeni düzene geçer: ayırıcı çizginin altında tam genişlik beyaz buton, altında düz metin bağlantısı. Boş bırakılırsa eski düzen (durum metni + hap düğme) aynen korunur." },
-    { "type": "url", "id": "alt_hedef", "label": "Alt bağlantı hedefi", "info": "Boş bırakılırsa yukarıdaki \"Bağlantı hedefi\" kullanılır." },
-
-    { "type": "header", "content": "Demo penceresi", "info": "Birincil butonun açtığı pencere." },
-    { "type": "text", "id": "modal_baslik", "label": "Pencere adı", "default": "Kendin dene", "info": "Ekran okuyucular için; ekranda görünmez." },
-    { "type": "text", "id": "modal_secici", "label": "İçerik seçicisi (CSS)", "info": "Sayfadaki bir bölümü pencereye taşır. Örn. #shopify-section-couple_bulusma. Eşleşen ilk öge kullanılır; boşsa aşağıdaki HTML gösterilir." },
-    { "type": "html", "id": "modal_html", "label": "Pencere içeriği (HTML)", "info": "Seçici boşken kullanılır." },
+    { "type": "header", "content": "Demo penceresi", "info": "Butonun açtığı pencere. İçeriği sonra eklenecek." },
+    { "type": "text", "id": "modal_baslik", "label": "Pencere başlığı", "default": "Kendin dene" },
+    { "type": "text", "id": "modal_kapat", "label": "Kapat düğmesi etiketi", "default": "Kapat", "info": "Ekran okuyucular için; ekranda görünmez." },
 
     { "type": "header", "content": "Marka degradesi" },
     { "type": "color", "id": "deg_1", "label": "Degrade 1 (açık uç)", "default": "#E8632B" },
     { "type": "color", "id": "deg_2", "label": "Degrade 2 (orta)", "default": "#A32020" },
     { "type": "color", "id": "deg_3", "label": "Degrade 3 (koyu uç)", "default": "#3B3F0E" },
     { "type": "range", "id": "deg_aci", "label": "Degrade açısı", "min": 0, "max": 360, "step": 10, "unit": "deg", "default": 90 },
-    { "type": "color", "id": "vurgu", "label": "Vurgu (ok, döngü etiketi, düğme yazısı)", "info": "Degrade metinde kullanılamıyor; koyu zeminde okunması için degradenin açık ucunu verin.", "default": "#E8632B" },
-
-    { "type": "header", "content": "Alt düğme" },
-    { "type": "color", "id": "dugme_yazi", "label": "Düğme yazısı", "default": "#E8632B" },
-    { "type": "color", "id": "dugme_kenar", "label": "Düğme kenarlığı", "default": "#3A3A37" },
-    { "type": "color", "id": "dugme_hover_yazi", "label": "Üzerine gelince yazı", "default": "#FFFFFF" },
-    { "type": "range", "id": "dugme_dolgu_x", "label": "Düğme iç boşluk — yatay", "min": 8, "max": 28, "step": 1, "unit": "px", "default": 14 },
-    { "type": "range", "id": "dugme_dolgu_y", "label": "Düğme iç boşluk — dikey", "min": 4, "max": 16, "step": 1, "unit": "px", "default": 7 },
+    { "type": "color", "id": "vurgu", "label": "Vurgu (ok, döngü etiketi)", "info": "Degrade metinde kullanılamıyor; koyu zeminde okunması için degradenin açık ucunu verin.", "default": "#E8632B" },
 
     { "type": "header", "content": "Bölüm" },
     { "type": "color", "id": "bolum_zemin", "label": "Bölüm zemini", "default": "#FFFFFF" },
-    { "type": "range", "id": "kart_genislik_d", "label": "Kart genişliği — masaüstü", "min": 330, "max": 900, "step": 10, "unit": "px", "default": 560 },
+    { "type": "range", "id": "kart_en_d", "label": "Kart genişliği — masaüstü", "min": 620, "max": 1200, "step": 20, "unit": "px", "default": 860, "info": "Yalnızca 900px ve üzerinde geçerli. Altında kart 620px'te (tablet) ve 330px'te (telefon) sabit." },
     { "type": "range", "id": "dis_bosluk", "label": "Dikey boşluk — telefon", "min": 0, "max": 80, "step": 4, "unit": "px", "default": 24 },
     { "type": "range", "id": "dis_bosluk_d", "label": "Dikey boşluk — masaüstü", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 40 }
   ],
