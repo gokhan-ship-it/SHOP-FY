@@ -102,6 +102,14 @@
       {%- render 'tt-couple-izgara', kok: '.tt-urun-page' -%}
       {%- render 'tt-couple-banka', kok: '.tt-urun-page' -%}
       {%- render 'tt-urun-hap' -%}
+    {%- elsif template.name == 'collection' and template.suffix == 'couple-urunler' -%}
+      {%- comment -%}
+        Couple koleksiyon sayfasina ozel yerel duzeltmeler. Su an tek
+        is: ekranin altinda yuzen "Filtrele ve sirala" dugmesini
+        gizlemek -- izgaranin ustunde zaten bir filtre dugmesi var.
+        Ayrinti dosyanin icinde.
+      {%- endcomment -%}
+      {%- render 'tt-couple-koleksiyon' -%}
     {%- endif -%}
 
     {{ content_for_header }}

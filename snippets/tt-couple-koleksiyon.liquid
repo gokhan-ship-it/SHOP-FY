@@ -1,0 +1,35 @@
+{%- comment -%}
+  COUPLE KOLEKSIYON SAYFASI -- YEREL DUZELTMELER
+
+  Yalnizca collection.couple-urunler sablonunda yukleniyor; kapisi
+  layout/theme.liquid icinde.
+
+  ------------------------------------------------------------------
+  YUZEN "FILTRELE VE SIRALA" DUGMESI
+
+  Tema, koleksiyon sayfalarinda asagi kaydirinca ekranin altinda
+  yuzen bir dugme gosteriyor (snippets/facets-sticky.liquid ->
+  <facet-sticky>, xl'in altindaki her genislikte). Bu sayfada urun
+  izgarasinin ustunde zaten bir "Filtrele" dugmesi var
+  (facets-topbar icindeki facets-drawer), yani yuzen dugme ikinci bir
+  kopya; ustelik sayfanin alt seridini surekli kapatiyor.
+
+  Bu yuzden yalnizca BU sayfada gizleniyor. Filtreleme kaybolmuyor:
+  ustteki dugme ve onun cekmecesi (FacetDrawer) oldugu gibi calisiyor;
+  gizlenen yuzen dugme ile onun ayri cekmecesi (FacetDrawerSticky).
+
+  sections/main-collection.liquid ve snippets/facets-*.liquid
+  dosyalarina DOKUNULMADI -- onlar butun koleksiyonlarda ortak.
+  display: none oldugu icin oge DOM'da duruyor, temanin kendi JS'i
+  (collection.js) onu aramaya devam edebiliyor.
+
+  !important bilerek: ogenin gorunurlugu temanin yardimci siniflarindan
+  geliyor (class="... block xl:hidden ..."). Bu tur bir sinifi kendi
+  secicimle gecmek ozgullukle mumkun ama derlenmis tema.css'te bu
+  siniflarin !important tasiyip tasimadigini dogrulayamadim (dosya
+  345 KB, API govdesini bos donduruyor). Tek bir ogeyi gizleyen, tek
+  sayfaya bagli bir kural oldugu icin garanti yolu secildi.
+{%- endcomment -%}
+<style>
+  facet-sticky.facet-sticky { display: none !important; }
+</style>
