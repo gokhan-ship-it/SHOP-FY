@@ -1,0 +1,70 @@
+{%- comment -%}
+  ZAMAN CUBUGU EKSEN ETIKETLERI: "1. Gun" ile "6. Ay" cakismasi  (12. tur)
+
+  Bu dosya snippets/tt-couple.liquid'in devami; kapsam ve mantik ayni,
+  ayri durmasinin tek sebebi ana dosyanin buyumesi.
+
+  ------------------------------------------------------------------
+  SORUN
+
+  hediye-omru bolumunun ekseninde etiketler mutlak konumlu ve yuzdeye
+  gore yerlesiyor (0 / 6 / 12 / 24 / 36 ay -> %0 / %16,7 / %33,3 /
+  %66,7 / %100). Ilk etiket sol kenardan basliyor (transform yok),
+  ikincisi ise eksenin daha %16,7'sinde ve kendi genisliginin yarisi
+  kadar sola cekiliyor. 390px'lik bir ekranda eksen ~321px kaliyor;
+  bu iki etiket arasinda 4px'ten az bosluk kaliyor, 360px'te ise
+  ust uste biniyorlar.
+
+  Ucuncuden sonrasinda sorun yok: aradaki mesafe 12 aya cikiyor.
+
+  ------------------------------------------------------------------
+  COZUM
+
+  Ikinci etiket margin-left ile birkac piksel saga aliniyor.
+  transform DEGISTIRILMIYOR: bolum onu etiketin kendi style
+  ozniteligine yaziyor, yani CSS'ten ancak !important ile
+  dondurulebilirdi. margin-left ise satir ici bir degerle
+  catismadigi icin temiz calisiyor ve transform'un ustune ekleniyor.
+
+  Kaydirma miktari etiketin yaklasik besde biri kadar; eksen
+  uzerindeki konumu goz yaniltacak kadar degismiyor (321px'lik
+  eksende 7px, yani yarim aydan az) ama araya nefes giriyor.
+
+  375px alti ekranlarda bu tek basina yetmiyor; orada etiket
+  boyutu da bir kademe kucultuluyor. 375px ve uzerinde boyut
+  bolumun kendi ayarindan ("Eksen etiketleri boyutu") gelmeye
+  devam ediyor -- editordeki kaydirici calismaya devam etsin diye
+  bilerek oraya karisilmadi.
+
+  ------------------------------------------------------------------
+  OLCUM (Chromium, ilk iki etiket arasindaki bosluk)
+
+           once     sonra
+    320px  -7.4px   6.7px
+    360px  -0.7px  13.4px
+    375px   1.8px   8.8px
+    390px   4.3px  11.3px
+    430px  10.9px  17.9px
+
+  Masaustunde etiketler zaten genis araliklarla duruyor; kurallar
+  bu yuzden max-width: 767px icinde.
+
+  sections/hediye-omru.liquid'e DOKUNULMADI.
+{%- endcomment -%}
+<style>
+  @media (max-width: 767px) {
+    #MainContent.tt-couple-page .ho-eksen span:nth-child(2) {
+      margin-left: 7px;
+    }
+  }
+
+  @media (max-width: 374px) {
+    #MainContent.tt-couple-page .ho-eksen span {
+      font-size: 11px;
+    }
+
+    #MainContent.tt-couple-page .ho-eksen span:nth-child(2) {
+      margin-left: 10px;
+    }
+  }
+</style>
