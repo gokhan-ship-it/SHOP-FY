@@ -1,0 +1,2502 @@
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+
+  assign secimler = section.blocks | where: 'type', 'secim'
+
+  comment
+    Pop-up modu: secim karti yoksa buton yine de pop-up acar; tema
+    duzenleyicide "kart ekleyin" notu gorunur. Boylece buton hicbir
+    durumda "#" linkine dusup sayfayi basa atmaz.
+  endcomment
+  assign pop_ac = false
+  if s.cta_eylem == 'popup'
+    assign pop_ac = true
+  endif
+
+  comment
+    "Ikiye bolunen" CTA: butona basinca tek dugme yerini yan yana iki
+    baglantiya birakir (orn. Kadin / Erkek). Yalnizca cta_eylem "bol"
+    secilince devreye girer; varsayilan hala "kaydir" oldugu icin bu
+    bolumu kullanan diger sablonlar aynen calismaya devam eder.
+  endcomment
+  assign bol_ac = false
+  if s.cta_eylem == 'bol' and s.cta_bol_1_metni != blank and s.cta_bol_2_metni != blank
+    assign bol_ac = true
+  endif
+
+  assign rozet_kaynak = ''
+  if s.rozet_gorsel != blank
+    assign rozet_kaynak = s.rozet_gorsel | image_url: width: 96
+  elsif s.rozet_url != blank
+    assign rozet_kaynak = s.rozet_url
+  endif
+-%}
+<style>
+  #shopify-section-{{ sid }} .mk-root {
+    --mk-o: {{ s.mobil_olcek | divided_by: 100.0 }};
+    background: {{ s.zemin }};
+    padding-top: calc({{ s.p_top_m }}px * var(--mk-o));
+    padding-bottom: calc({{ s.p_bot_m }}px * var(--mk-o));
+  }
+  #shopify-section-{{ sid }} .mk-inner {
+    max-width: {{ s.max_w }}px;
+    margin: 0 auto;
+    padding-left: {{ s.edge_m }}px;
+    padding-right: {{ s.edge_m }}px;
+    box-sizing: border-box;
+    position: relative;
+  }
+  #shopify-section-{{ sid }} .mk-head {
+    margin: 0;
+    font-size: {{ s.bas_m }}px;
+    line-height: 1.15;
+    text-align: {{ s.hiza }};
+    text-wrap: balance;
+    font-weight: {{ s.baslik_kalinlik }};
+    color: {{ s.baslik_rengi }};
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    visibility: visible !important;
+  }
+  #shopify-section-{{ sid }} .mk-metin {
+    margin: {{ s.metin_bos_m }}px 0 0;
+    font-size: {{ s.metin_m }}px;
+    line-height: 1.6;
+    text-align: {{ s.hiza }};
+    max-width: 46em;
+    {%- if s.hiza == 'center' %}
+    margin-left: auto;
+    margin-right: auto;
+    {%- endif %}
+    color: {{ s.metin_rengi }};
+    max-width: 46em;
+  }
+  #shopify-section-{{ sid }} .mk-metin p { margin: 0 0 10px; }
+  #shopify-section-{{ sid }} .mk-metin p:last-child { margin-bottom: 0; }
+
+  /* --- mozaik izgara --- */
+  #shopify-section-{{ sid }} .mk-grid {
+    margin-top: calc({{ s.grid_bosluk }}px * var(--mk-o));
+    column-count: {{ s.kolon_m }};
+    column-gap: calc({{ s.aralik_m }}px * var(--mk-o));
+  }
+  #shopify-section-{{ sid }} .mk-kart {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    display: block;
+    width: 100%;
+    margin: 0 0 calc({{ s.aralik_m }}px * var(--mk-o));
+    border-radius: {{ s.kart_kose }}px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* --- gorsel / video karti --- */
+  #shopify-section-{{ sid }} .mk-medya {
+    position: relative;
+    display: block;
+    background: {{ s.medya_zemin }};
+    text-decoration: none;
+  }
+  #shopify-section-{{ sid }} .mk-medya img,
+  #shopify-section-{{ sid }} .mk-medya video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+  #shopify-section-{{ sid }} .mk-oran {
+    position: relative;
+    width: 100%;
+    max-height: {% if s.kart_max_m > 0 %}{{ s.kart_max_m }}vh{% else %}none{% endif %};
+  }
+  #shopify-section-{{ sid }} .mk-scrim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 40%;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.78));
+  }
+  #shopify-section-{{ sid }} .mk-etiket {
+    position: absolute;
+    left: calc({{ s.etiket_ic }}px * var(--mk-o));
+    right: calc({{ s.etiket_ic }}px * var(--mk-o));
+    bottom: calc({{ s.etiket_ic }}px * var(--mk-o));
+    z-index: 2;
+  }
+  #shopify-section-{{ sid }} .mk-ust {
+    margin: 0;
+    font-size: calc({{ s.ust_boyut_m }}px * var(--mk-o));
+    line-height: 1.18;
+    font-weight: 700;
+    color: {{ s.foto_yazi }};
+    letter-spacing: -0.01em;
+  }
+  #shopify-section-{{ sid }} .mk-alt {
+    margin: 3px 0 0;
+    font-size: calc({{ s.alt_boyut_m }}px * var(--mk-o));
+    line-height: 1.3;
+    font-weight: 400;
+    color: {{ s.foto_yazi }};
+    opacity: .88;
+  }
+
+  /* --- oynat dugmesi --- */
+  #shopify-section-{{ sid }} .mk-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    width: calc({{ s.play_boyut }}px * var(--mk-o));
+    height: calc({{ s.play_boyut }}px * var(--mk-o));
+    border: 0;
+    border-radius: 999px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: {{ s.play_zemin }};
+    color: {{ s.play_renk }};
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #shopify-section-{{ sid }} .mk-play svg {
+    width: 42%;
+    height: 42%;
+    display: block;
+    fill: currentColor;
+    margin-left: 6%;
+  }
+  #shopify-section-{{ sid }} .mk-kart.is-oynuyor .mk-play,
+  #shopify-section-{{ sid }} .mk-kart.is-oynuyor .mk-scrim,
+  #shopify-section-{{ sid }} .mk-kart.is-oynuyor .mk-etiket { display: none; }
+
+  /* --- yorum karti --- */
+  #shopify-section-{{ sid }} .mk-yorum {
+    background: {{ s.yorum_zemin }};
+    padding: calc({{ s.yorum_ic }}px * var(--mk-o));
+    display: flex;
+    flex-direction: column;
+    gap: calc({{ s.yorum_bosluk }}px * var(--mk-o));
+    min-height: calc({{ s.yorum_min }}px * var(--mk-o));
+    box-sizing: border-box;
+  }
+  #shopify-section-{{ sid }} .mk-alinti {
+    margin: 0;
+    font-size: calc({{ s.yorum_boyut_m }}px * var(--mk-o));
+    line-height: 1.35;
+    font-weight: 500;
+    color: {{ s.yorum_yazi }};
+    letter-spacing: -0.01em;
+  }
+  #shopify-section-{{ sid }} .mk-alinti.is-kirpik {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  #shopify-section-{{ sid }} .mk-kisi {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+  }
+  #shopify-section-{{ sid }} .mk-avatar {
+    flex: none;
+    width: calc({{ s.avatar_boyut }}px * var(--mk-o));
+    height: calc({{ s.avatar_boyut }}px * var(--mk-o));
+    border-radius: 999px;
+    object-fit: cover;
+    display: block;
+  }
+  #shopify-section-{{ sid }} .mk-isim {
+    margin: 0;
+    font-size: calc({{ s.isim_boyut }}px * var(--mk-o));
+    line-height: 1.25;
+    font-weight: 700;
+    color: {{ s.isim_rengi }};
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  #shopify-section-{{ sid }} .mk-rozet {
+    flex: none;
+    display: block;
+    width: calc({{ s.rozet_boyut }}px * var(--mk-o));
+    height: calc({{ s.rozet_boyut }}px * var(--mk-o));
+  }
+  #shopify-section-{{ sid }} .mk-rozet svg,
+  #shopify-section-{{ sid }} .mk-rozet img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+  }
+  #shopify-section-{{ sid }} .mk-rol {
+    margin: 1px 0 0;
+    font-size: calc({{ s.rol_boyut }}px * var(--mk-o));
+    line-height: 1.25;
+    color: {{ s.rol_rengi }};
+  }
+  #shopify-section-{{ sid }} .mk-ac {
+    position: absolute;
+    top: calc({{ s.yorum_ic }}px * var(--mk-o));
+    right: calc({{ s.yorum_ic }}px * var(--mk-o));
+    z-index: 2;
+    width: calc({{ s.ac_boyut }}px * var(--mk-o));
+    height: calc({{ s.ac_boyut }}px * var(--mk-o));
+    border: 0;
+    border-radius: 999px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: {{ s.ac_zemin }};
+    color: {{ s.ac_renk }};
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #shopify-section-{{ sid }} .mk-ac svg {
+    width: 45%;
+    height: 45%;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  #shopify-section-{{ sid }} .mk-ac .mk-eksi { display: none; }
+  #shopify-section-{{ sid }} .mk-kart.is-acik .mk-ac .mk-eksi { display: block; }
+  #shopify-section-{{ sid }} .mk-kart.is-acik .mk-ac .mk-arti { display: none; }
+
+  /* --- secim pop-up --- */
+  #shopify-section-{{ sid }} .mk-dialog {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    max-width: {{ s.pop_genislik }}px;
+    width: calc(100vw - 32px);
+    overflow: visible;
+  }
+  #shopify-section-{{ sid }} .mk-dialog::backdrop { background: rgba(0, 0, 0, .62); }
+  #shopify-section-{{ sid }} .mk-pop {
+    position: relative;
+    background: {{ s.pop_zemin }};
+    border-radius: {{ s.pop_kose }}px;
+    padding: calc({{ s.pop_ic }}px * var(--mk-o));
+    box-sizing: border-box;
+    box-shadow: 0 20px 60px rgba(0,0,0,.28);
+  }
+  #shopify-section-{{ sid }} .mk-kapat {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 999px;
+    padding: 0;
+    background: {{ s.kapat_zemin }};
+    color: {{ s.kapat_renk }};
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  #shopify-section-{{ sid }} .mk-pop-baslik {
+    margin: 0 36px 0 0;
+    font-size: calc({{ s.pop_baslik_m }}px * var(--mk-o));
+    line-height: 1.22;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    color: {{ s.pop_baslik_renk }};
+  }
+  #shopify-section-{{ sid }} .mk-pop-alt {
+    margin: 8px 0 0;
+    font-size: calc({{ s.pop_alt_boyut }}px * var(--mk-o));
+    line-height: 1.4;
+    color: {{ s.pop_alt_renk }};
+  }
+  #shopify-section-{{ sid }} .mk-pop-bos {
+    margin: calc(14px * var(--mk-o)) 0 0;
+    padding: calc(14px * var(--mk-o));
+    border: 1px dashed {{ s.pop_alt_renk | color_modify: 'alpha', 0.45 }};
+    border-radius: {{ s.secim_kose }}px;
+    font-size: calc({{ s.pop_alt_boyut }}px * var(--mk-o));
+    line-height: 1.45;
+    color: {{ s.pop_alt_renk }};
+  }
+  #shopify-section-{{ sid }} .mk-secimler {
+    display: grid;
+    grid-template-columns: repeat({{ s.pop_kolon_m }}, minmax(0, 1fr));
+    gap: calc({{ s.pop_aralik }}px * var(--mk-o));
+    margin-top: calc({{ s.pop_bosluk }}px * var(--mk-o));
+  }
+  #shopify-section-{{ sid }} .mk-secim {
+    display: block;
+    text-decoration: none;
+    border-radius: {{ s.secim_kose }}px;
+    padding: calc({{ s.secim_ic }}px * var(--mk-o));
+    text-align: center;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    transition: filter 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    will-change: transform;
+  }
+  #shopify-section-{{ sid }} a.mk-secim { cursor: pointer; }
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ sid }} .mk-secim:hover {
+      filter: brightness({{ s.secim_parlak | divided_by: 100.0 }});
+      transform: translateY(-{{ s.secim_yukse }}px);
+      box-shadow: 0 calc({{ s.secim_yukse }}px + 6px) calc({{ s.secim_yukse }}px + 14px) rgba(0, 0, 0, .10);
+    }
+  }
+  #shopify-section-{{ sid }} .mk-secim:active {
+    filter: brightness({{ s.secim_parlak | divided_by: 100.0 }});
+    transform: scale({{ s.secim_bas | divided_by: 100.0 }});
+    transition-duration: 90ms;
+  }
+  #shopify-section-{{ sid }} .mk-secim:focus-visible {
+    outline: 2px solid {{ s.pop_baslik_renk }};
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .mk-secim { transition: none; }
+    #shopify-section-{{ sid }} .mk-secim:hover,
+    #shopify-section-{{ sid }} .mk-secim:active { transform: none; }
+  }
+  #shopify-section-{{ sid }} .mk-secim-ikon {
+    display: block;
+    width: calc({{ s.secim_ikon }}px * var(--mk-o));
+    height: calc({{ s.secim_ikon }}px * var(--mk-o));
+    margin: 0 auto calc(10px * var(--mk-o));
+  }
+  #shopify-section-{{ sid }} .mk-secim-ikon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  #shopify-section-{{ sid }} .mk-secim-ikon img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+  }
+  #shopify-section-{{ sid }} .mk-secim-baslik {
+    margin: 0;
+    font-size: calc({{ s.secim_baslik_boyut }}px * var(--mk-o));
+    line-height: 1.2;
+    font-weight: 700;
+  }
+  #shopify-section-{{ sid }} .mk-secim-alt {
+    margin: 5px 0 0;
+    font-size: calc({{ s.secim_alt_boyut }}px * var(--mk-o));
+    line-height: 1.35;
+  }
+  #shopify-section-{{ sid }} .mk-secim-cizgi {
+    display: block;
+    height: 1px;
+    margin: calc({{ s.secim_cizgi_bosluk }}px * var(--mk-o)) 0;
+    background: currentColor;
+    opacity: .3;
+  }
+  #shopify-section-{{ sid }} .mk-secim-etiket {
+    margin: 0;
+    font-size: calc({{ s.secim_etiket_boyut }}px * var(--mk-o));
+    line-height: 1.2;
+  }
+
+  /* --- sabit buton --- */
+  #shopify-section-{{ sid }} .mk-cta-sar {
+    display: flex;
+    justify-content: center;
+    margin-top: calc({{ s.cta_bosluk }}px * var(--mk-o));
+    {%- if s.cta_sabit %}
+    position: sticky;
+    bottom: {{ s.cta_alt }}px;
+    z-index: 5;
+    pointer-events: none;
+    {%- endif %}
+  }
+  #shopify-section-{{ sid }} .mk-cta {
+    pointer-events: auto;
+    display: inline-block;
+    text-decoration: none;
+    border: 0;
+    background: {{ s.cta_zemin }};
+    color: {{ s.cta_renk }};
+    border-radius: {% if s.cta_yuvarlak %}999px{% else %}{{ s.cta_kose }}px{% endif %};
+    padding: calc({{ s.cta_dikey }}px * var(--mk-o)) calc({{ s.cta_yatay }}px * var(--mk-o));
+    font-size: calc({{ s.cta_boyut_m }}px * var(--mk-o));
+    font-weight: {{ s.cta_kalinlik }};
+    letter-spacing: {{ s.cta_harf }}px;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(0,0,0,.18);
+  }
+  #shopify-section-{{ sid }} .mk-cta:hover { opacity: .9; }
+
+  {%- if s.cta_hover_ozel %}
+  /* Ustune gelince renk degistiren CTA. Varsayilan kapali oldugu icin
+     bu bolumu kullanan diger sablonlarda eski solma efekti aynen kalir.
+     Dokunmatik cihazlarda "yapisik hover" olmasin diye hover sorgusu
+     destekleyen isaretleyicilerle sinirlandi. */
+  #shopify-section-{{ sid }} .mk-cta {
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ sid }} .mk-cta:hover {
+      opacity: 1;
+      background: {{ s.cta_hover_zemin }};
+      color: {{ s.cta_hover_renk }};
+    }
+    {%- comment -%}
+      Hover zemininde degrade. Ayri bir kural olarak ve sonra geliyor:
+      yukaridaki "background" kisayolu background-image'i sifirladigi icin
+      ayni kural icinde yazilamaz.
+    {%- endcomment -%}
+    {%- if s.cta_hover_degrade %}
+    #shopify-section-{{ sid }} .mk-cta:hover {
+      background-image: linear-gradient({{ s.cta_hover_aci }}deg, {{ s.cta_hover_d1 }} 0%, {{ s.cta_hover_d2 }} 50%, {{ s.cta_hover_d3 }} 100%);
+      background-size: 100% 100%;
+    }
+    {%- endif %}
+  }
+  {%- endif %}
+
+  {%- if bol_ac %}
+  /* --- ikiye bolunen CTA --- */
+  /* Baslangicta iki secenek acik, tetik gizli: JS calismazsa ziyaretci
+     her iki baglantiyi da dogrudan gorur. JS "mk-bol-hazir" sinifini
+     ekleyince durum tersine doner ve tek dugme gorunur. */
+  #shopify-section-{{ sid }} .mk-bol-yuva {
+    pointer-events: auto;
+    min-width: 0;
+  }
+  #shopify-section-{{ sid }} .mk-bol-tetik { display: none; }
+  #shopify-section-{{ sid }} .mk-bol-secenekler {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: calc({{ s.cta_bol_ara }}px * var(--mk-o));
+  }
+  #shopify-section-{{ sid }} .mk-bol-yuva.mk-bol-hazir .mk-bol-tetik { display: inline-block; }
+  #shopify-section-{{ sid }} .mk-bol-yuva.mk-bol-hazir .mk-bol-secenekler { display: none; }
+  #shopify-section-{{ sid }} .mk-bol-yuva.mk-bol-hazir.is-bolundu .mk-bol-tetik { display: none; }
+  #shopify-section-{{ sid }} .mk-bol-yuva.mk-bol-hazir.is-bolundu .mk-bol-secenekler {
+    display: flex;
+    animation: mk-bol-{{ sid }} 240ms cubic-bezier(.33, 1, .68, 1) both;
+  }
+  @keyframes mk-bol-{{ sid }} {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .mk-bol-yuva.mk-bol-hazir.is-bolundu .mk-bol-secenekler {
+      animation: none;
+    }
+  }
+  /* Bolununce iki dugme yan yana durdugu icin biraz daraliyorlar. */
+  #shopify-section-{{ sid }} .mk-bol-kucuk {
+    padding: calc({{ s.cta_dikey }}px * var(--mk-o)) calc({{ s.cta_yatay | times: 0.72 | round }}px * var(--mk-o));
+  }
+  {%- endif %}
+
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .mk-root {
+      --mk-o: {{ s.masaustu_olcek | divided_by: 100.0 }};
+      padding-top: calc({{ s.p_top_d }}px * var(--mk-o));
+      padding-bottom: calc({{ s.p_bot_d }}px * var(--mk-o));
+    }
+    #shopify-section-{{ sid }} .mk-inner {
+      padding-left: {{ s.edge_d }}px;
+      padding-right: {{ s.edge_d }}px;
+    }
+    #shopify-section-{{ sid }} .mk-grid {
+      column-count: {{ s.kolon_d }};
+      column-gap: calc({{ s.aralik_d }}px * var(--mk-o));
+    }
+    #shopify-section-{{ sid }} .mk-kart { margin-bottom: calc({{ s.aralik_d }}px * var(--mk-o)); }
+    #shopify-section-{{ sid }} .mk-oran { max-height: {% if s.kart_max_d > 0 %}{{ s.kart_max_d }}vh{% else %}none{% endif %}; }
+    #shopify-section-{{ sid }} .mk-ust { font-size: calc({{ s.ust_boyut_d }}px * var(--mk-o)); }
+    #shopify-section-{{ sid }} .mk-alt { font-size: calc({{ s.alt_boyut_d }}px * var(--mk-o)); }
+    #shopify-section-{{ sid }} .mk-alinti { font-size: calc({{ s.yorum_boyut_d }}px * var(--mk-o)); }
+    #shopify-section-{{ sid }} .mk-cta { font-size: calc({{ s.cta_boyut_d }}px * var(--mk-o)); }
+    #shopify-section-{{ sid }} .mk-pop-baslik { font-size: calc({{ s.pop_baslik_d }}px * var(--mk-o)); }
+    #shopify-section-{{ sid }} .mk-secimler { grid-template-columns: repeat({{ s.pop_kolon_d }}, minmax(0, 1fr)); }
+  }
+
+  /* Baslik ve alt yazi sayfadaki diger bolumlerle ayni sistemde:
+     kademeler 768 ve 1024, satir yuksekligi 1.15 / 1.6.
+     Yogunluk olcegine (--mk-o) bagli degiller ki editordeki sayilar
+     ekranda gorunen boyutla birebir olsun. */
+  @media (min-width: 768px) {
+    #shopify-section-{{ sid }} .mk-head { font-size: {{ s.bas_t }}px; }
+    #shopify-section-{{ sid }} .mk-metin {
+      margin-top: {{ s.metin_bos_d }}px;
+      font-size: {{ s.metin_d }}px;
+    }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ sid }} .mk-head { font-size: {{ s.bas_d }}px; }
+  }
+  {%- if s.anim_ac %}
+  /* Kaydirinca belirme. Baslangic durumu yalnizca JS kok sinifi ekledikten
+     sonra uygulanir; JS calismazsa icerik oldugu gibi gorunur kalir. */
+  #shopify-section-{{ sid }} .mk-root.mk-hazir [data-mk-anim] {
+    opacity: 0;
+    transform: translateY({{ s.anim_mesafe }}px);
+    transition:
+      opacity {{ s.anim_sure }}ms cubic-bezier(.16, 1, .3, 1),
+      transform {{ s.anim_sure }}ms cubic-bezier(.16, 1, .3, 1);
+    transition-delay: var(--mk-gecikme, 0ms);
+    will-change: opacity, transform;
+  }
+  #shopify-section-{{ sid }} .mk-root.mk-hazir [data-mk-anim].is-gorunur {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .mk-root.mk-hazir [data-mk-anim],
+    #shopify-section-{{ sid }} .mk-root.mk-hazir [data-mk-anim].is-gorunur {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+  {%- endif %}
+</style>
+
+<div class="mk-root" data-mk-root{% if s.anim_ac %} data-mk-anim-kok data-mk-ara="{{ s.anim_ara }}"{% endif %}>
+  <div class="mk-inner">
+    {%- if s.baslik != blank -%}
+      <{{ s.baslik_etiketi }} class="mk-head"{% if s.anim_ac %} data-mk-anim{% endif %}>{{ s.baslik }}</{{ s.baslik_etiketi }}>
+    {%- endif -%}
+    {%- if s.metin != blank -%}
+      <div class="mk-metin rte"{% if s.anim_ac %} data-mk-anim{% endif %}>{{ s.metin }}</div>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      {%- comment -%} Ilk yorum karti acik gelsin diye yorumlar sayilir {%- endcomment -%}
+      {%- assign yorum_sira = 0 -%}
+      <div class="mk-grid">
+        {%- for block in section.blocks -%}
+          {%- assign b = block.settings -%}
+          {%- assign alt_metni = b.ust_yazi | strip_html | escape -%}
+
+          {%- case block.type -%}
+
+            {%- when 'secim' -%}
+
+            {%- when 'yorum' -%}
+              {%- assign yorum_sira = yorum_sira | plus: 1 -%}
+              {%- assign yorum_acik = false -%}
+              {%- if s.ilk_yorum_acik and yorum_sira == 1 and b.kirp -%}
+                {%- assign yorum_acik = true -%}
+              {%- endif -%}
+              <div class="mk-kart{% if yorum_acik %} is-acik{% endif %}" data-mk-kart{% if s.anim_ac %} data-mk-anim{% endif %} {{ block.shopify_attributes }}>
+                <div class="mk-yorum">
+                  {%- if b.alinti != blank -%}
+                    <p
+                      class="mk-alinti{% if b.kirp and yorum_acik == false %} is-kirpik{% endif %}"
+                      {% if b.kirp %}style="-webkit-line-clamp: {{ b.satir }};"{% endif %}
+                      data-mk-alinti
+                    >{{ b.alinti }}</p>
+                  {%- endif -%}
+                  {%- if b.isim != blank or b.avatar != blank -%}
+                    <div class="mk-kisi">
+                      {%- if b.avatar != blank -%}
+                        {{
+                          b.avatar
+                          | image_url: width: 120
+                          | image_tag: class: 'mk-avatar', loading: 'lazy', decoding: 'async', widths: '60, 90, 120', alt: ''
+                        }}
+                      {%- endif -%}
+                      <div>
+                        {%- if b.isim != blank -%}
+                          <p class="mk-isim">
+                            <span>{{ b.isim }}</span>
+                            {%- if b.dogrulandi -%}
+                              <span class="mk-rozet" role="img" aria-label="{{ s.rozet_etiket | escape }}">
+                                {%- if rozet_kaynak != blank -%}
+                                  <img src="{{ rozet_kaynak }}" alt="" width="32" height="32" loading="lazy" decoding="async">
+                                {%- else -%}
+                                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" fill="{{ s.rozet_renk }}"/>
+                                    <path fill="none" stroke="{{ s.rozet_ic }}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M7.6 12.3l3 3 5.8-6"/>
+                                  </svg>
+                                {%- endif -%}
+                              </span>
+                            {%- endif -%}
+                          </p>
+                        {%- endif -%}
+                        {%- if b.alt_not != blank -%}<p class="mk-rol">{{ b.alt_not }}</p>{%- endif -%}
+                      </div>
+                    </div>
+                  {%- endif -%}
+                </div>
+                {%- if b.kirp -%}
+                  <button type="button" class="mk-ac" data-mk-ac aria-expanded="{% if yorum_acik %}true{% else %}false{% endif %}" aria-label="{{ s.ac_etiket | escape }}">
+                    <svg class="mk-arti" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    <svg class="mk-eksi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+                  </button>
+                {%- endif -%}
+              </div>
+
+            {%- when 'video' -%}
+              <div class="mk-kart" data-mk-kart{% if s.anim_ac %} data-mk-anim{% endif %} {{ block.shopify_attributes }}>
+                <div class="mk-medya">
+                  <div class="mk-oran" style="aspect-ratio: {{ b.oran }};">
+                    {%- if b.video != blank -%}
+                      {{
+                        b.video
+                        | video_tag:
+                          image_size: '900x',
+                          autoplay: false,
+                          loop: false,
+                          muted: false,
+                          controls: false,
+                          playsinline: true
+                      }}
+                    {%- elsif b.poster != blank -%}
+                      {{
+                        b.poster
+                        | image_url: width: 900
+                        | image_tag: loading: 'lazy', decoding: 'async', widths: '300, 500, 700, 900', alt: alt_metni
+                      }}
+                    {%- endif -%}
+                  </div>
+                  {%- if b.karartma > 0 -%}
+                    <span class="mk-scrim" style="opacity: {{ b.karartma | divided_by: 100.0 }};"></span>
+                  {%- endif -%}
+                  {%- if b.ust_yazi != blank or b.alt_yazi != blank -%}
+                    <div class="mk-etiket">
+                      {%- if b.ust_yazi != blank -%}<p class="mk-ust">{{ b.ust_yazi }}</p>{%- endif -%}
+                      {%- if b.alt_yazi != blank -%}<p class="mk-alt">{{ b.alt_yazi }}</p>{%- endif -%}
+                    </div>
+                  {%- endif -%}
+                  {%- if b.video != blank -%}
+                    <button type="button" class="mk-play" data-mk-play aria-label="{{ s.play_etiket | escape }}">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+                    </button>
+                  {%- endif -%}
+                </div>
+              </div>
+
+            {%- else -%}
+              {%- capture ic -%}
+                <div class="mk-oran" style="aspect-ratio: {{ b.oran }};">
+                  {%- if b.gorsel != blank -%}
+                    {{
+                      b.gorsel
+                      | image_url: width: 900
+                      | image_tag: loading: 'lazy', decoding: 'async', widths: '300, 500, 700, 900', alt: alt_metni
+                    }}
+                  {%- else -%}
+                    {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                  {%- endif -%}
+                </div>
+                {%- if b.karartma > 0 -%}
+                  <span class="mk-scrim" style="opacity: {{ b.karartma | divided_by: 100.0 }};"></span>
+                {%- endif -%}
+                {%- if b.ust_yazi != blank or b.alt_yazi != blank -%}
+                  <div class="mk-etiket">
+                    {%- if b.ust_yazi != blank -%}<p class="mk-ust">{{ b.ust_yazi }}</p>{%- endif -%}
+                    {%- if b.alt_yazi != blank -%}<p class="mk-alt">{{ b.alt_yazi }}</p>{%- endif -%}
+                  </div>
+                {%- endif -%}
+              {%- endcapture -%}
+              <div class="mk-kart" data-mk-kart{% if s.anim_ac %} data-mk-anim{% endif %} {{ block.shopify_attributes }}>
+                {%- if b.link != blank -%}
+                  <a class="mk-medya" href="{{ b.link }}">{{ ic }}</a>
+                {%- else -%}
+                  <div class="mk-medya">{{ ic }}</div>
+                {%- endif -%}
+              </div>
+
+          {%- endcase -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if s.cta_yazi != blank -%}
+      <div class="mk-cta-sar">
+        {%- if s.cta_eylem == 'kaydir' -%}
+          <button
+            type="button"
+            class="mk-cta"
+            data-mk-kaydir="{{ s.cta_hedef | escape }}"
+            data-mk-ofset="{{ s.cta_ofset }}"
+            data-mk-hiza="{{ s.cta_hiza }}"
+          >{{ s.cta_yazi }}</button>
+        {%- elsif bol_ac -%}
+          <div class="mk-bol-yuva" data-mk-bol-yuva>
+            <button
+              type="button"
+              class="mk-cta mk-bol-tetik"
+              data-mk-bol
+              aria-expanded="false"
+              aria-controls="mk-bol-{{ sid }}"
+            >{{ s.cta_yazi }}</button>
+
+            <div class="mk-bol-secenekler" id="mk-bol-{{ sid }}">
+              <a class="mk-cta mk-bol-kucuk" href="{{ s.cta_bol_1_bag | default: '#' }}">{{ s.cta_bol_1_metni }}</a>
+              <a class="mk-cta mk-bol-kucuk" href="{{ s.cta_bol_2_bag | default: '#' }}">{{ s.cta_bol_2_metni }}</a>
+            </div>
+          </div>
+        {%- elsif pop_ac -%}
+          <button type="button" class="mk-cta" data-mk-ac-pop aria-haspopup="dialog">{{ s.cta_yazi }}</button>
+        {%- elsif s.cta_link != blank -%}
+          <a class="mk-cta" href="{{ s.cta_link }}">{{ s.cta_yazi }}</a>
+        {%- else -%}
+          <span class="mk-cta">{{ s.cta_yazi }}</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- if pop_ac -%}
+    <dialog class="mk-dialog" data-mk-dialog>
+      <div class="mk-pop">
+        <button type="button" class="mk-kapat" data-mk-kapat aria-label="{{ s.kapat_etiket | escape }}">&#10005;</button>
+        {%- if s.pop_baslik != blank -%}
+          <p class="mk-pop-baslik">{{ s.pop_baslik }}</p>
+        {%- endif -%}
+        {%- if s.pop_alt != blank -%}
+          <p class="mk-pop-alt">{{ s.pop_alt }}</p>
+        {%- endif -%}
+        {%- if secimler.size == 0 -%}
+          <p class="mk-pop-bos">{{ s.bos_uyari }}</p>
+        {%- endif -%}
+        <div class="mk-secimler">
+          {%- for block in secimler -%}
+            {%- assign c = block.settings -%}
+            {%- assign c_ikon = '' -%}
+            {%- if c.ozel_ikon != blank -%}
+              {%- assign c_ikon = c.ozel_ikon | image_url: width: 96 -%}
+            {%- endif -%}
+            {%- capture secim_nitelik -%}
+              class="mk-secim" style="background: {{ c.zemin }}; color: {{ c.soluk }};" {{ block.shopify_attributes }}
+            {%- endcapture -%}
+            {%- if c.link != blank -%}
+              <a href="{{ c.link }}" {{ secim_nitelik }}>
+            {%- else -%}
+              <div {{ secim_nitelik }}>
+            {%- endif -%}
+              <span class="mk-secim-ikon" style="color: {{ c.yazi }};" aria-hidden="true">
+                {%- if c_ikon != blank -%}
+                  <img src="{{ c_ikon }}" alt="" width="48" height="48" loading="lazy" decoding="async">
+                {%- else -%}
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    {%- case c.ikon -%}
+                      {%- when 'users' -%}
+                        <circle cx="9.2" cy="8.2" r="3.2"/>
+                        <path d="M2.8 19.4c.8-3.3 3.4-5.1 6.4-5.1s5.6 1.8 6.4 5.1"/>
+                        <path d="M16.4 5.4a3.2 3.2 0 0 1 0 6.1"/>
+                        <path d="M17.6 14.6c2.1.5 3.4 2.1 3.9 4.3"/>
+                      {%- when 'calendar' -%}
+                        <rect x="3" y="5" width="18" height="16" rx="2.5"/>
+                        <path d="M3 10.5h18"/>
+                        <path d="M8 3v4"/>
+                        <path d="M16 3v4"/>
+                        <path d="M12 15h.01"/>
+                      {%- when 'heart' -%}
+                        <path d="M12 20.3s-7.6-4.6-7.6-9.6a4.3 4.3 0 0 1 7.6-2.8 4.3 4.3 0 0 1 7.6 2.8c0 5-7.6 9.6-7.6 9.6z"/>
+                      {%- when 'gift' -%}
+                        <rect x="3" y="9.5" width="18" height="11.5" rx="2"/>
+                        <path d="M3 14h18"/>
+                        <path d="M12 9.5V21"/>
+                        <path d="M12 9.5H8.3a2.3 2.3 0 1 1 0-4.6c2.3 0 3.7 4.6 3.7 4.6z"/>
+                        <path d="M12 9.5h3.7a2.3 2.3 0 1 0 0-4.6c-2.3 0-3.7 4.6-3.7 4.6z"/>
+                      {%- when 'lock-open' -%}
+                        <rect x="4" y="11" width="16" height="10" rx="2.5"/>
+                        <path d="M8 11V7.6a4 4 0 0 1 7.7-1.6"/>
+                      {%- when 'clock' -%}
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 7v5.3l3.4 2"/>
+                      {%- else -%}
+                        <circle cx="12" cy="12" r="9"/>
+                    {%- endcase -%}
+                  </svg>
+                {%- endif -%}
+              </span>
+              {%- if c.baslik != blank -%}
+                <p class="mk-secim-baslik" style="color: {{ c.yazi }};">{{ c.baslik }}</p>
+              {%- endif -%}
+              {%- if c.alt_yazi != blank -%}
+                <p class="mk-secim-alt">{{ c.alt_yazi }}</p>
+              {%- endif -%}
+              {%- if c.etiket != blank -%}
+                <span class="mk-secim-cizgi"></span>
+                <p class="mk-secim-etiket">{{ c.etiket }}</p>
+              {%- endif -%}
+            {%- if c.link != blank -%}</a>{%- else -%}</div>{%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    </dialog>
+  {%- endif -%}
+</div>
+
+<script>
+  (function () {
+    if (window.mkMozaikReady) { window.mkMozaikInit(); return; }
+    window.mkMozaikReady = true;
+
+    function kur(root) {
+      if (!root || root.mkInited) return;
+      root.mkInited = true;
+
+      var acDugmeleri = root.querySelectorAll('[data-mk-ac]');
+      for (var i = 0; i < acDugmeleri.length; i++) {
+        (function (btn) {
+          btn.addEventListener('click', function () {
+            var kart = btn.closest('[data-mk-kart]');
+            if (!kart) return;
+            var p = kart.querySelector('[data-mk-alinti]');
+            var acik = kart.classList.toggle('is-acik');
+            if (p) p.classList.toggle('is-kirpik', !acik);
+            btn.setAttribute('aria-expanded', acik ? 'true' : 'false');
+          });
+        })(acDugmeleri[i]);
+      }
+
+      var playlar = root.querySelectorAll('[data-mk-play]');
+      for (var j = 0; j < playlar.length; j++) {
+        (function (btn) {
+          btn.addEventListener('click', function () {
+            var kart = btn.closest('[data-mk-kart]');
+            if (!kart) return;
+            var v = kart.querySelector('video');
+            if (!v) return;
+            var digerler = document.querySelectorAll('[data-mk-root] video');
+            for (var k = 0; k < digerler.length; k++) {
+              if (digerler[k] !== v) {
+                digerler[k].pause();
+                var dk = digerler[k].closest('[data-mk-kart]');
+                if (dk) dk.classList.remove('is-oynuyor');
+              }
+            }
+            kart.classList.add('is-oynuyor');
+            v.setAttribute('controls', 'controls');
+            var pr = v.play();
+            if (pr && pr.catch) pr.catch(function () {});
+          });
+        })(playlar[j]);
+      }
+
+      // "Sayfada kaydir": hedef bolumu bulup yumusakca oraya iner.
+      var kaydirBtn = root.querySelector('[data-mk-kaydir]');
+      if (kaydirBtn) {
+        var azHareket = window.matchMedia
+          && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        var mkHedef = function () {
+          var sec = kaydirBtn.getAttribute('data-mk-kaydir') || '';
+          if (!sec) return null;
+          try { return document.querySelector(sec); } catch (e) { return null; }
+        };
+
+        // Bolumun ekranda duracagi yer. Ustteki gorseller ve videolar
+        // gec yuklendiginde sayfa boyu degistigi icin her olcumde
+        // bastan hesaplanir.
+        var mkY = function (hedef) {
+          var ofset = parseInt(kaydirBtn.getAttribute('data-mk-ofset'), 10);
+          if (isNaN(ofset)) ofset = 0;
+          var hiza = kaydirBtn.getAttribute('data-mk-hiza') || 'oto';
+          var kutu = hedef.getBoundingClientRect();
+          var ekran = window.innerHeight || document.documentElement.clientHeight;
+          var y;
+          if (hiza === 'oto' && kutu.height + ofset < ekran) {
+            // Bolum ekrana siginca dikeyde ortalanir
+            y = kutu.top + window.pageYOffset - (ekran - kutu.height) / 2;
+          } else {
+            y = kutu.top + window.pageYOffset - ofset;
+          }
+          var enCok = (document.documentElement.scrollHeight || 0) - ekran;
+          if (y > enCok) y = enCok;
+          if (y < 0) y = 0;
+          return Math.round(y);
+        };
+
+        var mkGit = function (y, yumusak) {
+          if (window.scrollTo && yumusak) {
+            try { window.scrollTo({ top: y, behavior: 'smooth' }); return; } catch (e) {}
+          }
+          window.scrollTo(0, y);
+        };
+
+        kaydirBtn.addEventListener('click', function () {
+          var hedef = mkHedef();
+          if (!hedef) return;
+
+          var kalan = 2;
+          var iptal = false;
+
+          // Kullanici kendi kaydirmaya baslarsa duzeltme birakilir
+          var birak = function () {
+            iptal = true;
+            window.removeEventListener('wheel', birak);
+            window.removeEventListener('touchstart', birak);
+            window.removeEventListener('keydown', birak);
+          };
+          window.addEventListener('wheel', birak, { passive: true });
+          window.addEventListener('touchstart', birak, { passive: true });
+          window.addEventListener('keydown', birak);
+
+          var denetle = function () {
+            if (iptal || kalan <= 0) { birak(); return; }
+            kalan--;
+            var y = mkY(hedef);
+            if (Math.abs(y - window.pageYOffset) <= 2) { birak(); return; }
+            mkGit(y, !azHareket);
+            window.setTimeout(denetle, 500);
+          };
+
+          mkGit(mkY(hedef), !azHareket);
+          window.setTimeout(denetle, 500);
+        });
+      }
+
+      var acPop = root.querySelector('[data-mk-ac-pop]');
+      var dlg = root.querySelector('[data-mk-dialog]');
+      var kapat = root.querySelector('[data-mk-kapat]');
+      if (acPop && dlg) {
+        acPop.addEventListener('click', function () {
+          if (typeof dlg.showModal === 'function') dlg.showModal();
+          else dlg.setAttribute('open', '');
+        });
+        dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+        if (kapat) kapat.addEventListener('click', function () { dlg.close(); });
+      }
+
+      /* --- ikiye bolunen CTA --- */
+      var bolYuva = root.querySelector('[data-mk-bol-yuva]');
+      var bolTetik = bolYuva ? bolYuva.querySelector('[data-mk-bol]') : null;
+      if (bolYuva && bolTetik) {
+        // Gizli baslangic durumunu ancak burada aciyoruz: JS calismazsa
+        // iki baglanti da dogrudan gorunur kalir.
+        bolYuva.classList.add('mk-bol-hazir');
+
+        var bolAyarla = function (acik) {
+          bolYuva.classList.toggle('is-bolundu', acik);
+          bolTetik.setAttribute('aria-expanded', acik ? 'true' : 'false');
+        };
+
+        bolTetik.addEventListener('click', function (e) {
+          e.preventDefault();
+          bolAyarla(!bolYuva.classList.contains('is-bolundu'));
+        });
+
+        // Disari tiklayinca / Esc ile kapanir. Dinleyiciler root uzerinde
+        // saklaniyor ki bolum editorde kaldirilinca temizlenebilsin.
+        root.mkBolDisari = function (e) {
+          if (!bolYuva.classList.contains('is-bolundu')) return;
+          if (bolYuva.contains(e.target)) return;
+          bolAyarla(false);
+        };
+        root.mkBolEsc = function (e) {
+          if (e.key !== 'Escape' && e.keyCode !== 27) return;
+          if (!bolYuva.classList.contains('is-bolundu')) return;
+          bolAyarla(false);
+          bolTetik.focus();
+        };
+        document.addEventListener('click', root.mkBolDisari);
+        document.addEventListener('keydown', root.mkBolEsc);
+      }
+
+      root.mkOnEnd = function (e) {
+        var kart = e.target.closest ? e.target.closest('[data-mk-kart]') : null;
+        if (kart) kart.classList.remove('is-oynuyor');
+      };
+      root.addEventListener('ended', root.mkOnEnd, true);
+    }
+
+    function sok(root) {
+      if (!root) return;
+      var vids = root.querySelectorAll('video');
+      for (var i = 0; i < vids.length; i++) vids[i].pause();
+      var dlg = root.querySelector('[data-mk-dialog]');
+      if (dlg && dlg.open) dlg.close();
+      if (root.mkOnEnd) root.removeEventListener('ended', root.mkOnEnd, true);
+      if (root.mkBolDisari) { document.removeEventListener('click', root.mkBolDisari); root.mkBolDisari = null; }
+      if (root.mkBolEsc) { document.removeEventListener('keydown', root.mkBolEsc); root.mkBolEsc = null; }
+      root.mkInited = false;
+    }
+
+    window.mkMozaikInit = function (scope) {
+      var list = (scope || document).querySelectorAll('[data-mk-root]');
+      for (var i = 0; i < list.length; i++) kur(list[i]);
+    };
+
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) return;
+      var vids = document.querySelectorAll('[data-mk-root] video');
+      for (var i = 0; i < vids.length; i++) vids[i].pause();
+    });
+
+    document.addEventListener('shopify:section:load', function (e) { window.mkMozaikInit(e.target); });
+    document.addEventListener('shopify:section:unload', function (e) {
+      var list = e.target.querySelectorAll('[data-mk-root]');
+      for (var i = 0; i < list.length; i++) sok(list[i]);
+    });
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { window.mkMozaikInit(); });
+    } else {
+      window.mkMozaikInit();
+    }
+  })();
+</script>
+
+{%- if s.anim_ac -%}
+<script>
+  (function () {
+    if (window.mkAnimHazir) { window.mkAnimKur(); return; }
+    window.mkAnimHazir = true;
+
+    var azHareket = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function kur(kok) {
+      if (!kok || kok.mkAnimKurulu) return;
+      kok.mkAnimKurulu = true;
+
+      var ogeler = kok.querySelectorAll('[data-mk-anim]');
+      if (!ogeler.length) return;
+
+      var ara = parseInt(kok.getAttribute('data-mk-ara'), 10);
+      if (isNaN(ara)) ara = 90;
+
+      // Baslangic durumunu ancak burada aciyoruz: JS yoksa icerik gorunur kalir.
+      kok.classList.add('mk-hazir');
+
+      for (var i = 0; i < ogeler.length; i++) {
+        ogeler[i].style.setProperty('--mk-gecikme', (i * ara) + 'ms');
+      }
+
+      if (azHareket || !('IntersectionObserver' in window)) {
+        for (var j = 0; j < ogeler.length; j++) ogeler[j].classList.add('is-gorunur');
+        return;
+      }
+
+      var goz = new IntersectionObserver(function (girisler) {
+        for (var k = 0; k < girisler.length; k++) {
+          if (!girisler[k].isIntersecting) continue;
+          girisler[k].target.classList.add('is-gorunur');
+          goz.unobserve(girisler[k].target);   // bir kez oynar
+        }
+      }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+
+      for (var m = 0; m < ogeler.length; m++) goz.observe(ogeler[m]);
+      kok.mkAnimGoz = goz;
+    }
+
+    window.mkAnimKur = function (alan) {
+      var kokler = (alan || document).querySelectorAll('[data-mk-anim-kok]');
+      for (var i = 0; i < kokler.length; i++) kur(kokler[i]);
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { window.mkAnimKur(); });
+    } else {
+      window.mkAnimKur();
+    }
+
+    document.addEventListener('shopify:section:load', function (e) {
+      window.mkAnimKur(e.target);
+    });
+    document.addEventListener('shopify:section:unload', function (e) {
+      var kokler = e.target.querySelectorAll('[data-mk-anim-kok]');
+      for (var i = 0; i < kokler.length; i++) {
+        if (kokler[i].mkAnimGoz) kokler[i].mkAnimGoz.disconnect();
+        kokler[i].mkAnimKurulu = false;
+      }
+    });
+  })();
+</script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Mozaik Kartlar",
+  "tag": "section",
+  "class": "mozaik-kartlar-section",
+  "max_blocks": 24,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Başlık"
+    },
+    {
+      "type": "text",
+      "id": "baslik",
+      "label": "Başlık",
+      "default": "Kime alsan yakışır"
+    },
+    {
+      "type": "select",
+      "id": "baslik_etiketi",
+      "label": "Başlık etiketi (SEO)",
+      "default": "h2",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "p", "label": "Normal metin" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "baslik_kalinlik",
+      "label": "Başlık kalınlığı",
+      "default": "700",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" },
+        { "value": "800", "label": "Çok kalın" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "baslik_rengi",
+      "label": "Başlık rengi",
+      "default": "#111111"
+    },
+    {
+      "type": "select",
+      "id": "hiza",
+      "label": "Başlık hizası",
+      "default": "center",
+      "options": [
+        { "value": "center", "label": "Ortada" },
+        { "value": "left", "label": "Solda" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "bas_m",
+      "label": "Başlık boyutu (mobil)",
+      "info": "Video Hero başlığı mobilde 28px; bölüm başlıkları bir kademe altında durur.",
+      "min": 16,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "bas_t",
+      "label": "Başlık boyutu (tablet)",
+      "info": "768px ve üzeri.",
+      "min": 16,
+      "max": 56,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "bas_d",
+      "label": "Başlık boyutu (masaüstü)",
+      "info": "1024px ve üzeri.",
+      "min": 18,
+      "max": 72,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "richtext",
+      "id": "metin",
+      "label": "Açıklama",
+      "default": "<p>İster sevgiline, ister en yakın arkadaşına, ister aileye. Aynı kapsül, her ilişkide başka bir anlam kazanıyor.</p>"
+    },
+    {
+      "type": "color",
+      "id": "metin_rengi",
+      "label": "Açıklama rengi",
+      "default": "#3d3d3d"
+    },
+    {
+      "type": "range",
+      "id": "metin_m",
+      "label": "Alt yazı boyutu (mobil)",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "metin_d",
+      "label": "Alt yazı boyutu (masaüstü)",
+      "min": 12,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "metin_bos_m",
+      "label": "Başlık ile alt yazı arası (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "metin_bos_d",
+      "label": "Başlık ile alt yazı arası (masaüstü)",
+      "info": "Video Hero'da bu boşluk 8px.",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "grid_bosluk",
+      "label": "Açıklama ile kartlar arası",
+      "min": 8,
+      "max": 90,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "header",
+      "content": "Izgara"
+    },
+    {
+      "type": "range",
+      "id": "kolon_m",
+      "label": "Sütun sayısı (mobil)",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "kolon_d",
+      "label": "Sütun sayısı (masaüstü)",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "aralik_m",
+      "label": "Kart arası boşluk (mobil)",
+      "min": 4,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "aralik_d",
+      "label": "Kart arası boşluk (masaüstü)",
+      "min": 4,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "kart_kose",
+      "label": "Kart köşe yuvarlaklığı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "medya_zemin",
+      "label": "Görsel kutusu zemini",
+      "default": "#e9e9ec"
+    },
+    {
+      "type": "header",
+      "content": "Fotoğraf ve Video Kartları"
+    },
+    {
+      "type": "color",
+      "id": "foto_yazi",
+      "label": "Kart üzeri yazı rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "ust_boyut_m",
+      "label": "Ad boyutu (mobil)",
+      "min": 12,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "ust_boyut_d",
+      "label": "Ad boyutu (masaüstü)",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "alt_boyut_m",
+      "label": "Alt yazı boyutu (mobil)",
+      "min": 10,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "alt_boyut_d",
+      "label": "Alt yazı boyutu (masaüstü)",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "etiket_ic",
+      "label": "Yazının kenardan uzaklığı",
+      "min": 6,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "text",
+      "id": "play_etiket",
+      "label": "Oynat düğmesi etiketi (erişilebilirlik)",
+      "default": "Videoyu oynat"
+    },
+    {
+      "type": "color",
+      "id": "play_zemin",
+      "label": "Oynat düğmesi zemini",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "play_renk",
+      "label": "Oynat düğmesi ikon rengi",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "play_boyut",
+      "label": "Oynat düğmesi boyutu",
+      "min": 28,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 46
+    },
+    {
+      "type": "header",
+      "content": "Giriş Animasyonu"
+    },
+    {
+      "type": "checkbox",
+      "id": "anim_ac",
+      "label": "Kaydırınca belirsin",
+      "info": "Başlık, alt yazı ve kartlar ekrana girdikçe sırayla yükselerek görünür. Bir kez oynar, geri kaydırınca tekrarlamaz.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "anim_mesafe",
+      "label": "Yükselme mesafesi",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "anim_sure",
+      "label": "Süre",
+      "min": 200,
+      "max": 1200,
+      "step": 50,
+      "unit": "ms",
+      "default": 600
+    },
+    {
+      "type": "range",
+      "id": "anim_ara",
+      "label": "Öğeler arası gecikme",
+      "info": "0 yaparsanız hepsi aynı anda belirir.",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "unit": "ms",
+      "default": 90
+    },
+    {
+      "type": "header",
+      "content": "Yorum Kartları"
+    },
+    {
+      "type": "checkbox",
+      "id": "ilk_yorum_acik",
+      "label": "İlk yorum açık gelsin",
+      "info": "Sıradaki ilk yorum kartı kırpılmadan, tamamı görünerek açılır. Diğer yorumlar (+) ile açılmaya devam eder.",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "yorum_zemin",
+      "label": "Yorum kartı zemini",
+      "default": "#f1f2f6"
+    },
+    {
+      "type": "color",
+      "id": "yorum_yazi",
+      "label": "Yorum yazısı rengi",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "yorum_boyut_m",
+      "label": "Yorum boyutu (mobil)",
+      "min": 12,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "yorum_boyut_d",
+      "label": "Yorum boyutu (masaüstü)",
+      "min": 12,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "yorum_ic",
+      "label": "Yorum kartı iç boşluğu",
+      "min": 10,
+      "max": 44,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "yorum_bosluk",
+      "label": "Yorum ile kişi arası boşluk",
+      "min": 6,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "yorum_min",
+      "label": "Yorum kartı en az yüksekliği",
+      "min": 0,
+      "max": 340,
+      "step": 10,
+      "unit": "px",
+      "default": 180
+    },
+    {
+      "type": "range",
+      "id": "avatar_boyut",
+      "label": "Avatar boyutu",
+      "min": 24,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "color",
+      "id": "isim_rengi",
+      "label": "İsim rengi",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "isim_boyut",
+      "label": "İsim boyutu",
+      "min": 11,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "rol_rengi",
+      "label": "Alt bilgi rengi",
+      "default": "#6b6b6b"
+    },
+    {
+      "type": "range",
+      "id": "rol_boyut",
+      "label": "Alt bilgi boyutu",
+      "min": 10,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "image_picker",
+      "id": "rozet_gorsel",
+      "label": "Doğrulama rozeti ikonu",
+      "info": "Kendi rozetinizi yükleyin. Kare ve saydam zeminli (PNG) olması en iyi sonucu verir. Boş bırakırsanız aşağıdaki hazır rozet kullanılır."
+    },
+    {
+      "type": "text",
+      "id": "rozet_url",
+      "label": "veya ikon adresi",
+      "info": "SVG kullanmak isterseniz dosyayı İçerik > Dosyalar bölümüne yükleyip adresini buraya yapıştırın."
+    },
+    {
+      "type": "color",
+      "id": "rozet_renk",
+      "label": "Hazır rozetin rengi",
+      "info": "Yalnızca kendi ikonunuzu yüklemediyseniz geçerlidir.",
+      "default": "#1d9bf0"
+    },
+    {
+      "type": "color",
+      "id": "rozet_ic",
+      "label": "Hazır rozetin tik rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "rozet_boyut",
+      "label": "Rozet boyutu",
+      "min": 10,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "text",
+      "id": "rozet_etiket",
+      "label": "Rozetin ekran okuyucu karşılığı",
+      "default": "Doğrulanmış alıcı"
+    },
+    {
+      "type": "text",
+      "id": "ac_etiket",
+      "label": "Genişlet düğmesi etiketi (erişilebilirlik)",
+      "default": "Yorumun tamamını göster"
+    },
+    {
+      "type": "color",
+      "id": "ac_zemin",
+      "label": "Genişlet düğmesi zemini",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "ac_renk",
+      "label": "Genişlet düğmesi ikon rengi",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "ac_boyut",
+      "label": "Genişlet düğmesi boyutu",
+      "min": 20,
+      "max": 56,
+      "step": 2,
+      "unit": "px",
+      "default": 34
+    },
+    {
+      "type": "header",
+      "content": "Buton"
+    },
+    {
+      "type": "text",
+      "id": "cta_yazi",
+      "label": "Buton metni",
+      "info": "Boş bırakırsanız buton görünmez.",
+      "default": "HEMEN İNCELE"
+    },
+    {
+      "type": "select",
+      "id": "cta_eylem",
+      "label": "Butona basınca ne olsun",
+      "default": "kaydir",
+      "options": [
+        { "value": "kaydir", "label": "Sayfada bir bölüme insin" },
+        { "value": "popup", "label": "Seçim pop-up'ı açılsın" },
+        { "value": "bol", "label": "İkiye bölünsün (Kadın / Erkek)" },
+        { "value": "link", "label": "Bağlantıya gitsin" }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "cta_bol_1_metni",
+      "label": "Bölününce 1. seçenek yazısı",
+      "info": "Yalnızca \"İkiye bölünsün\" seçiliyken kullanılır.",
+      "default": "Kadın"
+    },
+    { "type": "url", "id": "cta_bol_1_bag", "label": "Bölününce 1. seçenek bağlantısı" },
+    {
+      "type": "text",
+      "id": "cta_bol_2_metni",
+      "label": "Bölününce 2. seçenek yazısı",
+      "default": "Erkek"
+    },
+    { "type": "url", "id": "cta_bol_2_bag", "label": "Bölününce 2. seçenek bağlantısı" },
+    {
+      "type": "checkbox",
+      "id": "cta_hover_ozel",
+      "label": "Üstüne gelince renk değiştirsin",
+      "info": "Kapalıyken düğme sadece hafifçe soluklaşır.",
+      "default": false
+    },
+    { "type": "color", "id": "cta_hover_zemin", "label": "Üstüne gelince düğme rengi", "default": "#c2e800" },
+    { "type": "checkbox", "id": "cta_hover_degrade", "label": "Hover zemininde degrade", "default": false },
+    { "type": "color", "id": "cta_hover_d1", "label": "Hover degrade 1", "default": "#8fcbb0" },
+    { "type": "color", "id": "cta_hover_d2", "label": "Hover degrade 2", "default": "#599176" },
+    { "type": "color", "id": "cta_hover_d3", "label": "Hover degrade 3", "default": "#30614b" },
+    { "type": "range", "id": "cta_hover_aci", "label": "Hover degrade açısı", "min": 0, "max": 360, "step": 5, "unit": "°", "default": 135 },
+    { "type": "color", "id": "cta_hover_renk", "label": "Üstüne gelince yazı rengi", "default": "#000000" },
+    {
+      "type": "range",
+      "id": "cta_bol_ara",
+      "label": "Bölünen düğmeler arası boşluk",
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "text",
+      "id": "cta_hedef",
+      "label": "İnilecek bölüm",
+      "info": "Yalnızca \"Sayfada bir bölüme insin\" seçiliyken kullanılır. Varsayılan, Hikâye Seçim Kartları bölümüdür. Başka bir bölüme indirmek isterseniz o bölümün CSS sınıfını yazın.",
+      "default": ".story-choice-cards-section"
+    },
+    {
+      "type": "select",
+      "id": "cta_hiza",
+      "label": "İnilen bölüm ekranda nasıl dursun",
+      "info": "Otomatikte bölüm ekrana sığıyorsa dikeyde ortalanır, sığmıyorsa üstten hizalanır.",
+      "default": "oto",
+      "options": [
+        { "value": "oto", "label": "Otomatik (sığarsa ortala)" },
+        { "value": "ust", "label": "Her zaman üstten hizala" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "cta_ofset",
+      "label": "Üstten boşluk bırak",
+      "info": "Başlık ekranın en tepesine yapışmasın diye bırakılan boşluk. Sabit bir üstbilgi kapatıyorsa artırın.",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Buton bağlantısı",
+      "info": "Yalnızca \"Bağlantıya gitsin\" seçiliyse kullanılır."
+    },
+    {
+      "type": "checkbox",
+      "id": "cta_sabit",
+      "label": "Buton kaydırırken ekranda sabit dursun",
+      "info": "WHOOP'taki gibi bölüm boyunca alt ortada asılı kalır, bölüm bitince kaybolur.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "cta_alt",
+      "label": "Sabit butonun alttan uzaklığı",
+      "min": 4,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "cta_zemin",
+      "label": "Buton zemini",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "cta_renk",
+      "label": "Buton yazı rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "checkbox",
+      "id": "cta_yuvarlak",
+      "label": "Butonu tam yuvarlak yap",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "cta_kose",
+      "label": "Buton köşe yuvarlaklığı",
+      "info": "Yalnızca \"tam yuvarlak\" kapalıyken geçerlidir.",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "select",
+      "id": "cta_kalinlik",
+      "label": "Buton yazı kalınlığı",
+      "default": "700",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "cta_harf",
+      "label": "Buton harf aralığı",
+      "min": 0,
+      "max": 4,
+      "step": 0.5,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "cta_boyut_m",
+      "label": "Buton yazı boyutu (mobil)",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "cta_boyut_d",
+      "label": "Buton yazı boyutu (masaüstü)",
+      "min": 11,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "cta_yatay",
+      "label": "Buton iç boşluk - yatay",
+      "min": 12,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "cta_dikey",
+      "label": "Buton iç boşluk - dikey",
+      "min": 8,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "cta_bosluk",
+      "label": "Kartlar ile buton arası",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Seçim Pop-up'ı"
+    },
+    {
+      "type": "text",
+      "id": "pop_baslik",
+      "label": "Pop-up başlığı",
+      "default": "Hangi Zaman Kapsülünü incelemek istersin?"
+    },
+    {
+      "type": "text",
+      "id": "pop_alt",
+      "label": "Pop-up alt yazısı",
+      "info": "Boş bırakabilirsiniz."
+    },
+    {
+      "type": "text",
+      "id": "bos_uyari",
+      "label": "Kart yokken görünen not",
+      "default": "Bu pop-up boş. Soldaki blok listesinden \"Pop-up seçim kartı\" ekleyin.",
+      "info": "Bölüme hiç \"Pop-up seçim kartı\" bloğu eklenmediğinde pop-up içinde bu yazı görünür."
+    },
+    {
+      "type": "color",
+      "id": "pop_zemin",
+      "label": "Pop-up arka planı",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "pop_baslik_renk",
+      "label": "Pop-up başlık rengi",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "pop_alt_renk",
+      "label": "Pop-up alt yazı rengi",
+      "default": "#5f5f5f"
+    },
+    {
+      "type": "range",
+      "id": "pop_baslik_m",
+      "label": "Pop-up başlık boyutu (mobil)",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "pop_baslik_d",
+      "label": "Pop-up başlık boyutu (masaüstü)",
+      "min": 18,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "pop_alt_boyut",
+      "label": "Pop-up alt yazı boyutu",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "pop_genislik",
+      "label": "Pop-up genişliği",
+      "min": 320,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 560
+    },
+    {
+      "type": "range",
+      "id": "pop_kose",
+      "label": "Pop-up köşe yuvarlaklığı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "pop_ic",
+      "label": "Pop-up iç boşluğu",
+      "min": 12,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "pop_bosluk",
+      "label": "Başlık ile kartlar arası",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "pop_kolon_m",
+      "label": "Seçim kartı sütunu (mobil)",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "pop_kolon_d",
+      "label": "Seçim kartı sütunu (masaüstü)",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "pop_aralik",
+      "label": "Seçim kartları arası boşluk",
+      "min": 6,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "secim_kose",
+      "label": "Seçim kartı köşe yuvarlaklığı",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "secim_parlak",
+      "label": "Üzerine gelince / basınca parlaklık",
+      "min": 90,
+      "max": 125,
+      "step": 1,
+      "unit": "%",
+      "default": 107,
+      "info": "100 = hiç değişmez. 100 üstü kartı açar, altı koyulaştırır. Masaüstünde fareyle üzerine gelince, mobilde parmakla basınca uygulanır."
+    },
+    {
+      "type": "range",
+      "id": "secim_yukse",
+      "label": "Üzerine gelince yükselme",
+      "min": 0,
+      "max": 8,
+      "step": 1,
+      "unit": "px",
+      "default": 2,
+      "info": "Yalnızca fareli cihazlarda. 0 yaparsanız kart yerinden oynamaz."
+    },
+    {
+      "type": "range",
+      "id": "secim_bas",
+      "label": "Basınca küçülme",
+      "min": 90,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 96,
+      "info": "Mobilde tıklama hissi. 100 yaparsanız küçülme olmaz."
+    },
+    {
+      "type": "range",
+      "id": "secim_ic",
+      "label": "Seçim kartı iç boşluğu",
+      "min": 10,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "secim_ikon",
+      "label": "Seçim kartı ikon boyutu",
+      "min": 20,
+      "max": 56,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "secim_baslik_boyut",
+      "label": "Seçim kartı başlık boyutu",
+      "min": 13,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "secim_alt_boyut",
+      "label": "Seçim kartı alt yazı boyutu",
+      "min": 11,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "secim_cizgi_bosluk",
+      "label": "Ayırıcı çizginin boşluğu",
+      "min": 6,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "secim_etiket_boyut",
+      "label": "Alttaki etiket boyutu",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "color",
+      "id": "kapat_zemin",
+      "label": "Kapat düğmesi zemini",
+      "default": "#f0f0f2"
+    },
+    {
+      "type": "color",
+      "id": "kapat_renk",
+      "label": "Kapat düğmesi rengi",
+      "default": "#111111"
+    },
+    {
+      "type": "text",
+      "id": "kapat_etiket",
+      "label": "Kapat düğmesi etiketi (erişilebilirlik)",
+      "default": "Kapat"
+    },
+    {
+      "type": "header",
+      "content": "Bölüm Görünümü"
+    },
+    {
+      "type": "range",
+      "id": "mobil_olcek",
+      "label": "Mobil yoğunluk",
+      "info": "Mobilde başlık, yazı ve boşlukları küçültür. Masaüstünü etkilemez.",
+      "min": 60,
+      "max": 110,
+      "step": 5,
+      "unit": "%",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "masaustu_olcek",
+      "label": "Masaüstü yoğunluk",
+      "info": "Masaüstünde başlık, yazı ve boşlukları küçültür. Mobili etkilemez.",
+      "min": 60,
+      "max": 110,
+      "step": 5,
+      "unit": "%",
+      "default": 85
+    },
+    {
+      "type": "range",
+      "id": "kart_max_m",
+      "label": "Kart en fazla yüksekliği (mobil)",
+      "info": "Ekran yüksekliğinin yüzdesi. Kartın oranı ne olursa olsun bu boyu aşmaz; görsel kırpılır. 0 = sınırsız.",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "vh",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "kart_max_d",
+      "label": "Kart en fazla yüksekliği (masaüstü)",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "vh",
+      "default": 30
+    },
+    {
+      "type": "color_background",
+      "id": "zemin",
+      "label": "Bölüm arka planı",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "max_w",
+      "label": "İçerik genişliği",
+      "min": 600,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "edge_m",
+      "label": "Kenar boşluğu (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "edge_d",
+      "label": "Kenar boşluğu (masaüstü)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "p_top_m",
+      "label": "Üst boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "p_bot_m",
+      "label": "Alt boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "p_top_d",
+      "label": "Üst boşluk (masaüstü)",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "p_bot_d",
+      "label": "Alt boşluk (masaüstü)",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "gorsel",
+      "name": "Fotoğraf kartı",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "gorsel",
+          "label": "Görsel"
+        },
+        {
+          "type": "select",
+          "id": "oran",
+          "label": "Kart oranı",
+          "default": "4 / 5",
+          "options": [
+            { "value": "1 / 1", "label": "Kare (1:1)" },
+            { "value": "4 / 5", "label": "Dikey (4:5)" },
+            { "value": "3 / 4", "label": "Dikey (3:4)" },
+            { "value": "2 / 3", "label": "Uzun dikey (2:3)" },
+            { "value": "4 / 3", "label": "Yatay (4:3)" },
+            { "value": "16 / 9", "label": "Geniş (16:9)" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "ust_yazi",
+          "label": "Ad / başlık",
+          "default": "Sevgiline"
+        },
+        {
+          "type": "text",
+          "id": "alt_yazi",
+          "label": "Alt yazı",
+          "default": "Yıl dönümünde açılsın"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Bağlantı",
+          "info": "Boş bırakırsanız kart tıklanamaz olur."
+        },
+        {
+          "type": "range",
+          "id": "karartma",
+          "label": "Alt karartma",
+          "info": "Yazının okunabilmesi için görselin altına eklenen koyuluk.",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 70
+        }
+      ]
+    },
+    {
+      "type": "yorum",
+      "name": "Yorum kartı",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "alinti",
+          "label": "Yorum",
+          "default": "Açtığımız gün ikimiz de ağladık. Bu yüzüğü değil, o günü hediye etmişim aslında."
+        },
+        {
+          "type": "image_picker",
+          "id": "avatar",
+          "label": "Profil fotoğrafı",
+          "info": "Boş bırakabilirsiniz."
+        },
+        {
+          "type": "text",
+          "id": "isim",
+          "label": "İsim",
+          "default": "Elif K."
+        },
+        {
+          "type": "checkbox",
+          "id": "dogrulandi",
+          "label": "İsmin yanına mavi doğrulama rozeti koy",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "alt_not",
+          "label": "İsmin altına küçük not",
+          "info": "Boş bırakırsanız hiç görünmez. Doğrulama zaten rozetle anlatılıyor."
+        },
+        {
+          "type": "checkbox",
+          "id": "kirp",
+          "label": "Uzun yorumu kırp ve (+) ile aç",
+          "default": true
+        },
+        {
+          "type": "range",
+          "id": "satir",
+          "label": "Kaç satır görünsün",
+          "min": 2,
+          "max": 8,
+          "step": 1,
+          "default": 3
+        }
+      ]
+    },
+    {
+      "type": "secim",
+      "name": "Pop-up seçim kartı",
+      "settings": [
+        {
+          "type": "text",
+          "id": "baslik",
+          "label": "Başlık",
+          "default": "Buluşunca"
+        },
+        {
+          "type": "text",
+          "id": "alt_yazi",
+          "label": "Alt yazı",
+          "default": "İki kolye bir araya gelince"
+        },
+        {
+          "type": "text",
+          "id": "etiket",
+          "label": "Alttaki etiket",
+          "info": "Boş bırakırsanız çizgi ve etiket görünmez.",
+          "default": "Couple"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Bağlantı",
+          "info": "Bu seçeneğe basınca gidilecek koleksiyon veya ürün."
+        },
+        {
+          "type": "select",
+          "id": "ikon",
+          "label": "İkon",
+          "default": "users",
+          "options": [
+            { "value": "users", "label": "İki kişi" },
+            { "value": "calendar", "label": "Takvim" },
+            { "value": "heart", "label": "Kalp" },
+            { "value": "gift", "label": "Hediye" },
+            { "value": "lock-open", "label": "Açık kilit" },
+            { "value": "clock", "label": "Saat" }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "ozel_ikon",
+          "label": "Özel ikon",
+          "info": "Doldurursanız yukarıdaki ikon yerine bu kullanılır."
+        },
+        {
+          "type": "color",
+          "id": "zemin",
+          "label": "Kart zemini",
+          "default": "#efeaff"
+        },
+        {
+          "type": "color",
+          "id": "yazi",
+          "label": "Başlık ve ikon rengi",
+          "default": "#4c1d95"
+        },
+        {
+          "type": "color",
+          "id": "soluk",
+          "label": "Alt yazı ve etiket rengi",
+          "default": "#6f60a8"
+        }
+      ]
+    },
+    {
+      "type": "video",
+      "name": "Video kartı",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video",
+          "info": "Kapak görselini Shopify video ayarlarından seçebilirsiniz. Sesli oynatılır."
+        },
+        {
+          "type": "image_picker",
+          "id": "poster",
+          "label": "Kapak görseli",
+          "info": "Video yoksa bu görsel gösterilir."
+        },
+        {
+          "type": "select",
+          "id": "oran",
+          "label": "Kart oranı",
+          "default": "3 / 4",
+          "options": [
+            { "value": "1 / 1", "label": "Kare (1:1)" },
+            { "value": "4 / 5", "label": "Dikey (4:5)" },
+            { "value": "3 / 4", "label": "Dikey (3:4)" },
+            { "value": "2 / 3", "label": "Uzun dikey (2:3)" },
+            { "value": "4 / 3", "label": "Yatay (4:3)" },
+            { "value": "16 / 9", "label": "Geniş (16:9)" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "ust_yazi",
+          "label": "Ad / başlık",
+          "default": "Ayşe & Mert"
+        },
+        {
+          "type": "text",
+          "id": "alt_yazi",
+          "label": "Alt yazı",
+          "default": "3. yıl dönümü"
+        },
+        {
+          "type": "range",
+          "id": "karartma",
+          "label": "Alt karartma",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 60
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Mozaik Kartlar",
+      "blocks": [
+        { "type": "video", "settings": { "ust_yazi": "Ayşe & Mert", "alt_yazi": "3. yıl dönümü", "oran": "3 / 4" } },
+        { "type": "gorsel", "settings": { "ust_yazi": "Sevgiline", "alt_yazi": "Yıl dönümünde açılsın", "oran": "4 / 5" } },
+        { "type": "yorum", "settings": { "isim": "Elif K." } },
+        { "type": "gorsel", "settings": { "ust_yazi": "Arkadaşına", "alt_yazi": "Mezuniyet günü için", "oran": "1 / 1" } },
+        { "type": "yorum", "settings": { "alinti": "Anneme aldım. Telefonunu dokundurunca torununun sesini duydu, günlerce anlattı.", "isim": "Burak T." } },
+        { "type": "gorsel", "settings": { "ust_yazi": "Ailene", "alt_yazi": "Yeni yıl sabahı", "oran": "3 / 4" } },
+        { "type": "secim", "settings": { "baslik": "Buluşunca", "alt_yazi": "İki kolye bir araya gelince", "etiket": "Couple", "ikon": "users", "zemin": "#efeaff", "yazi": "#4c1d95", "soluk": "#6f60a8" } },
+        { "type": "secim", "settings": { "baslik": "Tarihi gelince", "alt_yazi": "Seçtiğin gün geldiğinde", "etiket": "Single", "ikon": "calendar", "zemin": "#e6f0ff", "yazi": "#14448f", "soluk": "#4f739f" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
