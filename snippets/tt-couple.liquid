@@ -651,5 +651,53 @@
       blocks/ai_gen_block_*.liquid altinda.
       ------------------------------------------------------------
     {%- endcomment -%}
+
+    {%- comment -%}
+      ------------------------------------------------------------
+      KARSILASTIRMA BLOGU: SADECE DIKEY RITIM  (6. tur)
+
+      5. turda blok tumuyle katmanin disina alinmisti. Sonuc dogru
+      olculer ama yanlis ritim: bolumun ust/alt siyah boslugu ve
+      etiket/baslik/govde arasi mesafeler sayfanin geri kalanindan
+      belirgin sekilde farkli kaliyor. Olculen fark:
+
+        bolum ust boslugu   ~13px   (diger bolumlerde 60px)
+        baslik -> govde     ~10px   (diger bolumlerde 16px)
+        govde -> gorseller  ~15px   (diger bolumlerde 32px)
+
+      Bu tur YALNIZCA bu dort bosluk yaziliyor. Bilerek DISARIDA
+      kalanlar -- yani 5. turdeki "single sayfasiyla ayni olcu"
+      sozu bozulmuyor:
+        font-size / line-height / letter-spacing / font-weight
+        kart padding, kart yaricapi
+        gorsel boyutu
+        yan bosluk (padding-inline)  <-- kart genisligini degistirirdi
+        renkler
+        buton olculeri
+
+      Yani blogun kendi ic olculeri single sayfasindaki ornekle
+      ayni kaliyor; degisen tek sey bolumun sayfa ritmine oturmasi.
+      ------------------------------------------------------------
+    {%- endcomment -%}
+    #MainContent.tt-couple-page [class*="ai-comparison-container-"] {
+      padding-block: var(--tt-s7);
+    }
+
+    #MainContent.tt-couple-page [class*="ai-comparison-category-"] {
+      margin-block: 0 var(--tt-s3);
+    }
+
+    #MainContent.tt-couple-page [class*="ai-comparison-title-"] {
+      margin-block: 0;
+    }
+
+    {%- comment -%}
+      Alt basligin ust boslugu digerleriyle ayni (s4), alt boslugu
+      ise "baslik blogu -> icerik" mesafesi (s6). Ikisi de sayfanin
+      geri kalaninda kullanilan degerler.
+    {%- endcomment -%}
+    #MainContent.tt-couple-page [class*="ai-comparison-subtitle-"] {
+      margin-block: var(--tt-s4) var(--tt-s6);
+    }
   }
 </style>
