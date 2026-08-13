@@ -17,13 +17,15 @@
     solda    hamburger (kendi tam ekran menusu)
     ortada   logo -- mutlak konumlu, iki yandaki gruplarin genisligi
              farkli olsa da tam ortada kaliyor
-    sagda    tepede arama + sepet; asagi kaydirinca onlarin yerine
-             dugme (ikisi ayni anda durmuyor)
+    sagda    tepede arama + sepet; asagi kaydirinca onlar sonuyor ve
+             dugme ekranin sagindan kayarak giriyor (ayni noktaya
+             yaslilar, cubugun yerlesimi hic degismiyor)
 
-  Dugme baslangicta YOK. Sayfa "esik_px" kadar kaydirilinca soldan
-  acilarak beliriyor (max-width + opacity). Gizliyken hic yer
-  kaplamiyor, yani sayfa tepesinde ikonlar saga tam dayali duruyor ve
-  belirirken zipramaya sebep olmuyor.
+  Dugme baslangicta YOK. Sayfa "esik_px" kadar kaydirilinca ekranin
+  sag disindan kayarak giriyor (transform + opacity). Gizliyken hic
+  yer kaplamiyor -- ikonlarla ayni noktaya yaslandigi ve kabin
+  genisligi sifir oldugu icin cubugun yerlesimi hic degismiyor, logo
+  yerinden oynamiyor.
 
   ------------------------------------------------------------------
   DUGMENIN IKI BICIMI
@@ -103,6 +105,9 @@
     -webkit-backdrop-filter: blur({{ s.bulanik }}px) saturate(180%);
     backdrop-filter: blur({{ s.bulanik }}px) saturate(180%);
     border-bottom: 1px solid {{ s.kenar_rengi }};
+    /* Dugme ekranin sagindan geliyor; disarida kalan kismi kirpilsin
+       ki yatay kaydirma cubugu olusmasin. */
+    overflow: hidden;
   }
 
   /* Cubuk sabit; biraktigi bosluk govdeye geri veriliyor ki sayfanin
@@ -122,6 +127,12 @@
       padding: 0 {{ s.yan_bosluk_d }}px;
     }
     body { padding-top: {{ s.bar_yuk_d }}px; }
+    .tth-yuva-{{ sid }} {
+      transform: translate(calc(100% + {{ s.yan_bosluk_d }}px), -50%);
+    }
+    .tth-{{ sid }}.is-gecti .tth-yuva-{{ sid }} {
+      transform: translate(0, -50%);
+    }
   }
 
   /* Yalnizca ekran okuyucular icin. Temanin sr-only sinifina
@@ -162,26 +173,21 @@
 
   /* ---------------- ikonlar ---------------- */
   /* Ikonlar ve dugme AYNI YERI paylasiyor: tepede ikonlar, asagi
-     kaydirinca onlar daralip kayboluyor ve yerine dugme aciliyor.
+     kaydirinca onlar sonuyor ve yerine dugme sagdan kayarak giriyor.
      Ikisi ayni anda durursa dar ekranda ortadaki logoyu kapatiyorlar.
 
-     Iki tarafta da max-width + opacity kullaniliyor; mutlak konum
-     yok, yani konumlu ata / yukseklik gibi bir varsayima bagli
-     degil. Gizli olan taraf 0 genislikte, hic yer kaplamiyor. */
+     Ikonlar yalnizca soluyor (opacity); yer degistirmiyor, cunku
+     kaybolurken saga dogru kaymalari dugmenin girisiyle karisik
+     gorunuyor. */
   .tth-ikon-{{ sid }} {
     display: inline-flex;
     align-items: center;
     gap: {{ s.ikon_ara }}px;
-    flex: 0 0 auto;
-    max-width: 240px;
+    transform: translateY(-50%);
     opacity: 1;
-    overflow: hidden;
-    transition:
-      max-width 320ms cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   .tth-{{ sid }}.is-gecti .tth-ikon-{{ sid }} {
-    max-width: 0;
     opacity: 0;
     pointer-events: none;
   }
@@ -250,33 +256,49 @@
   }
 
   /* ---------------- sag grup ---------------- */
+  /* Ikonlar ve dugme AYNI NOKTAYA yasliyor: ikisi de saga dayali,
+     ust uste. Kap genisligi 0 -- yani hangisi gorunurse gorunsun
+     cubugun yerlesimi hic degismiyor, logo yerinden oynamiyor.
+
+     Kap "position: relative" ve sabit yukseklikte; cocuklarin
+     dayanacagi yer garanti. (Bu bolumun onceki denemelerinde mutlak
+     konumlu bir oge, konumlu atasini kaybedince cubugun tamamina
+     yayilmisti -- burada kap kendi dosyamizda ve sabit.) */
   .tth-sag-{{ sid }} {
-    display: inline-flex;
-    align-items: center;
+    position: relative;
+    display: block;
     flex: 0 0 auto;
+    width: 0;
+    height: {{ s.dugme_yuk }}px;
+  }
+  .tth-ikon-{{ sid }},
+  .tth-yuva-{{ sid }} {
+    position: absolute;
+    right: 0;
+    top: 50%;
   }
 
-  /* Dugme yuvasi: gizliyken hic yer kaplamiyor, belirirken soldan
-     aciliyor. max-width animasyonu icerigin genisligini bilmeyi
-     gerektirmiyor; overflow: hidden kirpiyor. */
+  /* Dugme yuvasi. Baslangicta ekranin sagindan disarida: kendi genisligi kadar +
+     cubugun yan boslugu. Cubuktaki overflow: hidden onu kirptigi icin
+     "ekranin disindan geliyor" hissi olusuyor. Genislik degil transform
+     animasyonu: yerlesim hesaplanmadigi icin akici ve logoyu silmiyor. */
   .tth-yuva-{{ sid }} {
     display: inline-flex;
     align-items: center;
-    max-width: 0;
-    margin-right: 0;
+    transform: translate(calc(100% + {{ s.yan_bosluk }}px), -50%);
     opacity: 0;
-    overflow: hidden;
     pointer-events: none;
     transition:
-      max-width 320ms cubic-bezier(0.4, 0, 0.2, 1),
-      margin-right 320ms cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 220ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   .tth-{{ sid }}.is-gecti .tth-yuva-{{ sid }} {
-    max-width: 420px;
-    margin-right: 0;
+    transform: translate(0, -50%);
     opacity: 1;
     pointer-events: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tth-yuva-{{ sid }} { transition: opacity 220ms linear; }
   }
 
   /* ---------------- dugme ---------------- */
