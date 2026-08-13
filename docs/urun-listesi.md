@@ -557,3 +557,30 @@ basinca sepet cekmecesi yukari kayiyorsa suphe dogrulanmis olur.
 
 Hazir: "Duzeltme 3 - kart sepet butonu 2026-08-13" (187518910784),
 icinde hem kart sepet butonu duzeltmesi hem bu daraltma var.
+
+---
+
+# GemPages sayfalari silindikten sonraki ilk yayinlama (13 Ağustos 2026)
+
+Kullanici GemPages panelinden urun ve koleksiyon sayfalarini sildi.
+Ardindan "Duzeltme 4 - kupon seridi konumu" (187519172928) yayina
+alindi -- silme sonrasi ILK yayinlama.
+
+Yayinlamadan 40 dk sonra yapilan kontrol: TEMIZ. 31 single, 36 couple
+ve 2 koleksiyonun hicbiri bozulmadi; ne gp-template'e dondu ne
+bosaldi.
+
+Onceki turlarda bozulma yaklasik 1 saat sonra fark edilmisti, yani 40
+dk henuz o pencerenin tam icinden gecmis sayilmaz. Bu yuzden ~90 dk
+noktasina bir kontrol daha planlandi. O da temiz cikarsa mesele
+kapanmis sayilir ve her yayinlamadan sonra tarama yapmaya gerek
+kalmaz.
+
+## Silmenin yan etkisi (kayit)
+
+GemPages bir sayfayi silerken urunun templateSuffix alanini
+BOSALTIYOR, bizim degerimizi geri koymuyor. Silme turu sirasinda 5
+urunde bu oldu (Eight Stars White, Infinity Glow, Taşlıkilit White,
+Velor, Vantablack + Taşlı Kilit) ve elle geri yazildi. Ileride
+GemPages'te baska sayfa silinirse ayni sey olur; silme sonrasi bir
+tarama gerekir.
