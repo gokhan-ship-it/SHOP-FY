@@ -117,6 +117,18 @@
       {%- render 'tt-couple-koleksiyon' -%}
     {%- endif -%}
 
+    {%- comment -%}
+      Butun koleksiyon sayfalari. Yukaridaki zincir if/elsif oldugu
+      icin ayri bir blok: couple-urunler zaten ilk dalda eslesiyor,
+      ama bu kural onda da gecerli olmali.
+
+      Cok secenekli urunlerde karttaki sepet butonu hizli gorunum
+      yerine urun sayfasini acsin. Gerekce dosyanin icinde.
+    {%- endcomment -%}
+    {%- if template.name == 'collection' -%}
+      {%- render 'tt-koleksiyon-kart' -%}
+    {%- endif -%}
+
     {{ content_for_header }}
 
     <script src="{{ 'vendor.js' | asset_url }}" defer="defer"></script>

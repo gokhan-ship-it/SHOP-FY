@@ -1,0 +1,97 @@
+{%- comment -%}
+  KOLEKSIYON KARTI: COK SECENEKLI URUNDE SEPET BUTONU URUNE GITSIN
+
+  ------------------------------------------------------------------
+  DURUM
+
+  Koleksiyon kartlarindaki sepet butonu, urunun TEK varyanti varsa
+  dogrudan sepete ekliyor. Birden fazla varyant varsa ekleyemiyor --
+  hangisinin istendigini bilmiyor -- ve alttan bir "hizli gorunum"
+  cekmecesi aciyor.
+
+  Bu magazadaki kolye ve bilekliklerin cogunda "Ham Madde" secenegi
+  var (316L Cerrahi Celik / 925 Ayar Gumus) ve aradaki fark buyuk
+  (orn. 2.599 TL - 4.799 TL). Yani secim ekrani teknik olarak dogru
+  ama musteri sepet ikonuna basinca sepet bekliyor, karsisina baska
+  bir sey cikiyor.
+
+  ISTENEN: cok secenekli urunlerde o butona basmak, urunun kendisine
+  tiklamakla ayni sonucu versin -- urun sayfasi acilsin.
+
+  ------------------------------------------------------------------
+  NASIL
+
+  snippets/product-card.liquid, cok varyantli urunde sepet butonunu
+  soyle basiyor:
+
+      <button type="button" class="button button--primary ..."
+              aria-controls="Quickview-<bolum>-<urun>" ...>
+
+  ve ayni kartta:
+
+      <quick-view id="Quickview-..." data-product-url="{{ product_url }}">
+
+  Yani hedef adres zaten kartin icinde yaziyor; tahmin etmeye gerek
+  yok. Butonun aria-controls'undan quick-view ogesini buluyor,
+  data-product-url'ini okuyup oraya gidiyoruz.
+
+  TEK VARYANTLI URUNLER ETKILENMIYOR: onlarin butonu bir <form>
+  submit'i, aria-controls tasimiyor. Eskisi gibi sepete ekliyor ve
+  sepet cekmecesi aciliyor.
+
+  DISARIDA BIRAKILANLAR
+  - Gorselin ustundeki goz ikonu (.quick-view__button): onun isi
+    zaten hizli gorunum acmak, dokunulmuyor.
+  - Renk gruplarindaki "+N" baglantisi (<a>): kendi isini yapiyor.
+  - Ctrl/Cmd/Shift ile ya da orta tusla tiklama.
+
+  Adres bulunamazsa hicbir sey yapilmiyor -- eski davranis (hizli
+  gorunum) devrede kaliyor. Yani en kotu ihtimalde bugunku hale
+  donuluyor, kirilma olmuyor.
+
+  KAPSAM: butun koleksiyon sayfalari. Bilerek tek bir koleksiyona
+  baglanmadi; ayni kart ayni yerde bir koleksiyonda baska, digerinde
+  baska davranirsa musteri icin daha kafa karistirici olurdu. Kapisi
+  layout/theme.liquid icinde.
+
+  snippets/product-card.liquid'e DOKUNULMADI -- o dosya butun
+  magazada ortak.
+{%- endcomment -%}
+<script>
+  (function () {
+    'use strict';
+
+    function urunAdresi(dugme) {
+      var id = dugme.getAttribute('aria-controls');
+      if (id) {
+        var panel = document.getElementById(id);
+        var adres = panel && panel.getAttribute('data-product-url');
+        if (adres) return adres;
+      }
+      // Yedek: kartin kendi baslik baglantisi.
+      var kart = dugme.closest('.product-card');
+      var bag = kart && kart.querySelector('a.product-card__title');
+      return bag ? bag.getAttribute('href') : null;
+    }
+
+    document.addEventListener('click', function (e) {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (e.button !== 0) return;
+
+      var hedef = e.target;
+      if (!hedef || !hedef.closest) return;
+
+      var dugme = hedef.closest('[aria-controls^="Quickview-"]');
+      if (!dugme) return;
+      if (dugme.tagName === 'A') return;
+      if (dugme.classList.contains('quick-view__button')) return;
+
+      var adres = urunAdresi(dugme);
+      if (!adres) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      window.location.href = adres;
+    }, true);
+  })();
+</script>
