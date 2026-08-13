@@ -1,0 +1,102 @@
+{%- comment -%}
+  INDIRIM SERIDINI EKRANA GORE ORTALA
+
+  ------------------------------------------------------------------
+  DURUM
+
+  Serit (taksit-tablosu.js icindeki .tt-kol-serit) urun izgarasinin
+  disina, kardes oge olarak basiliyor. Dustugu kap her sablonda ayni
+  degil:
+
+    zaman-kapsulu-kolyeler  -> sayfa genisliginde bir kaba dusuyor,
+                               serit ortada gorunuyor
+    zaman-kapsulu-bileklik  -> sayfadan dar ve sola dayali bir kaba
+                               dusuyor, serit o kabin ortasina
+                               hizalaniyor ve sayfaya gore ~160px
+                               sola kaymis gorunuyor
+
+  Kabin ne oldugunu ekran goruntusunden cikaramadim ve tahminle
+  yapilan iki deneme (kaba tam genislik vermek; seridi <main>'in
+  cocugu olarak yerlestirmek) tutmadi.
+
+  ------------------------------------------------------------------
+  COZUM: TAHMIN ETME, OLC
+
+  Kabin kim oldugunu bilmeye gerek yok. Serit cizildikten sonra
+  ekrandaki GERCEK konumu olculuyor ve ekranin ortasina gelmesi icin
+  gereken fark sol kenar boslugu olarak veriliyor. Hangi kabin
+  icinde olursa olsun sonuc ayni: serit her sayfada ekrana gore
+  ortada.
+
+  Olcumden once kendi ekledigimiz bosluklar sifirlaniyor; yoksa
+  ikinci turda kendi duzeltmemizin uzerine duzeltme yapardik ve
+  serit her turda biraz daha kayardi.
+
+  Yatay kaydirma cubugu olusmasin diye ekran genisligi
+  documentElement.clientWidth ile aliniyor (kaydirma cubugu haric).
+
+  Serit gizliyken (kod yokken) hicbir sey yapilmiyor. Serit hic
+  yoksa da oyle.
+
+  ------------------------------------------------------------------
+  NE ZAMAN TAZELENIYOR
+
+  Serit sonradan olusuyor, kodun suresi sayfa aciktayken dolabiliyor
+  ve pencere yeniden boyutlanabiliyor. Bu yuzden yukleme, resize,
+  orientationchange, DOM degisikligi ve saniyelik hafif bir
+  zamanlayici ile tazeleniyor. Fark 1px'in altindaysa hicbir sey
+  yazilmiyor, gereksiz reflow olmuyor.
+
+  KAPSAM: butun sayfalar. Kapisi layout/theme.liquid icinde.
+{%- endcomment -%}
+<script>
+  (function () {
+    'use strict';
+
+    function serit() {
+      return document.querySelector('[data-tt-kol-serit]');
+    }
+
+    function ortala() {
+      var s = serit();
+      if (!s || s.hidden) return;
+
+      /* Kendi eklediklerimizi sifirla: olcum ham konumu vermeli. */
+      if (s.style.marginLeft || s.style.marginRight) {
+        s.style.marginLeft = '';
+        s.style.marginRight = '';
+      }
+
+      var r = s.getBoundingClientRect();
+      if (r.width <= 0) return;
+
+      var ekran = document.documentElement.clientWidth;
+      var hedefSol = (ekran - r.width) / 2;
+      var fark = Math.round(hedefSol - r.left);
+
+      if (Math.abs(fark) < 1) return;
+
+      s.style.marginLeft = fark + 'px';
+      s.style.marginRight = '0px';
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', ortala);
+    } else {
+      ortala();
+    }
+
+    window.setInterval(ortala, 1000);
+    window.addEventListener('resize', ortala);
+    window.addEventListener('orientationchange', ortala);
+
+    if (window.MutationObserver) {
+      var bekleyen = false;
+      new MutationObserver(function () {
+        if (bekleyen) return;
+        bekleyen = true;
+        window.setTimeout(function () { bekleyen = false; ortala(); }, 200);
+      }).observe(document.body, { childList: true, subtree: true });
+    }
+  })();
+</script>

@@ -213,5 +213,11 @@
     {%- endcomment -%}
     {%- render 'tt-kupon-cubugu' -%}
     {%- render 'tt-yapilandirma' -%}
+    {%- comment -%}
+      Indirim seridi bazi koleksiyonlarda sayfaya gore kayik
+      duruyordu; cizildikten sonra olcup ekrana gore ortaliyor.
+      tt-yapilandirma'dan SONRA cagriliyor -- seridi o basiyor.
+    {%- endcomment -%}
+    {%- render 'tt-serit-ortala' -%}
   </body>
 </html>
