@@ -1,0 +1,992 @@
+<title>Kapsül Ekranı</title>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  /* page — light (Apple's own surface greys) */
+  --ground:#FBFBFD;
+  --surface:#FFFFFF;
+  --ink:#1D1D1F;
+  --muted:#6E6E73;
+  --faint:#86868B;
+  --hairline:#D2D2D7;
+  --raise:0 1px 3px rgba(0,0,0,.04), 0 12px 40px rgba(0,0,0,.06);
+  --stage:radial-gradient(120% 80% at 50% 0%, #FFFFFF 0%, #F2F2F5 55%, #E9E9ED 100%);
+
+  /* brand accent — used as a LINE, not a fill */
+  --lime:#D6FF00;
+  --moss:#4A5D3A;
+  --sage:#8FBF6A;
+
+  /* device screen — fixed dark, independent of page theme */
+  --d-bg:#000000;
+  --d-elev:#141416;
+  --d-elev2:#1C1C1E;
+  --d-ink:#F5F5F7;
+  --d-mut:#8E8E93;
+  --d-sep:rgba(255,255,255,.10);
+  --d-fill:rgba(120,120,128,.24);
+
+  /* type */
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+
+  /* motion — Apple's interactive spring, approximated */
+  --spring:cubic-bezier(0.32,0.72,0,1);
+  --ease:cubic-bezier(0.4,0,0.2,1);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#000000;
+    --surface:#151517;
+    --ink:#F5F5F7;
+    --muted:#98989D;
+    --faint:#6E6E73;
+    --hairline:#2C2C2E;
+    --raise:0 1px 3px rgba(0,0,0,.5), 0 16px 50px rgba(0,0,0,.55);
+    --stage:radial-gradient(120% 80% at 50% 0%, #232326 0%, #131315 55%, #08080A 100%);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#000000;
+  --surface:#151517;
+  --ink:#F5F5F7;
+  --muted:#98989D;
+  --faint:#6E6E73;
+  --hairline:#2C2C2E;
+  --raise:0 1px 3px rgba(0,0,0,.5), 0 16px 50px rgba(0,0,0,.55);
+  --stage:radial-gradient(120% 80% at 50% 0%, #232326 0%, #131315 55%, #08080A 100%);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+}
+.wrap{max-width:1240px;margin:0 auto;padding:0 28px}
+
+/* ============ MASTHEAD ============ */
+.mast{padding:88px 0 56px;max-width:720px}
+.eyebrow{
+  font:600 12px/1 var(--mono);
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 22px;
+}
+h1{
+  font-size:clamp(34px,5.4vw,58px);
+  font-weight:700;letter-spacing:-.032em;line-height:1.06;
+  margin:0 0 22px;text-wrap:balance;
+}
+.lede{
+  font-size:clamp(17px,1.6vw,20px);color:var(--muted);
+  margin:0;max-width:60ch;letter-spacing:-.008em;
+}
+.lede b{color:var(--ink);font-weight:600}
+
+/* ============ SPLIT LAYOUT ============ */
+.split{display:grid;grid-template-columns:1fr;gap:56px;padding-bottom:40px}
+@media (min-width:1000px){
+  .split{grid-template-columns:430px 1fr;gap:72px;align-items:start}
+  .stage-col{position:sticky;top:40px}
+}
+
+/* ============ PHONE ============ */
+.stage{
+  background:var(--stage);
+  border:1px solid var(--hairline);
+  border-radius:28px;
+  padding:34px 0 30px;
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+}
+.phone{
+  width:390px;height:790px;
+  background:var(--d-bg);
+  border-radius:52px;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 0 0 10px #1a1a1c, 0 0 0 11px rgba(255,255,255,.10), 0 40px 80px rgba(0,0,0,.35);
+  position:relative;overflow:hidden;
+  color:var(--d-ink);
+  font-size:17px;
+  flex:0 0 auto;
+}
+@media (max-width:479px){
+  .phone{transform:scale(.82);transform-origin:top center;margin-bottom:-142px}
+}
+.stage-cap{
+  font:500 12px/1.5 var(--mono);color:var(--faint);
+  letter-spacing:.04em;text-align:center;max-width:300px;
+}
+
+/* --- status bar --- */
+.status{
+  position:absolute;inset:0 0 auto 0;height:54px;z-index:40;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 30px 6px;pointer-events:none;
+  font-size:15px;font-weight:600;letter-spacing:-.01em;
+}
+.status .ico{display:flex;gap:5px;align-items:center}
+
+/* --- nav bar --- */
+.nav{
+  position:absolute;top:0;left:0;right:0;height:98px;z-index:30;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 12px 8px;
+}
+.nav::before{
+  content:"";position:absolute;inset:0;
+  background:rgba(10,10,11,.72);
+  -webkit-backdrop-filter:saturate(180%) blur(22px);
+  backdrop-filter:saturate(180%) blur(22px);
+  border-bottom:.5px solid var(--d-sep);
+  opacity:0;transition:opacity .22s var(--ease);
+}
+.nav.solid::before{opacity:1}
+.nav>*{position:relative}
+.nav-title{
+  position:absolute;left:0;right:0;bottom:12px;text-align:center;
+  font-size:17px;font-weight:600;letter-spacing:-.014em;
+  opacity:0;transform:translateY(9px);
+  transition:opacity .22s var(--ease),transform .22s var(--ease);
+  pointer-events:none;
+}
+.nav.solid .nav-title{opacity:1;transform:none}
+.nav-btn{
+  background:none;border:0;color:var(--lime);
+  font:400 17px/1 var(--sans);letter-spacing:-.012em;
+  display:flex;align-items:center;gap:2px;
+  padding:8px 10px;cursor:pointer;border-radius:10px;
+}
+.nav-btn:active{opacity:.4}
+.nav-btn svg{display:block}
+.nav-right{display:flex;align-items:center}
+
+/* --- scroller --- */
+.screen{
+  position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+  padding-top:98px;padding-bottom:120px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.screen::-webkit-scrollbar{display:none}
+
+/* --- hero: capsule + ring --- */
+.hero{padding:8px 24px 6px;display:flex;flex-direction:column;align-items:center}
+.ringwrap{
+  position:relative;width:232px;height:232px;
+  display:flex;align-items:center;justify-content:center;
+  transform-origin:50% 40%;
+}
+.ring{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-linecap:round}
+.ring .track{stroke:rgba(255,255,255,.09);stroke-width:3}
+.ring .prog{stroke:url(#limegrad);stroke-width:3;transition:stroke-dashoffset 1s var(--ease)}
+
+.capsule{
+  width:150px;height:78px;position:relative;
+  animation:float 7s ease-in-out infinite;
+}
+.capsule .body{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(168deg,#B9C79A 0%,#7E9160 26%,#4A5D3A 58%,#2A3520 100%);
+  clip-path:polygon(0% 50%,20% 8%,80% 8%,100% 50%,80% 92%,20% 92%);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.4);
+}
+.capsule .spec{
+  position:absolute;inset:0;
+  clip-path:polygon(0% 50%,20% 8%,80% 8%,100% 50%,80% 92%,20% 92%);
+  background:linear-gradient(100deg,transparent 34%,rgba(255,255,255,.42) 50%,transparent 64%);
+  background-size:260% 100%;
+  animation:sweep 7s ease-in-out infinite;
+}
+.capsule .mark{
+  position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+  text-align:center;font-size:9px;font-weight:600;letter-spacing:.04em;
+  color:rgba(255,255,255,.62);
+}
+.capsule::after{
+  content:"";position:absolute;left:14%;right:14%;bottom:-22px;height:16px;
+  background:radial-gradient(50% 50% at 50% 50%,rgba(0,0,0,.55),transparent 72%);
+  filter:blur(5px);
+}
+@keyframes float{0%,100%{transform:translateY(-5px)}50%{transform:translateY(5px)}}
+@keyframes sweep{0%,58%{background-position:170% 0}88%,100%{background-position:-70% 0}}
+
+/* --- large title + countdown --- */
+.titleblock{padding:22px 24px 4px;transform-origin:left top}
+.ltitle{
+  font-size:34px;font-weight:700;letter-spacing:-.028em;line-height:1.1;
+  margin:0 0 3px;
+}
+.subtle{
+  font-size:15px;color:var(--d-mut);margin:0;letter-spacing:-.008em;
+}
+.count{
+  margin:16px 0 0;padding:0;border:0;background:none;
+  display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+  cursor:pointer;color:inherit;text-align:left;width:100%;
+}
+.count .big{
+  font-size:28px;font-weight:600;letter-spacing:-.022em;
+  font-variant-numeric:tabular-nums;line-height:1.15;
+}
+.count .big em{font-style:normal;color:var(--d-mut);font-weight:400}
+.count .date{
+  font-size:13px;color:var(--d-mut);letter-spacing:-.004em;
+  display:flex;align-items:center;gap:5px;
+}
+.count .date svg{opacity:.7;transition:transform .3s var(--spring)}
+.count.open .date svg{transform:rotate(90deg)}
+.precise{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--d-sep);border-radius:12px;overflow:hidden;
+  margin-top:12px;max-height:0;opacity:0;
+  transition:max-height .4s var(--spring),opacity .25s var(--ease),margin-top .4s var(--spring);
+}
+.count.open + .precise{max-height:120px;opacity:1}
+.precise div{background:var(--d-elev);padding:11px 8px;text-align:center}
+.precise b{
+  display:block;font:600 19px/1.2 var(--sans);
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+}
+.precise span{
+  display:block;font:400 11px/1.4 var(--sans);color:var(--d-mut);
+  letter-spacing:.01em;margin-top:1px;
+}
+
+/* --- segmented control --- */
+.segwrap{padding:22px 24px 6px}
+.seg{
+  display:flex;background:var(--d-fill);border-radius:9px;padding:2px;
+  position:relative;
+}
+.seg button{
+  flex:1;position:relative;z-index:2;background:none;border:0;
+  color:var(--d-ink);font:500 13px/1 var(--sans);letter-spacing:-.006em;
+  padding:7px 4px;cursor:pointer;border-radius:7px;
+  transition:color .2s var(--ease);
+}
+.seg button[aria-selected="false"]{color:var(--d-mut);font-weight:400}
+.seg .thumb{
+  position:absolute;top:2px;bottom:2px;z-index:1;
+  background:#636366;border-radius:7px;
+  box-shadow:0 2px 6px rgba(0,0,0,.35);
+  transition:left .28s var(--spring),width .28s var(--spring);
+}
+
+/* --- grid --- */
+.month{
+  padding:24px 24px 8px;
+  font-size:20px;font-weight:700;letter-spacing:-.018em;
+}
+.month span{
+  display:block;font-size:13px;font-weight:400;color:var(--d-mut);
+  letter-spacing:-.004em;margin-top:1px;
+}
+.grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:0 3px;
+}
+.tile{
+  position:relative;aspect-ratio:3/4;border-radius:6px;overflow:hidden;
+  cursor:pointer;border:0;padding:0;background:none;
+  transition:transform .18s var(--ease),opacity .18s var(--ease);
+}
+.tile:active{transform:scale(.965)}
+.tile .img{position:absolute;inset:0}
+.tile .img::after{
+  content:"";position:absolute;inset:0;opacity:.32;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.tile .kind{
+  position:absolute;left:6px;bottom:6px;
+  display:flex;align-items:center;gap:3px;
+  font:600 10px/1 var(--sans);color:#fff;
+  text-shadow:0 1px 3px rgba(0,0,0,.6);
+}
+.tile .kind svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.tile .pick{
+  position:absolute;right:6px;bottom:6px;width:22px;height:22px;
+  border-radius:50%;border:1.5px solid rgba(255,255,255,.9);
+  background:rgba(0,0,0,.22);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;
+}
+.phone.selecting .tile .pick{display:flex}
+.phone.selecting .tile{border-radius:6px}
+.tile[data-picked="1"] .pick{background:var(--lime);border-color:var(--lime)}
+.tile[data-picked="1"] .pick svg{opacity:1}
+.tile .pick svg{opacity:0;color:#0A0A0B}
+.phone.selecting .tile[data-picked="0"] .img{opacity:.55}
+
+/* photo gradients */
+.p1{background:linear-gradient(160deg,#E8B57A,#B8724A 45%,#3D2418)}
+.p2{background:linear-gradient(200deg,#BFD4E0,#7E97A8 50%,#2E3B44)}
+.p3{background:linear-gradient(150deg,#EFCFC4,#C08A82 55%,#40241F)}
+.p4{background:linear-gradient(180deg,#D5D3CE,#8E8B84 50%,#31302C)}
+.p5{background:linear-gradient(170deg,#E0917A,#B04A3C 50%,#3A130E)}
+.p6{background:linear-gradient(190deg,#F0C08A,#8A6448 45%,#1E1611)}
+.p7{background:linear-gradient(165deg,#C7D2A8,#7C8C5A 50%,#2C331E)}
+.p8{background:linear-gradient(200deg,#8FA4C0,#4A5B78 50%,#171D28)}
+.p9{background:linear-gradient(155deg,#E5C79E,#A87A52 50%,#332314)}
+
+/* --- tab bar --- */
+.tabs{
+  position:absolute;left:0;right:0;bottom:0;height:84px;z-index:35;
+  display:flex;align-items:flex-start;padding-top:9px;
+  background:rgba(10,10,11,.72);
+  -webkit-backdrop-filter:saturate(180%) blur(22px);
+  backdrop-filter:saturate(180%) blur(22px);
+  border-top:.5px solid var(--d-sep);
+}
+.tabs button{
+  flex:1;background:none;border:0;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--d-mut);font:400 10px/1.2 var(--sans);letter-spacing:.005em;
+  padding:2px 0;
+}
+.tabs button[aria-current="true"]{color:var(--lime);font-weight:500}
+.tabs button svg{display:block;transition:transform .3s var(--spring)}
+.tabs button[aria-current="true"] svg{transform:translateY(-1px)}
+.homebar{
+  position:absolute;left:50%;bottom:8px;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(255,255,255,.32);
+  z-index:36;pointer-events:none;
+}
+
+/* --- lightbox --- */
+.lightbox{
+  position:absolute;inset:0;z-index:60;display:none;
+  background:#000;
+}
+.lightbox.on{display:block}
+.lightbox .frame{position:absolute;border-radius:6px;overflow:hidden}
+.lightbox .bar{
+  position:absolute;top:54px;left:0;right:0;z-index:2;
+  display:flex;justify-content:space-between;padding:0 12px;
+  opacity:0;transition:opacity .3s var(--ease) .18s;
+}
+.lightbox.on .bar{opacity:1}
+.lightbox .bar button{
+  background:rgba(28,28,30,.6);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border:0;color:var(--d-ink);width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+
+/* ============ DECISIONS ============ */
+.decisions{display:flex;flex-direction:column;gap:2px;padding-top:4px}
+.dec{
+  border-top:1px solid var(--hairline);
+  padding:34px 0;
+  display:grid;gap:16px;
+}
+.dec:last-child{border-bottom:1px solid var(--hairline)}
+.dec-n{
+  font:600 11px/1 var(--mono);color:var(--faint);
+  letter-spacing:.14em;text-transform:uppercase;
+}
+.dec h3{
+  font-size:23px;font-weight:600;letter-spacing:-.022em;line-height:1.24;
+  margin:0;text-wrap:balance;
+}
+.dec p{margin:0;color:var(--muted);font-size:16px;letter-spacing:-.006em}
+.dec p + p{margin-top:-4px}
+.dec b{color:var(--ink);font-weight:600}
+
+/* before / after strip */
+.ba{
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;
+  margin-top:4px;
+}
+@media (max-width:560px){.ba{grid-template-columns:1fr}}
+.ba figure{margin:0;display:flex;flex-direction:column;gap:9px}
+.ba figcaption{
+  font:500 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);
+}
+.ba .box{
+  background:#0E0E10;border:1px solid var(--hairline);border-radius:14px;
+  padding:16px 14px;min-height:104px;
+  display:flex;flex-direction:column;justify-content:center;
+  color:#F5F5F7;overflow:hidden;
+}
+
+/* mini: old countdown strip */
+.oldcount{display:flex;border-radius:999px;overflow:hidden;height:44px;
+  background:linear-gradient(90deg,#D6FF00 0%,#9BB800 16%,#3A3A3C 34%,#48484A 100%)}
+.oldcount i{
+  flex:1;font-style:normal;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:0;
+  border-right:1px solid rgba(0,0,0,.35);color:#fff;
+}
+.oldcount i:first-child{color:#1A1A00}
+.oldcount i:last-child{border-right:0}
+.oldcount b{font:700 13px/1 var(--sans);font-variant-numeric:tabular-nums}
+.oldcount span{font:400 8px/1.4 var(--sans);opacity:.75}
+
+/* mini: new countdown */
+.newcount{display:flex;align-items:center;gap:12px}
+.newcount .r{width:44px;height:44px;flex:0 0 auto;position:relative}
+.newcount .r svg{transform:rotate(-90deg)}
+.newcount .t b{display:block;font:600 16px/1.2 var(--sans);letter-spacing:-.018em;font-variant-numeric:tabular-nums}
+.newcount .t span{display:block;font:400 11px/1.4 var(--sans);color:#8E8E93}
+
+/* mini: tiles */
+.minigrid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.minigrid div{aspect-ratio:3/4;border-radius:5px;position:relative}
+.minigrid .badge{
+  position:absolute;top:4px;right:4px;width:15px;height:15px;border-radius:50%;
+  background:rgba(28,28,30,.82);display:flex;align-items:center;justify-content:center;
+}
+.minigrid .badge svg{width:8px;height:8px;color:#fff}
+
+/* mini: bars */
+.oldbar{
+  display:flex;align-items:center;gap:2px;background:#3A3A3C;
+  border-radius:999px;padding:5px;
+}
+.oldbar i{
+  flex:1;height:30px;display:flex;align-items:center;justify-content:center;
+  color:#C7C7CC;border-radius:999px;font-style:normal;
+}
+.oldbar i:first-child{background:#8E8E93;color:#fff}
+.newbar{display:flex;flex-direction:column;gap:11px}
+.newbar .sg{display:flex;background:rgba(120,120,128,.24);border-radius:8px;padding:2px}
+.newbar .sg i{
+  flex:1;font:500 10px/1 var(--sans);font-style:normal;color:#8E8E93;
+  padding:6px 2px;text-align:center;border-radius:6px;
+}
+.newbar .sg i:first-child{background:#636366;color:#fff}
+.newbar .tb{display:flex;border-top:.5px solid rgba(255,255,255,.12);padding-top:9px}
+.newbar .tb i{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font:400 8px/1 var(--sans);font-style:normal;color:#8E8E93;
+}
+.newbar .tb i:first-child{color:#D6FF00}
+
+/* ============ SPEC ============ */
+.spec{border-top:1px solid var(--hairline);margin-top:36px;padding:64px 0 96px}
+.spec h2{
+  font-size:clamp(26px,3.2vw,36px);font-weight:700;letter-spacing:-.026em;
+  margin:0 0 10px;
+}
+.spec .note{color:var(--muted);margin:0 0 40px;max-width:62ch;font-size:16px}
+.cards{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(272px,1fr))}
+.card{
+  background:var(--surface);border:1px solid var(--hairline);
+  border-radius:18px;padding:24px 22px;box-shadow:var(--raise);
+}
+.card h4{
+  font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 18px;
+}
+.rows{display:flex;flex-direction:column;gap:0}
+.row{
+  display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  padding:9px 0;border-bottom:1px solid var(--hairline);
+}
+.row:last-child{border-bottom:0;padding-bottom:0}
+.row:first-child{padding-top:0}
+.row .k{font-size:14px;color:var(--muted);letter-spacing:-.004em}
+.row .v{
+  font:500 13px/1.4 var(--mono);color:var(--ink);
+  text-align:right;font-variant-numeric:tabular-nums;
+}
+.swatch{display:flex;align-items:center;gap:9px}
+.swatch i{
+  width:15px;height:15px;border-radius:4px;flex:0 0 auto;
+  border:1px solid rgba(128,128,128,.28);
+}
+
+.foot{
+  border-top:1px solid var(--hairline);padding:36px 0 72px;
+  color:var(--faint);font-size:14px;max-width:66ch;
+}
+.foot b{color:var(--muted);font-weight:600}
+
+:focus-visible{outline:2px solid var(--lime);outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="limegrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D6FF00"/>
+      <stop offset="55%" stop-color="#8FBF6A"/>
+      <stop offset="100%" stop-color="#4A5D3A"/>
+    </linearGradient>
+    <linearGradient id="limegrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D6FF00"/>
+      <stop offset="100%" stop-color="#4A5D3A"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <header class="mast">
+    <p class="eyebrow">texttonext · iOS · kapsül detayı</p>
+    <h1>Bekleyiş kahraman, kroma değil.</h1>
+    <p class="lede">Mevcut ekran altı sayaç hücresi, altı kalem rozeti ve beş karışık sekme taşıyor — hepsi eşit ağırlıkta, hiçbiri diğerinden önemli değil. Apple'ın hiyerarşi kuralı basit: <b>her ekranda tek bir şey en yüksek sesle konuşur.</b> Bu üründe o şey kapsülün ne zaman açılacağı. Aşağıdaki telefon canlı — kaydır, dokun, sayaca bas.</p>
+  </header>
+
+  <div class="split">
+
+    <!-- ================= PHONE ================= -->
+    <div class="stage-col">
+      <div class="stage">
+        <div class="phone" id="phone">
+
+          <div class="status">
+            <span>9:41</span>
+            <span class="ico">
+              <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.6" y="5" width="3" height="6" rx="1"/><rect x="9.2" y="2.6" width="3" height="8.4" rx="1"/><rect x="13.8" y="0" width="3" height="11" rx="1"/></svg>
+              <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 10.4 6.1 8.4a2.7 2.7 0 0 1 3.8 0L8 10.4Zm0-4.5a5.2 5.2 0 0 0-3.7 1.5L2.9 6a7.2 7.2 0 0 1 10.2 0l-1.4 1.4A5.2 5.2 0 0 0 8 5.9Zm0-3.9a9 9 0 0 0-6.4 2.6L.2 3.2a11 11 0 0 1 15.6 0l-1.4 1.4A9 9 0 0 0 8 2Z"/></svg>
+              <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.2" stroke="currentColor" stroke-opacity=".38"/><rect x="2" y="2" width="18" height="8" rx="2" fill="currentColor"/><path d="M23 4.2v3.6c.9-.4 1.5-1 1.5-1.8s-.6-1.4-1.5-1.8Z" fill="currentColor" fill-opacity=".38"/></svg>
+            </span>
+          </div>
+
+          <nav class="nav" id="nav">
+            <button class="nav-btn" type="button">
+              <svg width="12" height="20" viewBox="0 0 12 20" fill="none"><path d="M10 1.5 2 10l8 8.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Kapsüllerim
+            </button>
+            <span class="nav-title" id="navTitle">Sevgilim</span>
+            <span class="nav-right">
+              <button class="nav-btn" type="button" id="addBtn" aria-label="Anı ekle">
+                <svg width="21" height="21" viewBox="0 0 21 21" fill="none"><path d="M10.5 3.4v14.2M3.4 10.5h14.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
+              </button>
+              <button class="nav-btn" type="button" id="moreBtn" aria-label="Daha fazla">
+                <svg width="21" height="21" viewBox="0 0 21 21" fill="none"><circle cx="10.5" cy="4.4" r="1.75" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1.75" fill="currentColor"/><circle cx="10.5" cy="16.6" r="1.75" fill="currentColor"/></svg>
+              </button>
+            </span>
+          </nav>
+
+          <div class="screen" id="screen">
+
+            <div class="hero">
+              <div class="ringwrap" id="ringwrap">
+                <svg class="ring" viewBox="0 0 232 232" aria-hidden="true">
+                  <circle class="track" cx="116" cy="116" r="112"/>
+                  <circle class="prog" id="prog" cx="116" cy="116" r="112"
+                          stroke-dasharray="703.7" stroke-dashoffset="703.7"/>
+                </svg>
+                <div class="capsule">
+                  <div class="body"></div>
+                  <div class="spec"></div>
+                  <div class="mark">texttonext</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="titleblock" id="titleblock">
+              <h2 class="ltitle">Sevgilim ❤️</h2>
+              <p class="subtle">14 Haziran 2025'te mühürlendi · 9 anı</p>
+
+              <button class="count" id="countBtn" type="button" aria-expanded="false">
+                <span class="big" id="bigCount">1 yıl 10 ay <em>kaldı</em></span>
+                <span class="date">
+                  <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M1 1l5 5-5 5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  14 Haziran 2028'de açılıyor
+                </span>
+              </button>
+              <div class="precise" id="precise">
+                <div><b id="pD">05</b><span>gün</span></div>
+                <div><b id="pH">20</b><span>saat</span></div>
+                <div><b id="pM">25</b><span>dakika</span></div>
+              </div>
+            </div>
+
+            <div class="segwrap">
+              <div class="seg" id="seg" role="tablist" aria-label="Anı türü">
+                <span class="thumb" id="thumb"></span>
+                <button role="tab" aria-selected="true" type="button">Tümü</button>
+                <button role="tab" aria-selected="false" type="button">Fotoğraf</button>
+                <button role="tab" aria-selected="false" type="button">Video</button>
+                <button role="tab" aria-selected="false" type="button">Ses</button>
+              </div>
+            </div>
+
+            <h3 class="month">Haziran 2026<span>İstanbul, Roma</span></h3>
+            <div class="grid">
+              <button class="tile" data-picked="0" type="button"><span class="img p1"></span><span class="pick"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5.2 4.3 8.5 11 1.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              <button class="tile" data-picked="0" type="button"><span class="img p2"></span><span class="kind"><svg width="9" height="12" viewBox="0 0 9 12" fill="currentColor"><rect x="3" y="0" width="3" height="7" rx="1.5"/><path d="M1 5.5a3.5 3.5 0 0 0 7 0" stroke="currentColor" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M4.5 9v2.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>0:42</span><span class="pick"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5.2 4.3 8.5 11 1.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              <button class="tile" data-picked="0" type="button"><span class="img p3"></span><span class="pick"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5.2 4.3 8.5 11 1.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+            </div>
+
+            <h3 class="month">Mayıs 2026<span>Paris</span></h3>
+            <div class="grid">
+              <button class="tile" data-picked="0" type="button"><span class="img p4"></span><span class="pick"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5.2 4.3 8.5 11 1.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              <button class="tile" data-picked="0" type="button"><span class="img p5"></span><span class="kind"><svg width="12" height="9" viewBox="0 0 12 9" fill="currentColor"><rect x="0" y="0" width="8" height="9" rx="2"/><path d="M9 3.2 12 1.4v6.2L9 5.8Z"/></svg>1:18</span><span class="pick"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5.2 4.3 8.5 11 1.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              <button class="tile" data-picked="0" type="button"><span class="img p6"></span><span class="pick"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5.2 4.3 8.5 11 1.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+            </div>
+
+            <h3 class="month">Nisan 2026<span>Kaş</span></h3>
+            <div class="grid">
+              <button class="tile" data-picked="0" type="button"><span class="img p7"></span><span class="pick"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5.2 4.3 8.5 11 1.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              <button class="tile" data-picked="0" type="button"><span class="img p8"></span><span class="pick"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5.2 4.3 8.5 11 1.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              <button class="tile" data-picked="0" type="button"><span class="img p9"></span><span class="pick"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5.2 4.3 8.5 11 1.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+            </div>
+
+          </div>
+
+          <nav class="tabs">
+            <button aria-current="true" type="button">
+              <svg width="25" height="25" viewBox="0 0 25 25" fill="none"><path d="M2.5 12.5 7 5.5h11l4.5 7-4.5 7H7l-4.5-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+              Kapsüller
+            </button>
+            <button type="button">
+              <svg width="25" height="25" viewBox="0 0 25 25" fill="none"><circle cx="12.5" cy="12.5" r="9.2" stroke="currentColor" stroke-width="1.7"/><path d="M12.5 7v5.9l4 2.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Zaman Tüneli
+            </button>
+            <button type="button">
+              <svg width="25" height="25" viewBox="0 0 25 25" fill="none"><circle cx="12.5" cy="12.5" r="3.1" stroke="currentColor" stroke-width="1.7"/><path d="M20.2 15.4a1.7 1.7 0 0 0 .34 1.88l.06.06a2.06 2.06 0 1 1-2.92 2.92l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56v.17a2.06 2.06 0 1 1-4.12 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06a2.06 2.06 0 1 1-2.92-2.92l.06-.06a1.7 1.7 0 0 0 .34-1.88 1.7 1.7 0 0 0-1.56-1.03H3.3a2.06 2.06 0 1 1 0-4.12h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.88l-.06-.06A2.06 2.06 0 1 1 7.47 3.4l.06.06a1.7 1.7 0 0 0 1.88.34h.08a1.7 1.7 0 0 0 1.03-1.56V2.06a2.06 2.06 0 1 1 4.12 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2.06 2.06 0 1 1 2.92 2.92l-.06.06a1.7 1.7 0 0 0-.34 1.88v.08a1.7 1.7 0 0 0 1.56 1.03h.17a2.06 2.06 0 1 1 0 4.12h-.09a1.7 1.7 0 0 0-1.56 1.03Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              Ayarlar
+            </button>
+          </nav>
+          <div class="homebar"></div>
+
+          <div class="lightbox" id="lightbox">
+            <div class="bar">
+              <button type="button" id="lbClose" aria-label="Kapat">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.5 1.5l11 11m0-11l-11 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+              <button type="button" aria-label="Paylaş">
+                <svg width="15" height="17" viewBox="0 0 15 17" fill="none"><path d="M7.5 11V1.6m0 0L4.4 4.7M7.5 1.6l3.1 3.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.2 7.4H2v8h11v-8h-1.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <p class="stage-cap">Canlı prototip · kaydırınca başlık daralır · sayaca basınca<br>tam hassasiyet açılır · fotoğrafa dokun</p>
+      </div>
+    </div>
+
+    <!-- ================= DECISIONS ================= -->
+    <div class="decisions">
+
+      <section class="dec">
+        <p class="dec-n">Sayaç</p>
+        <h3>Altı hücre yerine bir halka ve bir cümle.</h3>
+        <p>Mevcut şeritte altı birim eşit genişlikte duruyor. Saniyeler sürekli değiştiği için göz oraya kilitleniyor — oysa 22 aylık bir bekleyişte saniyenin taşıdığı bilgi sıfır. Apple'ın kuralı: <b>hassasiyet, desteklediği kararla orantılı olmalı.</b></p>
+        <p>Yerine kapsülün etrafına geçen sürenin oranını gösteren bir halka koydum, altına tek cümlelik okuma. Saniyeler kayboldu ama silinmedi — sayaca dokunan tam hassasiyeti açıyor. Apple buna aşamalı gösterim diyor: varsayılan sade, isteyene derinlik.</p>
+        <div class="ba">
+          <figure>
+            <figcaption>Şimdi</figcaption>
+            <div class="box">
+              <div class="oldcount">
+                <i><b>1</b><span>Yıl</span></i><i><b>10</b><span>Ay</span></i><i><b>5</b><span>Gün</span></i><i><b>20</b><span>Saat</span></i><i><b>25</b><span>Dakika</span></i><i><b>08</b><span>Saniye</span></i>
+              </div>
+            </div>
+          </figure>
+          <figure>
+            <figcaption>Öneri</figcaption>
+            <div class="box">
+              <div class="newcount">
+                <span class="r"><svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2.6"/><circle cx="22" cy="22" r="20" fill="none" stroke="url(#limegrad2)" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="76.6"/></svg></span>
+                <span class="t"><b>1 yıl 10 ay</b><span>14 Haziran 2028</span></span>
+              </div>
+            </div>
+          </figure>
+        </div>
+      </section>
+
+      <section class="dec">
+        <p class="dec-n">Izgara</p>
+        <h3>Altı kalem rozeti, fotoğrafın üstünden kalkıyor.</h3>
+        <p>Her karenin köşesinde yüzen bir düzenle rozeti var. Altı fotoğraf, altı rozet, altı rakip dokunma hedefi — hepsi içeriğin üstünü örtüyor. Apple'ın <b>deference</b> ilkesi tam bunun karşıtı: arayüz geri çekilir, içerik arayüz olur. Photos uygulamasında bir fotoğrafın üstünde hiçbir şey yoktur.</p>
+        <p>Rozetleri kaldırdım. Düzenleme, gezinme çubuğundaki <b>•••</b> menüsünden seçim moduna girerek yapılıyor — iOS'un standart deseni. Uzun basmak önizleme ve hızlı eylemleri açıyor. Ses ve video kayıtlarında sol alta küçük bir simge kalıyor, çünkü o bilgi türü ayırt ediyor; kalem rozeti ayırt etmiyordu.</p>
+        <div class="ba">
+          <figure>
+            <figcaption>Şimdi</figcaption>
+            <div class="box">
+              <div class="minigrid">
+                <div class="p1"><span class="badge"><svg viewBox="0 0 10 10" fill="none"><path d="M7 1.2 8.8 3 3.6 8.2 1.2 8.8 1.8 6.4 7 1.2Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg></span></div>
+                <div class="p2"><span class="badge"><svg viewBox="0 0 10 10" fill="none"><path d="M7 1.2 8.8 3 3.6 8.2 1.2 8.8 1.8 6.4 7 1.2Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg></span></div>
+                <div class="p3"><span class="badge"><svg viewBox="0 0 10 10" fill="none"><path d="M7 1.2 8.8 3 3.6 8.2 1.2 8.8 1.8 6.4 7 1.2Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg></span></div>
+              </div>
+            </div>
+          </figure>
+          <figure>
+            <figcaption>Öneri</figcaption>
+            <div class="box">
+              <div class="minigrid">
+                <div class="p1"></div><div class="p2"></div><div class="p3"></div>
+              </div>
+            </div>
+          </figure>
+        </div>
+      </section>
+
+      <section class="dec">
+        <p class="dec-n">Gezinme</p>
+        <h3>Alt çubuk üç farklı işi aynı anda yapıyor.</h3>
+        <p>Fotoğraf, video, mikrofon, arama, menü. İlk üçü <b>içerik türü filtresi</b>, arama bir <b>işlev</b>, menü ise <b>gezinme</b>. Üç ayrı kavram tek kontrolde toplanınca hiçbiri anlaşılmıyor.</p>
+        <p>Ayırdım. Tür filtresi başlığın altında segmentli kontrole taşındı — iOS'ta bir görünümün içini filtrelemenin yerleşik yolu bu. Alt çubukta yalnız gerçek üst düzey hedefler kaldı: Kapsüller, Zaman Tüneli, Ayarlar. Arama iOS'un koyduğu yere gitti: listeyi aşağı çekince beliriyor.</p>
+        <div class="ba">
+          <figure>
+            <figcaption>Şimdi</figcaption>
+            <div class="box">
+              <div class="oldbar">
+                <i><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="2.5" width="13" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><circle cx="5" cy="6" r="1.3" fill="currentColor"/><path d="M1.6 11 5.5 7.6l3 2.6 2.2-1.8 2.7 2.4" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></i>
+                <i><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="3.5" width="9" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M11 6.6 14 5v5l-3-1.6Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></i>
+                <i><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="5.4" y="1.2" width="4.2" height="8" rx="2.1" stroke="currentColor" stroke-width="1.4"/><path d="M2.8 7.4a4.7 4.7 0 0 0 9.4 0M7.5 12.1v1.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></i>
+                <i><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6.6" cy="6.6" r="4.6" stroke="currentColor" stroke-width="1.4"/><path d="m10.2 10.2 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></i>
+                <i><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.6 4h11.8M1.6 7.5h11.8M1.6 11h11.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></i>
+              </div>
+            </div>
+          </figure>
+          <figure>
+            <figcaption>Öneri</figcaption>
+            <div class="box">
+              <div class="newbar">
+                <div class="sg"><i>Tümü</i><i>Fotoğraf</i><i>Video</i><i>Ses</i></div>
+                <div class="tb">
+                  <i><svg width="15" height="15" viewBox="0 0 25 25" fill="none"><path d="M2.5 12.5 7 5.5h11l4.5 7-4.5 7H7l-4.5-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Kapsüller</i>
+                  <i><svg width="15" height="15" viewBox="0 0 25 25" fill="none"><circle cx="12.5" cy="12.5" r="9.2" stroke="currentColor" stroke-width="1.7"/><path d="M12.5 7v5.9l4 2.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Zaman Tüneli</i>
+                  <i><svg width="15" height="15" viewBox="0 0 25 25" fill="none"><circle cx="12.5" cy="12.5" r="3.4" stroke="currentColor" stroke-width="1.7"/><circle cx="12.5" cy="12.5" r="9" stroke="currentColor" stroke-width="1.7" stroke-dasharray="3 3"/></svg>Ayarlar</i>
+                </div>
+              </div>
+            </div>
+          </figure>
+        </div>
+      </section>
+
+      <section class="dec">
+        <p class="dec-n">Renk</p>
+        <h3>Lime yeşili kalıyor — ama dolgu değil, çizgi olarak.</h3>
+        <p>#D6FF00 yüksek alanda, siyah üstünde kullanılınca spor uygulaması gibi okunuyor. Buradaki içerik ise çiftler, sevgi, hatıra. Renk konuyla kavga ediyor.</p>
+        <p>Rengi atmadım, <b>alanını yaklaşık onda birine indirdim</b>: ilerleme halkası, aktif sekme, birincil buton. Geri kalan her yer nötr gri. Sonuç şu — uygulamanın rengi artık fotoğraflar oluyor. Photos'un modeli tam bu: gri kroma, renkli içerik. Halkada de istediğin degradeyi kullandım, lime'dan kapsülün kendi moss yeşiline geçiyor.</p>
+      </section>
+
+      <section class="dec">
+        <p class="dec-n">Gezinme çubuğu</p>
+        <h3>Tek başına duran onay işareti neyi onaylıyor?</h3>
+        <p>Sağ üstteki daire içindeki tik, kullanıcı bir düzenleme akışında değilken ne yaptığını söylemiyor. Kaydet mi, bitti mi, neyi onayladı?</p>
+        <p>Sol tarafa iOS'un kuralına göre geldiğin yerin adını koydum — <b>‹ Kapsüllerim</b>. Sağa gerçek birincil eylemi: <b>+</b>, anı ekle. Onay işareti yalnız onaylanacak bir şey varken beliriyor. Kaydırdıkça büyük başlık daralıp çubuğa oturuyor, arkası da o an bulanıklaşıyor.</p>
+      </section>
+
+      <section class="dec">
+        <p class="dec-n">Zaman</p>
+        <h3>Zaman kapsülü uygulamasının ızgarası zamanı göstermiyordu.</h3>
+        <p>Dokuz kare arka arkaya diziliydi, aralarında hiçbir yapı yoktu. Ürünün tamamı zaman üzerine kurulu ama ızgara bunu söylemiyordu.</p>
+        <p>Aya göre başlıklar ekledim, altına o ayın yeri. Photos'un deseni, ama burada dekoratif değil: kapsül açıldığında kullanıcı anıları kronolojik yaşayacak. Yapı içerikte zaten vardı, sadece görünmüyordu.</p>
+      </section>
+
+      <section class="dec">
+        <p class="dec-n">Hareket</p>
+        <h3>Yay eğrisi, doğrusal geçiş değil.</h3>
+        <p>Apple'ın hareket dili tek bir fikirden çıkıyor: <b>her şeyin ağırlığı var.</b> Doğrusal geçişler mekanik hissettirir; yay eğrisi nesneyi fiziksel yapar. Kapsül yedi saniyede bir yavaşça yükselip alçalıyor, üzerinden ışık geçiyor — duruyor ama ölü değil.</p>
+        <p>Başlığın daralması zamana değil <b>kaydırma miktarına</b> bağlı: parmağını durdurduğunda animasyon da duruyor, geri çektiğinde geri sarıyor. Apple'da her animasyon bu şekilde kesilebilir. Kullanıcı kontrolü asla bırakmıyor.</p>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ================= SPEC ================= -->
+  <section class="spec">
+    <h2>Yazılımcı için ölçüler</h2>
+    <p class="note">Prototipteki her değer aşağıda. Bunlar tahmin değil — soldaki telefonda çalışan gerçek sayılar. Stack'ini söylersen bunları SwiftUI, React Native veya Flutter koduna dökerim.</p>
+    <div class="cards">
+
+      <div class="card">
+        <h4>Tipografi · SF Pro</h4>
+        <div class="rows">
+          <div class="row"><span class="k">Büyük başlık</span><span class="v">34 / 700 / −0.028em</span></div>
+          <div class="row"><span class="k">Daralmış başlık</span><span class="v">17 / 600 / −0.014em</span></div>
+          <div class="row"><span class="k">Sayaç</span><span class="v">28 / 600 / tabular</span></div>
+          <div class="row"><span class="k">Ay başlığı</span><span class="v">20 / 700 / −0.018em</span></div>
+          <div class="row"><span class="k">Gövde</span><span class="v">17 / 400 / −0.012em</span></div>
+          <div class="row"><span class="k">İkincil</span><span class="v">15 / 400</span></div>
+          <div class="row"><span class="k">Segment · sekme</span><span class="v">13 / 500 · 10 / 400</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4>Renk</h4>
+        <div class="rows">
+          <div class="row"><span class="k swatch"><i style="background:#D6FF00"></i>Vurgu</span><span class="v">#D6FF00</span></div>
+          <div class="row"><span class="k swatch"><i style="background:#4A5D3A"></i>Halka ucu</span><span class="v">#4A5D3A</span></div>
+          <div class="row"><span class="k swatch"><i style="background:#000"></i>Zemin</span><span class="v">#000000</span></div>
+          <div class="row"><span class="k swatch"><i style="background:#1C1C1E"></i>Yüzey</span><span class="v">#1C1C1E</span></div>
+          <div class="row"><span class="k swatch"><i style="background:#F5F5F7"></i>Birincil metin</span><span class="v">#F5F5F7</span></div>
+          <div class="row"><span class="k swatch"><i style="background:#8E8E93"></i>İkincil metin</span><span class="v">#8E8E93</span></div>
+          <div class="row"><span class="k swatch"><i style="background:rgba(255,255,255,.1);"></i>Ayraç</span><span class="v">white 10%</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4>Ölçü · yarıçap</h4>
+        <div class="rows">
+          <div class="row"><span class="k">Kenar boşluğu</span><span class="v">24 pt</span></div>
+          <div class="row"><span class="k">Izgara aralığı</span><span class="v">3 pt</span></div>
+          <div class="row"><span class="k">Kare yarıçapı</span><span class="v">6 pt</span></div>
+          <div class="row"><span class="k">Kart yarıçapı</span><span class="v">12 pt</span></div>
+          <div class="row"><span class="k">Segment yarıçapı</span><span class="v">9 / 7 pt</span></div>
+          <div class="row"><span class="k">Halka çapı · kalınlık</span><span class="v">232 · 3 pt</span></div>
+          <div class="row"><span class="k">Gezinme · sekme</span><span class="v">98 · 84 pt</span></div>
+          <div class="row"><span class="k">Dokunma hedefi</span><span class="v">min 44 pt</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4>Hareket</h4>
+        <div class="rows">
+          <div class="row"><span class="k">Yay eğrisi</span><span class="v">.32, .72, 0, 1</span></div>
+          <div class="row"><span class="k">Fotoğraf açılışı</span><span class="v">420 ms · yay</span></div>
+          <div class="row"><span class="k">Segment geçişi</span><span class="v">280 ms · yay</span></div>
+          <div class="row"><span class="k">Başlık daralması</span><span class="v">kaydırmaya bağlı</span></div>
+          <div class="row"><span class="k">Bulanıklık geçişi</span><span class="v">220 ms · ease</span></div>
+          <div class="row"><span class="k">Kapsül salınımı</span><span class="v">7 s · ±5 pt</span></div>
+          <div class="row"><span class="k">Basma geri bildirimi</span><span class="v">scale .965 · 180 ms</span></div>
+          <div class="row"><span class="k">Malzeme</span><span class="v">blur 22 · sat 180%</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <p class="foot"><b>Tipografi notu:</b> Bu sayfa SF Pro'yu sistemden çağırıyor. Mac veya iPhone'da bakıyorsan gerçek SF Pro görüyorsun; Windows veya Android'de sistem yazı tipine düşer, harf oranları biraz kayar. Üretim kodunda bu sorun yok — iOS'ta SF zaten yerleşik.<br><br><b>Fotoğraflar</b> gradyan yer tutucu. Prototipte gerçek görsel kullanmadım çünkü mesele düzen, ölçü ve hiyerarşi — o kararları yer tutucuyla vermek daha dürüst, gerçek fotoğraflar zayıf düzeni de güzel gösterir.</p>
+
+</div>
+
+<script>
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- countdown + ring ---------- */
+  var SEAL = new Date(2025,5,14,12,0,0);
+  var OPEN = new Date(2028,5,14,12,0,0);
+  var C = 2*Math.PI*112;
+  var prog = document.getElementById('prog');
+  var big  = document.getElementById('bigCount');
+  var pD=document.getElementById('pD'), pH=document.getElementById('pH'), pM=document.getElementById('pM');
+  function pad(n){return n<10?'0'+n:''+n}
+
+  function tick(){
+    var now = new Date();
+    var span = OPEN - SEAL, done = now - SEAL;
+    var pct = Math.max(0, Math.min(1, done/span));
+    prog.style.strokeDashoffset = C*(1-pct);
+
+    var y = OPEN.getFullYear()-now.getFullYear();
+    var m = OPEN.getMonth()-now.getMonth();
+    var d = OPEN.getDate()-now.getDate();
+    if(d<0){ m--; d += new Date(now.getFullYear(), now.getMonth()+1, 0).getDate(); }
+    if(m<0){ y--; m+=12; }
+
+    var txt = y>0 ? y+' yıl '+m+' ay' : (m>0 ? m+' ay '+d+' gün' : d+' gün');
+    big.innerHTML = txt+' <em>kaldı</em>';
+
+    var ms = OPEN-now;
+    pD.textContent = pad(d);
+    pH.textContent = pad(23 - now.getHours());
+    pM.textContent = pad(59 - now.getMinutes());
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ---------- countdown disclosure ---------- */
+  var cBtn = document.getElementById('countBtn');
+  cBtn.addEventListener('click', function(){
+    var on = cBtn.classList.toggle('open');
+    cBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+  });
+
+  /* ---------- scroll-linked header collapse ---------- */
+  var screen = document.getElementById('screen');
+  var nav = document.getElementById('nav');
+  var ringwrap = document.getElementById('ringwrap');
+  var titleblock = document.getElementById('titleblock');
+
+  screen.addEventListener('scroll', function(){
+    var y = screen.scrollTop;
+    var t = Math.max(0, Math.min(1, y/210));
+    if(!reduce){
+      ringwrap.style.transform = 'scale('+(1-.30*t)+') translateY('+(-30*t)+'px)';
+      ringwrap.style.opacity = String(1-.72*t);
+    }
+    nav.classList.toggle('solid', t > .62);
+  }, {passive:true});
+
+  /* ---------- segmented control ---------- */
+  var seg = document.getElementById('seg');
+  var thumb = document.getElementById('thumb');
+  var segBtns = seg.querySelectorAll('button');
+  function moveThumb(btn){
+    thumb.style.left = (btn.offsetLeft)+'px';
+    thumb.style.width = (btn.offsetWidth)+'px';
+  }
+  segBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      segBtns.forEach(function(x){x.setAttribute('aria-selected','false')});
+      b.setAttribute('aria-selected','true');
+      moveThumb(b);
+    });
+  });
+  requestAnimationFrame(function(){ moveThumb(segBtns[0]); });
+
+  /* ---------- tab bar ---------- */
+  var tabBtns = document.querySelectorAll('.tabs button');
+  tabBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      tabBtns.forEach(function(x){x.removeAttribute('aria-current')});
+      b.setAttribute('aria-current','true');
+    });
+  });
+
+  /* ---------- select mode ---------- */
+  var phone = document.getElementById('phone');
+  document.getElementById('moreBtn').addEventListener('click', function(){
+    var on = phone.classList.toggle('selecting');
+    if(!on) document.querySelectorAll('.tile').forEach(function(t){t.dataset.picked='0'});
+  });
+
+  /* ---------- photo open (FLIP) ---------- */
+  var lb = document.getElementById('lightbox');
+  var lbClose = document.getElementById('lbClose');
+  var frame = null;
+
+  document.querySelectorAll('.tile').forEach(function(tile){
+    tile.addEventListener('click', function(){
+      if(phone.classList.contains('selecting')){
+        tile.dataset.picked = tile.dataset.picked === '1' ? '0' : '1';
+        return;
+      }
+      var pr = phone.getBoundingClientRect();
+      var tr = tile.getBoundingClientRect();
+
+      frame = document.createElement('div');
+      frame.className = 'frame';
+      var cls = tile.querySelector('.img').className;
+      frame.innerHTML = '<span class="'+cls+'" style="position:absolute;inset:0"></span>';
+      frame.style.left = (tr.left-pr.left)+'px';
+      frame.style.top  = (tr.top-pr.top)+'px';
+      frame.style.width = tr.width+'px';
+      frame.style.height = tr.height+'px';
+      lb.appendChild(frame);
+      lb.classList.add('on');
+
+      var tw = pr.width, th = tw*4/3;
+      var tx = 0, ty = (pr.height-th)/2;
+      frame.animate([
+        {left:(tr.left-pr.left)+'px', top:(tr.top-pr.top)+'px', width:tr.width+'px', height:tr.height+'px', borderRadius:'6px'},
+        {left:tx+'px', top:ty+'px', width:tw+'px', height:th+'px', borderRadius:'0px'}
+      ], {duration: reduce?1:420, easing:'cubic-bezier(0.32,0.72,0,1)', fill:'forwards'});
+    });
+  });
+
+  function closeLb(){
+    if(!frame) return;
+    lb.classList.remove('on');
+    lb.removeChild(frame);
+    frame = null;
+  }
+  lbClose.addEventListener('click', closeLb);
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeLb(); });
+})();
+</script>
