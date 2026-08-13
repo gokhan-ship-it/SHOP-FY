@@ -584,3 +584,19 @@ urunde bu oldu (Eight Stars White, Infinity Glow, Taşlıkilit White,
 Velor, Vantablack + Taşlı Kilit) ve elle geri yazildi. Ileride
 GemPages'te baska sayfa silinirse ayni sey olur; silme sonrasi bir
 tarama gerekir.
+
+## SONUC: dongu kirildi (13 Ağustos 2026)
+
+Silme sonrasi ilk yayinlamanin ustunden ~90 dk gecti (arada baska
+yayinlama olmadi, MAIN hala 187519172928). Kontrol TEMIZ: 31 single,
+36 couple, 2 koleksiyon -- hicbiri bozulmadi.
+
+Onceki uc turda bozulma yayinlamadan sonra ~1 saat icinde ortaya
+cikiyordu. Bu pencere sorunsuz gecildigine gore GemPages'te urun ve
+koleksiyon sayfalarinin silinmesi kok sebebi ortadan kaldirdi.
+
+Artik her yayinlamadan sonra rutin tarama gerekmiyor. Tarama yalnizca
+su iki durumda tekrar gerekli:
+  - GemPages'te yeni sayfa yayinlanirsa ya da mevcutlar silinirse
+    (silme, urunun templateSuffix'ini BOSALTIYOR)
+  - Beklenmedik sekilde eski tasarim geri gelirse
