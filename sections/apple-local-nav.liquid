@@ -706,8 +706,20 @@
     transform: translateY(-50%);
   }
 
+  {%- unless s.orta_dugme and s.header_modu %}
   /* Baslik modu sag tarafi mutlak konumlu iki duruma ceviriyor;
-     burada ona ihtiyac yok, normal akisa donduruyoruz. */
+     dugme gosterilmiyorsa ona ihtiyac yok, normal akisa
+     donduruyoruz.
+
+     DIKKAT: orta_dugme acikken bu blok ATLANIYOR. Atlanmazsa iki sey
+     birden bozuluyordu:
+       - .aln-ust opacity 1 !important kaldigi icin arama + sepet
+         ikonlari kaydirinca sonmuyor, dugmenin arkasinda duruyordu
+       - .aln-sag position: static + height: auto olunca .aln-yuva'nin
+         (position: absolute; height: 100%) dayanacagi kap kalmiyor,
+         dugmeler devasa cikiyordu
+     Ikisini de birakinca baslik modunun kendi iki durumlu duzeni
+     oldugu gibi calisiyor. */
   .aln-sag-{{ sid }} {
     position: static;
     display: flex;
@@ -723,6 +735,7 @@
     opacity: 1 !important;
     pointer-events: auto !important;
   }
+  {%- endunless %}
 
   @media (min-width: 750px) {
     .aln-{{ sid }} [data-aln-menu-ac] { left: {{ s.yan_bosluk_d }}px; }
