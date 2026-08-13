@@ -15,15 +15,29 @@
   Istenen yer ikisinin arasi: header'in hemen ALTI.
 
   ------------------------------------------------------------------
-  NASIL
+  KOD YOKKEN DOKUNMUYORUZ  (onemli)
 
-  Serit uygulamanin kendi ogesi, bizim isaretimiz yok. Bu yuzden:
+  Uygulama seridi DOM'da her zaman tutuyor; kod yokken ekranin
+  disinda bekletiyor ve icinde doldurulmamis sablon duruyor
+  ("KALAN SÜRE: dd hh mm ss", bos kod kutusu).
+
+  Bu dosyanin ilk surumu top degerini kosulsuz eziyordu ve o bos
+  iskeleti de gorunur hale getiriyordu. Artik once AKTIF BIR KOD VAR
+  MI diye bakiliyor; yoksa kendi eklediklerimiz geri alinip serit
+  uygulamanin kendi bicimine birakiliyor.
+
+  Aktiflik olcutu, katmanin geri kalaniyla AYNI kaynaktan: carkin
+  yazdigi uc cerez. Ikinci bir dogruluk kaynagi uretilmedi.
+  Serit metnini okuyup "dd hh mm ss" mi diye bakmak da mumkundu ama
+  o dile ve uygulamanin sablonuna bagimli olurdu.
+
+  ------------------------------------------------------------------
+  NASIL
 
   1. Aday havuzu yalnizca "wlo" gecen ogeler. Bu sinir bilincli --
      boylece yanlislikla baska bir sabit ogeyi (sohbet balonu, cerez
      uyarisi, bizim yapiskan cubugumuz) oynatma ihtimali yok. Cark
-     uygulamasinin butun ogeleri wlo onekli; cerez adlari da oyle
-     (wlo-codebar-code / -counter / -time).
+     uygulamasinin butun ogeleri wlo onekli; cerez adlari da oyle.
 
   2. Adaylar arasindan SERIT olani seciliyor: position fixed, ekran
      genisliginin en az %60'i kadar genis, 160px'den kisa. Carkin
@@ -37,9 +51,9 @@
   degistirirse ya da kaldirirsa kural bosa duser, sayfa aynen kalir.
 
   Olcum tek seferlik degil: serit sayfa acildiktan sonra enjekte
-  ediliyor, header'in yuksekligi de ekran donunce degisiyor. Bu
-  yuzden yukleme, yeniden boyutlandirma ve DOM degisikliklerinde
-  yeniden hesaplaniyor.
+  ediliyor, kodun suresi sayfa aciktayken dolabiliyor, ekran donunce
+  header'in yuksekligi degisiyor. Bu yuzden dusuk maliyetli bir
+  zamanlayici ve DOM gozlemcisi ile surekli tazeleniyor.
 
   KAPSAM: butun sayfalar. Serit her sayfada cikabildigi icin tek bir
   sablona baglanmadi. Kapisi layout/theme.liquid icinde.
@@ -48,12 +62,40 @@
   (function () {
     'use strict';
 
+    var C_KOD   = {{ settings.tt_cerez_kod | json }};
+    var C_SURE  = {{ settings.tt_cerez_sure | json }};
+    var C_ZAMAN = {{ settings.tt_cerez_zaman | json }};
+
     var UST_KABUK = [
       "header[is='sticky-header']",
       '[data-aln-kok]',
       '[id$="__header"]',
       '#shopify-section-header'
     ];
+
+    function cerez(ad) {
+      if (!ad) return '';
+      var hepsi = String(document.cookie || '').split(';');
+      for (var i = 0; i < hepsi.length; i++) {
+        var c = hepsi[i].trim();
+        var esit = c.indexOf('=');
+        if (esit < 0) continue;
+        if (c.slice(0, esit) !== ad) continue;
+        try { return decodeURIComponent(c.slice(esit + 1)); }
+        catch (e) { return c.slice(esit + 1); }
+      }
+      return '';
+    }
+
+    /* Carkin verdigi kod duruyor ve suresi dolmamis mi? */
+    function kodAktif() {
+      var kod = cerez(C_KOD);
+      if (!kod) return false;
+      var sure = parseFloat(cerez(C_SURE));
+      var basla = parseFloat(cerez(C_ZAMAN));
+      if (!isFinite(sure) || !isFinite(basla)) return false;
+      return basla + sure * 1000 > Date.now();
+    }
 
     function gorunur(el) {
       var s = window.getComputedStyle(el);
@@ -74,7 +116,11 @@
       return Math.max(0, Math.round(en));
     }
 
+    var bellek = null;
+
     function seridiBul() {
+      if (bellek && bellek.isConnected) return bellek;
+      bellek = null;
       var adaylar = document.querySelectorAll('[id*="wlo" i], [class*="wlo" i]');
       for (var i = 0; i < adaylar.length; i++) {
         var el = adaylar[i];
@@ -82,39 +128,41 @@
         var r = el.getBoundingClientRect();
         if (r.height <= 0 || r.height > 160) continue;
         if (r.width < window.innerWidth * 0.6) continue;
+        bellek = el;
         return el;
       }
       return null;
     }
 
-    var sonDeger = null;
+    var uygulandi = false;
+
+    function birak(serit) {
+      if (!uygulandi) return;
+      serit.style.removeProperty('top');
+      serit.style.removeProperty('bottom');
+      uygulandi = false;
+    }
 
     function yerlestir() {
       var serit = seridiBul();
       if (!serit) return;
+
+      if (!kodAktif()) { birak(serit); return; }
+
       var y = ustYukseklik() + 'px';
-      if (serit.style.top === y && sonDeger === y) return;
+      if (uygulandi && serit.style.top === y) return;
       serit.style.setProperty('top', y, 'important');
       serit.style.setProperty('bottom', 'auto', 'important');
-      sonDeger = y;
-    }
-
-    function baslat() {
-      yerlestir();
-      // Serit gec enjekte edilebiliyor; birkac kez daha bakiyoruz.
-      var n = 0;
-      var z = window.setInterval(function () {
-        yerlestir();
-        if (++n > 20) window.clearInterval(z);
-      }, 500);
+      uygulandi = true;
     }
 
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', baslat);
+      document.addEventListener('DOMContentLoaded', yerlestir);
     } else {
-      baslat();
+      yerlestir();
     }
 
+    window.setInterval(yerlestir, 1000);
     window.addEventListener('resize', yerlestir);
     window.addEventListener('orientationchange', yerlestir);
 
@@ -123,7 +171,7 @@
       new MutationObserver(function () {
         if (bekleyen) return;
         bekleyen = true;
-        window.setTimeout(function () { bekleyen = false; yerlestir(); }, 120);
+        window.setTimeout(function () { bekleyen = false; yerlestir(); }, 200);
       }).observe(document.body, { childList: true, subtree: true });
     }
   })();
