@@ -522,3 +522,38 @@ gore farkli davranmasi musteri icin daha kotu olurdu.
 
 Aktarim: "Duzeltme 3 - kart sepet butonu 2026-08-13"
 gid://shopify/OnlineStoreTheme/187518910784 (commit ea7b3c2)
+
+---
+
+# Cark kodu calismiyor: sepet yakalamasi cok genisti (13 Ağustos 2026)
+
+Belirti: cark ceviriliyor, "kuponu kullan" deniyor; ne geri sayim
+basliyor ne fiyatlar indirimliye donuyor.
+
+Once tema tarafi bastan sona dogrulandi, HICBIR KAYIP YOK:
+  settings.tt_indirim_aktif  true
+  settings.tt_indirim_tutar  "500"
+  tt_cerez_kod/sure/zaman    wlo-codebar-code / -counter / -time
+  Wheelio app embed          acik (disabled: false)
+  assets/taksit-tablosu.js   dogru surum (4ea23613...)
+
+Katman yalnizca o uc cerez okunamazsa tamamen susuyor. Yani sorun
+cerezlerin hic yazilmamasi.
+
+BAS SUPHELI: snippets/tt-sepet-cekmece.liquid'in 2. surumu. O surum
+"adresi sepet sayfasi olan HER baglanti" kuralini kullaniyordu ve
+yakalama evresinde stopPropagation cagiriyordu. Carkin "kuponu
+kullan" butonu sepete giden bir baglantiysa, uygulamanin kendi
+tiklama islevi hic calismamis, cerez de yazilmamis olur.
+
+3. surumde kural daraltildi: yalnizca temanin kendi sepet
+kontrolleri (aria-controls="CartDrawer" · a.cart-drawer-button ·
+[data-aln-sepet]). Uc isaretten biri yeterli oldugu icin 1. surumun
+acigi da kapali kaliyor.
+
+DOGRULANMADI: bu ortamdan canli sayfaya erisim yok, cark akisi
+denenemedi. Ayirt edici test kullaniciya birakildi: "kuponu kullan"a
+basinca sepet cekmecesi yukari kayiyorsa suphe dogrulanmis olur.
+
+Hazir: "Duzeltme 3 - kart sepet butonu 2026-08-13" (187518910784),
+icinde hem kart sepet butonu duzeltmesi hem bu daraltma var.
