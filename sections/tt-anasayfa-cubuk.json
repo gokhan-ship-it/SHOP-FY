@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "type": "custom.tt_anasayfa_cubuk",
   "name": "Anasayfa Ürün Çubuğu",
@@ -6,7 +15,7 @@
       "type": "apple-local-nav",
       "name": "Yapışkan Ürün Çubuğu",
       "settings": {
-        "aktif": true,
+        "aktif": false,
         "konum": "ust",
         "yerlesim": "orta",
         "header_modu": true,
@@ -77,7 +86,66 @@
         "yan_bosluk_d": 40,
         "z_kat": 1000
       }
+    },
+    "tt_baslik_anasayfa": {
+      "type": "tt-baslik",
+      "name": "TT Başlık",
+      "settings": {
+        "aktif": true,
+        "logo": "shopify://shop_images/beyazlogo_9fa2a926-6b56-4ae6-808d-220f37a4f807.png",
+        "logo_bag": "",
+        "logo_yuk_m": 22,
+        "logo_yuk_d": 24,
+        "menu_goster": true,
+        "menu": "main-menu",
+        "menu_etiket": "Menü",
+        "menu_boyut": 24,
+        "ara_goster": true,
+        "sepet_goster": true,
+        "cta_metni": "Ürünü Öğren",
+        "cta_bag": "/pages/couple-daha-fazla-bilgi-al",
+        "bol_1_metni": "",
+        "bol_1_bag": "",
+        "bol_2_metni": "",
+        "bol_2_bag": "",
+        "esik_px": 400,
+        "geri_sure": 6,
+        "parlama": true,
+        "parlama_ara": 5,
+        "header_gizle": true,
+        "header_secici": "[id$='__header']",
+        "zemin": "#161617",
+        "zemin_saydam": 72,
+        "bulanik": 20,
+        "kenar_rengi": "#2e2e30",
+        "ikon_renk": "#ffffff",
+        "rozet_zemin": "#0071e3",
+        "rozet_yazi": "#ffffff",
+        "dugme_zemin": "#0071e3",
+        "dugme_hover": "#0077ed",
+        "dugme_yazi": "#ffffff",
+        "cizgi_kenar": "#2997ff",
+        "cizgi_yazi": "#2997ff",
+        "menu_zemin": "#000000",
+        "menu_yazi": "#ffffff",
+        "menu_alt_yazi": "#a1a1a6",
+        "menu_ayirac": "#2e2e30",
+        "bar_yuk_m": 52,
+        "bar_yuk_d": 56,
+        "ikon_boyut": 20,
+        "ikon_ara": 16,
+        "dugme_yuk": 34,
+        "dugme_yatay": 20,
+        "dugme_boyut": 14,
+        "bol_ara": 8,
+        "yan_bosluk": 20,
+        "yan_bosluk_d": 40,
+        "z_kat": 1000
+      }
     }
   },
-  "order": ["apple_local_nav_couple"]
+  "order": [
+    "apple_local_nav_couple",
+    "tt_baslik_anasayfa"
+  ]
 }

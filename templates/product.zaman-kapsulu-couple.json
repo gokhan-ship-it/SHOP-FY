@@ -13,7 +13,7 @@
       "type": "apple-local-nav",
       "name": "Yapışkan Ürün Çubuğu",
       "settings": {
-        "aktif": true,
+        "aktif": false,
         "konum": "ust",
         "yerlesim": "orta",
         "header_modu": true,
@@ -94,10 +94,6 @@
       "settings": {}
     },
     "178204677029bcc614": {
-      "type": "_blocks",
-      "settings": {}
-    },
-    "17820468921c079b12": {
       "type": "_blocks",
       "settings": {}
     },
@@ -909,6 +905,7 @@
         "video-3",
         "video-4"
       ],
+      "disabled": true,
       "settings": {
         "palet": "apple",
         "show_rating": false,
@@ -1078,6 +1075,277 @@
         "edge_d": 32,
         "p_top_m": 40,
         "p_bot_m": 40,
+        "p_top_d": 72,
+        "p_bot_d": 72
+      }
+    },
+    "mozaik_kartlar_couple": {
+      "type": "mozaik-kartlar",
+      "blocks": {
+        "yorum_HgrNDn": {
+          "type": "yorum",
+          "settings": {
+            "alinti": "Couple ürününü aldım. Ürünlerin görünüşü gerçekten çok güzel, uygulamaya da bayıldım. Genel olarak çok beğendim. Yaşadığımız küçük bir sorun için WhatsApp’tan yazdım; 2 dakika içinde dönüş yaptılar ve 5 dakika içinde sorunu çözdüler. Gerçekten helal olsun.",
+            "isim": "Burak T.",
+            "dogrulandi": true,
+            "alt_not": "",
+            "kirp": true,
+            "satir": 3
+          }
+        },
+        "video_6gNNgn": {
+          "type": "video",
+          "settings": {
+            "video": "shopify://files/videos/öyküdik44 (1).mp4",
+            "oran": "3 / 4",
+            "ust_yazi": "",
+            "alt_yazi": "",
+            "karartma": 60
+          }
+        },
+        "yorum_4ygGdJ": {
+          "type": "yorum",
+          "settings": {
+            "alinti": "Sipariş verdiğim andan itibaren müşteri hizmetleri her konuda hızlıca destek oldu. Aldığım Couple ürününün kalitesi de gerçekten apayrı güzel. Böyle özenli ve kaliteli işlerin kesinlikle takdir görmesi gerekiyor.",
+            "isim": "Elif K.",
+            "dogrulandi": true,
+            "alt_not": "",
+            "kirp": true,
+            "satir": 3
+          }
+        },
+        "video_UYGF7F": {
+          "type": "video",
+          "settings": {
+            "video": "shopify://files/videos/Beyza Kararasul Uzun.mp4",
+            "oran": "3 / 4",
+            "ust_yazi": "",
+            "alt_yazi": "",
+            "karartma": 60
+          }
+        },
+        "secim_wcH6hj": {
+          "type": "secim",
+          "settings": {
+            "baslik": "Buluşunca",
+            "alt_yazi": "İki kolye bir araya gelince",
+            "etiket": "Couple",
+            "link": "",
+            "ikon": "users",
+            "zemin": "#efeaff",
+            "yazi": "#4c1d95",
+            "soluk": "#6f60a8"
+          }
+        },
+        "secim_N9JhNL": {
+          "type": "secim",
+          "settings": {
+            "baslik": "Buluşunca",
+            "alt_yazi": "İki kolye bir araya gelince",
+            "etiket": "Couple",
+            "link": "",
+            "ikon": "users",
+            "zemin": "#efeaff",
+            "yazi": "#4c1d95",
+            "soluk": "#6f60a8"
+          }
+        },
+        "video_crxeLz": {
+          "type": "video",
+          "settings": {
+            "oran": "3 / 4",
+            "ust_yazi": "Ayşe & Mert",
+            "alt_yazi": "3. yıl dönümü",
+            "karartma": 60
+          }
+        },
+        "yorum_EMrpzi": {
+          "type": "yorum",
+          "settings": {
+            "alinti": "Sevgilimin doğum günü için almıştım. Başta sadece özel bir hediye olacağını düşünüyordum ama kısa sürede ikimizin de sürekli kullandığı bir ürüne dönüştü. Aldığım en anlamlı hediyelerden biri oldu.",
+            "isim": "Yağmur S.",
+            "dogrulandi": true,
+            "alt_not": "",
+            "kirp": true,
+            "satir": 3
+          }
+        },
+        "video_DFcQTL": {
+          "type": "video",
+          "disabled": true,
+          "settings": {
+            "video": "shopify://files/videos/7320ea4b17dd49618a0b570e59b7a2b9.mp4",
+            "oran": "3 / 4",
+            "ust_yazi": "",
+            "alt_yazi": "",
+            "karartma": 60
+          }
+        },
+        "video_4gMKGn": {
+          "type": "video",
+          "settings": {
+            "video": "shopify://files/videos/068ce7c9371a4120961d8749e909009a.mp4",
+            "oran": "4 / 3",
+            "ust_yazi": "",
+            "alt_yazi": "",
+            "karartma": 60
+          }
+        },
+        "yorum_ieKPPM": {
+          "type": "yorum",
+          "settings": {
+            "alinti": "Sevgilimle birlikte kullanıyoruz. İlk başta nasıl olacağını çok merak etmiştik ama gerçekten düşündüğümüzden daha eğlenceli çıktı. Her buluştuğumuzda kapsülü açmak ayrı bir heyecan oluyor. İkimiz de çok sevdik.",
+            "isim": "Aleyna K.",
+            "dogrulandi": true,
+            "alt_not": "",
+            "kirp": true,
+            "satir": 3
+          }
+        }
+      },
+      "block_order": [
+        "yorum_HgrNDn",
+        "video_6gNNgn",
+        "yorum_4ygGdJ",
+        "video_UYGF7F",
+        "secim_wcH6hj",
+        "secim_N9JhNL",
+        "video_crxeLz",
+        "yorum_EMrpzi",
+        "video_DFcQTL",
+        "video_4gMKGn",
+        "yorum_ieKPPM"
+      ],
+      "name": "Mozaik Kartlar",
+      "settings": {
+        "baslik": "Kime alsan yakışır",
+        "baslik_etiketi": "h2",
+        "baslik_kalinlik": "700",
+        "baslik_rengi": "#111111",
+        "hiza": "center",
+        "bas_m": 24,
+        "bas_t": 28,
+        "bas_d": 32,
+        "metin": "<p>Sevgiline, arkadaşına veya ailene. Her kapsül başka anlam taşıyor.</p>",
+        "metin_rengi": "#3d3d3d",
+        "metin_m": 16,
+        "metin_d": 20,
+        "metin_bos_m": 14,
+        "metin_bos_d": 8,
+        "grid_bosluk": 32,
+        "kolon_m": 2,
+        "kolon_d": 3,
+        "aralik_m": 12,
+        "aralik_d": 20,
+        "kart_kose": 16,
+        "medya_zemin": "#e9e9ec",
+        "foto_yazi": "#ffffff",
+        "ust_boyut_m": 18,
+        "ust_boyut_d": 22,
+        "alt_boyut_m": 13,
+        "alt_boyut_d": 15,
+        "etiket_ic": 16,
+        "play_etiket": "Videoyu oynat",
+        "play_zemin": "#ffffff",
+        "play_renk": "#111111",
+        "play_boyut": 46,
+        "anim_ac": true,
+        "anim_mesafe": 16,
+        "anim_sure": 600,
+        "anim_ara": 90,
+        "ilk_yorum_acik": true,
+        "yorum_zemin": "#f1f2f6",
+        "yorum_yazi": "#111111",
+        "yorum_boyut_m": 16,
+        "yorum_boyut_d": 18,
+        "yorum_ic": 18,
+        "yorum_bosluk": 18,
+        "yorum_min": 180,
+        "avatar_boyut": 40,
+        "isim_rengi": "#111111",
+        "isim_boyut": 16,
+        "rol_rengi": "#6b6b6b",
+        "rol_boyut": 14,
+        "rozet_url": "",
+        "rozet_renk": "#1d9bf0",
+        "rozet_ic": "#ffffff",
+        "rozet_boyut": 16,
+        "rozet_etiket": "Doğrulanmış alıcı",
+        "ac_etiket": "Yorumun tamamını göster",
+        "ac_zemin": "#ffffff",
+        "ac_renk": "#111111",
+        "ac_boyut": 34,
+        "cta_yazi": "",
+        "cta_eylem": "link",
+        "cta_bol_1_metni": "",
+        "cta_bol_1_bag": "https://texttonext.com/collections/zaman-kapsulu-kolyeler",
+        "cta_bol_2_metni": "Erkek",
+        "cta_bol_2_bag": "https://texttonext.com/collections/zaman-kapsulu-bileklik",
+        "cta_hover_ozel": true,
+        "cta_hover_zemin": "#b21e3a",
+        "cta_hover_degrade": true,
+        "cta_hover_d1": "#c60303",
+        "cta_hover_d2": "#b21e3a",
+        "cta_hover_d3": "#4a0c16",
+        "cta_hover_aci": 100,
+        "cta_hover_renk": "#ffffff",
+        "cta_bol_ara": 12,
+        "cta_hedef": ".story-choice-cards-section",
+        "cta_hiza": "oto",
+        "cta_ofset": 24,
+        "cta_link": "https://texttonext.com/collections/couple-urunler",
+        "cta_sabit": true,
+        "cta_alt": 20,
+        "cta_zemin": "#111111",
+        "cta_renk": "#ffffff",
+        "cta_yuvarlak": true,
+        "cta_kose": 10,
+        "cta_kalinlik": "700",
+        "cta_harf": 1,
+        "cta_boyut_m": 15,
+        "cta_boyut_d": 16,
+        "cta_yatay": 48,
+        "cta_dikey": 18,
+        "cta_bosluk": 24,
+        "pop_baslik": "Hangi Zaman Kapsülünü incelemek istersin?",
+        "pop_alt": "",
+        "bos_uyari": "Bu pop-up boş. Soldaki blok listesinden \"Pop-up seçim kartı\" ekleyin.",
+        "pop_zemin": "#ffffff",
+        "pop_baslik_renk": "#111111",
+        "pop_alt_renk": "#5f5f5f",
+        "pop_baslik_m": 24,
+        "pop_baslik_d": 30,
+        "pop_alt_boyut": 15,
+        "pop_genislik": 560,
+        "pop_kose": 20,
+        "pop_ic": 24,
+        "pop_bosluk": 20,
+        "pop_kolon_m": 2,
+        "pop_kolon_d": 2,
+        "pop_aralik": 12,
+        "secim_kose": 16,
+        "secim_parlak": 107,
+        "secim_yukse": 2,
+        "secim_bas": 96,
+        "secim_ic": 20,
+        "secim_ikon": 32,
+        "secim_baslik_boyut": 18,
+        "secim_alt_boyut": 13,
+        "secim_cizgi_bosluk": 14,
+        "secim_etiket_boyut": 13,
+        "kapat_zemin": "#f0f0f2",
+        "kapat_renk": "#111111",
+        "kapat_etiket": "Kapat",
+        "mobil_olcek": 80,
+        "masaustu_olcek": 85,
+        "kart_max_m": 22,
+        "kart_max_d": 30,
+        "zemin": "#ffffff",
+        "max_w": 1200,
+        "edge_m": 16,
+        "edge_d": 32,
+        "p_top_m": 44,
+        "p_bot_m": 44,
         "p_top_d": 72,
         "p_bot_d": 72
       }
@@ -1824,6 +2092,62 @@
         "anim_sure": 600,
         "anim_ara": 90
       }
+    },
+    "tt_baslik_urun": {
+      "type": "tt-baslik",
+      "name": "TT Başlık",
+      "settings": {
+        "aktif": true,
+        "logo": "shopify://shop_images/ttnlogo.png",
+        "logo_bag": "",
+        "logo_yuk_m": 22,
+        "logo_yuk_d": 24,
+        "menu_goster": true,
+        "menu": "main-menu",
+        "menu_etiket": "Menü",
+        "menu_boyut": 24,
+        "ara_goster": true,
+        "sepet_goster": true,
+        "cta_metni": "Ürünü Öğren",
+        "cta_bag": "/pages/couple-daha-fazla-bilgi-al",
+        "bol_1_metni": "",
+        "bol_1_bag": "",
+        "bol_2_metni": "",
+        "bol_2_bag": "",
+        "esik_px": 400,
+        "geri_sure": 6,
+        "parlama": true,
+        "parlama_ara": 5,
+        "header_gizle": true,
+        "header_secici": "[id$='__header']",
+        "zemin": "#161617",
+        "zemin_saydam": 72,
+        "bulanik": 20,
+        "kenar_rengi": "#2e2e30",
+        "ikon_renk": "#ffffff",
+        "rozet_zemin": "#0071e3",
+        "rozet_yazi": "#ffffff",
+        "dugme_zemin": "#0071e3",
+        "dugme_hover": "#0077ed",
+        "dugme_yazi": "#ffffff",
+        "cizgi_kenar": "#2997ff",
+        "cizgi_yazi": "#2997ff",
+        "menu_zemin": "#000000",
+        "menu_yazi": "#ffffff",
+        "menu_alt_yazi": "#a1a1a6",
+        "menu_ayirac": "#2e2e30",
+        "bar_yuk_m": 52,
+        "bar_yuk_d": 56,
+        "ikon_boyut": 20,
+        "ikon_ara": 16,
+        "dugme_yuk": 34,
+        "dugme_yatay": 20,
+        "dugme_boyut": 14,
+        "bol_ara": 8,
+        "yan_bosluk": 20,
+        "yan_bosluk_d": 40,
+        "z_kat": 1000
+      }
     }
   },
   "order": [
@@ -1831,7 +2155,6 @@
     "1785341675bc410b78",
     "17820467353ecb21fa",
     "178204677029bcc614",
-    "17820468921c079b12",
     "main-product",
     "taksit_tablosu",
     "1782046908b16a45cc",
@@ -1843,6 +2166,7 @@
     "product-details",
     "ugc_galeri_1",
     "hediye_omru_4cjEHU",
+    "mozaik_kartlar_couple",
     "avantaj_kartlari_1",
     "urun_alt_cta",
     "faq",
@@ -1851,6 +2175,7 @@
     "video-hero",
     "recently-viewed",
     "how_it_works_timeline_HbEggP",
-    "video_slider_kapsul_P4MECP"
+    "video_slider_kapsul_P4MECP",
+    "tt_baslik_urun"
   ]
 }
