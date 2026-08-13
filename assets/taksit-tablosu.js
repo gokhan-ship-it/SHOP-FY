@@ -856,6 +856,27 @@
     d.innerHTML = '<div class="tt-kol-serit" data-tt-kol-serit hidden>' +
                   '<span class="tt-kol-metin" data-tt-kol-metin></span>' +
                   '<span class="tt-kol-saat" data-tt-kol-saat></span></div>';
+    /* Serit izgaranin hemen ustune DEGIL, izgarayi tasiyan BOLUMUN
+       ustune giriyor: <main> (#MainContent) ogesinin dogrudan cocugu
+       oluyor.
+
+       Sebep: izgaranin bir ust kabi her sablonda ayni degil. Bazi
+       koleksiyonlarda sayfadan dar ya da sola kaymis bir kap cikiyor
+       (zaman-kapsulu-bileklik'te oyleydi) ve serit o kabin ortasina
+       hizalaninca sayfaya gore kaymis gorunuyor. <main> her sayfada
+       tam genislikte oldugu icin konum artik deterministik: serit
+       hangi koleksiyonda olursa olsun ayni yerde ve ortada.
+
+       #MainContent yoksa ya da izgara onun disindaysa eski davranisa
+       duselim -- hicbir sayfada serit kaybolmasin. */
+    var kok = document.getElementById('MainContent');
+    if (kok && kok.contains(izgara)) {
+      var bolum = izgara;
+      while (bolum.parentNode && bolum.parentNode !== kok) bolum = bolum.parentNode;
+      kok.insertBefore(d, bolum);
+      return d;
+    }
+
     izgara.parentNode.insertBefore(d, izgara);
 
     /* Emniyet: ic ice izgaralarda ustteki de kart tasiyor olabilir.
