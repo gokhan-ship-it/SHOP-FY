@@ -1824,62 +1824,6 @@
         "anim_sure": 600,
         "anim_ara": 90
       }
-    },
-    "tt_baslik_urun": {
-      "type": "tt-baslik",
-      "name": "TT Başlık",
-      "settings": {
-        "aktif": true,
-        "logo": "shopify://shop_images/ttnlogo.png",
-        "logo_bag": "",
-        "logo_yuk_m": 22,
-        "logo_yuk_d": 24,
-        "menu_goster": true,
-        "menu": "main-menu",
-        "menu_etiket": "Menü",
-        "menu_boyut": 24,
-        "ara_goster": true,
-        "sepet_goster": true,
-        "cta_metni": "Ürünü Öğren",
-        "cta_bag": "/pages/hediye-daha-fazla-bilgi-al",
-        "bol_1_metni": "",
-        "bol_1_bag": "",
-        "bol_2_metni": "",
-        "bol_2_bag": "",
-        "esik_px": 400,
-        "geri_sure": 6,
-        "parlama": true,
-        "parlama_ara": 5,
-        "header_gizle": true,
-        "header_secici": "[id$='__header']",
-        "zemin": "#161617",
-        "zemin_saydam": 72,
-        "bulanik": 20,
-        "kenar_rengi": "#2e2e30",
-        "ikon_renk": "#ffffff",
-        "rozet_zemin": "#0071e3",
-        "rozet_yazi": "#ffffff",
-        "dugme_zemin": "#0071e3",
-        "dugme_hover": "#0077ed",
-        "dugme_yazi": "#ffffff",
-        "cizgi_kenar": "#2997ff",
-        "cizgi_yazi": "#2997ff",
-        "menu_zemin": "#000000",
-        "menu_yazi": "#ffffff",
-        "menu_alt_yazi": "#a1a1a6",
-        "menu_ayirac": "#2e2e30",
-        "bar_yuk_m": 52,
-        "bar_yuk_d": 56,
-        "ikon_boyut": 20,
-        "ikon_ara": 16,
-        "dugme_yuk": 34,
-        "dugme_yatay": 20,
-        "dugme_boyut": 14,
-        "bol_ara": 8,
-        "yan_bosluk": 20,
-        "yan_bosluk_d": 40,
-        "z_kat": 1000
-      }
     }
   },
   "order": [
@@ -1907,7 +1851,6 @@
     "video-hero",
     "recently-viewed",
     "how_it_works_timeline_HbEggP",
-    "video_slider_kapsul_P4MECP",
-    "tt_baslik_urun"
+    "video_slider_kapsul_P4MECP"
   ]
 }

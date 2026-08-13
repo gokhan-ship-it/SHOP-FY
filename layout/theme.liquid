@@ -183,6 +183,27 @@
       {% sections 'tt-anasayfa-cubuk' %}
     {%- endif -%}
 
+    {%- comment -%}
+      URUN SAYFASI CUBUGU
+
+      Ayni gerekce, ayri bir sebeple: urun sablonlari (product.zaman-
+      kapsulu ve product.zaman-kapsulu-couple) 25 bolumle Shopify'in
+      JSON sablon sinirina dayanmis durumda. 26. bolum eklenen dosya
+      sessizce reddediliyor -- userError donmuyor, upsert bos liste ile
+      "basarili" gorunuyor. Bu yuzden cubuk sablonun icine degil, bolum
+      grubu olarak yukleniyor; grup bu sinira dahil degil.
+
+      Iki ayri grup var cunku dugmenin gidecegi yer farkli: tekli urun
+      hediye sayfasina, couple urun couple sayfasina.
+
+      Sablondaki eski apple-local-nav kapatildi; onun yerini bu aliyor.
+    {%- endcomment -%}
+    {%- if template.name == 'product' and template.suffix == 'zaman-kapsulu-couple' -%}
+      {% sections 'tt-urun-couple-cubuk' %}
+    {%- elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' -%}
+      {% sections 'tt-urun-cubuk' %}
+    {%- endif -%}
+
     <div class="page-container" id="PageContainer">
       <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' %} tt-urun-page{% endif %}" id="MainContent" role="main">
         {{ content_for_layout }}
