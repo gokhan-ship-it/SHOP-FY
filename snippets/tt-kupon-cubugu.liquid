@@ -66,7 +66,16 @@
     var C_SURE  = {{ settings.tt_cerez_sure | json }};
     var C_ZAMAN = {{ settings.tt_cerez_zaman | json }};
 
+    /* Ustte durabilecek butun kabuk ogeleri. Hangisi o sayfada
+       gorunuyorsa onun alt kenari olculuyor; gorunmeyenler
+       ustYukseklik() icinde eleniyor.
+
+       [data-tth-kok] yeni baslik cubugu (sections/tt-baslik.liquid).
+       [data-aln-kok] onun yerini aldigi eski cubuk; hala listede,
+       cunku eski cubugun acik oldugu bir sayfa kalirsa orada da
+       dogru calissin. */
     var UST_KABUK = [
+      '[data-tth-kok]',
       "header[is='sticky-header']",
       '[data-aln-kok]',
       '[id$="__header"]',
