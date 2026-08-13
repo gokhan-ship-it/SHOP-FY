@@ -78,6 +78,17 @@
     assign bol_var = true
   endif
 
+  comment
+    Dugme metni bos birakilirsa o sayfada hic dugme olmasin: yuva
+    basilmiyor, kaydirma dinleyicisi kurulmuyor, dolayisiyla is-gecti
+    hic eklenmiyor ve arama/sepet ikonlari her zaman gorunur kaliyor.
+    Anasayfa boyle kullaniliyor.
+  endcomment
+  assign dugme_var = false
+  if s.cta_metni != blank
+    assign dugme_var = true
+  endif
+
   assign menu = linklists[s.menu]
 -%}
 
@@ -487,6 +498,7 @@
   {%- endif -%}
 
   <div class="tth-sag-{{ sid }}">
+    {%- if dugme_var -%}
     <div class="tth-yuva-{{ sid }}" data-tth-yuva aria-hidden="true">
       {%- if bol_var -%}
         <button class="tth-cta-{{ sid }}" type="button" data-tth-cta aria-expanded="false">
@@ -502,6 +514,7 @@
         </a>
       {%- endif -%}
     </div>
+    {%- endif -%}
 
     <div class="tth-ikon-{{ sid }}" data-tth-ikon>
       {%- if s.ara_goster -%}
@@ -588,8 +601,12 @@
       window.requestAnimationFrame(durumuUygula);
     }
 
-    window.addEventListener('scroll', kaydirma, { passive: true });
-    durumuUygula();
+    /* Dugme yoksa kaydirmayi hic dinlemiyoruz: is-gecti eklenmedigi
+       icin ikonlar sayfanin her yerinde gorunur kaliyor. */
+    if (yuva) {
+      window.addEventListener('scroll', kaydirma, { passive: true });
+      durumuUygula();
+    }
 
     /* ---------- dugmenin bolunmesi ---------- */
     var bolundu = false, geriSayac = null;
@@ -695,7 +712,7 @@
       "type": "paragraph",
       "content": "Düğme başlangıçta görünmez; sayfa aşağıdaki eşik kadar kaydırılınca belirir. Sol ve sağ seçeneğin İKİSİ de doluysa düğme tıklanınca ikiye bölünür; boş bırakılırsa düğme doğrudan kendi bağlantısına gider."
     },
-    { "type": "text", "id": "cta_metni", "label": "Düğme metni", "default": "Satın Al" },
+    { "type": "text", "id": "cta_metni", "label": "Düğme metni", "info": "Boş bırakılırsa o sayfada düğme hiç çıkmaz; arama ve sepet ikonları her zaman görünür kalır.", "default": "Satın Al" },
     { "type": "url", "id": "cta_bag", "label": "Düğme bağlantısı", "info": "Yalnızca bölünmeyen düğmede kullanılır." },
     { "type": "text", "id": "bol_1_metni", "label": "Sol seçenek" },
     { "type": "url", "id": "bol_1_bag", "label": "Sol seçenek bağlantısı" },
