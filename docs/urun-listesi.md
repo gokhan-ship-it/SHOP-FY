@@ -491,3 +491,34 @@ olarak mi kendini yeniden kuruyor? 3. geri donus yayinlamadan ~1 saat
 sonra fark edildi; arada baska yayinlama olmadi. Eger periyodikse
 yayinlamasak bile tekrarlayacak. Bunu ayirt etmek icin yayinlama
 yapilmadan bir kontrol daha planlandi.
+
+---
+
+# Koleksiyon kartindaki sepet butonu (13 Ağustos 2026)
+
+Cok varyantli urunlerde karttaki sepet butonu sepete ekleyemiyor --
+hangi varyantin istendigi belli degil -- ve tema alttan bir "hizli
+gorunum" cekmecesi aciyordu. Kolyelerin cogunda "Ham Madde" secenegi
+var (316L Celik 2.599 TL / 925 Gumus 4.799-4.999 TL), yani fark buyuk;
+otomatik bir varyant secmek yanlis olurdu.
+
+Istek: o butona basmak urunun kendisine tiklamakla ayni sonucu versin.
+
+Cozum snippets/tt-koleksiyon-kart.liquid: butonun aria-controls'undan
+kartin quick-view ogesi bulunuyor, onun data-product-url degeri
+okunup oraya gidiliyor. Adres tahmin edilmiyor, kartin icinde zaten
+yaziyor.
+
+- Tek varyantli urunler etkilenmiyor (butonlari form submit'i,
+  aria-controls tasimiyor) -- eskisi gibi sepete ekliyor.
+- Gorseldeki goz ikonu (.quick-view__button) ve renk gruplarindaki
+  "+N" baglantisi disarida.
+- Adres bulunamazsa hicbir sey yapilmiyor; eski davranis devrede
+  kaliyor.
+
+Kapsam: butun koleksiyon sayfalari (layout/theme.liquid icinde ayri
+bir if blogu). Tek koleksiyona baglanmadi -- ayni kartin koleksiyona
+gore farkli davranmasi musteri icin daha kotu olurdu.
+
+Aktarim: "Duzeltme 3 - kart sepet butonu 2026-08-13"
+gid://shopify/OnlineStoreTheme/187518910784 (commit ea7b3c2)
