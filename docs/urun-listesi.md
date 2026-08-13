@@ -600,3 +600,41 @@ su iki durumda tekrar gerekli:
   - GemPages'te yeni sayfa yayinlanirsa ya da mevcutlar silinirse
     (silme, urunun templateSuffix'ini BOSALTIYOR)
   - Beklenmedik sekilde eski tasarim geri gelirse
+
+---
+
+## Eski yapışkan çubuğun emekliye ayrılması (13 Ağustos)
+
+`apple-local-nav` bulunduğu her yerde kapatıldı; yerini `tt-baslik` aldı.
+
+| Yer | TT Başlık düğmesi |
+|---|---|
+| Hediye daha fazla bilgi al | Satın Al → Kadın / Erkek olarak bölünür |
+| Couple daha fazla bilgi al | Satın Al → `/collections/couple-urunler` |
+| Couple ürünler koleksiyonu | Ürünü Öğren → couple bilgi sayfası |
+| Kolyeler (Kadın) | Ürünü Öğren → hediye bilgi sayfası |
+| Bileklik (Erkek) | Ürünü Öğren → hediye bilgi sayfası |
+| Anasayfa (bölüm grubu) | Ürünü Öğren → couple bilgi sayfası |
+| Ürün sayfaları (bölüm grubu ×2) | Ürünü Öğren → ilgili bilgi sayfası |
+
+### İki Shopify sınırı, ikisi de sessizce vuruyor
+
+1. **JSON şablon başına 25 bölüm.** `product.zaman-kapsulu` ve
+   `product.zaman-kapsulu-couple` tam 25'teydi; 26. bölümü ekleyen
+   dosya yazılmıyor. Çubuk bu yüzden şablona değil, bölüm grubuna
+   taşındı (`sections/tt-urun-cubuk.json`,
+   `sections/tt-couple-urun.json`); kapıları `layout/theme.liquid`
+   içinde.
+
+2. **Bölüm grubu `type` alanı en fazla 25 karakter.**
+   `custom.tt_couple_urun_cubuk` 27 karakterdi.
+
+**Önemli:** `themeFilesUpsert` bu doğrulama hatalarını **URL gövdesiyle
+gönderildiğinde yutuyor** — `userErrors` boş, `upsertedThemeFiles` boş,
+dosya yazılmamış. Aynı içerik `TEXT` gövdesiyle gönderildiğinde hata
+açıkça dönüyor. Bir yükleme sessizce başarısız olursa teşhis için
+küçük bir TEXT yüklemesi yapmak en hızlı yol.
+
+Ayrıca `sections/tt-deneme.json` adında boş bir test bölüm grubu kaldı;
+hiçbir yerden çağrılmıyor, zararsız. Silmek gerekirse tema kod
+düzenleyicisinden — API'de silme engelli.
