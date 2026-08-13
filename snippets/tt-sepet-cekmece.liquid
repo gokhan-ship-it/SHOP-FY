@@ -1,53 +1,53 @@
 {%- comment -%}
-  SEPET: /cart SAYFASINA GITMEK YOK, HEP CEKMECE ACILSIN
+  SEPET IKONU CEKMECEYI ACSIN
 
   ------------------------------------------------------------------
   ISTEK
 
-  "Sepet sayfasina hic yonlendirmesin, hep alttan sepeti acsin."
+  "Sepet sayfasina yonlendirmesin, alttan sepeti acsin."
 
   ------------------------------------------------------------------
-  ONCEKI SURUM VE NEDEN YETMEDI
+  SURUM GECMISI VE BU SURUMUN SEBEBI
 
-  Ilk surum yalnizca aria-controls="CartDrawer" tasiyan ogeleri
-  yakaliyordu. Temanin header ikonu bunu tasiyor
-  (snippets/header-icons.liquid):
+  1. surum yalnizca aria-controls="CartDrawer" tasiyan ogeleri
+     yakaliyordu. Yetmedi: magazada header'i yeniden yazan uygulama
+     gomulusu var, oge degistirildiginde bu isaret kaybolabiliyor ve
+     tiklama baglantinin href'ine dusuyordu.
 
-      <a href="{{ routes.cart_url }}" class="cart-drawer-button"
-         is="magnet-link" aria-controls="CartDrawer" ...>
+  2. surum bunu cozmek icin kurali "adresi sepet sayfasi olan HER
+     baglanti" seklinde genislettti. Cozdu ama COK GENISTI: sayfadaki
+     ucuncu taraf uygulamalarin (cark, sohbet, kampanya pencereleri)
+     kendi sepet baglantilarini da yakaliyordu. Yakalama evresinde
+     stopPropagation cagirdigimiz icin o uygulamalarin kendi tiklama
+     islevi hic calismiyordu.
 
-  Buna ragmen ikon hala /cart'a goturuyordu. Magazada header'i
-  yeniden yazan uygulama gomulusu var; oge degistirildiginde ya da
-  sarmalandiginda aria-controls kaybolabiliyor, o zaman eski surum
-  hicbir sey yapmayip baglantiyi serbest birakiyordu.
+  3. surum (bu dosya): kural yeniden daraltildi ama 1. surumun acigi
+     kapatilarak. Artik SADECE temanin kendi sepet kontrolleri
+     yakalaniyor, uc ayri isaretten HERHANGI BIRI yeterli:
 
-  Bu yuzden artik TEK bir isarete bagli degiliz. Iki olcutten biri
-  yeterli:
+       [aria-controls="CartDrawer"]  temanin standart toggle'i
+       a.cart-drawer-button          header'daki sepet ikonu
+                                     (snippets/header-icons.liquid)
+       [data-aln-sepet]              yapiskan urun cubugundaki sepet
+                                     (sections/apple-local-nav.liquid)
 
-    1. aria-controls="CartDrawer" tasiyan herhangi bir oge, ya da
-    2. adresi sepet sayfasi olan herhangi bir <a>
-
-  Ikincisi istegin birebir karsiligi: sepet sayfasina goturen ne
-  varsa cekmeceyi aciyor.
+     Uc isaretin ayni anda kaybolmasi beklenmiyor; biri gitse digeri
+     yakaliyor. Ve hicbiri uygulama pencerelerinde bulunmadigi icin
+     onlarin islerine karismiyoruz.
 
   ------------------------------------------------------------------
-  SINIRLAR -- NELERE DOKUNULMUYOR
+  SINIRLAR
 
-  - /cart/add, /cart/change, /cart/clear, /cart/checkout gibi ISLEM
-    adresleri: yalnizca yol tam olarak /cart (ya da /tr/cart gibi dil
-    onekli hali) ise yakalaniyor.
-  - Baska alan adina giden baglantilar.
-  - target ile yeni sekmede acilanlar, indirme baglantilari.
   - Ctrl/Cmd/Shift/Alt ile ya da orta tusla tiklama: tarayicinin
     kendi davranisi korunuyor.
   - Cekmece DOM'da yoksa (sepet sayfasinin kendisi, ya da
-    settings.cart_type "drawer" degilse) hicbir sey yapilmiyor,
+    settings.cart_type "drawer" degilse) hicbir sey yapilmiyor;
     baglanti kendi href'ine gidiyor. JS kapaliysa da ayni.
 
   ------------------------------------------------------------------
   NASIL
 
-  Dinleyici dugume degil BELGEYE, yakalama evresinde takili. Boylece
+  Dinleyici dugume degil BELGEYE, yakalama evresinde takili; boylece
   dugme kac kez degistirilirse degistirilsin tiklama yakalaniyor.
   Temanin kendi dinleyicisi hala duruyorsa cift tetikleme olmasin
   diye stopPropagation cagriliyor.
@@ -59,19 +59,13 @@
         this.open ? this.hide() : this.show(event.currentTarget);
       }
 
-  Kapatma yalnizca temanin kendi toggle'lari icin (aria-controls
-  tasiyanlar). Duz bir sepet baglantisi her zaman ACAR, kapatmaz --
-  yoksa cekmece acikken icindeki bir sepet baglantisina basmak onu
-  kapatirdi.
-
   YUKSELTME BEKLENIYOR: ozel oge tanimlanmadan once tiklanirsa
   cekmecenin show/hide metotlari henuz yoktur. 2 saniyeye kadar 50ms
   araliklarla bekleniyor; o sure icinde hazir olmazsa sepet sayfasina
   gidiliyor.
 
   Cekmece once kimlikle (#CartDrawer), bulunamazsa etiket adiyla
-  (<cart-drawer>) araniyor -- kimlik bir tema guncellemesinde
-  degisirse davranis yine ayakta kalsin diye.
+  (<cart-drawer>) araniyor.
 
   sections/header.liquid, snippets/header-icons.liquid ve
   sections/cart-drawer.liquid dosyalarina DOKUNULMADI.
@@ -81,38 +75,21 @@
     'use strict';
 
     var YEDEK = {{ routes.cart_url | json }};
+    var SECICI = '[aria-controls="CartDrawer"], a.cart-drawer-button, [data-aln-sepet]';
 
     function cekmeceyiBul() {
       return document.getElementById('CartDrawer') ||
              document.querySelector('cart-drawer');
     }
 
-    /* Yol tam olarak sepet sayfasi mi? /cart, /cart/ ve /tr/cart gibi
-       dil onekli haller evet; /cart/add gibi islem adresleri hayir. */
-    function sepetAdresiMi(a) {
-      if (a.hasAttribute('download')) return false;
-      var hedefPencere = a.getAttribute('target');
-      if (hedefPencere && hedefPencere !== '_self') return false;
-      var u;
-      try { u = new URL(a.href, location.href); } catch (e) { return false; }
-      if (u.origin !== location.origin) return false;
-      return /(^|\/)cart\/?$/.test(u.pathname);
-    }
-
-    function tetikleyiciBul(hedef) {
-      if (!hedef || !hedef.closest) return null;
-      var d = hedef.closest('[aria-controls="CartDrawer"]');
-      if (d) return d;
-      var a = hedef.closest('a[href]');
-      if (a && sepetAdresiMi(a)) return a;
-      return null;
-    }
-
     document.addEventListener('click', function (e) {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       if (e.button !== 0) return;
 
-      var dugme = tetikleyiciBul(e.target);
+      var hedef = e.target;
+      if (!hedef || !hedef.closest) return;
+
+      var dugme = hedef.closest(SECICI);
       if (!dugme) return;
 
       var cekmece = cekmeceyiBul();
@@ -121,12 +98,10 @@
       e.preventDefault();
       e.stopPropagation();
 
-      var kapatabilir = dugme.hasAttribute('aria-controls');
       var deneme = 0;
-
       (function ac() {
         if (typeof cekmece.show === 'function') {
-          if (kapatabilir && cekmece.hasAttribute('open')) cekmece.hide();
+          if (cekmece.hasAttribute('open')) cekmece.hide();
           else cekmece.show(dugme);
           return;
         }
