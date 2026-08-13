@@ -206,6 +206,12 @@
       butun sayfalarda gecerli; ayrintili gerekce dosyanin icinde.
     {%- endcomment -%}
     {%- render 'tt-sepet-cekmece' -%}
+    {%- comment -%}
+      Cark kupon seridi header'i (ustte) ya da "Sepete ekle"yi (altta)
+      kapatiyordu; header'in altina oturtuluyor. Gerekce dosyanin
+      icinde.
+    {%- endcomment -%}
+    {%- render 'tt-kupon-cubugu' -%}
     {%- render 'tt-yapilandirma' -%}
   </body>
 </html>

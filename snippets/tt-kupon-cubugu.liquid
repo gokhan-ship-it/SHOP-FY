@@ -1,0 +1,130 @@
+{%- comment -%}
+  CARK KUPON CUBUGU: HEADER'IN ALTINA OTURSUN
+
+  ------------------------------------------------------------------
+  DURUM
+
+  Cark uygulamasi (Wheelio) kod alindiktan sonra ekrana tam genislikte
+  bir serit basiyor: kupon kodu + kalan sure + kapatma. Uygulamanin
+  ayarinda bu seridin yeri yalnizca UST ya da ALT olabiliyor ve ikisi
+  de bir seyi kapatiyor:
+
+    ust  -> temanin header'ini kapatiyor
+    alt  -> urun sayfasindaki "Sepete ekle" dugmesini kapatiyor
+
+  Istenen yer ikisinin arasi: header'in hemen ALTI.
+
+  ------------------------------------------------------------------
+  NASIL
+
+  Serit uygulamanin kendi ogesi, bizim isaretimiz yok. Bu yuzden:
+
+  1. Aday havuzu yalnizca "wlo" gecen ogeler. Bu sinir bilincli --
+     boylece yanlislikla baska bir sabit ogeyi (sohbet balonu, cerez
+     uyarisi, bizim yapiskan cubugumuz) oynatma ihtimali yok. Cark
+     uygulamasinin butun ogeleri wlo onekli; cerez adlari da oyle
+     (wlo-codebar-code / -counter / -time).
+
+  2. Adaylar arasindan SERIT olani seciliyor: position fixed, ekran
+     genisliginin en az %60'i kadar genis, 160px'den kisa. Carkin
+     kendi penceresi bu olcuye uymuyor, disarida kaliyor.
+
+  3. Ustteki tema kabugunun alt kenari olculuyor (header ya da bizim
+     yapiskan urun cubugumuz -- hangisi gorunuyorsa). Serit oraya
+     sabitleniyor: top = o deger, bottom = auto.
+
+  Serit bulunamazsa hicbir sey yapilmiyor. Uygulama seridin adini
+  degistirirse ya da kaldirirsa kural bosa duser, sayfa aynen kalir.
+
+  Olcum tek seferlik degil: serit sayfa acildiktan sonra enjekte
+  ediliyor, header'in yuksekligi de ekran donunce degisiyor. Bu
+  yuzden yukleme, yeniden boyutlandirma ve DOM degisikliklerinde
+  yeniden hesaplaniyor.
+
+  KAPSAM: butun sayfalar. Serit her sayfada cikabildigi icin tek bir
+  sablona baglanmadi. Kapisi layout/theme.liquid icinde.
+{%- endcomment -%}
+<script>
+  (function () {
+    'use strict';
+
+    var UST_KABUK = [
+      "header[is='sticky-header']",
+      '[data-aln-kok]',
+      '[id$="__header"]',
+      '#shopify-section-header'
+    ];
+
+    function gorunur(el) {
+      var s = window.getComputedStyle(el);
+      return s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity || '1') > 0;
+    }
+
+    /* Ust kenara yapisik, gorunur kabuk ogelerinin en alt kenari. */
+    function ustYukseklik() {
+      var en = 0;
+      for (var i = 0; i < UST_KABUK.length; i++) {
+        var el = document.querySelector(UST_KABUK[i]);
+        if (!el || !gorunur(el)) continue;
+        var r = el.getBoundingClientRect();
+        if (r.height <= 0) continue;
+        if (r.top > 8) continue;
+        if (r.bottom > en) en = r.bottom;
+      }
+      return Math.max(0, Math.round(en));
+    }
+
+    function seridiBul() {
+      var adaylar = document.querySelectorAll('[id*="wlo" i], [class*="wlo" i]');
+      for (var i = 0; i < adaylar.length; i++) {
+        var el = adaylar[i];
+        if (window.getComputedStyle(el).position !== 'fixed') continue;
+        var r = el.getBoundingClientRect();
+        if (r.height <= 0 || r.height > 160) continue;
+        if (r.width < window.innerWidth * 0.6) continue;
+        return el;
+      }
+      return null;
+    }
+
+    var sonDeger = null;
+
+    function yerlestir() {
+      var serit = seridiBul();
+      if (!serit) return;
+      var y = ustYukseklik() + 'px';
+      if (serit.style.top === y && sonDeger === y) return;
+      serit.style.setProperty('top', y, 'important');
+      serit.style.setProperty('bottom', 'auto', 'important');
+      sonDeger = y;
+    }
+
+    function baslat() {
+      yerlestir();
+      // Serit gec enjekte edilebiliyor; birkac kez daha bakiyoruz.
+      var n = 0;
+      var z = window.setInterval(function () {
+        yerlestir();
+        if (++n > 20) window.clearInterval(z);
+      }, 500);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', baslat);
+    } else {
+      baslat();
+    }
+
+    window.addEventListener('resize', yerlestir);
+    window.addEventListener('orientationchange', yerlestir);
+
+    if (window.MutationObserver) {
+      var bekleyen = false;
+      new MutationObserver(function () {
+        if (bekleyen) return;
+        bekleyen = true;
+        window.setTimeout(function () { bekleyen = false; yerlestir(); }, 120);
+      }).observe(document.body, { childList: true, subtree: true });
+    }
+  })();
+</script>
