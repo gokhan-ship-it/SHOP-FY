@@ -1,0 +1,697 @@
+{%- comment -%}
+  TT BASLIK -- Apple tarzi sayfa basligi
+
+  ------------------------------------------------------------------
+  NEDEN YENI BOLUM
+
+  apple-local-nav'in "logo ortada" modu dugme diye bir sey hic
+  dusunulmeden yazilmis: urun adini ve dugmeyi siliyor, sag tarafi
+  normal akisa donduruyor. Uzerine dugme iliştirme denemeleri her
+  seferinde baska bir varsayimi kirdi. Bu dosya o modun yamasi degil,
+  istenen davranisin kendi bolumu. apple-local-nav'a DOKUNULMUYOR;
+  iki bolum yan yana yasayabilir.
+
+  ------------------------------------------------------------------
+  DUZEN
+
+    solda    hamburger (kendi tam ekran menusu)
+    ortada   logo -- mutlak konumlu, iki yandaki gruplarin genisligi
+             farkli olsa da tam ortada kaliyor
+    sagda    dugme + arama + sepet
+
+  Dugme baslangicta YOK. Sayfa "esik_px" kadar kaydirilinca soldan
+  acilarak beliriyor (max-width + opacity). Gizliyken hic yer
+  kaplamiyor, yani sayfa tepesinde ikonlar saga tam dayali duruyor ve
+  belirirken zipramaya sebep olmuyor.
+
+  ------------------------------------------------------------------
+  DUGMENIN IKI BICIMI
+
+    Tek baglanti : "bol_1"/"bol_2" bos -> dugme dogrudan cta_bag'e
+                   giden bir <a>. Ornek: koleksiyon sayfalarinda
+                   "Ürünü öğren".
+    Bolunen      : ikisi de dolu -> dugme bir <button>; tiklaninca
+                   yerini iki baglanti aliyor. Ornek: single bilgi
+                   sayfasinda "Satın Al" -> Kadın / Erkek.
+
+  Bolunme, bir sure dokunulmazsa kendi kendine geri kapaniyor
+  (geri_sure). Disari tiklamak ve Esc de kapatiyor.
+
+  ------------------------------------------------------------------
+  MENU KENDI CEKMECESI
+
+  Temanin kendi menu cekmecesi (MenuDrawer) header bolumunun icinde.
+  Bu baslik temanin header'ini gizledigi icin o cekmece de gizlenirdi.
+  Bu yuzden menu burada kendi cekmecesiyle geliyor; icerik ayni
+  navigasyon listesinden (varsayilan main-menu) okunuyor, yani
+  "eski bardaki menu" ile ayni.
+
+  Arama ve sepet TEMANIN kendi cekmecelerine baglaniyor
+  (aria-controls="SearchDrawer" / "CartDrawer"); onlar overlay
+  grubunda, header'dan bagimsiz, gizlenmiyorlar. Boylece sepet sayaci,
+  arama onerileri gibi her sey temanin kendi mantigiyla calisiyor.
+
+  ------------------------------------------------------------------
+  ERISILEBILIRLIK
+
+  - Hamburger ve dugme gercek <button>; bolunmus secenekler <a>.
+  - Menu acikken sayfa kaydirmasi kilitleniyor, Esc kapatiyor,
+    odak menunun ilk baglantisina gidiyor ve kapaninca dugmeye
+    donuyor.
+  - Dugme gizliyken pointer-events: none + aria-hidden, yani klavye
+    ve ekran okuyucu da gormuyor.
+
+  Bolum tag'i "section" ve konumu fixed; sablondaki sirasi yalnizca
+  ne zaman belirecegini degil, hicbir seyi etkilemiyor -- istenen
+  yere konabilir.
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+
+  assign bol_var = false
+  if s.bol_1_metni != blank and s.bol_2_metni != blank
+    assign bol_var = true
+  endif
+
+  assign menu = linklists[s.menu]
+-%}
+
+{%- if s.aktif -%}
+{%- capture c_zemin -%}
+  {%- assign a = s.zemin_saydam | divided_by: 100.0 -%}
+  {{ s.zemin | color_modify: 'alpha', a }}
+{%- endcapture -%}
+
+<style>
+  /* ---------------- cubuk ---------------- */
+  .tth-{{ sid }} {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: {{ s.z_kat }};
+    box-sizing: border-box;
+    height: {{ s.bar_yuk_m }}px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 {{ s.yan_bosluk }}px;
+    background: {{ c_zemin | strip }};
+    -webkit-backdrop-filter: blur({{ s.bulanik }}px) saturate(180%);
+    backdrop-filter: blur({{ s.bulanik }}px) saturate(180%);
+    border-bottom: 1px solid {{ s.kenar_rengi }};
+  }
+
+  /* Cubuk sabit; biraktigi bosluk govdeye geri veriliyor ki sayfanin
+     ilk ogesi altinda kalmasin. */
+  body { padding-top: {{ s.bar_yuk_m }}px; }
+
+  {%- if s.header_gizle and s.header_secici != blank %}
+  /* Temanin kendi basligi bu sayfada tamamen kalkiyor. CSS ile
+     yapiliyor: acilista bir an bile gorunmuyor, yerlesim kaymasi
+     (CLS) olusmuyor. */
+  {{ s.header_secici }} { display: none !important; }
+  {%- endif %}
+
+  @media (min-width: 750px) {
+    .tth-{{ sid }} {
+      height: {{ s.bar_yuk_d }}px;
+      padding: 0 {{ s.yan_bosluk_d }}px;
+    }
+    body { padding-top: {{ s.bar_yuk_d }}px; }
+  }
+
+  /* Yalnizca ekran okuyucular icin. Temanin sr-only sinifina
+     guvenmiyoruz: bu bolum tema degisse de dogru calismali. */
+  .tth-gizli-{{ sid }} {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ---------------- logo ---------------- */
+  /* Mutlak konumlu: iki yandaki gruplarin genisligi degisse de
+     (dugme belirip kaybolurken) logo yerinden oynamiyor. */
+  .tth-logo-{{ sid }} {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
+  }
+  .tth-logo-{{ sid }} img {
+    display: block;
+    height: {{ s.logo_yuk_m }}px;
+    width: auto;
+  }
+  @media (min-width: 750px) {
+    .tth-logo-{{ sid }} img { height: {{ s.logo_yuk_d }}px; }
+  }
+
+  /* ---------------- ikonlar ---------------- */
+  .tth-ikon-{{ sid }} {
+    display: inline-flex;
+    align-items: center;
+    gap: {{ s.ikon_ara }}px;
+    flex: 0 0 auto;
+  }
+  .tth-ikon-{{ sid }} a,
+  .tth-mbtn-{{ sid }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: {{ s.ikon_boyut | plus: 12 }}px;
+    height: {{ s.ikon_boyut | plus: 12 }}px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: {{ s.ikon_renk }};
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tth-{{ sid }} svg { display: block; }
+
+  /* Sepet sayaci */
+  .tth-sepet-{{ sid }} { position: relative; }
+  .tth-sayi-{{ sid }} {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    background: {{ s.rozet_zemin }};
+    color: {{ s.rozet_yazi }};
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 16px;
+    text-align: center;
+  }
+  .tth-sayi-{{ sid }}[hidden] { display: none; }
+
+  /* ---------------- hamburger ---------------- */
+  .tth-mbtn-{{ sid }} span {
+    position: relative;
+    display: block;
+    width: {{ s.ikon_boyut }}px;
+    height: {{ s.ikon_boyut }}px;
+  }
+  .tth-mbtn-{{ sid }} i {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    height: 1.8px;
+    border-radius: 2px;
+    background: {{ s.ikon_renk }};
+    transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 140ms linear;
+  }
+  .tth-mbtn-{{ sid }} i:nth-child(1) { top: 32%; }
+  .tth-mbtn-{{ sid }} i:nth-child(2) { top: 62%; }
+  .tth-{{ sid }}.is-menu .tth-mbtn-{{ sid }} i:nth-child(1) {
+    top: 47%;
+    transform: rotate(45deg);
+  }
+  .tth-{{ sid }}.is-menu .tth-mbtn-{{ sid }} i:nth-child(2) {
+    top: 47%;
+    transform: rotate(-45deg);
+  }
+
+  /* ---------------- sag grup ---------------- */
+  .tth-sag-{{ sid }} {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+
+  /* Dugme yuvasi: gizliyken hic yer kaplamiyor, belirirken soldan
+     aciliyor. max-width animasyonu icerigin genisligini bilmeyi
+     gerektirmiyor; overflow: hidden kirpiyor. */
+  .tth-yuva-{{ sid }} {
+    display: inline-flex;
+    align-items: center;
+    max-width: 0;
+    margin-right: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition:
+      max-width 320ms cubic-bezier(0.4, 0, 0.2, 1),
+      margin-right 320ms cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .tth-{{ sid }}.is-gecti .tth-yuva-{{ sid }} {
+    max-width: 420px;
+    margin-right: {{ s.ikon_ara }}px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ---------------- dugme ---------------- */
+  .tth-cta-{{ sid }},
+  .tth-btn-{{ sid }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: {{ s.dugme_yuk }}px;
+    padding: 0 {{ s.dugme_yatay }}px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: {{ s.dugme_boyut }}px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+                color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .tth-cta-{{ sid }} {
+    position: relative;
+    overflow: hidden;
+    background: {{ s.dugme_zemin }};
+    color: {{ s.dugme_yazi }};
+  }
+  .tth-cta-{{ sid }}:active { transform: scale(0.97); }
+
+  {%- if s.parlama %}
+  /* Arada bir gecen isik seridi. ::before kullaniliyor -- dokunma
+     hedefini kapatmiyor ve yaziyi etkilemiyor. */
+  .tth-cta-{{ sid }}::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(
+      105deg,
+      rgba(255, 255, 255, 0) 42%,
+      rgba(255, 255, 255, 0.45) 50%,
+      rgba(255, 255, 255, 0) 58%
+    );
+    background-repeat: no-repeat;
+    background-size: 220% 100%;
+    background-position: 160% 0;
+    animation: tth-parla-{{ sid }} {{ s.parlama_ara }}s ease-in-out infinite;
+  }
+  @keyframes tth-parla-{{ sid }} {
+    0%   { background-position: 160% 0; }
+    16%  { background-position: -60% 0; }
+    100% { background-position: -60% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tth-cta-{{ sid }}::before { animation: none; }
+  }
+  {%- endif %}
+
+  .tth-cta-yazi-{{ sid }} { position: relative; z-index: 1; }
+
+  /* Bolunmus iki secenek */
+  .tth-bol-{{ sid }} {
+    display: none;
+    align-items: center;
+    gap: {{ s.bol_ara }}px;
+  }
+  .tth-{{ sid }}.is-bolundu .tth-cta-{{ sid }} { display: none; }
+  .tth-{{ sid }}.is-bolundu .tth-bol-{{ sid }} { display: inline-flex; }
+
+  .tth-btn-{{ sid }}.is-dolu {
+    background: {{ s.dugme_zemin }};
+    color: {{ s.dugme_yazi }};
+  }
+  .tth-btn-{{ sid }}.is-cizgi {
+    background: transparent;
+    border-color: {{ s.cizgi_kenar }};
+    color: {{ s.cizgi_yazi }};
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .tth-cta-{{ sid }}:hover,
+    .tth-btn-{{ sid }}.is-dolu:hover { background: {{ s.dugme_hover }}; }
+    .tth-btn-{{ sid }}.is-cizgi:hover {
+      background: {{ s.dugme_zemin }};
+      border-color: {{ s.dugme_zemin }};
+      color: {{ s.dugme_yazi }};
+    }
+  }
+
+  /* ---------------- menu cekmecesi ---------------- */
+  .tth-menu-{{ sid }} {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: {{ s.z_kat | minus: 1 }};
+    box-sizing: border-box;
+    padding: calc({{ s.bar_yuk_m }}px + 24px) {{ s.yan_bosluk }}px 40px;
+    background: {{ s.menu_zemin }};
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition:
+      opacity 240ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 240ms cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s linear 240ms;
+  }
+  .tth-menu-{{ sid }}.is-acik {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 240ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 240ms cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s;
+  }
+  @media (min-width: 750px) {
+    .tth-menu-{{ sid }} {
+      padding: calc({{ s.bar_yuk_d }}px + 32px) {{ s.yan_bosluk_d }}px 56px;
+    }
+  }
+
+  .tth-menu-ic-{{ sid }} {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .tth-menu-{{ sid }} ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .tth-menu-{{ sid }} a {
+    display: block;
+    padding: 10px 0;
+    color: {{ s.menu_yazi }};
+    font-size: {{ s.menu_boyut }}px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    text-decoration: none;
+  }
+  .tth-menu-{{ sid }} li + li { border-top: 1px solid {{ s.menu_ayirac }}; }
+  .tth-menu-{{ sid }} .tth-alt-{{ sid }} a {
+    padding: 7px 0;
+    font-size: {{ s.menu_boyut | times: 0.6 | round }}px;
+    font-weight: 400;
+    color: {{ s.menu_alt_yazi }};
+  }
+  .tth-menu-{{ sid }} .tth-alt-{{ sid }} li + li { border-top: 0; }
+  .tth-menu-{{ sid }} .tth-alt-{{ sid }} { padding: 0 0 8px; }
+
+  /* Menu acikken arka sayfa kaymasin */
+  html.tth-kilit-{{ sid }},
+  html.tth-kilit-{{ sid }} body { overflow: hidden; }
+</style>
+
+<div class="tth-{{ sid }}" data-tth-kok data-tth-esik="{{ s.esik_px }}" data-tth-geri="{{ s.geri_sure }}">
+  {%- if s.menu_goster and menu != blank -%}
+    <button class="tth-mbtn-{{ sid }}" type="button" data-tth-menu-ac aria-expanded="false" aria-controls="tth-menu-{{ sid }}">
+      <span aria-hidden="true"><i></i><i></i></span>
+      <span class="tth-gizli-{{ sid }}">{{ s.menu_etiket | escape }}</span>
+    </button>
+  {%- else -%}
+    <span></span>
+  {%- endif -%}
+
+  {%- if s.logo != blank -%}
+    <a class="tth-logo-{{ sid }}" href="{{ s.logo_bag | default: routes.root_url }}">
+      <img src="{{ s.logo | image_url: height: 120 }}" alt="{{ shop.name | escape }}" loading="eager" width="240" height="120">
+    </a>
+  {%- endif -%}
+
+  <div class="tth-sag-{{ sid }}">
+    <div class="tth-yuva-{{ sid }}" data-tth-yuva aria-hidden="true">
+      {%- if bol_var -%}
+        <button class="tth-cta-{{ sid }}" type="button" data-tth-cta aria-expanded="false">
+          <span class="tth-cta-yazi-{{ sid }}">{{ s.cta_metni }}</span>
+        </button>
+        <div class="tth-bol-{{ sid }}" data-tth-bol>
+          <a class="tth-btn-{{ sid }} is-dolu" href="{{ s.bol_1_bag }}">{{ s.bol_1_metni }}</a>
+          <a class="tth-btn-{{ sid }} is-cizgi" href="{{ s.bol_2_bag }}">{{ s.bol_2_metni }}</a>
+        </div>
+      {%- else -%}
+        <a class="tth-cta-{{ sid }}" href="{{ s.cta_bag }}" data-tth-cta>
+          <span class="tth-cta-yazi-{{ sid }}">{{ s.cta_metni }}</span>
+        </a>
+      {%- endif -%}
+    </div>
+
+    <div class="tth-ikon-{{ sid }}">
+      {%- if s.ara_goster -%}
+        {%- comment -%} Temanin kendi arama cekmecesi; overlay grubunda, gizlenmiyor. {%- endcomment -%}
+        <a href="{{ routes.search_url }}" aria-controls="SearchDrawer" aria-expanded="false">
+          <span class="tth-gizli-{{ sid }}">{{ 'general.search.title' | t }}</span>
+          <svg width="{{ s.ikon_boyut }}" height="{{ s.ikon_boyut }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path>
+          </svg>
+        </a>
+      {%- endif -%}
+
+      {%- if s.sepet_goster -%}
+        {%- comment -%} Temanin sepet cekmecesi. snippets/tt-sepet-cekmece.liquid bu baglantiyi zaten cekmeceye yonlendiriyor. {%- endcomment -%}
+        <a class="tth-sepet-{{ sid }}" href="{{ routes.cart_url }}" aria-controls="CartDrawer" aria-expanded="false" data-no-instant>
+          <span class="tth-gizli-{{ sid }}">{{ 'general.cart.title' | t }}</span>
+          <svg width="{{ s.ikon_boyut }}" height="{{ s.ikon_boyut }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 8h12l-1 12H7L6 8z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path>
+          </svg>
+          <cart-count class="tth-sayi-{{ sid }}"{% if cart == empty %} hidden{% endif %}>{{ cart.item_count }}</cart-count>
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{%- if s.menu_goster and menu != blank -%}
+<div class="tth-menu-{{ sid }}" id="tth-menu-{{ sid }}" data-tth-menu role="dialog" aria-modal="true" aria-label="{{ s.menu_etiket | escape }}">
+  <div class="tth-menu-ic-{{ sid }}">
+    <ul>
+      {%- for baglanti in menu.links -%}
+        <li>
+          <a href="{{ baglanti.url }}">{{ baglanti.title }}</a>
+          {%- if baglanti.links.size > 0 -%}
+            <ul class="tth-alt-{{ sid }}">
+              {%- for alt in baglanti.links -%}
+                <li><a href="{{ alt.url }}">{{ alt.title }}</a></li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</div>
+{%- endif -%}
+
+<script>
+  (function () {
+    'use strict';
+
+    var kok = document.querySelector('#shopify-section-{{ sid }} [data-tth-kok]');
+    if (!kok) return;
+
+    var yuva    = kok.querySelector('[data-tth-yuva]');
+    var cta     = kok.querySelector('[data-tth-cta]');
+    var menuAc  = kok.querySelector('[data-tth-menu-ac]');
+    var menu    = document.querySelector('#shopify-section-{{ sid }} [data-tth-menu]');
+    var esik    = parseInt(kok.getAttribute('data-tth-esik'), 10) || 0;
+    var geri    = parseFloat(kok.getAttribute('data-tth-geri')) || 0;
+    var bolunur = {% if bol_var %}true{% else %}false{% endif %};
+
+    /* ---------- kaydirinca dugme ---------- */
+    /* Kaydirma olayi rAF ile kisiliyor: her karede en fazla bir olcum,
+       hizli kaydirmada titreme ya da yigilma olmuyor. */
+    var gorunur = false, bekleyen = false;
+
+    function durumuUygula() {
+      bekleyen = false;
+      var goster = (window.pageYOffset || document.documentElement.scrollTop) > esik;
+      if (goster === gorunur) return;
+      gorunur = goster;
+      kok.classList.toggle('is-gecti', goster);
+      if (yuva) yuva.setAttribute('aria-hidden', goster ? 'false' : 'true');
+      if (!goster) bolmeAyarla(false);
+    }
+
+    function kaydirma() {
+      if (bekleyen) return;
+      bekleyen = true;
+      window.requestAnimationFrame(durumuUygula);
+    }
+
+    window.addEventListener('scroll', kaydirma, { passive: true });
+    durumuUygula();
+
+    /* ---------- dugmenin bolunmesi ---------- */
+    var bolundu = false, geriSayac = null;
+
+    function geriSayacKur() {
+      if (geriSayac) { window.clearTimeout(geriSayac); geriSayac = null; }
+      if (!bolundu || geri <= 0) return;
+      geriSayac = window.setTimeout(function () { bolmeAyarla(false); }, geri * 1000);
+    }
+
+    function bolmeAyarla(ac) {
+      if (!bolunur || ac === bolundu) return;
+      bolundu = ac;
+      kok.classList.toggle('is-bolundu', ac);
+      if (cta) cta.setAttribute('aria-expanded', ac ? 'true' : 'false');
+      geriSayacKur();
+    }
+
+    if (bolunur && cta) {
+      cta.addEventListener('click', function (e) {
+        e.preventDefault();
+        bolmeAyarla(!bolundu);
+      });
+      /* Disari tiklayinca kapansin */
+      document.addEventListener('click', function (e) {
+        if (!bolundu) return;
+        if (kok.contains(e.target)) return;
+        bolmeAyarla(false);
+      });
+    }
+
+    /* ---------- menu ---------- */
+    var menuAcik = false, sonOdak = null;
+
+    function menuAyarla(ac) {
+      if (!menu || !menuAc || ac === menuAcik) return;
+      menuAcik = ac;
+      kok.classList.toggle('is-menu', ac);
+      menu.classList.toggle('is-acik', ac);
+      menuAc.setAttribute('aria-expanded', ac ? 'true' : 'false');
+      document.documentElement.classList.toggle('tth-kilit-{{ sid }}', ac);
+      if (ac) {
+        sonOdak = document.activeElement;
+        var ilk = menu.querySelector('a');
+        if (ilk) window.setTimeout(function () { ilk.focus(); }, 80);
+      } else if (sonOdak && sonOdak.focus) {
+        sonOdak.focus();
+      }
+    }
+
+    if (menuAc && menu) {
+      menuAc.addEventListener('click', function () { menuAyarla(!menuAcik); });
+      /* Menudeki bir baglantiya basilinca kapansin -- ayni sayfa ici
+         baglantilarda sayfa degismedigi icin menu acik kalirdi. */
+      menu.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('a')) menuAyarla(false);
+      });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (menuAcik) menuAyarla(false);
+      else if (bolundu) bolmeAyarla(false);
+    });
+
+    /* Tema duzenleyicide bolum yeniden cizilirse eski dinleyiciler
+       olu dugumlerde kalir; kilit sinifini birakmadan cikiyoruz. */
+    document.addEventListener('shopify:section:unload', function (e) {
+      if (e.detail && e.detail.sectionId === '{{ sid }}') {
+        document.documentElement.classList.remove('tth-kilit-{{ sid }}');
+      }
+    });
+  })();
+</script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "TT Başlık",
+  "tag": "section",
+  "class": "tt-baslik-section",
+  "settings": [
+    { "type": "checkbox", "id": "aktif", "label": "Başlığı göster", "default": true },
+
+    { "type": "header", "content": "Logo" },
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "url", "id": "logo_bag", "label": "Logo bağlantısı", "info": "Boşsa ana sayfaya gider." },
+    { "type": "range", "id": "logo_yuk_m", "label": "Logo yüksekliği — telefon", "min": 12, "max": 48, "step": 1, "unit": "px", "default": 22 },
+    { "type": "range", "id": "logo_yuk_d", "label": "Logo yüksekliği — masaüstü", "min": 12, "max": 64, "step": 1, "unit": "px", "default": 24 },
+
+    { "type": "header", "content": "Menü" },
+    { "type": "checkbox", "id": "menu_goster", "label": "Hamburger menü", "default": true },
+    { "type": "link_list", "id": "menu", "label": "Menü", "default": "main-menu" },
+    { "type": "text", "id": "menu_etiket", "label": "Menü etiketi (ekran okuyucu)", "default": "Menü" },
+    { "type": "range", "id": "menu_boyut", "label": "Menü yazı boyutu", "min": 14, "max": 40, "step": 1, "unit": "px", "default": 24 },
+
+    { "type": "header", "content": "Arama ve sepet" },
+    { "type": "checkbox", "id": "ara_goster", "label": "Arama", "default": true },
+    { "type": "checkbox", "id": "sepet_goster", "label": "Sepet", "default": true },
+
+    { "type": "header", "content": "Düğme" },
+    {
+      "type": "paragraph",
+      "content": "Düğme başlangıçta görünmez; sayfa aşağıdaki eşik kadar kaydırılınca belirir. Sol ve sağ seçeneğin İKİSİ de doluysa düğme tıklanınca ikiye bölünür; boş bırakılırsa düğme doğrudan kendi bağlantısına gider."
+    },
+    { "type": "text", "id": "cta_metni", "label": "Düğme metni", "default": "Satın Al" },
+    { "type": "url", "id": "cta_bag", "label": "Düğme bağlantısı", "info": "Yalnızca bölünmeyen düğmede kullanılır." },
+    { "type": "text", "id": "bol_1_metni", "label": "Sol seçenek" },
+    { "type": "url", "id": "bol_1_bag", "label": "Sol seçenek bağlantısı" },
+    { "type": "text", "id": "bol_2_metni", "label": "Sağ seçenek" },
+    { "type": "url", "id": "bol_2_bag", "label": "Sağ seçenek bağlantısı" },
+    { "type": "range", "id": "esik_px", "label": "Belirme eşiği", "min": 0, "max": 1200, "step": 20, "unit": "px", "default": 400 },
+    { "type": "range", "id": "geri_sure", "label": "Bölünme kaç saniyede kapansın", "min": 0, "max": 20, "step": 1, "unit": "sn", "default": 6, "info": "0 = kendiliğinden kapanmasın." },
+    { "type": "checkbox", "id": "parlama", "label": "Düğmenin üzerinden ışık geçsin", "default": true },
+    { "type": "range", "id": "parlama_ara", "label": "Işık aralığı", "min": 2, "max": 20, "step": 1, "unit": "sn", "default": 5 },
+
+    { "type": "header", "content": "Tema başlığı" },
+    { "type": "checkbox", "id": "header_gizle", "label": "Temanın kendi başlığını gizle", "default": true },
+    { "type": "text", "id": "header_secici", "label": "Gizlenecek başlık (CSS seçicisi)", "default": "[id$='__header']" },
+
+    { "type": "header", "content": "Renkler" },
+    { "type": "color", "id": "zemin", "label": "Çubuk zemini", "default": "#161617" },
+    { "type": "range", "id": "zemin_saydam", "label": "Zemin doluluğu", "min": 40, "max": 100, "step": 2, "unit": "%", "default": 72 },
+    { "type": "range", "id": "bulanik", "label": "Arka bulanıklık", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 20 },
+    { "type": "color", "id": "kenar_rengi", "label": "Alt çizgi", "default": "#2e2e30" },
+    { "type": "color", "id": "ikon_renk", "label": "İkon rengi", "default": "#ffffff" },
+    { "type": "color", "id": "rozet_zemin", "label": "Sepet rozeti", "default": "#0071e3" },
+    { "type": "color", "id": "rozet_yazi", "label": "Sepet rozeti yazısı", "default": "#ffffff" },
+    { "type": "color", "id": "dugme_zemin", "label": "Düğme rengi", "default": "#0071e3" },
+    { "type": "color", "id": "dugme_hover", "label": "Düğme üzerine gelince", "default": "#0077ed" },
+    { "type": "color", "id": "dugme_yazi", "label": "Düğme yazısı", "default": "#ffffff" },
+    { "type": "color", "id": "cizgi_kenar", "label": "Çizgili düğme kenarlığı", "default": "#2997ff" },
+    { "type": "color", "id": "cizgi_yazi", "label": "Çizgili düğme yazısı", "default": "#2997ff" },
+    { "type": "color", "id": "menu_zemin", "label": "Menü zemini", "default": "#000000" },
+    { "type": "color", "id": "menu_yazi", "label": "Menü yazısı", "default": "#ffffff" },
+    { "type": "color", "id": "menu_alt_yazi", "label": "Menü alt bağlantı yazısı", "default": "#a1a1a6" },
+    { "type": "color", "id": "menu_ayirac", "label": "Menü ayıracı", "default": "#2e2e30" },
+
+    { "type": "header", "content": "Ölçüler" },
+    { "type": "range", "id": "bar_yuk_m", "label": "Çubuk yüksekliği — telefon", "min": 40, "max": 80, "step": 2, "unit": "px", "default": 52 },
+    { "type": "range", "id": "bar_yuk_d", "label": "Çubuk yüksekliği — masaüstü", "min": 44, "max": 96, "step": 2, "unit": "px", "default": 56 },
+    { "type": "range", "id": "ikon_boyut", "label": "İkon boyutu", "min": 14, "max": 28, "step": 1, "unit": "px", "default": 20 },
+    { "type": "range", "id": "ikon_ara", "label": "İkon arası", "min": 6, "max": 28, "step": 1, "unit": "px", "default": 16 },
+    { "type": "range", "id": "dugme_yuk", "label": "Düğme yüksekliği", "min": 26, "max": 48, "step": 1, "unit": "px", "default": 34 },
+    { "type": "range", "id": "dugme_yatay", "label": "Düğme yan boşluğu", "min": 10, "max": 36, "step": 1, "unit": "px", "default": 20 },
+    { "type": "range", "id": "dugme_boyut", "label": "Düğme yazı boyutu", "min": 11, "max": 20, "step": 1, "unit": "px", "default": 14 },
+    { "type": "range", "id": "bol_ara", "label": "Bölünmüş düğmeler arası", "min": 4, "max": 20, "step": 1, "unit": "px", "default": 8 },
+    { "type": "range", "id": "yan_bosluk", "label": "Yan boşluk — telefon", "min": 8, "max": 40, "step": 2, "unit": "px", "default": 20 },
+    { "type": "range", "id": "yan_bosluk_d", "label": "Yan boşluk — masaüstü", "min": 12, "max": 80, "step": 2, "unit": "px", "default": 40 },
+    { "type": "range", "id": "z_kat", "label": "Üstte kalma katmanı", "min": 100, "max": 2000, "step": 50, "unit": "", "default": 1000 }
+  ],
+  "presets": [
+    { "name": "TT Başlık" }
+  ]
+}
+{% endschema %}
