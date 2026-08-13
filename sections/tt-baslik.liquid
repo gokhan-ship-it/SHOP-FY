@@ -244,14 +244,21 @@
     transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
                 opacity 140ms linear;
   }
-  .tth-mbtn-{{ sid }} i:nth-child(1) { top: 32%; }
-  .tth-mbtn-{{ sid }} i:nth-child(2) { top: 62%; }
+  /* Uc cizgi, esit araliklarla. Acikken ortadaki soluyor, alttaki ve
+     ustteki ortaya gelip capraz duruyor. */
+  .tth-mbtn-{{ sid }} i:nth-child(1) { top: 26%; }
+  .tth-mbtn-{{ sid }} i:nth-child(2) { top: 49%; }
+  .tth-mbtn-{{ sid }} i:nth-child(3) { top: 72%; }
   .tth-{{ sid }}.is-menu .tth-mbtn-{{ sid }} i:nth-child(1) {
-    top: 47%;
+    top: 49%;
     transform: rotate(45deg);
   }
   .tth-{{ sid }}.is-menu .tth-mbtn-{{ sid }} i:nth-child(2) {
-    top: 47%;
+    opacity: 0;
+    transform: scaleX(0.4);
+  }
+  .tth-{{ sid }}.is-menu .tth-mbtn-{{ sid }} i:nth-child(3) {
+    top: 49%;
     transform: rotate(-45deg);
   }
 
@@ -466,7 +473,7 @@
 <div class="tth-{{ sid }}" data-tth-kok data-tth-esik="{{ s.esik_px }}" data-tth-geri="{{ s.geri_sure }}">
   {%- if s.menu_goster and menu != blank -%}
     <button class="tth-mbtn-{{ sid }}" type="button" data-tth-menu-ac aria-expanded="false" aria-controls="tth-menu-{{ sid }}">
-      <span aria-hidden="true"><i></i><i></i></span>
+      <span aria-hidden="true"><i></i><i></i><i></i></span>
       <span class="tth-gizli-{{ sid }}">{{ s.menu_etiket | escape }}</span>
     </button>
   {%- else -%}
