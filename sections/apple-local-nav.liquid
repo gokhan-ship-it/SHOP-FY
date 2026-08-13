@@ -706,20 +706,25 @@
     transform: translateY(-50%);
   }
 
-  {%- unless s.orta_dugme and s.header_modu %}
+  {%- unless s.orta_dugme %}
   /* Baslik modu sag tarafi mutlak konumlu iki duruma ceviriyor;
      dugme gosterilmiyorsa ona ihtiyac yok, normal akisa
      donduruyoruz.
 
-     DIKKAT: orta_dugme acikken bu blok ATLANIYOR. Atlanmazsa iki sey
-     birden bozuluyordu:
+     DIKKAT: orta_dugme acikken bu blok ATLANIYOR -- baslik modu acik
+     olsun olmasin. Atlanmazsa iki sey birden bozuluyordu:
        - .aln-ust opacity 1 !important kaldigi icin arama + sepet
          ikonlari kaydirinca sonmuyor, dugmenin arkasinda duruyordu
-       - .aln-sag position: static + height: auto olunca .aln-yuva'nin
-         (position: absolute; height: 100%) dayanacagi kap kalmiyor,
-         dugmeler devasa cikiyordu
-     Ikisini de birakinca baslik modunun kendi iki durumlu duzeni
-     oldugu gibi calisiyor. */
+       - .aln-sag position: static kalinca .aln-yuva'nin (mutlak
+         konumlu, height: 100%) dayanacagi kap kalmiyor; en yakin
+         konumlu ata cubugun kendisi (position: fixed) oldugu icin
+         dugme cubugun sag ust kosesine yapisip tum yuksekligi
+         kapliyor -- "devasa dugme" bundandi.
+
+     Kosul bilerek yalnizca orta_dugme: baslik modu kapaliyken de
+     dugme gorunur oldugu icin ayni tuzak gecerli. O durumda temel
+     kurallar devrede kalir; ikonlar ve dugme akista yan yana,
+     ikisi de dogru olcude durur. */
   .aln-sag-{{ sid }} {
     position: static;
     display: flex;
