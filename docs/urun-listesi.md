@@ -452,3 +452,42 @@ DIKKAT: themeDuplicate ASENKRON. Kopyalama bitmeden yapilan
 themeFilesUpsert sessizce kayboluyor (userErrors bos donuyor ama dosya
 eski kaliyor). Yukledikten sonra checksumMd5 ile DOGRULAMAK sart;
 eslesmezse upsert tekrarlanmali.
+
+---
+
+# 3. geri donus -- GECIKMELI GELIYOR (13 Ağustos 2026)
+
+"Duzeltme 2" temasi yayina alindiktan HEMEN SONRA yapilan kontrol
+tertemizdi: 31 single, 36 couple ve 2 koleksiyon dogru sablondaydi.
+Bir sure sonra bakildiginda hepsi bozulmustu.
+
+DERS: Yayinlamadan hemen sonra bakmak yaniltiyor. GemPages'in
+yeniden kurulumu gecikmeli calisiyor; kontrol en az 30-60 dk sonra
+yapilmali.
+
+## Bu turda iki farkli bozulma bicimi var
+
+1. gp-template'e gecenler (11 single + 3 couple set):
+   Astor · Auron · Eight Stars White · Gemici Zincir · Gourmet Zincir ·
+   Infinity Glow · Kral Zincir · Luna · Noir · Nora · Velor
+   Astor + Chloe · Noir + Chloe Charm · Vantablack + Taşlı Kilit
+
+2. Sablonu tamamen BOSALTILANLAR ("" degeri) -- 15 single + 4 koleksiyon:
+   Aurora · Chloe · Chloe Gold · Gold · Lumin · Nova · Ocean Blue ·
+   Rose · Rose Pink · Santorin · Santorin Gold · Taşlıkilit Gold ·
+   Taşlıkilit Rose · Vantablack · White
+   Kadınlar İçin · Erkekler İçin · Ömür Boyu Garantili · Künyeler
+
+Ikinci bicim yeni: GemPages yalnizca kendi sablonunu dayatmiyor, bazen
+alanı bosaltiyor da. Yani "gp-template- ile baslayanlari ara" yeterli
+degil; DOGRU DEGERDE OLMAYAN her sey aranmali.
+
+Hepsi (26 single + 3 couple set + 2 koleksiyon = 31) tekrar duzeltildi.
+
+## Acik soru
+
+Tetikleyici gercekten tema yayinlamak mi, yoksa GemPages periyodik
+olarak mi kendini yeniden kuruyor? 3. geri donus yayinlamadan ~1 saat
+sonra fark edildi; arada baska yayinlama olmadi. Eger periyodikse
+yayinlamasak bile tekrarlayacak. Bunu ayirt etmek icin yayinlama
+yapilmadan bir kontrol daha planlandi.
