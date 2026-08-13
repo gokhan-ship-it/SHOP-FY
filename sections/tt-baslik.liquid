@@ -17,7 +17,8 @@
     solda    hamburger (kendi tam ekran menusu)
     ortada   logo -- mutlak konumlu, iki yandaki gruplarin genisligi
              farkli olsa da tam ortada kaliyor
-    sagda    dugme + arama + sepet
+    sagda    tepede arama + sepet; asagi kaydirinca onlarin yerine
+             dugme (ikisi ayni anda durmuyor)
 
   Dugme baslangicta YOK. Sayfa "esik_px" kadar kaydirilinca soldan
   acilarak beliriyor (max-width + opacity). Gizliyken hic yer
@@ -160,11 +161,29 @@
   }
 
   /* ---------------- ikonlar ---------------- */
+  /* Ikonlar ve dugme AYNI YERI paylasiyor: tepede ikonlar, asagi
+     kaydirinca onlar daralip kayboluyor ve yerine dugme aciliyor.
+     Ikisi ayni anda durursa dar ekranda ortadaki logoyu kapatiyorlar.
+
+     Iki tarafta da max-width + opacity kullaniliyor; mutlak konum
+     yok, yani konumlu ata / yukseklik gibi bir varsayima bagli
+     degil. Gizli olan taraf 0 genislikte, hic yer kaplamiyor. */
   .tth-ikon-{{ sid }} {
     display: inline-flex;
     align-items: center;
     gap: {{ s.ikon_ara }}px;
     flex: 0 0 auto;
+    max-width: 240px;
+    opacity: 1;
+    overflow: hidden;
+    transition:
+      max-width 320ms cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .tth-{{ sid }}.is-gecti .tth-ikon-{{ sid }} {
+    max-width: 0;
+    opacity: 0;
+    pointer-events: none;
   }
   .tth-ikon-{{ sid }} a,
   .tth-mbtn-{{ sid }} {
@@ -255,7 +274,7 @@
   }
   .tth-{{ sid }}.is-gecti .tth-yuva-{{ sid }} {
     max-width: 420px;
-    margin-right: {{ s.ikon_ara }}px;
+    margin-right: 0;
     opacity: 1;
     pointer-events: auto;
   }
@@ -455,7 +474,7 @@
       {%- endif -%}
     </div>
 
-    <div class="tth-ikon-{{ sid }}">
+    <div class="tth-ikon-{{ sid }}" data-tth-ikon>
       {%- if s.ara_goster -%}
         {%- comment -%} Temanin kendi arama cekmecesi; overlay grubunda, gizlenmiyor. {%- endcomment -%}
         <a href="{{ routes.search_url }}" aria-controls="SearchDrawer" aria-expanded="false">
@@ -509,6 +528,7 @@
     if (!kok) return;
 
     var yuva    = kok.querySelector('[data-tth-yuva]');
+    var ikonlar = kok.querySelector('[data-tth-ikon]');
     var cta     = kok.querySelector('[data-tth-cta]');
     var menuAc  = kok.querySelector('[data-tth-menu-ac]');
     var menu    = document.querySelector('#shopify-section-{{ sid }} [data-tth-menu]');
@@ -528,6 +548,8 @@
       gorunur = goster;
       kok.classList.toggle('is-gecti', goster);
       if (yuva) yuva.setAttribute('aria-hidden', goster ? 'false' : 'true');
+      /* Gorunmeyen taraf klavye ve ekran okuyucu icin de kapali. */
+      if (ikonlar) ikonlar.setAttribute('aria-hidden', goster ? 'true' : 'false');
       if (!goster) bolmeAyarla(false);
     }
 
