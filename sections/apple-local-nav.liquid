@@ -666,8 +666,14 @@
 
   /* --- yerlesim: logo ortada --- */
   /* Temanin kendi basligindaki duzen: solda menu, ortada logo, sagda
-     arama + sepet. Urun adi ve dugme bu modda hic gorunmuyor, yani
-     cubuk tek durumlu: kaydirinca ikonlar dugmeye donusmuyor.
+     arama + sepet. Urun adi bu modda hic gorunmuyor.
+
+     Dugme varsayilan olarak gizli, yani cubuk tek durumlu: kaydirinca
+     ikonlar dugmeye donusmuyor. "orta_dugme" ayari acilirsa gizleme
+     kalkiyor ve baslik modundaki iki durumlu davranis burada da
+     calisiyor: tepede arama + sepet, asagi kaydirinca (.is-gecti)
+     onlar solup yerine dugme geliyor. Logo ortada kaliyor, urun adi
+     yine gizli -- ortadaki logoyla ayni satirda iki metin catisirdi. */
 
      Isaretleme degismedi. Dugme DOM'da duruyor ama gizli; JS acilista
      yuva/cta/bol ucundan birini bulamazsa hic calismiyor (menu, arama
@@ -678,7 +684,9 @@
      gruplarin genisligi farkli olsa da logo cubugun tam ortasinda
      kaliyor. */
   {%- if s.yerlesim == 'orta' %}
+  {%- unless s.orta_dugme %}
   .aln-yuva-{{ sid }} { display: none !important; }
+  {%- endunless %}
   .aln-ad-{{ sid }} { display: none !important; }
 
   .aln-{{ sid }} { justify-content: flex-end; }
@@ -1469,12 +1477,19 @@
       "type": "select",
       "id": "yerlesim",
       "label": "Yerleşim",
-      "info": "Logo ortada seçilirse ürün adı ve düğme gizlenir; çubukta yalnızca menü, logo, arama ve sepet kalır.",
+      "info": "Logo ortada seçilirse ürün adı gizlenir; çubukta menü, logo, arama ve sepet kalır. Düğmeyi de göstermek için alttaki kutuyu işaretleyin.",
       "default": "sol",
       "options": [
         { "value": "sol", "label": "Logo solda, düğme sağda (ürün çubuğu)" },
         { "value": "orta", "label": "Menü solda, logo ortada, ikonlar sağda" }
       ]
+    },
+    {
+      "type": "checkbox",
+      "id": "orta_dugme",
+      "label": "Logo ortadayken düğme de olsun",
+      "default": false,
+      "info": "Yalnızca \"logo ortada\" yerleşiminde işe yarar. Başlık modu açıkken: sayfa tepesinde arama + sepet ikonları durur, aşağı kaydırınca onlar solup yerine düğme gelir. Logo ortada kalır, ürün adı yine gizlidir."
     },
     { "type": "header", "content": "Başlık modu" },
     {
