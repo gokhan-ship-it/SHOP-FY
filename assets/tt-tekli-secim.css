@@ -1,0 +1,227 @@
+/* ------------------------------------------------------------------
+   TEKLI URUN SAYFASI - SAG SUTUN SECIM KATMANI  (.tt-ts-*)
+
+   Ham madde segmenti + "Nasil acilsin?" secim kartlari + fiyat/taksit/
+   sepet mekanigi. Tema icindeki tt-tk-*, tt-fb-*, tt-kart-* kaliplariyla
+   ayni dil: --tt- on ekli token katmani, sabit olcek, gorsel deger yok.
+
+   Renkler tt-couple.liquid'deki token degerleriyle birebir ayni
+   (--tt-c-ink #1d1d1f / ink-2 #6e6e73 / ink-3 #86868b).
+   ------------------------------------------------------------------ */
+.tt-ts {
+  --tt-ts-ink: #1d1d1f;
+  --tt-ts-ink-2: #6e6e73;
+  --tt-ts-ink-3: #86868b;
+  --tt-ts-line: rgba(0, 0, 0, .14);
+  --tt-ts-yuzey: #f2f2f4;
+  --tt-ts-beyaz: #ffffff;
+
+  /* Bosluk olcegi: 4px tabanli, ara deger yok. */
+  --tt-ts-s2: 8px;
+  --tt-ts-s3: 12px;
+  --tt-ts-s4: 14px;
+  --tt-ts-s5: 20px;
+  --tt-ts-s6: 24px;
+
+  --tt-ts-hair: .5px;
+  --tt-ts-radius: 12px;
+  --tt-ts-pill: 999px;
+
+  color: var(--tt-ts-ink);
+  font-variant-numeric: tabular-nums;
+}
+.tt-ts *, .tt-ts *::before, .tt-ts *::after { box-sizing: border-box; }
+
+/* --- HAM MADDE etiketi --- */
+.tt-ts-etiket {
+  margin: 0 0 var(--tt-ts-s2);
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: .04em;
+  color: var(--tt-ts-ink-2);
+}
+
+/* --- Segment kontrolu (ham madde + Kadin/Erkek ayni gorsel dil) --- */
+.tt-ts-seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  width: 100%;
+  padding: 3px;
+  background: var(--tt-ts-yuzey);
+  border-radius: var(--tt-ts-pill);
+}
+.tt-ts-seg-h {
+  display: block;
+  width: 100%;
+  padding: 9px 6px;
+  border: 0;
+  border-radius: var(--tt-ts-pill);
+  background: transparent;
+  color: var(--tt-ts-ink-2);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  appearance: none;
+}
+.tt-ts-seg-h[aria-checked="true"] {
+  background: var(--tt-ts-beyaz);
+  border: var(--tt-ts-hair) solid var(--tt-ts-line);
+  color: var(--tt-ts-ink);
+}
+/* Gumus farki: hucrenin altinda, silik. */
+.tt-ts-seg-fark {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--tt-ts-ink-3);
+}
+.tt-ts-seg-fark:empty { display: none; }
+
+/* Segmentin altindaki tek boslugu buradan yonetiyoruz. */
+.tt-ts-hammadde { margin-bottom: var(--tt-ts-s6); }
+
+/* --- "Nasil acilsin?" baslik satiri --- */
+.tt-ts-baslik {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tt-ts-s3);
+  margin-bottom: 10px;
+}
+.tt-ts-baslik-m { font-size: 17px; font-weight: 500; line-height: 1.3; }
+.tt-ts-fark-link {
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--tt-ts-ink-2);
+  text-decoration: underline;
+}
+
+/* --- Secim kartlari --- */
+.tt-ts-kart {
+  position: relative;
+  display: block;
+  width: 100%;
+  border: var(--tt-ts-hair) solid var(--tt-ts-line);
+  border-radius: var(--tt-ts-radius);
+  padding: var(--tt-ts-s4);
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.tt-ts-kart--tek { margin-bottom: var(--tt-ts-s5); }
+.tt-ts-kart--set {
+  border: 2px solid var(--tt-ts-ink);
+  padding: 18px var(--tt-ts-s4) var(--tt-ts-s4);
+}
+
+/* Rozet kartin ust kenarina oturuyor. */
+.tt-ts-rozet {
+  position: absolute;
+  top: -12px;
+  left: var(--tt-ts-s4);
+  padding: 4px 12px;
+  border-radius: var(--tt-ts-pill);
+  background: var(--tt-ts-ink);
+  color: var(--tt-ts-beyaz);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.tt-ts-govde { display: flex; align-items: flex-start; gap: var(--tt-ts-s3); }
+
+/* Radio: secilmemis 1.5px cerceve, secili 5px kalinlikta koyu halka. */
+.tt-ts-radio {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  border: 1.5px solid var(--tt-ts-line);
+  border-radius: 50%;
+  background: var(--tt-ts-beyaz);
+}
+.tt-ts-kart[aria-checked="true"] .tt-ts-radio {
+  border: 5px solid var(--tt-ts-ink);
+}
+
+.tt-ts-icerik { flex: 1 1 auto; min-width: 0; }
+.tt-ts-ust {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tt-ts-s2);
+}
+.tt-ts-ust-sol, .tt-ts-ust-sag { font-size: 16px; font-weight: 500; line-height: 1.3; }
+.tt-ts-alt {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tt-ts-s2);
+  margin-top: 2px;
+}
+.tt-ts-alt-sol { font-size: 13px; line-height: 1.5; color: var(--tt-ts-ink-2); }
+.tt-ts-alt-sag {
+  flex: 0 0 auto;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tt-ts-ink-3);
+  text-decoration: line-through;
+}
+
+/* --- Ozet satiri + sepete ekle --- */
+.tt-ts-ozet {
+  margin: var(--tt-ts-s5) 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tt-ts-ink-2);
+}
+.tt-ts-ozet[hidden] { display: none; }
+.tt-ts-sepet {
+  display: block;
+  width: 100%;
+  margin-top: var(--tt-ts-s2);
+  padding: 15px;
+  border: 0;
+  border-radius: var(--tt-ts-pill);
+  background: var(--tt-ts-ink);
+  color: var(--tt-ts-beyaz);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+}
+.tt-ts-sepet[disabled] { opacity: .5; cursor: default; }
+
+@media (hover: hover) and (pointer: fine) {
+  .tt-ts-sepet:hover { opacity: .88; }
+  .tt-ts-seg-h:hover[aria-checked="false"] { color: var(--tt-ts-ink); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tt-ts * { transition: none !important; }
+}
+
+/* --- Set modunda temanin fiyat alanina yazilan tutarlar --- */
+.tt-ts-fiyat-set {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--tt-ts-ink, #1d1d1f);
+}
+.tt-ts-fiyat-eski {
+  margin-left: 8px;
+  font-size: 15px;
+  line-height: 1.2;
+  color: var(--tt-ts-ink-3, #86868b);
+}
+
+/* Native secici / native sepet butonu: yalnizca kendi katmanimiz
+   eksiksiz kuruldugunda gizleniyor. */
+.tt-ts-native-gizli { display: none !important; }

@@ -1,0 +1,171 @@
+{%- doc -%}
+  Tekli urun sayfasi sag sutun secim katmani.
+
+  Ham madde segmenti + "Nasil acilsin?" secim kartlari + fiyat/taksit/
+  sepet mekanigi. main-product bolumune bir "Ozel Liquid" (liquid) blogu
+  olarak yerlestirilir; bolumun kendi dosyasina dokunulmaz.
+
+  CALISMA BICIMI
+  Segment hicbir seyi taklit etmiyor: temanin <variant-picker> elementi
+  icindeki gercek radio input'u tetikliyor. Fiyat, adres satiri, form
+  ve stok durumu temanin kendi akisinda guncelleniyor. Native secici
+  yalnizca segment basariyla kurulduktan SONRA gizleniyor; JS calismazsa
+  sayfa eski haliyle tam calisir durumda kaliyor.
+
+  Taksit kutusu icin de ayni mantik: [data-tt-tk-veri] ozniteligi
+  guncelleniyor, taksit-tablosu.js onu her cagrida yeniden okudugu icin
+  hem satir hem modal dogru tutari gosteriyor. O dosyaya dokunulmuyor.
+
+  @param {string} [baslik] - "Nasil acilsin?" satirinin sol metni
+  @param {string} [fark_metin] - Karsilastirmaya giden linkin metni
+  @param {string} [fark_link] - Karsilastirma hedefi
+  @param {string} [hammadde_etiket] - Segmentin ustundeki etiket
+  @param {string} [tek_ust] - 1. kartin ust satiri
+  @param {string} [tek_alt] - 1. kartin alt satiri
+  @param {string} [set_ust] - 2. kartin ust satiri
+  @param {string} [set_alt] - 2. kartin alt satiri
+  @param {string} [set_rozet] - 2. kartin ust kenarindaki rozet
+  @param {number} [indirim] - Ikinci uruna uygulanan indirim yuzdesi
+  @param {string} [sepet_metin] - Sepete ekle butonunun metni
+
+  @example
+  {% render 'tt-tekli-secim' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign v_secili = product.selected_or_first_available_variant
+  assign t_baslik = baslik | default: 'Nasıl açılsın?'
+  assign t_fark = fark_metin | default: 'Farkı gör'
+  assign t_fark_link = fark_link | default: '/pages/couple-daha-fazla-bilgi-al'
+  assign t_hm = hammadde_etiket | default: 'HAM MADDE'
+  assign t_tek_ust = tek_ust | default: 'Belirlediğim tarihte'
+  assign t_tek_alt = tek_alt | default: '1 ürün · Sen yüklersin, seçtiğin gün açılır'
+  assign t_set_ust = set_ust | default: 'Buluştuğumuzda'
+  assign t_set_alt = set_alt | default: '2 ürün · İkiniz de yüklersiniz, her buluşmanızda açılır'
+  assign t_rozet = set_rozet | default: 'İkincisi yarı fiyatına'
+  assign t_sepet = sepet_metin | default: 'Sepete ekle'
+  assign p_indirim = indirim | default: 50
+
+  comment
+    Ham madde secenegi: adi degisebilir diye pozisyonuyla degil,
+    urunun tek/ilk secenegi olarak aliniyor.
+  endcomment
+  assign hm_option = product.options_with_values | first
+
+  comment
+    Segmentte gosterilecek fark: en ucuz varyanta gore. Sabit yazilmiyor,
+    varyant fiyatlarindan hesaplaniyor.
+  endcomment
+  assign en_ucuz = 0
+  for v in product.variants
+    if en_ucuz == 0 or v.price < en_ucuz
+      assign en_ucuz = v.price
+    endif
+  endfor
+-%}
+
+{%- unless product.has_only_default_variant -%}
+  {{ 'tt-tekli-secim.css' | asset_url | stylesheet_tag }}
+
+  <div class="tt-ts" data-tt-ts
+       data-tt-ts-indirim="{{ p_indirim }}"
+       data-tt-ts-form="ProductForm-{{ section.id }}-{{ product.id }}"
+       data-tt-ts-secici="VariantPicker-{{ section.id }}-{{ product.id }}">
+
+    {%- comment -%} --- HAM MADDE segmenti --- {%- endcomment -%}
+    <div class="tt-ts-hammadde">
+      <p class="tt-ts-etiket">{{ t_hm }}</p>
+      <div class="tt-ts-seg" role="radiogroup" aria-label="{{ hm_option.name | escape }}" data-tt-ts-hmseg>
+        {%- for deger in hm_option.values -%}
+          {%- liquid
+            comment
+              Fark dogrudan hesaplaniyor: ara degisken tutmuyoruz, boylece
+              Liquid'de tanimsiz nesne karsilastirmasi hic olusmuyor.
+            endcomment
+            assign fark = 0
+            for v in product.variants
+              if v.options[0] == deger and v.price > en_ucuz
+                assign fark = v.price | minus: en_ucuz
+                break
+              endif
+            endfor
+          -%}
+          <button type="button"
+                  class="tt-ts-seg-h"
+                  role="radio"
+                  data-tt-ts-hm="{{ deger | escape }}"
+                  aria-checked="{% if hm_option.selected_value == deger %}true{% else %}false{% endif %}">
+            {{ deger }}
+            <span class="tt-ts-seg-fark">{% if fark > 0 %}+{{ fark | money_without_currency | strip_html }} TL{% endif %}</span>
+          </button>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    {%- comment -%} --- "Nasil acilsin?" baslik satiri --- {%- endcomment -%}
+    <div class="tt-ts-baslik">
+      <span class="tt-ts-baslik-m">{{ t_baslik }}</span>
+      <a class="tt-ts-fark-link" href="{{ t_fark_link }}">{{ t_fark }}</a>
+    </div>
+
+    {%- comment -%} --- Kart 1: tek kapsul --- {%- endcomment -%}
+    <button type="button" class="tt-ts-kart tt-ts-kart--tek" role="radio"
+            data-tt-ts-mod="tek" aria-checked="true">
+      <span class="tt-ts-govde">
+        <span class="tt-ts-radio"></span>
+        <span class="tt-ts-icerik">
+          <span class="tt-ts-ust">
+            <span class="tt-ts-ust-sol">{{ t_tek_ust }}</span>
+            <span class="tt-ts-ust-sag" data-tt-ts-tek-fiyat>{{ v_secili.price | money }}</span>
+          </span>
+          <span class="tt-ts-alt">
+            <span class="tt-ts-alt-sol">{{ t_tek_alt }}</span>
+          </span>
+        </span>
+      </span>
+    </button>
+
+    {%- comment -%} --- Kart 2: ikili set --- {%- endcomment -%}
+    <button type="button" class="tt-ts-kart tt-ts-kart--set" role="radio"
+            data-tt-ts-mod="set" aria-checked="false">
+      <span class="tt-ts-rozet">{{ t_rozet }}</span>
+      <span class="tt-ts-govde">
+        <span class="tt-ts-radio"></span>
+        <span class="tt-ts-icerik">
+          <span class="tt-ts-ust">
+            <span class="tt-ts-ust-sol">{{ t_set_ust }}</span>
+            <span class="tt-ts-ust-sag" data-tt-ts-set-fiyat></span>
+          </span>
+          <span class="tt-ts-alt">
+            <span class="tt-ts-alt-sol">{{ t_set_alt }}</span>
+            <span class="tt-ts-alt-sag" data-tt-ts-set-eski></span>
+          </span>
+        </span>
+      </span>
+    </button>
+
+    {%- comment -%} --- Ozet + sepete ekle --- {%- endcomment -%}
+    <p class="tt-ts-ozet" data-tt-ts-ozet hidden></p>
+    <button type="submit" class="tt-ts-sepet" data-tt-ts-sepet
+            form="ProductForm-{{ section.id }}-{{ product.id }}">
+      {{ t_sepet }}
+    </button>
+
+    <script type="application/json" data-tt-ts-veri>
+      {
+        "urun": {{ product.title | json }},
+        "handle": {{ product.handle | json }},
+        "secenek": {{ hm_option.name | json }},
+        "indirim": {{ p_indirim | json }},
+        "sepetMetin": {{ t_sepet | json }},
+        "varyantlar": [
+          {%- for v in product.variants -%}
+            {"id": {{ v.id }}, "deger": {{ v.options[0] | json }}, "kurus": {{ v.price }}, "stok": {{ v.available | json }}}{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        ]
+      }
+    </script>
+  </div>
+
+  <script src="{{ 'tt-tekli-secim.js' | asset_url }}" defer></script>
+{%- endunless -%}
