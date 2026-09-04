@@ -1,20 +1,29 @@
 /* ------------------------------------------------------------------
    TEKLI URUN SAYFASI - SAG SUTUN SECIM KATMANI  (.tt-ts-*)
 
-   Ham madde segmenti + "Nasil acilsin?" secim kartlari + fiyat/taksit/
-   sepet mekanigi. Tema icindeki tt-tk-*, tt-fb-*, tt-kart-* kaliplariyla
-   ayni dil: --tt- on ekli token katmani, sabit olcek, gorsel deger yok.
-
-   Renkler tt-couple.liquid'deki token degerleriyle birebir ayni
-   (--tt-c-ink #1d1d1f / ink-2 #6e6e73 / ink-3 #86868b).
+   RENK YAKLASIMI
+   Bu katman sabit renk kullanmiyor. Metin rengini sayfadan miras aliyor
+   (currentColor), yuzey ve cizgileri ondan tureterek hesapliyor. Boylece
+   urun sayfasi koyu da olsa acik da olsa katman kendini uyduruyor;
+   "koyu dolu" ogeler koyu temada acik dolu olarak ciziliyor.
+   Zemin icin temanin kendi --color-background tokeni kullaniliyor,
+   bulunamazsa beyaza duşuyor.
    ------------------------------------------------------------------ */
 .tt-ts {
-  --tt-ts-ink: #1d1d1f;
-  --tt-ts-ink-2: #6e6e73;
-  --tt-ts-ink-3: #86868b;
-  --tt-ts-line: rgba(0, 0, 0, .14);
-  --tt-ts-yuzey: #f2f2f4;
-  --tt-ts-beyaz: #ffffff;
+  /* DIKKAT: CSS degiskenlerinde currentColor TANIMLANDIGI yerde degil
+     KULLANILDIGI yerde cozuluyor. Bu yuzden "koyu dolu" ogelerin
+     (rozet, sepet butonu) rengi currentColor'dan turetilemiyor: kendi
+     color'unu degistirdikleri an zemin de ona esitlenip oge kayboluyor.
+     Cozum: somut degerler. tt-tekli-secim.js sayfanin gercek metin ve
+     zemin rengini olcup --tt-ts-ink / --tt-ts-zemin degerlerini bu
+     ogenin ustune yaziyor. Asagidakiler yalnizca JS calismadigindaki
+     yedek; temanin kendi tokenini, o da yoksa acik temayi varsayiyor. */
+  --tt-ts-ink: rgb(var(--color-foreground, 29 29 31));
+  --tt-ts-zemin: rgb(var(--color-background, 255 255 255));
+  --tt-ts-ink-2: color-mix(in srgb, currentColor 62%, transparent);
+  --tt-ts-ink-3: color-mix(in srgb, currentColor 45%, transparent);
+  --tt-ts-line: color-mix(in srgb, currentColor 18%, transparent);
+  --tt-ts-yuzey: color-mix(in srgb, currentColor 8%, transparent);
 
   /* Bosluk olcegi: 4px tabanli, ara deger yok. */
   --tt-ts-s2: 8px;
@@ -27,10 +36,22 @@
   --tt-ts-radius: 12px;
   --tt-ts-pill: 999px;
 
-  color: var(--tt-ts-ink);
   font-variant-numeric: tabular-nums;
 }
 .tt-ts *, .tt-ts *::before, .tt-ts *::after { box-sizing: border-box; }
+
+/* color-mix desteklemeyen tarayicilar icin makul yedek. */
+@supports not (color: color-mix(in srgb, currentColor 50%, transparent)) {
+  .tt-ts {
+    --tt-ts-ink: currentColor;
+    --tt-ts-ink-2: currentColor;
+    --tt-ts-ink-3: currentColor;
+    --tt-ts-line: currentColor;
+    --tt-ts-yuzey: transparent;
+  }
+  .tt-ts-ink-2, .tt-ts-alt-sol, .tt-ts-etiket { opacity: .62; }
+  .tt-ts-seg { outline: var(--tt-ts-hair) solid currentColor; }
+}
 
 /* --- HAM MADDE etiketi --- */
 .tt-ts-etiket {
@@ -41,16 +62,16 @@
   color: var(--tt-ts-ink-2);
 }
 
-/* --- Segment kontrolu (ham madde + Kadin/Erkek ayni gorsel dil) --- */
+/* --- Segment kontrolu: ham madde ve Kadin/Erkek ayni gorsel dil --- */
 .tt-ts-seg {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  width: 100%;
   padding: 3px;
   background: var(--tt-ts-yuzey);
   border-radius: var(--tt-ts-pill);
 }
+.tt-ts-seg--tam { width: 100%; }
 .tt-ts-seg-h {
   display: block;
   width: 100%;
@@ -67,11 +88,13 @@
   appearance: none;
 }
 .tt-ts-seg-h[aria-checked="true"] {
-  background: var(--tt-ts-beyaz);
+  background: var(--tt-ts-zemin);
   border: var(--tt-ts-hair) solid var(--tt-ts-line);
   color: var(--tt-ts-ink);
 }
-/* Gumus farki: hucrenin altinda, silik. */
+/* Kadin/Erkek segmenti daha kucuk olcekte, ayni dil. */
+.tt-ts-seg--kucuk .tt-ts-seg-h { padding: 5px 14px; font-size: 12px; }
+
 .tt-ts-seg-fark {
   display: block;
   margin-top: 2px;
@@ -80,8 +103,6 @@
   color: var(--tt-ts-ink-3);
 }
 .tt-ts-seg-fark:empty { display: none; }
-
-/* Segmentin altindaki tek boslugu buradan yonetiyoruz. */
 .tt-ts-hammadde { margin-bottom: var(--tt-ts-s6); }
 
 /* --- "Nasil acilsin?" baslik satiri --- */
@@ -119,8 +140,6 @@
   border: 2px solid var(--tt-ts-ink);
   padding: 18px var(--tt-ts-s4) var(--tt-ts-s4);
 }
-
-/* Rozet kartin ust kenarina oturuyor. */
 .tt-ts-rozet {
   position: absolute;
   top: -12px;
@@ -128,15 +147,13 @@
   padding: 4px 12px;
   border-radius: var(--tt-ts-pill);
   background: var(--tt-ts-ink);
-  color: var(--tt-ts-beyaz);
+  color: var(--tt-ts-zemin);
   font-size: 12px;
   line-height: 1.2;
   white-space: nowrap;
 }
 
 .tt-ts-govde { display: flex; align-items: flex-start; gap: var(--tt-ts-s3); }
-
-/* Radio: secilmemis 1.5px cerceve, secili 5px kalinlikta koyu halka. */
 .tt-ts-radio {
   flex: 0 0 auto;
   width: 18px;
@@ -144,11 +161,9 @@
   margin-top: 3px;
   border: 1.5px solid var(--tt-ts-line);
   border-radius: 50%;
-  background: var(--tt-ts-beyaz);
+  background: var(--tt-ts-zemin);
 }
-.tt-ts-kart[aria-checked="true"] .tt-ts-radio {
-  border: 5px solid var(--tt-ts-ink);
-}
+.tt-ts-kart[aria-checked="true"] .tt-ts-radio { border: 5px solid var(--tt-ts-ink); }
 
 .tt-ts-icerik { flex: 1 1 auto; min-width: 0; }
 .tt-ts-ust {
@@ -158,11 +173,12 @@
   gap: var(--tt-ts-s2);
 }
 .tt-ts-ust-sol, .tt-ts-ust-sag { font-size: 16px; font-weight: 500; line-height: 1.3; }
+.tt-ts-ust-sag { flex: 0 0 auto; }
 .tt-ts-alt {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--tt-ts-s2);
+  gap: var(--tt-ts-s3);
   margin-top: 2px;
 }
 .tt-ts-alt-sol { font-size: 13px; line-height: 1.5; color: var(--tt-ts-ink-2); }
@@ -174,7 +190,175 @@
   text-decoration: line-through;
 }
 
-/* --- Ozet satiri + sepete ekle --- */
+/* ------------------------------------------------------------------
+   IKINCI URUN BOLUMU - yalnizca ikili set secilinken aciliyor
+   ------------------------------------------------------------------ */
+.tt-ts-ikinci { display: none; }
+.tt-ts-kart--set[aria-checked="true"] .tt-ts-ikinci { display: block; }
+
+.tt-ts-ayrac {
+  height: var(--tt-ts-hair);
+  margin: var(--tt-ts-s4) 0;
+  background: var(--tt-ts-line);
+}
+.tt-ts-not {
+  display: flex;
+  align-items: center;
+  gap: var(--tt-ts-s2);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--tt-ts-ink-2);
+}
+.tt-ts-not svg { flex: 0 0 auto; width: 15px; height: 15px; }
+
+.tt-ts-secsatir {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tt-ts-s3);
+  margin-top: var(--tt-ts-s4);
+}
+.tt-ts-secsatir-m { font-size: 14px; font-weight: 500; line-height: 1.3; }
+
+.tt-ts-sirala {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tt-ts-s3);
+  margin-top: var(--tt-ts-s3);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--tt-ts-ink-2);
+}
+.tt-ts-sirala-btn {
+  flex: 0 0 auto;
+  padding: 5px 12px;
+  border: var(--tt-ts-hair) solid var(--tt-ts-line);
+  border-radius: var(--tt-ts-pill);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+/* --- Urun grid'i: 3 sutun, 8px aralik --- */
+.tt-ts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--tt-ts-s2);
+  margin-top: var(--tt-ts-s3);
+}
+.tt-ts-karo {
+  position: relative;
+  display: block;
+  padding: 6px;
+  border: var(--tt-ts-hair) solid var(--tt-ts-line);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.tt-ts-karo[aria-checked="true"] { border: 1.5px solid var(--tt-ts-ink); }
+.tt-ts-karo-gorsel {
+  display: block;
+  width: 100%;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--tt-ts-yuzey);
+}
+.tt-ts-karo-ad {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tt-ts-karo-hm {
+  display: block;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--tt-ts-ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Karo dar (3 sutun, ~100px): tutarlar yuvarlanmis ve tek satirda.
+   Sigmazsa ustu cizili tutar gizleniyor, indirimli tutar hep gorunuyor. */
+.tt-ts-karo-fiyat {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.tt-ts-karo-eski {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 11px;
+  color: var(--tt-ts-ink-3);
+  text-decoration: line-through;
+}
+/* Secili karo: sag ust kosede koyu dolu daire icinde tik. */
+.tt-ts-karo-tik {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--tt-ts-ink);
+  color: var(--tt-ts-zemin);
+}
+.tt-ts-karo[aria-checked="true"] .tt-ts-karo-tik { display: block; }
+.tt-ts-karo-tik svg { display: block; width: 100%; height: 100%; }
+
+/* "Tumunu gor" cikisi */
+.tt-ts-karo--tum {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--tt-ts-ink-2);
+}
+.tt-ts-karo--tum svg { width: 18px; height: 18px; }
+
+/* Grid alti bilgi satiri */
+.tt-ts-secili {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tt-ts-s3);
+  margin-top: var(--tt-ts-s3);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.tt-ts-secili-ad { color: var(--tt-ts-ink-2); min-width: 0; }
+.tt-ts-secili-link {
+  flex: 0 0 auto;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.tt-ts-secili-link[hidden] { display: none; }
+
+/* --- Ozet + sepete ekle --- */
 .tt-ts-ozet {
   margin: var(--tt-ts-s5) 0 0;
   font-size: 13px;
@@ -190,7 +374,7 @@
   border: 0;
   border-radius: var(--tt-ts-pill);
   background: var(--tt-ts-ink);
-  color: var(--tt-ts-beyaz);
+  color: var(--tt-ts-zemin);
   font: inherit;
   font-size: 16px;
   font-weight: 500;
@@ -200,28 +384,20 @@
 }
 .tt-ts-sepet[disabled] { opacity: .5; cursor: default; }
 
-@media (hover: hover) and (pointer: fine) {
-  .tt-ts-sepet:hover { opacity: .88; }
-  .tt-ts-seg-h:hover[aria-checked="false"] { color: var(--tt-ts-ink); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .tt-ts * { transition: none !important; }
-}
-
 /* --- Set modunda temanin fiyat alanina yazilan tutarlar --- */
-.tt-ts-fiyat-set {
-  font-size: 22px;
-  font-weight: 500;
-  line-height: 1.2;
-  color: var(--tt-ts-ink, #1d1d1f);
-}
+.tt-ts-fiyat-set { font-size: 22px; font-weight: 500; line-height: 1.2; }
 .tt-ts-fiyat-eski {
   margin-left: 8px;
   font-size: 15px;
   line-height: 1.2;
-  color: var(--tt-ts-ink-3, #86868b);
+  opacity: .55;
 }
 
-/* Native secici / native sepet butonu: yalnizca kendi katmanimiz
-   eksiksiz kuruldugunda gizleniyor. */
+/* Native secici / sepet butonu: yalnizca katman eksiksiz kuruldugunda. */
 .tt-ts-native-gizli { display: none !important; }
+
+@media (hover: hover) and (pointer: fine) {
+  .tt-ts-sepet:hover { opacity: .88; }
+  .tt-ts-seg-h[aria-checked="false"]:hover { color: var(--tt-ts-ink); }
+}
+@media (prefers-reduced-motion: reduce) { .tt-ts * { transition: none !important; } }

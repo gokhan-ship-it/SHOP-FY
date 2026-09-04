@@ -1,17 +1,8 @@
 /* ------------------------------------------------------------------
    TEKLI URUN SAYFASI - SAG SUTUN SECIM KATMANI
 
-   Hicbir paylasilan dosyaya dokunmadan calisir:
-
-   - Ham madde segmenti temanin <variant-picker> elementindeki gercek
-     radio input'u tetikler. Fiyat, adres satiri, form ve stok durumu
-     temanin kendi akisinda guncellenir.
-   - Taksit kutusu icin [data-tt-tk-veri] ozniteligi guncellenir;
-     taksit-tablosu.js onu her cagrida yeniden okudugu icin hem satir
-     hem modal dogru tutari gosterir. O dosya degistirilmez.
-   - Native secici ve native sepet butonu YALNIZCA kurulum basariyla
-     bittikten sonra gizlenir. JS calismazsa sayfa eski haliyle tam
-     calisir kalir.
+   Hicbir paylasilan dosyaya dokunmadan calisir. Ayrintili gerekce icin
+   snippets/tt-tekli-secim.liquid basindaki nota bakin.
    ------------------------------------------------------------------ */
 (function () {
   'use strict';
@@ -22,20 +13,50 @@
   if (!KOK) return;
 
   var V = null;
-  try {
-    V = JSON.parse(KOK.querySelector('[data-tt-ts-veri]').textContent);
-  } catch (e) { return; }
+  try { V = JSON.parse(KOK.querySelector('[data-tt-ts-veri]').textContent); } catch (e) { return; }
   if (!V || !V.varyantlar || !V.varyantlar.length) return;
+
+  /* Veri adasindaki listeler sondaki null ile kapaniyor (Liquid'de
+     virgul kacinmak icin); burada temizleniyor. */
+  var GRUP = {};
+  ['kadin', 'erkek'].forEach(function (g) {
+    var k = (V.gruplar && V.gruplar[g]) || { urunler: [] };
+    GRUP[g] = {
+      url: k.url || '/collections/all',
+      urunler: (k.urunler || []).filter(function (u) { return u && u.varyantlar && u.varyantlar.length; })
+    };
+  });
 
   var secici = document.getElementById(KOK.getAttribute('data-tt-ts-secici'));
   var form = document.getElementById(KOK.getAttribute('data-tt-ts-form'));
-  var mod = 'tek';
 
-  /* --- Turkce para bicimi: binlik nokta, kurus virgul. --- */
+  var mod = 'tek';
+  var grup = 'kadin';
+  var siraGumus = false;   /* false: once celikler */
+  var ikinci = null;       /* {urun, varyant} */
+
+  /* ---------- Yardimcilar ---------- */
+  function bin(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
   function para(kurus) {
     var t = (Math.round(kurus) / 100).toFixed(2).split('.');
-    return t[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + t[1] + ' TL';
+    return bin(t[0]) + ',' + t[1] + ' TL';
   }
+  /* Karolar 3 sutunda ~100px: kurus ve ikinci "TL" satiri kiriyordu.
+     Orada yuvarlak tutar gosteriliyor, ana tutarlar tam bicimde kaliyor. */
+  function paraKisa(kurus, ekli) {
+    return bin(Math.round(kurus / 100)) + (ekli ? ' TL' : '');
+  }
+
+  /* Katalogda secenek adi ve deger metni tutarsiz ("Ham Madde" /
+     "Hammadde", "316L Cerrahi Celik" / "316L Celik"). Bu yuzden tam
+     metin degil anahtar kelime eslestiriyoruz. */
+  function cins(deger) {
+    var t = String(deger || '').toLocaleLowerCase('tr');
+    if (t.indexOf('gümüş') > -1 || t.indexOf('gumus') > -1) return 'gumus';
+    if (t.indexOf('çelik') > -1 || t.indexOf('celik') > -1) return 'celik';
+    return 'diger';
+  }
+  function cinsAd(c) { return c === 'gumus' ? 'gümüş' : (c === 'celik' ? 'çelik' : ''); }
 
   function varyantBul(id) {
     for (var i = 0; i < V.varyantlar.length; i++) {
@@ -43,9 +64,6 @@
     }
     return null;
   }
-
-  /* Secili varyant: once formun gizli input'u, sonra adres satiri,
-     en son ilk stoklu varyant. */
   function seciliVaryant() {
     var el = form && form.querySelector('input[name="id"]');
     var v = el && varyantBul(el.value);
@@ -53,28 +71,40 @@
     var id = new URLSearchParams(location.search).get('variant');
     v = id && varyantBul(id);
     if (v) return v;
-    for (var i = 0; i < V.varyantlar.length; i++) {
-      if (V.varyantlar[i].stok) return V.varyantlar[i];
-    }
+    for (var i = 0; i < V.varyantlar.length; i++) if (V.varyantlar[i].stok) return V.varyantlar[i];
     return V.varyantlar[0];
   }
+  function aktifCins() { return cins(seciliVaryant().deger); }
 
-  /* --- Tutarlar --- */
-  function tekKurus() { return seciliVaryant().kurus; }
-  function setKurus() {
-    var p = tekKurus();
-    return p + Math.round(p * (100 - V.indirim) / 100);
+  /* Ikinci urun ustteki ham maddeyi devraliyor; o ham maddede varyanti
+     yoksa mevcut tek varyanti seciliyor. */
+  function varyantSec(urun) {
+    var hedef = aktifCins();
+    for (var i = 0; i < urun.varyantlar.length; i++) {
+      if (cins(urun.varyantlar[i].deger) === hedef) return urun.varyantlar[i];
+    }
+    return urun.varyantlar[0];
   }
-  function setEskiKurus() { return tekKurus() * 2; }
-  function aktifKurus() { return mod === 'set' ? setKurus() : tekKurus(); }
 
-  /* ------------------------------------------------------------------
-     TAKSIT KUTUSU
+  /* ---------- Tutarlar ---------- */
+  function p1() { return seciliVaryant().kurus; }
+  function p2() { return ikinci ? ikinci.varyant.kurus : p1(); }
+  function indirimKurus() {
+    return Math.round(Math.min(p1(), p2()) * V.indirim / 100);
+  }
+  function setKurus() { return p1() + p2() - indirimKurus(); }
+  function setEskiKurus() { return p1() + p2(); }
+  function aktifKurus() { return mod === 'set' ? setKurus() : p1(); }
+
+  /* Bir karonun sete katkisi: indirim iki urunden ucuz olana gidiyor. */
+  function katki(fiyat) {
+    return fiyat - (fiyat <= p1() ? Math.round(fiyat * V.indirim / 100) : 0);
+  }
+
+  /* ---------- Taksit kutusu ----------
      taksit-tablosu.js tutari [data-tt-tk-veri] ozniteliginden HER
-     CAGRIDA yeniden okuyor. Secili varyantin karsiligini ve varsayilani
-     aktif tutara cekince hem satir hem modal dogru calisiyor.
-     Orijinal deger saklaniyor, tek moda donunce geri yaziliyor.
-     ------------------------------------------------------------------ */
+     CAGRIDA yeniden okuyor; oznitelik guncellenince hem satir hem modal
+     dogru tutari gosteriyor. O dosya degistirilmiyor. */
   var tkEl = null, tkAsil = null;
   function tkHazirla() {
     tkEl = document.querySelector('[data-tt-tk-veri]');
@@ -83,101 +113,166 @@
   function tkYaz() {
     tkHazirla();
     if (!tkEl || !tkAsil) return;
-    var d;
-    try { d = JSON.parse(tkAsil); } catch (e) { return; }
+    var d; try { d = JSON.parse(tkAsil); } catch (e) { return; }
     var hedef = aktifKurus();
     d.varsayilan = hedef;
     if (!d.varyantlar) d.varyantlar = {};
-    /* Adres satirinda hangi varyant varsa fbFiyat onu okuyor. */
-    for (var i = 0; i < V.varyantlar.length; i++) {
-      d.varyantlar[String(V.varyantlar[i].id)] = hedef;
-    }
+    for (var i = 0; i < V.varyantlar.length; i++) d.varyantlar[String(V.varyantlar[i].id)] = hedef;
     tkEl.setAttribute('data-tt-tk-veri', JSON.stringify(d));
   }
-  function tkGeriAl() {
-    tkHazirla();
-    if (tkEl && tkAsil) tkEl.setAttribute('data-tt-tk-veri', tkAsil);
-  }
+  function tkGeriAl() { tkHazirla(); if (tkEl && tkAsil) tkEl.setAttribute('data-tt-tk-veri', tkAsil); }
 
-  /* Temanin fiyat alani. Set modunda toplam + ustu cizili tutar
-     buraya yaziliyor; bu degisiklik ayni zamanda taksit-tablosu.js'in
-     .price uzerindeki gozlemcisini tetikleyip satiri yeniden cizdiriyor. */
-  function fiyatAlani() { return document.querySelector('.product__info-container .price, .price'); }
-
+  /* ---------- Temanin fiyat alani ---------- */
   var fiyatAsil = null;
+  function fiyatAlani() { return document.querySelector('.price'); }
   function fiyatYaz() {
     var el = fiyatAlani();
     if (!el) return;
     if (fiyatAsil === null) fiyatAsil = el.innerHTML;
     if (mod !== 'set') { el.innerHTML = fiyatAsil; return; }
-    el.innerHTML =
-      '<span class="tt-ts-fiyat-set">' + para(setKurus()) + '</span> ' +
-      '<s class="tt-ts-fiyat-eski">' + para(setEskiKurus()) + '</s>';
+    el.innerHTML = '<span class="tt-ts-fiyat-set">' + para(setKurus()) + '</span>' +
+                   '<s class="tt-ts-fiyat-eski">' + para(setEskiKurus()) + '</s>';
   }
 
-  /* --- Ham madde segmenti --- */
+  /* ---------- Ham madde segmenti ---------- */
   function nativeRadyo(deger) {
     if (!secici) return null;
-    return secici.querySelector('input[type="radio"][data-option-value="' +
-      String(deger).replace(/"/g, '\\"') + '"]');
+    var hepsi = secici.querySelectorAll('input[type="radio"][data-option-value]');
+    for (var i = 0; i < hepsi.length; i++) {
+      if (hepsi[i].getAttribute('data-option-value') === deger) return hepsi[i];
+    }
+    return null;
   }
-
   function segmentBagla() {
-    var hucreler = KOK.querySelectorAll('[data-tt-ts-hm]');
-    if (!hucreler.length || !secici) return false;
-    var bagliSayi = 0;
-    for (var i = 0; i < hucreler.length; i++) {
-      (function (h) {
-        var r = nativeRadyo(h.getAttribute('data-tt-ts-hm'));
+    var h = KOK.querySelectorAll('[data-tt-ts-hm]');
+    if (!h.length || !secici) return false;
+    var bagli = 0;
+    for (var i = 0; i < h.length; i++) {
+      (function (el) {
+        var r = nativeRadyo(el.getAttribute('data-tt-ts-hm'));
         if (!r) return;
-        bagliSayi++;
-        h.addEventListener('click', function () {
+        bagli++;
+        el.addEventListener('click', function () {
           if (r.checked) return;
           r.checked = true;
           r.dispatchEvent(new Event('change', { bubbles: true }));
           r.click();
         });
-      })(hucreler[i]);
+      })(h[i]);
     }
-    /* Her secenege karsilik gelen native input bulunamadiysa segmenti
-       devreye almiyoruz -- yarim calisan bir secici olmasin. */
-    return bagliSayi === hucreler.length;
+    return bagli === h.length;
   }
 
-  function segmentTazele() {
-    var v = seciliVaryant();
-    var hucreler = KOK.querySelectorAll('[data-tt-ts-hm]');
-    for (var i = 0; i < hucreler.length; i++) {
-      var esit = hucreler[i].getAttribute('data-tt-ts-hm') === v.deger;
-      hucreler[i].setAttribute('aria-checked', esit ? 'true' : 'false');
+  /* ---------- Ikinci urun grid'i ---------- */
+  function listele() {
+    var l = GRUP[grup].urunler.slice();
+    l.forEach(function (u) { u.__v = varyantSec(u); });
+    /* Filtre DEGIL, siralama: hicbir urun listeden cikmiyor. */
+    l.sort(function (a, b) {
+      var ca = cins(a.__v.deger) === (siraGumus ? 'gumus' : 'celik') ? 0 : 1;
+      var cb = cins(b.__v.deger) === (siraGumus ? 'gumus' : 'celik') ? 0 : 1;
+      return ca - cb;
+    });
+    return l;
+  }
+
+  function tikSvg() {
+    return '<span class="tt-ts-karo-tik"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" ' +
+           'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+           '<path d="M4 8.5l2.5 2.5L12 5.5"/></svg></span>';
+  }
+
+  function gridCiz() {
+    var kap = KOK.querySelector('[data-tt-ts-grid]');
+    if (!kap) return;
+    var liste = listele();
+    if (!ikinci || liste.indexOf(ikinci.urun) === -1) {
+      if (liste.length) ikinci = { urun: liste[0], varyant: liste[0].__v };
+    } else {
+      ikinci.varyant = varyantSec(ikinci.urun);
+    }
+
+    var h = '';
+    liste.slice(0, 5).forEach(function (u, i) {
+      var v = u.__v;
+      var tekCins = u.varyantlar.length === 1;
+      var etiket = tekCins && cinsAd(cins(v.deger))
+        ? 'Sadece ' + cinsAd(cins(v.deger))
+        : v.deger;
+      h += '<button type="button" class="tt-ts-karo" role="radio" data-tt-ts-karo="' + i + '"' +
+           ' aria-checked="' + (ikinci && ikinci.urun === u ? 'true' : 'false') + '">' +
+           tikSvg() +
+           '<img class="tt-ts-karo-gorsel" src="' + (u.gorsel || '') + '" alt="" loading="lazy">' +
+           '<span class="tt-ts-karo-ad">' + u.ad + '</span>' +
+           '<span class="tt-ts-karo-hm">' + etiket + '</span>' +
+           '<span class="tt-ts-karo-fiyat">' + paraKisa(katki(v.kurus), true) +
+           '<s class="tt-ts-karo-eski">' + paraKisa(v.kurus, false) + '</s></span>' +
+           '</button>';
+    });
+    h += '<a class="tt-ts-karo tt-ts-karo--tum" href="' + GRUP[grup].url + '" data-tt-ts-tum>' +
+         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" ' +
+         'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+         '<path d="M5 12h14M13 6l6 6-6 6"/></svg><span>Tümünü gör</span></a>';
+    kap.innerHTML = h;
+
+    var karolar = kap.querySelectorAll('[data-tt-ts-karo]');
+    for (var i = 0; i < karolar.length; i++) {
+      (function (el) {
+        el.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          var u = liste[parseInt(el.getAttribute('data-tt-ts-karo'), 10)];
+          ikinci = { urun: u, varyant: varyantSec(u) };
+          ciz();
+        });
+      })(karolar[i]);
     }
   }
 
-  /* --- Kartlar, ozet, buton --- */
+  /* ---------- Cizim ---------- */
   function ciz() {
-    segmentTazele();
+    var v1 = seciliVaryant();
+
+    var hm = KOK.querySelectorAll('[data-tt-ts-hm]');
+    for (var i = 0; i < hm.length; i++) {
+      hm[i].setAttribute('aria-checked', hm[i].getAttribute('data-tt-ts-hm') === v1.deger ? 'true' : 'false');
+    }
+    var gr = KOK.querySelectorAll('[data-tt-ts-grup]');
+    for (var j = 0; j < gr.length; j++) {
+      gr[j].setAttribute('aria-checked', gr[j].getAttribute('data-tt-ts-grup') === grup ? 'true' : 'false');
+    }
+    var kartlar = KOK.querySelectorAll('[data-tt-ts-mod]');
+    for (var k = 0; k < kartlar.length; k++) {
+      kartlar[k].setAttribute('aria-checked', kartlar[k].getAttribute('data-tt-ts-mod') === mod ? 'true' : 'false');
+    }
+
+    if (mod === 'set') gridCiz();
+
+    var sm = KOK.querySelector('[data-tt-ts-sirala-metin]');
+    var sb = KOK.querySelector('[data-tt-ts-sirala-btn]');
+    if (sm) sm.textContent = siraGumus ? 'Önce gümüşler gösteriliyor.' : 'Önce çelikler gösteriliyor.';
+    if (sb) sb.textContent = siraGumus ? 'Çelikleri gör' : 'Gümüşleri gör';
 
     var tek = KOK.querySelector('[data-tt-ts-tek-fiyat]');
-    if (tek) tek.textContent = para(tekKurus());
+    if (tek) tek.textContent = para(p1());
     var sf = KOK.querySelector('[data-tt-ts-set-fiyat]');
     if (sf) sf.textContent = para(setKurus());
     var se = KOK.querySelector('[data-tt-ts-set-eski]');
     if (se) se.textContent = para(setEskiKurus());
 
-    var kartlar = KOK.querySelectorAll('[data-tt-ts-mod]');
-    for (var i = 0; i < kartlar.length; i++) {
-      kartlar[i].setAttribute('aria-checked',
-        kartlar[i].getAttribute('data-tt-ts-mod') === mod ? 'true' : 'false');
+    var sa = KOK.querySelector('[data-tt-ts-secili-ad]');
+    var sl = KOK.querySelector('[data-tt-ts-hm-degistir]');
+    if (sa && ikinci) {
+      var ad = cinsAd(cins(ikinci.varyant.deger)) || ikinci.varyant.deger;
+      sa.textContent = ikinci.urun.ad + ' · ' + ad;
+      if (sl) sl.hidden = ikinci.urun.varyantlar.length < 2;
     }
 
     var ozet = KOK.querySelector('[data-tt-ts-ozet]');
     if (ozet) {
-      if (mod === 'set') {
+      if (mod === 'set' && ikinci) {
         ozet.hidden = false;
-        ozet.textContent = V.urun + ' + ' + V.urun + ' · 2 ürün';
-      } else {
-        ozet.hidden = true;
-      }
+        ozet.textContent = V.urun + ' + ' + ikinci.urun.ad + ' · 2 ürün';
+      } else { ozet.hidden = true; }
     }
 
     var btn = KOK.querySelector('[data-tt-ts-sepet]');
@@ -187,46 +282,92 @@
     if (mod === 'set') tkYaz(); else tkGeriAl();
   }
 
-  /* --- Sepete ekleme --- */
+  /* ---------- Sepete ekleme ---------- */
   function sepeteEkle(e) {
-    if (mod !== 'set') return;          /* tek mod: formun kendi akisi */
+    if (mod !== 'set' || !ikinci) return;   /* tek mod: formun kendi akisi */
     e.preventDefault();
-    var v = seciliVaryant();
     var btn = KOK.querySelector('[data-tt-ts-sepet]');
     if (btn) btn.disabled = true;
+    var v1 = seciliVaryant();
+    var items = (String(v1.id) === String(ikinci.varyant.id))
+      ? [{ id: v1.id, quantity: 2 }]
+      : [{ id: v1.id, quantity: 1 }, { id: ikinci.varyant.id, quantity: 1 }];
     fetch('/cart/add.js', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ items: [{ id: v.id, quantity: 2 }] })
+      body: JSON.stringify({ items: items })
     }).then(function (r) { return r.json(); })
       .then(function () { window.location.href = '/cart'; })
       .catch(function () { if (btn) btn.disabled = false; });
   }
 
-  /* --- Kurulum --- */
+  /* ---------- Kurulum ---------- */
+
+  /* CSS'te currentColor'dan turetilemeyen iki token (koyu dolu rozet ve
+     sepet butonu) burada somut renge cevriliyor: sayfanin gercek metin
+     rengi ve en yakin saydam olmayan ata zemini olculuyor. Boylece
+     katman acik da koyu da olsa dogru ciziliyor. */
+  function zeminBul(el) {
+    for (var n = el; n && n !== document.documentElement; n = n.parentElement) {
+      var b = getComputedStyle(n).backgroundColor;
+      if (b && b !== 'transparent' && !/rgba\(0,\s*0,\s*0,\s*0\)/.test(b)) return b;
+    }
+    var g = getComputedStyle(document.body).backgroundColor;
+    return (g && g !== 'transparent') ? g : '#ffffff';
+  }
+  try {
+    KOK.style.setProperty('--tt-ts-ink', getComputedStyle(KOK).color);
+    KOK.style.setProperty('--tt-ts-zemin', zeminBul(KOK));
+  } catch (e) {}
+
   var segmentTamam = segmentBagla();
 
   var kartlar = KOK.querySelectorAll('[data-tt-ts-mod]');
   for (var i = 0; i < kartlar.length; i++) {
     (function (k) {
-      k.addEventListener('click', function () {
-        mod = k.getAttribute('data-tt-ts-mod');
-        ciz();
+      function sec() { mod = k.getAttribute('data-tt-ts-mod'); ciz(); }
+      k.addEventListener('click', function (ev) {
+        /* Kart icindeki kendi kontrolleri kart secimini tetiklemesin. */
+        if (ev.target.closest('.tt-ts-ikinci') && k.getAttribute('aria-checked') === 'true') return;
+        sec();
+      });
+      k.addEventListener('keydown', function (ev) {
+        if (ev.key === ' ' || ev.key === 'Enter') { ev.preventDefault(); sec(); }
       });
     })(kartlar[i]);
   }
 
+  var gr = KOK.querySelectorAll('[data-tt-ts-grup]');
+  for (var g = 0; g < gr.length; g++) {
+    (function (el) {
+      el.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        grup = el.getAttribute('data-tt-ts-grup');
+        ikinci = null;
+        ciz();
+      });
+    })(gr[g]);
+  }
+
+  var sb = KOK.querySelector('[data-tt-ts-sirala-btn]');
+  if (sb) sb.addEventListener('click', function (ev) { ev.stopPropagation(); siraGumus = !siraGumus; ciz(); });
+
+  var hd = KOK.querySelector('[data-tt-ts-hm-degistir]');
+  if (hd) hd.addEventListener('click', function (ev) {
+    ev.stopPropagation();
+    if (!ikinci || ikinci.urun.varyantlar.length < 2) return;
+    var su = String(ikinci.varyant.id);
+    for (var i = 0; i < ikinci.urun.varyantlar.length; i++) {
+      if (String(ikinci.urun.varyantlar[i].id) !== su) { ikinci.varyant = ikinci.urun.varyantlar[i]; break; }
+    }
+    ciz();
+  });
+
   var sepet = KOK.querySelector('[data-tt-ts-sepet]');
   if (sepet) sepet.addEventListener('click', sepeteEkle);
 
-  /* Native secici degisince (kendi segmentimizden veya baska yoldan)
-     kartlari ve tutarlari tazele. */
-  if (secici) {
-    secici.addEventListener('change', function () { window.setTimeout(ciz, 60); });
-  }
+  if (secici) secici.addEventListener('change', function () { window.setTimeout(ciz, 60); });
 
-  /* Segment eksiksiz bagliysa native seciciyi ve native sepet butonunu
-     gizle. Bagli degilse ikisi de gorunur kalir: sayfa bozulmaz. */
   if (segmentTamam) {
     KOK.setAttribute('data-tt-ts-hazir', '');
     if (secici) secici.classList.add('tt-ts-native-gizli');
