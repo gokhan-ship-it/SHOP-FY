@@ -215,7 +215,9 @@
       ? 'Sadece ' + cinsAd(cins(v.deger)) : v.deger;
     return '<button type="button" class="tt-ts-karo" role="radio" data-tt-ts-karo="' + i + '"' +
       ' aria-checked="' + (secili ? 'true' : 'false') + '">' + tikSvg() +
+      '<span class="tt-ts-karo-kutu">' +
       '<img class="tt-ts-karo-gorsel" src="' + (u.gorsel || '') + '" alt="" loading="lazy">' +
+      '</span>' +
       '<span class="tt-ts-karo-ad">' + u.ad + '</span>' +
       '<span class="tt-ts-karo-hm">' + etiket + '</span>' +
       '<span class="tt-ts-karo-fiyat">' + paraKisa(katki(v.kurus), true) +
