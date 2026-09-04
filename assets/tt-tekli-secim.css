@@ -295,17 +295,21 @@
 .tt-ts-karo[aria-checked="true"] { border: 1.5px solid var(--tt-ts-ink); }
 /* Kare oran <img> uzerinde degil KUTU uzerinde: temanin global img
    kurallari (width/height auto) orani ezebiliyordu. Gorsel kutuyu
-   mutlak konumla dolduruyor, boylece cerceve her zaman 1:1 kaliyor.
+   mutlak konumla dolduruyor, boylece cerceve her zaman sabit kaliyor.
 
-   object-fit COVER degil CONTAIN: kare kutuda cover, dikey cekilmis
-   taki fotograflarinin yarisini kirpiyordu. Musteri neyi sectigini
-   gormeli, urunun tamami gorunuyor. Kutu zemini sayfa zeminiyle ayni,
-   boylece beyaz zeminli fotograflarin etrafinda cerceve olusmuyor. */
+   object-fit COVER degil CONTAIN: cover, dikey cekilmis taki
+   fotograflarinin yarisini kirpiyordu. Musteri neyi sectigini gormeli,
+   urunun tamami gorunuyor. Kutu zemini sayfa zeminiyle ayni, boylece
+   beyaz zeminli fotograflarin etrafinda cerceve olusmuyor.
+
+   Oran 1:1 degil 4:5: katalogdaki takilarin cogu dikey cekilmis,
+   karede yanlarda genis bosluk kaliyordu. 4:5 o boslugu kapatiyor,
+   kutular sabit oldugu icin grid yine hizali. */
 .tt-ts-karo-kutu {
   position: relative;
   display: block;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: 6px;
   background: var(--tt-ts-zemin);
