@@ -16,6 +16,17 @@
   try { V = JSON.parse(KOK.querySelector('[data-tt-ts-veri]').textContent); } catch (e) { return; }
   if (!V || !V.varyantlar || !V.varyantlar.length) return;
 
+  /* Katalogda secenek adi ve deger metni tutarsiz ("Ham Madde" /
+     "Hammadde", "316L Cerrahi Celik" / "316L Celik"). Bu yuzden tam
+     metin degil anahtar kelime eslestiriyoruz. */
+  function cins(deger) {
+    var t = String(deger || '').toLocaleLowerCase('tr');
+    if (t.indexOf('gümüş') > -1 || t.indexOf('gumus') > -1) return 'gumus';
+    if (t.indexOf('çelik') > -1 || t.indexOf('celik') > -1) return 'celik';
+    return 'diger';
+  }
+  function cinsAd(c) { return c === 'gumus' ? 'gümüş' : (c === 'celik' ? 'çelik' : ''); }
+
   /* Veri adasindaki listeler sondaki null ile kapaniyor (Liquid'de
      virgul kacinmak icin); burada temizleniyor. */
   var GRUP = {};
@@ -32,6 +43,12 @@
           return u;
         })
         .filter(function (u) { return u.varyantlar.length; })
+        /* Yalnizca taki onerilsin: ham maddesi olmayan urunler
+           ("Default Title" tek varyantli kutu, event kapsulu vb.) listeye
+           girmiyor. Olcut varyant adi degil, celik/gumus olup olmamasi. */
+        .filter(function (u) {
+          return u.varyantlar.some(function (v) { return cins(v.deger) !== 'diger'; });
+        })
     };
   });
 
@@ -67,17 +84,6 @@
   function paraKisa(kurus, ekli) {
     return bin(Math.round(kurus / 100)) + (ekli ? ' TL' : '');
   }
-
-  /* Katalogda secenek adi ve deger metni tutarsiz ("Ham Madde" /
-     "Hammadde", "316L Cerrahi Celik" / "316L Celik"). Bu yuzden tam
-     metin degil anahtar kelime eslestiriyoruz. */
-  function cins(deger) {
-    var t = String(deger || '').toLocaleLowerCase('tr');
-    if (t.indexOf('gümüş') > -1 || t.indexOf('gumus') > -1) return 'gumus';
-    if (t.indexOf('çelik') > -1 || t.indexOf('celik') > -1) return 'celik';
-    return 'diger';
-  }
-  function cinsAd(c) { return c === 'gumus' ? 'gümüş' : (c === 'celik' ? 'çelik' : ''); }
 
   function varyantBul(id) {
     for (var i = 0; i < V.varyantlar.length; i++) {

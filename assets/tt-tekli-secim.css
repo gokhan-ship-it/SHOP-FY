@@ -214,10 +214,11 @@
 }
 
 /* ------------------------------------------------------------------
-   IKINCI URUN BOLUMU - yalnizca ikili set secilinken aciliyor
+   IKINCI URUN BOLUMU
    ------------------------------------------------------------------ */
-.tt-ts-ikinci { display: none; }
-.tt-ts-kart--set[aria-checked="true"] .tt-ts-ikinci { display: block; }
+/* Oneriler kart secilmeden de gorunuyor: musteri neyi secebilecegini
+   tiklamadan gormeli. Kart secimi yalnizca tekli/ikili kararini veriyor. */
+.tt-ts-ikinci { display: block; }
 
 .tt-ts-ayrac {
   height: var(--tt-ts-hair);
@@ -286,10 +287,12 @@
   cursor: pointer;
 }
 .tt-ts-karo[aria-checked="true"] { border: 1.5px solid var(--tt-ts-ink); }
+/* Karo gorseli kare: takilarin oranlari birbirinden cok farkli,
+   1:1 olmayinca grid dagiliyordu. */
 .tt-ts-karo-gorsel {
   display: block;
   width: 100%;
-  height: 72px;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: 6px;
   background: var(--tt-ts-yuzey);
