@@ -50,7 +50,9 @@
   }
 
   var mod = 'tek';
-  var grup = 'kadin';
+  /* Varsayilan grup snippet'te urunun koleksiyonundan turetiliyor:
+     erkek urunundeysek kadin, kadin urunundeysek erkek acik geliyor. */
+  var grup = KOK.getAttribute('data-tt-ts-grup-varsayilan') === 'erkek' ? 'erkek' : 'kadin';
   var siraGumus = false;   /* false: once celikler */
   var ikinci = null;       /* {urun, varyant} */
 
@@ -234,9 +236,23 @@
     if (!kap) return;
     var liste = listele();
     if (!ikinci || liste.indexOf(ikinci.urun) === -1) {
-      if (liste.length) ikinci = { urun: liste[0], varyant: liste[0].__v };
+      /* Varsayilan olarak gruptaki EN UCUZ urun seciliyor: teklif ilk
+         bakista mumkun olan en dusuk tutarla gorunsun. */
+      var ucuz = null;
+      liste.forEach(function (u) {
+        if (!ucuz || u.__v.kurus < ucuz.__v.kurus) ucuz = u;
+      });
+      if (ucuz) ikinci = { urun: ucuz, varyant: ucuz.__v };
     } else {
       ikinci.varyant = varyantSec(ikinci.urun);
+    }
+
+    /* Secili urun her zaman gorunen 5 karodan biri olsun: en ucuz urun
+       siralamada geride kalabiliyor, rozette adi gecip karosu ortada
+       olmamasi kafa karistirirdi. */
+    if (ikinci) {
+      var yeri = liste.indexOf(ikinci.urun);
+      if (yeri > 4) { liste.splice(yeri, 1); liste.unshift(ikinci.urun); }
     }
 
     var h = '';
@@ -285,7 +301,9 @@
       kartlar[k].setAttribute('aria-checked', kartlar[k].getAttribute('data-tt-ts-mod') === mod ? 'true' : 'false');
     }
 
-    if (mod === 'set') gridCiz();
+    /* Grid her modda hesaplaniyor: rozetteki ikinci urun adi, kart
+       secili olmasa da dogru gorunsun. Gorunurlugu CSS yonetiyor. */
+    gridCiz();
 
     hepsi('[data-tt-ts-sirala-metin]').forEach(function (el) {
       el.textContent = siraGumus ? 'Önce gümüşler gösteriliyor.' : 'Önce çelikler gösteriliyor.';
@@ -308,6 +326,9 @@
       sa.textContent = ikinci.urun.ad + ' · ' + ad;
       if (sl) sl.hidden = ikinci.urun.varyantlar.length < 2;
     }
+
+    var ru = KOK.querySelector('[data-tt-ts-rozet-urun]');
+    if (ru) ru.textContent = ikinci ? '+ ' + ikinci.urun.ad + ' ile birlikte' : '';
 
     var ozet = KOK.querySelector('[data-tt-ts-ozet]');
     if (ozet) {

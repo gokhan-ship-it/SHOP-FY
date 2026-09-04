@@ -24,13 +24,14 @@
   --tt-ts-ink-3: color-mix(in srgb, currentColor 45%, transparent);
   --tt-ts-line: color-mix(in srgb, currentColor 18%, transparent);
   --tt-ts-yuzey: color-mix(in srgb, currentColor 8%, transparent);
+  --tt-ts-cta: #0071e3;
 
   /* Bosluk olcegi: 4px tabanli, ara deger yok. */
   --tt-ts-s2: 8px;
   --tt-ts-s3: 12px;
   --tt-ts-s4: 14px;
-  --tt-ts-s5: 20px;
-  --tt-ts-s6: 24px;
+  --tt-ts-s5: 16px;
+  --tt-ts-s6: 18px;
 
   --tt-ts-hair: .5px;
   --tt-ts-radius: 12px;
@@ -55,8 +56,8 @@
 
 /* --- HAM MADDE etiketi --- */
 .tt-ts-etiket {
-  margin: 0 0 var(--tt-ts-s2);
-  font-size: 12px;
+  margin: 0 0 6px;
+  font-size: 11px;
   line-height: 1.2;
   letter-spacing: .04em;
   color: var(--tt-ts-ink-2);
@@ -75,7 +76,7 @@
 .tt-ts-seg-h {
   display: block;
   width: 100%;
-  padding: 9px 6px;
+  padding: 8px 6px;
   border: 0;
   border-radius: var(--tt-ts-pill);
   background: transparent;
@@ -84,6 +85,7 @@
   font-size: 13px;
   line-height: 1.2;
   text-align: center;
+  white-space: nowrap;
   cursor: pointer;
   appearance: none;
 }
@@ -95,9 +97,10 @@
 /* Kadin/Erkek segmenti daha kucuk olcekte, ayni dil. */
 .tt-ts-seg--kucuk .tt-ts-seg-h { padding: 5px 14px; font-size: 12px; }
 
+/* Fark, hucrenin altinda ayri satir yerine etiketin yaninda: segment
+   ~16px kisaliyor, teklif yukari geliyor. */
 .tt-ts-seg-fark {
-  display: block;
-  margin-top: 2px;
+  margin-left: 5px;
   font-size: 11px;
   line-height: 1.2;
   color: var(--tt-ts-ink-3);
@@ -140,18 +143,38 @@
   border: 2px solid var(--tt-ts-ink);
   padding: 18px var(--tt-ts-s4) var(--tt-ts-s4);
 }
-.tt-ts-rozet {
+/* Kartin ust kenarina oturan rozet satiri: solda teklif rozeti (CTA
+   mavisi, dikkat cekmesi icin), yaninda secili ikinci urunun rozeti. */
+.tt-ts-rozetler {
   position: absolute;
   top: -12px;
   left: var(--tt-ts-s4);
+  right: var(--tt-ts-s4);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.tt-ts-rozet {
+  flex: 0 0 auto;
   padding: 4px 12px;
   border-radius: var(--tt-ts-pill);
-  background: var(--tt-ts-ink);
-  color: var(--tt-ts-zemin);
+  background: var(--tt-ts-cta);
+  color: #ffffff;
   font-size: 12px;
   line-height: 1.2;
   white-space: nowrap;
 }
+.tt-ts-rozet--urun {
+  flex: 0 1 auto;
+  min-width: 0;
+  background: var(--tt-ts-zemin);
+  border: var(--tt-ts-hair) solid var(--tt-ts-line);
+  color: var(--tt-ts-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tt-ts-rozet--urun:empty { display: none; }
 
 .tt-ts-govde { display: flex; align-items: flex-start; gap: var(--tt-ts-s3); }
 .tt-ts-radio {

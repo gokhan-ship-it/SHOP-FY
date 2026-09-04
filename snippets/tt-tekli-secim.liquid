@@ -60,6 +60,19 @@
   assign k_kadin = kadin_koleksiyon | default: 'zaman-kapsulu-kolyeler'
   assign k_erkek = erkek_koleksiyon | default: 'zaman-kapsulu-bileklik'
 
+  comment
+    Grup varsayilani sabit degil: kullanici erkek urunu inceliyorsa
+    ikinci urun olarak kadin koleksiyonu, kadin urunu inceliyorsa erkek
+    koleksiyonu acik geliyor. Dogal davranis bu.
+  endcomment
+  assign varsayilan_grup = 'kadin'
+  for c in product.collections
+    if c.handle == k_kadin
+      assign varsayilan_grup = 'erkek'
+      break
+    endif
+  endfor
+
   assign hm_option = product.options_with_values | first
   assign en_ucuz = 0
   for v in product.variants
@@ -75,7 +88,8 @@
   <div class="tt-ts" data-tt-ts
        data-tt-ts-indirim="{{ p_indirim }}"
        data-tt-ts-form="ProductForm-{{ section.id }}-{{ product.id }}"
-       data-tt-ts-secici="VariantPicker-{{ section.id }}-{{ product.id }}">
+       data-tt-ts-secici="VariantPicker-{{ section.id }}-{{ product.id }}"
+       data-tt-ts-grup-varsayilan="{{ varsayilan_grup }}">
 
     {%- comment -%} --- HAM MADDE segmenti --- {%- endcomment -%}
     <div class="tt-ts-hammadde">
@@ -83,6 +97,10 @@
       <div class="tt-ts-seg tt-ts-seg--tam" role="radiogroup" aria-label="{{ hm_option.name | escape }}">
         {%- for deger in hm_option.values -%}
           {%- liquid
+            comment
+              Fark dogrudan hesaplaniyor: ara degisken tutmuyoruz, boylece
+              Liquid'de tanimsiz nesne karsilastirmasi hic olusmuyor.
+            endcomment
             assign fark = 0
             for v in product.variants
               if v.options[0] == deger and v.price > en_ucuz
@@ -95,7 +113,7 @@
                   data-tt-ts-hm="{{ deger | escape }}"
                   aria-checked="{% if hm_option.selected_value == deger %}true{% else %}false{% endif %}">
             {{ deger }}
-            <span class="tt-ts-seg-fark">{% if fark > 0 %}+{{ fark | money_without_currency | strip_html }} TL{% endif %}</span>
+            <span class="tt-ts-seg-fark">{% if fark > 0 %}+{{ fark | money_without_currency | strip_html | split: ',' | first }}{% endif %}</span>
           </button>
         {%- endfor -%}
       </div>
@@ -130,7 +148,10 @@
 
     <div class="tt-ts-kart tt-ts-kart--set" role="radio" tabindex="0"
          data-tt-ts-mod="set" aria-checked="false">
-      <span class="tt-ts-rozet">{{ t_rozet }}</span>
+      <span class="tt-ts-rozetler">
+        <span class="tt-ts-rozet">{{ t_rozet }}</span>
+        <span class="tt-ts-rozet tt-ts-rozet--urun" data-tt-ts-rozet-urun></span>
+      </span>
       <div class="tt-ts-govde" data-tt-ts-set-bas>
         <span class="tt-ts-radio"></span>
         <span class="tt-ts-icerik">
@@ -160,8 +181,8 @@
         <div class="tt-ts-secsatir">
           <span class="tt-ts-secsatir-m">{{ t_secim }}</span>
           <div class="tt-ts-seg tt-ts-seg--kucuk" role="radiogroup" aria-label="{{ t_secim | escape }}">
-            <button type="button" class="tt-ts-seg-h" role="radio" data-tt-ts-grup="kadin" aria-checked="true">Kadın</button>
-            <button type="button" class="tt-ts-seg-h" role="radio" data-tt-ts-grup="erkek" aria-checked="false">Erkek</button>
+            <button type="button" class="tt-ts-seg-h" role="radio" data-tt-ts-grup="kadin" aria-checked="{% if varsayilan_grup == 'kadin' %}true{% else %}false{% endif %}">Kadın</button>
+            <button type="button" class="tt-ts-seg-h" role="radio" data-tt-ts-grup="erkek" aria-checked="{% if varsayilan_grup == 'erkek' %}true{% else %}false{% endif %}">Erkek</button>
           </div>
         </div>
 
@@ -194,8 +215,8 @@
           </button>
         </div>
         <div class="tt-ts-seg tt-ts-seg--kucuk" role="radiogroup" aria-label="{{ t_secim | escape }}">
-          <button type="button" class="tt-ts-seg-h" role="radio" data-tt-ts-grup="kadin" aria-checked="true">Kadın</button>
-          <button type="button" class="tt-ts-seg-h" role="radio" data-tt-ts-grup="erkek" aria-checked="false">Erkek</button>
+          <button type="button" class="tt-ts-seg-h" role="radio" data-tt-ts-grup="kadin" aria-checked="{% if varsayilan_grup == 'kadin' %}true{% else %}false{% endif %}">Kadın</button>
+          <button type="button" class="tt-ts-seg-h" role="radio" data-tt-ts-grup="erkek" aria-checked="{% if varsayilan_grup == 'erkek' %}true{% else %}false{% endif %}">Erkek</button>
         </div>
         <div class="tt-ts-sirala">
           <span data-tt-ts-sirala-metin></span>
