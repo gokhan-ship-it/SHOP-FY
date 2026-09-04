@@ -401,3 +401,63 @@
   .tt-ts-seg-h[aria-checked="false"]:hover { color: var(--tt-ts-ink); }
 }
 @media (prefers-reduced-motion: reduce) { .tt-ts * { transition: none !important; } }
+
+/* ------------------------------------------------------------------
+   TUMUNU GOR - alt sayfa (bottom sheet)
+   Ayni tasarim dili: ayni segment, ayni karo, ayni hairline.
+   Sayfadan cikilmiyor; secim yapilinca kapaniyor.
+   ------------------------------------------------------------------ */
+.tt-ts-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: flex-end;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.tt-ts-sheet[open] { display: flex; }
+.tt-ts-sheet::backdrop { background: rgb(0 0 0 / .5); }
+
+.tt-ts-sheet-ic {
+  width: 100%;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--tt-ts-s4) var(--tt-ts-s4) calc(var(--tt-ts-s4) + env(safe-area-inset-bottom, 0px));
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  background: var(--tt-ts-zemin);
+  color: var(--tt-ts-ink);
+}
+.tt-ts-sheet-bas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tt-ts-s3);
+  margin-bottom: var(--tt-ts-s3);
+}
+.tt-ts-sheet-baslik { font-size: 17px; font-weight: 500; line-height: 1.3; }
+.tt-ts-sheet-kapat {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: var(--tt-ts-hair) solid var(--tt-ts-line);
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.tt-ts-sheet-kapat svg { width: 14px; height: 14px; }
+.tt-ts-sheet-govde {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tt-ts-sheet .tt-ts-grid { margin-top: var(--tt-ts-s3); }

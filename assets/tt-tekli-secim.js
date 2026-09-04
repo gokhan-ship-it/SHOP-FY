@@ -23,12 +23,31 @@
     var k = (V.gruplar && V.gruplar[g]) || { urunler: [] };
     GRUP[g] = {
       url: k.url || '/collections/all',
-      urunler: (k.urunler || []).filter(function (u) { return u && u.varyantlar && u.varyantlar.length; })
+      urunler: (k.urunler || [])
+        .filter(function (u) { return u && u.varyantlar; })
+        .map(function (u) {
+          /* Listeler null ile kapaniyor (Liquid'de sondaki virgulu
+             onlemek icin); burada temizleniyor. */
+          u.varyantlar = u.varyantlar.filter(function (v) { return v; });
+          return u;
+        })
+        .filter(function (u) { return u.varyantlar.length; })
     };
   });
 
   var secici = document.getElementById(KOK.getAttribute('data-tt-ts-secici'));
   var form = document.getElementById(KOK.getAttribute('data-tt-ts-form'));
+
+  /* Alt sayfa body'ye tasiniyor: kartin border/overflow yigin baglami
+     panelin ustune binmesin. Tasindiktan sonra KOK icinde bulunamayacagi
+     icin sorgular iki kapsayicida birden yapiliyor. */
+  var SHEET = KOK.querySelector('[data-tt-ts-sheet]');
+  if (SHEET) document.body.appendChild(SHEET);
+  function hepsi(sel) {
+    var a = [].slice.call(KOK.querySelectorAll(sel));
+    if (SHEET) a = a.concat([].slice.call(SHEET.querySelectorAll(sel)));
+    return a;
+  }
 
   var mod = 'tek';
   var grup = 'kadin';
@@ -182,6 +201,34 @@
            '<path d="M4 8.5l2.5 2.5L12 5.5"/></svg></span>';
   }
 
+  function karoHtml(u, i, secili) {
+    var v = u.__v;
+    var etiket = (u.varyantlar.length === 1 && cinsAd(cins(v.deger)))
+      ? 'Sadece ' + cinsAd(cins(v.deger)) : v.deger;
+    return '<button type="button" class="tt-ts-karo" role="radio" data-tt-ts-karo="' + i + '"' +
+      ' aria-checked="' + (secili ? 'true' : 'false') + '">' + tikSvg() +
+      '<img class="tt-ts-karo-gorsel" src="' + (u.gorsel || '') + '" alt="" loading="lazy">' +
+      '<span class="tt-ts-karo-ad">' + u.ad + '</span>' +
+      '<span class="tt-ts-karo-hm">' + etiket + '</span>' +
+      '<span class="tt-ts-karo-fiyat">' + paraKisa(katki(v.kurus), true) +
+      '<s class="tt-ts-karo-eski">' + paraKisa(v.kurus, false) + '</s></span></button>';
+  }
+
+  function karoBagla(kap, liste, kapat) {
+    var k = kap.querySelectorAll('[data-tt-ts-karo]');
+    for (var i = 0; i < k.length; i++) {
+      (function (el) {
+        el.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          var u = liste[parseInt(el.getAttribute('data-tt-ts-karo'), 10)];
+          ikinci = { urun: u, varyant: varyantSec(u) };
+          if (kapat && SHEET && SHEET.open) SHEET.close();
+          ciz();
+        });
+      })(k[i]);
+    }
+  }
+
   function gridCiz() {
     var kap = KOK.querySelector('[data-tt-ts-grid]');
     if (!kap) return;
@@ -194,37 +241,30 @@
 
     var h = '';
     liste.slice(0, 5).forEach(function (u, i) {
-      var v = u.__v;
-      var tekCins = u.varyantlar.length === 1;
-      var etiket = tekCins && cinsAd(cins(v.deger))
-        ? 'Sadece ' + cinsAd(cins(v.deger))
-        : v.deger;
-      h += '<button type="button" class="tt-ts-karo" role="radio" data-tt-ts-karo="' + i + '"' +
-           ' aria-checked="' + (ikinci && ikinci.urun === u ? 'true' : 'false') + '">' +
-           tikSvg() +
-           '<img class="tt-ts-karo-gorsel" src="' + (u.gorsel || '') + '" alt="" loading="lazy">' +
-           '<span class="tt-ts-karo-ad">' + u.ad + '</span>' +
-           '<span class="tt-ts-karo-hm">' + etiket + '</span>' +
-           '<span class="tt-ts-karo-fiyat">' + paraKisa(katki(v.kurus), true) +
-           '<s class="tt-ts-karo-eski">' + paraKisa(v.kurus, false) + '</s></span>' +
-           '</button>';
+      h += karoHtml(u, i, ikinci && ikinci.urun === u);
     });
-    h += '<a class="tt-ts-karo tt-ts-karo--tum" href="' + GRUP[grup].url + '" data-tt-ts-tum>' +
+    /* 6. hucre: alt sayfayi acan cikis. Sayfadan cikilmiyor. */
+    h += '<button type="button" class="tt-ts-karo tt-ts-karo--tum" data-tt-ts-tum>' +
          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" ' +
          'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-         '<path d="M5 12h14M13 6l6 6-6 6"/></svg><span>Tümünü gör</span></a>';
+         '<path d="M5 12h14M13 6l6 6-6 6"/></svg><span>Tümünü gör</span></button>';
     kap.innerHTML = h;
+    karoBagla(kap, liste, false);
 
-    var karolar = kap.querySelectorAll('[data-tt-ts-karo]');
-    for (var i = 0; i < karolar.length; i++) {
-      (function (el) {
-        el.addEventListener('click', function (ev) {
-          ev.stopPropagation();
-          var u = liste[parseInt(el.getAttribute('data-tt-ts-karo'), 10)];
-          ikinci = { urun: u, varyant: varyantSec(u) };
-          ciz();
-        });
-      })(karolar[i]);
+    var tum = kap.querySelector('[data-tt-ts-tum]');
+    if (tum) tum.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (SHEET && typeof SHEET.showModal === 'function') SHEET.showModal();
+      else if (SHEET) SHEET.setAttribute('open', '');
+    });
+
+    /* Alt sayfa: ayni gruptaki TUM urunler, ayni karo bileseni. */
+    var sk = SHEET && SHEET.querySelector('[data-tt-ts-sheet-grid]');
+    if (sk) {
+      var sh = '';
+      liste.forEach(function (u, i) { sh += karoHtml(u, i, ikinci && ikinci.urun === u); });
+      sk.innerHTML = sh;
+      karoBagla(sk, liste, true);
     }
   }
 
@@ -236,7 +276,7 @@
     for (var i = 0; i < hm.length; i++) {
       hm[i].setAttribute('aria-checked', hm[i].getAttribute('data-tt-ts-hm') === v1.deger ? 'true' : 'false');
     }
-    var gr = KOK.querySelectorAll('[data-tt-ts-grup]');
+    var gr = hepsi('[data-tt-ts-grup]');
     for (var j = 0; j < gr.length; j++) {
       gr[j].setAttribute('aria-checked', gr[j].getAttribute('data-tt-ts-grup') === grup ? 'true' : 'false');
     }
@@ -247,10 +287,12 @@
 
     if (mod === 'set') gridCiz();
 
-    var sm = KOK.querySelector('[data-tt-ts-sirala-metin]');
-    var sb = KOK.querySelector('[data-tt-ts-sirala-btn]');
-    if (sm) sm.textContent = siraGumus ? 'Önce gümüşler gösteriliyor.' : 'Önce çelikler gösteriliyor.';
-    if (sb) sb.textContent = siraGumus ? 'Çelikleri gör' : 'Gümüşleri gör';
+    hepsi('[data-tt-ts-sirala-metin]').forEach(function (el) {
+      el.textContent = siraGumus ? 'Önce gümüşler gösteriliyor.' : 'Önce çelikler gösteriliyor.';
+    });
+    hepsi('[data-tt-ts-sirala-btn]').forEach(function (el) {
+      el.textContent = siraGumus ? 'Çelikleri gör' : 'Gümüşleri gör';
+    });
 
     var tek = KOK.querySelector('[data-tt-ts-tek-fiyat]');
     if (tek) tek.textContent = para(p1());
@@ -337,20 +379,27 @@
     })(kartlar[i]);
   }
 
-  var gr = KOK.querySelectorAll('[data-tt-ts-grup]');
-  for (var g = 0; g < gr.length; g++) {
-    (function (el) {
-      el.addEventListener('click', function (ev) {
-        ev.stopPropagation();
-        grup = el.getAttribute('data-tt-ts-grup');
-        ikinci = null;
-        ciz();
-      });
-    })(gr[g]);
-  }
+  hepsi('[data-tt-ts-grup]').forEach(function (el) {
+    el.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      grup = el.getAttribute('data-tt-ts-grup');
+      ikinci = null;
+      ciz();
+    });
+  });
 
-  var sb = KOK.querySelector('[data-tt-ts-sirala-btn]');
-  if (sb) sb.addEventListener('click', function (ev) { ev.stopPropagation(); siraGumus = !siraGumus; ciz(); });
+  hepsi('[data-tt-ts-sirala-btn]').forEach(function (el) {
+    el.addEventListener('click', function (ev) { ev.stopPropagation(); siraGumus = !siraGumus; ciz(); });
+  });
+
+  if (SHEET) {
+    var kap = SHEET.querySelector('[data-tt-ts-sheet-kapat]');
+    if (kap) kap.addEventListener('click', function () { SHEET.close(); });
+    /* Panelin disina basinca kapansin. */
+    SHEET.addEventListener('click', function (ev) {
+      if (ev.target === SHEET) SHEET.close();
+    });
+  }
 
   var hd = KOK.querySelector('[data-tt-ts-hm-degistir]');
   if (hd) hd.addEventListener('click', function (ev) {

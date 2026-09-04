@@ -180,6 +180,33 @@
       </div>
     </div>
 
+    {%- comment -%}
+      "Tumunu gor" alt sayfasi. Kurulumda body'ye tasiniyor ki kartin
+      yigin baglami (border/overflow) panelin ustune binmesin.
+    {%- endcomment -%}
+    <dialog class="tt-ts-sheet" data-tt-ts-sheet aria-label="{{ t_secim | escape }}">
+      <div class="tt-ts-sheet-ic">
+        <div class="tt-ts-sheet-bas">
+          <span class="tt-ts-sheet-baslik">{{ t_secim }}</span>
+          <button type="button" class="tt-ts-sheet-kapat" data-tt-ts-sheet-kapat aria-label="Kapat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          </button>
+        </div>
+        <div class="tt-ts-seg tt-ts-seg--kucuk" role="radiogroup" aria-label="{{ t_secim | escape }}">
+          <button type="button" class="tt-ts-seg-h" role="radio" data-tt-ts-grup="kadin" aria-checked="true">Kadın</button>
+          <button type="button" class="tt-ts-seg-h" role="radio" data-tt-ts-grup="erkek" aria-checked="false">Erkek</button>
+        </div>
+        <div class="tt-ts-sirala">
+          <span data-tt-ts-sirala-metin></span>
+          <button type="button" class="tt-ts-sirala-btn" data-tt-ts-sirala-btn></button>
+        </div>
+        <div class="tt-ts-sheet-govde">
+          <div class="tt-ts-grid" data-tt-ts-sheet-grid></div>
+        </div>
+      </div>
+    </dialog>
+
     <p class="tt-ts-ozet" data-tt-ts-ozet hidden></p>
     <button type="submit" class="tt-ts-sepet" data-tt-ts-sepet
             form="ProductForm-{{ section.id }}-{{ product.id }}">
@@ -214,11 +241,17 @@
                   {"ad": {{ u.title | json }},
                    "gorsel": {{ u.featured_image | image_url: width: 200 | json }},
                    "varyantlar": [
+                     {%- comment -%}
+                       Son varyant stokta degilse "unless forloop.last" bir
+                       virgul birakip JSON'u bozuyordu. Liste her zaman null
+                       ile kapaniyor; JS null'lari eliyor.
+                     {%- endcomment -%}
                      {%- for v in u.variants -%}
                        {%- if v.available -%}
-                       {"id": {{ v.id }}, "deger": {{ v.options[0] | json }}, "kurus": {{ v.price }}}{% unless forloop.last %},{% endunless %}
+                       {"id": {{ v.id }}, "deger": {{ v.options[0] | json }}, "kurus": {{ v.price }}},
                        {%- endif -%}
                      {%- endfor -%}
+                     null
                    ]},
                   {%- endunless -%}
                 {%- endfor -%}
