@@ -293,18 +293,18 @@
   cursor: pointer;
 }
 .tt-ts-karo[aria-checked="true"] { border: 1.5px solid var(--tt-ts-ink); }
-/* Kare oran <img> uzerinde degil KUTU uzerinde: temanin global img
-   kurallari (width/height auto) orani ezebiliyordu. Gorsel kutuyu
-   mutlak konumla dolduruyor, boylece cerceve her zaman sabit kaliyor.
+/* Oran <img> uzerinde degil KUTU uzerinde: temanin global img kurallari
+   (width/height auto) orani ezebiliyordu. Gorsel kutuyu mutlak konumla
+   dolduruyor, boylece cerceve her zaman sabit kaliyor.
 
-   object-fit COVER degil CONTAIN: cover, dikey cekilmis taki
-   fotograflarinin yarisini kirpiyordu. Musteri neyi sectigini gormeli,
-   urunun tamami gorunuyor. Kutu zemini sayfa zeminiyle ayni, boylece
-   beyaz zeminli fotograflarin etrafinda cerceve olusmuyor.
-
-   Oran 1:1 degil 4:5: katalogdaki takilarin cogu dikey cekilmis,
-   karede yanlarda genis bosluk kaliyordu. 4:5 o boslugu kapatiyor,
-   kutular sabit oldugu icin grid yine hizali. */
+   ORAN VE DOLDURMA: temanin kendi urun kartlari 4:5 + cover kullaniyor
+   (theme.css: .media--portrait > img / .media > img). Bu karolar da ayni
+   dili konusuyor, boylece sitenin geri kalaniyla ayni cerceveleme olusuyor.
+   Katalogdaki fotograflarin tamami 3:4 (1500x2000); 3:4 fotograf 4:5
+   kutuya cover ile girince toplam %6.7 kirpiliyor (ustten ve alttan
+   %3.3) - hicbir urun kesilmiyor. CONTAIN denendi ve birakildi: fotograf
+   zemini de kutu zemini de beyaz oldugu icin cerceve gorunmuyor, urun
+   bos alanin icinde kuculmus ve rastgele konumlanmis gibi duruyordu. */
 .tt-ts-karo-kutu {
   position: relative;
   display: block;
@@ -314,13 +314,19 @@
   border-radius: 6px;
   background: var(--tt-ts-zemin);
 }
+/* Fotograflarin studyo bosluklari fotografin icine gomulu. Urunler hala
+   kucuk duruyorsa bu carpan buyutuyor; kutu overflow:hidden oldugu icin
+   tasan kenar kirpiliyor. 1 = kirpma yok. Deger karo grid'ine
+   --tt-ts-karo-zoom olarak yaziliyor (snippet: karo_zoom parametresi). */
 .tt-ts-karo-gorsel {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center center;
+  transform: scale(var(--tt-ts-karo-zoom, 1));
 }
 .tt-ts-karo-ad {
   display: block;

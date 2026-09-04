@@ -37,6 +37,7 @@
   @param {string} [erkek_koleksiyon] - Erkek urunleri koleksiyonu
   @param {number} [indirim] - Ikinci uruna uygulanan indirim yuzdesi
   @param {string} [sepet_metin] - Sepete ekle butonunun metni
+  @param {number} [karo_zoom] - Karo fotograflarinin buyutme carpani (1 = kirpma yok)
 
   @example
   {% render 'tt-tekli-secim' %}
@@ -59,6 +60,15 @@
   assign p_indirim = indirim | default: 50
   assign k_kadin = kadin_koleksiyon | default: 'zaman-kapsulu-kolyeler'
   assign k_erkek = erkek_koleksiyon | default: 'zaman-kapsulu-bileklik'
+
+  comment
+    Karo fotograflarinin buyutme carpani. Katalogdaki studyo
+    fotograflarinda urunun etrafinda gomulu beyaz bosluk var; hicbir
+    CSS onu fotografin icinden silemez, ancak yakinlastirip kirpabilir.
+    1 = kirpma yok (temanin kendi urun kartlariyla ayni cerceveleme).
+    1.15 gibi bir deger urunu buyutur, kenarlardan kirpar.
+  endcomment
+  assign p_zoom = karo_zoom | default: 1
 
   comment
     Grup varsayilani sabit degil: kullanici erkek urunu inceliyorsa
@@ -89,7 +99,8 @@
        data-tt-ts-indirim="{{ p_indirim }}"
        data-tt-ts-form="ProductForm-{{ section.id }}-{{ product.id }}"
        data-tt-ts-secici="VariantPicker-{{ section.id }}-{{ product.id }}"
-       data-tt-ts-grup-varsayilan="{{ varsayilan_grup }}">
+       data-tt-ts-grup-varsayilan="{{ varsayilan_grup }}"
+       style="--tt-ts-karo-zoom: {{ p_zoom }};">
 
     {%- comment -%} --- HAM MADDE segmenti --- {%- endcomment -%}
     <div class="tt-ts-hammadde">
@@ -260,7 +271,7 @@
                 {%- for u in kol.products limit: 24 -%}
                   {%- unless u.id == product.id -%}
                   {"ad": {{ u.title | json }},
-                   "gorsel": {{ u.featured_image | image_url: width: 200 | json }},
+                   "gorsel": {{ u.featured_image | image_url: width: 400 | json }},
                    "varyantlar": [
                      {%- comment -%}
                        Son varyant stokta degilse "unless forloop.last" bir
