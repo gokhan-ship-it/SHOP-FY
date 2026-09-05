@@ -81,10 +81,10 @@ Her iki kartın açıklama bloğu **sürekli açık**; seçime bağlı açılıp
 değerine bağlı CSS ile). Amaç iki modun tek bakışta karşılaştırılabilmesi.
 
 Ortak yapı, iki kartta da birebir aynı ve testle doğrulanıyor:
-0.5px ayırıcı (üstü/altı 14px) → adımlar (aralarında 12px) → her adımda 18px
-ikon + 12px boşluk + 13px başlık / 12px açıklama, satır yüksekliği 1.45.
-İkili sette ek olarak: blok başlığı, sonsuzluk kutusu (8px köşe, 10px 12px iç
-boşluk, üstünde 14px), takvim notu.
+0.5px ayırıcı (üstü/altı 14px) → adımlar (aralarında 14px) → her adımda 34px
+yuvarlak çip (içinde 18px ikon) + 12px boşluk + 13px başlık / 12px açıklama,
+satır yüksekliği 1.45. İkili sette ek olarak: blok başlığı, sonsuzluk kutusu
+(8px köşe, 10px 12px iç boşluk, üstünde 14px), takvim notu.
 
 Sonsuzluk kutusunun zemini `--tt-ts-kutu`: metin renginin %7'si sayfa zeminine
 karıştırılıyor. Açık temada karttan bir tık koyu, koyu temada bir tık açık
@@ -129,17 +129,22 @@ yeni bir liste eklerken aynı kurala uyun.
 Artık `sayfa.py` hem `.rte` sarmalayıcısını hem temanın gerçek kurallarını
 içeriyor; `ul`'a dönülürse test kırmızıya döner.
 
-## Açıklama kutusu
+## Adımlar: zaman çizelgesi çipleri
 
-Adımlar gri bir kutunun içinde (`--tt-ts-kutu`, 10px iç boşluk, 10px köşe).
-Kutu yanlardan **taşıyor** (`margin: 14px -10px 0; padding: 10px`): kutunun iç
-kenarı kartın içerik kenarıyla, yani seçim yuvarlağıyla aynı hizada. Normal
-padding verilseydi ikonlar 10px içeri kayar ve kartın içinde ikinci bir sol
-kenar oluşurdu — düzeltilmek istenen şey buydu.
+Adımları saran gri kutu **kaldırıldı**. Her ikon 34px'lik yuvarlak bir çipin
+içinde (`.tt-ts-adim-cip`, zemin `--tt-ts-kutu`), çipler aralarındaki dikey
+hairline ile birbirine bağlanıyor — adımlar tek tek değil, bir akış olarak
+okunuyor. Çizgi `.tt-ts-adim + .tt-ts-adim .tt-ts-adim-cip::before` ile
+çiziliyor; yüksekliği `--tt-ts-adim-ara` (14px), yani adımlar arası boşlukla
+**aynı değişkenden** geliyor. Boşluk değiştirilirse çizgi kendiliğinden uyuyor;
+iki ayrı sayı tutulsaydı ilk düzenlemede kopardı.
 
-İkili sette sonsuzluk satırı **aynı kutunun içinde**, ince bir çizgiyle ayrılmış.
-Ayrı bir gri kutu olsaydı iki gri kutu yan yana gelip aralarındaki sınır
-kaybolurdu.
+Çipin sol kenarı seçim yuvarlağıyla aynı hizada (ölçüldü: ikisi de 31px).
+Bunun kaçınılmaz sonucu: adım **metni** artık kart başlığıyla hizalı değil
+(77px'e karşı 61px), çünkü çip yuvarlaktan geniş. Referans tasarımda da böyle.
+
+Sonsuzluk satırı **kendi yüzeyinde** (`--tt-ts-kutu`). Adımlar artık gri kutuda
+olmadığı için "iki gri kutu yan yana gelirse sınır kaybolur" sorunu kalmadı.
 
 ## Tarayıcı sınırı: 0.5px ve 1.5px kenarlıklar
 
