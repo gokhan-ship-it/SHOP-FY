@@ -292,6 +292,21 @@
       }
     }
 
+    /* Seridin sag kenari yalnizca kaydirilacak icerik varken soluyor.
+       Bir kez baglaniyor, sonra her kaydirmada guncelleniyor. */
+    function seritDurum(kap) {
+      function guncelle() {
+        var devam = kap.scrollWidth - kap.clientWidth - kap.scrollLeft > 2;
+        kap.classList.toggle('tt-ts-serit--devam', devam);
+      }
+      if (!kap.__ttSeritBagli) {
+        kap.__ttSeritBagli = true;
+        kap.addEventListener('scroll', guncelle, { passive: true });
+        window.addEventListener('resize', guncelle);
+      }
+      guncelle();
+    }
+
     function gridCiz() {
       var kap = KOK.querySelector('[data-tt-ts-grid]');
       if (!kap) return;
@@ -327,6 +342,7 @@
            '<path d="M5 12h14M13 6l6 6-6 6"/></svg><span>Tümünü gör</span></button>';
       kap.innerHTML = h;
       karoBagla(kap, liste, false);
+      seritDurum(kap);
 
       var tum = kap.querySelector('[data-tt-ts-tum]');
       if (tum) tum.addEventListener('click', function (ev) {
@@ -387,6 +403,16 @@
         sa.textContent = ikinci.urun.ad + ' · ' + ad;
         if (sl) sl.hidden = ikinci.urun.varyantlar.length < 2;
       }
+
+      /* Cift gorseli satiri: ikinci gorsel ve "A + B" metni. Kart secili
+         olmasa da yaziliyor, cunku acikladigi tutar da o zaman gorunuyor. */
+      var cg2 = KOK.querySelector('[data-tt-ts-cift-g2]');
+      var cad = KOK.querySelector('[data-tt-ts-cift-ad]');
+      if (cg2) {
+        cg2.src = (ikinci && ikinci.urun.gorsel) || '';
+        cg2.alt = ikinci ? ikinci.urun.ad : '';
+      }
+      if (cad) cad.textContent = ikinci ? (V.urun + ' + ' + ikinci.urun.ad) : V.urun;
 
       var ozet = KOK.querySelector('[data-tt-ts-ozet]');
       if (ozet) {
@@ -609,6 +635,19 @@
       ciz();
     });
 
+    /* "Degistir": kart secili degilse once seciyor (secici zaten yalnizca
+       secili kartta gorunuyor), sonra seride kaydiriyor. */
+    var cd = KOK.querySelector('[data-tt-ts-cift-degistir]');
+    if (cd) cd.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      ev.preventDefault();
+      if (mod !== 'set') { mod = 'set'; ciz(); }
+      var serit = KOK.querySelector('[data-tt-ts-grid]');
+      if (serit && serit.scrollIntoView) {
+        serit.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    });
+
     segmentFarkYaz();
 
     var sepet = KOK.querySelector('[data-tt-ts-sepet]');
@@ -648,7 +687,6 @@
       var s = parseFloat(v);
       return isNaN(s) ? yedek : s;
     }
-    var oran = oku('--tt-ts-karo-oran', 0.8);
     var zoom = oku('--tt-ts-karo-zoom', 1);
     var kaydir = oku('--tt-ts-karo-kaydir', 0);
 
@@ -668,67 +706,42 @@
       'font:inherit;font-weight:600;cursor:pointer">Karo cercevelemesi<span data-ok>–</span></button>' +
       '<div data-govde>' +
       '<div style="opacity:.6;margin:2px 0 10px">Yalnizca ?ttayar=1 ile gorunur</div>' +
-      '<label style="display:block;margin-bottom:2px">Kutu orani: <b data-o></b></label>' +
-      '<input data-os type="range" min="0.6" max="1.4" step="0.01" style="width:100%">' +
-      '<div style="opacity:.6;margin:2px 0 10px">kucuk = uzun kutu, buyuk = basik</div>' +
+      '<label style="display:block;margin-bottom:2px">Gorunen bolge: <b data-k></b></label>' +
+      '<input data-ks type="range" min="-50" max="50" step="1" style="width:100%">' +
+      '<div style="opacity:.6;margin:2px 0 10px">eksi = fotografin alti, arti = ustu</div>' +
       '<label style="display:block;margin-bottom:2px">Yakinlastirma: <b data-z></b></label>' +
-      '<input data-zs type="range" min="0.8" max="2" step="0.01" style="width:100%;margin-bottom:10px">' +
-      '<label style="display:block;margin-bottom:2px">Dikey kaydirma: <b data-k></b>%</label>' +
-      '<input data-ks type="range" min="-60" max="60" step="0.5" style="width:100%">' +
-      '<div style="opacity:.6;margin:2px 0 10px">eksi = altini goster, arti = ustunu</div>' +
-      '<div data-uyari style="margin:0 0 10px;padding:6px 8px;border-radius:8px;' +
-      'background:#4a3a00;color:#ffd479"></div>' +
+      '<input data-zs type="range" min="1" max="2" step="0.01" style="width:100%">' +
+      '<div style="opacity:.6;margin:2px 0 10px">1 = kutuyu dolduran hali</div>' +
       '<div style="opacity:.6;margin-bottom:4px">Ozel Liquid bloguna yapistir:</div>' +
       '<code data-cikti style="display:block;padding:8px;border-radius:8px;background:#000;' +
       'color:#7fd4a0;word-break:break-all;user-select:all;cursor:text"></code>' +
       '<button data-sifirla type="button" style="margin-top:8px;width:100%;padding:6px;' +
       'border:0;border-radius:8px;background:#3a3a3c;color:#fff;font:inherit;cursor:pointer">' +
-      'Basa dondur (0.8 / 1 / 0)</button></div>';
+      'Basa dondur (0 / 1)</button></div>';
     document.body.appendChild(p);
 
-    var os = p.querySelector('[data-os]'), zs = p.querySelector('[data-zs]');
-    var ks = p.querySelector('[data-ks]');
-    var ob = p.querySelector('[data-o]'), zb = p.querySelector('[data-z]');
-    var kb = p.querySelector('[data-k]');
-    var cikti = p.querySelector('[data-cikti]'), uyari = p.querySelector('[data-uyari]');
+    var zs = p.querySelector('[data-zs]'), ks = p.querySelector('[data-ks]');
+    var zb = p.querySelector('[data-z]'), kb = p.querySelector('[data-k]');
+    var cikti = p.querySelector('[data-cikti]');
 
-    /* Kaydirma cok buyudugunde gorsel kutunun disina tasip alt (veya ust)
-       kenarda bos bant birakiyor. Bunu gozle fark etmek zor -- fotograf
-       zemini acik oldugu icin bant beyaz gorunuyor -- o yuzden hesaplanip
-       uyari olarak yaziliyor. Kutu yuksekligi 1 kabul edilirse gorselin
-       yarim yuksekligi zoom/2, kaymasi zoom*kaydir. */
-    function bosBantYuzde() {
-      var yariBosluk = 0.5 - (zoom / 2 - Math.abs(zoom * kaydir / 100));
-      return Math.max(0, yariBosluk) * 100;
-    }
-
+    /* Bos bant uyarisi kaldirildi: kaydirma artik object-position ile
+       yapiliyor, gorsel kendi kutusunun icinde kayiyor ve kutu her zaman
+       dolu kaliyor. Bant olusmasi yapisal olarak mumkun degil. */
     function uygula() {
       for (var i = 0; i < kokler.length; i++) {
-        kokler[i].style.setProperty('--tt-ts-karo-oran', String(oran));
         kokler[i].style.setProperty('--tt-ts-karo-zoom', String(zoom));
-        kokler[i].style.setProperty('--tt-ts-karo-kaydir', kaydir + '%');
+        kokler[i].style.setProperty('--tt-ts-karo-kaydir', String(kaydir));
       }
-      os.value = oran; zs.value = zoom; ks.value = kaydir;
-      ob.textContent = oran.toFixed(2);
+      zs.value = zoom; ks.value = kaydir;
       zb.textContent = zoom.toFixed(2);
       kb.textContent = kaydir;
-      var bos = bosBantYuzde();
-      if (bos > 1) {
-        uyari.hidden = false;
-        uyari.textContent = 'Karo yuksekliginin %' + Math.round(bos) +
-          ' kadari bos kaliyor. Kutu oranini buyutmeyi (basiklastirmayi) deneyin.';
-      } else {
-        uyari.hidden = true;
-      }
-      cikti.textContent = "{% render 'tt-tekli-secim', karo_oran: " + oran.toFixed(2) +
-                          ', karo_zoom: ' + zoom.toFixed(2) +
+      cikti.textContent = "{% render 'tt-tekli-secim', karo_zoom: " + zoom.toFixed(2) +
                           ', karo_kaydir: ' + kaydir + ' %}';
     }
-    os.addEventListener('input', function () { oran = parseFloat(os.value); uygula(); });
     zs.addEventListener('input', function () { zoom = parseFloat(zs.value); uygula(); });
     ks.addEventListener('input', function () { kaydir = parseFloat(ks.value); uygula(); });
     p.querySelector('[data-sifirla]').addEventListener('click', function () {
-      oran = 0.8; zoom = 1; kaydir = 0; uygula();
+      zoom = 1; kaydir = 0; uygula();
     });
     var govde = p.querySelector('[data-govde]');
     p.querySelector('[data-kat]').addEventListener('click', function () {

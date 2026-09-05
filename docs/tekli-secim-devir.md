@@ -1,6 +1,6 @@
 # Tekli ürün sayfası sağ sütun seçim katmanı — devir notu
 
-Son güncelleme: 2026-09-05 (kart tasarım revizyonu)
+Son güncelleme: 2026-09-05 (kart tasarım revizyonu, 2. tur)
 
 ## Nerede duruyor
 
@@ -25,15 +25,26 @@ CSS onu silemez, yalnızca pencereyi oynatabilir. Üç kol var:
 
 | Parametre | Anlamı | Varsayılan |
 |---|---|---|
-| `karo_oran` | Kutunun en/boy oranı. 0.8 = 4:5 (uzun), 1 = kare, 1.14 = 8:7 (basık). | `0.8` |
-| `karo_zoom` | Yakınlaştırma. 1 = kırpma yok. | `0.99` |
-| `karo_kaydir` | Dikey kaydırma yüzdesi. Eksi = fotoğrafın altını göster. | `-30` |
+| `karo_kaydir` | Fotoğrafın hangi dikey bölgesi görünecek. 0 = orta, eksi = alt, artı = üst. | `-30` |
+| `karo_zoom` | Ek yakınlaştırma. 1 = kutuyu dolduran hali; altına inmek etkisiz. | `0.99` |
+
+`karo_oran` **kaldırıldı**: şerit kartlarının görsel yüksekliği artık sabit
+(104×76), oran diye bir serbestlik kalmadı.
 
 Varsayılanlar, mağaza sahibinin 2026-09-05'te gerçek katalogda gözle bulduğu
 değerler. Şablondaki render satırında ayrıca veriliyor; buradakiler o satır
 silinse de aynı çerçeveleme kalsın diye.
 
-### Boş bant tuzağı
+### Boş bant tuzağı — ÇÖZÜLDÜ
+
+Kaydırma önceden `transform: translateY` ile yapılıyordu: **öğeyi** oynatıyor,
+görseli değil. Öğe kutunun dışına taşınca karşı kenarda boş bant kalıyordu
+(`kaydır -30`'da karonun %30'u boştu). Artık `object-position` kullanılıyor:
+görsel kendi kutusunun içinde kayıyor, kutu her zaman dolu. Bant oluşması
+yapısal olarak imkânsız, dolayısıyla aşağıdaki formül de artık geçerli değil —
+tarihsel kayıt olarak duruyor.
+
+<details><summary>Eski formül (transform dönemi)</summary>
 
 Kaydırma görseli kutunun dışına taşırıyor; taşan tarafın karşısında **boş bant**
 kalıyor. Kutu yüksekliği 1 kabul edilirse:
@@ -53,7 +64,9 @@ zoom ≥ 1 / (1 − 2 × |kaydır| / 100)
 zoom'da ürün paramparça kırpılır. Yani **büyük kaydırma tek başına çözüm değil**;
 kutuyu basıklaştırmak (`karo_oran` büyütmek) gerekiyor.
 
-Ölçülen, bant bırakmayan iyi kombinasyonlar:
+</details>
+
+Ölçülen, bant bırakmayan iyi kombinasyonlar (transform dönemi):
 
 | oran / zoom / kaydır | Not |
 |---|---|
@@ -77,6 +90,40 @@ Sonsuzluk kutusunun zemini `--tt-ts-kutu`: metin renginin %7'si sayfa zeminine
 karıştırılıyor. Açık temada karttan bir tık koyu, koyu temada bir tık açık
 çıkıyor — yön iki temada da kendiliğinden doğru. Sabit gri kullanılsaydı koyu
 temada karttan koyu görünürdü.
+
+## İkinci ürün seçici: yatay şerit
+
+3 sütunlu grid kaldırıldı. Kartlar 104px sabit genişlikte, 8px aralıkla yan
+yana, yatay kaydırmalı; görsel alanı 104×76. Şerit kartın sağ iç boşluğunun
+dışına taşıyor, böylece sonraki karo kartın kenarından kırpılarak görünüyor.
+
+**Peek neden tek başına yetmiyor:** 104px sabit kart genişliğiyle "sonraki
+karo görünsün" saf aritmetiğe bırakılamıyor — 390px'te üç karo (328px) mevcut
+genişliğe (327px) tam oturuyor ve sonraki karodan 1px kalıyor. Bu yüzden
+kaydırılacak içerik varken şeridin sağ kenarı soluyor (`.tt-ts-serit--devam`,
+sınıfı JS kaydırma durumuna göre ekliyor). İşaret her genişlikte aynı.
+
+Sıralama satırı şeridin altında. Alt sayfa (bottom sheet) 3 sütunlu grid
+olarak kalıyor.
+
+## Tarayıcı sınırı: 0.5px ve 1.5px kenarlıklar
+
+Chrome `border-width` değerini tam piksele yuvarlıyor: kaynakta `0.5px` de
+`1.5px` de ekranda **1px** olarak çiziliyor. Bunun somut sonucu vardı —
+"seçili karo 1.5px kenarlık" kuralı seçili karoyu seçili olmayandan
+ayırmıyordu. Çözüm kartlarda kullanılan yöntem: kenarlık hairline kalıyor,
+seçim `box-shadow: inset 0 0 0 1px` ile ekleniyor (görsel kalınlık 2px, ölçü
+değişmediği için seçim değişince içerik oynamıyor).
+
+Aynı sebeple `.tt-ts-ayrac` gibi **yükseklik** kullanan hairline'lar 0.5px
+çiziliyor; sınır yalnızca kenarlıklarda.
+
+## Karo tikinin rengi temaya bağlı DEĞİL
+
+Seçim tiki ürün fotoğrafının üzerinde duruyor, temanın zemininin değil. Tema
+token'ı kullanılınca koyu temada daire açık renge dönüp beyaz zeminli ürün
+fotoğrafının içinde kayboluyordu. Koyu daire + beyaz tik her iki temada ve her
+fotoğraf zemininde okunuyor.
 
 ## Üstü kapatan sabit öğeler
 

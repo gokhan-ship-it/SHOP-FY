@@ -68,14 +68,19 @@
   .tt-ts-sonsuz { outline: var(--tt-ts-hair) solid currentColor; background: transparent; }
 }
 
-/* --- HAM MADDE etiketi --- */
+/* --- Bolum etiketleri (HAM MADDE / ACILMA SEKLI) ---
+   Iki etiket ayni sinifi paylasiyor; birinin olcusu degisirse ikisi
+   birden degisiyor, boylece bicimsel esitlik kodla garanti altinda. */
 .tt-ts-etiket {
   margin: 0 0 6px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.2;
   letter-spacing: .04em;
+  text-transform: uppercase;
   color: var(--tt-ts-ink-2);
 }
+/* "Farki gor" ile ayni satirda dururken alt bosluk satirin kendisinde. */
+.tt-ts-etiket--satir { margin: 0; }
 
 /* --- Segment kontrolu: ham madde ve Kadin/Erkek ayni gorsel dil --- */
 .tt-ts-seg {
@@ -122,7 +127,7 @@
 .tt-ts-seg-fark:empty { display: none; }
 .tt-ts-hammadde { margin-bottom: var(--tt-ts-s6); }
 
-/* --- "Nasil acilsin?" baslik satiri --- */
+/* --- Bolum etiketi satiri: etiket solda, "Farki gor" sagda --- */
 .tt-ts-baslik {
   display: flex;
   align-items: baseline;
@@ -130,7 +135,6 @@
   gap: var(--tt-ts-s3);
   margin-bottom: 10px;
 }
-.tt-ts-baslik-m { font-size: 17px; font-weight: 500; line-height: 1.3; }
 .tt-ts-fark-link {
   font-size: 13px;
   line-height: 1.3;
@@ -204,8 +208,11 @@
   justify-content: space-between;
   gap: var(--tt-ts-s2);
 }
-.tt-ts-ust-sol, .tt-ts-ust-sag { font-size: 16px; font-weight: 500; line-height: 1.3; }
-.tt-ts-ust-sag { flex: 0 0 auto; }
+.tt-ts-ust-sol, .tt-ts-ust-sag { font-size: 16px; font-weight: 500; line-height: 1.35; }
+/* Baslik iki satira sarabiliyor; fiyat ASLA kirilmiyor. Gumus varyantta
+   tutar uzuyor ve tek satirda kalmasi sart, yer basliktan aliniyor. */
+.tt-ts-ust-sol { min-width: 0; }
+.tt-ts-ust-sag { flex: 0 0 auto; white-space: nowrap; }
 .tt-ts-alt {
   display: flex;
   align-items: baseline;
@@ -220,6 +227,50 @@
   line-height: 1.5;
   color: var(--tt-ts-ink-3);
   text-decoration: line-through;
+}
+
+/* --- Cift gorseli satiri: toplamin hangi iki urunden olustugu --- */
+.tt-ts-cift {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.tt-ts-cift-gorseller { flex: 0 0 auto; display: flex; align-items: center; }
+.tt-ts-cift-g {
+  display: block;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: var(--tt-ts-hair) solid var(--tt-ts-line);
+  background: var(--tt-ts-zemin);
+  object-fit: cover;
+}
+/* Ikinci gorsel birincinin ustune biniyor: iki urunun tek bir teklif
+   oldugu, iki ayri satir yazmadan anlasiliyor. */
+.tt-ts-cift-g--iki { margin-left: -8px; }
+.tt-ts-cift-g--iki[src=""] { display: none; }
+.tt-ts-cift-ad {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--tt-ts-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tt-ts-cift-link {
+  flex: 0 0 auto;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--tt-ts-ink-2);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.3;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /* ------------------------------------------------------------------
@@ -282,8 +333,8 @@
 }
 .tt-ts-sonsuz-ikon {
   flex: 0 0 auto;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   margin-top: 1px;
   color: var(--tt-ts-ink);
 }
@@ -342,7 +393,35 @@
   cursor: pointer;
 }
 
-/* --- Urun grid'i: 3 sutun, 8px aralik --- */
+/* --- Yatay serit (sag sutun) ---
+   Kartlar 104px sabit, aralarinda 8px, yatay kaydirmali. Serit kartin
+   sag ic boslugunun DISINA tasiyor, boylece bir sonraki karo kartin
+   kenarindan kirpilarak goruniyor. */
+.tt-ts-serit {
+  display: flex;
+  gap: var(--tt-ts-s2);
+  /* Tasirma YALNIZCA sagdan ve geri padding'lenmiyor. Iki yandan tasirip
+     esit padding vermek net kazanci sifirliyordu: 390px'te ucuncu karo
+     kenari 1px asiyor, yani peek yok sayilirdi. */
+  margin: var(--tt-ts-s3) calc(-1 * var(--tt-ts-s4)) 0 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.tt-ts-serit::-webkit-scrollbar { display: none; }
+/* Sabit 104px karo ile "peek" saf aritmetige birakilamiyor: 390px'te uc
+   karo mevcut genislige tam oturup sonraki karo 1px kaliyor. Bu yuzden
+   kaydirilacak icerik VARKEN sag kenar soluyor - isaret her genislikte
+   ayni. Sinifi JS kaydirma durumuna gore ekliyor, sona gelince kalkiyor. */
+.tt-ts-serit--devam {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+          mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+}
+.tt-ts-serit > .tt-ts-karo { flex: 0 0 104px; width: 104px; }
+
+/* --- Alt sayfadaki grid: 3 sutun, 8px aralik --- */
 .tt-ts-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -367,29 +446,28 @@
   text-align: left;
   cursor: pointer;
 }
-.tt-ts-karo[aria-checked="true"] { border: 1.5px solid var(--tt-ts-ink); }
-/* Oran <img> uzerinde degil KUTU uzerinde: temanin global img kurallari
-   (width/height auto) orani ezebiliyordu. Gorsel kutuyu mutlak konumla
-   dolduruyor, boylece cerceve her zaman sabit kaliyor.
+/* Secili karo: Chrome border-width'i tam piksele yuvarliyor - 0.5px de
+   1.5px de 1px olarak ciziliyor, yani "1.5px kenarlik" secili karoyu
+   secili olmayandan ayirmiyordu. Kenarlik hairline kaliyor, secim ic
+   golgeyle ekleniyor: gorsel kalinlik 2px, olcu degismedigi icin karo
+   secilince yeniden konumlanmiyor. */
+.tt-ts-karo[aria-checked="true"] {
+  border-color: var(--tt-ts-ink);
+  box-shadow: inset 0 0 0 1px var(--tt-ts-ink);
+}
+/* Yukseklik <img> uzerinde degil KUTU uzerinde: temanin global img
+   kurallari (width/height auto) olcuyu ezebiliyordu. Gorsel kutuyu
+   mutlak konumla dolduruyor, boylece cerceve her zaman sabit kaliyor.
 
-   ORAN AYARLANABILIR (--tt-ts-karo-oran, en/boy). Varsayilan 0.8 = 4:5.
-   Sebep: bilekliklerin fotografta kapladigi alan yatay bir serit; 4:5
-   gibi uzun bir kutuda ya alt bosluk kaliyor ya urun cok kirpiliyor.
-   Kutuyu basiklastirmak ikisini de cozuyor.
-
-   ORAN VE DOLDURMA: temanin kendi urun kartlari 4:5 + cover kullaniyor
-   (theme.css: .media--portrait > img / .media > img). Bu karolar da ayni
-   dili konusuyor, boylece sitenin geri kalaniyla ayni cerceveleme olusuyor.
-   Katalogdaki fotograflarin tamami 3:4 (1500x2000); 3:4 fotograf 4:5
-   kutuya cover ile girince toplam %6.7 kirpiliyor (ustten ve alttan
-   %3.3) - hicbir urun kesilmiyor. CONTAIN denendi ve birakildi: fotograf
-   zemini de kutu zemini de beyaz oldugu icin cerceve gorunmuyor, urun
-   bos alanin icinde kuculmus ve rastgele konumlanmis gibi duruyordu. */
+   Yukseklik sabit 104x76: serit kartlarinin hepsi ayni boyda, alt
+   satirlar hizali. Katalogdaki fotograflarin tamami 3:4 (1500x2000);
+   92x76'lik alana cover ile girince dikeyde bol pay kaliyor ve hangi
+   bolgenin gorunecegi --tt-ts-karo-kaydir ile secilebiliyor. */
 .tt-ts-karo-kutu {
   position: relative;
   display: block;
   width: 100%;
-  aspect-ratio: var(--tt-ts-karo-oran, 0.8);
+  height: 76px;
   overflow: hidden;
   border-radius: 6px;
   background: var(--tt-ts-zemin);
@@ -398,17 +476,20 @@
    etrafindaki bosluk fotografin icine gomulu ve her fotografta farkli;
    CSS onu silemez, sadece pencereyi oynatabilir.
 
-   --tt-ts-karo-zoom   : yakinlastirma. 1 = kirpma yok. Buyutunce urun
-                         buyur, kenarlardan kirpilir.
-   --tt-ts-karo-kaydir : dikey kaydirma, yuzde. Pozitif = gorsel asagi
-                         kayar (fotografin UST kismi gorunur), negatif =
-                         yukari kayar (ALT kismi gorunur). Bileklik gibi
-                         ilginc yeri altta olan fotograflar icin negatif.
+   --tt-ts-karo-kaydir : hangi dikey bolgenin gorunecegi. Eksi = fotografin
+                         ALT kismi, arti = UST kismi. object-position ile
+                         uygulaniyor: 0 -> %50 (orta), -30 -> %80 (alt).
+   --tt-ts-karo-zoom   : ek yakinlastirma. 1 = kutuyu dolduran hali.
 
-   Zoom tek basina yetmiyordu: merkezden buyuttugu icin altta kesilen
-   bilekligi geri getiremiyor, daha da kesiyordu. Kaydirma o yuzden ayri
-   bir kol. Ikisi de snippet parametresi (karo_zoom / karo_kaydir) ve
-   ?ttayar=1 ile acilan panelden canli denenebiliyor. */
+   KAYDIRMA NEDEN transform DEGIL: translateY OGEYI oynatiyordu, gorseli
+   degil; oge kutunun disina tasinca karsi kenarda bos bant kaliyordu
+   (kaydir -30'da karonun %30'u bostu). object-position gorseli KENDI
+   kutusunun icinde kaydiriyor, kutu her zaman dolu kaliyor - bos bant
+   yapisal olarak imkansiz. Kutu 92x76 ve fotograf 3:4 oldugu icin
+   dikeyde ~%38 pay var; kaydirmanin hareket alani bol.
+
+   zoom max(1, ...) ile kelepceli: 1'in altinda oge kuculup kenarda bosluk
+   birakiyordu. 0.99 gibi bir deger artik 1 gibi davraniyor. */
 .tt-ts-karo-gorsel {
   position: absolute;
   inset: 0;
@@ -416,8 +497,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
-  transform: scale(var(--tt-ts-karo-zoom, 1)) translateY(var(--tt-ts-karo-kaydir, 0%));
+  object-position: 50% calc(50% - var(--tt-ts-karo-kaydir, 0) * 1%);
+  transform: scale(max(1, var(--tt-ts-karo-zoom, 1)));
 }
 .tt-ts-karo-ad {
   display: block;
@@ -437,7 +518,8 @@
   line-height: 1.3;
   color: var(--tt-ts-ink-2);
 }
-/* Karo dar (3 sutun, ~100px): tutarlar yuvarlanmis. Sigmadiginda ustu
+/* Karo dar (serit 104px, alt sayfa 3 sutun): tutarlar yuvarlanmis.
+   Sigmadiginda ustu
    cizili tutar KIRPILMIYOR, alt satira geciyor - eskiden karo kenarindan
    tasip yarim gorunuyordu. */
 .tt-ts-karo-fiyat {
@@ -453,7 +535,12 @@
   color: var(--tt-ts-ink-3);
   text-decoration: line-through;
 }
-/* Secili karo: sag ust kosede koyu dolu daire icinde tik. */
+/* Secili karo: sag ust kosede koyu dolu daire icinde BEYAZ tik.
+   Bu iki renk bilerek temaya bagli DEGIL. Tik urun fotografinin
+   uzerinde duruyor, temanin zemininin degil; tema token'i kullanilinca
+   koyu temada daire acik renge donup beyaz zeminli urun fotografinin
+   icinde kayboluyordu. Koyu daire + beyaz tik her iki temada ve her
+   fotograf zemininde okunuyor. */
 .tt-ts-karo-tik {
   position: absolute;
   top: 10px;
@@ -463,8 +550,8 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--tt-ts-ink);
-  color: var(--tt-ts-zemin);
+  background: #1d1d1f;
+  color: #ffffff;
 }
 .tt-ts-karo[aria-checked="true"] .tt-ts-karo-tik { display: block; }
 .tt-ts-karo-tik svg { display: block; width: 100%; height: 100%; }

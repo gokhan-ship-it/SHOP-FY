@@ -22,7 +22,7 @@
   yuzden eslestirme tam metinle degil anahtar kelimeyle yapiliyor:
   icinde "celik" gecen celik, "gumus" gecen gumus sayiliyor.
 
-  @param {string} [baslik] - "Nasil acilsin?" satirinin sol metni
+  @param {string} [baslik] - Bolum etiketi (varsayilan "ACILMA SEKLI")
   @param {string} [fark_metin] - Karsilastirmaya giden linkin metni
   @param {string} [fark_link] - Karsilastirma hedefi
   @param {string} [hammadde_etiket] - Segmentin ustundeki etiket
@@ -41,9 +41,8 @@
   @param {string} [set_blok_baslik] - Ikili set aciklama blogunun basligi
   @param {string} [set_adim1_bas] - Ikili set 1. adim basligi (digerleri: set_adim2_*, set_adim3_*)
   @param {string} [sonsuz_metin] - Sonsuzluk kutusunun metni
-  @param {number} [karo_oran] - Karo kutusunun en/boy orani (0.8 = 4:5, 1 = kare)
   @param {number} [karo_zoom] - Karo fotograflarinin buyutme carpani (1 = kirpma yok)
-  @param {number} [karo_kaydir] - Karo fotograflarinin dikey kaydirma yuzdesi (- = alt taraf gorunur)
+  @param {number} [karo_kaydir] - Fotografin gorunen dikey bolgesi (0 = orta, - = alt, + = ust)
 
   @example
   {% render 'tt-tekli-secim' %}
@@ -51,14 +50,14 @@
 
 {%- liquid
   assign v_secili = product.selected_or_first_available_variant
-  assign t_baslik = baslik | default: 'Nasıl açılsın?'
+  assign t_baslik = baslik | default: 'AÇILMA ŞEKLİ'
   assign t_fark = fark_metin | default: 'Farkı gör'
   assign t_fark_link = fark_link | default: '/pages/couple-daha-fazla-bilgi-al'
   assign t_hm = hammadde_etiket | default: 'HAM MADDE'
-  assign t_tek_ust = tek_ust | default: 'Belirlediğim tarihte'
-  assign t_tek_alt = tek_alt | default: '1 ürün · Sen yüklersin, seçtiğin gün açılır'
-  assign t_set_ust = set_ust | default: 'Buluştuğumuzda'
-  assign t_set_alt = set_alt | default: '2 ürün · İkiniz de yüklersiniz, her buluşmanızda açılır'
+  assign t_tek_ust = tek_ust | default: 'Belirlediğim tarihte açılsın'
+  assign t_tek_alt = tek_alt | default: '1 ürün · İçeriği sen yüklersin'
+  assign t_set_ust = set_ust | default: 'Buluştuğumuzda açılsın'
+  assign t_set_alt = set_alt | default: '2 ürün · İkiniz de yüklersiniz'
   assign t_rozet = set_rozet | default: 'İkincisi yarı fiyatına'
   assign t_not = tarih_not | default: 'İsterseniz ikili seti de belirli bir tarihe kurabilirsiniz.'
   assign t_secim = secim_baslik | default: 'İkinci ürünü seç'
@@ -73,21 +72,23 @@
     farkli; hicbir CSS onu fotografin icinden silemez, ancak pencereyi
     oynatabilir.
 
-    karo_oran   : kutunun en/boy orani. 0.8 = 4:5 (uzun), 1 = kare,
-                  1.14 = 8:7 (basik). Bilekliklerin fotografta kapladigi
-                  alan yatay bir serit oldugu icin uzun kutu ya alt
-                  bosluk birakiyor ya urunu cok kirpiyor.
-    karo_zoom   : yakinlastirma. 1 = kirpma yok. 1.15 urunu buyutur.
-    karo_kaydir : dikey kaydirma yuzdesi. Pozitif = fotografin UST kismi,
-                  negatif = ALT kismi gorunur. Bileklikler gibi ilginc
-                  yeri altta olan fotograflarda negatif deger gerekiyor.
+    karo_kaydir : fotografin hangi dikey bolgesinin gorunecegi. 0 = orta,
+                  eksi = ALT kismi, arti = UST kismi. Bileklikler gibi
+                  ilginc yeri altta olan fotograflarda negatif gerekiyor.
+    karo_zoom   : ek yakinlastirma. 1 = kutuyu dolduran hali; 1'in altina
+                  inmek etkisiz (CSS kelepceliyor).
 
     Degerleri gozle bulmak icin onizleme adresine ?ttayar=1 ekleyin:
-    uc kaydiracli bir panel acilir ve yapistirilacak satiri yazar.
+    iki kaydiracli bir panel acilir ve yapistirilacak satiri yazar.
 
     VARSAYILANLAR magazanin kendi katalogunda gozle bulundu (2026-09-05):
     zoom 0.99 / kaydir -30. Sablondaki render satirinda ayrica veriliyor;
     buradakiler o satir silinse de ayni cerceveleme kalsin diye.
+
+    karo_oran parametresi KALDIRILDI: serit kartlarinin gorsel yuksekligi
+    artik sabit (104x76), oran diye bir serbestlik kalmadi. Eski render
+    satirlarinda gecmesi zarar vermiyor, Liquid bilinmeyen parametreyi
+    yok sayiyor.
   endcomment
   comment
     Aciklama bloklarinin metinleri. Digerleri gibi parametre: varsayilan
@@ -109,7 +110,6 @@
   assign t_set_a3a = set_adim3_alt | default: 'İki kapsül yan yana geldiğinde içerik ikinize de açılır. Uzaklaştığınızda kilitlenir.'
   assign t_sonsuz = sonsuz_metin | default: 'Buluştukça kapsülünüz büyür, ilişkinizin hikâyesi birikir.'
 
-  assign p_oran = karo_oran | default: 0.8
   assign p_zoom = karo_zoom | default: 0.99
   assign p_kaydir = karo_kaydir | default: -30
 
@@ -143,7 +143,7 @@
        data-tt-ts-form="ProductForm-{{ section.id }}-{{ product.id }}"
        data-tt-ts-secici="VariantPicker-{{ section.id }}-{{ product.id }}"
        data-tt-ts-grup-varsayilan="{{ varsayilan_grup }}"
-       style="--tt-ts-karo-oran: {{ p_oran }}; --tt-ts-karo-zoom: {{ p_zoom }}; --tt-ts-karo-kaydir: {{ p_kaydir }}%;">
+       style="--tt-ts-karo-zoom: {{ p_zoom }}; --tt-ts-karo-kaydir: {{ p_kaydir }};">
 
     {%- comment -%} --- HAM MADDE segmenti --- {%- endcomment -%}
     <div class="tt-ts-hammadde">
@@ -168,9 +168,13 @@
       </div>
     </div>
 
-    {%- comment -%} --- "Nasil acilsin?" baslik satiri --- {%- endcomment -%}
+    {%- comment -%}
+      Bolum etiketi. Ustteki HAM MADDE ile AYNI sinifi kullaniyor
+      (.tt-ts-etiket), boylece iki etiket bicimsel olarak birebir ayni
+      kaliyor; birinin olcusu degisirse digeri de degisiyor.
+    {%- endcomment -%}
     <div class="tt-ts-baslik">
-      <span class="tt-ts-baslik-m">{{ t_baslik }}</span>
+      <p class="tt-ts-etiket tt-ts-etiket--satir">{{ t_baslik }}</p>
       <a class="tt-ts-fark-link" href="{{ t_fark_link }}">{{ t_fark }}</a>
     </div>
 
@@ -202,7 +206,7 @@
         <div class="tt-ts-ayrac"></div>
         <ul class="tt-ts-adimlar">
           <li class="tt-ts-adim">
-            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2.5 9.2a14 14 0 0 1 19 0"/><path d="M5.6 12.6a10 10 0 0 1 12.8 0"/><path d="M8.7 16a5.5 5.5 0 0 1 6.6 0"/><circle cx="12" cy="19.4" r=".9"/></svg>
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 9.4a13.5 13.5 0 0 1 18 0"/><path d="M6.2 12.8a9 9 0 0 1 11.6 0"/><path d="M9 16.1a5 5 0 0 1 6 0"/><circle cx="12" cy="19.3" r=".9"/></svg>
             <span class="tt-ts-adim-metin">
               <span class="tt-ts-adim-bas">{{ t_tek_a1b }}</span>
               <span class="tt-ts-adim-alt">{{ t_tek_a1a }}</span>
@@ -216,7 +220,7 @@
             </span>
           </li>
           <li class="tt-ts-adim">
-            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.7"/></svg>
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="10.8" width="18" height="10.4" rx="2.2"/><path d="M7.4 10.8V6.9a4.6 4.6 0 0 1 8.7-2"/></svg>
             <span class="tt-ts-adim-metin">
               <span class="tt-ts-adim-bas">{{ t_tek_a3b }}</span>
               <span class="tt-ts-adim-alt">{{ t_tek_a3a }}</span>
@@ -247,6 +251,22 @@
             <span class="tt-ts-alt-sol">{{ t_set_alt }}</span>
             <span class="tt-ts-alt-sag" data-tt-ts-set-eski></span>
           </span>
+
+          {%- comment -%}
+            Cift gorseli satiri: gosterilen toplamin HANGI iki urunden
+            olustugunu aciklar. Kart secili olmasa da gorunuyor, cunku
+            aciklamasi gereken tutar da secili olmadan gorunuyor.
+          {%- endcomment -%}
+          <span class="tt-ts-cift">
+            <span class="tt-ts-cift-gorseller">
+              <img class="tt-ts-cift-g" src="{{ product.featured_image | image_url: width: 120 }}"
+                   alt="{{ product.title | escape }}" loading="lazy" width="34" height="34">
+              <img class="tt-ts-cift-g tt-ts-cift-g--iki" data-tt-ts-cift-g2
+                   src="" alt="" loading="lazy" width="34" height="34">
+            </span>
+            <span class="tt-ts-cift-ad" data-tt-ts-cift-ad></span>
+            <button type="button" class="tt-ts-cift-link" data-tt-ts-cift-degistir>Değiştir</button>
+          </span>
         </span>
       </div>
 
@@ -259,21 +279,21 @@
         <p class="tt-ts-blok-baslik">{{ t_set_blok }}</p>
         <ul class="tt-ts-adimlar">
           <li class="tt-ts-adim">
-            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2.5 9.2a14 14 0 0 1 19 0"/><path d="M5.6 12.6a10 10 0 0 1 12.8 0"/><path d="M8.7 16a5.5 5.5 0 0 1 6.6 0"/><circle cx="12" cy="19.4" r=".9"/></svg>
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 9.4a13.5 13.5 0 0 1 18 0"/><path d="M6.2 12.8a9 9 0 0 1 11.6 0"/><path d="M9 16.1a5 5 0 0 1 6 0"/><circle cx="12" cy="19.3" r=".9"/></svg>
             <span class="tt-ts-adim-metin">
               <span class="tt-ts-adim-bas">{{ t_set_a1b }}</span>
               <span class="tt-ts-adim-alt">{{ t_set_a1a }}</span>
             </span>
           </li>
           <li class="tt-ts-adim">
-            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="10.8" width="18" height="10.4" rx="2.2"/><path d="M7.4 10.8V6.9a4.6 4.6 0 0 1 9.2 0v3.9"/></svg>
             <span class="tt-ts-adim-metin">
               <span class="tt-ts-adim-bas">{{ t_set_a2b }}</span>
               <span class="tt-ts-adim-alt">{{ t_set_a2a }}</span>
             </span>
           </li>
           <li class="tt-ts-adim">
-            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9.5" cy="8" r="3.2"/><path d="M3.6 20a5.9 5.9 0 0 1 11.8 0"/><path d="M16.5 5.4a3.2 3.2 0 0 1 0 5.2"/><path d="M17.8 14.5A5.9 5.9 0 0 1 20.4 20"/></svg>
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9.3" cy="8" r="3.3"/><path d="M3 20.2a6.3 6.3 0 0 1 12.6 0"/><path d="M16.6 5.2a3.3 3.3 0 0 1 0 5.6"/><path d="M18 14.6a6.3 6.3 0 0 1 3 5.6"/></svg>
             <span class="tt-ts-adim-metin">
               <span class="tt-ts-adim-bas">{{ t_set_a3b }}</span>
               <span class="tt-ts-adim-alt">{{ t_set_a3a }}</span>
@@ -283,9 +303,12 @@
 
         {%- comment -%}
           Sonsuzluk ikonu sitede yalnizca bu satirda kullaniliyor.
+          stroke-width 1.6 degil 2.13: viewBox 24 birim, ikon 18px
+          ciziliyor, yani cizgi 24/18 orani kadar inceliyor. Ekranda
+          gercekten 1.6px olmasi icin viewBox degeri 1.6*24/18 = 2.13.
         {%- endcomment -%}
         <div class="tt-ts-sonsuz" data-tt-ts-sonsuz>
-          <svg class="tt-ts-sonsuz-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15.2 12c1.5-1.9 2.4-3.2 4.1-3.2a3.2 3.2 0 0 1 0 6.4c-1.7 0-2.6-1.3-4.1-3.2Zm0 0c-1.5 1.9-2.4 3.2-4.1 3.2H8.8a3.2 3.2 0 0 1 0-6.4h2.3c1.7 0 2.6 1.3 4.1 3.2Z"/></svg>
+          <svg class="tt-ts-sonsuz-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.13" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7.4 8.1c2.5 0 3.4 1.6 4.6 3.9 1.2 2.3 2.1 3.9 4.6 3.9a3.9 3.9 0 0 0 0-7.8c-2.5 0-3.4 1.6-4.6 3.9-1.2 2.3-2.1 3.9-4.6 3.9a3.9 3.9 0 0 1 0-7.8Z"/></svg>
           <span class="tt-ts-sonsuz-metin">{{ t_sonsuz }}</span>
         </div>
 
@@ -311,12 +334,17 @@
           </div>
         </div>
 
+        {%- comment -%}
+          Yatay serit. Ayni JS'i kullaniyor (data-tt-ts-grid), yalnizca
+          duzeni degisti: kartlar 104px sabit, yan yana, kaydirmali.
+          Siralama satiri seridin ALTINA alindi.
+        {%- endcomment -%}
+        <div class="tt-ts-serit" data-tt-ts-grid></div>
+
         <div class="tt-ts-sirala">
           <span data-tt-ts-sirala-metin></span>
           <button type="button" class="tt-ts-sirala-btn" data-tt-ts-sirala-btn></button>
         </div>
-
-        <div class="tt-ts-grid" data-tt-ts-grid></div>
 
         <div class="tt-ts-ayrac"></div>
         <div class="tt-ts-secili">
