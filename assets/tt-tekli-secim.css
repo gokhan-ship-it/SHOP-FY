@@ -26,6 +26,18 @@
   --tt-ts-yuzey: color-mix(in srgb, currentColor 8%, transparent);
   --tt-ts-cta: #0071e3;
 
+  /* Kart kenarligi ayri token: --tt-ts-line (%18) koyu temada neredeyse
+     gorunmuyordu ve secili olmayan kart "devre disi" gibi okunuyordu. */
+  --tt-ts-line-kart: color-mix(in srgb, currentColor 30%, transparent);
+
+  /* Sonsuzluk kutusunun zemini. SEFFAF degil, zemine KARISTIRILMIS renk:
+     metin renginin %7'si sayfa zemininin uzerine biniyor. Acik temada
+     metin koyu oldugu icin sonuc karttan bir tik KOYU, koyu temada metin
+     acik oldugu icin bir tik ACIK cikiyor - yon her iki temada da dogru.
+     Sabit gri kullanilsaydi koyu temada karttan koyu gorunup blok siyah
+     bir kutu gibi one firlardi. */
+  --tt-ts-kutu: color-mix(in srgb, currentColor 7%, var(--tt-ts-zemin));
+
   /* Bosluk olcegi: 4px tabanli, ara deger yok. */
   --tt-ts-s2: 8px;
   --tt-ts-s3: 12px;
@@ -52,6 +64,8 @@
   }
   .tt-ts-ink-2, .tt-ts-alt-sol, .tt-ts-etiket { opacity: .62; }
   .tt-ts-seg { outline: var(--tt-ts-hair) solid currentColor; }
+  .tt-ts { --tt-ts-line-kart: currentColor; }
+  .tt-ts-sonsuz { outline: var(--tt-ts-hair) solid currentColor; background: transparent; }
 }
 
 /* --- HAM MADDE etiketi --- */
@@ -125,11 +139,14 @@
 }
 
 /* --- Secim kartlari --- */
+/* Kenarlik genisligi HER ZAMAN 1px; secili kart ic golgeyle 2px'e
+   cikiyor. Boylece secim degisince kart yeniden olculenmiyor, icerik
+   1px oynamiyor. Secili olmayan kart soluk degil, okunur bir hairline. */
 .tt-ts-kart {
   position: relative;
   display: block;
   width: 100%;
-  border: var(--tt-ts-hair) solid var(--tt-ts-line);
+  border: 1px solid var(--tt-ts-line-kart);
   border-radius: var(--tt-ts-radius);
   padding: var(--tt-ts-s4);
   background: transparent;
@@ -138,13 +155,15 @@
   color: inherit;
   cursor: pointer;
 }
-.tt-ts-kart--tek { margin-bottom: var(--tt-ts-s5); }
-.tt-ts-kart--set {
-  border: 2px solid var(--tt-ts-ink);
-  padding: 18px var(--tt-ts-s4) var(--tt-ts-s4);
+.tt-ts-kart[aria-checked="true"] {
+  border-color: var(--tt-ts-ink);
+  box-shadow: inset 0 0 0 1px var(--tt-ts-ink);
 }
-/* Kartin ust kenarina oturan rozet satiri: solda teklif rozeti (CTA
-   mavisi, dikkat cekmesi icin), yaninda secili ikinci urunun rozeti. */
+.tt-ts-kart--tek { margin-bottom: var(--tt-ts-s5); }
+.tt-ts-kart--set { padding: 18px var(--tt-ts-s4) var(--tt-ts-s4); }
+/* Kartin ust kenarina oturan tek rozet: teklif rozeti, CTA mavisinde.
+   Secili ikinci urunu gosteren ikinci rozet kaldirildi; ayni bilgi grid
+   altindaki secim ozeti satirinda zaten duruyor. */
 .tt-ts-rozetler {
   position: absolute;
   top: -12px;
@@ -165,16 +184,6 @@
   line-height: 1.2;
   white-space: nowrap;
 }
-.tt-ts-rozet--urun {
-  flex: 0 1 auto;
-  min-width: 0;
-  background: var(--tt-ts-zemin);
-  border: var(--tt-ts-hair) solid var(--tt-ts-line);
-  color: var(--tt-ts-ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.tt-ts-rozet--urun:empty { display: none; }
 
 .tt-ts-govde { display: flex; align-items: flex-start; gap: var(--tt-ts-s3); }
 .tt-ts-radio {
@@ -216,9 +225,74 @@
 /* ------------------------------------------------------------------
    IKINCI URUN BOLUMU
    ------------------------------------------------------------------ */
-/* Oneriler kart secilmeden de gorunuyor: musteri neyi secebilecegini
-   tiklamadan gormeli. Kart secimi yalnizca tekli/ikili kararini veriyor. */
-.tt-ts-ikinci { display: block; }
+/* Aciklama bloklari her zaman acik; acilip kapanan tek sey ikinci urun
+   secicisi. Musteri iki modu tek bakista karsilastirabilsin diye metinler
+   sabit duruyor, ama urun secimi yalnizca ikili set seciliyken anlamli. */
+.tt-ts-aciklama { display: block; }
+.tt-ts-ikinci { display: none; }
+.tt-ts-kart[aria-checked="true"] .tt-ts-ikinci { display: block; }
+
+/* --- Aciklama adimlari: iki kartta da ayni olcu, ayni sol hiza --- */
+.tt-ts-adimlar {
+  display: grid;
+  gap: var(--tt-ts-s3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tt-ts-adim { display: flex; align-items: flex-start; gap: var(--tt-ts-s3); }
+.tt-ts-adim-ikon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  /* Ikonun optik merkezi metnin ilk satiriyla hizalansin. */
+  margin-top: 1px;
+  color: var(--tt-ts-ink);
+}
+.tt-ts-adim-metin { min-width: 0; }
+.tt-ts-adim-bas {
+  display: block;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--tt-ts-ink);
+}
+.tt-ts-adim-alt {
+  display: block;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--tt-ts-ink-2);
+}
+.tt-ts-blok-baslik {
+  margin: 0 0 var(--tt-ts-s3);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--tt-ts-ink);
+}
+
+/* --- Sonsuzluk kutusu --- */
+.tt-ts-sonsuz {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: var(--tt-ts-s4);
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--tt-ts-kutu);
+}
+.tt-ts-sonsuz-ikon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  color: var(--tt-ts-ink);
+}
+.tt-ts-sonsuz-metin {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--tt-ts-ink);
+}
 
 .tt-ts-ayrac {
   height: var(--tt-ts-hair);
@@ -227,13 +301,14 @@
 }
 .tt-ts-not {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--tt-ts-s2);
+  margin: var(--tt-ts-s3) 0 0;
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--tt-ts-ink-2);
 }
-.tt-ts-not svg { flex: 0 0 auto; width: 15px; height: 15px; }
+.tt-ts-not svg { flex: 0 0 auto; width: 15px; height: 15px; margin-top: 1px; }
 
 .tt-ts-secsatir {
   display: flex;
@@ -353,28 +428,27 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Etiketler kisa ve tek bicimde ("Celik", "Gumus", "Sadece celik",
+   "Sadece gumus") uretildigi icin kirpma kuralina gerek kalmadi;
+   uc noktayla biten "316L Cerrahi ..." goruntusu boylece bitti. */
 .tt-ts-karo-hm {
   display: block;
   font-size: 11px;
   line-height: 1.3;
   color: var(--tt-ts-ink-2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
-/* Karo dar (3 sutun, ~100px): tutarlar yuvarlanmis ve tek satirda.
-   Sigmazsa ustu cizili tutar gizleniyor, indirimli tutar hep gorunuyor. */
+/* Karo dar (3 sutun, ~100px): tutarlar yuvarlanmis. Sigmadiginda ustu
+   cizili tutar KIRPILMIYOR, alt satira geciyor - eskiden karo kenarindan
+   tasip yarim gorunuyordu. */
 .tt-ts-karo-fiyat {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px;
+  gap: 0 4px;
   font-size: 12px;
   line-height: 1.3;
-  white-space: nowrap;
 }
 .tt-ts-karo-eski {
-  min-width: 0;
-  overflow: hidden;
   font-size: 11px;
   color: var(--tt-ts-ink-3);
   text-decoration: line-through;
@@ -464,6 +538,24 @@
   line-height: 1.2;
   opacity: .55;
 }
+
+/* Kart icerigini kapatan sabit konumlu ogeler (asagi ok butonu, cark
+   widget'i, sohbet baloncugu) icin. Hangi oge oldugunu secici tahmin
+   ederek degil, tt-tekli-secim.js sabit ogelerin dikdortgenini kartinkiyle
+   kesistirerek OLCEREK buluyor; bu sinif yalnizca kartlar ekranda
+   gorunurken ekleniyor, cikinca kaldiriliyor. */
+.tt-ts-ortu-gizli { display: none !important; }
+
+/* Yapiskan cubuk dar: ayni tutarlar sag sutundakinden kucuk ve tek
+   satirda. Sarmalayici olmadan "4.598,00 TL" alt satira kiriliyordu. */
+.tt-ts-sticky-tutar {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+.tt-ts-sticky-tutar .tt-ts-fiyat-set { font-size: 18px; }
+.tt-ts-sticky-tutar .tt-ts-fiyat-eski { margin-left: 0; font-size: 13px; }
 
 /* Native secici / sepet butonu: yalnizca katman eksiksiz kuruldugunda. */
 .tt-ts-native-gizli { display: none !important; }

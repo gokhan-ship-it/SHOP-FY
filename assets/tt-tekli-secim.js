@@ -205,6 +205,28 @@
       return bagli === h.length;
     }
 
+    /* Ham madde segmentindeki tutar farki. Liquid'de money filtresiyle
+       hesaplaniyordu ve para birimi bicimine gore "+1" gibi bozuk cikiyordu;
+       burada varyant kuruslarindan dogrudan hesaplaniyor. Deger sabit,
+       bir kez yaziliyor. */
+    function segmentFarkYaz() {
+      var enUcuz = 0;
+      for (var i = 0; i < V.varyantlar.length; i++) {
+        if (!enUcuz || V.varyantlar[i].kurus < enUcuz) enUcuz = V.varyantlar[i].kurus;
+      }
+      var h = KOK.querySelectorAll('[data-tt-ts-hm]');
+      for (var j = 0; j < h.length; j++) {
+        var deger = h[j].getAttribute('data-tt-ts-hm');
+        var kurus = 0;
+        for (var k = 0; k < V.varyantlar.length; k++) {
+          if (V.varyantlar[k].deger === deger) { kurus = V.varyantlar[k].kurus; break; }
+        }
+        var alan = h[j].querySelector('[data-tt-ts-seg-fark]');
+        if (!alan) continue;
+        alan.textContent = (kurus > enUcuz) ? '+' + paraKisa(kurus - enUcuz, true) : '';
+      }
+    }
+
     /* ---------- Ikinci urun grid'i ---------- */
     function listele() {
       var l = GRUP[grup].urunler.slice();
@@ -224,19 +246,35 @@
              '<path d="M4 8.5l2.5 2.5L12 5.5"/></svg></span>';
     }
 
+    /* Karo etiketleri kisa ve tek bicimde: "Celik", "Gumus", "Sadece celik",
+       "Sadece gumus". Eskiden katalogdaki ham metin ("316L Cerrahi Celik")
+       basiliyor ve dar karoda uc noktayla kirpiliyordu. Anahtar kelime
+       eslesmezse ham metne dusuyoruz - uydurmaktansa olani gostermek. */
+    function karoEtiket(u, v) {
+      var ad = cinsAd(cins(v.deger));
+      if (!ad) return v.deger;
+      if (u.varyantlar.length === 1) return 'Sadece ' + ad;
+      return ad.charAt(0).toLocaleUpperCase('tr') + ad.slice(1);
+    }
+
     function karoHtml(u, i, secili) {
       var v = u.__v;
-      var etiket = (u.varyantlar.length === 1 && cinsAd(cins(v.deger)))
-        ? 'Sadece ' + cinsAd(cins(v.deger)) : v.deger;
+      var indirimli = katki(v.kurus);
+      /* Ustu cizili tutar YALNIZCA indirim o urune uygulaniyorsa. Eskiden
+         indirimsiz urunlerde ayni tutar iki kez, biri ustu cizili
+         yaziliyordu; musteriye yanlis bir indirim izlenimi veriyordu. */
+      var fiyat = paraKisa(indirimli, true);
+      if (indirimli !== v.kurus) {
+        fiyat += '<s class="tt-ts-karo-eski">' + paraKisa(v.kurus, false) + '</s>';
+      }
       return '<button type="button" class="tt-ts-karo" role="radio" data-tt-ts-karo="' + i + '"' +
         ' aria-checked="' + (secili ? 'true' : 'false') + '">' + tikSvg() +
         '<span class="tt-ts-karo-kutu">' +
         '<img class="tt-ts-karo-gorsel" src="' + (u.gorsel || '') + '" alt="" loading="lazy">' +
         '</span>' +
         '<span class="tt-ts-karo-ad">' + u.ad + '</span>' +
-        '<span class="tt-ts-karo-hm">' + etiket + '</span>' +
-        '<span class="tt-ts-karo-fiyat">' + paraKisa(katki(v.kurus), true) +
-        '<s class="tt-ts-karo-eski">' + paraKisa(v.kurus, false) + '</s></span></button>';
+        '<span class="tt-ts-karo-hm">' + karoEtiket(u, v) + '</span>' +
+        '<span class="tt-ts-karo-fiyat">' + fiyat + '</span></button>';
     }
 
     function karoBagla(kap, liste, kapat) {
@@ -350,9 +388,6 @@
         if (sl) sl.hidden = ikinci.urun.varyantlar.length < 2;
       }
 
-      var ru = KOK.querySelector('[data-tt-ts-rozet-urun]');
-      if (ru) ru.textContent = ikinci ? '+ ' + ikinci.urun.ad + ' ile birlikte' : '';
-
       var ozet = KOK.querySelector('[data-tt-ts-ozet]');
       if (ozet) {
         if (mod === 'set' && ikinci) {
@@ -365,7 +400,125 @@
       if (btn) btn.textContent = V.sepetMetin + ' · ' + para(aktifKurus());
 
       fiyatYaz();
+      stickyYaz();
       if (mod === 'set') tkYaz(); else tkGeriAl();
+    }
+
+    /* ---------- Ustu kapatan sabit ogeler ----------
+       Asagi ok butonu, cark/indirim widget'i ve sohbet baloncugu kart
+       metninin ustune biniyordu. Ucu de tema disindan geliyor ve CSS
+       secicileri bize kapali; tahmin etmek yerine OLCUYORUZ.
+
+       Yontem: sayfadaki position:fixed ogeleri bir kez taraniyor, sonra
+       her kaydirmada sadece dikdortgenleri kartinkiyle kesisiyor mu diye
+       bakiliyor. Nokta ornekleme denendi ve birakildi: 60px araliklarla
+       ornek alinca 44px'lik ok butonu iki ornegin arasina dusup
+       kacabiliyordu. Dikdortgen kesisiminde bosluk yok.
+
+       Disarida birakilanlar: kendi katmanimiz, ayar paneli, temanin
+       yapiskan cubugu (onu bilerek gosteriyoruz), ekranin %60'indan
+       yuksek veya %95'inden genis ortuler (header, tam ekran katmanlar). */
+    function ortuKoru() {
+      var gizli = [], adaylar = [], sonTarama = 0;
+
+      function bizden(el) {
+        try {
+          return el === KOK || KOK.contains(el) || el.contains(KOK) ||
+                 !!el.closest('#tt-ts-ayar') || !!el.closest('product-sticky-form');
+        } catch (e) { return true; }
+      }
+      /* Widget'lar sayfaya gec enjekte olabiliyor; tarama tekrarlaniyor. */
+      function tara() {
+        adaylar = [];
+        var hepsiEl = document.body.getElementsByTagName('*');
+        for (var i = 0; i < hepsiEl.length; i++) {
+          var el = hepsiEl[i];
+          var pos = getComputedStyle(el).position;
+          if (pos !== 'fixed') continue;
+          if (bizden(el)) continue;
+          /* Sabit bir ogenin icindeki sabit cocugu ayrica gizlemeye gerek yok. */
+          var iceride = false;
+          for (var j = 0; j < adaylar.length; j++) if (adaylar[j].contains(el)) { iceride = true; break; }
+          if (!iceride) adaylar.push(el);
+        }
+        sonTarama = Date.now();
+      }
+
+      function geriAl() {
+        for (var i = 0; i < gizli.length; i++) gizli[i].classList.remove('tt-ts-ortu-gizli');
+        gizli.length = 0;
+      }
+
+      function kontrol() {
+        if (Date.now() - sonTarama > 2000) tara();
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        var vw = window.innerWidth || document.documentElement.clientWidth;
+        var r = KOK.getBoundingClientRect();
+        if (r.bottom <= 0 || r.top >= vh || r.width < 40) { geriAl(); return; }
+        geriAl();
+        for (var i = 0; i < adaylar.length; i++) {
+          var el = adaylar[i];
+          if (!el.isConnected) continue;
+          var er = el.getBoundingClientRect();
+          if (er.width === 0 || er.height === 0) continue;
+          if (er.height > vh * 0.6 || er.width > vw * 0.95) continue;
+          var kesisir = er.right > r.left && er.left < r.right &&
+                        er.bottom > r.top && er.top < r.bottom;
+          if (!kesisir) continue;
+          el.classList.add('tt-ts-ortu-gizli');
+          gizli.push(el);
+        }
+      }
+
+      var bekliyor = false;
+      function tetikle() {
+        if (bekliyor) return;
+        bekliyor = true;
+        window.setTimeout(function () { bekliyor = false; kontrol(); }, 150);
+      }
+      window.addEventListener('scroll', tetikle, { passive: true });
+      window.addEventListener('resize', tetikle);
+      tara();
+      tetikle();
+      /* Gec yuklenen widget'lari yakalamak icin iki ek tarama. */
+      window.setTimeout(function () { sonTarama = 0; tetikle(); }, 1500);
+      window.setTimeout(function () { sonTarama = 0; tetikle(); }, 4000);
+    }
+
+    /* ---------- Yapiskan urun cubugu ----------
+       Kartlar surekli acik oldugu icin sayfa uzun; sepete ekle butonu
+       ekrandan cikinca alt cubuk devraliyor. Temanin kendi
+       <product-sticky-form> bloguna dokunulmuyor, yalnizca icindeki tutar
+       alani guncelleniyor ve butonu bizim akisimiza baglaniyor: set
+       modunda native gonderim tek urun eklerdi. */
+    var stickyKok = document.querySelector('product-sticky-form');
+    var stickyKart = stickyKok && stickyKok.querySelector('.product-sticky-form__card');
+    var stickyFiyat = stickyKok && stickyKok.querySelector('[id^="StickyPrice-"]');
+    var stickyBtn = stickyKok && stickyKok.querySelector('button[name="add"]');
+    var stickyFiyatAsil = stickyFiyat ? stickyFiyat.innerHTML : null;
+
+    function stickyYaz() {
+      if (!stickyFiyat) return;
+      if (mod === 'set') {
+        stickyFiyat.innerHTML = '<span class="tt-ts-sticky-tutar">' +
+          '<span class="tt-ts-fiyat-set">' + para(setKurus()) + '</span>' +
+          '<s class="tt-ts-fiyat-eski">' + para(setEskiKurus()) + '</s></span>';
+      } else if (stickyFiyatAsil !== null) {
+        stickyFiyat.innerHTML = stickyFiyatAsil;
+      }
+    }
+
+    /* Cubugun gorunurlugu: tema kendi mantiginda sayfadaki native sepet
+       butonunu izliyor, ama biz o butonu gizliyoruz - bu yuzden gozlemi
+       KENDI butonumuz uzerinden kuruyoruz. Temanin kullandigi siniflari
+       aynen kullaniyoruz ki gorsel dil degismesin. */
+    function stickyGorunurluk(btn) {
+      if (!stickyKart || !btn || !('IntersectionObserver' in window)) return;
+      new IntersectionObserver(function (girisler) {
+        var gorunur = girisler[0].isIntersecting;
+        stickyKart.classList.toggle('opacity-0', gorunur);
+        stickyKart.classList.toggle('invisible', gorunur);
+      }, { rootMargin: '0px 0px -20px 0px' }).observe(btn);
     }
 
     /* ---------- Sepete ekleme ---------- */
@@ -456,8 +609,13 @@
       ciz();
     });
 
+    segmentFarkYaz();
+
     var sepet = KOK.querySelector('[data-tt-ts-sepet]');
     if (sepet) sepet.addEventListener('click', sepeteEkle);
+    if (stickyBtn) stickyBtn.addEventListener('click', sepeteEkle);
+    stickyGorunurluk(sepet);
+    ortuKoru();
 
     if (secici) secici.addEventListener('change', function () { window.setTimeout(ciz, 60); });
 

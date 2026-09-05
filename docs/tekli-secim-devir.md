@@ -1,6 +1,6 @@
 # Tekli ürün sayfası sağ sütun seçim katmanı — devir notu
 
-Son güncelleme: 2026-09-05
+Son güncelleme: 2026-09-05 (kart tasarım revizyonu)
 
 ## Nerede duruyor
 
@@ -60,6 +60,44 @@ kutuyu basıklaştırmak (`karo_oran` büyütmek) gerekiyor.
 | `1.14 / 1.25 / -10` | Hem bileklik hem kolye düzgün. Karolar daha kompakt. |
 | `1.14 / 1.45 / -15` | Daha iri ürün, biraz daha agresif kırpma. |
 | `1.00 / 1.30 / -11` | Kare karo isteniyorsa. |
+
+## Açıklama blokları
+
+Her iki kartın açıklama bloğu **sürekli açık**; seçime bağlı açılıp kapanan tek
+şey ikinci ürün seçicisi (`.tt-ts-ikinci`, görünürlüğü kartın `aria-checked`
+değerine bağlı CSS ile). Amaç iki modun tek bakışta karşılaştırılabilmesi.
+
+Ortak yapı, iki kartta da birebir aynı ve testle doğrulanıyor:
+0.5px ayırıcı (üstü/altı 14px) → adımlar (aralarında 12px) → her adımda 18px
+ikon + 12px boşluk + 13px başlık / 12px açıklama, satır yüksekliği 1.45.
+İkili sette ek olarak: blok başlığı, sonsuzluk kutusu (8px köşe, 10px 12px iç
+boşluk, üstünde 14px), takvim notu.
+
+Sonsuzluk kutusunun zemini `--tt-ts-kutu`: metin renginin %7'si sayfa zeminine
+karıştırılıyor. Açık temada karttan bir tık koyu, koyu temada bir tık açık
+çıkıyor — yön iki temada da kendiliğinden doğru. Sabit gri kullanılsaydı koyu
+temada karttan koyu görünürdü.
+
+## Üstü kapatan sabit öğeler
+
+Aşağı ok butonu, çark widget'ı ve sohbet baloncuğu kart metninin üstüne
+biniyordu. Üçü de tema dışından geliyor ve CSS seçicileri bilinmiyor; bu yüzden
+seçici tahmin edilmiyor: `ortuKoru()` sayfadaki `position: fixed` öğeleri tarayıp
+dikdörtgenlerini kartınkiyle kesiştiriyor, kesişenleri kartlar ekranda olduğu
+sürece `.tt-ts-ortu-gizli` ile gizliyor, kart ekrandan çıkınca geri veriyor.
+Dışarıda bırakılanlar: kendi katman, ayar paneli, temanın yapışkan çubuğu,
+ekranın %60'ından yüksek veya %95'inden geniş örtüler.
+
+Nokta örnekleme (elementsFromPoint) denendi ve bırakıldı: 60px aralıklarla örnek
+alınca 44px'lik ok butonu iki örneğin arasına düşüp kaçabiliyordu.
+
+## Yapışkan çubuk
+
+Temanın `sticky_buy_button` bloğu kullanılıyor, bloğa dokunulmuyor. JS yalnızca
+`#StickyPrice-*` içeriğini set toplamıyla güncelliyor ve çubuğun butonunu
+`sepeteEkle`'ye bağlıyor (native gönderim set modunda tek ürün eklerdi).
+Görünürlük gözlemi temanın native butonu yerine **bizim** butonumuz üzerinden
+kuruluyor, çünkü native buton katman kurulunca gizleniyor.
 
 ## Ayar paneli
 

@@ -37,6 +37,10 @@
   @param {string} [erkek_koleksiyon] - Erkek urunleri koleksiyonu
   @param {number} [indirim] - Ikinci uruna uygulanan indirim yuzdesi
   @param {string} [sepet_metin] - Sepete ekle butonunun metni
+  @param {string} [tek_adim1_bas] - Tek kapsul 1. adim basligi (digerleri: tek_adim2_*, tek_adim3_*)
+  @param {string} [set_blok_baslik] - Ikili set aciklama blogunun basligi
+  @param {string} [set_adim1_bas] - Ikili set 1. adim basligi (digerleri: set_adim2_*, set_adim3_*)
+  @param {string} [sonsuz_metin] - Sonsuzluk kutusunun metni
   @param {number} [karo_oran] - Karo kutusunun en/boy orani (0.8 = 4:5, 1 = kare)
   @param {number} [karo_zoom] - Karo fotograflarinin buyutme carpani (1 = kirpma yok)
   @param {number} [karo_kaydir] - Karo fotograflarinin dikey kaydirma yuzdesi (- = alt taraf gorunur)
@@ -85,6 +89,26 @@
     zoom 0.99 / kaydir -30. Sablondaki render satirinda ayrica veriliyor;
     buradakiler o satir silinse de ayni cerceveleme kalsin diye.
   endcomment
+  comment
+    Aciklama bloklarinin metinleri. Digerleri gibi parametre: varsayilan
+    burada, istenirse render satirindan degistirilebiliyor.
+  endcomment
+  assign t_tek_a1b = tek_adim1_bas | default: 'Çiple yükle'
+  assign t_tek_a1a = tek_adim1_alt | default: 'Fotoğraf, video ve notlarını telefonunla yüklersin.'
+  assign t_tek_a2b = tek_adim2_bas | default: 'Zamanı belirle'
+  assign t_tek_a2a = tek_adim2_alt | default: 'Açılacağı günü sen seçersin.'
+  assign t_tek_a3b = tek_adim3_bas | default: 'Vakti gelince açılsın'
+  assign t_tek_a3a = tek_adim3_alt | default: 'O güne kadar kilitli kalır, kimse göremez.'
+
+  assign t_set_blok = set_blok_baslik | default: 'Couple Zaman Kapsülüne dönüşür'
+  assign t_set_a1b = set_adim1_bas | default: 'Ortak kapsüle yükleyin'
+  assign t_set_a1a = set_adim1_alt | default: 'İkiniz de kendi telefonunuzdan aynı kapsüle içerik eklersiniz.'
+  assign t_set_a2b = set_adim2_bas | default: 'Buluşana kadar kilitli kalır'
+  assign t_set_a2a = set_adim2_alt | default: 'Karşı tarafın ne yüklediğini göremezsiniz.'
+  assign t_set_a3b = set_adim3_bas | default: 'Buluşunca birlikte açılır'
+  assign t_set_a3a = set_adim3_alt | default: 'İki kapsül yan yana geldiğinde içerik ikinize de açılır. Uzaklaştığınızda kilitlenir.'
+  assign t_sonsuz = sonsuz_metin | default: 'Buluştukça kapsülünüz büyür, ilişkinizin hikâyesi birikir.'
+
   assign p_oran = karo_oran | default: 0.8
   assign p_zoom = karo_zoom | default: 0.99
   assign p_kaydir = karo_kaydir | default: -30
@@ -126,24 +150,19 @@
       <p class="tt-ts-etiket">{{ t_hm }}</p>
       <div class="tt-ts-seg tt-ts-seg--tam" role="radiogroup" aria-label="{{ hm_option.name | escape }}">
         {%- for deger in hm_option.values -%}
-          {%- liquid
-            comment
-              Fark dogrudan hesaplaniyor: ara degisken tutmuyoruz, boylece
-              Liquid'de tanimsiz nesne karsilastirmasi hic olusmuyor.
-            endcomment
-            assign fark = 0
-            for v in product.variants
-              if v.options[0] == deger and v.price > en_ucuz
-                assign fark = v.price | minus: en_ucuz
-                break
-              endif
-            endfor
-          -%}
+          {%- comment -%}
+            Tutar farki BURADA hesaplanmiyor. money_without_currency'nin
+            ayirici karakteri magazanin para birimi bicimine bagli; ','
+            uzerinden bolunce "1.400,00" -> "1.400" ama "1,400.00" -> "1"
+            cikiyordu ve segmentte "+1" goruntusu bundandi. Fark, varyant
+            kuruslarindan tt-tekli-secim.js icinde hesaplanip yaziliyor;
+            orada bicimleme tek yerde ve para birimi bicimine bagimsiz.
+          {%- endcomment -%}
           <button type="button" class="tt-ts-seg-h" role="radio"
                   data-tt-ts-hm="{{ deger | escape }}"
                   aria-checked="{% if hm_option.selected_value == deger %}true{% else %}false{% endif %}">
             {{ deger }}
-            <span class="tt-ts-seg-fark">{% if fark > 0 %}+{{ fark | money_without_currency | strip_html | split: ',' | first }}{% endif %}</span>
+            <span class="tt-ts-seg-fark" data-tt-ts-seg-fark></span>
           </button>
         {%- endfor -%}
       </div>
@@ -174,13 +193,48 @@
           </span>
         </span>
       </div>
+
+      {%- comment -%}
+        Aciklama blogu SUREKLI acik: iki mod tek bakista karsilastirilabilsin.
+        Secime bagli acilip kapanan tek sey ikinci urun secicisi.
+      {%- endcomment -%}
+      <div class="tt-ts-aciklama">
+        <div class="tt-ts-ayrac"></div>
+        <ul class="tt-ts-adimlar">
+          <li class="tt-ts-adim">
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2.5 9.2a14 14 0 0 1 19 0"/><path d="M5.6 12.6a10 10 0 0 1 12.8 0"/><path d="M8.7 16a5.5 5.5 0 0 1 6.6 0"/><circle cx="12" cy="19.4" r=".9"/></svg>
+            <span class="tt-ts-adim-metin">
+              <span class="tt-ts-adim-bas">{{ t_tek_a1b }}</span>
+              <span class="tt-ts-adim-alt">{{ t_tek_a1a }}</span>
+            </span>
+          </li>
+          <li class="tt-ts-adim">
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            <span class="tt-ts-adim-metin">
+              <span class="tt-ts-adim-bas">{{ t_tek_a2b }}</span>
+              <span class="tt-ts-adim-alt">{{ t_tek_a2a }}</span>
+            </span>
+          </li>
+          <li class="tt-ts-adim">
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.7"/></svg>
+            <span class="tt-ts-adim-metin">
+              <span class="tt-ts-adim-bas">{{ t_tek_a3b }}</span>
+              <span class="tt-ts-adim-alt">{{ t_tek_a3a }}</span>
+            </span>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <div class="tt-ts-kart tt-ts-kart--set" role="radio" tabindex="0"
          data-tt-ts-mod="set" aria-checked="false">
+      {%- comment -%}
+        Ust kenarda tek rozet var. Secili ikinci urunu gosteren ikinci rozet
+        kaldirildi: ayni bilgi grid altindaki secim ozeti satirinda zaten
+        duruyordu ve iki rozet dar ekranda ust kenari kalabaliklastiriyordu.
+      {%- endcomment -%}
       <span class="tt-ts-rozetler">
         <span class="tt-ts-rozet">{{ t_rozet }}</span>
-        <span class="tt-ts-rozet tt-ts-rozet--urun" data-tt-ts-rozet-urun></span>
       </span>
       <div class="tt-ts-govde" data-tt-ts-set-bas>
         <span class="tt-ts-radio"></span>
@@ -196,17 +250,58 @@
         </span>
       </div>
 
-      {%- comment -%} --- Ikinci urun bolumu (kart seciliyken aciliyor) --- {%- endcomment -%}
-      <div class="tt-ts-ikinci">
+      {%- comment -%}
+        Aciklama blogu her zaman gorunur (tek kartla ayni yapi): ayirici,
+        blok basligi, uc adim, sonsuzluk kutusu, takvim notu.
+      {%- endcomment -%}
+      <div class="tt-ts-aciklama">
         <div class="tt-ts-ayrac"></div>
+        <p class="tt-ts-blok-baslik">{{ t_set_blok }}</p>
+        <ul class="tt-ts-adimlar">
+          <li class="tt-ts-adim">
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2.5 9.2a14 14 0 0 1 19 0"/><path d="M5.6 12.6a10 10 0 0 1 12.8 0"/><path d="M8.7 16a5.5 5.5 0 0 1 6.6 0"/><circle cx="12" cy="19.4" r=".9"/></svg>
+            <span class="tt-ts-adim-metin">
+              <span class="tt-ts-adim-bas">{{ t_set_a1b }}</span>
+              <span class="tt-ts-adim-alt">{{ t_set_a1a }}</span>
+            </span>
+          </li>
+          <li class="tt-ts-adim">
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <span class="tt-ts-adim-metin">
+              <span class="tt-ts-adim-bas">{{ t_set_a2b }}</span>
+              <span class="tt-ts-adim-alt">{{ t_set_a2a }}</span>
+            </span>
+          </li>
+          <li class="tt-ts-adim">
+            <svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9.5" cy="8" r="3.2"/><path d="M3.6 20a5.9 5.9 0 0 1 11.8 0"/><path d="M16.5 5.4a3.2 3.2 0 0 1 0 5.2"/><path d="M17.8 14.5A5.9 5.9 0 0 1 20.4 20"/></svg>
+            <span class="tt-ts-adim-metin">
+              <span class="tt-ts-adim-bas">{{ t_set_a3b }}</span>
+              <span class="tt-ts-adim-alt">{{ t_set_a3a }}</span>
+            </span>
+          </li>
+        </ul>
+
+        {%- comment -%}
+          Sonsuzluk ikonu sitede yalnizca bu satirda kullaniliyor.
+        {%- endcomment -%}
+        <div class="tt-ts-sonsuz" data-tt-ts-sonsuz>
+          <svg class="tt-ts-sonsuz-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15.2 12c1.5-1.9 2.4-3.2 4.1-3.2a3.2 3.2 0 0 1 0 6.4c-1.7 0-2.6-1.3-4.1-3.2Zm0 0c-1.5 1.9-2.4 3.2-4.1 3.2H8.8a3.2 3.2 0 0 1 0-6.4h2.3c1.7 0 2.6 1.3 4.1 3.2Z"/></svg>
+          <span class="tt-ts-sonsuz-metin">{{ t_sonsuz }}</span>
+        </div>
 
         <p class="tt-ts-not">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
           <span>{{ t_not }}</span>
         </p>
+      </div>
+
+      {%- comment -%}
+        Ikinci urun secicisi: aciklamalarin aksine YALNIZCA bu kart
+        seciliyken gorunuyor. Gorunurlugu CSS yonetiyor (kartin
+        aria-checked degeri), JS her modda hesaplamaya devam ediyor.
+      {%- endcomment -%}
+      <div class="tt-ts-ikinci">
+        <div class="tt-ts-ayrac"></div>
 
         <div class="tt-ts-secsatir">
           <span class="tt-ts-secsatir-m">{{ t_secim }}</span>
