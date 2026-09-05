@@ -30,12 +30,12 @@
      gorunmuyordu ve secili olmayan kart "devre disi" gibi okunuyordu. */
   --tt-ts-line-kart: color-mix(in srgb, currentColor 30%, transparent);
 
-  /* Sonsuzluk kutusunun zemini. SEFFAF degil, zemine KARISTIRILMIS renk:
+  /* Aciklama kutusunun zemini. SEFFAF degil, zemine KARISTIRILMIS renk:
      metin renginin %7'si sayfa zemininin uzerine biniyor. Acik temada
      metin koyu oldugu icin sonuc karttan bir tik KOYU, koyu temada metin
      acik oldugu icin bir tik ACIK cikiyor - yon her iki temada da dogru.
      Sabit gri kullanilsaydi koyu temada karttan koyu gorunup blok siyah
-     bir kutu gibi one firlardi. */
+     bir kutu gibi one firlardi. Olculdu: acik temada -15.8, koyuda +17.2. */
   --tt-ts-kutu: color-mix(in srgb, currentColor 7%, var(--tt-ts-zemin));
 
   /* Bosluk olcegi: 4px tabanli, ara deger yok. */
@@ -65,7 +65,7 @@
   .tt-ts-ink-2, .tt-ts-alt-sol, .tt-ts-etiket { opacity: .62; }
   .tt-ts-seg { outline: var(--tt-ts-hair) solid currentColor; }
   .tt-ts { --tt-ts-line-kart: currentColor; }
-  .tt-ts-sonsuz { outline: var(--tt-ts-hair) solid currentColor; background: transparent; }
+  .tt-ts-kutu-blok { outline: var(--tt-ts-hair) solid currentColor; background: transparent; }
 }
 
 /* --- Bolum etiketleri (HAM MADDE / ACILMA SEKLI) ---
@@ -283,13 +283,40 @@
 .tt-ts-ikinci { display: none; }
 .tt-ts-kart[aria-checked="true"] .tt-ts-ikinci { display: block; }
 
-/* --- Aciklama adimlari: iki kartta da ayni olcu, ayni sol hiza --- */
+/* --- Aciklama kutusu ---
+   Adimlar gri bir kutunun icinde: dagilmis satirlar yerine tek bir blok
+   olarak okunuyor.
+
+   KUTU YANLARDAN TASIYOR (margin -10 / padding 10): kutunun IC kenari
+   kartin icerik kenariyla, yani secim yuvarlagiyla ayni hizaya geliyor.
+   Kutuya normal padding verilseydi ikonlar 10px iceri kayar ve kartin
+   icinde ikinci bir sol kenar olusurdu - duzeltilmek istenen sey buydu. */
+.tt-ts-kutu-blok {
+  margin: var(--tt-ts-s4) -10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--tt-ts-kutu);
+}
+/* Kutu icindeki ayirici (adimlar ile sonsuzluk satiri arasi). */
+.tt-ts-kutu-ayrac {
+  height: var(--tt-ts-hair);
+  margin: 10px 0;
+  background: var(--tt-ts-line);
+}
+
+/* --- Aciklama adimlari: iki kartta da ayni olcu, ayni sol hiza ---
+   ul/li DEGIL, role tasiyan div. Sebep olculdu: katman temanin .rte
+   sarmalayicisi icinde render ediliyor ve theme.css'te
+   ".rte :is(ul, ol) { padding-inline-start: var(--sp-7) }" kurali var.
+   Ozgullugu (0,1,1); benim (0,1,0) sifirlamami yeniyordu ve adim ikonlari
+   secim yuvarlagindan ~33px iceri kayiyordu. Ayni yerdeki ".rte li"
+   kurali da adimlara fazladan ust bosluk ekliyordu. Div'de bu kurallarin
+   tutunacagi bir sey yok. */
 .tt-ts-adimlar {
   display: grid;
   gap: var(--tt-ts-s3);
   margin: 0;
   padding: 0;
-  list-style: none;
 }
 .tt-ts-adim { display: flex; align-items: flex-start; gap: var(--tt-ts-s3); }
 .tt-ts-adim-ikon {
@@ -321,15 +348,14 @@
   color: var(--tt-ts-ink);
 }
 
-/* --- Sonsuzluk kutusu --- */
+/* --- Sonsuzluk satiri ---
+   Kendi gri kutusu YOK: aciklama kutusunun icinde, ince cizgiyle ayrilmis
+   duruyor. Iki ayri gri kutu yan yana gelince aralarindaki sinir
+   kayboluyordu. */
 .tt-ts-sonsuz {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-top: var(--tt-ts-s4);
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--tt-ts-kutu);
 }
 .tt-ts-sonsuz-ikon {
   flex: 0 0 auto;

@@ -106,6 +106,41 @@ sınıfı JS kaydırma durumuna göre ekliyor). İşaret her genişlikte aynı.
 Sıralama satırı şeridin altında. Alt sayfa (bottom sheet) 3 sütunlu grid
 olarak kalıyor.
 
+## TUZAK: katman `.rte` içinde render ediliyor
+
+Custom Liquid bloğunun çıktısı temanın `.rte` sarmalayıcısının içine düşüyor.
+`theme.css` orada şunları tanımlıyor:
+
+```css
+.rte :is(ul, ol) { padding-inline-start: var(--sp-7) }   /* (0,1,1) */
+.rte li          { margin-block-start: var(--sp-2) }
+```
+
+Özgüllükleri `.tt-ts-adimlar` gibi tek sınıflık (0,1,0) sıfırlamaları **yeniyor**.
+Somut sonucu: adım ikonları seçim yuvarlağından ~33px sağa kayıyor ve adımlar
+arasına fazladan boşluk giriyordu — "ikonlar hizasız" ve "çok boşluklu" şikâyetlerinin
+ikisi de bu tek sebepten.
+
+**Çözüm:** adım listesi `ul/li` değil, `role="list"` / `role="listitem"` taşıyan
+`div`'lerle yazılıyor. Bu kuralların tutunacağı bir eleman kalmıyor. Bu bölüme
+yeni bir liste eklerken aynı kurala uyun.
+
+**Test bunu yakalayamıyordu**: fixture katmanı `.rte` olmadan render ediyordu.
+Artık `sayfa.py` hem `.rte` sarmalayıcısını hem temanın gerçek kurallarını
+içeriyor; `ul`'a dönülürse test kırmızıya döner.
+
+## Açıklama kutusu
+
+Adımlar gri bir kutunun içinde (`--tt-ts-kutu`, 10px iç boşluk, 10px köşe).
+Kutu yanlardan **taşıyor** (`margin: 14px -10px 0; padding: 10px`): kutunun iç
+kenarı kartın içerik kenarıyla, yani seçim yuvarlağıyla aynı hizada. Normal
+padding verilseydi ikonlar 10px içeri kayar ve kartın içinde ikinci bir sol
+kenar oluşurdu — düzeltilmek istenen şey buydu.
+
+İkili sette sonsuzluk satırı **aynı kutunun içinde**, ince bir çizgiyle ayrılmış.
+Ayrı bir gri kutu olsaydı iki gri kutu yan yana gelip aralarındaki sınır
+kaybolurdu.
+
 ## Tarayıcı sınırı: 0.5px ve 1.5px kenarlıklar
 
 Chrome `border-width` değerini tam piksele yuvarlıyor: kaynakta `0.5px` de
