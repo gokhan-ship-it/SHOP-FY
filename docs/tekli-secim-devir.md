@@ -226,6 +226,34 @@ korumalı (`KOK.__ttTsKurulu`) ve `shopify:section:load` olayında yeniden
 taranıyor. Sayfa çapında tek bir bayrak kullanılırsa yeni DOM kurulumsuz kalıyor:
 kart tıklanmıyor, grid boş, native seçici gizlenmiyor.
 
+## TUZAK (en pahalısı): mağazada bölüm baştan çiziliyor, olay yok
+
+Varyant değişince tema ürün bölümünü Section Rendering ile **baştan çiziyor** —
+katman dahil. Yani `[data-tt-ts]` kökü yepyeni bir düğüm oluyor ve üzerindeki
+bütün dinleyiciler gidiyor.
+
+**`shopify:section:load` bunu haber vermiyor.** O olay **yalnızca tema
+editöründe** atıyor; mağazada atmıyor. Sonuç: ilk ham madde seçimi çalışıyor,
+ondan sonra katman ölü kalıyor — segment geçmiyor, kartlar tıklanmıyor, ekranda
+sunucudan gelen eski değer duruyor. Hiçbir hata mesajı yok.
+
+Bunu haber veren tek mekanizma `MutationObserver`. Kurulum eleman başına
+korumalı olduğu için gözcü ucuz: 50ms'de bir, yalnızca **kurulmamış** bir katman
+varsa `tara()` çağırıyor.
+
+**Durum DOM'un dışında** (`DURUM` sözlüğü, anahtar form id'si). Aksi hâlde her
+varyant değişiminde müşterinin seçtiği kart modu, grup, sıralama ve ikinci ürün
+sıfırlanırdı. İkinci ürün nesne referansıyla değil **ada göre** geri bulunuyor;
+yeni listede eski nesne yok.
+
+Kopan düğümlerin `window` dinleyicileri de kendini siliyor (`isConnected`
+kontrolü, `seritDurum` ve `ortuKoru` içinde) — yoksa her varyant değişiminde bir
+scroll ve bir resize dinleyicisi birikirdi.
+
+`morf.py` test sayfasını bu senaryoya alıyor (`python3 morf.py acik bolum`) ve
+`durum.mjs` seçimlerin korunduğunu ölçüyor. Düzeltmeden önceki JS ile
+`segment.mjs` 5, `durum.mjs` 4 maddeden kırmızı.
+
 ## TUZAK: varyant değişince `<variant-picker>`'ın içeriği yeniden yazılıyor
 
 Aynı Section Rendering, varyant değiştiğinde `<variant-picker>` elementinin
@@ -246,6 +274,12 @@ gizleme sınıfı geri konuyor.
 `segment.mjs` bunu ölçüyor: test sayfası artık temanın bu davranışını taklit
 ediyor (değişimde picker'ın `innerHTML`'i yeniden yazılıyor). Eski JS ile test
 4 maddeden kırmızı, yenisiyle 11/11 yeşil.
+
+**Bu yukarıdaki tuzağın yerine geçmiyor, onunla birlikte var.** İkisi ayrı
+düzeltme: burası radyoyu her tıklamada yeniden buluyor, yukarısı katmanın
+kendisini yeniden kuruyor. Yalnızca birini yapmak belirtiyi taşıyor, kaldırmıyor
+— nitekim önce yalnızca bu yapıldı ve "gümüşe geçiliyor, çeliğe dönülmüyor"
+şikâyeti "hiç geçiş yapılmıyor"a döndü.
 
 ## Dokunulmayanlar
 

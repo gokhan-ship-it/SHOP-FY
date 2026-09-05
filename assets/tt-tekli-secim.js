@@ -12,6 +12,11 @@
      sayfa yenilenmiyor. Sayfa capinda tek bir bayrak burada "zaten
      kuruldu" deyip yeni DOM'u kurulumsuz birakiyordu; katman olu
      goruniyordu (kart tiklanmiyor, grid bos, native secici gizlenmiyor). */
+  /* Katman yeniden kurulunca musterinin secimleri kaybolmasin diye durum
+     DOM'un disinda tutuluyor. Anahtar form id'si: bolum bastan cizilse de
+     ayni urun icin ayni kaliyor. */
+  var DURUM = {};
+
   function kur(KOK) {
     if (KOK.__ttTsKurulu) return;
     KOK.__ttTsKurulu = true;
@@ -81,12 +86,16 @@
       return a;
     }
 
-    var mod = 'tek';
+    var ANAHTAR = KOK.getAttribute('data-tt-ts-form') || 'tt-ts';
+    var ONCEKI = DURUM[ANAHTAR] || null;
+
+    var mod = ONCEKI ? ONCEKI.mod : 'tek';
     /* Varsayilan grup snippet'te urunun koleksiyonundan turetiliyor:
        erkek urunundeysek kadin, kadin urunundeysek erkek acik geliyor. */
-    var grup = KOK.getAttribute('data-tt-ts-grup-varsayilan') === 'erkek' ? 'erkek' : 'kadin';
-    var siraGumus = false;   /* false: once celikler */
-    var ikinci = null;       /* {urun, varyant} */
+    var grup = ONCEKI ? ONCEKI.grup
+             : (KOK.getAttribute('data-tt-ts-grup-varsayilan') === 'erkek' ? 'erkek' : 'kadin');
+    var siraGumus = ONCEKI ? ONCEKI.siraGumus : false;   /* false: once celikler */
+    var ikinci = null;       /* {urun, varyant} - asagida ada gore geri bulunuyor */
 
     /* ---------- Yardimcilar ---------- */
     function bin(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
@@ -320,6 +329,10 @@
        Bir kez baglaniyor, sonra her kaydirmada guncelleniyor. */
     function seritDurum(kap) {
       function guncelle() {
+        /* Bolum bastan cizilince eski serit DOM'dan kopuyor ama window
+           dinleyicisi kaliyordu; her varyant degisiminde bir tane daha
+           birikirdi. Kopmus olani kendi kendini siliyor. */
+        if (!kap.isConnected) { window.removeEventListener('resize', guncelle); return; }
         var devam = kap.scrollWidth - kap.clientWidth - kap.scrollLeft > 2;
         kap.classList.toggle('tt-ts-serit--devam', devam);
       }
@@ -335,6 +348,13 @@
       var kap = KOK.querySelector('[data-tt-ts-grid]');
       if (!kap) return;
       var liste = listele();
+      /* Bolum bastan cizilince ikinci urun secimi de geri geliyor: nesne
+         referansi yeni listede yok, bu yuzden ADA gore eslestiriliyor. */
+      if (!ikinci && ONCEKI && ONCEKI.ikinciAd) {
+        for (var o = 0; o < liste.length; o++) {
+          if (liste[o].ad === ONCEKI.ikinciAd) { ikinci = { urun: liste[o], varyant: varyantSec(liste[o]) }; break; }
+        }
+      }
       if (!ikinci || liste.indexOf(ikinci.urun) === -1) {
         /* Varsayilan olarak gruptaki EN UCUZ urun seciliyor: teklif ilk
            bakista mumkun olan en dusuk tutarla gorunsun. */
@@ -452,6 +472,11 @@
       fiyatYaz();
       stickyYaz();
       if (mod === 'set') tkYaz(); else tkGeriAl();
+
+      DURUM[ANAHTAR] = {
+        mod: mod, grup: grup, siraGumus: siraGumus,
+        ikinciAd: ikinci ? ikinci.urun.ad : null
+      };
     }
 
     /* ---------- Ustu kapatan sabit ogeler ----------
@@ -500,6 +525,14 @@
       }
 
       function kontrol() {
+        /* Ayni birikme sorunu: katman yenilenince eski kurulumun scroll
+           dinleyicisi geride kaliyordu. */
+        if (!KOK.isConnected) {
+          window.removeEventListener('scroll', tetikle);
+          window.removeEventListener('resize', tetikle);
+          geriAl();
+          return;
+        }
         if (Date.now() - sonTarama > 2000) tara();
         var vh = window.innerHeight || document.documentElement.clientHeight;
         var vw = window.innerWidth || document.documentElement.clientWidth;
@@ -783,7 +816,39 @@
     for (var i = 0; i < k.length; i++) kur(k[i]);
     ayarPaneli();
   }
+
+  /* ---------- Katman kendini onaran gozcu ----------
+     TUZAK, olcerek bulundu: tema varyant degisince urun bolumunu Section
+     Rendering ile BASTAN CIZIYOR ve katman yepyeni bir dugum oluyor.
+     shopify:section:load bunu haber vermiyor - o olay YALNIZCA tema
+     editorunde atiyor, magazada atmiyor. Sonuc: ilk ham madde secimi
+     calisiyor, ondan sonra katman olu kaliyor (segment gecmiyor, kartlar
+     tiklanmiyor) ve ekranda sunucudan gelen eski deger goruniyor.
+     Bunu MutationObserver disinda haber veren bir sey yok.
+
+     Gozcu tum sayfayi izliyor ama isi ucuz: her degisiklikte degil,
+     50ms'de bir ve yalnizca KURULMAMIS bir katman varsa tara() cagriliyor.
+     Kurulum eleman basina korumali oldugu icin fazladan cagri zararsiz. */
+  function eksikVar() {
+    var k = document.querySelectorAll('[data-tt-ts]');
+    for (var i = 0; i < k.length; i++) if (!k[i].__ttTsKurulu) return true;
+    return false;
+  }
+  function gozle() {
+    if (!window.MutationObserver || !document.body) return;
+    var bekliyor = false;
+    new MutationObserver(function () {
+      if (bekliyor) return;
+      bekliyor = true;
+      window.setTimeout(function () {
+        bekliyor = false;
+        if (eksikVar()) tara();
+      }, 50);
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
   tara();
+  gozle();
   /* Olayin target'ini daraltmiyoruz: kurulum eleman basina korumali,
      bu yuzden tum sayfayi yeniden taramak bedava ve daha az varsayim. */
   document.addEventListener('shopify:section:load', tara);
