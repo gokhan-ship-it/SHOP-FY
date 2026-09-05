@@ -199,22 +199,65 @@
       }
       return secici;
     }
-    function nativeRadyo(deger) {
+    /* Radyolar YALNIZCA ilk secenegin (Ham Madde) alanindan aliniyor.
+       Temanin markup'i: her fieldset'te data-option-index="option1..n". */
+    function nativeRadyolar() {
       var s = seciciEl();
-      if (!s) return null;
-      var hepsi = s.querySelectorAll('input[type="radio"][data-option-value]');
+      if (!s) return [];
+      var alan = s.querySelector('[data-option-index="option1"]') || s;
+      return [].slice.call(alan.querySelectorAll('input[type="radio"][data-option-value]'));
+    }
+
+    /* Eslestirme once METINLE, tutmazsa SIRAYLA.
+
+       Metin eslesmesi tek basina kirilgan cikti: segment dugmeleri de
+       temanin radyolari da ayni product.options_with_values dizisinden
+       uretiliyor ama arada escape/bosluk/gorunmez karakter farki olusabilen
+       iki ayri sablon var. Tek bir deger tutmadiginda o dugmeye hic
+       dinleyici baglanmiyordu; belirti "gumuse geciliyor ama celige
+       donulemiyor" ve segment eksik sayildigi icin temanin kendi secicisi
+       de gizlenmeden ekranda kaliyordu.
+
+       Sira guvenli bir yedek: iki liste ayni diziden, ayni sirayla
+       uretiliyor. Yedege duşuldugunde kok elemana data-tt-ts-tani
+       yaziliyor - ?tttani=1 paneli bunu ekranda gosteriyor. */
+    function nativeRadyo(deger, sira) {
+      var hepsi = nativeRadyolar();
       for (var i = 0; i < hepsi.length; i++) {
         if (hepsi[i].getAttribute('data-option-value') === deger) return hepsi[i];
       }
+      if (typeof sira === 'number' && hepsi.length > sira) {
+        var t = KOK.getAttribute('data-tt-ts-tani') || '';
+        var not = 'siraya duşuldu: "' + deger + '" != "' +
+                  hepsi[sira].getAttribute('data-option-value') + '"';
+        if (t.indexOf(not) === -1) KOK.setAttribute('data-tt-ts-tani', t ? t + ' | ' + not : not);
+        return hepsi[sira];
+      }
       return null;
     }
+
+    /* Radyo sr-only; gorunen ve tiklanan sey <label for>. Etiketi
+       tiklamak gercek kullanici yolunun AYNISI: tarayici radyoyu isaretliyor
+       ve click -> input -> change olaylarini DOGRU SIRAYLA atiyor. Elle
+       checked yazip sentetik change gondermek bu sirayi ters ceviriyordu
+       (once change, sonra click) ve temanin bazi akislarinda ilk tiklama
+       yutuluyordu - "iki kere tiklayinca geciyor" belirtisi buydu. */
+    function nativeEtiket(r) {
+      if (!r || !r.id) return null;
+      var s = seciciEl();
+      if (!s) return null;
+      var l = s.getElementsByTagName('label');
+      for (var i = 0; i < l.length; i++) if (l[i].htmlFor === r.id) return l[i];
+      return null;
+    }
+
     function segmentBagla() {
       var h = KOK.querySelectorAll('[data-tt-ts-hm]');
       if (!h.length || !secici) return false;
       var bagli = 0;
       for (var i = 0; i < h.length; i++) {
-        (function (el) {
-          if (!nativeRadyo(el.getAttribute('data-tt-ts-hm'))) return;
+        (function (el, sira) {
+          if (!nativeRadyo(el.getAttribute('data-tt-ts-hm'), sira)) return;
           bagli++;
           el.addEventListener('click', function () {
             /* Radyo HER TIKLAMADA yeniden bulunuyor, kurulumda bir kez
@@ -224,16 +267,18 @@
                kaliyor) ama radio input'lari yepyeni dugumler oluyor.
                Kurulumda yakalanan input DOM'dan kopuyor; uzerine
                checked yazmak, change gondermek, click etmek hicbir sey
-               yapmiyor ve HATA SESSIZ oluyor.
-               Belirti: ilk tikla gumuse geciliyor, sonra celige
-               donulemiyordu. */
-            var r = nativeRadyo(el.getAttribute('data-tt-ts-hm'));
+               yapmiyor ve HATA SESSIZ oluyor. */
+            var r = nativeRadyo(el.getAttribute('data-tt-ts-hm'), sira);
             if (!r || r.checked) return;
+            var lbl = nativeEtiket(r);
+            if (lbl) { lbl.click(); return; }
+            /* Etiket yoksa (baska bir secici bicimi) elle: sira DOGRU olsun. */
             r.checked = true;
-            r.dispatchEvent(new Event('change', { bubbles: true }));
             r.click();
+            r.dispatchEvent(new Event('input', { bubbles: true }));
+            r.dispatchEvent(new Event('change', { bubbles: true }));
           });
-        })(h[i]);
+        })(h[i], i);
       }
       return bagli === h.length;
     }
@@ -722,6 +767,17 @@
         var nb = form.querySelector('[name="add"], button[type="submit"]');
         if (nb) nb.classList.add('tt-ts-native-gizli');
       }
+      /* Adet secici de gizleniyor: katmanda adet kavrami yok (tek urun ya
+         da iki urunluk set) ve ekranda birakilinca "2 urun" ile "adet 1"
+         yan yana celisiyordu. Bolumun id'si form id'siyle ayni kaliba
+         uyuyor: ProductForm-<section>-<product> -> QuantityForm-...
+         Temanin dosyasina DOKUNULMUYOR, yalnizca gizleme sinifi ekleniyor;
+         JS calismazsa adet secici eski haliyle geri geliyor. */
+      var mikId = ANAHTAR.indexOf('ProductForm-') === 0
+                ? 'QuantityForm-' + ANAHTAR.slice('ProductForm-'.length) : '';
+      var mik = (mikId && document.getElementById(mikId)) ||
+                document.querySelector('[id^="QuantityForm-"]');
+      if (mik) mik.classList.add('tt-ts-native-gizli');
     }
 
     ciz();
@@ -809,12 +865,68 @@
     uygula();
   }
 
+  /* ---------- Teshis paneli (?tttani=1) ----------
+     Segment temanin gercek secicisine bagli ve o secici uzaktan
+     goruntulenemiyor. Bir sey tutmadiginda tahmin etmek yerine EKRANDA
+     gostermek icin: adrese ?tttani=1 eklenince katmanin ne gordugu
+     yaziliyor - segment dugmesinin metni, esleyen radyonun metni, etiket
+     bulundu mu, segment eksiksiz mi. Musteri hicbir kosulda gormuyor. */
+  function taniPaneli() {
+    if (document.getElementById('tt-ts-tani')) return;
+    if (!new URLSearchParams(location.search).get('tttani')) return;
+    var KOK = document.querySelector('[data-tt-ts]');
+    if (!KOK) return;
+    var sec = document.getElementById(KOK.getAttribute('data-tt-ts-secici'));
+    var alan = sec && (sec.querySelector('[data-option-index="option1"]') || sec);
+    var radyolar = alan ? [].slice.call(alan.querySelectorAll('input[type="radio"][data-option-value]')) : [];
+    var dugmeler = [].slice.call(KOK.querySelectorAll('[data-tt-ts-hm]'));
+
+    var satir = dugmeler.map(function (d, i) {
+      var metin = d.getAttribute('data-tt-ts-hm');
+      var esles = null;
+      for (var j = 0; j < radyolar.length; j++) {
+        if (radyolar[j].getAttribute('data-option-value') === metin) { esles = radyolar[j]; break; }
+      }
+      var r = esles || radyolar[i] || null;
+      var etiket = null;
+      if (r && r.id && sec) {
+        var l = sec.getElementsByTagName('label');
+        for (var k = 0; k < l.length; k++) if (l[k].htmlFor === r.id) { etiket = l[k]; break; }
+      }
+      return '<div style="margin-bottom:6px">' +
+        '<b>' + (i + 1) + '. dugme</b><br>bizde: <code>' + metin + '</code><br>' +
+        'temada: <code>' + (r ? r.getAttribute('data-option-value') : '-') + '</code><br>' +
+        'metin esti: ' + (esles ? 'EVET' : 'HAYIR (sira yedegi)') + '<br>' +
+        'etiket: ' + (etiket ? 'var' : 'YOK') + '</div>';
+    }).join('');
+
+    var p = document.createElement('div');
+    p.id = 'tt-ts-tani';
+    p.setAttribute('style', [
+      'position:fixed', 'left:8px', 'right:8px', 'bottom:8px', 'z-index:99999',
+      'max-height:60vh', 'overflow:auto', 'padding:12px 14px', 'border-radius:12px',
+      'background:#1d1d1f', 'color:#fff',
+      'font:12px/1.5 -apple-system,system-ui,sans-serif',
+      'box-shadow:0 8px 28px rgba(0,0,0,.35)'
+    ].join(';'));
+    p.innerHTML =
+      '<div style="font-weight:600;margin-bottom:8px">tt-ts teshis (?tttani=1)</div>' +
+      '<div>secici bulundu: <b>' + (sec ? 'EVET' : 'HAYIR') + '</b></div>' +
+      '<div>radyo sayisi: <b>' + radyolar.length + '</b> / segment dugmesi: <b>' + dugmeler.length + '</b></div>' +
+      '<div>segment eksiksiz (native gizlendi): <b>' +
+        (KOK.hasAttribute('data-tt-ts-hazir') ? 'EVET' : 'HAYIR') + '</b></div>' +
+      '<div style="margin:8px 0">' + satir + '</div>' +
+      '<div>not: <code>' + (KOK.getAttribute('data-tt-ts-tani') || '-') + '</code></div>';
+    document.body.appendChild(p);
+  }
+
   /* Ilk yukleme + tema editorunde her yeniden cizim. shopify:section:load
      yalnizca editorde tetikleniyor, magazada ek maliyeti yok. */
   function tara() {
     var k = document.querySelectorAll('[data-tt-ts]');
     for (var i = 0; i < k.length; i++) kur(k[i]);
     ayarPaneli();
+    taniPaneli();
   }
 
   /* ---------- Katman kendini onaran gozcu ----------

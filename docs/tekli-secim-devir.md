@@ -226,6 +226,58 @@ korumalı (`KOK.__ttTsKurulu`) ve `shopify:section:load` olayında yeniden
 taranıyor. Sayfa çapında tek bir bayrak kullanılırsa yeni DOM kurulumsuz kalıyor:
 kart tıklanmıyor, grid boş, native seçici gizlenmiyor.
 
+## Segmentin temaya bağlanması: metin DEĞİL, metin + sıra
+
+Segment temanın kendi radio'sunu tetikliyor. Temanın markup'ı
+(`snippets/product-variant-picker-button.liquid`):
+
+```html
+<magnet-element>
+  <input type="radio" class="sr-only" id="..." data-option-value="{{ value | escape }}">
+  <label for="..." class="label-swatch">{{ value }}</label>
+</magnet-element>
+```
+
+Buradan iki kural çıkıyor:
+
+**1. Eşleştirme yalnızca metne dayanamaz.** Segment düğmeleri de temanın
+radio'ları da aynı `product.options_with_values` dizisinden üretiliyor, ama
+iki ayrı şablondan — arada escape/boşluk/görünmez karakter farkı oluşabiliyor.
+Tek bir değer tutmadığında o düğmeye **hiç dinleyici bağlanmıyordu** ve dahası
+`segmentTamam` false olduğu için temanın kendi seçicisi de gizlenmeden ekranda
+kalıyordu. Kullanıcının gördüğü tablo tam olarak buydu: gümüşe geçiliyor,
+çeliğe dönülmüyor, altta native seçici + adet duruyor. Artık metin tutmazsa
+**sıraya** düşülüyor (iki liste aynı diziden, aynı sırayla); sıra yedeğine
+düşüldüğünde kök elemana `data-tt-ts-tani` yazılıyor.
+
+**2. Tıklanacak şey radio değil, `<label for>`.** Radio `sr-only`. Etiketi
+tıklamak gerçek kullanıcı yolunun aynısı: tarayıcı radio'yu işaretliyor ve
+`click → input → change` olaylarını **doğru sırayla** atıyor. Elle `checked`
+yazıp sentetik `change` göndermek bu sırayı ters çeviriyordu (önce change,
+sonra click) — "iki kere tıklayınca geçiyor" belirtisi buydu.
+
+Test sayfası artık temanın gerçek seçici HTML'ini kullanıyor (sr-only radio +
+label + fieldset). `sayfa.py acik --bozuk` temanın metnine görünmez bir fark
+koyuyor; `eslesme.mjs` o hâlde bile segmentin çalıştığını ve native blokların
+gizlendiğini ölçüyor. Düzeltmeden önceki JS ile bu test 5 maddeden kırmızı ve
+üç belirtiyi birden üretiyor.
+
+## Teşhis paneli: `?tttani=1`
+
+Temanın seçicisi uzaktan görüntülenemiyor (mağaza ve CDN bu ortamdan kapalı).
+Bir şey tutmadığında tahmin etmek yerine adrese `?tttani=1` eklenince katmanın
+ne gördüğü ekranda listeleniyor: seçici bulundu mu, kaç radio var, her segment
+düğmesi için bizim metnimiz / temanın metni / metin eşti mi / etiket var mı, ve
+segment eksiksiz sayıldı mı. `?ttayar=1` ile aynı mantık; müşteri hiçbir koşulda
+görmüyor.
+
+## Adet seçici
+
+Katmanda adet kavramı yok (tek ürün ya da iki ürünlük set) ve ekranda
+bırakılınca "2 ürün" ile "adet 1" yan yana çelişiyordu. Segment eksiksiz
+kurulduğunda `#QuantityForm-<section>-<product>` de `tt-ts-native-gizli`
+alıyor. Temanın dosyasına dokunulmuyor; JS çalışmazsa adet seçici geri geliyor.
+
 ## TUZAK (en pahalısı): mağazada bölüm baştan çiziliyor, olay yok
 
 Varyant değişince tema ürün bölümünü Section Rendering ile **baştan çiziyor** —
