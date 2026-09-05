@@ -490,6 +490,7 @@
       var s = parseFloat(v);
       return isNaN(s) ? yedek : s;
     }
+    var oran = oku('--tt-ts-karo-oran', 0.8);
     var zoom = oku('--tt-ts-karo-zoom', 1);
     var kaydir = oku('--tt-ts-karo-kaydir', 0);
 
@@ -509,38 +510,67 @@
       'font:inherit;font-weight:600;cursor:pointer">Karo cercevelemesi<span data-ok>–</span></button>' +
       '<div data-govde>' +
       '<div style="opacity:.6;margin:2px 0 10px">Yalnizca ?ttayar=1 ile gorunur</div>' +
+      '<label style="display:block;margin-bottom:2px">Kutu orani: <b data-o></b></label>' +
+      '<input data-os type="range" min="0.6" max="1.4" step="0.01" style="width:100%">' +
+      '<div style="opacity:.6;margin:2px 0 10px">kucuk = uzun kutu, buyuk = basik</div>' +
       '<label style="display:block;margin-bottom:2px">Yakinlastirma: <b data-z></b></label>' +
       '<input data-zs type="range" min="0.8" max="2" step="0.01" style="width:100%;margin-bottom:10px">' +
       '<label style="display:block;margin-bottom:2px">Dikey kaydirma: <b data-k></b>%</label>' +
-      '<input data-ks type="range" min="-30" max="30" step="0.5" style="width:100%">' +
+      '<input data-ks type="range" min="-60" max="60" step="0.5" style="width:100%">' +
       '<div style="opacity:.6;margin:2px 0 10px">eksi = altini goster, arti = ustunu</div>' +
+      '<div data-uyari style="margin:0 0 10px;padding:6px 8px;border-radius:8px;' +
+      'background:#4a3a00;color:#ffd479"></div>' +
       '<div style="opacity:.6;margin-bottom:4px">Ozel Liquid bloguna yapistir:</div>' +
       '<code data-cikti style="display:block;padding:8px;border-radius:8px;background:#000;' +
       'color:#7fd4a0;word-break:break-all;user-select:all;cursor:text"></code>' +
       '<button data-sifirla type="button" style="margin-top:8px;width:100%;padding:6px;' +
       'border:0;border-radius:8px;background:#3a3a3c;color:#fff;font:inherit;cursor:pointer">' +
-      'Basa dondur (1 / 0)</button></div>';
+      'Basa dondur (0.8 / 1 / 0)</button></div>';
     document.body.appendChild(p);
 
-    var zs = p.querySelector('[data-zs]'), ks = p.querySelector('[data-ks]');
-    var zb = p.querySelector('[data-z]'), kb = p.querySelector('[data-k]');
-    var cikti = p.querySelector('[data-cikti]');
+    var os = p.querySelector('[data-os]'), zs = p.querySelector('[data-zs]');
+    var ks = p.querySelector('[data-ks]');
+    var ob = p.querySelector('[data-o]'), zb = p.querySelector('[data-z]');
+    var kb = p.querySelector('[data-k]');
+    var cikti = p.querySelector('[data-cikti]'), uyari = p.querySelector('[data-uyari]');
+
+    /* Kaydirma cok buyudugunde gorsel kutunun disina tasip alt (veya ust)
+       kenarda bos bant birakiyor. Bunu gozle fark etmek zor -- fotograf
+       zemini acik oldugu icin bant beyaz gorunuyor -- o yuzden hesaplanip
+       uyari olarak yaziliyor. Kutu yuksekligi 1 kabul edilirse gorselin
+       yarim yuksekligi zoom/2, kaymasi zoom*kaydir. */
+    function bosBantYuzde() {
+      var yariBosluk = 0.5 - (zoom / 2 - Math.abs(zoom * kaydir / 100));
+      return Math.max(0, yariBosluk) * 100;
+    }
 
     function uygula() {
       for (var i = 0; i < kokler.length; i++) {
+        kokler[i].style.setProperty('--tt-ts-karo-oran', String(oran));
         kokler[i].style.setProperty('--tt-ts-karo-zoom', String(zoom));
         kokler[i].style.setProperty('--tt-ts-karo-kaydir', kaydir + '%');
       }
-      zs.value = zoom; ks.value = kaydir;
+      os.value = oran; zs.value = zoom; ks.value = kaydir;
+      ob.textContent = oran.toFixed(2);
       zb.textContent = zoom.toFixed(2);
       kb.textContent = kaydir;
-      cikti.textContent = "{% render 'tt-tekli-secim', karo_zoom: " + zoom.toFixed(2) +
+      var bos = bosBantYuzde();
+      if (bos > 1) {
+        uyari.hidden = false;
+        uyari.textContent = 'Karo yuksekliginin %' + Math.round(bos) +
+          ' kadari bos kaliyor. Kutu oranini buyutmeyi (basiklastirmayi) deneyin.';
+      } else {
+        uyari.hidden = true;
+      }
+      cikti.textContent = "{% render 'tt-tekli-secim', karo_oran: " + oran.toFixed(2) +
+                          ', karo_zoom: ' + zoom.toFixed(2) +
                           ', karo_kaydir: ' + kaydir + ' %}';
     }
+    os.addEventListener('input', function () { oran = parseFloat(os.value); uygula(); });
     zs.addEventListener('input', function () { zoom = parseFloat(zs.value); uygula(); });
     ks.addEventListener('input', function () { kaydir = parseFloat(ks.value); uygula(); });
     p.querySelector('[data-sifirla]').addEventListener('click', function () {
-      zoom = 1; kaydir = 0; uygula();
+      oran = 0.8; zoom = 1; kaydir = 0; uygula();
     });
     var govde = p.querySelector('[data-govde]');
     p.querySelector('[data-kat]').addEventListener('click', function () {

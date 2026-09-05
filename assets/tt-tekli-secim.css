@@ -297,6 +297,11 @@
    (width/height auto) orani ezebiliyordu. Gorsel kutuyu mutlak konumla
    dolduruyor, boylece cerceve her zaman sabit kaliyor.
 
+   ORAN AYARLANABILIR (--tt-ts-karo-oran, en/boy). Varsayilan 0.8 = 4:5.
+   Sebep: bilekliklerin fotografta kapladigi alan yatay bir serit; 4:5
+   gibi uzun bir kutuda ya alt bosluk kaliyor ya urun cok kirpiliyor.
+   Kutuyu basiklastirmak ikisini de cozuyor.
+
    ORAN VE DOLDURMA: temanin kendi urun kartlari 4:5 + cover kullaniyor
    (theme.css: .media--portrait > img / .media > img). Bu karolar da ayni
    dili konusuyor, boylece sitenin geri kalaniyla ayni cerceveleme olusuyor.
@@ -309,7 +314,7 @@
   position: relative;
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: var(--tt-ts-karo-oran, 0.8);
   overflow: hidden;
   border-radius: 6px;
   background: var(--tt-ts-zemin);

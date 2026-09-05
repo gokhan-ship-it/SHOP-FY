@@ -37,6 +37,7 @@
   @param {string} [erkek_koleksiyon] - Erkek urunleri koleksiyonu
   @param {number} [indirim] - Ikinci uruna uygulanan indirim yuzdesi
   @param {string} [sepet_metin] - Sepete ekle butonunun metni
+  @param {number} [karo_oran] - Karo kutusunun en/boy orani (0.8 = 4:5, 1 = kare)
   @param {number} [karo_zoom] - Karo fotograflarinin buyutme carpani (1 = kirpma yok)
   @param {number} [karo_kaydir] - Karo fotograflarinin dikey kaydirma yuzdesi (- = alt taraf gorunur)
 
@@ -68,16 +69,25 @@
     farkli; hicbir CSS onu fotografin icinden silemez, ancak pencereyi
     oynatabilir.
 
+    karo_oran   : kutunun en/boy orani. 0.8 = 4:5 (uzun), 1 = kare,
+                  1.14 = 8:7 (basik). Bilekliklerin fotografta kapladigi
+                  alan yatay bir serit oldugu icin uzun kutu ya alt
+                  bosluk birakiyor ya urunu cok kirpiyor.
     karo_zoom   : yakinlastirma. 1 = kirpma yok. 1.15 urunu buyutur.
     karo_kaydir : dikey kaydirma yuzdesi. Pozitif = fotografin UST kismi,
                   negatif = ALT kismi gorunur. Bileklikler gibi ilginc
                   yeri altta olan fotograflarda negatif deger gerekiyor.
 
     Degerleri gozle bulmak icin onizleme adresine ?ttayar=1 ekleyin:
-    iki kaydiracli bir panel acilir ve yapistirilacak satiri yazar.
+    uc kaydiracli bir panel acilir ve yapistirilacak satiri yazar.
+
+    VARSAYILANLAR magazanin kendi katalogunda gozle bulundu (2026-09-05):
+    zoom 0.99 / kaydir -30. Sablondaki render satirinda ayrica veriliyor;
+    buradakiler o satir silinse de ayni cerceveleme kalsin diye.
   endcomment
-  assign p_zoom = karo_zoom | default: 1
-  assign p_kaydir = karo_kaydir | default: 0
+  assign p_oran = karo_oran | default: 0.8
+  assign p_zoom = karo_zoom | default: 0.99
+  assign p_kaydir = karo_kaydir | default: -30
 
   comment
     Grup varsayilani sabit degil: kullanici erkek urunu inceliyorsa
@@ -109,7 +119,7 @@
        data-tt-ts-form="ProductForm-{{ section.id }}-{{ product.id }}"
        data-tt-ts-secici="VariantPicker-{{ section.id }}-{{ product.id }}"
        data-tt-ts-grup-varsayilan="{{ varsayilan_grup }}"
-       style="--tt-ts-karo-zoom: {{ p_zoom }}; --tt-ts-karo-kaydir: {{ p_kaydir }}%;">
+       style="--tt-ts-karo-oran: {{ p_oran }}; --tt-ts-karo-zoom: {{ p_zoom }}; --tt-ts-karo-kaydir: {{ p_kaydir }}%;">
 
     {%- comment -%} --- HAM MADDE segmenti --- {%- endcomment -%}
     <div class="tt-ts-hammadde">
