@@ -177,9 +177,23 @@
     }
 
     /* ---------- Ham madde segmenti ---------- */
+    /* Secici elementi de tazeleniyor: bazi tema akislari <variant-picker>
+       elementinin ICERIGINI degil KENDISINI degistiriyor. O durumda eski
+       referans DOM'dan kopuyor ve gizleme sinifi da onunla gidiyor;
+       yenisi bulununca sinif geri konuyor. */
+    function seciciEl() {
+      if (secici && secici.isConnected) return secici;
+      var y = document.getElementById(KOK.getAttribute('data-tt-ts-secici'));
+      if (y) {
+        secici = y;
+        if (KOK.hasAttribute('data-tt-ts-hazir')) secici.classList.add('tt-ts-native-gizli');
+      }
+      return secici;
+    }
     function nativeRadyo(deger) {
-      if (!secici) return null;
-      var hepsi = secici.querySelectorAll('input[type="radio"][data-option-value]');
+      var s = seciciEl();
+      if (!s) return null;
+      var hepsi = s.querySelectorAll('input[type="radio"][data-option-value]');
       for (var i = 0; i < hepsi.length; i++) {
         if (hepsi[i].getAttribute('data-option-value') === deger) return hepsi[i];
       }
@@ -191,11 +205,21 @@
       var bagli = 0;
       for (var i = 0; i < h.length; i++) {
         (function (el) {
-          var r = nativeRadyo(el.getAttribute('data-tt-ts-hm'));
-          if (!r) return;
+          if (!nativeRadyo(el.getAttribute('data-tt-ts-hm'))) return;
           bagli++;
           el.addEventListener('click', function () {
-            if (r.checked) return;
+            /* Radyo HER TIKLAMADA yeniden bulunuyor, kurulumda bir kez
+               degil. Tema varyant degisince <variant-picker> elementinin
+               ICERIGINI yeniden yaziyor: element ve id yerinde kaliyor
+               (bu yuzden gizleme sinifi ve change dinleyicisi hayatta
+               kaliyor) ama radio input'lari yepyeni dugumler oluyor.
+               Kurulumda yakalanan input DOM'dan kopuyor; uzerine
+               checked yazmak, change gondermek, click etmek hicbir sey
+               yapmiyor ve HATA SESSIZ oluyor.
+               Belirti: ilk tikla gumuse geciliyor, sonra celige
+               donulemiyordu. */
+            var r = nativeRadyo(el.getAttribute('data-tt-ts-hm'));
+            if (!r || r.checked) return;
             r.checked = true;
             r.dispatchEvent(new Event('change', { bubbles: true }));
             r.click();

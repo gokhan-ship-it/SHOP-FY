@@ -69,10 +69,35 @@
   .tt-ts-adim-cip { outline: var(--tt-ts-hair) solid currentColor; background: transparent; }
 }
 
+/* --- TEMA KALKANI: .rte kurallari katmanin icine sizmasin ---
+   Katman temanin .rte sarmalayicisinin ICINDE render ediliyor ve
+   theme.css oradaki ciplak HTML etiketlerine bosluk veriyor:
+     .rte p              { margin-block: var(--sp-4)  }   ~16px
+     .rte :is(img,video) { margin-block: var(--sp-12) }   ~48px
+     .rte :is(ul,ol)     { margin-block/padding-inline-start }
+   Ozgullukleri (0,1,1); buradaki tek sinifli kurallar (0,1,0) onlari
+   yenemiyordu. Somut sonuc olculdu: ikili set kartindaki 34px'lik iki
+   kucuk urun gorseli alta ve uste 48px'er bosluk aliyor, "2 urun ·
+   Ikiniz de yuklersiniz" ile gorsel satiri ve gorsel satiri ile
+   "Couple Zaman Kapsulune donusur" arasi kocaman aciliyordu. Ayni
+   sekilde her <p> (bolum etiketleri, blok basligi, takvim notu, ozet)
+   16px fazladan bosluk aliyordu.
+
+   Kalkanin ozgullugu (0,2,1): kok elemani hem sinif hem oznitelikle
+   yaziliyor, tek fazladan tip secici .rte'ninkini geciyor. Kendi
+   bosluk veren kurallarimiz da ayni onekle yaziliyor (0,3,0) ki
+   kalkan onlari silmesin. YENI BIR <p> VEYA <img> EKLERKEN bunu
+   hatirla: boslugu varsa oneki de olmali. */
+.tt-ts[data-tt-ts] :is(p, img, video, figure, hr, ul, ol, li,
+                       h1, h2, h3, h4, h5, h6) {
+  margin-block: 0;
+  padding-inline-start: 0;
+}
+
 /* --- Bolum etiketleri (HAM MADDE / ACILMA SEKLI) ---
    Iki etiket ayni sinifi paylasiyor; birinin olcusu degisirse ikisi
    birden degisiyor, boylece bicimsel esitlik kodla garanti altinda. */
-.tt-ts-etiket {
+.tt-ts[data-tt-ts] .tt-ts-etiket {
   margin: 0 0 6px;
   font-size: 12px;
   line-height: 1.2;
@@ -81,7 +106,7 @@
   color: var(--tt-ts-ink-2);
 }
 /* "Farki gor" ile ayni satirda dururken alt bosluk satirin kendisinde. */
-.tt-ts-etiket--satir { margin: 0; }
+.tt-ts[data-tt-ts] .tt-ts-etiket--satir { margin: 0; }
 
 /* --- Segment kontrolu: ham madde ve Kadin/Erkek ayni gorsel dil --- */
 .tt-ts-seg {
@@ -352,7 +377,7 @@
   line-height: 1.45;
   color: var(--tt-ts-ink-2);
 }
-.tt-ts-blok-baslik {
+.tt-ts[data-tt-ts] .tt-ts-blok-baslik {
   margin: 0 0 var(--tt-ts-s3);
   font-size: 13px;
   font-weight: 500;
@@ -389,7 +414,7 @@
   margin: var(--tt-ts-s4) 0;
   background: var(--tt-ts-line);
 }
-.tt-ts-not {
+.tt-ts[data-tt-ts] .tt-ts-not {
   display: flex;
   align-items: flex-start;
   gap: var(--tt-ts-s2);
@@ -631,7 +656,7 @@
 .tt-ts-secili-link[hidden] { display: none; }
 
 /* --- Ozet + sepete ekle --- */
-.tt-ts-ozet {
+.tt-ts[data-tt-ts] .tt-ts-ozet {
   margin: var(--tt-ts-s5) 0 0;
   font-size: 13px;
   line-height: 1.5;

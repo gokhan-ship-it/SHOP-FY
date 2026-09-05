@@ -112,22 +112,47 @@ Custom Liquid bloğunun çıktısı temanın `.rte` sarmalayıcısının içine 
 `theme.css` orada şunları tanımlıyor:
 
 ```css
-.rte :is(ul, ol) { padding-inline-start: var(--sp-7) }   /* (0,1,1) */
-.rte li          { margin-block-start: var(--sp-2) }
+.rte :is(ul, ol)    { padding-inline-start: var(--sp-7) }   /* (0,1,1) */
+.rte li             { margin-block-start: var(--sp-2) }
+.rte p              { margin-block: var(--sp-4)  }          /* ~16px */
+.rte :is(img,video) { margin-block: var(--sp-12) }          /* ~48px */
 ```
 
-Özgüllükleri `.tt-ts-adimlar` gibi tek sınıflık (0,1,0) sıfırlamaları **yeniyor**.
-Somut sonucu: adım ikonları seçim yuvarlağından ~33px sağa kayıyor ve adımlar
-arasına fazladan boşluk giriyordu — "ikonlar hizasız" ve "çok boşluklu" şikâyetlerinin
-ikisi de bu tek sebepten.
+(`--sp-N` = N×4px.) Özgüllükleri (0,1,1); `.tt-ts-adimlar` veya `.tt-ts-cift-g`
+gibi tek sınıflık (0,1,0) kurallarımızı **yeniyor**. Bu tuzak üç kez, üç ayrı
+kılıkta vurdu:
 
-**Çözüm:** adım listesi `ul/li` değil, `role="list"` / `role="listitem"` taşıyan
-`div`'lerle yazılıyor. Bu kuralların tutunacağı bir eleman kalmıyor. Bu bölüme
-yeni bir liste eklerken aynı kurala uyun.
+1. `ul/li` → adım ikonları seçim yuvarlağından ~33px sağa kayıyor, adımlar arası
+   fazladan boşluk. ("İkonlar hizasız" + "çok boşluklu" — tek sebep.)
+2. `img` → ikili set kartındaki 34px'lik iki ürün görseli alta ve üste 48px'er
+   boşluk alıyor; şerit karolarının görselleri de aynı şekilde. ("Eight Stars
+   satırının altı ve üstü çok boşluklu.")
+3. `p` → bölüm etiketleri, blok başlığı, takvim notu ve özet 16px fazladan
+   boşluk alıyor.
 
-**Test bunu yakalayamıyordu**: fixture katmanı `.rte` olmadan render ediyordu.
-Artık `sayfa.py` hem `.rte` sarmalayıcısını hem temanın gerçek kurallarını
-içeriyor; `ul`'a dönülürse test kırmızıya döner.
+**Çözüm iki katmanlı:**
+
+- Liste `ul/li` değil, `role="list"` / `role="listitem"` taşıyan `div`'lerle
+  yazılıyor — bu kuralların tutunacağı eleman kalmıyor.
+- Geri kalanı için **tema kalkanı**: CSS'in başındaki
+
+  ```css
+  .tt-ts[data-tt-ts] :is(p, img, video, figure, hr, ul, ol, li, h1..h6) {
+    margin-block: 0; padding-inline-start: 0;
+  }
+  ```
+
+  Kök elemanı hem sınıf hem öznitelikle yazılınca özgüllük (0,2,1) oluyor ve
+  `.rte`'ninkini geçiyor. Kendi boşluk veren kurallarımız (`.tt-ts-etiket`,
+  `.tt-ts-blok-baslik`, `.tt-ts-not`, `.tt-ts-ozet`) aynı önekle yazılıyor
+  (0,3,0), yoksa kalkan onları da siler. **Katmana yeni bir `<p>` veya `<img>`
+  eklerken:** boşluğu varsa kuralı `.tt-ts[data-tt-ts]` önekiyle yazın.
+
+**Test bunu yakalayamıyordu**: fixture katmanı `.rte` olmadan render ediyordu,
+sonra `.rte` eklendi ama yalnızca `ul/li` kurallarıyla. Artık `sayfa.py` temanın
+`p`, `img`, `figure` kurallarını da içeriyor ve `kalkan.mjs` katmandaki hiçbir
+`p`/`img`/`ul`'ın tema boşluğu almadığını ölçüyor (kalkan çıkarılınca 3 test
+kırmızıya dönüyor — denendi).
 
 ## Adımlar: zaman çizelgesi çipleri
 
@@ -200,6 +225,27 @@ Editörde bir blok düzenlenince Shopify bölümü Section Rendering API ile
 korumalı (`KOK.__ttTsKurulu`) ve `shopify:section:load` olayında yeniden
 taranıyor. Sayfa çapında tek bir bayrak kullanılırsa yeni DOM kurulumsuz kalıyor:
 kart tıklanmıyor, grid boş, native seçici gizlenmiyor.
+
+## TUZAK: varyant değişince `<variant-picker>`'ın içeriği yeniden yazılıyor
+
+Aynı Section Rendering, varyant değiştiğinde `<variant-picker>` elementinin
+**içeriğini** yeniden yazıyor: element ve id yerinde kalıyor (bu yüzden
+`tt-ts-native-gizli` sınıfı ve `change` dinleyicisi hayatta kalıyor) ama radio
+input'ları yepyeni düğümler oluyor.
+
+Segment kurulumda radio referansını yakalayıp saklıyordu. İlk tıklamadan sonra o
+referans DOM'dan kopuyor; üzerine `checked` yazmak, `change` göndermek ve
+`click()` etmek **sessizce** hiçbir şey yapmıyor. Belirti tam olarak şuydu:
+gümüşe geçiliyor, sonra çeliğe dönülemiyor.
+
+**Çözüm:** radio her tıklamada yeniden bulunuyor (`nativeRadyo(...)` tıklama
+içinde çağrılıyor). Seçicinin kendisi de `seciciEl()` ile tazeleniyor: bazı tema
+akışları elementin içeriğini değil kendisini değiştirebilir; yenisi bulununca
+gizleme sınıfı geri konuyor.
+
+`segment.mjs` bunu ölçüyor: test sayfası artık temanın bu davranışını taklit
+ediyor (değişimde picker'ın `innerHTML`'i yeniden yazılıyor). Eski JS ile test
+4 maddeden kırmızı, yenisiyle 11/11 yeşil.
 
 ## Dokunulmayanlar
 
