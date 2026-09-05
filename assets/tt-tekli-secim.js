@@ -473,11 +473,90 @@
     ciz();
   }
 
+  /* ---------- Cerceveleme ayar paneli ----------
+     Karo fotograflarinin dogru cercevelemesi ancak gercek fotograflara
+     bakarak bulunabiliyor; kod bunu hesaplayamaz. Panel yalnizca adreste
+     ?ttayar=1 varken aciliyor, musteri hicbir kosulda gormuyor. Bulunan
+     degerler Ozel Liquid blogundaki render satirina yaziliyor. */
+  function ayarPaneli() {
+    if (document.getElementById('tt-ts-ayar')) return;
+    var q = new URLSearchParams(location.search);
+    if (!q.get('ttayar')) return;
+    var kokler = document.querySelectorAll('[data-tt-ts]');
+    if (!kokler.length) return;
+
+    function oku(ad, yedek) {
+      var v = getComputedStyle(kokler[0]).getPropertyValue(ad).trim();
+      var s = parseFloat(v);
+      return isNaN(s) ? yedek : s;
+    }
+    var zoom = oku('--tt-ts-karo-zoom', 1);
+    var kaydir = oku('--tt-ts-karo-kaydir', 0);
+
+    var p = document.createElement('div');
+    p.id = 'tt-ts-ayar';
+    p.setAttribute('style', [
+      'position:fixed', 'right:12px', 'bottom:12px', 'z-index:99999',
+      'width:250px', 'padding:12px 14px', 'border-radius:12px',
+      'background:#1d1d1f', 'color:#fff', 'font:12px/1.45 -apple-system,system-ui,sans-serif',
+      'box-shadow:0 8px 28px rgba(0,0,0,.35)'
+    ].join(';'));
+    /* Panel dar onizlemede karolarin ustunu kapatiyor; baslikla katlanip
+       kucuk bir pile donusuyor ki sonuca bakarken engel olmasin. */
+    p.innerHTML =
+      '<button data-kat type="button" style="display:flex;width:100%;align-items:center;' +
+      'justify-content:space-between;gap:8px;padding:0;border:0;background:none;color:inherit;' +
+      'font:inherit;font-weight:600;cursor:pointer">Karo cercevelemesi<span data-ok>–</span></button>' +
+      '<div data-govde>' +
+      '<div style="opacity:.6;margin:2px 0 10px">Yalnizca ?ttayar=1 ile gorunur</div>' +
+      '<label style="display:block;margin-bottom:2px">Yakinlastirma: <b data-z></b></label>' +
+      '<input data-zs type="range" min="0.8" max="2" step="0.01" style="width:100%;margin-bottom:10px">' +
+      '<label style="display:block;margin-bottom:2px">Dikey kaydirma: <b data-k></b>%</label>' +
+      '<input data-ks type="range" min="-30" max="30" step="0.5" style="width:100%">' +
+      '<div style="opacity:.6;margin:2px 0 10px">eksi = altini goster, arti = ustunu</div>' +
+      '<div style="opacity:.6;margin-bottom:4px">Ozel Liquid bloguna yapistir:</div>' +
+      '<code data-cikti style="display:block;padding:8px;border-radius:8px;background:#000;' +
+      'color:#7fd4a0;word-break:break-all;user-select:all;cursor:text"></code>' +
+      '<button data-sifirla type="button" style="margin-top:8px;width:100%;padding:6px;' +
+      'border:0;border-radius:8px;background:#3a3a3c;color:#fff;font:inherit;cursor:pointer">' +
+      'Basa dondur (1 / 0)</button></div>';
+    document.body.appendChild(p);
+
+    var zs = p.querySelector('[data-zs]'), ks = p.querySelector('[data-ks]');
+    var zb = p.querySelector('[data-z]'), kb = p.querySelector('[data-k]');
+    var cikti = p.querySelector('[data-cikti]');
+
+    function uygula() {
+      for (var i = 0; i < kokler.length; i++) {
+        kokler[i].style.setProperty('--tt-ts-karo-zoom', String(zoom));
+        kokler[i].style.setProperty('--tt-ts-karo-kaydir', kaydir + '%');
+      }
+      zs.value = zoom; ks.value = kaydir;
+      zb.textContent = zoom.toFixed(2);
+      kb.textContent = kaydir;
+      cikti.textContent = "{% render 'tt-tekli-secim', karo_zoom: " + zoom.toFixed(2) +
+                          ', karo_kaydir: ' + kaydir + ' %}';
+    }
+    zs.addEventListener('input', function () { zoom = parseFloat(zs.value); uygula(); });
+    ks.addEventListener('input', function () { kaydir = parseFloat(ks.value); uygula(); });
+    p.querySelector('[data-sifirla]').addEventListener('click', function () {
+      zoom = 1; kaydir = 0; uygula();
+    });
+    var govde = p.querySelector('[data-govde]');
+    p.querySelector('[data-kat]').addEventListener('click', function () {
+      govde.hidden = !govde.hidden;
+      p.querySelector('[data-ok]').textContent = govde.hidden ? '+' : '–';
+      p.style.width = govde.hidden ? 'auto' : '250px';
+    });
+    uygula();
+  }
+
   /* Ilk yukleme + tema editorunde her yeniden cizim. shopify:section:load
      yalnizca editorde tetikleniyor, magazada ek maliyeti yok. */
   function tara() {
     var k = document.querySelectorAll('[data-tt-ts]');
     for (var i = 0; i < k.length; i++) kur(k[i]);
+    ayarPaneli();
   }
   tara();
   /* Olayin target'ini daraltmiyoruz: kurulum eleman basina korumali,

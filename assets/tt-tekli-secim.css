@@ -314,10 +314,21 @@
   border-radius: 6px;
   background: var(--tt-ts-zemin);
 }
-/* Fotograflarin studyo bosluklari fotografin icine gomulu. Urunler hala
-   kucuk duruyorsa bu carpan buyutuyor; kutu overflow:hidden oldugu icin
-   tasan kenar kirpiliyor. 1 = kirpma yok. Deger karo grid'ine
-   --tt-ts-karo-zoom olarak yaziliyor (snippet: karo_zoom parametresi). */
+/* IKI KOL, IKI AYRI IS. Katalogdaki studyo fotograflarinda urunun
+   etrafindaki bosluk fotografin icine gomulu ve her fotografta farkli;
+   CSS onu silemez, sadece pencereyi oynatabilir.
+
+   --tt-ts-karo-zoom   : yakinlastirma. 1 = kirpma yok. Buyutunce urun
+                         buyur, kenarlardan kirpilir.
+   --tt-ts-karo-kaydir : dikey kaydirma, yuzde. Pozitif = gorsel asagi
+                         kayar (fotografin UST kismi gorunur), negatif =
+                         yukari kayar (ALT kismi gorunur). Bileklik gibi
+                         ilginc yeri altta olan fotograflar icin negatif.
+
+   Zoom tek basina yetmiyordu: merkezden buyuttugu icin altta kesilen
+   bilekligi geri getiremiyor, daha da kesiyordu. Kaydirma o yuzden ayri
+   bir kol. Ikisi de snippet parametresi (karo_zoom / karo_kaydir) ve
+   ?ttayar=1 ile acilan panelden canli denenebiliyor. */
 .tt-ts-karo-gorsel {
   position: absolute;
   inset: 0;
@@ -326,7 +337,7 @@
   height: 100%;
   object-fit: cover;
   object-position: center center;
-  transform: scale(var(--tt-ts-karo-zoom, 1));
+  transform: scale(var(--tt-ts-karo-zoom, 1)) translateY(var(--tt-ts-karo-kaydir, 0%));
 }
 .tt-ts-karo-ad {
   display: block;

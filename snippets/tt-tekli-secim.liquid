@@ -38,6 +38,7 @@
   @param {number} [indirim] - Ikinci uruna uygulanan indirim yuzdesi
   @param {string} [sepet_metin] - Sepete ekle butonunun metni
   @param {number} [karo_zoom] - Karo fotograflarinin buyutme carpani (1 = kirpma yok)
+  @param {number} [karo_kaydir] - Karo fotograflarinin dikey kaydirma yuzdesi (- = alt taraf gorunur)
 
   @example
   {% render 'tt-tekli-secim' %}
@@ -62,13 +63,21 @@
   assign k_erkek = erkek_koleksiyon | default: 'zaman-kapsulu-bileklik'
 
   comment
-    Karo fotograflarinin buyutme carpani. Katalogdaki studyo
-    fotograflarinda urunun etrafinda gomulu beyaz bosluk var; hicbir
-    CSS onu fotografin icinden silemez, ancak yakinlastirip kirpabilir.
-    1 = kirpma yok (temanin kendi urun kartlariyla ayni cerceveleme).
-    1.15 gibi bir deger urunu buyutur, kenarlardan kirpar.
+    Karo fotograflarinin cerceveleme kollari. Katalogdaki studyo
+    fotograflarinda urunun etrafinda gomulu bosluk var ve her fotografta
+    farkli; hicbir CSS onu fotografin icinden silemez, ancak pencereyi
+    oynatabilir.
+
+    karo_zoom   : yakinlastirma. 1 = kirpma yok. 1.15 urunu buyutur.
+    karo_kaydir : dikey kaydirma yuzdesi. Pozitif = fotografin UST kismi,
+                  negatif = ALT kismi gorunur. Bileklikler gibi ilginc
+                  yeri altta olan fotograflarda negatif deger gerekiyor.
+
+    Degerleri gozle bulmak icin onizleme adresine ?ttayar=1 ekleyin:
+    iki kaydiracli bir panel acilir ve yapistirilacak satiri yazar.
   endcomment
   assign p_zoom = karo_zoom | default: 1
+  assign p_kaydir = karo_kaydir | default: 0
 
   comment
     Grup varsayilani sabit degil: kullanici erkek urunu inceliyorsa
@@ -100,7 +109,7 @@
        data-tt-ts-form="ProductForm-{{ section.id }}-{{ product.id }}"
        data-tt-ts-secici="VariantPicker-{{ section.id }}-{{ product.id }}"
        data-tt-ts-grup-varsayilan="{{ varsayilan_grup }}"
-       style="--tt-ts-karo-zoom: {{ p_zoom }};">
+       style="--tt-ts-karo-zoom: {{ p_zoom }}; --tt-ts-karo-kaydir: {{ p_kaydir }}%;">
 
     {%- comment -%} --- HAM MADDE segmenti --- {%- endcomment -%}
     <div class="tt-ts-hammadde">
