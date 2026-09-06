@@ -251,32 +251,101 @@
       return null;
     }
 
+    /* Ham maddeyi ELLE secmek: son care.
+
+       Katman bugune kadar secimi YALNIZCA temanin secicisi uzerinden
+       yapiyordu. Bu bagimlilik iki kez sessizce koptu (radyolar yeniden
+       yazildi, bolum bastan cizildi) ve her seferinde musteri acisindan
+       sonuc ayni oldu: dugmeye basiliyor, hicbir sey olmuyor. Artik
+       temanin tepki verip vermedigi OLCULUYOR; vermiyorsa varyanti
+       kendimiz seciyoruz.
+
+       Elle secimde galeri gorseli degismiyor (onu tema yonetiyor). Bu
+       bilincli bir taviz: alternatifi ham madde seciminin hic
+       calismamasi. Fiyat, taksit, kart tutarlari ve sepete giden varyant
+       dogru kaliyor. */
+    function elleSec(deger) {
+      var v = null;
+      for (var i = 0; i < V.varyantlar.length; i++) {
+        if (V.varyantlar[i].deger === deger) { v = V.varyantlar[i]; break; }
+      }
+      if (!v) return;
+      var el = form && form.querySelector('input[name="id"]');
+      if (el) {
+        el.value = String(v.id);
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      try {
+        var u = new URL(location.href);
+        u.searchParams.set('variant', String(v.id));
+        history.replaceState({}, '', u.toString());
+      } catch (e) {}
+      /* Temanin fiyat alani da bizim sorumlulugumuza geciyor: tema
+         guncellemedigi icin buradayiz. fiyatAsil tek modun geri donus
+         degeri, o yuzden onu da tazeliyoruz. */
+      fiyatAsil = para(v.kurus);
+      ciz();
+    }
+
+    /* Secim, DOGRULAMALI merdiven:
+         1. etiketi tikla (gercek kullanici yolu)
+         2. tutmadiysa radyoya elle yaz + olaylari gonder
+         3. yine tutmadiysa varyanti kendimiz sec
+       Her basamaktan sonra secili varyantin GERCEKTEN degisip
+       degismedigine bakiliyor. Uzaktan goremedigimiz icin varsaymiyoruz. */
+    function segmentSec(deger, sira) {
+      var onceki = String(seciliVaryant().id);
+      var r = nativeRadyo(deger, sira);
+      if (!r) { elleSec(deger); return; }
+
+      var lbl = nativeEtiket(r);
+      if (lbl) {
+        lbl.click();
+      } else {
+        r.checked = true;
+        r.click();
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      window.setTimeout(function () {
+        if (String(seciliVaryant().id) !== onceki) return;   /* tema yapti */
+        var r2 = nativeRadyo(deger, sira);
+        if (r2 && !r2.checked) {
+          r2.checked = true;
+          r2.dispatchEvent(new Event('input', { bubbles: true }));
+          r2.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        window.setTimeout(function () {
+          if (String(seciliVaryant().id) !== onceki) return;
+          elleSec(deger);
+        }, 160);
+      }, 160);
+    }
+
+    /* Tekrar cagrilabilir: tema editorunde bloklar sirayla basiliyor ve
+       secici bizden SONRA gelebiliyor. Bagli dugme ikinci kez
+       baglanmiyor (el.__ttTsBagli). */
     function segmentBagla() {
       var h = KOK.querySelectorAll('[data-tt-ts-hm]');
-      if (!h.length || !secici) return false;
+      if (!h.length || !seciciEl()) return false;
       var bagli = 0;
       for (var i = 0; i < h.length; i++) {
         (function (el, sira) {
+          if (el.__ttTsBagli) { bagli++; return; }
           if (!nativeRadyo(el.getAttribute('data-tt-ts-hm'), sira)) return;
+          el.__ttTsBagli = true;
           bagli++;
           el.addEventListener('click', function () {
             /* Radyo HER TIKLAMADA yeniden bulunuyor, kurulumda bir kez
                degil. Tema varyant degisince <variant-picker> elementinin
                ICERIGINI yeniden yaziyor: element ve id yerinde kaliyor
-               (bu yuzden gizleme sinifi ve change dinleyicisi hayatta
-               kaliyor) ama radio input'lari yepyeni dugumler oluyor.
-               Kurulumda yakalanan input DOM'dan kopuyor; uzerine
-               checked yazmak, change gondermek, click etmek hicbir sey
-               yapmiyor ve HATA SESSIZ oluyor. */
+               ama radio input'lari yepyeni dugumler oluyor. Kurulumda
+               yakalanan input DOM'dan kopuyor ve uzerine yazmak SESSIZCE
+               hicbir sey yapmiyor. */
             var r = nativeRadyo(el.getAttribute('data-tt-ts-hm'), sira);
-            if (!r || r.checked) return;
-            var lbl = nativeEtiket(r);
-            if (lbl) { lbl.click(); return; }
-            /* Etiket yoksa (baska bir secici bicimi) elle: sira DOGRU olsun. */
-            r.checked = true;
-            r.click();
-            r.dispatchEvent(new Event('input', { bubbles: true }));
-            r.dispatchEvent(new Event('change', { bubbles: true }));
+            if (r && r.checked) return;
+            segmentSec(el.getAttribute('data-tt-ts-hm'), sira);
           });
         })(h[i], i);
       }
@@ -760,9 +829,12 @@
 
     if (secici) secici.addEventListener('change', function () { window.setTimeout(ciz, 60); });
 
-    if (segmentTamam) {
+    /* Temanin kendi kontrolleri: secici, sepet butonu, adet.
+       Ayri fonksiyon, cunku gec kurulumda tekrar cagriliyor. */
+    function nativeGizle() {
       KOK.setAttribute('data-tt-ts-hazir', '');
-      if (secici) secici.classList.add('tt-ts-native-gizli');
+      var s = seciciEl();
+      if (s) s.classList.add('tt-ts-native-gizli');
       if (form) {
         var nb = form.querySelector('[name="add"], button[type="submit"]');
         if (nb) nb.classList.add('tt-ts-native-gizli');
@@ -778,6 +850,23 @@
       var mik = (mikId && document.getElementById(mikId)) ||
                 document.querySelector('[id^="QuantityForm-"]');
       if (mik) mik.classList.add('tt-ts-native-gizli');
+    }
+
+    if (segmentTamam) {
+      nativeGizle();
+    } else {
+      /* Tema editorunde bloklar sirayla basiliyor: Ozel Liquid blogumuz
+         Variant picker blogundan ONCE geliyor, yani kurulum aninda secici
+         henuz sayfada olmayabiliyor. Belirtisi "editorde iki secici
+         goruyorum" idi - segment eksik sayilinca temaninki gizlenmiyor.
+         Birkac kez tekrar deneniyor; baglanan dugme ikinci kez
+         baglanmadigi icin tekrar zararsiz. */
+      [150, 500, 1200, 2500].forEach(function (ms) {
+        window.setTimeout(function () {
+          if (segmentTamam || !KOK.isConnected) return;
+          if (segmentBagla()) { segmentTamam = true; nativeGizle(); ciz(); }
+        }, ms);
+      });
     }
 
     ciz();

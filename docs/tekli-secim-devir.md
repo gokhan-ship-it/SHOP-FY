@@ -262,6 +262,44 @@ koyuyor; `eslesme.mjs` o hâlde bile segmentin çalıştığını ve native blok
 gizlendiğini ölçüyor. Düzeltmeden önceki JS ile bu test 5 maddeden kırmızı ve
 üç belirtiyi birden üretiyor.
 
+## Seçim artık doğrulamalı: temanın tepki verdiğini ÖLÇÜYORUZ
+
+Katman ham madde seçimini uzun süre **yalnızca** temanın seçicisini sürerek
+yaptı. Bu bağımlılık üç ayrı şekilde sessizce koptu (radio'lar yeniden yazıldı,
+bölüm baştan çizildi, seçici geç geldi) ve müşteri açısından sonuç her seferinde
+aynı oldu: **düğmeye basılıyor, hiçbir şey olmuyor.** Hata mesajı yok.
+
+Artık seçim üç basamaklı ve her basamaktan sonra **seçili varyantın gerçekten
+değişip değişmediğine bakılıyor**:
+
+1. `<label>` tıklanıyor (gerçek kullanıcı yolu).
+2. Değişmediyse radio'ya elle yazılıp `input` + `change` gönderiliyor.
+3. Yine değişmediyse **varyantı kendimiz seçiyoruz** (`elleSec`): formun
+   `input[name="id"]` alanı, adres çubuğundaki `?variant`, temanın fiyat alanı
+   ve katmanın tamamı elle güncelleniyor.
+
+**3. basamağın bilinçli tavizi:** galeri görseli değişmiyor, çünkü onu tema
+yönetiyor. Alternatifi ham madde seçiminin hiç çalışmaması olduğu için bu takas
+kabul edildi. Fiyat, taksit, kart tutarları ve sepete giden varyant doğru kalıyor.
+
+`sayfa.py acik --olu` temanın `change` dinleyicisini tamamen devre dışı bırakıyor;
+`eslesme.mjs` o hâlde bile seçimin çalıştığını ve fiyat/taksit/sepet butonunun
+takip ettiğini ölçüyor.
+
+## Editörde iki seçici: blok sırası
+
+Editörde Özel Liquid bloğu **Variant picker bloğundan önce** basılıyor. Bölüm
+baştan çizilirken katman kurulduğu anda seçici henüz DOM'da olmayabiliyor:
+`segmentBagla()` false dönüyor, temanın seçicisi gizlenmiyor ve ekranda **iki
+seçici** kalıyor. Kurulum eleman başına korumalı olduğu için de bir daha
+denenmiyordu.
+
+Çözüm: bağlanma başarısızsa 150/500/1200/2500 ms'de tekrar deneniyor. Bağlanmış
+düğme ikinci kez bağlanmıyor (`el.__ttTsBagli`), o yüzden tekrar zararsız.
+
+`sayfa.py acik --gec` seçiciyi 600 ms sonra ekliyor; eski JS ile bu senaryo 8
+maddeden kırmızı ve tam olarak "editörde iki seçici" tablosunu üretiyor.
+
 ## Teşhis paneli: `?tttani=1`
 
 Temanın seçicisi uzaktan görüntülenemiyor (mağaza ve CDN bu ortamdan kapalı).
