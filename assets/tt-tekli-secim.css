@@ -711,6 +711,23 @@
 /* Native secici / sepet butonu: yalnizca katman eksiksiz kuruldugunda. */
 .tt-ts-native-gizli { display: none !important; }
 
+/* --- Gizlemenin KALICI yeri: bolum sarmalayicisi ---
+   Sinifi <variant-picker> elemanina koymak yetmiyor. Tema varyant
+   degisince bolumun ICERIGINI bastan yaziyor: secici yeni bir dugum
+   oluyor ve sinif onunla birlikte gidiyor. Belirti: bir varyantta
+   temanin secicisi sepet butonunun altinda geri beliriyordu.
+
+   Sarmalayici <div id="shopify-section-..."> ise yerinde kaliyor -
+   Section Rendering onun ICINI degistiriyor, kendisini degil. Sinif
+   oraya konunca gizleme her yeniden cizimden sagliyor.
+
+   Kapsam bilerek dar: yalnizca KATMANIN ICINDE bulundugu bolum. Diger
+   bolumlerdeki (onerilen urunler, paket bileseni) secicilere
+   dokunulmuyor. Katmanin kendi karolarini da kapsamamasi icin secici
+   ad bazli: variant-picker elemani ve QuantityForm bolumu. */
+.tt-ts-native-kapali variant-picker,
+.tt-ts-native-kapali [id^="QuantityForm-"] { display: none !important; }
+
 @media (hover: hover) and (pointer: fine) {
   .tt-ts-sepet:hover { opacity: .88; }
   .tt-ts-seg-h[aria-checked="false"]:hover { color: var(--tt-ts-ink); }

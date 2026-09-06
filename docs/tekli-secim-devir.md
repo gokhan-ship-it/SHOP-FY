@@ -309,6 +309,30 @@ düğmesi için bizim metnimiz / temanın metni / metin eşti mi / etiket var m�
 segment eksiksiz sayıldı mı. `?ttayar=1` ile aynı mantık; müşteri hiçbir koşulda
 görmüyor.
 
+## Gizlemenin doğru yeri: bölüm sarmalayıcısı
+
+`tt-ts-native-gizli` sınıfını `<variant-picker>` elemanının **üzerine** koymak
+yetmiyor. Tema varyant değişince bölümün içeriğini baştan yazıyor: seçici yeni
+bir düğüm oluyor ve sınıf onunla birlikte gidiyor. Belirti: bir varyantta
+temanın seçicisi sepet butonunun altında geri beliriyor, sonraki tıklamada
+tekrar kayboluyordu — kullanıcıya "çelikte var, gümüşte yok" gibi görünüyor.
+
+Sarmalayıcı `<div id="shopify-section-…">` ise **yerinde kalıyor**: Section
+Rendering onun *içini* değiştiriyor, kendisini değil. Sınıf oraya konuyor:
+
+```css
+.tt-ts-native-kapali variant-picker,
+.tt-ts-native-kapali [id^="QuantityForm-"] { display: none !important; }
+```
+
+Kapsam bilerek dar — yalnızca katmanın içinde bulunduğu bölüm. Diğer
+bölümlerdeki (önerilen ürünler, paket bileşeni) seçicilere dokunulmuyor.
+
+`sayfa.py acik --yeni` temanın seçici **elemanını** her değişimde baştan
+yaratıyor (temiz class listesi). `kalici.mjs` dört varyant değişimi boyunca
+seçicinin ve adet bölümünün gizli kaldığını ölçüyor; önceki sürümle bu test
+kırmızı ve belirtiyi birebir üretiyor.
+
 ## Adet seçici
 
 Katmanda adet kavramı yok (tek ürün ya da iki ürünlük set) ve ekranda

@@ -833,6 +833,14 @@
        Ayri fonksiyon, cunku gec kurulumda tekrar cagriliyor. */
     function nativeGizle() {
       KOK.setAttribute('data-tt-ts-hazir', '');
+      /* ASIL gizleme burada: sinif bolum SARMALAYICISINA konuyor.
+         Elemanin kendisine konan sinif, tema bolumu bastan cizince
+         yeni secici dugumuyle birlikte kayboluyordu; sarmalayici ise
+         yerinde kaliyor (Section Rendering onun icini degistiriyor).
+         Belirti: bir varyantta temanin secicisi sepet butonunun altinda
+         geri beliriyordu. */
+      var bolum = KOK.closest('[id^="shopify-section-"]');
+      if (bolum) bolum.classList.add('tt-ts-native-kapali');
       var s = seciciEl();
       if (s) s.classList.add('tt-ts-native-gizli');
       if (form) {
