@@ -34,20 +34,20 @@
   @param {string} [fark_link] - Karsilastirma hedefi
   @param {string} [hammadde_etiket] - Segmentin ustundeki etiket
   @param {string} [tek_ust] - 1. kartin ust satiri
-  @param {string} [tek_alt] - 1. kartin alt satiri
+  @param {string} [tek_alt1] - 1. kartin adet satiri (tek_alt2: yukleme satiri)
   @param {string} [set_ust] - 2. kartin ust satiri
-  @param {string} [set_alt] - 2. kartin alt satiri
+  @param {string} [set_alt1] - 2. kartin adet satiri (set_alt2: yukleme satiri)
   @param {string} [set_rozet] - 2. kartin ust kenarindaki rozet
-  @param {string} [tarih_not] - Takvim ikonlu bilgi satiri
   @param {string} [secim_baslik] - "Ikinci urunu sec" metni
+  @param {string} [cift_ust] - Ikinci urun kontrolunun ust satiri
+  @param {string} [cift_ac] - Kontrol pilinin kapaliyken metni
+  @param {string} [cift_kapat] - Kontrol pilinin acikken metni
   @param {string} [kadin_koleksiyon] - Kadin urunleri koleksiyonu
   @param {string} [erkek_koleksiyon] - Erkek urunleri koleksiyonu
   @param {number} [indirim] - Ikinci uruna uygulanan indirim yuzdesi
   @param {string} [sepet_metin] - Sepete ekle butonunun metni
   @param {string} [tek_adim1_bas] - Tek kapsul 1. adim basligi (digerleri: tek_adim2_*, tek_adim3_*)
-  @param {string} [set_blok_baslik] - Ikili set aciklama blogunun basligi
   @param {string} [set_adim1_bas] - Ikili set 1. adim basligi (digerleri: set_adim2_*, set_adim3_*)
-  @param {string} [sonsuz_metin] - Sonsuzluk satirinin metni
   @param {number} [karo_zoom] - Karo fotograflarinin buyutme carpani (1 = kirpma yok)
   @param {number} [karo_kaydir] - Fotografin gorunen dikey bolgesi (0 = orta, - = alt, + = ust)
 
@@ -62,12 +62,21 @@
   assign t_fark_link = fark_link | default: '/pages/couple-daha-fazla-bilgi-al'
   assign t_hm = hammadde_etiket | default: 'HAM MADDE'
   assign t_tek_ust = tek_ust | default: 'Belirlediğim tarihte açılsın'
-  assign t_tek_alt = tek_alt | default: '1 ürün · İçeriği sen yüklersin'
+  comment
+    Adet ve yukleme bilgisi AYRI satirlarda. Tek satirda nokta ile
+    ayrilinca ikili sette tasarruf tutariyla ayni satira sikisiyordu;
+    iki kart da ayni kalibi kullaniyor.
+  endcomment
+  assign t_tek_alt1 = tek_alt1 | default: '1 ürün'
+  assign t_tek_alt2 = tek_alt2 | default: 'İçeriği sen yüklersin'
   assign t_set_ust = set_ust | default: 'Buluştuğumuzda açılsın'
-  assign t_set_alt = set_alt | default: '2 ürün · İkiniz de yüklersiniz'
+  assign t_set_alt1 = set_alt1 | default: '2 ürün'
+  assign t_set_alt2 = set_alt2 | default: 'İçeriği ikiniz yüklersiniz'
   assign t_rozet = set_rozet | default: 'İkincisi yarı fiyatına'
-  assign t_not = tarih_not | default: 'İsterseniz ikili seti de belirli bir tarihe kurabilirsiniz.'
   assign t_secim = secim_baslik | default: 'İkinci ürünü seç'
+  assign t_cift_ust = cift_ust | default: 'İkinci ürün'
+  assign t_cift_ac = cift_ac | default: 'Değiştir'
+  assign t_cift_kapat = cift_kapat | default: 'Kapat'
   assign t_sepet = sepet_metin | default: 'Sepete ekle'
   assign p_indirim = indirim | default: 50
   assign k_kadin = kadin_koleksiyon | default: 'zaman-kapsulu-kolyeler'
@@ -108,14 +117,18 @@
   assign t_tek_a3b = tek_adim3_bas | default: 'Vakti gelince açılsın'
   assign t_tek_a3a = tek_adim3_alt | default: 'O güne kadar kilitli kalır, kimse göremez.'
 
-  assign t_set_blok = set_blok_baslik | default: 'Couple Zaman Kapsülüne dönüşür'
   assign t_set_a1b = set_adim1_bas | default: 'Ortak kapsüle yükleyin'
   assign t_set_a1a = set_adim1_alt | default: 'İkiniz de kendi telefonunuzdan aynı kapsüle içerik eklersiniz.'
   assign t_set_a2b = set_adim2_bas | default: 'Buluşana kadar kilitli kalır'
   assign t_set_a2a = set_adim2_alt | default: 'Karşı tarafın ne yüklediğini göremezsiniz.'
   assign t_set_a3b = set_adim3_bas | default: 'Buluşunca birlikte açılır'
-  assign t_set_a3a = set_adim3_alt | default: 'İki kapsül yan yana geldiğinde içerik ikinize de açılır. Uzaklaştığınızda kilitlenir.'
-  assign t_sonsuz = sonsuz_metin | default: 'Buluştukça kapsülünüz büyür, ilişkinizin hikâyesi birikir.'
+  comment
+    Ucuncu adimin aciklamasi, kaldirilan iki ogenin bilgisini tasiyor:
+    sonsuzluk kutusundaki "bulustukca birikir" fikri ve kilitlenme.
+    Blok basligi, sonsuzluk kutusu ve takvim notu kartin uzamasina yol
+    aciyordu; bilgi kaybolmasin diye buraya cekildi.
+  endcomment
+  assign t_set_a3a = set_adim3_alt | default: 'Uzaklaştığınızda tekrar kilitlenir. Buluştukça hikâyeniz birikir.'
 
   assign p_zoom = karo_zoom | default: 0.99
   assign p_kaydir = karo_kaydir | default: -30
@@ -205,8 +218,9 @@
             <span class="tt-ts-ust-sag" data-tt-ts-tek-fiyat>{{ v_secili.price | money }}</span>
           </span>
           <span class="tt-ts-alt">
-            <span class="tt-ts-alt-sol">{{ t_tek_alt }}</span>
+            <span class="tt-ts-alt-sol">{{ t_tek_alt1 }}</span>
           </span>
+          <span class="tt-ts-alt2">{{ t_tek_alt2 }}</span>
         </span>
       </div>
 
@@ -260,35 +274,60 @@
             <span class="tt-ts-ust-sag" data-tt-ts-set-fiyat></span>
           </span>
           <span class="tt-ts-alt">
-            <span class="tt-ts-alt-sol">{{ t_set_alt }}</span>
+            <span class="tt-ts-alt-sol">{{ t_set_alt1 }}</span>
             <span class="tt-ts-alt-sag" data-tt-ts-set-eski></span>
           </span>
+          <span class="tt-ts-alt2">{{ t_set_alt2 }}</span>
 
-          {%- comment -%}
-            Cift gorseli satiri: gosterilen toplamin HANGI iki urunden
-            olustugunu aciklar. Kart secili olmasa da gorunuyor, cunku
-            aciklamasi gereken tutar da secili olmadan gorunuyor.
-          {%- endcomment -%}
-          <span class="tt-ts-cift">
-            <span class="tt-ts-cift-gorseller">
-              <img class="tt-ts-cift-g" src="{{ product.featured_image | image_url: width: 120 }}"
-                   alt="{{ product.title | escape }}" loading="lazy" width="34" height="34">
-              <img class="tt-ts-cift-g tt-ts-cift-g--iki" data-tt-ts-cift-g2
-                   src="" alt="" loading="lazy" width="34" height="34">
-            </span>
-            <span class="tt-ts-cift-ad" data-tt-ts-cift-ad></span>
-            <button type="button" class="tt-ts-cift-link" data-tt-ts-cift-degistir>Değiştir</button>
-          </span>
         </span>
       </div>
 
       {%- comment -%}
-        Aciklama blogu her zaman gorunur (tek kartla ayni yapi): blok
-        basligi, uc adim ve sonsuzluk satiri AYNI gri kutunun icinde.
+        IKINCI URUN KONTROLU
+        Eskiden bu satir "iki gorsel + A + B + Degistir linki" idi ve
+        yalnizca link tiklanabiliyordu; dokunma alani bir metin kadardi.
+        Artik SATIRIN TAMAMI tek bir buton: gorsele, metne ya da pile
+        basmak ayni seyi yapiyor.
+
+        Kartin dogrudan cocugu, .tt-ts-icerik'in ICINDE DEGIL: kontrol
+        radyonun SOL kenarindan basliyor, yani metin sutunundan daha
+        genis. Icerigin icinde kalsaydi radyo kadar saga kayardi.
+
+        Kart secili olmasa da gorunuyor: gosterilen tutarin hangi iki
+        urunden olustugunu acikliyor. Secili degilken basilirsa once
+        kart seciliyor, sonra secici aciliyor (JS).
+      {%- endcomment -%}
+      <button type="button" class="tt-ts-cift" data-tt-ts-cift
+              aria-expanded="false" aria-controls="ttIkinci-{{ section.id }}-{{ product.id }}">
+        <span class="tt-ts-cift-gorseller">
+          <img class="tt-ts-cift-g" src="{{ product.featured_image | image_url: width: 120 }}"
+               alt="" loading="lazy" width="34" height="34">
+          <img class="tt-ts-cift-g tt-ts-cift-g--iki" data-tt-ts-cift-g2
+               src="" alt="" loading="lazy" width="34" height="34">
+        </span>
+        <span class="tt-ts-cift-metin">
+          <span class="tt-ts-cift-ust">{{ t_cift_ust }}</span>
+          <span class="tt-ts-cift-ad" data-tt-ts-cift-ad></span>
+        </span>
+        <span class="tt-ts-cift-pil">
+          <span data-tt-ts-cift-pil-metin>{{ t_cift_ac }}</span>
+          {%- comment -%}
+            Chevron ASAGI bakiyor: secici ayni kartin icinde ASAGIDA
+            aciliyor, baska bir sayfaya gitmiyor. Acikken JS ok'u
+            ceviriyor ve metni "Kapat" yapiyor.
+          {%- endcomment -%}
+          <svg class="tt-ts-cift-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
+        </span>
+      </button>
+
+      {%- comment -%}
+        Aciklama blogu her zaman gorunur (tek kartla ayni yapi), ama
+        secili olmayan kartta sade bicimde: yalnizca ikon + adim adi.
       {%- endcomment -%}
       <div class="tt-ts-aciklama">
         <div class="tt-ts-ayrac"></div>
-        <p class="tt-ts-blok-baslik">{{ t_set_blok }}</p>
         <div class="tt-ts-adimlar" role="list">
           <div class="tt-ts-adim" role="listitem">
             <span class="tt-ts-adim-cip"><svg class="tt-ts-adim-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 9.4a13.5 13.5 0 0 1 18 0"/><path d="M6.2 12.8a9 9 0 0 1 11.6 0"/><path d="M9 16.1a5 5 0 0 1 6 0"/><circle cx="12" cy="19.3" r=".9"/></svg></span>
@@ -313,24 +352,6 @@
           </div>
         </div>
 
-        {%- comment -%}
-          Sonsuzluk satiri kendi yuzeyinde. Adimlar artik gri kutuda degil
-          (zaman cizelgesi cipleriyle gruplaniyor), bu yuzden iki gri kutu
-          yan yana gelme sorunu kalmadi.
-
-          stroke-width 1.6 degil 2.13: viewBox 24 birim, ikon 18px
-          ciziliyor, yani cizgi 24/18 orani kadar inceliyor. Ekranda
-          gercekten 1.6px olmasi icin viewBox degeri 1.6*24/18 = 2.13.
-        {%- endcomment -%}
-        <div class="tt-ts-sonsuz" data-tt-ts-sonsuz>
-          <svg class="tt-ts-sonsuz-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.13" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7.4 8.1c2.5 0 3.4 1.6 4.6 3.9 1.2 2.3 2.1 3.9 4.6 3.9a3.9 3.9 0 0 0 0-7.8c-2.5 0-3.4 1.6-4.6 3.9-1.2 2.3-2.1 3.9-4.6 3.9a3.9 3.9 0 0 1 0-7.8Z"/></svg>
-          <span class="tt-ts-sonsuz-metin">{{ t_sonsuz }}</span>
-        </div>
-
-        <p class="tt-ts-not">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-          <span>{{ t_not }}</span>
-        </p>
       </div>
 
       {%- comment -%}
@@ -338,7 +359,7 @@
         seciliyken gorunuyor. Gorunurlugu CSS yonetiyor (kartin
         aria-checked degeri), JS her modda hesaplamaya devam ediyor.
       {%- endcomment -%}
-      <div class="tt-ts-ikinci">
+      <div class="tt-ts-ikinci" id="ttIkinci-{{ section.id }}-{{ product.id }}">
         <div class="tt-ts-ayrac"></div>
 
         <div class="tt-ts-secsatir">
@@ -412,6 +433,8 @@
         "urun": {{ product.title | json }},
         "indirim": {{ p_indirim | json }},
         "sepetMetin": {{ t_sepet | json }},
+        "ciftAc": {{ t_cift_ac | json }},
+        "ciftKapat": {{ t_cift_kapat | json }},
         "varyantlar": [
           {%- for v in product.variants -%}
             {"id": {{ v.id }}, "deger": {{ v.options[0] | json }}, "kurus": {{ v.price }}, "stok": {{ v.available | json }}}{% unless forloop.last %},{% endunless %}

@@ -84,7 +84,6 @@
   .tt-ts-ink-2, .tt-ts-alt-sol, .tt-ts-etiket { opacity: .62; }
   .tt-ts-seg { outline: var(--tt-ts-hair) solid currentColor; }
   .tt-ts { --tt-ts-line-kart: currentColor; }
-  .tt-ts-sonsuz { outline: var(--tt-ts-hair) solid currentColor; background: transparent; }
   .tt-ts-adim-cip { outline: var(--tt-ts-hair) solid currentColor; background: transparent; }
 }
 
@@ -263,14 +262,27 @@
    tutar uzuyor ve tek satirda kalmasi sart, yer basliktan aliniyor. */
 .tt-ts-ust-sol { min-width: 0; }
 .tt-ts-ust-sag { flex: 0 0 auto; white-space: nowrap; }
+/* Iki alt satir, iki kartta da ayni kalip:
+     satir 1  adet (ikili sette saginda tasarruf tutari)
+     satir 2  yukleme bilgisi
+   Tek satirda nokta ile ayrilinca ikili sette tasarruf tutariyla ayni
+   satira sikisiyordu; ikiye bolununce iki kart da ayni yuksekligi
+   tutuyor ve tasarruf tutarinin yeri sabit kaliyor. */
 .tt-ts-alt {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--tt-ts-s3);
-  margin-top: 2px;
+  margin-top: 4px;
 }
 .tt-ts-alt-sol { font-size: 13px; line-height: 1.5; color: var(--tt-ts-ink-2); }
+.tt-ts-alt2 {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tt-ts-ink-2);
+}
 /* Eskiden burada indirimsiz toplam USTU CIZILI duruyordu. Ustu cizili
    tutar musteriye "ne odemiyorsun"u dolayli anlatiyor; kazancin kendisi
    yaziliyor artik: "1.149,50 TL tasarruf". Tutar sabit degil, JS her
@@ -285,16 +297,30 @@
   white-space: nowrap;
 }
 
-/* --- Cift gorseli satiri: toplamin hangi iki urunden olustugu --- */
-/* Bu satir kart basligi ve alt satirla AYNI sol hizadan basliyor:
-   ucu de .tt-ts-icerik'in (radyonun sagindaki metin sutunu) cocugu.
-   Sol bosluklar acikca sifir yaziliyor - hiza tesaduf degil, kural. */
-.tt-ts-cift {
+/* --- IKINCI URUN KONTROLU ---
+   Tek parca, satirin TAMAMI tiklanabilir. Eskiden yalnizca "Degistir"
+   linki tiklanabiliyordu; dokunma alani bir metin genisligindeydi ve
+   gorsellere ya da urun adina basmak hicbir sey yapmiyordu.
+
+   Kartin dogrudan cocugu, .tt-ts-icerik'in icinde DEGIL: radyonun SOL
+   kenarindan basliyor. Icerigin icinde kalsaydi radyo genisligi kadar
+   saga kayardi ve kartin sag ic kenarina yetismezdi. */
+.tt-ts[data-tt-ts] .tt-ts-cift {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 10px 0 0;
-  padding: 0;
+  width: 100%;
+  margin: var(--tt-ts-s3) 0 0;
+  padding: var(--tt-ts-s2);
+  border: var(--tt-ts-hair) solid var(--tt-ts-line);
+  border-radius: 10px;
+  /* Kart zemininden bir tik farkli: satirin tiklanabilir bir kutu
+     oldugu, cerceve okunmasa bile anlasiliyor. */
+  background: var(--tt-ts-kutu);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 .tt-ts-cift-gorseller {
   flex: 0 0 auto;
@@ -317,9 +343,16 @@
    sifirladigi icin bu kural da ayni onekle yaziliyor. */
 .tt-ts[data-tt-ts] .tt-ts-cift-g--iki { margin-left: -8px; }
 .tt-ts-cift-g--iki[src=""] { display: none; }
+
+.tt-ts-cift-metin { flex: 1 1 auto; min-width: 0; }
+.tt-ts-cift-ust {
+  display: block;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--tt-ts-ink-2);
+}
 .tt-ts-cift-ad {
-  flex: 1 1 auto;
-  min-width: 0;
+  display: block;
   font-size: 13px;
   line-height: 1.3;
   color: var(--tt-ts-ink);
@@ -327,18 +360,32 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.tt-ts-cift-link {
+
+/* Pil BUTON DEGIL, span: satirin tamami zaten bir buton ve ic ice buton
+   gecersiz HTML olurdu. Gorsel olarak basilabilir duruyor, islevi de
+   satirinkiyle ayni - nereye basilirsa basilsin ayni sey oluyor. */
+.tt-ts-cift-pil {
   flex: 0 0 auto;
-  border: 0;
-  padding: 0;
-  background: none;
-  color: var(--tt-ts-ink-2);
-  font: inherit;
-  font-size: 13px;
-  line-height: 1.3;
-  text-decoration: underline;
-  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
+  border: var(--tt-ts-hair) solid var(--tt-ts-line);
+  border-radius: var(--tt-ts-pill);
+  background: var(--tt-ts-zemin);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
 }
+.tt-ts-cift-ok {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  transition: transform 160ms ease;
+}
+/* Acikken ok yukari doner: bir sonraki dokunusun kapatacagi okunuyor. */
+.tt-ts-cift[aria-expanded="true"] .tt-ts-cift-ok { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .tt-ts-cift-ok { transition: none; } }
 
 /* ------------------------------------------------------------------
    IKINCI URUN BOLUMU
@@ -348,10 +395,15 @@
    sabit duruyor, ama urun secimi yalnizca ikili set seciliyken anlamli. */
 .tt-ts-aciklama { display: block; }
 .tt-ts-ikinci { display: none; }
-/* [data-tt-ts-js] kosulu: snippet ikili karti SECILI basiyor (varsayilan
-   o). JS calismazsa serit bos kalirdi; bu kosul o durumda bolumu hic
-   gostermiyor. JS calistiginda kurulumun ilk isi bu isareti koymak. */
-.tt-ts[data-tt-ts-js] .tt-ts-kart[aria-checked="true"] .tt-ts-ikinci { display: block; }
+/* Iki kosul birden:
+   [data-tt-ts-js]  snippet ikili karti SECILI basiyor (varsayilan o).
+                    JS calismazsa serit bos kalirdi; bu kosul o durumda
+                    bolumu hic gostermiyor.
+   .tt-ts-kart--acik  ikinci urun kontrolunun acik/kapali durumu. Secici
+                    varsayilan olarak KAPALI: kart zaten uzun ve kontrol
+                    satiri secili urunu gosterdigi icin listeyi surekli
+                    acik tutmanin karsiligi yok. */
+.tt-ts[data-tt-ts-js] .tt-ts-kart[aria-checked="true"].tt-ts-kart--acik .tt-ts-ikinci { display: block; }
 
 /* --- Aciklama adimlari: iki kartta da ayni olcu, ayni sol hiza ---
    ul/li DEGIL, role tasiyan div. Sebep olculdu: katman temanin .rte
@@ -367,32 +419,80 @@
      yetismez ya da tasar. */
   --tt-ts-adim-ara: var(--tt-ts-s4);
 }
+/* --- IKI GORUNUM, TEK MARKUP ---
+   Adim listesi iki bicimde goruntuleniyor ve HTML iki kez yazilmiyor:
+   ayni ogeler kartin aria-checked degerine gore farkli diziliyor.
+
+   Ikinci bir "sade" markup yazmak da mumkundu ama iki maliyeti var:
+   ayni metinler DOM'da iki kez durur (ekran okuyucu icin gurultu) ve
+   metin degistiginde iki yeri birden guncellemek gerekir. Burada tek
+   kaynak var; sade gorunum yalnizca bir CSS katmani.
+
+   TABAN = SADE (secili olmayan kart): ikon + adim adi, yan yana
+   etiketler, sigmayan alt satira sariyor. Aciklama cumlesi gizli.
+   USTUNE YAZAN = TAM (secili kart): daire icinde ikon, dikey baglanti
+   cizgisi, baslik + aciklama. */
 .tt-ts-adimlar {
-  display: grid;
-  gap: var(--tt-ts-adim-ara);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
   margin: 0;
   padding: 0;
 }
-.tt-ts-adim { display: flex; align-items: flex-start; gap: var(--tt-ts-s3); }
-
-/* Ikon dolu bir daire icinde; daireler dikey cizgiyle baglanip zaman
-   cizelgesi olusturuyor. Adimlarin bir grup oldugu gri kutu olmadan da
-   okunuyor, uc satir dagilmis gibi durmuyor. */
+.tt-ts-adim {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
 .tt-ts-adim-cip {
   position: relative;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+}
+.tt-ts-adim-ikon {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  color: var(--tt-ts-ink-2);
+}
+.tt-ts-adim-metin { min-width: 0; }
+.tt-ts-adim-bas {
+  display: block;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--tt-ts-ink-2);
+}
+/* Sade gorunumde aciklama cumlesi yok. */
+.tt-ts-adim-alt { display: none; }
+
+/* --- TAM GORUNUM: yalnizca secili kartta --- */
+.tt-ts-kart[aria-checked="true"] .tt-ts-adimlar {
+  display: grid;
+  gap: var(--tt-ts-adim-ara);
+}
+.tt-ts-kart[aria-checked="true"] .tt-ts-adim { align-items: flex-start; gap: var(--tt-ts-s3); }
+/* Ikon dolu bir daire icinde; daireler dikey cizgiyle baglanip zaman
+   cizelgesi olusturuyor. Adimlarin bir grup oldugu gri kutu olmadan da
+   okunuyor, uc satir dagilmis gibi durmuyor. */
+.tt-ts-kart[aria-checked="true"] .tt-ts-adim-cip {
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--tt-ts-kutu);
 }
 /* Baglanti cizgisi: her cipin USTUNDEN bir onceki cipe uzaniyor.
    Secici "adim + adim" oldugu icin ilk adim disarida kaliyor, yani
-   listenin ustunde bosta bir cizgi ucu olusmuyor. */
-.tt-ts-adim + .tt-ts-adim .tt-ts-adim-cip::before {
+   listenin ustunde bosta bir cizgi ucu olusmuyor. Sade gorunumde bu
+   kural hic uygulanmiyor - etiketler yan yana, birlestirecek bir sey
+   yok. */
+.tt-ts-kart[aria-checked="true"] .tt-ts-adim + .tt-ts-adim .tt-ts-adim-cip::before {
   content: "";
   position: absolute;
   left: 50%;
@@ -402,73 +502,27 @@
   transform: translateX(-50%);
   background: var(--tt-ts-line);
 }
-.tt-ts-adim-ikon {
-  flex: 0 0 auto;
+.tt-ts-kart[aria-checked="true"] .tt-ts-adim-ikon {
   width: 18px;
   height: 18px;
   color: var(--tt-ts-ink);
 }
-.tt-ts-adim-metin { min-width: 0; }
-.tt-ts-adim-bas {
-  display: block;
+.tt-ts-kart[aria-checked="true"] .tt-ts-adim-bas {
   font-size: 13px;
   line-height: 1.45;
   color: var(--tt-ts-ink);
 }
-.tt-ts-adim-alt {
+.tt-ts-kart[aria-checked="true"] .tt-ts-adim-alt {
   display: block;
   font-size: 12px;
   line-height: 1.45;
   color: var(--tt-ts-ink-2);
 }
-.tt-ts[data-tt-ts] .tt-ts-blok-baslik {
-  margin: 0 0 var(--tt-ts-s3);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.45;
-  color: var(--tt-ts-ink);
-}
-
-/* --- Sonsuzluk satiri: kendi yuzeyinde --- */
-.tt-ts-sonsuz {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: var(--tt-ts-s4);
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--tt-ts-kutu);
-}
-.tt-ts-sonsuz-ikon {
-  flex: 0 0 auto;
-  width: 18px;
-  height: 18px;
-  margin-top: 1px;
-  color: var(--tt-ts-ink);
-}
-.tt-ts-sonsuz-metin {
-  min-width: 0;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--tt-ts-ink);
-}
-
 .tt-ts-ayrac {
   height: var(--tt-ts-hair);
   margin: var(--tt-ts-s4) 0;
   background: var(--tt-ts-line);
 }
-.tt-ts[data-tt-ts] .tt-ts-not {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--tt-ts-s2);
-  margin: var(--tt-ts-s3) 0 0;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--tt-ts-ink-2);
-}
-.tt-ts-not svg { flex: 0 0 auto; width: 15px; height: 15px; margin-top: 1px; }
-
 .tt-ts-secsatir {
   display: flex;
   align-items: center;

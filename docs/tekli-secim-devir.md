@@ -135,20 +135,49 @@ kutuyu basıklaştırmak (`karo_oran` büyütmek) gerekiyor.
 
 ## Açıklama blokları
 
-Her iki kartın açıklama bloğu **sürekli açık**; seçime bağlı açılıp kapanan tek
-şey ikinci ürün seçicisi (`.tt-ts-ikinci`, görünürlüğü kartın `aria-checked`
-değerine bağlı CSS ile). Amaç iki modun tek bakışta karşılaştırılabilmesi.
+Her iki kartın açıklama bloğu **sürekli görünür**; açılıp kapanan tek şey ikinci
+ürün seçicisi (`.tt-ts-ikinci`). Amaç iki modun tek bakışta
+karşılaştırılabilmesi. Seçili olmayan kart bloğu sade biçimde gösteriyor
+(aşağıya bakın).
 
-Ortak yapı, iki kartta da birebir aynı ve testle doğrulanıyor:
-0.5px ayırıcı (üstü/altı 14px) → adımlar (aralarında 14px) → her adımda 34px
-yuvarlak çip (içinde 18px ikon) + 12px boşluk + 13px başlık / 12px açıklama,
-satır yüksekliği 1.45. İkili sette ek olarak: blok başlığı, sonsuzluk kutusu
-(8px köşe, 10px 12px iç boşluk, üstünde 14px), takvim notu.
+### İKİ GÖRÜNÜM, TEK MARKUP
 
-Sonsuzluk kutusunun zemini `--tt-ts-kutu`: metin renginin %7'si sayfa zeminine
-karıştırılıyor. Açık temada karttan bir tık koyu, koyu temada bir tık açık
-çıkıyor — yön iki temada da kendiliğinden doğru. Sabit gri kullanılsaydı koyu
-temada karttan koyu görünürdü.
+Adım listesi iki biçimde görüntüleniyor ve HTML **iki kez yazılmıyor**: aynı
+öğeler kartın `aria-checked` değerine göre farklı diziliyor.
+
+- **TABAN = sade** (seçili olmayan kart): ikon + adım adı, yan yana etiketler,
+  sığmayan alt satıra sarıyor. 15px ikon, 12px etiket, ikisi de
+  `--tt-ts-ink-2`; etiketler arası 14px yatay / 6px dikey. Açıklama cümlesi
+  (`.tt-ts-adim-alt`) `display:none`.
+- **ÜSTÜNE YAZAN = tam** (seçili kart): 30px yuvarlak çip (içinde 18px ikon),
+  çipleri birleştiren dikey bağlantı çizgisi, 13px başlık + 12px açıklama,
+  satır yüksekliği 1.45, adımlar arası 14px.
+
+Kart değişince iki görünüm yer değiştiriyor; DOM'a hiç dokunulmuyor, yalnızca
+CSS katmanı devreye giriyor.
+
+**Neden ikinci bir "sade" markup yazılmadı:** aynı metinler DOM'da iki kez
+dururdu (ekran okuyucu için gürültü) ve metin değiştiğinde iki yeri birden
+güncellemek gerekirdi. Tek kaynak var.
+
+### Kaldırılan üç öğe (ikili set kartı)
+
+Blok başlığı ("Couple Zaman Kapsülüne dönüşür"), sonsuzluk kutusu ve takvim
+notu satırı kaldırıldı — üçü de kartı uzatıyor, bilgiyi tekrar ediyordu.
+Taşıdıkları anlam kaybolmasın diye üçüncü adımın açıklaması genişletildi:
+"Uzaklaştığınızda tekrar kilitlenir. Buluştukça hikâyeniz birikir."
+(`set_adim3_alt` parametresi). CSS'teki `.tt-ts-blok-baslik`, `.tt-ts-sonsuz*`
+ve `.tt-ts-not*` kuralları da silindi.
+
+### Alt satırlar: iki satır, iki kartta da aynı kalıp
+
+    satır 1   adet ("1 ürün" / "2 ürün"; ikili sette sağında tasarruf tutarı)
+    satır 2   yükleme bilgisi ("İçeriği sen yüklersin" / "İçeriği ikiniz yüklersiniz")
+
+13px, `--tt-ts-ink-2`, aralarında 2px, başlıktan sonra 4px. Tek satırda nokta
+ile ayrılınca ikili sette tasarruf tutarıyla aynı satıra sıkışıyordu; ikiye
+bölününce iki kart da aynı yüksekliği tutuyor ve tasarruf tutarının yeri sabit
+kalıyor.
 
 ## İkinci ürün seçici: yatay şerit
 
@@ -164,6 +193,55 @@ sınıfı JS kaydırma durumuna göre ekliyor). İşaret her genişlikte aynı.
 
 Sıralama satırı şeridin altında. Alt sayfa (bottom sheet) 3 sütunlu grid
 olarak kalıyor.
+
+## İkinci ürün kontrolü: satırın tamamı tek buton
+
+Eskiden bu satır "iki görsel + A + B + Değiştir linki" idi ve **yalnızca link**
+tıklanabiliyordu; dokunma alanı bir metin genişliğindeydi. Artık satırın tamamı
+tek bir `<button data-tt-ts-cift>`: görsele, metne ya da pile basmak aynı şeyi
+yapıyor.
+
+Ölçüler: 8px iç boşluk, 10px köşe, hairline çerçeve, zemin `--tt-ts-kutu`
+(kart zemininden bir tık farklı, tıklanabilir bir kutu olduğu çerçeve okunmasa
+da anlaşılıyor). Solda 34px'lik iki görsel, ikincisi birincinin üstüne 8px
+biniyor. Ortada 11px üst satır ("İkinci ürün") + 13px seçili ürün adı
+(taşarsa üç noktayla kırpılıyor). Sağda pil: 7px 12px, tam yuvarlak, 12px metin
++ 14px aşağı bakan chevron.
+
+**Kartın doğrudan çocuğu, `.tt-ts-icerik`'in içinde DEĞİL:** kontrol radyonun
+**sol kenarından** başlıyor, yani metin sütunundan geniş. İçeriğin içinde
+kalsaydı radyo genişliği kadar sağa kayardı.
+
+Davranış (`ikinciAcik`, `DURUM` içinde saklanıyor, **varsayılan kapalı**):
+
+| kart seçili mi | seçici | tıklayınca |
+|---|---|---|
+| hayır | kapalı | önce kart seçiliyor, sonra seçici açılıyor |
+| evet | kapalı | açılıyor |
+| evet | açık | kapanıyor |
+
+Pil metni "Değiştir" ↔ "Kapat" (`cift_ac` / `cift_kapat` parametreleri, veri
+adasından geliyor; anahtar eksikse snippet'te basılı duran metin korunuyor,
+düğme boş kalmıyor). Chevron `aria-expanded="true"` iken 180° dönüyor.
+
+`stopPropagation` şart: buton kartın içinde ve kartın kendi tıklama dinleyicisi
+var; durdurulmazsa kart seçimi bizim açtığımız seçicinin üstüne yeniden çizerdi.
+
+Seçicinin görünürlüğü artık **iki koşula** bağlı:
+`.tt-ts[data-tt-ts-js] .tt-ts-kart[aria-checked="true"].tt-ts-kart--acik .tt-ts-ikinci`.
+
+### TUZAK: şerit `display:none` iken ölçülüyordu
+
+`seritDurum()` `scrollWidth`e bakıp "daha var" solmasını ekliyor. Ama seçici
+kapalıyken şerit gizli ve `scrollWidth` **0** dönüyor — solma hiç eklenmiyordu.
+Belirti: seçici açılınca sağdaki karo kırpık görünüyor ama solma yok, yani
+kaydırılabileceği belli olmuyor.
+
+İki taraflı düzeltildi:
+
+1. `ciz()` içinde `.tt-ts-kart--acik` sınıfı `gridCiz()`'den **önce** uygulanıyor.
+2. `seritDurum()` bir kare sonra (`requestAnimationFrame`) tekrar ölçüyor —
+   görünürlük aynı karede değiştiği için ilk ölçüm geçişe denk gelebiliyor.
 
 ## TUZAK: katman `.rte` içinde render ediliyor
 
@@ -186,8 +264,8 @@ kılıkta vurdu:
 2. `img` → ikili set kartındaki 34px'lik iki ürün görseli alta ve üste 48px'er
    boşluk alıyor; şerit karolarının görselleri de aynı şekilde. ("Eight Stars
    satırının altı ve üstü çok boşluklu.")
-3. `p` → bölüm etiketleri, blok başlığı, takvim notu ve özet 16px fazladan
-   boşluk alıyor.
+3. `p` → bölüm etiketleri ve özet 16px fazladan boşluk alıyor. (Blok başlığı
+   ve takvim notu o sırada hâlâ vardı; ikisi de sonradan kaldırıldı.)
 
 **Çözüm iki katmanlı:**
 
@@ -203,7 +281,7 @@ kılıkta vurdu:
 
   Kök elemanı hem sınıf hem öznitelikle yazılınca özgüllük (0,2,1) oluyor ve
   `.rte`'ninkini geçiyor. Kendi boşluk veren kurallarımız (`.tt-ts-etiket`,
-  `.tt-ts-blok-baslik`, `.tt-ts-not`, `.tt-ts-ozet`) aynı önekle yazılıyor
+  `.tt-ts-cift`, `.tt-ts-cift-g--iki`, `.tt-ts-ozet`) aynı önekle yazılıyor
   (0,3,0), yoksa kalkan onları da siler. **Katmana yeni bir `<p>` veya `<img>`
   eklerken:** boşluğu varsa kuralı `.tt-ts[data-tt-ts]` önekiyle yazın.
 
@@ -215,7 +293,10 @@ kırmızıya dönüyor — denendi).
 
 ## Adımlar: zaman çizelgesi çipleri
 
-Adımları saran gri kutu **kaldırıldı**. Her ikon 34px'lik yuvarlak bir çipin
+Bu bölüm **yalnızca seçili kartın tam görünümü** için geçerli; seçili olmayan
+kartta çip, daire ve bağlantı çizgisi yok (bkz. "İki görünüm, tek markup").
+
+Adımları saran gri kutu **kaldırıldı**. Her ikon 30px'lik yuvarlak bir çipin
 içinde (`.tt-ts-adim-cip`, zemin `--tt-ts-kutu`), çipler aralarındaki dikey
 hairline ile birbirine bağlanıyor — adımlar tek tek değil, bir akış olarak
 okunuyor. Çizgi `.tt-ts-adim + .tt-ts-adim .tt-ts-adim-cip::before` ile
@@ -227,8 +308,10 @@ iki ayrı sayı tutulsaydı ilk düzenlemede kopardı.
 Bunun kaçınılmaz sonucu: adım **metni** artık kart başlığıyla hizalı değil
 (77px'e karşı 61px), çünkü çip yuvarlaktan geniş. Referans tasarımda da böyle.
 
-Sonsuzluk satırı **kendi yüzeyinde** (`--tt-ts-kutu`). Adımlar artık gri kutuda
-olmadığı için "iki gri kutu yan yana gelirse sınır kaybolur" sorunu kalmadı.
+Çip zemini `--tt-ts-kutu`: metin renginin %7'si sayfa zeminine karıştırılıyor.
+Açık temada karttan bir tık koyu, koyu temada bir tık açık çıkıyor — yön iki
+temada da kendiliğinden doğru. Sabit gri kullanılsaydı koyu temada karttan koyu
+görünürdü.
 
 ## Tarayıcı sınırı: 0.5px ve 1.5px kenarlıklar
 
@@ -453,6 +536,30 @@ düzeltme: burası radyoyu her tıklamada yeniden buluyor, yukarısı katmanın
 kendisini yeniden kuruyor. Yalnızca birini yapmak belirtiyi taşıyor, kaldırmıyor
 — nitekim önce yalnızca bu yapıldı ve "gümüşe geçiliyor, çeliğe dönülmüyor"
 şikâyeti "hiç geçiş yapılmıyor"a döndü.
+
+## Temada `prefers-color-scheme` var mı? — TARAMA SONUCU
+
+Soruldu, tarandı, **hiçbir şey kaldırılmadı**.
+
+| dosya | `prefers-color-scheme` |
+|---|---|
+| `assets/theme.css` | **yok** (0 eşleşme) |
+| `snippets/css-variables.liquid` | **yok** — tek bir ayar-güdümlü palet üretiyor |
+| `assets/custom-tt.css` | yok |
+| `assets/tt-tekli-secim.css` | yok |
+| `assets/tt-tekli-secim.js` | yok |
+
+Yani temanın koyu/açık hali bir **mağaza ayarı**, işletim sistemi tercihi değil.
+Katman da bu yüzden `prefers-color-scheme` kullanmıyor: `tt-tekli-secim.js`
+sayfanın gerçek zeminini `getComputedStyle` ile okuyup bağıl parlaklığını
+hesaplıyor (`acikMi()`) ve tasarruf metninin tonunu ona göre seçiyor. Ayar
+değişince ölçüm de değişiyor; medya sorgusu olsaydı ayar koyu, OS açık olan
+müşteride yanlış ton çıkardı.
+
+**Taranmayan iki dosya:** `assets/apps.css` (62KB) ve `assets/gp-global.css`
+(69KB). İkisi de uygulama/sayfa-oluşturucu üretimi; bu katmanın kapsamı dışında
+oldukları için açılmadılar. İçlerinde bir `prefers-color-scheme` varsa bu
+katmanı etkilemiyor ama kesin konuşmuyorum — gerekirse ayrıca taranmalı.
 
 ## Dokunulmayanlar
 

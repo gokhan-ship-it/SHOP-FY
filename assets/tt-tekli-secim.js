@@ -103,6 +103,11 @@
     var grup = ONCEKI ? ONCEKI.grup
              : (KOK.getAttribute('data-tt-ts-grup-varsayilan') === 'erkek' ? 'erkek' : 'kadin');
     var siraGumus = ONCEKI ? ONCEKI.siraGumus : false;   /* false: once celikler */
+    /* Ikinci urun secicisi varsayilan olarak KAPALI. Kontrol satiri secili
+       urunu zaten gosterdigi icin listeyi surekli acik tutmanin karsiligi
+       yok; kart da o kadar uzamiyor. Durum, digerleri gibi DOM'un disinda
+       tutuluyor ki bolum bastan cizilince kaybolmasin. */
+    var ikinciAcik = ONCEKI ? !!ONCEKI.ikinciAcik : false;
     var ikinci = null;       /* {urun, varyant} - asagida ada gore geri bulunuyor */
 
     /* ---------- Yardimcilar ---------- */
@@ -464,6 +469,14 @@
         window.addEventListener('resize', guncelle);
       }
       guncelle();
+      /* Bir kare sonra TEKRAR olculuyor. Sebep olculdu: serit gizliyken
+         (secici kapali) scrollWidth 0 donuyor ve "devam ediyor" solma
+         isareti eklenmiyor. Secici acildigi cizimde gorunurluk ayni
+         karede degisiyor; ilk olcum bu gecise denk gelip yanlis
+         sonuc veriyordu. Belirti: secici acilinca sagdaki karo kirpik
+         goruniyor ama solma yok, yani kaydirilabilecegi belli olmuyordu. */
+      if (window.requestAnimationFrame) window.requestAnimationFrame(guncelle);
+      else window.setTimeout(guncelle, 0);
     }
 
     function gridCiz() {
@@ -544,6 +557,17 @@
         kartlar[k].setAttribute('aria-checked', kartlar[k].getAttribute('data-tt-ts-mod') === mod ? 'true' : 'false');
       }
 
+      /* Secicinin acik/kapali sinifi gridCiz'den ONCE uygulaniyor.
+         Sonra uygulanirsa serit hala display:none iken olculuyor:
+         scrollWidth 0 cikiyor ve "devam ediyor" solma isareti hic
+         eklenmiyordu. Belirti: secici acildiginda sagdaki karo kirpik
+         gorunuyor ama solma yok, yani kaydirilabilecegi belli olmuyor.
+         Secici yalnizca kart SECILIYKEN acilabiliyor; kapali kartta
+         "acik" durumu ekranda karsiligi olmayan bir sey olurdu. */
+      var acik = (mod === 'set') && ikinciAcik;
+      var setKart = KOK.querySelector('[data-tt-ts-mod="set"]');
+      if (setKart) setKart.classList.toggle('tt-ts-kart--acik', acik);
+
       /* Grid her modda hesaplaniyor: rozetteki ikinci urun adi, kart
          secili olmasa da dogru gorunsun. Gorunurlugu CSS yonetiyor. */
       gridCiz();
@@ -573,15 +597,32 @@
         if (sl) sl.hidden = ikinci.urun.varyantlar.length < 2;
       }
 
-      /* Cift gorseli satiri: ikinci gorsel ve "A + B" metni. Kart secili
-         olmasa da yaziliyor, cunku acikladigi tutar da o zaman gorunuyor. */
+      /* Ikinci urun kontrolu. Kart secili olmasa da yaziliyor, cunku
+         acikladigi tutar da o zaman gorunuyor. Metin "A + B" degil,
+         SECILEN urunu tarif ediyor: "Luna · Sadece celik". */
       var cg2 = KOK.querySelector('[data-tt-ts-cift-g2]');
       var cad = KOK.querySelector('[data-tt-ts-cift-ad]');
       if (cg2) {
         cg2.src = (ikinci && ikinci.urun.gorsel) || '';
-        cg2.alt = ikinci ? ikinci.urun.ad : '';
+        cg2.alt = '';
       }
-      if (cad) cad.textContent = ikinci ? (V.urun + ' + ' + ikinci.urun.ad) : V.urun;
+      if (cad) {
+        cad.textContent = ikinci
+          ? (ikinci.urun.ad + ' · ' + karoEtiket(ikinci.urun, ikinci.varyant))
+          : '';
+      }
+      var cbtn = KOK.querySelector('[data-tt-ts-cift]');
+      if (cbtn) cbtn.setAttribute('aria-expanded', acik ? 'true' : 'false');
+      /* Metinler veri adasindan geliyor. Anahtar eksikse pil BOS kalmasin:
+         snippet'te basili duran metin korunuyor. Bir veri alani eksik
+         diye ekranda bos bir dugme birakmak, yanlis metin gostermekten
+         daha kotu. */
+      var cpil = KOK.querySelector('[data-tt-ts-cift-pil-metin]');
+      if (cpil) {
+        if (cpil.__ttAsil === undefined) cpil.__ttAsil = cpil.textContent;
+        var yeniMetin = acik ? V.ciftKapat : V.ciftAc;
+        cpil.textContent = yeniMetin || cpil.__ttAsil;
+      }
 
       var ozet = KOK.querySelector('[data-tt-ts-ozet]');
       if (ozet) {
@@ -599,7 +640,7 @@
       if (mod === 'set') tkYaz(); else tkGeriAl();
 
       DURUM[ANAHTAR] = {
-        mod: mod, grup: grup, siraGumus: siraGumus,
+        mod: mod, grup: grup, siraGumus: siraGumus, ikinciAcik: ikinciAcik,
         ikinciAd: ikinci ? ikinci.urun.ad : null
       };
     }
@@ -897,16 +938,26 @@
       ciz();
     });
 
-    /* "Degistir": kart secili degilse once seciyor (secici zaten yalnizca
-       secili kartta gorunuyor), sonra seride kaydiriyor. */
-    var cd = KOK.querySelector('[data-tt-ts-cift-degistir]');
+    /* Ikinci urun kontrolu: SATIRIN TAMAMI. Gorsele, metne ya da pile
+       basmak ayni seyi yapiyor.
+         - kart secili degilse: once kart seciliyor, sonra secici aciliyor
+         - secili ve kapaliysa: aciliyor
+         - secili ve acikse: kapaniyor
+       stopPropagation sart: bu buton kartin ICINDE ve kartin kendi
+       tiklama dinleyicisi var; onu durdurmazsak kart secimi bizim
+       actigimiz secicinin ustune yeniden cizilirdi. */
+    var cd = KOK.querySelector('[data-tt-ts-cift]');
     if (cd) cd.addEventListener('click', function (ev) {
       ev.stopPropagation();
       ev.preventDefault();
-      if (mod !== 'set') { mod = 'set'; ciz(); }
-      var serit = KOK.querySelector('[data-tt-ts-grid]');
-      if (serit && serit.scrollIntoView) {
-        serit.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      if (mod !== 'set') { mod = 'set'; ikinciAcik = true; }
+      else { ikinciAcik = !ikinciAcik; }
+      ciz();
+      if (ikinciAcik) {
+        var serit = KOK.querySelector('[data-tt-ts-grid]');
+        if (serit && serit.scrollIntoView) {
+          serit.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
       }
     });
 
