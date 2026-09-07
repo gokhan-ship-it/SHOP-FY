@@ -145,10 +145,9 @@ karşılaştırılabilmesi. Seçili olmayan kart bloğu sade biçimde gösteriyo
 Adım listesi iki biçimde görüntüleniyor ve HTML **iki kez yazılmıyor**: aynı
 öğeler kartın `aria-checked` değerine göre farklı diziliyor.
 
-- **TABAN = sade** (seçili olmayan kart): ikon + adım adı, yan yana etiketler,
-  sığmayan alt satıra sarıyor. 15px ikon, 12px etiket, ikisi de
-  `--tt-ts-ink-2`; etiketler arası 14px yatay / 6px dikey. Açıklama cümlesi
-  (`.tt-ts-adim-alt`) `display:none`.
+- **TABAN = sade** (seçili olmayan kart): **üç eşit sütun**, ikon etiketin
+  üstünde. 15px ikon, 12px etiket, ikisi de `--tt-ts-ink-2`; sütun arası 10px,
+  satır arası 12px. Açıklama cümlesi (`.tt-ts-adim-alt`) `display:none`.
 - **ÜSTÜNE YAZAN = tam** (seçili kart): 30px yuvarlak çip (içinde 18px ikon),
   çipleri birleştiren dikey bağlantı çizgisi, 13px başlık + 12px açıklama,
   satır yüksekliği 1.45, adımlar arası 14px.
@@ -159,6 +158,41 @@ CSS katmanı devreye giriyor.
 **Neden ikinci bir "sade" markup yazılmadı:** aynı metinler DOM'da iki kez
 dururdu (ekran okuyucu için gürültü) ve metin değiştiğinde iki yeri birden
 güncellemek gerekirdi. Tek kaynak var.
+
+#### Neden üç sütun, neden ikon üstte
+
+İlk sürümde etiketler yan yana akıyor ve sığmayanı alt satıra sarıyordu.
+Pratikte **üçüncüsü hep tek başına alta düşüyordu** — 430px'te bile. Ölçüldü:
+
+| ekran | kartın iç genişliği | üç etiketin istediği |
+|---|---|---|
+| 430px | 353px | 362px |
+| 390px | 313px | 362px |
+| 360px | 283px | 362px |
+
+Yani yatay dizilimle üçü tek satıra **hiçbir telefonda** sığmıyor. Yazıyı
+küçültmek de kurtarmıyor: 11px'te bile 324px istiyor, 390px'te yer 313px.
+Tek çözüm düzeni değiştirmek — ikon etiketin üstüne alınınca her sütun
+84px'e iniyor ve üçü 360px'ten itibaren yan yana duruyor.
+
+Kırılma noktası elle yazılmış bir medya sorgusu değil:
+`grid-template-columns: repeat(auto-fit, minmax(84px, 1fr))`. Üç sütun için
+272px yetiyor; daha darında (320px telefon → 243px) kendiliğinden ikiye
+düşüyor. Metin uzarsa ya da dil değişirse kırılma noktası da kendiliğinden
+kayıyor.
+
+#### TUZAK: `margin-top` çöktü, `padding-top` çözdü
+
+Adım satırını üstteki metin bloğundan ayırmak için `.tt-ts-adimlar`'a
+`margin-top` verildi ve **hiçbir şey değişmedi** — ölçüm öncesi de sonrası da
+29px. Sebep: bitişik kardeş `.tt-ts-ayrac`'ın 14px'lik alt margin'i ile
+çöküyor (`max(14, 8) = 14`). `padding-top` çökmüyor; toplam 37px oldu.
+
+Boşluğun tek başına yetmemesinin sebebi de not düşülmeye değer: üstteki
+"İçeriği sen yüklersin" (13px, `--tt-ts-ink-2`) ile çip etiketleri (12px, aynı
+renk) neredeyse aynı görünüyor, iki blok tek bir gri metin gibi okunuyordu.
+Ayrımı asıl yapan şey **yapının değişmesi** — üç sütunlu ızgara paragraf
+metnine hiç benzemiyor.
 
 ### Kaldırılan üç öğe (ikili set kartı)
 

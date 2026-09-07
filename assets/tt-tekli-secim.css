@@ -432,17 +432,37 @@
    etiketler, sigmayan alt satira sariyor. Aciklama cumlesi gizli.
    USTUNE YAZAN = TAM (secili kart): daire icinde ikon, dikey baglanti
    cizgisi, baslik + aciklama. */
+/* SADE gorunum UC SUTUN. Once yan yana akan etiketlerdi ve uc etiket tek
+   satira SIGMIYORDU: olculdu, 390px'te kartin ic genisligi 313px ama
+   "Ciple yukle + Zamani belirle + Vakti gelince acilsin" 362px istiyor.
+   Ucuncusu tek basina alta dusup dengesiz duruyordu. Yaziyi kucultmeden
+   tek satira sigdirmanin yolu yok (11px'te bile 324px), o yuzden duzen
+   degisti: ikon etiketin USTUNDE, uc esit sutun.
+
+   auto-fit + minmax(84px): uc sutun icin 272px yetiyor, yani 360px ve
+   uzeri telefonlarda ucu yan yana; daha darinda kendiliginden ikiye,
+   gerekirse tek sutuna dusuyor. Kirilma noktasi elle yazilmis bir medya
+   sorgusu degil, icerigin kendi olcusu.
+
+   Ust bosluk MARGIN DEGIL PADDING. Ustteki "Icerigi sen yuklersin" ile
+   ayni renkte ve neredeyse ayni boyutta oldugu icin ayracin biraktigi
+   29px tek basina ayirmiyordu, iki blok tek bir gri metin gibi
+   okunuyordu. Asil ayrimi yapan sey yapinin degismesi; bu bosluk onu
+   pekistiriyor. margin-top denendi ve HICBIR SEY YAPMADI: ayracin
+   14px'lik alt margin'iyle carpisip max(14,8)'e cokuyor. Padding
+   cokmuyor - toplam 37px. */
 .tt-ts-adimlar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 12px 10px;
   margin: 0;
-  padding: 0;
+  padding: 8px 0 0;
 }
 .tt-ts-adim {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
   min-width: 0;
 }
 .tt-ts-adim-cip {
@@ -473,11 +493,19 @@
 .tt-ts-adim-alt { display: none; }
 
 /* --- TAM GORUNUM: yalnizca secili kartta --- */
+/* Tam gorunum TEK SUTUN: sade gorunumun uc sutunu ve ust boslugu burada
+   geri aliniyor, adimlar alt alta akiyor. */
 .tt-ts-kart[aria-checked="true"] .tt-ts-adimlar {
   display: grid;
+  grid-template-columns: none;
   gap: var(--tt-ts-adim-ara);
+  padding-top: 0;
 }
-.tt-ts-kart[aria-checked="true"] .tt-ts-adim { align-items: flex-start; gap: var(--tt-ts-s3); }
+.tt-ts-kart[aria-checked="true"] .tt-ts-adim {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--tt-ts-s3);
+}
 /* Ikon dolu bir daire icinde; daireler dikey cizgiyle baglanip zaman
    cizelgesi olusturuyor. Adimlarin bir grup oldugu gri kutu olmadan da
    okunuyor, uc satir dagilmis gibi durmuyor. */
