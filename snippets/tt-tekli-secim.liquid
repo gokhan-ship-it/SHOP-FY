@@ -190,8 +190,13 @@
       bolumu kartin ICINDE ve kendi butonlarini tasiyor; ic ice buton
       gecersiz HTML olurdu.
     {%- endcomment -%}
+    {%- comment -%}
+      Varsayilan secili kart IKILI SET. Buradaki aria-checked degerleri
+      JS'in ilk cizimiyle ayni olsun diye boyle basiliyor; aksi halde
+      sayfa acilirken bir an tek kart secili gorunup sonra atliyordu.
+    {%- endcomment -%}
     <div class="tt-ts-kart tt-ts-kart--tek" role="radio" tabindex="0"
-         data-tt-ts-mod="tek" aria-checked="true">
+         data-tt-ts-mod="tek" aria-checked="false">
       <div class="tt-ts-govde">
         <span class="tt-ts-radio"></span>
         <span class="tt-ts-icerik">
@@ -238,7 +243,7 @@
     </div>
 
     <div class="tt-ts-kart tt-ts-kart--set" role="radio" tabindex="0"
-         data-tt-ts-mod="set" aria-checked="false">
+         data-tt-ts-mod="set" aria-checked="true">
       {%- comment -%}
         Ust kenarda tek rozet var. Secili ikinci urunu gosteren ikinci rozet
         kaldirildi: ayni bilgi grid altindaki secim ozeti satirinda zaten

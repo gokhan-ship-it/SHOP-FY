@@ -17,6 +17,65 @@ bloğu olarak giriyor (draft temada blok kimliği `liquid_7iEzqH`).
 Yayındaki tema `Catal renk ayarlari - 2026-09-04` (`188044443968`) — bu dosyaların
 hiçbiri orada yok, dolayısıyla render çağrısı orada hata verir.
 
+## Tasarruf rengi ve tasarruf vurgusu
+
+Rozet maviydi; mavi sitede aksiyon rengi olduğu için rozet **basılabilir**
+görünüyordu. Artık tek bir tasarruf yeşili var ve **yalnızca tasarrufun geçtiği
+iki yerde** kullanılıyor: rozet zemini ve tasarruf tutarı. Başlık, ikon, ayraç,
+kenarlık ve butonlarda yok — "Sepete ekle" siyah kalıyor. Bunu `tasarruf.mjs`
+ölçüyor: katmandaki her öğenin hesaplanmış renkleri taranıyor ve yeşil bulunan
+her yer bu ikisinden biri olmak zorunda.
+
+İki token, çünkü iki farklı iş:
+
+| token | nerede | neden |
+|---|---|---|
+| `--tt-ts-tasarruf` | rozet **dolgusu** | üstünde beyaz metin var, sayfa zemininden bağımsız. İki temada da `#15803D`; beyaz/yeşil karşıtlığı 5.0:1 |
+| `--tt-ts-tasarruf-metin` | tutarın **metin** rengi | sayfa zeminine oturuyor. Açık temada `#15803D` (5.0:1), koyu temada `#4ADE80` (12.1:1) |
+
+Koyu tema `prefers-color-scheme` ile değil **ölçümle** anlaşılıyor: tema koyusu
+bir ayar, işletim sistemi tercihi değil. `acikMi()` zeminin bağıl parlaklığını
+hesaplıyor — katmanın `--tt-ts-ink`/`--tt-ts-zemin` ölçümüyle aynı yaklaşım.
+
+**Üstü çizili indirimsiz toplam kartta kaldırıldı.** Yerine kazancın kendisi
+yazıyor: "1.149,50 TL tasarruf". Değer her çizimde `setEskiKurus() - setKurus()`
+ile yeniden hesaplanıyor; ham madde veya ikinci ürün değişince kendiliğinden
+güncelleniyor. Testte sabit sayı değil **değişmez** ölçülüyor
+(`tasarruf = min(p1, p2) × indirim/100`), çünkü ikinci ürünün o ham maddede
+varyantı yoksa indirim değişmez ve bu doğru davranıştır.
+
+Üstü çizili toplam temanın **fiyat alanında ve yapışkan çubukta** duruyor —
+istek yalnızca kartı kapsıyordu.
+
+## Sohbet balonu ve "Sepete ekle"
+
+`custom-tt.css` balonu mobilde yapışkan şeridin üstüne alıyor (`bottom: 92px`),
+ama katmanın sepet butonu **sayfa akışının içinde**: sayfa o noktaya gelince
+balon tam butonun üstüne denk gelip tutarı kapatıyordu.
+
+Balon **gizlenmiyor** (müşteri sohbete erişebilmeli), gerektiği **kadar** yukarı
+alınıyor: JS balonun dikdörtgeni ile butonunkini kesiştirip örtüşme + 12px payı
+`--tt-ts-sohbet-kaydir` olarak yazıyor, CSS `transform` ile uyguluyor. Örtüşme
+yoksa değer 0 — balon boş yere oynamıyor. Bu yüzden balon `ortuKoru()`'nun genel
+gizleme listesinin **dışında** tutuluyor.
+
+`transition` denendi ve kaldırıldı: bir sonraki tarama balonun konumunu
+`getBoundingClientRect` ile okuyor, animasyon sürerken ara konum dönüyor ve
+hesaplanan kaldırma eksik çıkıyordu (23 kaydırma konumunun 2'sinde buton hâlâ
+kapalıydı). `sohbet.mjs` sayfayı 40px adımlarla tarayıp butonun göründüğü **her**
+konumda örtüşme olmadığını ölçüyor.
+
+## Varsayılan seçim: ikili set
+
+Sayfa ikili set seçili açılıyor; ikinci ürün gruptaki en ucuz (o davranış
+değişmedi). Fiyat alanı, taksit satırı ve sepet butonu seçili kartı izlediği için
+sayfa **set toplamıyla** açılıyor.
+
+Snippet de ikili kartı `aria-checked="true"` basıyor: aksi hâlde sayfa açılırken
+bir an tek kart seçili görünüp atlıyordu. Bunun bedeli JS kapalıyken boş bir ürun
+şeridi olurdu; onun için ikinci ürün bölümünün görünürlüğü `[data-tt-ts-js]`
+koşuluna bağlandı — kurulumun ilk işi o işareti koymak.
+
 ## Karo çerçeveleme ayarları
 
 Katalogdaki ürün fotoğraflarının tamamı **3:4** (1500×2000) ve ürünün kare

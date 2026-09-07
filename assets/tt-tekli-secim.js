@@ -20,6 +20,10 @@
   function kur(KOK) {
     if (KOK.__ttTsKurulu) return;
     KOK.__ttTsKurulu = true;
+    /* JS calisiyor isareti. Ikinci urun bolumunun gorunurlugu buna bagli:
+       snippet artik ikili karti secili basiyor (varsayilan o) ve JS
+       calismazsa bos bir urun seridi gorunurdu. */
+    KOK.setAttribute('data-tt-ts-js', '');
 
     var V = null;
     try { V = JSON.parse(KOK.querySelector('[data-tt-ts-veri]').textContent); } catch (e) { return; }
@@ -89,7 +93,11 @@
     var ANAHTAR = KOK.getAttribute('data-tt-ts-form') || 'tt-ts';
     var ONCEKI = DURUM[ANAHTAR] || null;
 
-    var mod = ONCEKI ? ONCEKI.mod : 'tek';
+    /* Varsayilan kart IKILI SET. Sayfa acilir acilmaz gorunen teklif bu;
+       ikinci urun gridCiz icinde gruptaki EN UCUZ urun olarak seciliyor
+       (o davranis degismedi). Fiyat alani, taksit satiri ve sepet butonu
+       secili karti izledigi icin sayfa set toplamiyla aciliyor. */
+    var mod = ONCEKI ? ONCEKI.mod : 'set';
     /* Varsayilan grup snippet'te urunun koleksiyonundan turetiliyor:
        erkek urunundeysek kadin, kadin urunundeysek erkek acik geliyor. */
     var grup = ONCEKI ? ONCEKI.grup
@@ -551,8 +559,11 @@
       if (tek) tek.textContent = para(p1());
       var sf = KOK.querySelector('[data-tt-ts-set-fiyat]');
       if (sf) sf.textContent = para(setKurus());
+      /* Ustu cizili indirimsiz toplam yerine KAZANCIN KENDISI yaziliyor.
+         Hesap her cizimde yeniden yapiliyor, sabit metin yok: ham madde
+         ya da ikinci urun degisince tutar kendiliginden guncelleniyor. */
       var se = KOK.querySelector('[data-tt-ts-set-eski]');
-      if (se) se.textContent = para(setEskiKurus());
+      if (se) se.textContent = para(setEskiKurus() - setKurus()) + ' tasarruf';
 
       var sa = KOK.querySelector('[data-tt-ts-secili-ad]');
       var sl = KOK.querySelector('[data-tt-ts-hm-degistir]');
@@ -613,7 +624,11 @@
       function bizden(el) {
         try {
           return el === KOK || KOK.contains(el) || el.contains(KOK) ||
-                 !!el.closest('#tt-ts-ayar') || !!el.closest('product-sticky-form');
+                 !!el.closest('#tt-ts-ayar') || !!el.closest('product-sticky-form') ||
+                 /* Sohbet balonu bu listeye GIRMIYOR: onu gizlemek musteriye
+                    bir sey kaybettirir. Asagidaki sohbetKoru onu gizlemek
+                    yerine gerektigi kadar yukari aliyor. */
+                 !!el.closest('#ShopifyChat, [id^="ShopifyChat"], .shopify-chat-container, [data-tt-ts-sohbet]');
         } catch (e) { return true; }
       }
       /* Widget'lar sayfaya gec enjekte olabiliyor; tarama tekrarlaniyor. */
@@ -667,11 +682,71 @@
         }
       }
 
+      /* --- Sohbet balonu: gizleme degil, KALDIRMA ---
+         Balon (Shopify Inbox) sepet butonunun uzerine binip tutari
+         kapatiyordu. Gizlemek dogru degil, musteri sohbete erisebilmeli;
+         bu yuzden yalnizca gerektigi KADAR yukari aliniyor.
+
+         Miktar olculuyor: balonun alt kenari ile butonun ust kenari
+         arasindaki ortusme + 12px pay. Ortusme yoksa 0 yaziliyor, yani
+         balon bos yere oynamiyor. Ayni tarama dongusunde calisiyor,
+         ek dinleyici yok.
+
+         ortuKoru'nun genel gizleme mantigindan AYRI tutuluyor: o mantik
+         karti kapatan her seyi gizliyor, sohbet balonunu gizlemek ise
+         musteriye bir sey kaybettirir. */
+      function sohbetAdaylari() {
+        var a = [];
+        var secs = ['#ShopifyChat', 'div[id^="ShopifyChat"]',
+                    'iframe[name="ShopifyChat"]', '.shopify-chat-container',
+                    '[data-tt-ts-sohbet]'];
+        for (var i = 0; i < secs.length; i++) {
+          var b = document.querySelectorAll(secs[i]);
+          for (var j = 0; j < b.length; j++) if (a.indexOf(b[j]) === -1) a.push(b[j]);
+        }
+        return a;
+      }
+      function sohbetKoru() {
+        var btn = KOK.querySelector('[data-tt-ts-sepet]');
+        var kok = document.documentElement;
+        if (!btn || !btn.isConnected) {
+          kok.classList.remove('tt-ts-sohbet-tasi');
+          return;
+        }
+        var br = btn.getBoundingClientRect();
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        var gorunur = br.bottom > 0 && br.top < vh;
+        var balonlar = sohbetAdaylari();
+        var kaydir = 0;
+        if (gorunur) {
+          for (var i = 0; i < balonlar.length; i++) {
+            var el = balonlar[i];
+            if (!el.isConnected) continue;
+            /* Kaldirma miktari olculurken balonun KENDI yerine bakiliyor:
+               daha once uygulanmis kaydirma cikarilarak, yoksa her
+               taramada ustune eklenip balon ekrandan kacardi. */
+            var onceki = parseFloat(getComputedStyle(el).getPropertyValue('--tt-ts-sohbet-kaydir')) || 0;
+            var r = el.getBoundingClientRect();
+            var alt = r.bottom + onceki;
+            var ust = r.top + onceki;
+            if (r.width === 0 || r.height === 0) continue;
+            var yatay = r.right > br.left && r.left < br.right;
+            if (!yatay) continue;
+            var ortusme = alt - br.top;
+            if (ust < br.bottom && ortusme > 0) {
+              kaydir = Math.max(kaydir, Math.ceil(ortusme) + 12);
+            }
+          }
+        }
+        kok.style.setProperty('--tt-ts-sohbet-kaydir', kaydir + 'px');
+        kok.classList.toggle('tt-ts-sohbet-tasi', kaydir > 0);
+      }
+
       var bekliyor = false;
       function tetikle() {
         if (bekliyor) return;
         bekliyor = true;
-        window.setTimeout(function () { bekliyor = false; kontrol(); }, 150);
+        window.setTimeout(function () { bekliyor = false; kontrol(); sohbetKoru(); }, 150);
       }
       window.addEventListener('scroll', tetikle, { passive: true });
       window.addEventListener('resize', tetikle);
@@ -743,6 +818,20 @@
        sepet butonu) burada somut renge cevriliyor: sayfanin gercek metin
        rengi ve en yakin saydam olmayan ata zemini olculuyor. Boylece
        katman acik da koyu da olsa dogru ciziliyor. */
+    /* Tasarruf yesili METIN olarak da kullaniliyor. Koyu yesil beyaz
+       zeminde okunur (5.0:1) ama siyah zeminde okunmaz. Zeminin
+       parlakligi zaten olculuyor; ayni olcumden metin tonu de seciliyor.
+       Rozetin DOLGUSU degismiyor: uzerinde beyaz metin var, yani sayfa
+       zemininden bagimsiz. */
+    function acikMi(renk) {
+      var m = String(renk).match(/(\d+(?:\.\d+)?)/g);
+      if (!m || m.length < 3) return true;
+      function lin(v) {
+        v = v / 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      }
+      return (0.2126 * lin(+m[0]) + 0.7152 * lin(+m[1]) + 0.0722 * lin(+m[2])) > 0.4;
+    }
     function zeminBul(el) {
       for (var n = el; n && n !== document.documentElement; n = n.parentElement) {
         var b = getComputedStyle(n).backgroundColor;
@@ -753,7 +842,9 @@
     }
     try {
       KOK.style.setProperty('--tt-ts-ink', getComputedStyle(KOK).color);
-      KOK.style.setProperty('--tt-ts-zemin', zeminBul(KOK));
+      var zem = zeminBul(KOK);
+      KOK.style.setProperty('--tt-ts-zemin', zem);
+      KOK.style.setProperty('--tt-ts-tasarruf-metin', acikMi(zem) ? '#15803d' : '#4ade80');
     } catch (e) {}
 
     var segmentTamam = segmentBagla();

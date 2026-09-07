@@ -24,7 +24,26 @@
   --tt-ts-ink-3: color-mix(in srgb, currentColor 45%, transparent);
   --tt-ts-line: color-mix(in srgb, currentColor 18%, transparent);
   --tt-ts-yuzey: color-mix(in srgb, currentColor 8%, transparent);
-  --tt-ts-cta: #0071e3;
+  /* --- TASARRUF YESILI ---
+     Mavi bilerek kaldirildi: sitede mavi aksiyon rengi, rozet o yuzden
+     basilabilir gibi duruyordu. Yesil hicbir yerde tiklanabilir bir sey
+     anlatmiyor, yalnizca kazanci anlatiyor.
+
+     Iki token, cunku iki farkli is:
+       --tt-ts-tasarruf        rozet DOLGUSU. Uzerinde beyaz metin var,
+                               yani sayfa zemininden bagimsiz; iki temada
+                               da ayni. Beyaz/#15803D karsitligi 5.0:1.
+       --tt-ts-tasarruf-metin  tutarin METIN rengi. Bu sayfa zeminine
+                               oturuyor: acik temada koyu yesil okunur,
+                               siyah zeminde okunmaz. Degeri JS zemini
+                               OLCUP yaziyor (bkz. acikMi); asagidaki
+                               acik tema degeri yalnizca yedek.
+
+     Sadece tasarrufun gectigi iki yerde kullaniliyor: rozet ve tutar.
+     Basliklarda, ikonlarda, ayraclarda, kenarliklarda, butonlarda YOK -
+     sepete ekle butonu siyah kaliyor. */
+  --tt-ts-tasarruf: #15803d;
+  --tt-ts-tasarruf-metin: #15803d;
 
   /* Kart kenarligi ayri token: --tt-ts-line (%18) koyu temada neredeyse
      gorunmuyordu ve secili olmayan kart "devre disi" gibi okunuyordu. */
@@ -91,7 +110,12 @@
 .tt-ts[data-tt-ts] :is(p, img, video, figure, hr, ul, ol, li,
                        h1, h2, h3, h4, h5, h6) {
   margin-block: 0;
-  padding-inline-start: 0;
+  /* YATAY bosluk da sifir. Once yalnizca margin-block sifirlaniyordu;
+     temanin bir kurali gorsellere yatay bosluk verirse satirin sol
+     hizasi kayardi ve bu disaridan gelen bir kayma oldugu icin
+     buradaki olculere bakarak anlasilmazdi. */
+  margin-inline: 0;
+  padding-inline: 0;
 }
 
 /* --- Bolum etiketleri (HAM MADDE / ACILMA SEKLI) ---
@@ -191,9 +215,9 @@
 }
 .tt-ts-kart--tek { margin-bottom: var(--tt-ts-s5); }
 .tt-ts-kart--set { padding: 18px var(--tt-ts-s4) var(--tt-ts-s4); }
-/* Kartin ust kenarina oturan tek rozet: teklif rozeti, CTA mavisinde.
-   Secili ikinci urunu gosteren ikinci rozet kaldirildi; ayni bilgi grid
-   altindaki secim ozeti satirinda zaten duruyor. */
+/* Kartin ust kenarina oturan tek rozet: teklif rozeti, tasarruf
+   yesilinde. Secili ikinci urunu gosteren ikinci rozet kaldirildi; ayni
+   bilgi grid altindaki secim ozeti satirinda zaten duruyor. */
 .tt-ts-rozetler {
   position: absolute;
   top: -12px;
@@ -208,7 +232,7 @@
   flex: 0 0 auto;
   padding: 4px 12px;
   border-radius: var(--tt-ts-pill);
-  background: var(--tt-ts-cta);
+  background: var(--tt-ts-tasarruf);
   color: #ffffff;
   font-size: 12px;
   line-height: 1.2;
@@ -247,22 +271,38 @@
   margin-top: 2px;
 }
 .tt-ts-alt-sol { font-size: 13px; line-height: 1.5; color: var(--tt-ts-ink-2); }
+/* Eskiden burada indirimsiz toplam USTU CIZILI duruyordu. Ustu cizili
+   tutar musteriye "ne odemiyorsun"u dolayli anlatiyor; kazancin kendisi
+   yaziliyor artik: "1.149,50 TL tasarruf". Tutar sabit degil, JS her
+   cizimde indirimsiz toplamdan indirimli toplami cikariyor - ham madde
+   ya da ikinci urun degisince kendiliginden guncelleniyor. */
 .tt-ts-alt-sag {
   flex: 0 0 auto;
   font-size: 13px;
+  font-weight: 500;
   line-height: 1.5;
-  color: var(--tt-ts-ink-3);
-  text-decoration: line-through;
+  color: var(--tt-ts-tasarruf-metin);
+  white-space: nowrap;
 }
 
 /* --- Cift gorseli satiri: toplamin hangi iki urunden olustugu --- */
+/* Bu satir kart basligi ve alt satirla AYNI sol hizadan basliyor:
+   ucu de .tt-ts-icerik'in (radyonun sagindaki metin sutunu) cocugu.
+   Sol bosluklar acikca sifir yaziliyor - hiza tesaduf degil, kural. */
 .tt-ts-cift {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 10px;
+  margin: 10px 0 0;
+  padding: 0;
 }
-.tt-ts-cift-gorseller { flex: 0 0 auto; display: flex; align-items: center; }
+.tt-ts-cift-gorseller {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
 .tt-ts-cift-g {
   display: block;
   width: 34px;
@@ -273,8 +313,9 @@
   object-fit: cover;
 }
 /* Ikinci gorsel birincinin ustune biniyor: iki urunun tek bir teklif
-   oldugu, iki ayri satir yazmadan anlasiliyor. */
-.tt-ts-cift-g--iki { margin-left: -8px; }
+   oldugu, iki ayri satir yazmadan anlasiliyor. Kalkan yatay bosluklari
+   sifirladigi icin bu kural da ayni onekle yaziliyor. */
+.tt-ts[data-tt-ts] .tt-ts-cift-g--iki { margin-left: -8px; }
 .tt-ts-cift-g--iki[src=""] { display: none; }
 .tt-ts-cift-ad {
   flex: 1 1 auto;
@@ -307,7 +348,10 @@
    sabit duruyor, ama urun secimi yalnizca ikili set seciliyken anlamli. */
 .tt-ts-aciklama { display: block; }
 .tt-ts-ikinci { display: none; }
-.tt-ts-kart[aria-checked="true"] .tt-ts-ikinci { display: block; }
+/* [data-tt-ts-js] kosulu: snippet ikili karti SECILI basiyor (varsayilan
+   o). JS calismazsa serit bos kalirdi; bu kosul o durumda bolumu hic
+   gostermiyor. JS calistiginda kurulumun ilk isi bu isareti koymak. */
+.tt-ts[data-tt-ts-js] .tt-ts-kart[aria-checked="true"] .tt-ts-ikinci { display: block; }
 
 /* --- Aciklama adimlari: iki kartta da ayni olcu, ayni sol hiza ---
    ul/li DEGIL, role tasiyan div. Sebep olculdu: katman temanin .rte
@@ -707,6 +751,33 @@
 }
 .tt-ts-sticky-tutar .tt-ts-fiyat-set { font-size: 18px; }
 .tt-ts-sticky-tutar .tt-ts-fiyat-eski { margin-left: 0; font-size: 13px; }
+
+/* --- Sohbet balonu "Sepete ekle" butonunun tutarini kapatmasin ---
+   custom-tt.css balonu MOBILDE yapiskan seridin ustune aliyor
+   (bottom: 92px). Ama bizim sepet butonumuz sayfa akisinin ICINDE:
+   sayfa o noktaya gelince balon tam butonun uzerine denk gelip tutari
+   kapatiyor.
+
+   Cozum tahmin degil OLCUM: tt-tekli-secim.js balonun dikdortgeni ile
+   butonun dikdortgenini kesistiriyor ve gerekli kaldirma miktarini
+   --tt-ts-sohbet-kaydir olarak yaziyor. Kesisme yoksa deger 0, yani
+   balon hicbir zaman gereksiz yere oynamiyor. Balonu gizlemiyoruz -
+   musteri sohbete erisebilmeli.
+
+   transform kullaniliyor, bottom degil: temanin/uygulamanin kendi
+   bottom degerini ezmiyoruz, uzerine biniyoruz. */
+.tt-ts-sohbet-tasi #ShopifyChat,
+.tt-ts-sohbet-tasi div[id^="ShopifyChat"],
+.tt-ts-sohbet-tasi iframe[name="ShopifyChat"],
+.tt-ts-sohbet-tasi .shopify-chat-container,
+.tt-ts-sohbet-tasi [data-tt-ts-sohbet] {
+  /* GECIS YOK, bilerek. transition denendi ve KALDIRILDI: JS bir sonraki
+     taramada balonun gercek konumunu getBoundingClientRect ile olcuyor,
+     animasyon suruyorken bu ara konumu donduruyor ve hesaplanan kaldirma
+     eksik cikiyordu. Olculdu: 23 kaydirma konumunun 2'sinde buton hala
+     kapaliydi. Gecissiz halde kaldirma kaydirmayla birebir gidiyor. */
+  transform: translateY(calc(-1 * var(--tt-ts-sohbet-kaydir, 0px))) !important;
+}
 
 /* Native secici / sepet butonu: yalnizca katman eksiksiz kuruldugunda. */
 .tt-ts-native-gizli { display: none !important; }
