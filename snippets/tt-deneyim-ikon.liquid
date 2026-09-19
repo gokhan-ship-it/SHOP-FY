@@ -1,0 +1,53 @@
+{%- doc -%}
+  Deneyim secimi bolumunun ikon seti.
+
+  Neden ayri dosya: ayni ikon 14 yerde geciyor (iki kartin ucer ozet
+  satiri, iki panelin dorder adimi). Her birine case yazmak dosyayi
+  okunmaz hale getirirdi.
+
+  Ikonlar 24x24 viewBox, currentColor konturlu, dolgusuz. Boyut ve renk
+  CAGIRAN tarafta belirleniyor; buradan sabit bir olcu gelmiyor.
+
+  @param {string} ad - Ikon anahtari (urun, urunler, kisi, kisiler, takvim,
+                       kilit, kilit-acik, kalp, yukle, saat, hediye, sonsuz)
+  @param {string} [sinif] - Ek CSS sinifi
+
+  @example
+  {% render 'tt-deneyim-ikon', ad: 'kilit', sinif: 'ttd-ozet-ikon' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign i = ad | default: 'urun'
+-%}
+<svg class="{{ sinif }}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+     aria-hidden="true" focusable="false">
+  {%- case i -%}
+    {%- when 'urun' -%}
+      <rect x="3.5" y="7.5" width="17" height="13" rx="2.2"/><path d="M8.5 7.5V6a3.5 3.5 0 0 1 7 0v1.5"/>
+    {%- when 'urunler' -%}
+      <rect x="2.5" y="8.5" width="12" height="12" rx="2.2"/><path d="M9.5 8.5V7.2a3 3 0 0 1 6 0v1.3"/><path d="M17 20.5h2.3a2.2 2.2 0 0 0 2.2-2.2V8.2"/>
+    {%- when 'kisi' -%}
+      <circle cx="12" cy="8" r="3.4"/><path d="M5 20.4a7 7 0 0 1 14 0"/>
+    {%- when 'kisiler' -%}
+      <circle cx="9.3" cy="8" r="3.3"/><path d="M3 20.2a6.3 6.3 0 0 1 12.6 0"/><path d="M16.6 5.2a3.3 3.3 0 0 1 0 5.6"/><path d="M18 14.6a6.3 6.3 0 0 1 3 5.6"/>
+    {%- when 'takvim' -%}
+      <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>
+    {%- when 'kilit' -%}
+      <rect x="3.5" y="10.8" width="17" height="10.2" rx="2.2"/><path d="M7.6 10.8V6.9a4.4 4.4 0 0 1 8.8 0v3.9"/>
+    {%- when 'kilit-acik' -%}
+      <rect x="3.5" y="10.8" width="17" height="10.2" rx="2.2"/><path d="M7.6 10.8V6.9a4.4 4.4 0 0 1 8.3-2"/>
+    {%- when 'kalp' -%}
+      <path d="M12 20.3s-7.5-4.6-7.5-9.4A4.4 4.4 0 0 1 12 8.3a4.4 4.4 0 0 1 7.5 2.6c0 4.8-7.5 9.4-7.5 9.4Z"/>
+    {%- when 'yukle' -%}
+      <path d="M12 16V4.8"/><path d="M7.8 9 12 4.8 16.2 9"/><path d="M4 16v2.4A2.6 2.6 0 0 0 6.6 21h10.8A2.6 2.6 0 0 0 20 18.4V16"/>
+    {%- when 'saat' -%}
+      <circle cx="12" cy="12" r="8.6"/><path d="M12 7.2V12l3.2 2"/>
+    {%- when 'hediye' -%}
+      <rect x="3.2" y="9.6" width="17.6" height="11.2" rx="2"/><path d="M3.2 14h17.6M12 9.6V21"/><path d="M12 9.6S10.6 5 8.4 5a2.2 2.2 0 0 0 0 4.6Z"/><path d="M12 9.6S13.4 5 15.6 5a2.2 2.2 0 0 1 0 4.6Z"/>
+    {%- when 'sonsuz' -%}
+      <path d="M8.4 8.6a3.4 3.4 0 1 0 0 6.8c2.6 0 4-6.8 6.6-6.8a3.4 3.4 0 1 1 0 6.8c-2.6 0-4-6.8-6.6-6.8Z"/>
+    {%- else -%}
+      <circle cx="12" cy="12" r="8.6"/>
+  {%- endcase -%}
+</svg>

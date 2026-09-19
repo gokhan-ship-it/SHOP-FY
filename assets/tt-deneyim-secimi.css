@@ -1,0 +1,470 @@
+/* ------------------------------------------------------------------
+   KOLEKSIYON SAYFASI - DENEYIM SECIMI  (.ttd-*)
+
+   Golge yok, degrade yok. Ayrimi INCE CERCEVE ve ZEMIN TONU yapiyor.
+   Renkler bolum ayarindan geliyor; buradaki var() degerleri yalnizca
+   ayar okunamazsa devreye giren yedekler.
+
+   Urun kartlarina DOKUNULMUYOR: izgaranin icindeki .product-card
+   temanin kendi snippet'i ve kendi bicimiyle duruyor. Buradaki
+   kurallarin hicbiri .product-card icine girmiyor.
+   ------------------------------------------------------------------ */
+.ttd {
+  --ttd-zemin: #f8f8f8;
+  --ttd-yuzey: #ffffff;
+  --ttd-ink: #1d1d1f;
+  --ttd-ink-2: #6e6e73;
+  --ttd-line: #d2d2d7;
+  --ttd-secili: #1d1d1f;
+  --ttd-kose-kart: 22px;
+  --ttd-kose-dugme: 14px;
+  --ttd-genislik: 1200px;
+  --ttd-sutun-m: 2;
+  --ttd-sutun-d: 4;
+  --ttd-gecis: 220ms;
+
+  /* Ikincil butonun ve seridin zemini: sabit gri DEGIL, metin renginin
+     %5'i kart zeminine karistirilmis hali. Boylece zemin ayari
+     degistirilince bu da ayni yone kayiyor; sabit #f5f5f7 koyu bir
+     zeminde kartin uzerinde parlak bir leke birakirdi. */
+  --ttd-sessiz: color-mix(in srgb, var(--ttd-ink) 5%, var(--ttd-yuzey));
+
+  background: var(--ttd-zemin);
+  color: var(--ttd-ink);
+  font-variant-numeric: tabular-nums;
+}
+.ttd *, .ttd *::before, .ttd *::after { box-sizing: border-box; }
+
+@supports not (color: color-mix(in srgb, #000 5%, #fff)) {
+  .ttd { --ttd-sessiz: #f5f5f7; }
+}
+
+.ttd-ic {
+  max-width: var(--ttd-genislik);
+  margin: 0 auto;
+  padding: 40px 20px 56px;
+}
+
+/* --- Baslik --- */
+.ttd-bas { margin-bottom: 24px; text-align: center; }
+.ttd .ttd-baslik {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  /* Apple bakisi: buyuk puntoda harfleri hafif sikistir. */
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ttd-ink);
+}
+.ttd .ttd-altbaslik {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ttd-ink-2);
+}
+
+/* --- Secim kartlari: MOBILDE DE iki sutun --- */
+/* align-items BILEREK verilmiyor (yani stretch): iki kartin metni
+   farkli uzunlukta ve "start" ile sutunlar kendi boylarinda kaliyor,
+   boylece kartin ALTINDAKI "nasil calisir?" butonlari farkli
+   hizalarda duruyordu. Stretch ile iki sutun esit boyda; kart
+   height:100% ile bosluk aliyor ve iki buton ayni cizgide. */
+.ttd-secim {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.ttd-sutun { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+/* Kenarlik genisligi HER ZAMAN 1px; secili kart ic golgeyle 2px'e
+   cikiyor. Boylece secim degisince kart yeniden olculenmiyor ve
+   yanindaki kart 1px oynamiyor. */
+.ttd-kart {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 16px 14px;
+  border: 1px solid var(--ttd-line);
+  border-radius: var(--ttd-kose-kart);
+  background: var(--ttd-yuzey);
+  cursor: pointer;
+  transition: border-color var(--ttd-gecis) ease, box-shadow var(--ttd-gecis) ease;
+}
+.ttd-kart[aria-checked="true"] {
+  border-color: var(--ttd-secili);
+  box-shadow: inset 0 0 0 1px var(--ttd-secili);
+}
+.ttd-kart:focus-visible { outline: 2px solid var(--ttd-secili); outline-offset: 2px; }
+
+/* Radyo noktasi sag USTTE: kart basligi iki satira sardiginda bile
+   yeri degismiyor, mutlak konumlu. */
+.ttd-nokta {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--ttd-line);
+  border-radius: 50%;
+  background: var(--ttd-yuzey);
+  transition: border-color var(--ttd-gecis) ease, border-width var(--ttd-gecis) ease;
+}
+.ttd-kart[aria-checked="true"] .ttd-nokta { border: 5px solid var(--ttd-secili); }
+
+.ttd-etiket {
+  display: block;
+  /* Nokta icin sag tarafta yer birak: etiket uzun bir dilde noktanin
+     altina girmesin. */
+  padding-right: 26px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--ttd-ink-2);
+}
+.ttd-kart-baslik {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--ttd-ink);
+}
+/* margin-top:auto DENENDI VE KALDIRILDI: satirlari kartin dibine
+   itiyordu ve iki kartin basliklari farkli uzunlukta oldugu icin kisa
+   baslikli kartta basligin altinda bos bir delik kaliyordu. Satirlar
+   artik basligin hemen altinda; kartlarin esit boyda durmasini ve
+   altlarindaki butonlarin hizali kalmasini zaten sutun stretch'i
+   sagliyor. */
+.ttd-ozet { display: grid; gap: 8px; }
+.ttd-ozet-satir { display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
+.ttd-ozet-ikon { flex: 0 0 auto; width: 15px; height: 15px; margin-top: 1px; color: var(--ttd-ink-2); }
+.ttd-ozet-metin { font-size: 12px; line-height: 1.35; color: var(--ttd-ink-2); }
+
+/* --- "Nasil calisir?" ikincil butonu ---
+   Kartin DISINDA ve kartla ayni genislikte. Secimi degistirmiyor,
+   yalnizca paneli aciyor; bu yuzden kartla ayni gorsel agirlikta
+   degil: cercevesiz, sessiz zeminli. */
+.ttd-nasil {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: var(--ttd-kose-dugme);
+  background: var(--ttd-sessiz);
+  color: var(--ttd-ink);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--ttd-gecis) ease;
+}
+.ttd-nasil-ok { flex: 0 0 auto; width: 15px; height: 15px; color: var(--ttd-ink-2); }
+.ttd-nasil:focus-visible { outline: 2px solid var(--ttd-secili); outline-offset: 2px; }
+
+/* --- Couple bilgi seridi --- */
+.ttd .ttd-serit {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--ttd-kose-dugme);
+  background: var(--ttd-sessiz);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ttd-ink-2);
+}
+.ttd-serit[hidden] { display: none; }
+
+/* --- Filtre satiri --- */
+.ttd-filtre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+  transition: opacity var(--ttd-gecis) ease;
+}
+.ttd-chipler { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.ttd-chip {
+  padding: 7px 14px;
+  border: 1px solid var(--ttd-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ttd-ink);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--ttd-gecis) ease, color var(--ttd-gecis) ease,
+              border-color var(--ttd-gecis) ease;
+}
+.ttd-chip[aria-checked="true"] {
+  border-color: var(--ttd-secili);
+  background: var(--ttd-secili);
+  color: var(--ttd-yuzey);
+}
+.ttd-chip:focus-visible { outline: 2px solid var(--ttd-secili); outline-offset: 2px; }
+.ttd-sayi { flex: 0 0 auto; font-size: 13px; line-height: 1.2; color: var(--ttd-ink-2); }
+
+/* --- Urun izgarasi ---
+   Temanin card-grid sinifi DEGIL: her karo filtrelenebilir bir
+   sarmalayicida duruyor ve temanin izgarasi dogrudan-cocuk
+   secicilerine dayaniyor olabilirdi. Kartin KENDI gorunumu
+   sarmalayicidan etkilenmiyor. */
+.ttd-izgara {
+  display: grid;
+  grid-template-columns: repeat(var(--ttd-sutun-m), minmax(0, 1fr));
+  gap: 16px 12px;
+  margin-top: 20px;
+}
+.ttd-karo { position: relative; min-width: 0; transition: opacity var(--ttd-gecis) ease; }
+.ttd-karo[hidden] { display: none; }
+/* Filtre degisirken once soluyor, sonra yeni kume beliriyor. */
+.ttd-izgara[data-ttd-soluk] .ttd-karo { opacity: 0; }
+
+/* Couple rozeti urun kartinin ustunde, sol ust kosede. Kartin kendi
+   rozetleri sag/sol duruma gore konumlaniyor; bu yuzden z-index
+   veriliyor ama kartin hicbir kurali degistirilmiyor. */
+.ttd-rozet {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--ttd-secili);
+  color: var(--ttd-yuzey);
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.ttd-rozet[hidden] { display: none; }
+
+/* --- Upsell karti: izgaranin icinde, tam genislikte --- */
+.ttd-upsell {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--ttd-line);
+  border-radius: var(--ttd-kose-kart);
+  background: var(--ttd-yuzey);
+}
+.ttd-upsell[hidden] { display: none; }
+.ttd-upsell-metin { display: grid; gap: 6px; }
+.ttd-upsell-baslik { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; }
+.ttd-upsell-alt { font-size: 13px; line-height: 1.45; color: var(--ttd-ink-2); }
+.ttd-upsell-dugme {
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ttd-secili);
+  color: var(--ttd-yuzey);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.ttd-upsell-dugme:focus-visible { outline: 2px solid var(--ttd-secili); outline-offset: 2px; }
+
+.ttd .ttd-bos {
+  margin: 28px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--ttd-ink-2);
+}
+.ttd-bos[hidden] { display: none; }
+
+/* ------------------------------------------------------------------
+   PANEL (native <dialog>)
+   Mobilde alttan yukari kayan sayfa, masaustunde ortada modal.
+   showModal() kullaniliyor: odak tuzagi, arka planin inert olmasi ve
+   ESC ile kapanma tarayicidan bedava geliyor.
+   ------------------------------------------------------------------ */
+.ttd-panel {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  /* Alttan acilan sayfa: ust marj auto, alt marj 0. */
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ttd-ink);
+  overflow: visible;
+}
+.ttd-panel::backdrop { background: rgb(0 0 0 / .45); }
+
+.ttd-panel-ic {
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+  padding: 8px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  border-top-left-radius: var(--ttd-kose-kart, 22px);
+  border-top-right-radius: var(--ttd-kose-kart, 22px);
+  background: var(--ttd-yuzey, #fff);
+  /* Surukleme sirasinda JS burayi oynatiyor. Gecis sinif ile
+     aciliyor ki parmakla surukleme gecikmeli hissettirmesin. */
+  transform: translateY(0);
+}
+.ttd-panel-ic[data-ttd-yumusak] { transition: transform 220ms ease; }
+
+/* Surukleme tutamagi: yalnizca mobilde anlamli. */
+.ttd-panel-tut {
+  width: 38px;
+  height: 4px;
+  margin: 4px auto 10px;
+  border-radius: 999px;
+  background: var(--ttd-line);
+  /* Parmak alani cizginin kendisinden buyuk olsun. */
+  box-sizing: content-box;
+  padding: 10px 24px;
+  background-clip: content-box;
+  cursor: grab;
+  touch-action: none;
+}
+
+.ttd-panel-bas {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+}
+.ttd .ttd-panel-baslik {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.ttd-panel-kapat {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--ttd-line);
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.ttd-panel-kapat svg { width: 13px; height: 13px; }
+
+.ttd-panel-govde {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.ttd-panel-giris { font-size: 14px; line-height: 1.5; color: var(--ttd-ink-2); }
+.ttd-panel-giris :is(p, ul, ol) { margin: 0 0 10px; }
+.ttd-panel-giris :is(p, ul, ol):last-child { margin-bottom: 0; }
+
+.ttd-panel-adimlar { display: grid; gap: 16px; margin-top: 18px; }
+.ttd-panel-adim { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.ttd-panel-cip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ttd-sessiz);
+}
+.ttd-panel-ikon { width: 18px; height: 18px; color: var(--ttd-ink); }
+.ttd-panel-metin { min-width: 0; }
+.ttd-panel-adim-bas { display: block; font-size: 14px; font-weight: 500; line-height: 1.35; }
+.ttd-panel-adim-alt { display: block; margin-top: 3px; font-size: 13px; line-height: 1.45; color: var(--ttd-ink-2); }
+
+.ttd-panel-alt { padding-top: 16px; }
+.ttd-panel-sec {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ttd-secili);
+  color: var(--ttd-yuzey);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+/* Acilis: mobilde asagidan yukari. */
+@keyframes ttd-yukari { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes ttd-belir { from { opacity: 0; } to { opacity: 1; } }
+.ttd-panel[open] .ttd-panel-ic { animation: ttd-yukari 260ms cubic-bezier(.32, .72, 0, 1); }
+.ttd-panel[open]::backdrop { animation: ttd-belir 260ms ease; }
+
+/* ------------------------------------------------------------------
+   MASAUSTU
+   ------------------------------------------------------------------ */
+@media (min-width: 750px) {
+  .ttd-ic { padding: 64px 40px 80px; }
+  .ttd-bas { margin-bottom: 32px; }
+  .ttd .ttd-baslik { font-size: 40px; }
+  .ttd .ttd-altbaslik { font-size: 17px; }
+
+  .ttd-secim { gap: 20px; }
+  .ttd-kart { gap: 12px; padding: 22px 20px; }
+  .ttd-nokta { top: 18px; right: 18px; }
+  .ttd-kart-baslik { font-size: 19px; }
+  .ttd-ozet-metin { font-size: 13px; }
+  .ttd-nasil { padding: 13px 18px; font-size: 14px; }
+
+  .ttd-izgara {
+    grid-template-columns: repeat(var(--ttd-sutun-d), minmax(0, 1fr));
+    gap: 28px 20px;
+    margin-top: 28px;
+  }
+
+  .ttd-upsell {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 24px 28px;
+  }
+  .ttd-upsell-baslik { font-size: 18px; }
+
+  /* Panel masaustunde ORTADA: alttan acilan sayfa kucuk ekranin
+     cozumu, genis ekranda ekranin dibinde duran bir seride donusurdu. */
+  .ttd-panel { max-width: 520px; margin: auto; }
+  .ttd-panel-ic {
+    max-height: 82vh;
+    padding: 24px 28px 28px;
+    border-radius: var(--ttd-kose-kart, 22px);
+  }
+  .ttd-panel-tut { display: none; }
+  .ttd-panel[open] .ttd-panel-ic { animation: ttd-belir 200ms ease; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ttd-nasil:hover { background: color-mix(in srgb, var(--ttd-ink) 9%, var(--ttd-yuzey)); }
+  .ttd-chip[aria-checked="false"]:hover { border-color: var(--ttd-ink-2); }
+  .ttd-upsell-dugme:hover, .ttd-panel-sec:hover { opacity: .88; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ttd *, .ttd-panel * { transition: none !important; animation: none !important; }
+}
