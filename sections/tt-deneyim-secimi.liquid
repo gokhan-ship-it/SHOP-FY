@@ -28,7 +28,7 @@
   indirimi var (1 al / 1'ini %50 indirimli al) ve kapsami tam olarak
   bu iki koleksiyonu iceriyor. Yani indirim sepet seviyesinde
   kendiliginden calisiyor. Couple modu urun listesini DEGISTIRMIYOR,
-  yalnizca anlatimi degistiriyor: bilgi seridi ve kart rozetleri.
+  yalnizca anlatimi degistiriyor: kart rozeti ve urun karti rozetleri.
 
   Ayri "Couple Urunler" koleksiyonu (23 urun) BILEREK kullanilmadi:
   o urunlerin 20'si indirimin kapsami disinda ve fiyatlari tekli
@@ -73,8 +73,36 @@
     sozdizimi hatasi veriyor (Shopify dogrulayicisi yakaladi).
   endcomment
   assign modlar = 'single,couple' | split: ','
-  assign uclu = '1,2,3' | split: ','
+  assign ikili = '1,2' | split: ','
   assign dortlu = '1,2,3,4' | split: ','
+
+  comment
+    SINGLE KARTINDAKI BASLANGIC FIYATI
+    Izgarada BASILAN urunlerin en dusugunden turetiliyor. Ayri bir
+    koleksiyondan hesaplamak, listede gorunmeyen bir urunun fiyatini
+    vaat etme riski tasirdi.
+
+    money_without_trailing_zeros kullaniliyor, elle string ayristirma
+    YOK: ayirici karakter magazanin para birimi bicimine bagli ve
+    ',' uzerinden bolmek daha once "1.400,00" -> "1.400" ama
+    "1,400.00" -> "1" verip ekranda "+1" goruntusune yol acmisti.
+  endcomment
+  assign en_ucuz = 0
+  for p in kadin_kol.products
+    if en_ucuz == 0 or p.price_min < en_ucuz
+      assign en_ucuz = p.price_min
+    endif
+  endfor
+  for p in erkek_kol.products
+    if en_ucuz == 0 or p.price_min < en_ucuz
+      assign en_ucuz = p.price_min
+    endif
+  endfor
+  if en_ucuz > 0
+    assign fiyat_metni = en_ucuz | money_without_trailing_zeros | append: s.fiyat_ek
+  else
+    assign fiyat_metni = s.single_fiyat_yedek
+  endif
 -%}
 
 {%- if s.aktif -%}
@@ -85,15 +113,20 @@
        data-ttd-upsell-sira="{{ s.upsell_sira }}"
        data-ttd-sayi-metin="{{ s.sayi_metin | escape }}"
        {% if s.upsell_aktif %}data-ttd-upsell-acik{% endif %}
+       {% if s.gorsel_beyazlat %}data-ttd-gorsel-beyaz{% endif %}
        style="
          --ttd-zemin: {{ s.zemin }};
          --ttd-ink: {{ s.ink }};
          --ttd-ink-2: {{ s.ink_2 }};
          --ttd-line: {{ s.line }};
          --ttd-yuzey: {{ s.yuzey }};
+         --ttd-kart-zemin: {{ s.kart_zemin }};
+         --ttd-koyu: {{ s.koyu }};
+         --ttd-koyu-yazi: {{ s.koyu_yazi }};
+         --ttd-pill-zemin: {{ s.pill_zemin }};
+         --ttd-pill-yazi: {{ s.pill_yazi }};
          --ttd-secili: {{ s.secili_renk }};
          --ttd-kose-kart: {{ s.kose_kart }}px;
-         --ttd-kose-dugme: {{ s.kose_dugme }}px;
          --ttd-genislik: {{ s.genislik }}px;
          --ttd-sutun-m: {{ s.urun_sutun_m }};
          --ttd-sutun-d: {{ s.urun_sutun_d }};
@@ -122,45 +155,61 @@
             if mod == 'single'
               assign etiket = s.single_etiket
               assign kb = s.single_baslik
-              assign nasil = s.single_nasil
+              assign gorsel = s.single_gorsel
               assign i1 = s.single_s1_ikon
               assign m1 = s.single_s1_metin
               assign i2 = s.single_s2_ikon
               assign m2 = s.single_s2_metin
-              assign i3 = s.single_s3_ikon
-              assign m3 = s.single_s3_metin
             else
               assign etiket = s.couple_etiket
               assign kb = s.couple_baslik
-              assign nasil = s.couple_nasil
+              assign gorsel = s.couple_gorsel
               assign i1 = s.couple_s1_ikon
               assign m1 = s.couple_s1_metin
               assign i2 = s.couple_s2_ikon
               assign m2 = s.couple_s2_metin
-              assign i3 = s.couple_s3_ikon
-              assign m3 = s.couple_s3_metin
             endif
           -%}
           <div class="ttd-sutun">
             <div class="ttd-kart" role="radio" tabindex="-1"
                  data-ttd-mod="{{ mod }}" aria-checked="false">
-              <span class="ttd-nokta" aria-hidden="true"></span>
+
+              {%- comment -%}
+                GORSEL ALANI
+                Kac urun alindigini artik bu anlatiyor: Single'da tek
+                kapsul, Couple'da iki. "1 urun / 2 urun" satirlari bu
+                yuzden kaldirildi.
+
+                Gorsel yuklenmemisse cizgi ikonu devreye giriyor.
+                Ikon currentColor ile ciziliyor, yani secili koyu
+                kartta kendiliginden beyaza donuyor -- fotograf icin
+                ayni sey gecerli degil, onu asagidaki sinif hallediyor.
+              {%- endcomment -%}
+              <span class="ttd-gorsel" aria-hidden="true">
+                {%- if gorsel != blank -%}
+                  <img class="ttd-gorsel-img" src="{{ gorsel | image_url: width: 360 }}"
+                       alt="" loading="lazy" width="180" height="80">
+                {%- else -%}
+                  {%- render 'tt-deneyim-ikon', ad: 'kapsul', sinif: 'ttd-kapsul' -%}
+                  {%- if mod == 'couple' -%}
+                    {%- render 'tt-deneyim-ikon', ad: 'kapsul', sinif: 'ttd-kapsul' -%}
+                  {%- endif -%}
+                {%- endif -%}
+              </span>
+
               <span class="ttd-etiket">{{ etiket }}</span>
               <span class="ttd-kart-baslik">{{ kb }}</span>
+
               <span class="ttd-ozet" role="list">
-                {%- for n in uclu -%}
+                {%- for n in ikili -%}
                   {%- liquid
-                    case n
-                      when '1'
-                        assign ik = i1
-                        assign mt = m1
-                      when '2'
-                        assign ik = i2
-                        assign mt = m2
-                      else
-                        assign ik = i3
-                        assign mt = m3
-                    endcase
+                    if n == '1'
+                      assign ik = i1
+                      assign mt = m1
+                    else
+                      assign ik = i2
+                      assign mt = m2
+                    endif
                   -%}
                   {%- if mt != blank -%}
                     <span class="ttd-ozet-satir" role="listitem">
@@ -170,17 +219,38 @@
                   {%- endif -%}
                 {%- endfor -%}
               </span>
+
+              {%- comment -%}
+                Single'da baslangic fiyati, Couple'da fiyat yerine
+                teklif rozeti. Ikisi de kartin DIBINDE ve ayni
+                cizgide (CSS'te margin-top:auto).
+              {%- endcomment -%}
+              <span class="ttd-fiyat">
+                {%- if mod == 'single' -%}
+                  {%- if fiyat_metni != blank -%}
+                    <span class="ttd-fiyat-metin">{{ fiyat_metni }}</span>
+                  {%- endif -%}
+                {%- else -%}
+                  {%- if s.couple_pill != blank -%}
+                    <span class="ttd-pill">{{ s.couple_pill }}</span>
+                  {%- endif -%}
+                {%- endif -%}
+              </span>
             </div>
 
             {%- comment -%}
-              Bu buton secimi DEGISTIRMIYOR, yalnizca paneli aciyor.
+              Bu link secimi DEGISTIRMIYOR, yalnizca paneli aciyor.
               Kartin disinda duruyor ki karta basmakla karismasin.
+
+              Iki link de ayni metni tasiyor; hangi deneyimin panelini
+              actigini ekran okuyucuya aria-label soyluyor.
             {%- endcomment -%}
             <button type="button" class="ttd-nasil"
                     data-ttd-panel-ac="{{ mod }}"
                     aria-haspopup="dialog"
-                    aria-controls="ttdPanel-{{ mod }}-{{ sid }}">
-              <span>{{ nasil }}</span>
+                    aria-controls="ttdPanel-{{ mod }}-{{ sid }}"
+                    aria-label="{{ etiket }} — {{ s.nasil_metin | escape }}">
+              <span>{{ s.nasil_metin }}</span>
               <svg class="ttd-nasil-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
                    aria-hidden="true" focusable="false"><path d="M5 12h13M12 6l6 6-6 6"/></svg>
@@ -188,14 +258,6 @@
           </div>
         {%- endfor -%}
       </div>
-
-      {%- comment -%}
-        Couple bilgi seridi: urun listesi degismiyor, anlatim degisiyor.
-        Otomatik BXGY indirimi bu koleksiyonlarda zaten gecerli.
-      {%- endcomment -%}
-      {%- if s.couple_serit != blank -%}
-        <p class="ttd-serit" data-ttd-serit hidden>{{ s.couple_serit }}</p>
-      {%- endif -%}
 
       {%- comment -%} --- Filtre satiri --- {%- endcomment -%}
       <div class="ttd-filtre" data-ttd-filtre>
@@ -407,37 +469,39 @@
       "info": "Adres satırında ?deneyim=couple varsa o kazanır." },
 
     { "type": "header", "content": "Single kartı" },
+    { "type": "image_picker", "id": "single_gorsel", "label": "Kapsül görseli",
+      "info": "Boş bırakılırsa çizgi ikonu kullanılır. Seçili koyu kartta beyazlatıldığı için şeffaf zeminli çizgi/silüet görsel yükleyin; fotoğraf beyaz bir lekeye döner." },
     { "type": "text", "id": "single_etiket", "label": "Üst etiket", "default": "SINGLE" },
-    { "type": "text", "id": "single_baslik", "label": "Başlık", "default": "Sen yükle, tarihi sen seç." },
-    { "type": "text", "id": "single_s1_metin", "label": "1. satır", "default": "1 ürün" },
-    { "type": "select", "id": "single_s1_ikon", "label": "1. satır ikonu", "default": "urun",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
-    { "type": "text", "id": "single_s2_metin", "label": "2. satır", "default": "Sadece sen yüklersin" },
-    { "type": "select", "id": "single_s2_ikon", "label": "2. satır ikonu", "default": "kisi",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
-    { "type": "text", "id": "single_s3_metin", "label": "3. satır", "default": "Seçtiğin tarihte açılır" },
-    { "type": "select", "id": "single_s3_ikon", "label": "3. satır ikonu", "default": "takvim",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
-    { "type": "text", "id": "single_nasil", "label": "Panel butonu", "default": "Single nasıl çalışır?" },
+    { "type": "text", "id": "single_baslik", "label": "Başlık", "default": "Tarihini sen seç." },
+    { "type": "text", "id": "single_s1_metin", "label": "1. satır", "default": "Sen yüklersin" },
+    { "type": "select", "id": "single_s1_ikon", "label": "1. satır ikonu", "default": "kisi",
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
+    { "type": "text", "id": "single_s2_metin", "label": "2. satır", "default": "Bir tarihte açılır" },
+    { "type": "select", "id": "single_s2_ikon", "label": "2. satır ikonu", "default": "takvim",
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ],
+      "info": "390px telefonda satır metni için ~112px yer var (12px yazı). Daha uzun metin alt satıra sarar; düzen bozulmaz ama kart uzar. 320px gibi dar ekranlarda kısa metinler bile sarabilir." },
+    { "type": "paragraph", "content": "Fiyat, ızgarada basılan ürünlerin en düşüğünden otomatik hesaplanır. Hesaplanamazsa aşağıdaki yedek metin kullanılır." },
+    { "type": "text", "id": "fiyat_ek", "label": "Fiyat eki", "default": "'den" },
+    { "type": "text", "id": "single_fiyat_yedek", "label": "Yedek fiyat metni", "default": "2.299 TL'den" },
 
     { "type": "header", "content": "Couple kartı" },
+    { "type": "image_picker", "id": "couple_gorsel", "label": "Kapsül görseli (iki kapsül)",
+      "info": "Boş bırakılırsa yan yana iki çizgi ikonu kullanılır." },
     { "type": "text", "id": "couple_etiket", "label": "Üst etiket", "default": "COUPLE" },
-    { "type": "text", "id": "couple_baslik", "label": "Başlık", "default": "İkiniz yükleyin, buluşunca açılsın." },
-    { "type": "text", "id": "couple_s1_metin", "label": "1. satır", "default": "2 ürün" },
-    { "type": "select", "id": "couple_s1_ikon", "label": "1. satır ikonu", "default": "urunler",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
-    { "type": "text", "id": "couple_s2_metin", "label": "2. satır", "default": "İkiniz birlikte yüklersiniz" },
-    { "type": "select", "id": "couple_s2_ikon", "label": "2. satır ikonu", "default": "kisiler",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
-    { "type": "text", "id": "couple_s3_metin", "label": "3. satır", "default": "Her buluştuğunuzda açılır" },
-    { "type": "select", "id": "couple_s3_ikon", "label": "3. satır ikonu", "default": "kalp",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
-    { "type": "text", "id": "couple_nasil", "label": "Panel butonu", "default": "Couple nasıl çalışır?" },
+    { "type": "text", "id": "couple_baslik", "label": "Başlık", "default": "Buluşunca açılır." },
+    { "type": "text", "id": "couple_s1_metin", "label": "1. satır", "default": "İkiniz yüklersiniz" },
+    { "type": "select", "id": "couple_s1_ikon", "label": "1. satır ikonu", "default": "kisiler",
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
+    { "type": "text", "id": "couple_s2_metin", "label": "2. satır", "default": "Her buluşmada" },
+    { "type": "select", "id": "couple_s2_ikon", "label": "2. satır ikonu", "default": "dongu",
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ],
+      "info": "390px telefonda satır metni için ~112px yer var (12px yazı). Daha uzun metin alt satıra sarar; düzen bozulmaz ama kart uzar. 320px gibi dar ekranlarda kısa metinler bile sarabilir." },
+    { "type": "text", "id": "couple_pill", "label": "Teklif rozeti", "default": "2. ürün %50" },
 
     { "type": "header", "content": "Couple modu anlatımı" },
     { "type": "paragraph", "content": "Couple modunda ürün listesi DEĞİŞMEZ. Mağazadaki otomatik \"İkinci Üründe %50 İndirim\" kampanyası bu koleksiyonlarda zaten geçerli; müşteri 2 ürün aldığında sepette kendiliğinden uygulanır. Bu bölüm sepete ve indirime dokunmaz." },
-    { "type": "text", "id": "couple_serit", "label": "Bilgi şeridi", "default": "Couple'da 2 ürün alınır. İkincisi yarı fiyatına, sepette otomatik uygulanır." },
-    { "type": "text", "id": "couple_rozet", "label": "Kart rozeti", "default": "İkincisi yarı fiyatına" },
+    { "type": "text", "id": "couple_rozet", "label": "Ürün kartı rozeti", "default": "İkincisi yarı fiyatına",
+      "info": "Couple modunda ürün ızgarasındaki kartların üstünde çıkar. Seçim kartındaki rozet ayrı (yukarıda)." },
 
     { "type": "header", "content": "Filtre satırı" },
     { "type": "text", "id": "kime_etiket", "label": "Filtre grubu adı (ekran okuyucu)", "default": "Kime alıyorsun?" },
@@ -461,19 +525,19 @@
     { "type": "text", "id": "single_p1_bas", "label": "1. adım", "default": "Çipi telefonuna dokundur" },
     { "type": "text", "id": "single_p1_alt", "label": "1. adım açıklaması", "default": "Ürün eline ulaştığında çipi telefonuna dokundurarak kapsülünü etkinleştirirsin." },
     { "type": "select", "id": "single_p1_ikon", "label": "1. adım ikonu", "default": "yukle",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
     { "type": "text", "id": "single_p2_bas", "label": "2. adım", "default": "Anılarını yükle" },
     { "type": "text", "id": "single_p2_alt", "label": "2. adım açıklaması", "default": "Dilediğin kadar fotoğraf, video, ses kaydı ve not ekleyebilirsin." },
     { "type": "select", "id": "single_p2_ikon", "label": "2. adım ikonu", "default": "kisi",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
     { "type": "text", "id": "single_p3_bas", "label": "3. adım", "default": "Zamanı belirle ve kilitle" },
     { "type": "text", "id": "single_p3_alt", "label": "3. adım açıklaması", "default": "Belirlediğin tarih ve saate kadar geri sayım başlar, o güne kadar kimse göremez." },
     { "type": "select", "id": "single_p3_ikon", "label": "3. adım ikonu", "default": "takvim",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
     { "type": "text", "id": "single_p4_bas", "label": "4. adım", "default": "Tam zamanında açılsın" },
     { "type": "text", "id": "single_p4_alt", "label": "4. adım açıklaması", "default": "Geri sayım bittiğinde çipi telefona dokundurarak kapsül açılır. Sonra tekrar kilitleyebilirsin." },
     { "type": "select", "id": "single_p4_ikon", "label": "4. adım ikonu", "default": "kilit-acik",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
 
     { "type": "header", "content": "Couple paneli" },
     { "type": "text", "id": "couple_panel_baslik", "label": "Panel başlığı", "default": "Couple nasıl çalışır?" },
@@ -481,21 +545,22 @@
     { "type": "text", "id": "couple_p1_bas", "label": "1. adım", "default": "İkiniz de kendi çipinizi bağlayın" },
     { "type": "text", "id": "couple_p1_alt", "label": "1. adım açıklaması", "default": "Her biriniz kendi ürününüzü telefonunuza dokundurup aynı kapsüle bağlanırsınız." },
     { "type": "select", "id": "couple_p1_ikon", "label": "1. adım ikonu", "default": "kisiler",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
     { "type": "text", "id": "couple_p2_bas", "label": "2. adım", "default": "Ortak kapsüle yükleyin" },
     { "type": "text", "id": "couple_p2_alt", "label": "2. adım açıklaması", "default": "İkiniz de kendi telefonunuzdan aynı kapsüle içerik eklersiniz." },
     { "type": "select", "id": "couple_p2_ikon", "label": "2. adım ikonu", "default": "yukle",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
     { "type": "text", "id": "couple_p3_bas", "label": "3. adım", "default": "Buluşana kadar kilitli kalır" },
     { "type": "text", "id": "couple_p3_alt", "label": "3. adım açıklaması", "default": "Karşı tarafın ne yüklediğini göremezsiniz." },
     { "type": "select", "id": "couple_p3_ikon", "label": "3. adım ikonu", "default": "kilit",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
     { "type": "text", "id": "couple_p4_bas", "label": "4. adım", "default": "Buluşunca birlikte açılır" },
     { "type": "text", "id": "couple_p4_alt", "label": "4. adım açıklaması", "default": "Uzaklaştığınızda tekrar kilitlenir. Buluştukça hikâyeniz birikir." },
     { "type": "select", "id": "couple_p4_ikon", "label": "4. adım ikonu", "default": "kalp",
-      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
+      "options": [ { "value": "urun", "label": "Ürün" }, { "value": "urunler", "label": "İki ürün" }, { "value": "kisi", "label": "Tek kişi" }, { "value": "kisiler", "label": "İki kişi" }, { "value": "takvim", "label": "Takvim" }, { "value": "kilit", "label": "Kilit" }, { "value": "kilit-acik", "label": "Açık kilit" }, { "value": "kalp", "label": "Kalp" }, { "value": "yukle", "label": "Yükleme" }, { "value": "saat", "label": "Saat" }, { "value": "hediye", "label": "Hediye" }, { "value": "dongu", "label": "Döngü" }, { "value": "kapsul", "label": "Kapsül" }, { "value": "sonsuz", "label": "Sonsuz" } ] },
 
     { "type": "header", "content": "Panel genel" },
+    { "type": "text", "id": "nasil_metin", "label": "\"Nasıl çalışır\" link metni", "default": "Nasıl çalışır" },
     { "type": "text", "id": "panel_sec_metin", "label": "Alttaki buton", "default": "Bu deneyimi seç" },
     { "type": "text", "id": "panel_kapat_etiket", "label": "Kapat (ekran okuyucu)", "default": "Kapat" },
 
@@ -505,17 +570,23 @@
       "options": [ { "value": "1", "label": "1 sütun" }, { "value": "2", "label": "2 sütun" } ],
       "info": "range olarak yazılamıyor: Shopify aralık ayarında en az 3 adım istiyor." },
     { "type": "range", "id": "urun_sutun_d", "label": "Ürün sütunu — masaüstü", "min": 2, "max": 5, "step": 1, "default": 4 },
-    { "type": "range", "id": "kose_kart", "label": "Kart köşe yuvarlaklığı", "min": 12, "max": 32, "step": 1, "unit": "px", "default": 22 },
-    { "type": "range", "id": "kose_dugme", "label": "İkincil buton köşesi", "min": 8, "max": 24, "step": 1, "unit": "px", "default": 14 },
+    { "type": "range", "id": "kose_kart", "label": "Kart köşe yuvarlaklığı", "min": 12, "max": 32, "step": 1, "unit": "px", "default": 20 },
     { "type": "range", "id": "gecis_sure", "label": "Geçiş süresi", "min": 0, "max": 400, "step": 10, "unit": "ms", "default": 220 },
 
     { "type": "header", "content": "Renkler" },
     { "type": "color", "id": "zemin", "label": "Bölüm zemini", "default": "#f8f8f8" },
-    { "type": "color", "id": "yuzey", "label": "Kart zemini", "default": "#ffffff" },
+    { "type": "color", "id": "yuzey", "label": "Yüzey (upsell kartı, panel)", "default": "#ffffff" },
+    { "type": "color", "id": "kart_zemin", "label": "Seçim kartı — seçili değilken", "default": "#f0f0f2" },
+    { "type": "color", "id": "koyu", "label": "Seçim kartı — seçiliyken zemin", "default": "#1d1d1f" },
+    { "type": "color", "id": "koyu_yazi", "label": "Seçim kartı — seçiliyken yazı", "default": "#ffffff" },
+    { "type": "checkbox", "id": "gorsel_beyazlat", "label": "Seçili kartta görseli beyazlat", "default": true,
+      "info": "Şeffaf zeminli çizgi/silüet görsellerde doğru çalışır. Fotoğraf kullanıyorsanız kapatın." },
+    { "type": "color", "id": "pill_zemin", "label": "Teklif rozeti zemini", "default": "#dcfce7" },
+    { "type": "color", "id": "pill_yazi", "label": "Teklif rozeti yazısı", "default": "#166534" },
     { "type": "color", "id": "ink", "label": "Metin", "default": "#1d1d1f" },
-    { "type": "color", "id": "ink_2", "label": "İkincil metin", "default": "#6e6e73" },
+    { "type": "color", "id": "ink_2", "label": "İkincil metin", "default": "#68686d" },
     { "type": "color", "id": "line", "label": "Çizgi", "default": "#d2d2d7" },
-    { "type": "color", "id": "secili_renk", "label": "Seçili çerçeve", "default": "#1d1d1f" }
+    { "type": "color", "id": "secili_renk", "label": "Vurgu rengi (chip, buton, odak)", "default": "#1d1d1f" }
   ],
   "presets": [
     { "name": "Deneyim Seçimi" }

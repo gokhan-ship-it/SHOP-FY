@@ -9,7 +9,8 @@
   CAGIRAN tarafta belirleniyor; buradan sabit bir olcu gelmiyor.
 
   @param {string} ad - Ikon anahtari (urun, urunler, kisi, kisiler, takvim,
-                       kilit, kilit-acik, kalp, yukle, saat, hediye, sonsuz)
+                       kilit, kilit-acik, kalp, yukle, saat, hediye, sonsuz,
+                       kapsul, dongu)
   @param {string} [sinif] - Ek CSS sinifi
 
   @example
@@ -45,6 +46,15 @@
       <circle cx="12" cy="12" r="8.6"/><path d="M12 7.2V12l3.2 2"/>
     {%- when 'hediye' -%}
       <rect x="3.2" y="9.6" width="17.6" height="11.2" rx="2"/><path d="M3.2 14h17.6M12 9.6V21"/><path d="M12 9.6S10.6 5 8.4 5a2.2 2.2 0 0 0 0 4.6Z"/><path d="M12 9.6S13.4 5 15.6 5a2.2 2.2 0 0 1 0 4.6Z"/>
+    {%- when 'kapsul' -%}
+      {%- comment -%}
+        Kapsul: elmas/altigen govde + ustunde tasima halkasi. Gorsel
+        yuklenmediginde devreye giriyor; currentColor oldugu icin
+        secili koyu kartta kendiliginden beyaza donuyor.
+      {%- endcomment -%}
+      <path d="M12 7.2 16.4 13 12 18.8 7.6 13Z"/><circle cx="12" cy="4.6" r="1.9"/><path d="M12 6.5v.7"/>
+    {%- when 'dongu' -%}
+      <path d="M20.2 12a8.2 8.2 0 0 1-13.9 5.9"/><path d="M3.8 12a8.2 8.2 0 0 1 13.9-5.9"/><path d="M17.7 2.6v3.7h-3.7"/><path d="M6.3 21.4v-3.7h3.7"/>
     {%- when 'sonsuz' -%}
       <path d="M8.4 8.6a3.4 3.4 0 1 0 0 6.8c2.6 0 4-6.8 6.6-6.8a3.4 3.4 0 1 1 0 6.8c-2.6 0-4-6.8-6.6-6.8Z"/>
     {%- else -%}

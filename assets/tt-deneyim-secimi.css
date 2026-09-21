@@ -1,7 +1,9 @@
 /* ------------------------------------------------------------------
    KOLEKSIYON SAYFASI - DENEYIM SECIMI  (.ttd-*)
 
-   Golge yok, degrade yok. Ayrimi INCE CERCEVE ve ZEMIN TONU yapiyor.
+   Golge yok, degrade yok. Secim kartlarinda cerceve de yok: secili
+   olan koyu zemin + beyaz yazi, digeri acik gri. Kalan yuzeylerde
+   (upsell karti, chip) ayrimi ince cerceve yapiyor.
    Renkler bolum ayarindan geliyor; buradaki var() degerleri yalnizca
    ayar okunamazsa devreye giren yedekler.
 
@@ -13,20 +15,38 @@
   --ttd-zemin: #f8f8f8;
   --ttd-yuzey: #ffffff;
   --ttd-ink: #1d1d1f;
-  --ttd-ink-2: #6e6e73;
+  /* #6e6e73 DEGIL: secili olmayan kartin #f0f0f2 zemininde 4.46:1
+     veriyordu ve AA'yi kil payi kaciriyordu. #68686d ayni zeminde
+     4.87:1. */
+  --ttd-ink-2: #68686d;
   --ttd-line: #d2d2d7;
   --ttd-secili: #1d1d1f;
-  --ttd-kose-kart: 22px;
-  --ttd-kose-dugme: 14px;
+
+  /* --- SECIM KARTININ IKI HALI ---
+     Secim artik cerceveyle degil ZEMINLE anlatiliyor: secili kart
+     koyu ve beyaz yazili, secili olmayan acik gri. Olculdu:
+       beyaz / #1d1d1f            16.8:1
+       beyazin %75'i / #1d1d1f     9.3:1
+       #1d1d1f / #f0f0f2          14.8:1
+       #68686d / #f0f0f2           4.9:1
+     Kart zemini bolum zemininden (#f8f8f8) de ayirt ediliyor. */
+  --ttd-kart-zemin: #f0f0f2;
+  --ttd-koyu: #1d1d1f;
+  --ttd-koyu-yazi: #ffffff;
+  /* Teklif rozeti: #166534 / #dcfce7 = 6.5:1. Daha acik yesil
+     (#15803d) 4.57:1 ile siniri ancak geciyordu. */
+  --ttd-pill-zemin: #dcfce7;
+  --ttd-pill-yazi: #166534;
+  --ttd-kose-kart: 20px;
   --ttd-genislik: 1200px;
   --ttd-sutun-m: 2;
   --ttd-sutun-d: 4;
   --ttd-gecis: 220ms;
 
-  /* Ikincil butonun ve seridin zemini: sabit gri DEGIL, metin renginin
-     %5'i kart zeminine karistirilmis hali. Boylece zemin ayari
-     degistirilince bu da ayni yone kayiyor; sabit #f5f5f7 koyu bir
-     zeminde kartin uzerinde parlak bir leke birakirdi. */
+  /* Panel adim ciplerinin zemini: sabit gri DEGIL, metin renginin
+     %5'i yuzeye karistirilmis hali. Boylece renk ayari degistirilince
+     bu da ayni yone kayiyor; sabit #f5f5f7 koyu bir yuzeyde parlak
+     bir leke birakirdi. */
   --ttd-sessiz: color-mix(in srgb, var(--ttd-ink) 5%, var(--ttd-yuzey));
 
   background: var(--ttd-zemin);
@@ -72,13 +92,13 @@
 .ttd-secim {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 .ttd-sutun { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 
-/* Kenarlik genisligi HER ZAMAN 1px; secili kart ic golgeyle 2px'e
-   cikiyor. Boylece secim degisince kart yeniden olculenmiyor ve
-   yanindaki kart 1px oynamiyor. */
+/* Cerceve YOK. Secili/secili degil ayrimini tamamen zemin yapiyor;
+   kenarlik kalmadigi icin secim degisince olcu de degismiyor, yani
+   yanindaki kart oynamiyor. */
 .ttd-kart {
   position: relative;
   display: flex;
@@ -86,38 +106,52 @@
   gap: 10px;
   height: 100%;
   padding: 16px 14px;
-  border: 1px solid var(--ttd-line);
+  border: 0;
   border-radius: var(--ttd-kose-kart);
-  background: var(--ttd-yuzey);
+  background: var(--ttd-kart-zemin);
+  color: var(--ttd-ink);
   cursor: pointer;
-  transition: border-color var(--ttd-gecis) ease, box-shadow var(--ttd-gecis) ease;
+  transition: background-color var(--ttd-gecis) ease, color var(--ttd-gecis) ease;
 }
 .ttd-kart[aria-checked="true"] {
-  border-color: var(--ttd-secili);
-  box-shadow: inset 0 0 0 1px var(--ttd-secili);
+  background: var(--ttd-koyu);
+  color: var(--ttd-koyu-yazi);
 }
 .ttd-kart:focus-visible { outline: 2px solid var(--ttd-secili); outline-offset: 2px; }
 
-/* Radyo noktasi sag USTTE: kart basligi iki satira sardiginda bile
-   yeri degismiyor, mutlak konumlu. */
-.ttd-nokta {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 18px;
-  height: 18px;
-  border: 1.5px solid var(--ttd-line);
-  border-radius: 50%;
-  background: var(--ttd-yuzey);
-  transition: border-color var(--ttd-gecis) ease, border-width var(--ttd-gecis) ease;
+/* --- Gorsel alani ---
+   Kac urun alindigini anlatan yer burasi: Single'da tek kapsul,
+   Couple'da iki. Yukseklik SABIT, boylece iki kartin etiketi ayni
+   cizgiden basliyor -- gorsellerin en-boy orani farkli olsa bile. */
+.ttd-gorsel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 80px;
+  margin-bottom: 2px;
 }
-.ttd-kart[aria-checked="true"] .ttd-nokta { border: 5px solid var(--ttd-secili); }
+.ttd-gorsel-img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* Yuklenen gorseli secili koyu kartta beyazlatmak: brightness(0)
+   once her pikseli siyaha indiriyor, invert(1) beyaza ceviriyor --
+   yani sonuc gorselin SILUETI. Seffaf zeminli cizgi gorsellerde
+   dogru, fotografta koca bir beyaz leke olur; bu yuzden ayardan
+   kapatilabiliyor (data-ttd-gorsel-beyaz). */
+.ttd[data-ttd-gorsel-beyaz] .ttd-kart[aria-checked="true"] .ttd-gorsel-img {
+  filter: brightness(0) invert(1);
+}
+/* Cizgi ikonu currentColor ile ciziliyor: kartin rengi degisince
+   kendiliginden beyaza donuyor, ek kurala gerek yok. */
+.ttd-kapsul { width: 38px; height: 62px; color: currentColor; }
 
 .ttd-etiket {
   display: block;
-  /* Nokta icin sag tarafta yer birak: etiket uzun bir dilde noktanin
-     altina girmesin. */
-  padding-right: 26px;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -131,55 +165,76 @@
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.3;
-  color: var(--ttd-ink);
+  /* Kartin rengini miras aliyor: secili kartta beyaz, digerinde koyu. */
+  color: inherit;
 }
-/* margin-top:auto DENENDI VE KALDIRILDI: satirlari kartin dibine
-   itiyordu ve iki kartin basliklari farkli uzunlukta oldugu icin kisa
-   baslikli kartta basligin altinda bos bir delik kaliyordu. Satirlar
-   artik basligin hemen altinda; kartlarin esit boyda durmasini ve
-   altlarindaki butonlarin hizali kalmasini zaten sutun stretch'i
+/* Ozet satirlari basligin HEMEN ALTINDA: burada margin-top:auto
+   denendi ve kaldirildi, satirlari kartin dibine itip basligin
+   altinda bos bir delik birakiyordu. Dibe yaslanan tek sey fiyat
+   satiri (asagida); kartlarin esit boyda durmasini sutun stretch'i
    sagliyor. */
 .ttd-ozet { display: grid; gap: 8px; }
 .ttd-ozet-satir { display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
 .ttd-ozet-ikon { flex: 0 0 auto; width: 15px; height: 15px; margin-top: 1px; color: var(--ttd-ink-2); }
 .ttd-ozet-metin { font-size: 12px; line-height: 1.35; color: var(--ttd-ink-2); }
 
-/* --- "Nasil calisir?" ikincil butonu ---
-   Kartin DISINDA ve kartla ayni genislikte. Secimi degistirmiyor,
-   yalnizca paneli aciyor; bu yuzden kartla ayni gorsel agirlikta
-   degil: cercevesiz, sessiz zeminli. */
+/* Secili kartta soluk ogeler beyazin %75'i: koyu zeminde 9.3:1, yani
+   hem okunuyor hem basliktan geride duruyor. Sabit bir gri
+   verilseydi kartin koyu tonu degistirildiginde bozulurdu. */
+.ttd-kart[aria-checked="true"] :is(.ttd-etiket, .ttd-ozet-metin, .ttd-ozet-ikon) {
+  color: rgb(255 255 255 / .75);
+}
+
+/* --- Fiyat / teklif rozeti: kartin dibinde, iki kartta ayni cizgide --- */
+/* min-height OLCULEREK kondu: pill 25px, duz fiyat metni 19px.
+   Ikisi de margin-top:auto ile dibe yaslandigi icin ALTLARI hizaliydi
+   ama ustleri 6px kayiyordu. Ortak yukseklik + dikey ortalama ile iki
+   kartta da ayni cizgide duruyorlar. */
+.ttd-fiyat {
+  display: flex;
+  align-items: center;
+  min-height: 26px;
+  margin-top: auto;
+  padding-top: 2px;
+}
+.ttd-fiyat-metin { font-size: 14px; font-weight: 500; line-height: 1.2; }
+.ttd-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--ttd-pill-zemin);
+  color: var(--ttd-pill-yazi);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+/* --- "Nasil calisir" metin linki ---
+   Kutulu buton kaldirildi: secim kartlarinin yaninda ikinci bir
+   dolu yuzey, hangisinin asil secim oldugunu bulaniklastiriyordu.
+   Artik sade, ortalanmis, soluk bir metin -- yine de dokunma alani
+   satirin tamami (buton width:100%). */
 .ttd-nasil {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
+  gap: 5px;
   width: 100%;
-  padding: 11px 14px;
+  padding: 10px 6px 2px;
   border: 0;
-  border-radius: var(--ttd-kose-dugme);
-  background: var(--ttd-sessiz);
-  color: var(--ttd-ink);
-  font: inherit;
-  font-size: 13px;
-  line-height: 1.3;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color var(--ttd-gecis) ease;
-}
-.ttd-nasil-ok { flex: 0 0 auto; width: 15px; height: 15px; color: var(--ttd-ink-2); }
-.ttd-nasil:focus-visible { outline: 2px solid var(--ttd-secili); outline-offset: 2px; }
-
-/* --- Couple bilgi seridi --- */
-.ttd .ttd-serit {
-  margin: 16px 0 0;
-  padding: 12px 14px;
-  border-radius: var(--ttd-kose-dugme);
-  background: var(--ttd-sessiz);
-  font-size: 13px;
-  line-height: 1.45;
+  background: none;
   color: var(--ttd-ink-2);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+  transition: color var(--ttd-gecis) ease;
 }
-.ttd-serit[hidden] { display: none; }
+.ttd-nasil-ok { flex: 0 0 auto; width: 13px; height: 13px; }
+.ttd-nasil:focus-visible { outline: 2px solid var(--ttd-secili); outline-offset: 2px; border-radius: 6px; }
 
 /* --- Filtre satiri --- */
 .ttd-filtre {
@@ -187,7 +242,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 28px;
+  /* Gri bilgi seridi kaldirildi; chip satiri secim alanina yaklasti. */
+  margin-top: 20px;
   transition: opacity var(--ttd-gecis) ease;
 }
 .ttd-chipler { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
@@ -425,12 +481,15 @@
   .ttd .ttd-baslik { font-size: 40px; }
   .ttd .ttd-altbaslik { font-size: 17px; }
 
-  .ttd-secim { gap: 20px; }
-  .ttd-kart { gap: 12px; padding: 22px 20px; }
-  .ttd-nokta { top: 18px; right: 18px; }
-  .ttd-kart-baslik { font-size: 19px; }
+  /* Kartlar arasi bosluk ayni (8px), ferahlik kartin KENDI ic
+     boslugundan geliyor. */
+  .ttd-kart { gap: 12px; padding: 26px 24px; }
+  .ttd-gorsel { height: 104px; }
+  .ttd-kapsul { width: 46px; height: 78px; }
+  .ttd-kart-baslik { font-size: 20px; }
   .ttd-ozet-metin { font-size: 13px; }
-  .ttd-nasil { padding: 13px 18px; font-size: 14px; }
+  .ttd-fiyat-metin { font-size: 15px; }
+  .ttd-nasil { font-size: 13px; padding-top: 12px; }
 
   .ttd-izgara {
     grid-template-columns: repeat(var(--ttd-sutun-d), minmax(0, 1fr));
@@ -460,7 +519,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .ttd-nasil:hover { background: color-mix(in srgb, var(--ttd-ink) 9%, var(--ttd-yuzey)); }
+  .ttd-nasil:hover { color: var(--ttd-ink); }
   .ttd-chip[aria-checked="false"]:hover { border-color: var(--ttd-ink-2); }
   .ttd-upsell-dugme:hover, .ttd-panel-sec:hover { opacity: .88; }
 }

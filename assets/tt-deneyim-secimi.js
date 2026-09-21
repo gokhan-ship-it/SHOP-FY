@@ -25,7 +25,6 @@
     var izgara = KOK.querySelector('[data-ttd-izgara]');
     var karolar = [].slice.call(KOK.querySelectorAll('[data-ttd-karo]'));
     var upsell = KOK.querySelector('[data-ttd-upsell]');
-    var serit = KOK.querySelector('[data-ttd-serit]');
     var bos = KOK.querySelector('[data-ttd-bos]');
     var sayiEl = KOK.querySelector('[data-ttd-sayi]');
     var kartlar = [].slice.call(KOK.querySelectorAll('[data-ttd-mod]'));
@@ -95,10 +94,11 @@
         chipler[c].setAttribute('tabindex', cs ? '0' : '-1');
       }
 
-      /* Couple anlatimi: serit ve kart rozetleri. Urun listesi
-         degismiyor -- degisen tek sey ne anlattigimiz. */
+      /* Couple anlatimi. Urun listesi degismiyor -- degisen tek sey
+         ne anlattigimiz. Gri bilgi seridi kaldirildi; o bilgi artik
+         Couple kartindaki teklif rozetinde duruyor. Burada kalan is
+         urun kartlarinin uzerindeki rozetler. */
       var couple = mod === 'couple';
-      if (serit) serit.hidden = !couple;
       var rozetler = KOK.querySelectorAll('[data-ttd-rozet]');
       for (var r = 0; r < rozetler.length; r++) rozetler[r].hidden = !couple;
 
