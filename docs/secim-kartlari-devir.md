@@ -8,10 +8,10 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 
 | Dosya | Boyut | md5 |
 |---|---|---|
-| `sections/tt-secim-kartlari.liquid` | 25.699 | `7e13025e54fdfbe7e767fac78adc5f9c` |
+| `sections/tt-secim-kartlari.liquid` | 26.082 | `904a95e1b3c4906688970e8bb834ce17` |
 | `snippets/tt-sc-karo.liquid` | 3.048 | `bd3847fce53aec482150767b64a9246a` |
 | `snippets/tt-sc-ikon.liquid` | 1.198 | `c4042fada7124171db3bd369c318cc92` |
-| `assets/tt-secim-kartlari.css` | 17.270 | `a38efbdee85a3eafe3414febe8edf114` |
+| `assets/tt-secim-kartlari.css` | 19.369 | `cb192bc259b4f6e27d523d539e8f79a0` |
 | `assets/tt-secim-kartlari.js` | 25.044 | `5abc96fb74a389ecc5e75e94fac91563` |
 
 Hiçbir paylaşılan dosyaya dokunulmadı: `sections/main-collection.liquid`,
@@ -108,6 +108,33 @@ listesi bırakmıştı.
   yalnızca "İkincisi yarı fiyatına" yazıyor. **Gerçek sepetle bir kez
   karşılaştırılmalı.**
 
+## Yükleme kutusu (kartın son satırı)
+
+`.tt-sc-satir--kutu`. "Sadece sen yüklersin" / "İkiniz de yüklersiniz",
+Single ile Couple arasındaki farkın ta kendisi olduğu için kendi zemini
+ve rengi olan vurgulu bir kutuda. Üstündeki "1 ürün / 2 ürün" satırı
+12px ve gri kaldı.
+
+| | Beyaz kart | Seçili koyu kart |
+|---|---|---|
+| Kutu zemini | `#eef6f1` | `#1f2c26` |
+| Yazı ve ikon | `#30614b` | `#8fcbb0` |
+| Ölçülen kontrast | **6,5:1** | **7,8:1** |
+
+Ölçüler: 7px dikey / 9px yatay dolgu, 10px köşe, ikon 16px (`flex: none`),
+ikon–metin arası 6px, metin 13px / 500 / 1.25, üst satırla arası 8px.
+
+Kutu **kendi grid satırını dolduruyor**: subgrid'de grid öğesinin
+varsayılan hizalaması `stretch`, yani metinlerden biri iki satıra
+kırılırsa satır büyüyor ve diğer karttaki kutu da onunla aynı boya
+uzuyor — ek kural gerekmiyor, sadece `height`/`align-self` ile
+bozmamak gerekiyor. Subgrid'siz tarayıcıda `min-height: 47px`
+(7+7 dolgu + 2 × 16.25 satır).
+
+Renkler bölüm ayarı **değil**, CSS'te sabit — yeni ayar istenmedi.
+Geçiş süresi eklenmedi: bölümde zaten hiçbir yerde `transition` yok,
+kart seçilince bütün renkler anında değişiyor; kutu da onlarla birlikte.
+
 ## Ölçüm
 
 `layout/theme.liquid` içinde Meta Pixel yok; her şey `content_for_header`
@@ -185,4 +212,9 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   hesaplanmış `display` ölçümü (nitelik yazılıyor mu değil, gerçekten
   kayboluyor mu).
 
-**223/223 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).
+- `test5.mjs` — 141 test: kutunun ölçüleri, renkleri, iki karttaki
+  hizası ve eşit yüksekliği (360/390/430px), ikonun ilk satırla hizası,
+  metin iki satıra kırıldığında diğer kutunun da uzaması, üst satırın
+  değişmediği.
+
+**364/364 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).

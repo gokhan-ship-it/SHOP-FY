@@ -19,6 +19,8 @@
      #30614b / beyaz             7.2:1
      beyaz  / #30614b            7.2:1
      #30614b / #f0f7f3           6.6:1
+     #30614b / #eef6f1           6.5:1
+     #8fcbb0 / #1f2c26           7.8:1
      #b42318 / beyaz             6.6:1
    ------------------------------------------------------------------ */
 .tt-sc {
@@ -32,6 +34,13 @@
   --tt-sc-halka-yesil: #599176;
   --tt-sc-yesil-acik: #8fcbb0;
   --tt-sc-yesil-zemin: #f0f7f3;
+  /* Yukleme kutusu. Bolum ayari DEGIL: iki kartin tek farkini anlatan
+     sabit bir vurgu, renk secimine acilmasi istenmedi.
+     Olculdu: #30614b / #eef6f1 = 6.5:1, #8fcbb0 / #1f2c26 = 7.8:1. */
+  --tt-sc-kutu-zemin: #eef6f1;
+  --tt-sc-kutu-yazi: #30614b;
+  --tt-sc-kutu-zemin-koyu: #1f2c26;
+  --tt-sc-kutu-yazi-koyu: #8fcbb0;
   --tt-sc-uyari: #b42318;
   --tt-sc-genislik: 1200px;
   --tt-sc-sutun-m: 2;
@@ -191,6 +200,42 @@
 .tt-sc-kart[aria-checked="true"] :is(.tt-sc-ustyazi, .tt-sc-satir) { color: var(--tt-sc-gri-koyu); }
 .tt-sc-kart[aria-checked="true"] .tt-sc-ayrac { background: var(--tt-sc-ayrac-koyu); }
 
+/* --- Yukleme kutusu: iki kartin ASIL farki ---
+   "Sadece sen yuklersin" ile "Ikiniz de yuklersiniz" arasindaki fark
+   Single ile Couple arasindaki farkin ta kendisi; ust satirla ayni
+   agirlikta duruyorken goze carpmiyordu. Kendi zemini, kendi rengi ve
+   bir punto buyuk yazisi var.
+
+   Kutu kendi grid satirini DOLDURUYOR: subgrid'de grid ogesinin
+   varsayilan hizalamasi stretch, yani metinlerden biri iki satira
+   kirilirsa satir buyuyor ve diger karttaki kutu da onunla ayni boya
+   uzuyor. Ek bir kural gerekmiyor -- sadece height/align-self ile
+   bozulmamasi gerekiyor, o yuzden ikisi de verilmedi.
+
+   Renk gecisi YOK: bolumde hicbir yerde transition yok, kart secilince
+   butun renkler ani degisiyor. Kutu da onlarla ayni anda degisiyor. */
+.tt-sc-satir--kutu {
+  align-items: flex-start;
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: var(--tt-sc-kutu-zemin);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--tt-sc-kutu-yazi);
+}
+/* Ikon ilk satirla hizali: 13px x 1.25 = 16.25px satir kutusu, ikon
+   16px. align-items: flex-start ikisini ustten esitliyor. */
+.tt-sc-satir--kutu .tt-sc-ikon { flex: none; width: 16px; height: 16px; }
+
+/* Ustteki :is(...) kurali ile AYNI ozgullukte; sirayla kazaniyor.
+   Bu yuzden kutu kurallari o bloktan SONRA duruyor. */
+.tt-sc-kart[aria-checked="true"] .tt-sc-satir--kutu {
+  background: var(--tt-sc-kutu-zemin-koyu);
+  color: var(--tt-sc-kutu-yazi-koyu);
+}
+
 /* Halkalar CSS ile ciziliyor: 14px cap, 2px kenarlik, ikincisi
    -5px ile birincinin uzerine biniyor. Couple'in ikinci halkasi
    yesil; secili koyu kartta acik yesile donuyor ki kaybolmasin. */
@@ -219,7 +264,11 @@
   .tt-sc-ustyazi { min-height: 2.7em; }
   .tt-sc-ad { min-height: 1.2em; }
   .tt-sc-satir { min-height: 15px; }
-  .tt-sc-satir:last-child { margin-top: auto; padding-top: 8px; }
+  /* Kutu karti dibine yaslaniyor: kartlar zaten esit boyda (stretch),
+     boylece iki kutu da ayni cizgide bitiyor. min-height iki satirlik
+     metne gore: 7 + 7 dolgu + 2 x 16.25 satir = 46.5px. */
+  .tt-sc-satir:last-child { margin-top: auto; }
+  .tt-sc-satir--kutu { min-height: 47px; }
 }
 
 /* --- Filtre satiri --- */

@@ -177,6 +177,12 @@
         Kartlar .tt-sc-kartlar'in DOGRUDAN cocugu: araya sarmalayici
         koyulsaydi subgrid zinciri kirilir, iki kartin satirlari
         hizasini kaybederdi.
+
+        Son satir (yukleme bilgisi) vurgulu bir kutu: "Sadece sen
+        yuklersin" ile "Ikiniz de yuklersiniz" arasindaki fark, Single
+        ile Couple arasindaki farkin ta kendisi. Kutu kendi grid
+        satirini dolduruyor, yani metinlerden biri iki satira kirilsa
+        bile iki kartta ayni boyda kaliyor.
       {%- endcomment -%}
       <div class="tt-sc-kartlar" role="radiogroup" aria-label="{{ s.baslik | default: 'Deneyim' | escape }}">
         {%- comment -%} Single {%- endcomment -%}
@@ -189,7 +195,7 @@
             <span class="tt-sc-halkalar" aria-hidden="true"><i></i></span>
             <span class="tt-sc-satir-metin">{{ s.single_adet }}</span>
           </span>
-          <span class="tt-sc-satir">
+          <span class="tt-sc-satir tt-sc-satir--kutu">
             {%- render 'tt-sc-ikon', ad: 'kisi' -%}
             <span class="tt-sc-satir-metin">{{ s.single_yukleme }}</span>
           </span>
@@ -208,7 +214,7 @@
             <span class="tt-sc-halkalar tt-sc-halkalar--cift" aria-hidden="true"><i></i><i></i></span>
             <span class="tt-sc-satir-metin">{{ s.couple_adet }}</span>
           </span>
-          <span class="tt-sc-satir">
+          <span class="tt-sc-satir tt-sc-satir--kutu">
             {%- render 'tt-sc-ikon', ad: 'kisiler' -%}
             <span class="tt-sc-satir-metin">{{ s.couple_yukleme }}</span>
           </span>
@@ -405,7 +411,7 @@
     { "type": "text", "id": "single_ust", "label": "Üst küçük yazı", "default": "Belirlediğin tarihte açılır" },
     { "type": "text", "id": "single_ad", "label": "Başlık", "default": "Single" },
     { "type": "text", "id": "single_adet", "label": "Ürün sayısı satırı", "default": "1 ürün" },
-    { "type": "text", "id": "single_yukleme", "label": "Yükleme satırı", "default": "Sadece sen yüklersin" },
+    { "type": "text", "id": "single_yukleme", "label": "Yükleme satırı (vurgulu kutu)", "default": "Sadece sen yüklersin" },
 
     { "type": "header", "content": "Couple kartı" },
     { "type": "text", "id": "couple_rozet", "label": "Rozet metni", "default": "İkincisi yarı fiyatına",
@@ -413,7 +419,7 @@
     { "type": "text", "id": "couple_ust", "label": "Üst küçük yazı", "default": "Buluşunca açılır" },
     { "type": "text", "id": "couple_ad", "label": "Başlık", "default": "Couple" },
     { "type": "text", "id": "couple_adet", "label": "Ürün sayısı satırı", "default": "2 ürün" },
-    { "type": "text", "id": "couple_yukleme", "label": "Yükleme satırı", "default": "İkiniz de yüklersiniz" },
+    { "type": "text", "id": "couple_yukleme", "label": "Yükleme satırı (vurgulu kutu)", "default": "İkiniz de yüklersiniz" },
 
     { "type": "header", "content": "Açılışta seçili" },
     { "type": "select", "id": "varsayilan_mod", "label": "Açılışta seçili deneyim",
