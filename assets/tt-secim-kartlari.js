@@ -48,6 +48,7 @@
        koleksiyonu filtresiz listelemeyi temanin izgarasi zaten daha
        iyi yapiyor. Ayar kaldirildi. */
     var TEMA_IZGARA = KOK.getAttribute('data-sc-tekil-izgara') !== 'kendi';
+    var TUKENDI_SONA = KOK.getAttribute('data-sc-tukendi-sona') === 'true';
 
     var izgara   = KOK.querySelector('[data-sc-izgara]');
     var filtreEl = KOK.querySelector('[data-sc-filtre]');
@@ -212,9 +213,6 @@
           var g = karolar[k].getAttribute('data-sc-grup');
           if (grupSayi[g] != null) grupSayi[g]++;
         }
-        /* "Sete ekle" yalnizca Couple modunda. */
-        var ekleBtn = karolar[k].querySelector('[data-sc-ekle]');
-        if (ekleBtn) ekleBtn.hidden = mod !== 'couple';
       }
 
       /* Grup basliklari yalnizca "Tumu" secilince ve iki grup da
@@ -237,6 +235,8 @@
 
       if (sayac) sayac.textContent = toplam + ' ' + (M.sayacEki || '');
       if (bos) bos.hidden = temayaDevret || toplam > 0;
+
+      baglantilariYaz();
 
       if (setKutu) setKutu.hidden = mod !== 'couple';
       if (cubuk) cubuk.hidden = mod !== 'couple';
@@ -296,6 +296,55 @@
       }
     }
 
+    /* ---------- Tukenen urunler grubun sonuna ----------
+       Izgarada "Kadin" ve "Erkek" grup basliklari var. Global bir
+       siralama kadin grubunun tukenmislerini Erkek basliginin altina
+       dusururdu; bu yuzden siralama HER GRUBUN KENDI ICINDE.
+
+       Liquid'de degil burada yapiliyor: uc ayri dongude basilan ve
+       ortak bir "gorulen" dizesiyle tekillestirilen listeyi iki gecise
+       bolmek dedup'i kirardi. DOM'da bir kez tasimak hem daha kisa hem
+       de tekillestirmeye hic dokunmuyor. */
+    function tukendiSona() {
+      if (!TUKENDI_SONA || !izgara) return;
+      var gruplarAd = ['kadin', 'erkek'];
+      for (var g = 0; g < gruplarAd.length; g++) {
+        var sonMusait = null, tukenenler = [];
+        for (var i = 0; i < karolar.length; i++) {
+          if (karolar[i].getAttribute('data-sc-grup') !== gruplarAd[g]) continue;
+          if (karolar[i].getAttribute('data-sc-var') === '0') tukenenler.push(karolar[i]);
+          else sonMusait = karolar[i];
+        }
+        /* Grupta hic musait urun yoksa tasinacak bir sey de yok. */
+        if (!sonMusait || !tukenenler.length) continue;
+        var ref = sonMusait.nextSibling;
+        for (var t = 0; t < tukenenler.length; t++) {
+          izgara.insertBefore(tukenenler[t], ref);
+        }
+      }
+      /* Dizi DOM sirasini yansitsin: sayimlar sirali degil ama
+         okuyanin kafasi karismasin. */
+      karolar = Array.prototype.slice.call(KOK.querySelectorAll('[data-sc-karo]'));
+    }
+
+    /* ---------- Urun baglantilari ----------
+       Couple modunda urun sayfasi Couple secili acilsin diye linklere
+       ?mod=couple ekleniyor. Kartlar yeniden BASILMIYOR -- yalnizca
+       mevcut <a>'larin href'i yaziliyor, mod degisimi ani kaliyor. */
+    function baglantilariYaz() {
+      for (var k = 0; k < karolar.length; k++) {
+        var kart = karolar[k].querySelector('[data-uk]');
+        if (!kart) continue;
+        var u = kart.getAttribute('data-uk-url');
+        if (!u) continue;
+        var hedef = mod === 'couple'
+          ? u + (u.indexOf('?') >= 0 ? '&' : '?') + 'mod=couple'
+          : u;
+        var baglar = karolar[k].querySelectorAll('[data-uk-bag]');
+        for (var b = 0; b < baglar.length; b++) baglar[b].setAttribute('href', hedef);
+      }
+    }
+
     function cubukOlc() {
       if (!cubuk || cubuk.hidden) {
         document.body.style.removeProperty('--tt-sc-cubuk-yuk');
@@ -352,12 +401,33 @@
 
       for (var k = 0; k < karolar.length; k++) {
         var id = karolar[k].getAttribute('data-sc-urun');
-        var icinde = set.some(function (e) { return String(e.urunId) === id; });
+        var icinde = false;
+        /* Karttaki numara SET KUTUSUNDAKI slot numarasiyla ayni olmali.
+           Ikisi de ayni "sira" dizisinden okunuyor: slot i'de gosterilen
+           oge set[sira[i]], yani urunun numarasi i+1. Fiyata gore
+           siralama degisirse numara da kendiliginden dogru kaliyor. */
+        var slotNo = 0;
+        for (var d = 0; d < sira.length; d++) {
+          if (String(set[sira[d]].urunId) === id) { icinde = true; slotNo = d + 1; }
+        }
         karolar[k].toggleAttribute('data-sc-secili', icinde);
+
         var btn = karolar[k].querySelector('[data-sc-ekle]');
         var metin = karolar[k].querySelector('[data-sc-ekle-metin]');
         if (metin) metin.textContent = icinde ? (M.kartSecili || '') : (M.kartEkle || '');
-        if (btn) btn.setAttribute('aria-pressed', icinde ? 'true' : 'false');
+        if (btn) {
+          btn.setAttribute('aria-pressed', icinde ? 'true' : 'false');
+          var ad = karolar[k].getAttribute('data-sc-ad') || '';
+          var sablon = mod === 'couple'
+            ? (icinde ? M.ukAriaSetCikar : M.ukAriaSetEkle)
+            : M.ukAriaSepet;
+          btn.setAttribute('aria-label', String(sablon || '').replace('[ad]', ad));
+        }
+        var sayiEl = karolar[k].querySelector('[data-uk-sira]');
+        if (sayiEl) {
+          sayiEl.textContent = slotNo ? String(slotNo) : '';
+          sayiEl.hidden = !slotNo;
+        }
       }
 
       if (durumEl) durumEl.textContent = n === 0 ? (M.durum2 || '') : (n === 1 ? (M.durum1 || '') : (M.durum0 || ''));
@@ -398,9 +468,16 @@
       setCiz();
     }
 
-    /* ---------- Varyant secici ---------- */
+    /* ---------- Varyant secici ----------
+       Iki amaca birden hizmet ediyor: Couple'da secilen varyant sete,
+       Single'da dogrudan sepete gidiyor. Temanin quick-view'ini
+       acmak yerine bu diyalog kullaniliyor -- fiyatlari gosteriyor
+       (Vantablack 2.699 / 4.799 gibi farklar var), zaten kurulu ve
+       iki modda da ayni. */
     var vHedef = null;
-    function varyantAc(karo) {
+    var vAmac = 'set';
+    function varyantAc(karo, amac) {
+      vAmac = amac || 'set';
       var vs = varyantlar(karo);
       vHedef = karo;
       if (vBaslik) vBaslik.textContent = M.varyantBaslik || '';
@@ -419,7 +496,8 @@
         b.appendChild(f);
         b.addEventListener('click', function () {
           varyantKapat();
-          setEkle(vHedef.getAttribute('data-sc-urun'), v, vHedef);
+          if (vAmac === 'sepet') tekUrunEkle(vHedef, v);
+          else setEkle(vHedef.getAttribute('data-sc-urun'), v, vHedef);
         });
         vListe.appendChild(b);
       });
@@ -433,7 +511,67 @@
       else vDialog.removeAttribute('open');
     }
 
-    /* ---------- Sepete ekleme ----------
+    /* ---------- Single modunda sepete ekleme ----------
+       Couple'in iki kalemlik istegiyle AYNI yolu kullaniyor: /cart/add.js
+       ve ardindan temanin 'cart:refresh' kancasi. Ayri bir sepet mantigi
+       kurulmuyor, fiyat hesabi yapilmiyor.
+
+       Temanin kendi <product-form> hata bildirimi kullanilamiyor: o
+       bildirim form ogesinin icinde yasiyor, kartta form yok. Onun
+       yerine dugme kisa sure hata haline geciyor ve ekran okuyucuya
+       aria-live ile duyuruluyor. Kartin boyu degismiyor. */
+    var ukDuyuru = null;
+    function duyur(metin) {
+      if (!ukDuyuru) {
+        ukDuyuru = document.createElement('p');
+        ukDuyuru.className = 'sr-only';
+        ukDuyuru.setAttribute('aria-live', 'polite');
+        KOK.appendChild(ukDuyuru);
+      }
+      ukDuyuru.textContent = metin || '';
+    }
+
+    function tekUrunEkle(karo, varyant) {
+      if (gonderiyor) return;
+      var btn = karo.querySelector('[data-sc-ekle]');
+      gonderiyor = true;
+      if (btn) btn.setAttribute('aria-busy', 'true');
+
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ items: [{ id: varyant.id, quantity: 1 }] })
+      })
+        .then(function (r) {
+          if (!r.ok) throw new Error('cart');
+          return r.json();
+        })
+        .then(function () {
+          if (btn) {
+            btn.setAttribute('data-uk-durum', 'basarili');
+            /* ~1.3 saniye yesil tik, sonra artiya donuyor. */
+            window.setTimeout(function () { btn.removeAttribute('data-uk-durum'); }, 1300);
+          }
+          duyur(M.ukEklendi || '');
+          document.dispatchEvent(new CustomEvent('cart:refresh', { detail: { open: true } }));
+          if (!document.getElementById('CartDrawer') && !document.querySelector('cart-drawer')) {
+            window.location.href = '/cart';
+          }
+        })
+        .catch(function () {
+          if (btn) {
+            btn.setAttribute('data-uk-durum', 'hata');
+            window.setTimeout(function () { btn.removeAttribute('data-uk-durum'); }, 1800);
+          }
+          duyur(M.hata || '');
+        })
+        .then(function () {
+          gonderiyor = false;
+          if (btn) btn.removeAttribute('aria-busy');
+        });
+    }
+
+    /* ---------- Couple setini sepete ekleme ----------
        Iki urun TEK istekte gidiyor. Ayni varyant iki kez secilmisse
        quantity 2 olarak birlesiyor -- iki ayri satir gondermek sepette
        tek satir olarak birlesirdi zaten, ama istek de gereksiz buyurdu. */
@@ -564,8 +702,10 @@
       });
     });
 
-    /* Kart icindeki "Sete ekle" delegasyonla baglaniyor: karolar
-       cok ve dugmeler mod degisince gizlenip aciliyor. */
+    /* Karttaki kose dugmesi DELEGASYONLA baglaniyor: izgarada 29 karo
+       var, her birine ayri dinleyici takmanin anlami yok. Tek dugme
+       iki is yapiyor ve karari tiklama aninda MOD veriyor -- markup
+       iki modda da ayni, dugme gizlenip acilmiyor. */
     if (izgara) {
       izgara.addEventListener('click', function (e) {
         var btn = e.target.closest && e.target.closest('[data-sc-ekle]');
@@ -574,13 +714,25 @@
         var karo = btn.closest('[data-sc-karo]');
         if (!karo) return;
         var id = karo.getAttribute('data-sc-urun');
-        var zatenSecili = set.some(function (x) { return String(x.urunId) === id; });
         var vs = varyantlar(karo);
+        /* Tukenen urunde dugme zaten basilmiyor; bu ikinci kemer.
+           Satilabilir varyanti kalmamis urun ne sepete ne de sete
+           girebiliyor. */
         if (!vs.length) return;
-        /* Secili urune tekrar basmak cikarma demek; varyant sormaya
-           gerek yok. */
-        if (zatenSecili || vs.length === 1) setEkle(id, vs[0], karo);
-        else varyantAc(karo);
+
+        if (mod === 'couple') {
+          var zatenSecili = set.some(function (x) { return String(x.urunId) === id; });
+          /* Secili urune tekrar basmak cikarma demek; varyant sormaya
+             gerek yok. */
+          if (zatenSecili || vs.length === 1) setEkle(id, vs[0], karo);
+          else varyantAc(karo, 'set');
+        } else {
+          /* Single: tek satilabilir varyant varsa dogrudan sepete,
+             birden fazlaysa once hangisi diye soruyoruz -- ilk varyanti
+             varsaymak yanlis fiyat gostermek olurdu. */
+          if (vs.length === 1) tekUrunEkle(karo, vs[0]);
+          else varyantAc(karo, 'sepet');
+        }
       });
     }
 
@@ -619,6 +771,10 @@
       if (p === 'couple' || p === 'single') mod = p;
     } catch (e) {}
 
+    /* Bir kez, ilk cizimden once: sonraki her ciz() cagrisinda DOM'u
+       yeniden karistirmaya gerek yok, stok durumu sayfa omru boyunca
+       degismiyor. */
+    tukendiSona();
     ciz();
   }
 

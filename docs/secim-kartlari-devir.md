@@ -8,15 +8,20 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 
 | Dosya | Boyut | md5 |
 |---|---|---|
-| `sections/tt-secim-kartlari.liquid` | 30.895 | `f331ba5259b23fc3f01e93c2de8518c7` |
-| `snippets/tt-sc-karo.liquid` | 3.048 | `bd3847fce53aec482150767b64a9246a` |
+| `sections/tt-secim-kartlari.liquid` | 33.810 | `d7b110efa7120845b17832bc5b37a74d` |
+| `snippets/tt-sc-karo.liquid` | 2.491 | `1bd4b1f99f5d98de6016556e687f5d55` |
 | `snippets/tt-sc-ikon.liquid` | 3.432 | `f8cb0504ac5d8f34e997b5e649bb5171` |
-| `assets/tt-secim-kartlari.css` | 24.103 | `928f874cf41f8b6055e63345773972b7` |
-| `assets/tt-secim-kartlari.js` | 26.722 | `9548bb50a648440e88b781bb105ce5aa` |
+| `snippets/tt-uk-kart.liquid` | 10.126 | `a9afd0a5f97c495bdaa0f61f53b29b4d` |
+| `assets/tt-secim-kartlari.css` | 23.694 | `7c2694d79a2ea357b7aa8b737747faa3` |
+| `assets/tt-secim-kartlari.js` | 33.430 | `b2018e2007b969e5ae40a7a2075bbeae` |
+| `assets/tt-uk-kart.css` | 8.298 | `b3f921a0a5dab296f502fcefa53a2adb` |
+| `assets/tt-uk-kart.js` | 5.172 | `235f918a235ce9dea82453e106ab0cf9` |
 
 Hiçbir paylaşılan dosyaya dokunulmadı: `sections/main-collection.liquid`,
 `snippets/product-card.liquid`, `assets/theme.js`, `assets/cart.js`
-olduğu gibi duruyor.
+olduğu gibi duruyor. **Temanın kartı artık bu bölümde kullanılmıyor**
+ama dosyası duruyor ve mağazanın geri kalan sayfalarında çalışmaya
+devam ediyor.
 
 ## Kurulum (tema düzenleyici)
 
@@ -190,6 +195,75 @@ sırası tek başına yetiyor.** Set kutusunun `margin-top`'ı 20px, yani
 Single'da filtrenin kartlardan uzaklığıyla aynı — iki modda ilk boşluk
 birebir eşit.
 
+## Ürün kartı (.tt-uk-*)
+
+Single ve Couple modunda **aynı kart**. Önceden Couple'a geçince
+temanın kartının altına tam genişlikte bir "Sete ekle" butonu
+ekleniyordu: kartlar uzuyor, ızgara yeniden akıyor, sayfa zıplıyordu.
+Ayrıca tükenen ürün sete eklenebiliyordu. İkisi de gitti.
+
+**Mod değişince kartın ölçüsü değişmiyor.** Köşe butonu iki modda da
+aynı yerde ve aynı boyda; seçim çerçevesi şeffaf halde de duruyor
+(inset box-shadow, yerleşimi hiç etkilemiyor). Mod değişimi yalnızca
+kökteki `data-sc-aktif-mod` ile buton durumunu ve linkleri güncelliyor
+— kartlar yeniden basılmıyor.
+
+**Galeri.** Yatay scroll-snap, `touch-action: pan-x pan-y` (dikey
+hareket sayfaya gidiyor). Her görsel bir `<a>` ile sarılı; parmak
+8px'den fazla yatay giderse tıklama **yakalama evresinde** iptal
+ediliyor, yani ürün sayfası açılmıyor. Köşe butonu galerinin DIŞINDA,
+kardeşi — olay yayılımına güvenmek yerine yapıyla çözülüyor. Nokta
+göstergesi scroll + rAF ile güncelleniyor, dinleyiciler passive.
+
+**Görsel yükleme.** İlk dört kartın ilk görseli `eager` +
+`fetchpriority="high"`, gerisi lazy. 2. ve 3. görselin kaynağı
+`data-uk-src`'de bekliyor; kart görüş alanına yaklaşınca
+(IntersectionObserver, 200px) ya da galeriye dokunulunca gerçek `src`
+yazılıyor. Oran baştan sabit (1:1), yerleşim kaymıyor.
+
+**Köşe butonu.** 36×36 görünür, `::before` ile 44×44 dokunma alanı.
+- Single: tek satılabilir varyant varsa doğrudan sepete (`/cart/add.js`
+  + `cart:refresh`), çok varyantlıysa önce varyant seçici. Başarıda
+  ~1,3 sn yeşil tik.
+- Couple: mevcut set mantığını tetikliyor (`data-sc-ekle`). Seçiliyken
+  yeşil tik + sağ üstte **slot numarası**. Numara set kutusundaki
+  slotla aynı `sira` dizisinden okunuyor, yani her zaman eşleşiyor.
+
+**Tükenen ürün.** Buton hiç basılmıyor, yerine "Tükendi" etiketi;
+görseller `opacity: .35`, ad ve fiyat soluk. Ne sepete ne sete
+girebiliyor (JS'te ikinci kemer: satılabilir varyant yoksa çıkış).
+Tükenenler **her grubun kendi içinde** sona alınıyor — global sıralama
+kadın grubunun tükenmişlerini Erkek başlığının altına düşürürdü.
+Sıralama Liquid'de değil JS'te: üç ayrı döngüde basılan ve ortak bir
+`gorulen` dizesiyle tekilleştirilen listeyi iki geçişe bölmek dedup'ı
+kırardı.
+
+**Fiyat satırı `price` sınıfını da taşıyor.** Kupon katmanı
+(`taksit-tablosu.js`) indirimli bloğu açarken **aynı ebeveyndeki**
+`.price` öğesini gizliyor; `tt-kart-taksit` ile normal fiyat satırının
+kardeş olması ve normal satırın bu sınıfı taşıması şart. Taksit satırı
+temanın kartındaki yerinde kaldı.
+
+**Rozet.** Kampanya rozeti yalnızca `compare_at_price > price` ise.
+Katalogda üç üründe karşılaştırma fiyatı satış fiyatından **düşük**
+girilmiş (Noir/Nora/Auron: 2.199 < 2.399); korumasız bir hesap orada
+"%-9 indirim" yazardı. Etiket rozeti `rozet:` önekli tag'ten okunuyor;
+şu an katalogda böyle tag yok.
+
+**Ürün tipi satırı `product.vendor`.** `productType` 29 ürünün
+hepsinde boş. Vendor tutarsız: kolye koleksiyonundaki 4 ürün "Zaman
+Kapsülü Bileklik", 3 ürün "Text To Next" diyor. Admin'den
+düzeltilmeli; kod doğru kaynağı kullanıyor.
+
+**1.5px tuzağı — üçüncü kez.** Chrome `border-width`'i tam piksele
+yuvarlıyor. Kartın çerçevesi bu yüzden border değil inset box-shadow:
+hem gerçekten 1.5px çiziliyor hem de şeffaf↔yeşil geçişinde kartın
+kutusu bir piksel bile değişmiyor.
+
+**Masaüstünde görsel sürükleme kapatıldı** (`draggable="false"` +
+`-webkit-user-drag: none`): tarayıcı kendi resim sürükleme hayaletini
+başlatıyor, galeri kaymıyor ve üzerine `click` hiç üretilmiyordu.
+
 ## Setini oluştur kutusu
 
 Yukarıdan aşağıya: kural bandı → başlık + sayaç → ilerleme çubuğu →
@@ -362,4 +436,17 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   ızgaranın hâlâ süzüldüğü ve süzdükten sonra da sıranın korunduğu —
   360/390/430px'te.
 
-**1179/1179 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).
+- `test9.mjs` — 221 test: kartın bütün ölçüleri (360/390/430px), iki
+  modda aynı boy ve aynı konum, galeri (snap, touch-action, noktalar,
+  geç yüklenen görseller), köşe butonu, Single'da sepete ekleme +
+  başarı/hata halleri, çok varyantlıda seçici, Couple'da slot
+  numarasının set kutusuyla birebir eşleşmesi, tükenen ürünün sepete
+  ve sete girememesi, tükenenlerin grup içinde sona sıralanması,
+  `?mod=couple` linkleri, **kaydırma/dokunma ayrımının kendisi**
+  (olaylar doğrudan üretilip `defaultPrevented` okunuyor — fare
+  sürüklemesi Chromium'da zaten click üretmediği için naif bir test
+  koruma kaldırılsa bile geçerdi).
+
+**1400/1400 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü
+5.0:1); tek istisna tükenen ürünün soluk metni (#8b8e95, 3.4:1) —
+WCAG 1.4.3 devre dışı bırakılmış öğeleri kapsam dışı tutuyor.

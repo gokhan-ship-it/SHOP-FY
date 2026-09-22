@@ -5,11 +5,11 @@
    Renkler bolum ayarindan geliyor; buradaki var() yedekleri yalnizca
    ayar okunamazsa devreye giriyor.
 
-   URUN KARTLARINA DOKUNULMUYOR: izgaradaki .product-card temanin
-   kendi snippet'i ve kendi bicimiyle duruyor. Buradaki kurallarin
-   hicbiri .product-card'in ICINE girmiyor; tek istisna Couple
-   modunda temanin hizli sepet dugmesini gizleyen tek satir, o da
-   .quick-add sarmalayicisi uzerinde (kartin kendi bicimi degil).
+   URUN KARTI BU DOSYADA DEGIL: izgaradaki kart artik bu is icin
+   yazilan .tt-uk-* karti (assets/tt-uk-kart.css). Temanin kendi
+   snippets/product-card.liquid dosyasina hic dokunulmadi, magazanin
+   geri kalan sayfalarinda oldugu gibi kullanilmaya devam ediyor.
+   Burasi yalnizca izgarayi ve karonun sarmalayicisini bicimliyor.
 
    OLCULEN KONTRASTLAR
      #15171c / beyaz            17.9:1
@@ -505,6 +505,20 @@
   .tt-sc-ilerleme i { transition: none; }
 }
 
+/* Ekran okuyucuya yapilan duyurular (sepete eklendi / hata) icin.
+   JS bu ogeyi bolumun koküne ekliyor, .tt-uk'in disina. */
+.tt-sc .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ------------------------------------------------------------------
    URUN IZGARASI
    Temanin card-grid sinifi DEGIL: her karo filtrelenebilir bir
@@ -514,8 +528,11 @@
 .tt-sc-izgara {
   display: grid;
   grid-template-columns: repeat(var(--tt-sc-sutun-m), minmax(0, 1fr));
-  gap: 16px 12px;
+  gap: 8px;
   margin-top: 20px;
+  /* Ayni satirdaki kartlar esit boyda: izgara ogesinin varsayilan
+     hizalamasi stretch, kart da height: 100% aliyor. */
+  align-items: stretch;
 }
 .tt-sc-karo { position: relative; min-width: 0; }
 .tt-sc-karo[hidden] { display: none; }
@@ -534,42 +551,12 @@
 .tt-sc-grup[hidden] { display: none; }
 .tt-sc-grup-sayi { flex: 0 0 auto; font-size: 12px; font-weight: 400; color: var(--tt-sc-gri); }
 
-/* Couple modunda temanin kendi hizli sepet dugmesi gizleniyor ve
-   yerini "Sete ekle" aliyor. Kural .quick-add SARMALAYICISI
-   uzerinde; kartin kendi bicimine girmiyor. */
-.tt-sc[data-sc-aktif-mod="couple"] .tt-sc-karo .quick-add { display: none; }
-
-.tt-sc-ekle {
-  display: block;
-  width: 100%;
-  margin-top: 8px;
-  padding: 9px 10px;
-  border: 1.5px solid var(--tt-sc-kenar);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--tt-sc-koyu);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.2;
-  cursor: pointer;
-}
-.tt-sc-ekle[hidden] { display: none; }
-.tt-sc-ekle:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
-.tt-sc-karo[data-sc-secili] .tt-sc-ekle {
-  border-color: var(--tt-sc-yesil);
-  background: var(--tt-sc-yesil);
-  color: #fff;
-}
-/* Secili urunun karosu yesil cerceve aliyor. Cerceve KARONUN
-   kendisinde, urun kartinin degil: kartin ic bicimine dokunmamak
-   icin disaridan bir outline kullaniliyor, boylece kart icindeki
-   hicbir olcu degismiyor. */
-.tt-sc-karo[data-sc-secili] {
-  outline: 2px solid var(--tt-sc-yesil);
-  outline-offset: 4px;
-  border-radius: 4px;
-}
+/* Kartin ALTINDAKI eski "Sete ekle" dugmesi ve onun dis outline'i
+   kaldirildi. Dugme artik gorselin sag alt kosesinde (.tt-uk-dugme)
+   ve secili kartin cercevesi kartin KENDI seffaf cercevesinin rengi
+   degisince olusuyor -- ikisi de kartin olcusunu degistirmiyor, mod
+   degisince izgara yeniden akmiyor.
+   Bkz. assets/tt-uk-kart.css */
 
 .tt-sc .tt-sc-bos {
   margin: 24px 0 0;
@@ -739,8 +726,7 @@ body.tt-sc-cubuk-acik { padding-bottom: var(--tt-sc-cubuk-yuk, 132px); }
 @media (hover: hover) and (pointer: fine) {
   .tt-sc-kart[aria-checked="false"]:hover { box-shadow: inset 0 0 0 1.5px var(--tt-sc-gri); }
   .tt-sc-cip[aria-checked="false"]:hover { border-color: var(--tt-sc-gri); }
-  .tt-sc-ekle:hover { border-color: var(--tt-sc-yesil); }
-  .tt-sc-karo[data-sc-secili] .tt-sc-ekle:hover { opacity: .9; }
+  .tt-uk-dugme:hover { box-shadow: 0 2px 6px rgb(0 0 0 / .18); }
 }
 
 @media (prefers-reduced-motion: reduce) {

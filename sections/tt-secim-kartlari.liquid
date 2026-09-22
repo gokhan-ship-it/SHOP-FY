@@ -48,10 +48,11 @@
   Her karo hangi moda ve hangi cinsiyete ait oldugunu kendi uzerinde
   tasiyor.
 
-  Urun kartlari temanin KENDI snippet'iyle basiliyor; parametreler
-  product-recommendations bolumundeki cagriyla birebir ayni.
-  snippets/product-card.liquid ve sections/main-collection.liquid
-  dosyalarina DOKUNULMUYOR.
+  Urun kartlari artik bu is icin yazilan snippets/tt-uk-kart.liquid
+  ile basiliyor: Single ve Couple modunda AYNI kart ve kartin olcusu
+  mod degisince degismiyor. Temanin snippets/product-card.liquid ve
+  sections/main-collection.liquid dosyalarina DOKUNULMUYOR; magazanin
+  geri kalan sayfalarinda oldugu gibi duruyorlar.
 
   @param {string} [baslik] - Bolum basligi
   @param {string} [ust_yazi] - Baslik ustundeki kucuk yazi
@@ -121,6 +122,10 @@
   "slot2AltDolu": {{ s.slot2_alt_dolu | json }},
   "kartEkle": {{ s.kart_ekle | json }},
   "kartSecili": {{ s.kart_secili | json }},
+  "ukEklendi": {{ s.uk_eklendi | json }},
+  "ukAriaSepet": {{ s.uk_aria_sepet | json }},
+  "ukAriaSetEkle": {{ s.uk_aria_set_ekle | json }},
+  "ukAriaSetCikar": {{ s.uk_aria_set_cikar | json }},
   "durum2": {{ s.durum_2 | json }},
   "durum1": {{ s.durum_1 | json }},
   "durum0": {{ s.durum_0 | json }},
@@ -137,6 +142,7 @@
 
 {%- if s.aktif -%}
   {{ 'tt-secim-kartlari.css' | asset_url | stylesheet_tag }}
+  {{ 'tt-uk-kart.css' | asset_url | stylesheet_tag }}
 
   <div class="tt-sc" data-tt-sc
        data-sc-varsayilan="{{ s.varsayilan_mod }}"
@@ -145,6 +151,7 @@
        data-sc-gizle-secici="{{ s.gizle_secici | escape }}"
        data-sc-tekil-izgara="{{ s.tekil_izgara }}"
        data-sc-tema-izgara="{{ s.tema_izgara_secici | escape }}"
+       data-sc-tukendi-sona="{{ s.uk_tukendi_sona }}"
        data-sc-metin="{{ metin_json | strip | escape }}"
        style="
          --tt-sc-zemin: {{ s.zemin }};
@@ -362,7 +369,13 @@
           <span>{{ s.kime_kadin }}</span><span class="tt-sc-grup-sayi" data-sc-grup-sayi></span>
         </h3>
 
+        {%- comment -%}
+          "sira" izgaradaki sira numarasi: ilk dort kartin ilk gorseli
+          eager ve yuksek oncelikli yukleniyor, gerisi lazy. Uc dongu
+          boyunca artiyor ki sayim gercek izgara sirasiyla ayni olsun.
+        {%- endcomment -%}
         {%- assign gorulen = ',' -%}
+        {%- assign sira = 0 -%}
         {%- for p in kadin_kol.products -%}
           {%- assign ara = ',' | append: p.id | append: ',' -%}
           {%- unless gorulen contains ara -%}
@@ -384,7 +397,8 @@
                 assign tekil = '1'
               endif
             -%}
-            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: tekil, grup: 'kadin', s: s -%}
+            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: tekil, grup: 'kadin', s: s, sira: sira -%}
+            {%- assign sira = sira | plus: 1 -%}
           {%- endunless -%}
         {%- endfor -%}
 
@@ -404,7 +418,8 @@
                 assign kime = 'erkek'
               endif
             -%}
-            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: '1', grup: 'kadin', s: s -%}
+            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: '1', grup: 'kadin', s: s, sira: sira -%}
+            {%- assign sira = sira | plus: 1 -%}
           {%- endunless -%}
         {%- endfor -%}
 
@@ -423,7 +438,8 @@
                 assign tekil = '1'
               endif
             -%}
-            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: tekil, grup: 'erkek', s: s -%}
+            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: tekil, grup: 'erkek', s: s, sira: sira -%}
+            {%- assign sira = sira | plus: 1 -%}
           {%- endunless -%}
         {%- endfor -%}
       </div>
@@ -471,6 +487,7 @@
     </dialog>
   </div>
 
+  <script src="{{ 'tt-uk-kart.js' | asset_url }}" defer></script>
   <script src="{{ 'tt-secim-kartlari.js' | asset_url }}" defer></script>
 {%- endif -%}
 
@@ -548,9 +565,26 @@
     { "type": "text", "id": "slot2_rozet", "label": "2. slot rozeti", "default": "%50",
       "info": "Slotun sağ üst köşesindeki yeşil etiket. Boş bırakılırsa çıkmaz." },
 
-    { "type": "header", "content": "Ürün kartı butonları" },
-    { "type": "text", "id": "kart_ekle", "label": "Sete ekle", "default": "+ Sete ekle" },
-    { "type": "text", "id": "kart_secili", "label": "Setinde", "default": "✓ Setinde" },
+    { "type": "header", "content": "Ürün kartı" },
+    { "type": "paragraph", "content": "Single ve Couple modunda aynı kart kullanılıyor. Köşedeki buton Single'da ürünü sepete, Couple'da sete ekliyor; kartın boyu iki modda da aynı." },
+    { "type": "range", "id": "uk_gorsel_sayisi", "label": "Kart başına görsel sayısı",
+      "min": 1, "max": 5, "step": 1, "default": 3,
+      "info": "Ürünün Shopify'daki medya sırasını takip eder. Önerilen sıra: ürün, üstünde, çip ekranı." },
+    { "type": "text", "id": "uk_rozet_onek", "label": "Rozet tag öneki", "default": "rozet:",
+      "info": "Ürüne \"rozet:Yeni\" tag'i eklerseniz kartta \"Yeni\" rozeti çıkar. Şu an katalogda bu önekle tag yok." },
+    { "type": "text", "id": "uk_kampanya", "label": "Kampanya rozeti metni", "default": "%[indirim] indirim",
+      "info": "Yalnızca karşılaştırma fiyatı satış fiyatından BÜYÜKSE çıkar. [indirim] yuvarlanmış yüzdeyle değişir." },
+    { "type": "text", "id": "uk_tukendi", "label": "\"Tükendi\" metni", "default": "Tükendi" },
+    { "type": "checkbox", "id": "uk_tukendi_sona", "label": "Tükenenleri sona sırala", "default": true,
+      "info": "Her grubun (Kadın / Erkek) kendi içinde sona alınır; grup başlıkları bozulmaz." },
+    { "type": "text", "id": "uk_baslangic", "label": "Varyant fiyatları farklıysa", "default": "[FIYAT]'dan",
+      "info": "[FIYAT] en düşük varyant fiyatıyla değişir." },
+    { "type": "text", "id": "uk_eklendi", "label": "Sepete eklendi duyurusu (ekran okuyucu)", "default": "Ürün sepete eklendi." },
+    { "type": "text", "id": "uk_aria_sepet", "label": "Buton etiketi — Single (ekran okuyucu)", "default": "[ad] sepete ekle" },
+    { "type": "text", "id": "uk_aria_set_ekle", "label": "Buton etiketi — Couple, seçili değil", "default": "[ad] sete ekle" },
+    { "type": "text", "id": "uk_aria_set_cikar", "label": "Buton etiketi — Couple, seçili", "default": "[ad] setten çıkar" },
+    { "type": "text", "id": "kart_ekle", "label": "Sete ekle (ekran okuyucu)", "default": "Sete ekle" },
+    { "type": "text", "id": "kart_secili", "label": "Setinde (ekran okuyucu)", "default": "Setinde" },
 
     { "type": "header", "content": "Yapışkan çubuk" },
     { "type": "text", "id": "durum_2", "label": "Hiç ürün seçilmemişken", "default": "2 ürün daha seç" },

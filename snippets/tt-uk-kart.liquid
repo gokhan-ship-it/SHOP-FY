@@ -1,0 +1,246 @@
+{%- doc -%}
+  URUN KARTI  (.tt-uk-*)
+
+  Single ve Couple modunda AYNI kart. Mod degisince kartin boyu ve
+  yerlesimi degismiyor; yalnizca sag alttaki kose dugmesinin davranisi
+  ve gorunumu degisiyor. Eskiden Couple modunda kartin ALTINA tam
+  genislikte bir "Sete ekle" dugmesi ekleniyordu, kartlar uzuyor ve
+  sayfa ziplayordu -- dugme artik gorselin uzerinde, iki modda da ayni
+  yerde duruyor.
+
+  TEMANIN KARTINA DOKUNULMUYOR: snippets/product-card.liquid oldugu
+  gibi duruyor ve magazanin geri kalan sayfalarinda kullanilmaya devam
+  ediyor. Bu kart yalnizca Single/Couple koleksiyon bolumunde.
+
+  ------------------------------------------------------------------
+  FIYAT SATIRI NEDEN "price" SINIFINI DA TASIYOR
+
+  Kupon katmani (assets/taksit-tablosu.js) indirimli fiyat blogunu
+  acarken ayni EBEVEYNDEKI ".price" ogesini gizliyor:
+      var normal = b.parentNode.querySelector('.price')
+  Yani tt-kart-taksit blogu ile normal fiyat satiri KARDES olmak ve
+  normal satir "price" sinifini tasimak zorunda. Ikisi de burada
+  saglaniyor; aksi halde kupon gecerliyken iki fiyat alt alta cikardi.
+  Temanin .price kurallari .tt-uk .tt-uk-fiyat ile eziliyor.
+
+  ------------------------------------------------------------------
+  YER TUTUCULAR KOSELI PARANTEZ
+
+  Ayar metinlerindeki yer tutucular [ad], [FIYAT], [indirim] biciminde.
+  Susluyla yazilamiyor: Liquid {{ }} icindeki tirnakli '{ad}' dizesini
+  gorunce etiketi erken kapatiyor ve "was not properly terminated"
+  hatasi veriyor. Bolumun geri kalani da zaten [n] kullaniyor.
+
+  ------------------------------------------------------------------
+  GALERI
+
+  Yatay scroll-snap. Her gorsel bir <a> ile sarili (tema da boyle
+  yapiyor) -- dokunmak urun sayfasini aciyor. Kaydirma ile dokunmayi
+  ayirmak JS'in isi: parmak ~8px'den fazla yatay giderse tiklama
+  iptal ediliyor (bkz. assets/tt-uk-kart.js).
+
+  Kose dugmesi galerinin DISINDA, kardesi olarak duruyor. Boylece
+  dugmeye basmak hicbir zaman urun linkini tetikleyemiyor -- olay
+  yayilimini durdurmaya guvenmek yerine yapiyla cozuluyor.
+
+  @param {object} p - Urun
+  @param {object} s - Bolum ayarlari
+  @param {number} sira - Izgaradaki sira (ilk 4 kartin ilk gorseli eager)
+{%- enddoc -%}
+
+{%- liquid
+  assign gorseller = p.media | where: 'media_type', 'image'
+  assign en_cok = s.uk_gorsel_sayisi | default: 3
+  assign v = p.selected_or_first_available_variant
+  assign musait = p.available
+
+  assign url = p.url | within: collection
+  if settings.product_disable_collection_portion
+    assign url = p.url
+  endif
+
+  comment
+    ROZET
+    Kampanya rozeti yalnizca compare_at_price fiyattan BUYUKSE cikiyor.
+    Katalogda uc urunde compare_at fiyattan kucuk girilmis (2.199 <
+    2.399); korumasiz bir hesap orada "%-9 indirim" yazardi.
+    Tukenen uronde hic rozet yok.
+  endcomment
+  assign rozet = ''
+  assign rozet_tur = ''
+  if musait
+    if v.compare_at_price > v.price
+      assign fark = v.compare_at_price | minus: v.price | times: 100.0
+      assign oran = fark | divided_by: v.compare_at_price | round
+      if oran > 0
+        assign rozet = s.uk_kampanya | replace: '[indirim]', oran
+        assign rozet_tur = 'kampanya'
+      endif
+    endif
+    if rozet == blank and s.uk_rozet_onek != blank
+      assign onek_boy = s.uk_rozet_onek | size
+      for t in p.tags
+        assign bas = t | slice: 0, onek_boy
+        if bas == s.uk_rozet_onek
+          assign rozet = t | remove_first: s.uk_rozet_onek | strip
+          assign rozet_tur = 'etiket'
+          break
+        endif
+      endfor
+    endif
+  endif
+
+  assign cok_varyant = false
+  assign satilabilir = 0
+  for vr in p.variants
+    if vr.available
+      assign satilabilir = satilabilir | plus: 1
+    endif
+  endfor
+  if satilabilir > 1
+    assign cok_varyant = true
+  endif
+-%}
+
+<div class="tt-uk"
+     data-uk
+     data-uk-url="{{ url }}"
+     data-uk-var="{% if musait %}1{% else %}0{% endif %}">
+
+  <div class="tt-uk-gorsel">
+    {%- if gorseller.size > 0 -%}
+      <div class="tt-uk-serit" data-uk-serit{% if gorseller.size < 2 %} data-uk-tek{% endif %}>
+        {%- for m in gorseller limit: en_cok -%}
+          {%- liquid
+            assign ilk_mi = false
+            if forloop.first
+              assign ilk_mi = true
+            endif
+            assign alt_metin = m.alt | default: p.title
+          -%}
+          <div class="tt-uk-kare">
+            <a class="tt-uk-bag" href="{{ url }}" data-uk-bag tabindex="-1" aria-hidden="true">
+              {%- if ilk_mi -%}
+                {%- comment -%}
+                  Ilk ekrandaki dort kartin ilk gorseli eager ve yuksek
+                  oncelikli; gerisi lazy. Oran baştan sabit oldugu icin
+                  yukleme sirasinda yerlesim kaymiyor.
+                {%- endcomment -%}
+                {%- if sira < 4 -%}
+                  {{ m | image_url: width: 800 | image_tag:
+                       loading: 'eager', fetchpriority: 'high',
+                       widths: '200,300,400,600,800',
+                       sizes: '(min-width: 750px) 25vw, 50vw',
+                       alt: alt_metin, class: 'tt-uk-img', draggable: 'false' }}
+                {%- else -%}
+                  {{ m | image_url: width: 800 | image_tag:
+                       loading: 'lazy',
+                       widths: '200,300,400,600,800',
+                       sizes: '(min-width: 750px) 25vw, 50vw',
+                       alt: alt_metin, class: 'tt-uk-img', draggable: 'false' }}
+                {%- endif -%}
+              {%- else -%}
+                {%- comment -%}
+                  2. ve 3. gorsel kaynagi data-* icinde bekliyor; kart
+                  gorus alanina girince ya da galeriye dokunulunca JS
+                  gercek src'yi yaziyor. Boylece ekranin altindaki 25
+                  kartin yedek gorselleri bos yere indirilmiyor.
+                {%- endcomment -%}
+                <img class="tt-uk-img" draggable="false" alt="{{ alt_metin | escape }}"
+                     width="800" height="800" loading="lazy" decoding="async"
+                     data-uk-src="{{ m | image_url: width: 800 }}"
+                     data-uk-srcset="{{ m | image_url: width: 200 }} 200w, {{ m | image_url: width: 300 }} 300w, {{ m | image_url: width: 400 }} 400w, {{ m | image_url: width: 600 }} 600w, {{ m | image_url: width: 800 }} 800w"
+                     sizes="(min-width: 750px) 25vw, 50vw"
+                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800'%3E%3C/svg%3E">
+              {%- endif -%}
+            </a>
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <div class="tt-uk-serit" data-uk-serit data-uk-tek>
+        <div class="tt-uk-kare">
+          <a class="tt-uk-bag" href="{{ url }}" data-uk-bag tabindex="-1" aria-hidden="true"></a>
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if rozet != blank -%}
+      <span class="tt-uk-rozet tt-uk-rozet--{{ rozet_tur }}">{{ rozet }}</span>
+    {%- endif -%}
+
+    {%- comment -%}
+      Noktalar dekoratif: hangi gorselde oldugu bilgisi ekran okuyucuya
+      bir sey katmiyor, galeri zaten tek bir urun linki.
+      Tek gorselli uronde hic basilmiyor.
+    {%- endcomment -%}
+    {%- if gorseller.size > 1 -%}
+      {%- assign nokta_sayisi = gorseller.size | at_most: en_cok -%}
+      <div class="tt-uk-noktalar" data-uk-noktalar aria-hidden="true">
+        {%- for n in (1..nokta_sayisi) -%}<i{% if forloop.first %} data-uk-aktif{% endif %}></i>{%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if musait -%}
+      {%- comment -%}
+        TEK DUGME, IKI DAVRANIS.
+        data-sc-ekle bolumun mevcut olay delegasyonunun tutamagi:
+        Couple modunda set mantigini, Single modunda sepete eklemeyi
+        tetikliyor. Karar tiklama aninda moda bakilarak veriliyor,
+        markup iki modda da ayni.
+      {%- endcomment -%}
+      <button type="button" class="tt-uk-dugme"
+              data-uk-dugme data-sc-ekle
+              data-uk-cok="{% if cok_varyant %}1{% else %}0{% endif %}"
+              aria-pressed="false"
+              aria-label="{{ s.uk_aria_sepet | replace: '[ad]', p.title | escape }}">
+        <span class="sr-only" data-sc-ekle-metin></span>
+        <svg class="tt-uk-ikon tt-uk-ikon--arti" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             aria-hidden="true" focusable="false">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <svg class="tt-uk-ikon tt-uk-ikon--tik" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M5 12.5l4.5 4.5L19 7.5"/>
+        </svg>
+        <span class="tt-uk-sira" data-uk-sira aria-hidden="true" hidden></span>
+      </button>
+    {%- else -%}
+      <span class="tt-uk-tukendi">{{ s.uk_tukendi }}</span>
+    {%- endif -%}
+  </div>
+
+  <div class="tt-uk-metin">
+    {%- if p.vendor != blank -%}
+      <span class="tt-uk-tip">{{ p.vendor }}</span>
+    {%- endif -%}
+
+    <a class="tt-uk-ad" href="{{ url }}" data-uk-bag>{{ p.title }}</a>
+
+    <div class="tt-uk-fiyatlar">
+      <p class="price tt-uk-fiyat">
+        {%- if p.price_varies -%}
+          {%- comment -%}
+            Filtre zincirinde ic ice filtre YAZILAMIYOR: money'yi
+            replace'in SONUCUNA uygulardi. Once bicimlendirip sonra
+            yerlestiriyoruz.
+          {%- endcomment -%}
+          {%- assign fiyat_taban = p.price_min | money -%}
+          <span class="tt-uk-satis">{{ s.uk_baslangic | replace: '[FIYAT]', fiyat_taban }}</span>
+        {%- else -%}
+          <span class="tt-uk-satis">{{ p.price | money }}</span>
+          {%- if v.compare_at_price > v.price -%}
+            <s class="tt-uk-eski">{{ v.compare_at_price | money }}</s>
+          {%- endif -%}
+        {%- endif -%}
+      </p>
+      {%- comment -%}
+        Taksit/kupon blogu: temanin kartinda da fiyatin hemen altindaydi,
+        burada da ayni yerde. Kardes olmasi sart (bkz. baştaki not).
+      {%- endcomment -%}
+      {%- render 'tt-kart-taksit', product: p -%}
+    </div>
+  </div>
+</div>

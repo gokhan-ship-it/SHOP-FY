@@ -1,0 +1,291 @@
+/* ------------------------------------------------------------------
+   URUN KARTI  (.tt-uk-*)
+
+   Single ve Couple modunda AYNI kart. Modlar arasinda kartin OLCUSU
+   hic degismiyor: kose dugmesi iki modda da ayni yerde ve ayni boyda,
+   secim cercevesi seffaf halde de duruyor. Bu yuzden mod degisiminde
+   izgara yeniden akmiyor, sayfa ziplayamiyor.
+
+   OLCULEN KONTRASTLAR
+     #15171c / beyaz            17.9:1
+     #6b6f78 / beyaz             5.0:1
+     #8b8e95 / beyaz             3.4:1   (yalnizca TUKENEN urunun soluk
+                                          metni -- WCAG 1.4.3 devre disi
+                                          birakilmis arayuz ogelerini
+                                          kapsam disi tutuyor)
+     beyaz  / #30614b            7.2:1
+     #15171c / beyaz (sira)     17.9:1
+   ------------------------------------------------------------------ */
+.tt-uk {
+  --tt-uk-koyu: #15171c;
+  --tt-uk-gri: #6b6f78;
+  --tt-uk-soluk: #8b8e95;
+  --tt-uk-yesil: #30614b;
+  --tt-uk-zemin: #f1f2f5;
+  --tt-uk-nokta: #b9bec5;
+
+  display: flex;
+  flex-direction: column;
+  /* Izgara ogesi olarak esnedigi icin ayni satirdaki kartlar esit
+     boyda; metin alani asagi yaslanmiyor, ust ust hizali kaliyor. */
+  height: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  /* Cerceve border DEGIL inset box-shadow. Iki sebep:
+     1) Chrome border-width'i tam piksele yuvarliyor -- "1.5px" ekranda
+        1px cikiyordu (kartlarda ve slotlarda da ayni tuzak).
+     2) Golge yerlesimi HIC etkilemiyor: seffaf halden yesile gecerken
+        kartin kutusu bir piksel bile degismiyor, izgara yeniden akmiyor.
+     Bkz. [data-sc-secili] .tt-uk asagida. */
+  box-shadow: inset 0 0 0 1.5px transparent;
+  background: #fff;
+  color: var(--tt-uk-koyu);
+}
+
+/* --- Gorsel alani --- */
+.tt-uk-gorsel {
+  position: relative;
+  /* Oran BASTAN sabit: gorsel yuklenirken yerlesim kaymiyor.
+     Temanin product_image_ratio ayari "square". */
+  aspect-ratio: 1 / 1;
+  background: var(--tt-uk-zemin);
+}
+.tt-uk-serit {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  /* Dikey hareket SAYFAYA gidiyor, yatay hareket seride.
+     pan-y olmadan galeri sayfanin kaydirilmasini yutuyordu. */
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.tt-uk-serit::-webkit-scrollbar { display: none; }
+/* Tek gorselli uronde kaydirma kapali. */
+.tt-uk-serit[data-uk-tek] { overflow-x: hidden; scroll-snap-type: none; }
+
+.tt-uk-kare {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+}
+.tt-uk-bag { display: block; width: 100%; height: 100%; }
+.tt-uk-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Masaustunde gorseli surukleyince tarayici kendi resim surukleme
+     hayaletini baslatiyor: galeri kaymiyor, uzerine click de hic
+     uretilmiyor. draggable="false" ile birlikte kapatiliyor. */
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* --- Rozet --- */
+.tt-uk-rozet {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  max-width: calc(100% - 52px);
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+.tt-uk-rozet--kampanya { background: var(--tt-uk-yesil); color: #fff; }
+.tt-uk-rozet--etiket { background: #fff; color: var(--tt-uk-koyu); }
+
+/* --- Nokta gostergesi --- */
+.tt-uk-noktalar {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / .85);
+  pointer-events: none;
+}
+.tt-uk-noktalar i {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--tt-uk-nokta);
+  transition: width 160ms ease, background-color 160ms ease;
+}
+.tt-uk-noktalar i[data-uk-aktif] { width: 13px; background: var(--tt-uk-koyu); }
+
+/* --- Kose dugmesi --- */
+.tt-uk-dugme {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--tt-uk-koyu);
+  box-shadow: 0 1px 3px rgb(0 0 0 / .12);
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+/* Dokunma alani 44x44: gorunur kutu 36px kaliyor, pseudo-element
+   dort yana 4'er px tasip parmak hedefini buyutuyor. */
+.tt-uk-dugme::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+}
+.tt-uk-dugme:active { transform: scale(.9); }
+.tt-uk-dugme:focus-visible { outline: 2px solid var(--tt-uk-koyu); outline-offset: 2px; }
+
+.tt-uk-ikon { width: 20px; height: 20px; pointer-events: none; }
+/* Arti ve tik ikonlarinin IKISI de basiliyor, secimi CSS yapiyor --
+   JS ikon uretmiyor. */
+.tt-uk-ikon--tik { display: none; }
+
+/* Yesil hal: Single'da "sepete eklendi" geri bildirimi, Couple'da
+   "sette" durumu. Ikisi de ayni gorunumu kullaniyor.
+   Couple secimi karonun [data-sc-secili] niteliginden okunuyor --
+   bolumun zaten yazdigi nitelik, kart icin ikinci bir bayrak yok. */
+.tt-uk-dugme[data-uk-durum="basarili"],
+[data-sc-secili] .tt-uk-dugme {
+  background: var(--tt-uk-yesil);
+  color: #fff;
+}
+.tt-uk-dugme[data-uk-durum="basarili"] .tt-uk-ikon--arti,
+[data-sc-secili] .tt-uk-dugme .tt-uk-ikon--arti { display: none; }
+.tt-uk-dugme[data-uk-durum="basarili"] .tt-uk-ikon--tik,
+[data-sc-secili] .tt-uk-dugme .tt-uk-ikon--tik { display: block; }
+.tt-uk-dugme[aria-busy="true"] { opacity: .6; }
+
+/* Sira numarasi: set kutusundaki slot numarasiyla ayni sayi. */
+.tt-uk-sira {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--tt-uk-koyu);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+}
+.tt-uk-sira[hidden] { display: none; }
+
+/* --- Tukendi --- */
+.tt-uk-tukendi {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
+  padding: 5px 9px;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--tt-uk-soluk);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+/* Gorseller soluyor ama galeri kaydirilabilir kaliyor. */
+.tt-uk[data-uk-var="0"] .tt-uk-serit { opacity: .35; }
+.tt-uk[data-uk-var="0"] .tt-uk-tip,
+.tt-uk[data-uk-var="0"] .tt-uk-ad,
+.tt-uk[data-uk-var="0"] .tt-uk-fiyat { color: var(--tt-uk-soluk); }
+.tt-uk[data-uk-var="0"] .tt-uk-satis { color: var(--tt-uk-soluk); }
+
+/* Couple'da secili kartin cercevesi. Seffaf cerceve zaten yerinde
+   duruyor, yalnizca rengi degisiyor: kart bir piksel bile buyumuyor. */
+[data-sc-secili] .tt-uk { box-shadow: inset 0 0 0 1.5px var(--tt-uk-yesil); }
+
+/* --- Metin alani --- */
+.tt-uk-metin {
+  display: flex;
+  flex-direction: column;
+  padding: 9px 10px 12px;
+}
+.tt-uk-tip {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--tt-uk-gri);
+}
+.tt-uk .tt-uk-ad {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin: 2px 0 3px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--tt-uk-koyu);
+  text-decoration: none;
+}
+.tt-uk .tt-uk-ad:focus-visible { outline: 2px solid var(--tt-uk-koyu); outline-offset: 2px; }
+
+/* Temanin .price kurallarini eziyor: fiyat satiri kupon katmani icin
+   "price" sinifini tasimak ZORUNDA (bkz. snippets/tt-uk-kart.liquid). */
+.tt-uk .tt-uk-fiyat {
+  display: block;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--tt-uk-koyu);
+}
+.tt-uk .tt-uk-eski {
+  margin-left: 5px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--tt-uk-soluk);
+}
+
+.tt-uk .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-uk-dugme,
+  .tt-uk-noktalar i { transition: none; }
+  .tt-uk-dugme:active { transform: none; }
+  .tt-uk-serit { scroll-behavior: auto; }
+}
