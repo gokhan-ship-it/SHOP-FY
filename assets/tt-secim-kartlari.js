@@ -271,12 +271,11 @@
       return temaIzgara;
     }
     function temaIzgaraGoster(goster) {
-      /* Ayar "kendi" ise sahiplik temada degil bu bolumde: o zaman
-         temanin izgarasina HIC dokunulmuyor, kapatmasi kullaniciya
-         birakiliyor. Aksi halde bolum, kapatilmasini soyledigimiz bir
-         bolumu Single modunda kendi kendine gizlerdi ve ayarin ne ise
-         yaradigi anlasilmazdi. */
-      if (!TEMA_IZGARA) return;
+      /* Temanin izgarasini HER ZAMAN bu bolum yonetiyor: ayar "kendi"
+         ise liste iki modda da bu bolumun oldugu icin temaninki surekli
+         gizli kaliyor. Kapatmayi kullaniciya birakmak, main-collection
+         acik unutuldugunda sayfada iki urun listesi birakiyordu --
+         nitekim ilk kurulumda tam olarak bu oldu. */
       var el = temaIzgaraBul();
       if (!el) return;
       if (goster) {

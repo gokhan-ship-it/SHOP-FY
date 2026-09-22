@@ -265,20 +265,20 @@
         tam genisligini kapliyor ve yalnizca "Tumu" secildiginde
         gorunuyor.
 
-        SINGLE MODUNDA VARSAYILAN OLARAK BU IZGARA KULLANILMIYOR.
-        Sayfanin zaten calisan bir urun izgarasi var (main-collection):
-        filtreleri, siralamasi ve sayfalamasi onun uzerinde. Single
-        modu "sayfa bugunku gibi calissin" demek oldugu icin bolum o
-        moda girdiginde kendi izgarasini gizleyip temanin izgarasini
-        oldugu gibi birakiyor.
+        NEDEN TEMANIN IZGARASI DEGIL
 
-        Kendi izgarasi YALNIZCA Couple modunda devreye giriyor, cunku
-        orada iki koleksiyondan birden urun gostermek ve her karoyu
-        sete eklenebilir yapmak gerekiyor; main-collection yalnizca
-        sayfanin kendi koleksiyonunu basiyor.
+        Kadin/Erkek filtresinin IKI MODDA DA calismasi isteniyor.
+        Temanin izgarasi (main-collection) yalnizca sayfanin KENDI
+        koleksiyonunu basiyor, yani kadin sayfasinda erkek urununu
+        gosteremez -- o izgarayla filtre Single modunda kacinilmaz
+        bicimde bos kalirdi. Bu yuzden liste iki modda da bu bolumun.
 
-        Ayardan (tekil_izgara) Single modunda da bu izgara
-        kullanilabilir; o zaman temanin izgarasini kapatmak gerekir.
+        Ayardan (tekil_izgara = tema) Single modu temanin izgarasina
+        birakilabilir: o zaman sayfanin kendi filtreleri ve siralamasi
+        korunur ama Kadin/Erkek cipleri Single modunda gizlenir.
+
+        Hangi ayarda olursa olsun temanin izgarasini BU BOLUM yonetiyor;
+        kullanicidan main-collection'i kapatmasi beklenmiyor.
       {%- endcomment -%}
       <div class="tt-sc-izgara" data-sc-izgara>
 
@@ -434,21 +434,21 @@
     { "type": "paragraph", "content": "Kadın/Erkek ayrımı koleksiyon üyeliğine göre yapılıyor; katalogda cinsiyet alanı yok. Yeni ürün eklerken doğru koleksiyona da eklemeyi unutmayın." },
     { "type": "text", "id": "kadin_koleksiyon", "label": "Couple – kadın koleksiyonu (handle)", "default": "zaman-kapsulu-kolyeler" },
     { "type": "text", "id": "erkek_koleksiyon", "label": "Couple – erkek koleksiyonu (handle)", "default": "zaman-kapsulu-bileklik" },
-    { "type": "select", "id": "tekil_izgara", "label": "Single modunda ürün ızgarası", "default": "tema",
+    { "type": "select", "id": "tekil_izgara", "label": "Single modunda ürün ızgarası", "default": "kendi",
       "options": [
-        { "value": "tema", "label": "Temanın kendi ızgarası (önerilen)" },
-        { "value": "kendi", "label": "Bu bölümün ızgarası" }
+        { "value": "kendi", "label": "Bu bölümün ızgarası — Kadın/Erkek filtresi çalışır" },
+        { "value": "tema", "label": "Temanın kendi ızgarası — filtre Single'da kapanır" }
       ],
-      "info": "\"Temanın kendi ızgarası\" seçiliyken Single modunda sayfa bugünkü gibi çalışır: filtreler, sıralama ve sayfalama korunur. Bu bölüm kendi ızgarasını yalnızca Couple modunda gösterir. \"Bu bölümün ızgarası\" seçilirse temanın Ürün ızgarası bölümünü kapatmanız gerekir, yoksa sayfada iki liste olur." },
+      "info": "Kadın/Erkek filtresinin Single modunda da çalışması için bu bölümün ızgarası gerekiyor: temanın ızgarası yalnızca sayfanın kendi koleksiyonunu basar, karşı cinsiyeti gösteremez. \"Temanın kendi ızgarası\" seçilirse Single modunda sayfanın kendi filtreleri ve sıralaması korunur ama Kadın/Erkek çipleri o modda gizlenir. Temanın Ürün ızgarası bölümünü elle kapatmayın; bu bölüm gerektiğinde kendisi gizliyor." },
     { "type": "text", "id": "tema_izgara_secici", "label": "Temanın ızgara bölümü (CSS seçici)",
       "default": "#shopify-section-main-collection",
-      "info": "Couple modunda gizlenir. Şablondaki bölüm kimliği değişirse burayı güncelleyin." },
-    { "type": "select", "id": "single_kaynak", "label": "Single modunda listelenen ürünler", "default": "kendi",
+      "info": "Bu bölüm listeyi devraldığında gizlenen öğe. Şablondaki bölüm kimliği değişirse burayı güncelleyin." },
+    { "type": "select", "id": "single_kaynak", "label": "Single modunda listelenen ürünler", "default": "ikisi",
       "options": [
-        { "value": "kendi", "label": "Sayfanın kendi koleksiyonu" },
-        { "value": "ikisi", "label": "Kadın + Erkek koleksiyonları" }
+        { "value": "ikisi", "label": "Kadın + Erkek koleksiyonları" },
+        { "value": "kendi", "label": "Sayfanın kendi koleksiyonu" }
       ],
-      "info": "\"Sayfanın kendi koleksiyonu\" seçiliyken tek cinsiyetli bir sayfada karşı cinsiyetin çipi otomatik gizlenir." },
+      "info": "Kadın/Erkek filtresinin Single modunda da çalışması için iki koleksiyon birden listelenmeli. \"Sayfanın kendi koleksiyonu\" seçilirse tek cinsiyetli bir sayfada karşı cinsiyetin çipi otomatik gizlenir." },
 
     { "type": "header", "content": "Filtre satırı" },
     { "type": "text", "id": "kime_etiket", "label": "Filtre grubu adı (ekran okuyucu)", "default": "Kime alıyorsun?" },

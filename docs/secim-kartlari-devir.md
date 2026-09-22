@@ -8,11 +8,11 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 
 | Dosya | Boyut | md5 |
 |---|---|---|
-| `sections/tt-secim-kartlari.liquid` | 26.331 | `b35cae14a687e9b583fd24a0c48e7742` |
+| `sections/tt-secim-kartlari.liquid` | 26.590 | `4b4401172c878cf1f7694599410f38d8` |
 | `snippets/tt-sc-karo.liquid` | 3.048 | `bd3847fce53aec482150767b64a9246a` |
 | `snippets/tt-sc-ikon.liquid` | 1.198 | `c4042fada7124171db3bd369c318cc92` |
 | `assets/tt-secim-kartlari.css` | 16.803 | `4f8d85766e5ab4503101acb82e367837` |
-| `assets/tt-secim-kartlari.js` | 24.747 | `527cf6d25591c2528745f7ca9d4e855f` |
+| `assets/tt-secim-kartlari.js` | 24.740 | `85af3ef2ca6763e7d275fb95d106f44f` |
 
 Hiçbir paylaşılan dosyaya dokunulmadı: `sections/main-collection.liquid`,
 `snippets/product-card.liquid`, `assets/theme.js`, `assets/cart.js`
@@ -24,9 +24,9 @@ olduğu gibi duruyor.
    (`/collections/zaman-kapsulu-kolyeler` ve `.../zaman-kapsulu-bileklik`).
 2. **Bölüm ekle → Single / Couple Seçimi**. Yukarı, `main-collection`'ın
    üstüne taşı.
-3. **`main-collection` (Ürün ızgarası) AÇIK KALSIN.** Bölüm varsayılan
-   ayarıyla Single modunda o ızgarayı kullanıyor; kendi ızgarasını
-   yalnızca Couple modunda gösterip temanınkini gizliyor.
+3. **`main-collection` (Ürün ızgarası) AÇIK KALSIN, elle kapatma.**
+   Bölüm gerektiğinde onu kendisi gizliyor; iki listenin üst üste
+   binmesi mümkün değil.
 4. Kolyeler sayfasında **eski `Deneyim Seçimi` bölümünü kapat** — yerini
    bu alıyor.
 
@@ -60,36 +60,43 @@ düzenleyici değişikliklerinin üzerine yazma riski var.
   `product.variants.size == 1` iken `<product-form>` basıyor; çok
   varyantlıda buton sepete eklemiyor, quick-view açıyor.
 
-## Neden temanın kendi ızgarası
+## Izgara kimin: Kadın/Erkek filtresi belirledi
 
-Sayfanın zaten çalışan bir ürün ızgarası var (`main-collection`):
-filtreleri, sıralaması ve sayfalaması onun üzerinde. Single modu
-"sayfa bugünkü gibi çalışsın" demek olduğu için bölüm o modda kendi
-ızgarasını, filtre satırını ve sayacını gizleyip temanınkini olduğu gibi
-bırakıyor.
+Filtrenin **iki modda da** çalışması isteniyor. Temanın ızgarası
+(`main-collection`) yalnızca sayfanın **kendi** koleksiyonunu basıyor —
+kadın sayfasında erkek ürünü gösteremez. O ızgarayla Kadın/Erkek
+filtresi Single modunda kaçınılmaz olarak boş kalırdı. Bu yüzden liste
+iki modda da bu bölümün; temanın ızgarası gizleniyor.
 
-Kendi ızgarası **yalnızca Couple modunda** devreye giriyor, çünkü orada
-iki koleksiyondan birden ürün göstermek ve her karoyu sete eklenebilir
-yapmak gerekiyor — `main-collection` yalnızca sayfanın kendi
-koleksiyonunu basıyor.
+Ürün kartları temanın kendi `product-card` snippet'iyle basıldığı için
+kartların görünümü değişmiyor; değişen yalnızca ızgara kapsayıcısı ve
+listenin hangi koleksiyonlardan geldiği.
 
-Ayar: **"Single modunda ürün ızgarası"** → *Temanın kendi ızgarası*
-(varsayılan) / *Bu bölümün ızgarası*. İkincisi seçilirse temanın Ürün
-ızgarası bölümünü kapatmak gerekiyor, yoksa sayfada iki liste olur.
-Temanın bölümü `"Temanın ızgara bölümü (CSS seçici)"` ayarıyla
-bulunuyor; varsayılan `#shopify-section-main-collection`.
+**Bunun bedeli:** `main-collection`'ın kendi filtreleri, sıralaması ve
+sayfalaması bu iki sayfada devre dışı kalıyor. Koleksiyonlar 17 ve 13
+ürün olduğu için sayfalamaya gerek yok; sıralama/filtre gerekiyorsa
+ayar `tema` yapılabilir.
 
-Ayar *kendi* iken bölüm temanın ızgarasına **hiç dokunmuyor** —
-kapatması kullanıcıya bırakılıyor.
+İki ayar:
+
+| Ayar | Varsayılan | Diğer seçenek |
+|---|---|---|
+| Single modunda ürün ızgarası | **Bu bölümün ızgarası** — filtre çalışır | Temanın ızgarası — filtre Single'da kapanır |
+| Single modunda listelenen ürünler | **Kadın + Erkek koleksiyonları** | Sayfanın kendi koleksiyonu |
+
+Temanın ızgarasını **her zaman bu bölüm yönetiyor** (seçici ayarı:
+`#shopify-section-main-collection`). Kapatmayı kullanıcıya bırakmak,
+ilk kurulumda `main-collection` açık unutulduğu için sayfada iki ürün
+listesi bırakmıştı.
 
 ## Kurulum sırasında dikkat
 
-- **Filtre ve `single_kaynak`.** Varsayılan `kendi` (sayfanın kendi
-  koleksiyonu). Tek cinsiyetli bir koleksiyon sayfasında filtrelenecek
-  bir cinsiyet farkı olmadığı için çip satırı Single modunda otomatik
-  gizleniyor (boş sonuç ekranı çıkmasın diye). Filtrenin Single modunda
-  da çalışması isteniyorsa ayarı **"Kadın + Erkek koleksiyonları"**
-  yapmak yeterli — o zaman gruplar ve başlıklar iki modda da çıkıyor.
+- **Single modunda karşı cinsiyet de listeleniyor.** Varsayılan
+  `Kadın + Erkek koleksiyonları` olduğu için kadın koleksiyon sayfasında
+  Single modunda erkek ürünleri de görünüyor ("Tümü" seçiliyken grup
+  başlıklarıyla ayrılmış olarak). Filtrenin Single modunda çalışmasının
+  koşulu bu. İstenmezse ayar `Sayfanın kendi koleksiyonu` yapılır; o
+  zaman karşı cinsiyetin çipi otomatik gizlenir.
 - **Tutar bir önizleme.** Pahalı ürün tam, ucuz ürün yarım. Shopify de
   BXGY'de indirimi ucuz olana uyguluyor, yani beklenen sonuç aynı; ama
   gerçek tutarı sepet hesaplıyor. `tutar_goster` kapatılırsa yerine
@@ -149,7 +156,9 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   varyantla), rozetin başlığa binmemesi, yatay taşma, seçim durumu
   renkleri, halka ölçüleri, filtre sayaçları, grup başlıkları,
   `single_kaynak` iki değeri, erkek koleksiyon sayfası.
-- `test3.mjs` — 24 test: Single modunda temanın ızgarasına devir,
+- `test3.mjs` — 40 test: varsayılan ayarda Single modunda çiplerin
+  çalışması (29 / 17 / 13 ürün, grup başlıkları, set kutusunun Single'da
+  çıkmaması), Single modunda temanın ızgarasına devir,
   Couple modunda geri alma, `kendi` ayarında temaya dokunulmaması,
   `concat` hatasının geri gelmediği (Single'da 17 ürün, 1 değil),
   `?mod=couple` ile açılış, temanın ızgarası sayfada yokken çökmeme.
@@ -159,4 +168,4 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   `cart:refresh` + `detail.open`, çekmece yoksa `/cart` yedeği, para
   biçiminin mağazadan öğrenilmesi (TR ve ABD biçimi), klavye, `?mod=`.
 
-**183/183 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).
+**199/199 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).
