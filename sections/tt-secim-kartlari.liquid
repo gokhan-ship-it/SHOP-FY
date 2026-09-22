@@ -1,0 +1,466 @@
+{%- doc -%}
+  SINGLE / COUPLE SECIM KARTLARI + COUPLE SET OLUSTURUCU  (.tt-sc-*)
+
+  Musteri once deneyimi seciyor (Single / Couple), sonra Kadin/Erkek
+  filtresiyle urununu buluyor. Couple secerse ayni sayfada iki urunluk
+  bir set kuruyor ve ikisi TEK istekte sepete gidiyor.
+
+  ------------------------------------------------------------------
+  INDIRIME VE SEPETE DOKUNULMUYOR
+
+  Magazada "Ikinci Uründe %50 Indirim" adinda OTOMATIK bir Shopify
+  BXGY indirimi var (1 al / 1'ini %50 indirimli al). Kapsami bu
+  sayfalarin koleksiyonlarini iceriyor, yani indirim SEPET
+  SEVIYESINDE kendiliginden isliyor. Bu bolum yalnizca iki uygun
+  urunu sepete koyuyor; ne yeni bir fiyat hesabi kuruyor ne de
+  indirim mantigina karisiyor.
+
+  Cubuktaki tutar bir TAHMIN: pahali urun tam, ucuz urun yarim.
+  Shopify de BXGY'de indirimi ucuz olana uyguluyor, yani beklenen
+  sonuc ayni. Yine de "gercek" tutar sepetin kendisi; bu yuzden
+  tahmini kapatip yerine yalnizca teklif metnini gosteren bir ayar
+  var (tutar_goster).
+
+  ------------------------------------------------------------------
+  LINE ITEM PROPERTY EKLENMIYOR -- BILEREK
+
+  Urun sayfasindaki couple akisi (assets/tt-tekli-secim.js) sepete
+  duz bir items dizisi gonderiyor, hicbir property tasimiyor. Bu
+  bolum de aynisini yapiyor ki siparis ve uretim tarafinda iki akis
+  arasinda fark olmasin. Sete ortak bir anahtar istenirse IKI YERE
+  BIRDEN eklenmeli.
+
+  ------------------------------------------------------------------
+  CINSIYET SINYALI = KOLEKSIYON UYELIGI
+
+  Katalogda cinsiyet metafield'i YOK, etiketler tutarsiz ve cogu bos,
+  productType bos, vendor cinsiyet degil urun tipi. Bugun dogru olan
+  tek sinyal koleksiyon uyeligi. Iki koleksiyonda birden olan urun
+  ("Klasik Zaman Kapsulu") bir kez basiliyor, "ikisi" isaretiyle her
+  iki filtrede de gorunuyor.
+
+  ------------------------------------------------------------------
+  URUNLER ONCEDEN BASILIYOR, SECTION RENDER API KULLANILMIYOR
+
+  Mod degisince sayfa yenilenmemeli. Iki koleksiyon toplam ~30 urun;
+  hepsini bir kez basip JS ile gostermek/gizlemek, her mod degisiminde
+  ag istegi atmaktan hem hizli hem de cevrimdisi kirilmaya kapali.
+  Her karo hangi moda ve hangi cinsiyete ait oldugunu kendi uzerinde
+  tasiyor.
+
+  Urun kartlari temanin KENDI snippet'iyle basiliyor; parametreler
+  product-recommendations bolumundeki cagriyla birebir ayni.
+  snippets/product-card.liquid ve sections/main-collection.liquid
+  dosyalarina DOKUNULMUYOR.
+
+  @param {string} [baslik] - Bolum basligi
+  @param {string} [ust_yazi] - Baslik ustundeki kucuk yazi
+
+  @example
+  {% section 'tt-secim-kartlari' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign s = section.settings
+  assign sid = section.id
+
+  assign tekil_kol = collection
+  assign kadin_kol = collections[s.kadin_koleksiyon]
+  assign erkek_kol = collections[s.erkek_koleksiyon]
+
+  comment
+    Uyelik kumeleri virgulle SARILMIS id dizisi. Sarmalama sart: duz
+    "contains" ile "123" aramasi "1234"un icinde de eslesirdi.
+  endcomment
+  assign kadin_ids = ','
+  for p in kadin_kol.products
+    assign kadin_ids = kadin_ids | append: p.id | append: ','
+  endfor
+  assign erkek_ids = ','
+  for p in erkek_kol.products
+    assign erkek_ids = erkek_ids | append: p.id | append: ','
+  endfor
+  assign tekil_ids = ','
+  for p in tekil_kol.products
+    assign tekil_ids = tekil_ids | append: p.id | append: ','
+  endfor
+
+  comment
+    Single modunun urun kaynagi ayardan. Varsayilan "kendi": sayfa
+    kendi koleksiyonunu listeliyor. Bu durumda tek cinsiyetli bir
+    sayfada karsi cinsiyetin cipi BOS kalirdi; cipler bu yuzden
+    JS tarafinda sayisi sifir olunca gizleniyor, musteri bos bir
+    sonuc ekraniyla karsilasmiyor.
+  endcomment
+
+  comment
+    Karo listesi: uc kaynagin birlesimi, id'ye gore tekillestirilmis.
+    Siralama ONEMLI -- "Tumu" gorunumunde once Kadin grubu, sonra
+    Erkek grubu basiliyor ve basliklar bu siraya guveniyor.
+  endcomment
+  assign kadin_sirasi = kadin_kol.products | concat: tekil_kol.products
+  assign erkek_sirasi = erkek_kol.products
+
+  assign para_ornek = 1234567 | money
+-%}
+
+{%- comment -%}
+  JS'in ihtiyac duydugu butun metinler tek bir JSON'da. Ayri ayri
+  data-* niteligi yerine tek paket: metin eklendiginde yalnizca bu
+  blok ve schema degisiyor, DOM sozlesmesi sabit kaliyor.
+{%- endcomment -%}
+{%- capture metin_json -%}
+{
+  "sayacEki": {{ s.sayac_eki | json }},
+  "setSayac": {{ s.set_sayac | json }},
+  "slot1Ust": {{ s.slot1_ust | json }},
+  "slot1Alt": {{ s.slot1_alt | json }},
+  "slot2Ust": {{ s.slot2_ust | json }},
+  "slot2Alt": {{ s.slot2_alt | json }},
+  "kartEkle": {{ s.kart_ekle | json }},
+  "kartSecili": {{ s.kart_secili | json }},
+  "durum2": {{ s.durum_2 | json }},
+  "durum1": {{ s.durum_1 | json }},
+  "durum0": {{ s.durum_0 | json }},
+  "dugmeEksik": {{ s.dugme_eksik | json }},
+  "dugmeTam": {{ s.dugme_tam | json }},
+  "uyari": {{ s.uyari_metin | json }},
+  "hata": {{ s.hata_metin | json }},
+  "tutarYerine": {{ s.tutar_yerine | json }},
+  "varyantBaslik": {{ s.varyant_baslik | json }},
+  "kadin": {{ s.kime_kadin | json }},
+  "erkek": {{ s.kime_erkek | json }}
+}
+{%- endcapture -%}
+
+{%- if s.aktif -%}
+  {{ 'tt-secim-kartlari.css' | asset_url | stylesheet_tag }}
+
+  <div class="tt-sc" data-tt-sc
+       data-sc-varsayilan="{{ s.varsayilan_mod }}"
+       data-sc-para-ornek="{{ para_ornek | escape }}"
+       data-sc-tutar-goster="{{ s.tutar_goster }}"
+       data-sc-gizle-secici="{{ s.gizle_secici | escape }}"
+       data-sc-single-kaynak="{{ s.single_kaynak }}"
+       data-sc-metin="{{ metin_json | strip | escape }}"
+       style="
+         --tt-sc-zemin: {{ s.zemin }};
+         --tt-sc-koyu: {{ s.koyu }};
+         --tt-sc-yesil: {{ s.yesil }};
+         --tt-sc-halka-yesil: {{ s.halka_yesil }};
+         --tt-sc-yesil-acik: {{ s.yesil_acik }};
+         --tt-sc-yesil-zemin: {{ s.yesil_zemin }};
+         --tt-sc-kenar: {{ s.kenar }};
+         --tt-sc-gri: {{ s.gri }};
+         --tt-sc-gri-koyu: {{ s.gri_koyu }};
+         --tt-sc-ayrac-koyu: {{ s.ayrac_koyu }};
+         --tt-sc-uyari: {{ s.uyari }};
+         --tt-sc-genislik: {{ s.genislik }}px;
+         --tt-sc-sutun-m: {{ s.urun_sutun_m }};
+         --tt-sc-sutun-d: {{ s.urun_sutun_d }};
+       ">
+    <div class="tt-sc-ic">
+
+      {%- comment -%} --- Baslik --- {%- endcomment -%}
+      {%- assign ust = s.ust_yazi | default: tekil_kol.title -%}
+      {%- if ust != blank or s.baslik != blank -%}
+        <div class="tt-sc-bas">
+          {%- if ust != blank -%}<span class="tt-sc-ust">{{ ust }}</span>{%- endif -%}
+          {%- if s.baslik != blank -%}<h2 class="tt-sc-baslik">{{ s.baslik }}</h2>{%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- comment -%}
+        SECIM KARTLARI
+
+        Kartlar .tt-sc-kartlar'in DOGRUDAN cocugu: araya sarmalayici
+        koyulsaydi subgrid zinciri kirilir, iki kartin satirlari
+        hizasini kaybederdi.
+      {%- endcomment -%}
+      <div class="tt-sc-kartlar" role="radiogroup" aria-label="{{ s.baslik | default: 'Deneyim' | escape }}">
+        {%- comment -%} Single {%- endcomment -%}
+        <div class="tt-sc-kart" role="radio" tabindex="0" aria-checked="true" data-sc-mod="single">
+          <span class="tt-sc-radyo" aria-hidden="true"></span>
+          <span class="tt-sc-ustyazi">{{ s.single_ust }}</span>
+          <span class="tt-sc-ad">{{ s.single_ad }}</span>
+          <span class="tt-sc-ayrac" aria-hidden="true"></span>
+          <span class="tt-sc-satir">
+            <span class="tt-sc-halkalar" aria-hidden="true"><i></i></span>
+            <span class="tt-sc-satir-metin">{{ s.single_adet }}</span>
+          </span>
+          <span class="tt-sc-satir">
+            {%- render 'tt-sc-ikon', ad: 'kisi' -%}
+            <span class="tt-sc-satir-metin">{{ s.single_yukleme }}</span>
+          </span>
+        </div>
+
+        {%- comment -%} Couple {%- endcomment -%}
+        <div class="tt-sc-kart" role="radio" tabindex="-1" aria-checked="false" data-sc-mod="couple">
+          {%- if s.couple_rozet != blank -%}
+            <span class="tt-sc-rozet">{{ s.couple_rozet }}</span>
+          {%- endif -%}
+          <span class="tt-sc-radyo" aria-hidden="true"></span>
+          <span class="tt-sc-ustyazi">{{ s.couple_ust }}</span>
+          <span class="tt-sc-ad">{{ s.couple_ad }}</span>
+          <span class="tt-sc-ayrac" aria-hidden="true"></span>
+          <span class="tt-sc-satir">
+            <span class="tt-sc-halkalar tt-sc-halkalar--cift" aria-hidden="true"><i></i><i></i></span>
+            <span class="tt-sc-satir-metin">{{ s.couple_adet }}</span>
+          </span>
+          <span class="tt-sc-satir">
+            {%- render 'tt-sc-ikon', ad: 'kisiler' -%}
+            <span class="tt-sc-satir-metin">{{ s.couple_yukleme }}</span>
+          </span>
+        </div>
+      </div>
+
+      {%- comment -%} --- Filtre satiri --- {%- endcomment -%}
+      <div class="tt-sc-filtre">
+        <div class="tt-sc-cipler" role="radiogroup" aria-label="{{ s.kime_etiket | escape }}">
+          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="tumu"  aria-checked="true"  tabindex="0">{{ s.kime_tumu }}</button>
+          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="kadin" aria-checked="false" tabindex="-1">{{ s.kime_kadin }}</button>
+          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="erkek" aria-checked="false" tabindex="-1">{{ s.kime_erkek }}</button>
+        </div>
+        <span class="tt-sc-sayac" data-sc-sayac aria-live="polite"></span>
+      </div>
+
+      {%- comment -%}
+        SET OLUSTURUCU
+        Yalnizca Couple modunda gorunuyor. Slotlar bos/dolu iki halde;
+        dolu slot urun adini ve Kadin/Erkek bilgisini tasiyor.
+      {%- endcomment -%}
+      <div class="tt-sc-set" data-sc-set hidden>
+        <div class="tt-sc-set-bas">
+          <span class="tt-sc-set-baslik">{{ s.set_baslik }}</span>
+          <span class="tt-sc-set-sayac" data-sc-set-sayac aria-live="polite"></span>
+        </div>
+        <div class="tt-sc-slotlar">
+          <button type="button" class="tt-sc-slot" data-sc-slot="0">
+            <span class="tt-sc-slot-ust" data-sc-slot-ust>{{ s.slot1_ust }}</span>
+            <span class="tt-sc-slot-alt" data-sc-slot-alt>{{ s.slot1_alt }}</span>
+          </button>
+          <button type="button" class="tt-sc-slot" data-sc-slot="1">
+            <span class="tt-sc-slot-ust" data-sc-slot-ust>{{ s.slot2_ust }}</span>
+            <span class="tt-sc-slot-alt" data-sc-slot-alt>{{ s.slot2_alt }}</span>
+          </button>
+        </div>
+        {%- if s.set_aciklama != blank -%}
+          <p class="tt-sc-set-not">{{ s.set_aciklama }}</p>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%}
+        URUN IZGARASI
+        Once Kadin grubu, sonra Erkek grubu. Grup baslikari izgaranin
+        tam genisligini kapliyor ve yalnizca "Tumu" secildiginde
+        gorunuyor.
+      {%- endcomment -%}
+      <div class="tt-sc-izgara" data-sc-izgara>
+
+        <h3 class="tt-sc-grup" data-sc-grup="kadin" hidden>
+          <span>{{ s.kime_kadin }}</span><span class="tt-sc-grup-sayi" data-sc-grup-sayi></span>
+        </h3>
+
+        {%- assign gorulen = ',' -%}
+        {%- for p in kadin_sirasi -%}
+          {%- assign ara = ',' | append: p.id | append: ',' -%}
+          {%- unless gorulen contains ara -%}
+            {%- assign gorulen = gorulen | append: p.id | append: ',' -%}
+            {%- liquid
+              assign kime = ''
+              if kadin_ids contains ara
+                assign kime = 'kadin'
+              endif
+              if erkek_ids contains ara
+                if kime == 'kadin'
+                  assign kime = 'ikisi'
+                else
+                  assign kime = 'erkek'
+                endif
+              endif
+              assign tekil = '0'
+              if tekil_ids contains ara
+                assign tekil = '1'
+              endif
+            -%}
+            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: tekil, grup: 'kadin', s: s -%}
+          {%- endunless -%}
+        {%- endfor -%}
+
+        <h3 class="tt-sc-grup" data-sc-grup="erkek" hidden>
+          <span>{{ s.kime_erkek }}</span><span class="tt-sc-grup-sayi" data-sc-grup-sayi></span>
+        </h3>
+
+        {%- for p in erkek_sirasi -%}
+          {%- assign ara = ',' | append: p.id | append: ',' -%}
+          {%- unless gorulen contains ara -%}
+            {%- assign gorulen = gorulen | append: p.id | append: ',' -%}
+            {%- liquid
+              assign kime = 'erkek'
+              assign tekil = '0'
+              if tekil_ids contains ara
+                assign tekil = '1'
+              endif
+            -%}
+            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: tekil, grup: 'erkek', s: s -%}
+          {%- endunless -%}
+        {%- endfor -%}
+      </div>
+
+      <p class="tt-sc-bos" data-sc-bos hidden>{{ s.bos_metin }}</p>
+    </div>
+
+    {%- comment -%}
+      YAPISKAN SEPET CUBUGU
+      Yalnizca Couple modunda. Buton HICBIR ZAMAN disabled degil:
+      eksik secimle basilirsa altinda uyari cikiyor, yeni urun
+      secilince uyari kalkiyor. Devre disi bir buton, neden
+      calismadigini soylemedigi icin daha kotu.
+    {%- endcomment -%}
+    <div class="tt-sc-cubuk" data-sc-cubuk hidden role="region" aria-label="{{ s.set_baslik | escape }}">
+      <div class="tt-sc-cubuk-ic">
+        <div class="tt-sc-cubuk-ust">
+          <span class="tt-sc-cubuk-durum" data-sc-durum></span>
+          <span class="tt-sc-cubuk-tutar" data-sc-tutar></span>
+        </div>
+        <button type="button" class="tt-sc-cubuk-dugme" data-sc-ekle-sepet>{{ s.dugme_eksik }}</button>
+        <p class="tt-sc-cubuk-uyari" data-sc-uyari hidden></p>
+      </div>
+    </div>
+
+    {%- comment -%}
+      VARYANT SECICI
+      Katalogdaki 30 urunun 9'unda birden fazla varyant var ve fiyat
+      farki 1.100 TL'ye kadar cikiyor (Aurora 2.699 / 3.799). Ilk
+      varyanti varsaymak yanlis fiyat gostermek olurdu; cok varyantli
+      urunde "Sete ekle" once bunu aciyor.
+    {%- endcomment -%}
+    <dialog class="tt-sc-varyant" data-sc-varyant aria-labelledby="ttScVaryantBas-{{ sid }}">
+      <div class="tt-sc-varyant-ic">
+        <div class="tt-sc-varyant-bas">
+          <h3 class="tt-sc-varyant-baslik" id="ttScVaryantBas-{{ sid }}" data-sc-varyant-baslik></h3>
+          <button type="button" class="tt-sc-varyant-kapat" data-sc-varyant-kapat
+                  aria-label="{{ s.kapat_etiket | escape }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          </button>
+        </div>
+        <div class="tt-sc-varyant-liste" data-sc-varyant-liste role="list"></div>
+      </div>
+    </dialog>
+  </div>
+
+  <script src="{{ 'tt-secim-kartlari.js' | asset_url }}" defer></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Single / Couple Seçimi",
+  "tag": "section",
+  "class": "tt-secim-kartlari-section",
+  "settings": [
+    { "type": "checkbox", "id": "aktif", "label": "Bölümü göster", "default": true },
+
+    { "type": "header", "content": "Başlık" },
+    { "type": "text", "id": "ust_yazi", "label": "Üst küçük yazı", "info": "Boş bırakılırsa koleksiyonun adı kullanılır." },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Zaman kapsülünü seç" },
+
+    { "type": "header", "content": "Single kartı" },
+    { "type": "text", "id": "single_ust", "label": "Üst küçük yazı", "default": "Belirlediğin tarihte açılır" },
+    { "type": "text", "id": "single_ad", "label": "Başlık", "default": "Single" },
+    { "type": "text", "id": "single_adet", "label": "Ürün sayısı satırı", "default": "1 ürün" },
+    { "type": "text", "id": "single_yukleme", "label": "Yükleme satırı", "default": "Sadece sen yüklersin" },
+
+    { "type": "header", "content": "Couple kartı" },
+    { "type": "text", "id": "couple_rozet", "label": "Rozet metni", "default": "İkincisi yarı fiyatına",
+      "info": "Boş bırakılırsa rozet çıkmaz." },
+    { "type": "text", "id": "couple_ust", "label": "Üst küçük yazı", "default": "Buluşunca açılır" },
+    { "type": "text", "id": "couple_ad", "label": "Başlık", "default": "Couple" },
+    { "type": "text", "id": "couple_adet", "label": "Ürün sayısı satırı", "default": "2 ürün" },
+    { "type": "text", "id": "couple_yukleme", "label": "Yükleme satırı", "default": "İkiniz de yüklersiniz" },
+
+    { "type": "header", "content": "Açılışta seçili" },
+    { "type": "select", "id": "varsayilan_mod", "label": "Açılışta seçili deneyim",
+      "options": [ { "value": "single", "label": "Single" }, { "value": "couple", "label": "Couple" } ],
+      "default": "single",
+      "info": "Adres satırında ?mod=couple varsa o kazanır." },
+
+    { "type": "header", "content": "Ürün kaynağı" },
+    { "type": "paragraph", "content": "Kadın/Erkek ayrımı koleksiyon üyeliğine göre yapılıyor; katalogda cinsiyet alanı yok. Yeni ürün eklerken doğru koleksiyona da eklemeyi unutmayın." },
+    { "type": "text", "id": "kadin_koleksiyon", "label": "Couple – kadın koleksiyonu (handle)", "default": "zaman-kapsulu-kolyeler" },
+    { "type": "text", "id": "erkek_koleksiyon", "label": "Couple – erkek koleksiyonu (handle)", "default": "zaman-kapsulu-bileklik" },
+    { "type": "select", "id": "single_kaynak", "label": "Single modunda listelenen ürünler", "default": "kendi",
+      "options": [
+        { "value": "kendi", "label": "Sayfanın kendi koleksiyonu" },
+        { "value": "ikisi", "label": "Kadın + Erkek koleksiyonları" }
+      ],
+      "info": "\"Sayfanın kendi koleksiyonu\" seçiliyken tek cinsiyetli bir sayfada karşı cinsiyetin çipi otomatik gizlenir." },
+
+    { "type": "header", "content": "Filtre satırı" },
+    { "type": "text", "id": "kime_etiket", "label": "Filtre grubu adı (ekran okuyucu)", "default": "Kime alıyorsun?" },
+    { "type": "text", "id": "kime_tumu", "label": "Tümü", "default": "Tümü" },
+    { "type": "text", "id": "kime_kadin", "label": "Kadın", "default": "Kadın" },
+    { "type": "text", "id": "kime_erkek", "label": "Erkek", "default": "Erkek" },
+    { "type": "text", "id": "sayac_eki", "label": "Sayaç eki", "default": "ürün" },
+    { "type": "text", "id": "bos_metin", "label": "Sonuç boşsa", "default": "Bu seçimle eşleşen ürün kalmadı." },
+
+    { "type": "header", "content": "Setini oluştur kutusu" },
+    { "type": "text", "id": "set_baslik", "label": "Başlık", "default": "Setini oluştur" },
+    { "type": "text", "id": "set_sayac", "label": "Sayaç metni", "default": "[n]/2 seçildi",
+      "info": "[n] seçili ürün sayısıyla değişir." },
+    { "type": "text", "id": "slot1_ust", "label": "1. slot üst yazı", "default": "1. ürün" },
+    { "type": "text", "id": "slot1_alt", "label": "1. slot alt yazı", "default": "Seç" },
+    { "type": "text", "id": "slot2_ust", "label": "2. slot üst yazı", "default": "2. ürün" },
+    { "type": "text", "id": "slot2_alt", "label": "2. slot alt yazı", "default": "Yarı fiyatına" },
+    { "type": "text", "id": "set_aciklama", "label": "Açıklama", "default": "Couple için sepete 2 ürün eklenir." },
+
+    { "type": "header", "content": "Ürün kartı butonları" },
+    { "type": "text", "id": "kart_ekle", "label": "Sete ekle", "default": "+ Sete ekle" },
+    { "type": "text", "id": "kart_secili", "label": "Setinde", "default": "✓ Setinde" },
+
+    { "type": "header", "content": "Yapışkan çubuk" },
+    { "type": "text", "id": "durum_2", "label": "Hiç ürün seçilmemişken", "default": "2 ürün daha seç" },
+    { "type": "text", "id": "durum_1", "label": "1 ürün seçilmişken", "default": "1 ürün daha seç" },
+    { "type": "text", "id": "durum_0", "label": "2 ürün seçilmişken", "default": "2 ürün, ikincisi yarı fiyatına" },
+    { "type": "text", "id": "dugme_eksik", "label": "Buton – eksik seçim", "default": "Sepete ekle ([n]/2)",
+      "info": "[n] seçili ürün sayısıyla değişir." },
+    { "type": "text", "id": "dugme_tam", "label": "Buton – 2 ürün seçiliyken", "default": "2 ürünü sepete ekle" },
+    { "type": "text", "id": "uyari_metin", "label": "Eksik seçimle basılırsa", "default": "Sete bir ürün daha seç." },
+    { "type": "text", "id": "hata_metin", "label": "Sepete eklenemezse", "default": "Sepete eklenemedi. Ürünlerden biri tükenmiş olabilir." },
+    { "type": "checkbox", "id": "tutar_goster", "label": "Çubukta toplam tutarı göster", "default": true,
+      "info": "Tutar bir tahmindir: pahalı ürün tam, ucuz ürün yarı fiyat. Gerçek tutarı Shopify sepette hesaplar. Kapatırsanız tutar yerine teklif metni çıkar." },
+    { "type": "text", "id": "tutar_yerine", "label": "Tutar kapalıyken yazılacak", "default": "İkincisi yarı fiyatına" },
+    { "type": "text", "id": "gizle_secici", "label": "Couple modunda gizlenecek öğeler (CSS seçici)",
+      "default": "facet-sticky.facet-sticky",
+      "info": "Yapışkan çubukla çakışan öğeler. Virgülle ayırın." },
+
+    { "type": "header", "content": "Varyant seçici" },
+    { "type": "text", "id": "varyant_baslik", "label": "Başlık", "default": "Seçenek seç" },
+    { "type": "text", "id": "kapat_etiket", "label": "Kapat (ekran okuyucu)", "default": "Kapat" },
+
+    { "type": "header", "content": "Görünüm" },
+    { "type": "range", "id": "genislik", "label": "En fazla genişlik", "min": 800, "max": 1600, "step": 20, "unit": "px", "default": 1200 },
+    { "type": "select", "id": "urun_sutun_m", "label": "Ürün sütunu — telefon", "default": "2",
+      "options": [ { "value": "1", "label": "1 sütun" }, { "value": "2", "label": "2 sütun" } ],
+      "info": "range olarak yazılamıyor: Shopify aralık ayarında en az 3 adım istiyor." },
+    { "type": "range", "id": "urun_sutun_d", "label": "Ürün sütunu — masaüstü", "min": 2, "max": 5, "step": 1, "default": 4 },
+
+    { "type": "header", "content": "Renkler" },
+    { "type": "color", "id": "zemin", "label": "Bölüm zemini", "default": "#ffffff" },
+    { "type": "color", "id": "koyu", "label": "Seçili kart / koyu yüzey", "default": "#15171c" },
+    { "type": "color", "id": "kenar", "label": "Kenarlık", "default": "#e1e4e8" },
+    { "type": "color", "id": "gri", "label": "Gri yazı — beyaz kartta", "default": "#6b6f78" },
+    { "type": "color", "id": "gri_koyu", "label": "Gri yazı — seçili kartta", "default": "#a3a6ad" },
+    { "type": "color", "id": "ayrac_koyu", "label": "Ayırıcı — seçili kartta", "default": "#2c2e33" },
+    { "type": "color", "id": "yesil", "label": "Yeşil (rozet, buton, sayaç)", "default": "#30614b" },
+    { "type": "color", "id": "halka_yesil", "label": "Yeşil halka — beyaz kartta", "default": "#599176" },
+    { "type": "color", "id": "yesil_acik", "label": "Yeşil halka — seçili kartta", "default": "#8fcbb0" },
+    { "type": "color", "id": "yesil_zemin", "label": "Dolu slot zemini", "default": "#f0f7f3" },
+    { "type": "color", "id": "uyari", "label": "Uyarı yazısı", "default": "#b42318" }
+  ],
+  "presets": [
+    { "name": "Single / Couple Seçimi" }
+  ],
+  "enabled_on": { "templates": ["collection"] }
+}
+{% endschema %}

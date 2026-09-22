@@ -1,0 +1,30 @@
+{%- doc -%}
+  SECIM KARTLARI BOLUMU -- CIZGI IKONLARI
+
+  Ikonlar currentColor ile ciziliyor: kartin rengi degisince
+  (beyaz kart / secili koyu kart) kendiliginden dogru renge
+  donuyorlar, ek kurala gerek kalmiyor.
+
+  Halkalar SVG DEGIL, CSS ile ciziliyor (bkz. .tt-sc-halkalar):
+  ikinci halkanin yesili ve -5px binmesi ayardan geliyor.
+
+  @param {string} ad - kisi | kisiler
+{%- enddoc -%}
+{%- case ad -%}
+  {%- when 'kisi' -%}
+    <svg class="tt-sc-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">
+      <circle cx="12" cy="8" r="3.4"/>
+      <path d="M5.5 20c0-3.3 2.9-5.6 6.5-5.6s6.5 2.3 6.5 5.6"/>
+    </svg>
+  {%- when 'kisiler' -%}
+    <svg class="tt-sc-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">
+      <circle cx="9" cy="8" r="3.1"/>
+      <path d="M3 20c0-3.1 2.7-5.2 6-5.2s6 2.1 6 5.2"/>
+      <path d="M16.2 5.3a3.1 3.1 0 0 1 0 5.5"/>
+      <path d="M17.6 14.9c2.1.5 3.6 2.2 3.6 4.4"/>
+    </svg>
+{%- endcase -%}

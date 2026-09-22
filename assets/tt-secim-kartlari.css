@@ -1,0 +1,543 @@
+/* ------------------------------------------------------------------
+   SINGLE / COUPLE SECIM KARTLARI  (.tt-sc-*)
+
+   Golge yok, degrade yok, gereksiz animasyon yok.
+   Renkler bolum ayarindan geliyor; buradaki var() yedekleri yalnizca
+   ayar okunamazsa devreye giriyor.
+
+   URUN KARTLARINA DOKUNULMUYOR: izgaradaki .product-card temanin
+   kendi snippet'i ve kendi bicimiyle duruyor. Buradaki kurallarin
+   hicbiri .product-card'in ICINE girmiyor; tek istisna Couple
+   modunda temanin hizli sepet dugmesini gizleyen tek satir, o da
+   .quick-add sarmalayicisi uzerinde (kartin kendi bicimi degil).
+
+   OLCULEN KONTRASTLAR
+     #15171c / beyaz            17.9:1
+     #6b6f78 / beyaz             5.0:1
+     beyaz  / #15171c           17.9:1
+     #a3a6ad / #15171c           7.4:1
+     #30614b / beyaz             7.2:1
+     beyaz  / #30614b            7.2:1
+     #30614b / #f0f7f3           6.6:1
+     #b42318 / beyaz             6.6:1
+   ------------------------------------------------------------------ */
+.tt-sc {
+  --tt-sc-zemin: #ffffff;
+  --tt-sc-koyu: #15171c;
+  --tt-sc-kenar: #e1e4e8;
+  --tt-sc-gri: #6b6f78;
+  --tt-sc-gri-koyu: #a3a6ad;
+  --tt-sc-ayrac-koyu: #2c2e33;
+  --tt-sc-yesil: #30614b;
+  --tt-sc-halka-yesil: #599176;
+  --tt-sc-yesil-acik: #8fcbb0;
+  --tt-sc-yesil-zemin: #f0f7f3;
+  --tt-sc-uyari: #b42318;
+  --tt-sc-genislik: 1200px;
+  --tt-sc-sutun-m: 2;
+  --tt-sc-sutun-d: 4;
+
+  background: var(--tt-sc-zemin);
+  color: var(--tt-sc-koyu);
+  font-variant-numeric: tabular-nums;
+}
+.tt-sc *, .tt-sc *::before, .tt-sc *::after { box-sizing: border-box; }
+
+.tt-sc-ic {
+  max-width: var(--tt-sc-genislik);
+  margin: 0 auto;
+  padding: 28px 16px 40px;
+}
+
+/* --- Baslik --- */
+.tt-sc-bas { display: grid; gap: 4px; margin-bottom: 18px; }
+.tt-sc-ust {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--tt-sc-gri);
+}
+.tt-sc .tt-sc-baslik {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--tt-sc-koyu);
+}
+
+/* ------------------------------------------------------------------
+   SECIM KARTLARI
+
+   Iki kartin BUTUN satirlari birebir hizali olmali: Single'in ust
+   yazisi iki satira tassa bile "Single" ve "Couple" basliklari,
+   ayirici cizgiler ve alt satirlar ayni yerden baslamali.
+
+   Bunu subgrid sagliyor. Kartlar .tt-sc-kartlar'in DOGRUDAN cocugu
+   -- araya bir sarmalayici koyulsaydi subgrid zinciri kirilirdi.
+   Satir araliklari row-gap ile degil satir ogelerinin KENDI
+   marjlariyla veriliyor; boylece bir satirin yuksekligi iki karttan
+   uzun olanina gore buyuyor ve digeri de ayni yerden devam ediyor.
+
+   Rozet kartin ust kenarina biniyor (top: -10px); izgaraya 12px ust
+   bosluk verildi ki kirpilmasin.
+   ------------------------------------------------------------------ */
+.tt-sc-kartlar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(5, auto);
+  column-gap: 8px;
+  row-gap: 0;
+  padding-top: 12px;
+}
+.tt-sc-kart {
+  position: relative;
+  grid-row: span 5;
+  display: grid;
+  grid-template-rows: subgrid;
+  padding: 22px 12px 14px;
+  /* Kenarlik border DEGIL inset box-shadow: Chrome border-width'i tam
+     piksele yuvarliyor, yani "1.5px" ekranda 1px cikiyordu. Inset
+     golge yuvarlanmiyor ve DUZENI HIC ETKILEMIYOR -- kartin olcusu
+     secili olsun olmasin ayni, yani secim degisince yanindaki kart
+     yerinden oynamiyor. */
+  border: 0;
+  box-shadow: inset 0 0 0 1.5px var(--tt-sc-kenar);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  text-align: left;
+  cursor: pointer;
+}
+.tt-sc-kart[aria-checked="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--tt-sc-koyu);
+  background: var(--tt-sc-koyu);
+  color: #fff;
+}
+.tt-sc-kart:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+.tt-sc-kart[aria-checked="true"]:focus-visible { outline-color: var(--tt-sc-yesil-acik); }
+
+/* Rozet: kartin ust kenarina oturuyor, basligin hizasina DEGIL --
+   kartin ust ic boslugu 22px, yani rozetin altinda da yazinin
+   ustunde de yer kaliyor. Iki kartta da ayni bosluk var ki
+   rozetsiz kartin satirlari kaymasin. */
+.tt-sc-rozet {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  z-index: 1;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--tt-sc-yesil);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Secim dairesi: sag ust kosede. Seciliyken ici dolu gorunsun diye
+   kalin beyaz kenarlik + koyu ic (kartin zeminiyle ayni). */
+.tt-sc-radyo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--tt-sc-kenar);
+  border-radius: 50%;
+  background: #fff;
+}
+.tt-sc-kart[aria-checked="true"] .tt-sc-radyo {
+  border: 4.5px solid #fff;
+  background: var(--tt-sc-koyu);
+}
+
+.tt-sc-ustyazi {
+  display: block;
+  /* Dairenin altina girmesin. */
+  padding-right: 22px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--tt-sc-gri);
+}
+.tt-sc-ad {
+  display: block;
+  margin-top: 6px;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: inherit;
+}
+.tt-sc-ayrac {
+  display: block;
+  height: 1px;
+  margin: 12px 0;
+  background: var(--tt-sc-kenar);
+}
+.tt-sc-satir {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--tt-sc-gri);
+}
+.tt-sc-satir + .tt-sc-satir { margin-top: 8px; }
+.tt-sc-satir-metin { min-width: 0; }
+.tt-sc-ikon { flex: 0 0 auto; width: 15px; height: 15px; color: currentColor; }
+
+.tt-sc-kart[aria-checked="true"] :is(.tt-sc-ustyazi, .tt-sc-satir) { color: var(--tt-sc-gri-koyu); }
+.tt-sc-kart[aria-checked="true"] .tt-sc-ayrac { background: var(--tt-sc-ayrac-koyu); }
+
+/* Halkalar CSS ile ciziliyor: 14px cap, 2px kenarlik, ikincisi
+   -5px ile birincinin uzerine biniyor. Couple'in ikinci halkasi
+   yesil; secili koyu kartta acik yesile donuyor ki kaybolmasin. */
+.tt-sc-halkalar { flex: 0 0 auto; display: flex; align-items: center; }
+.tt-sc-halkalar i {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+.tt-sc-halkalar--cift i + i {
+  margin-left: -5px;
+  border-color: var(--tt-sc-halka-yesil);
+}
+.tt-sc-kart[aria-checked="true"] .tt-sc-halkalar--cift i + i {
+  border-color: var(--tt-sc-yesil-acik);
+}
+
+/* Subgrid desteklemeyen tarayici (Safari 15 ve oncesi): kartlar
+   flex'e dusuyor ve hiza sabit min-yuksekliklerle korunuyor.
+   2.7em = 12px yazi, 1.35 satir yuksekligi, iki satir + pay. */
+@supports not (grid-template-rows: subgrid) {
+  .tt-sc-kartlar { grid-template-rows: none; align-items: stretch; }
+  .tt-sc-kart { grid-row: auto; display: flex; flex-direction: column; }
+  .tt-sc-ustyazi { min-height: 2.7em; }
+  .tt-sc-ad { min-height: 1.2em; }
+  .tt-sc-satir { min-height: 15px; }
+  .tt-sc-satir:last-child { margin-top: auto; padding-top: 8px; }
+}
+
+/* --- Filtre satiri --- */
+.tt-sc-filtre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+.tt-sc-cipler { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.tt-sc-cip {
+  padding: 7px 14px;
+  border: 1px solid var(--tt-sc-kenar);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tt-sc-cip[aria-checked="true"] {
+  border-color: var(--tt-sc-koyu);
+  background: var(--tt-sc-koyu);
+  color: #fff;
+}
+.tt-sc-cip[hidden] { display: none; }
+.tt-sc-cip:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+.tt-sc-sayac { flex: 0 0 auto; font-size: 13px; line-height: 1.2; color: var(--tt-sc-gri); }
+
+/* ------------------------------------------------------------------
+   SETINI OLUSTUR
+   ------------------------------------------------------------------ */
+.tt-sc-set {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--tt-sc-kenar);
+  border-radius: 16px;
+  background: #fff;
+}
+.tt-sc-set[hidden] { display: none; }
+.tt-sc-set-bas {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.tt-sc-set-baslik { font-size: 15px; font-weight: 500; line-height: 1.25; }
+.tt-sc-set-sayac { flex: 0 0 auto; font-size: 13px; font-weight: 500; line-height: 1.2; color: var(--tt-sc-yesil); }
+
+.tt-sc-slotlar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tt-sc-slot {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-height: 64px;
+  padding: 10px;
+  border: 1.5px dashed var(--tt-sc-kenar);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.tt-sc-slot[data-sc-dolu] {
+  border-style: solid;
+  border-color: var(--tt-sc-yesil);
+  background: var(--tt-sc-yesil-zemin);
+}
+.tt-sc-slot:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+.tt-sc-slot-ust { font-size: 12px; line-height: 1.3; color: var(--tt-sc-gri); overflow-wrap: anywhere; }
+.tt-sc-slot-alt { font-size: 12px; line-height: 1.3; color: var(--tt-sc-gri); }
+.tt-sc-slot[data-sc-dolu] .tt-sc-slot-ust { font-size: 13px; font-weight: 500; color: var(--tt-sc-koyu); }
+.tt-sc-slot[data-sc-dolu] .tt-sc-slot-alt { color: var(--tt-sc-yesil); }
+.tt-sc .tt-sc-set-not { margin: 10px 0 0; font-size: 12px; line-height: 1.4; color: var(--tt-sc-gri); }
+
+/* ------------------------------------------------------------------
+   URUN IZGARASI
+   Temanin card-grid sinifi DEGIL: her karo filtrelenebilir bir
+   sarmalayicida duruyor ve temanin izgarasi dogrudan-cocuk
+   secicilerine dayaniyor olabilirdi.
+   ------------------------------------------------------------------ */
+.tt-sc-izgara {
+  display: grid;
+  grid-template-columns: repeat(var(--tt-sc-sutun-m), minmax(0, 1fr));
+  gap: 16px 12px;
+  margin-top: 20px;
+}
+.tt-sc-karo { position: relative; min-width: 0; }
+.tt-sc-karo[hidden] { display: none; }
+
+.tt-sc .tt-sc-grup {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.tt-sc-grup[hidden] { display: none; }
+.tt-sc-grup-sayi { flex: 0 0 auto; font-size: 12px; font-weight: 400; color: var(--tt-sc-gri); }
+
+/* Couple modunda temanin kendi hizli sepet dugmesi gizleniyor ve
+   yerini "Sete ekle" aliyor. Kural .quick-add SARMALAYICISI
+   uzerinde; kartin kendi bicimine girmiyor. */
+.tt-sc[data-sc-aktif-mod="couple"] .tt-sc-karo .quick-add { display: none; }
+
+.tt-sc-ekle {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 10px;
+  border: 1.5px solid var(--tt-sc-kenar);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.tt-sc-ekle[hidden] { display: none; }
+.tt-sc-ekle:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+.tt-sc-karo[data-sc-secili] .tt-sc-ekle {
+  border-color: var(--tt-sc-yesil);
+  background: var(--tt-sc-yesil);
+  color: #fff;
+}
+/* Secili urunun karosu yesil cerceve aliyor. Cerceve KARONUN
+   kendisinde, urun kartinin degil: kartin ic bicimine dokunmamak
+   icin disaridan bir outline kullaniliyor, boylece kart icindeki
+   hicbir olcu degismiyor. */
+.tt-sc-karo[data-sc-secili] {
+  outline: 2px solid var(--tt-sc-yesil);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.tt-sc .tt-sc-bos {
+  margin: 24px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--tt-sc-gri);
+}
+.tt-sc-bos[hidden] { display: none; }
+
+/* ------------------------------------------------------------------
+   YAPISKAN SEPET CUBUGU
+   ------------------------------------------------------------------ */
+.tt-sc-cubuk {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 60;
+  width: 100%;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--tt-sc-koyu);
+  color: #fff;
+}
+.tt-sc-cubuk[hidden] { display: none; }
+.tt-sc-cubuk-ic { max-width: var(--tt-sc-genislik); margin: 0 auto; }
+.tt-sc-cubuk-ust {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.tt-sc-cubuk-durum { font-size: 13px; line-height: 1.3; color: var(--tt-sc-gri-koyu); }
+.tt-sc-cubuk-tutar { flex: 0 0 auto; font-size: 15px; font-weight: 500; line-height: 1.2; }
+.tt-sc-cubuk-dugme {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.tt-sc-cubuk[data-sc-hazir] .tt-sc-cubuk-dugme {
+  background: var(--tt-sc-yesil);
+  color: #fff;
+}
+.tt-sc-cubuk-dugme:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.tt-sc .tt-sc-cubuk-uyari {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: center;
+  /* Koyu cubukta #b42318 okunmaz; uyari burada acik tonda. */
+  color: #ffb4ab;
+}
+.tt-sc-cubuk-uyari[hidden] { display: none; }
+
+/* Cubuk sayfanin son satirini kapatmasin. Yukseklik JS tarafindan
+   olculup yaziliyor; burasi yalnizca yedek. */
+body.tt-sc-cubuk-acik { padding-bottom: var(--tt-sc-cubuk-yuk, 132px); }
+
+/* ------------------------------------------------------------------
+   VARYANT SECICI
+   ------------------------------------------------------------------ */
+.tt-sc-varyant {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tt-sc-koyu);
+}
+.tt-sc-varyant::backdrop { background: rgb(0 0 0 / .45); }
+.tt-sc-varyant-ic {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  background: #fff;
+}
+.tt-sc-varyant-bas {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.tt-sc .tt-sc-varyant-baslik { margin: 0; font-size: 17px; font-weight: 500; line-height: 1.3; }
+.tt-sc-varyant-kapat {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--tt-sc-kenar);
+  border-radius: 50%;
+  background: #fff;
+  color: inherit;
+  cursor: pointer;
+}
+.tt-sc-varyant-kapat svg { width: 13px; height: 13px; }
+.tt-sc-varyant-liste { display: grid; gap: 8px; overflow-y: auto; overscroll-behavior: contain; }
+.tt-sc-varyant-sec {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid var(--tt-sc-kenar);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+}
+.tt-sc-varyant-sec:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+.tt-sc-varyant-sec[disabled] { opacity: .45; cursor: not-allowed; }
+.tt-sc-varyant-fiyat { flex: 0 0 auto; font-weight: 500; }
+
+/* ------------------------------------------------------------------
+   MASAUSTU
+   ------------------------------------------------------------------ */
+@media (min-width: 750px) {
+  .tt-sc-ic { padding: 48px 32px 64px; }
+  .tt-sc-bas { margin-bottom: 26px; }
+  .tt-sc .tt-sc-baslik { font-size: 32px; }
+  .tt-sc-kart { padding: 26px 22px 20px; }
+  .tt-sc-ad { font-size: 22px; }
+
+  .tt-sc-izgara {
+    grid-template-columns: repeat(var(--tt-sc-sutun-d), minmax(0, 1fr));
+    gap: 26px 20px;
+    margin-top: 26px;
+  }
+
+  .tt-sc-cubuk-ic {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .tt-sc-cubuk-ust { flex: 1 1 auto; margin-bottom: 0; justify-content: flex-start; gap: 16px; }
+  .tt-sc-cubuk-dugme { flex: 0 0 auto; width: auto; padding: 14px 32px; }
+  .tt-sc-cubuk-uyari { flex: 1 0 100%; margin-top: 0; text-align: left; }
+
+  .tt-sc-varyant { max-width: 440px; margin: auto; }
+  .tt-sc-varyant-ic { max-height: 76vh; border-radius: 18px; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tt-sc-kart[aria-checked="false"]:hover { box-shadow: inset 0 0 0 1.5px var(--tt-sc-gri); }
+  .tt-sc-cip[aria-checked="false"]:hover { border-color: var(--tt-sc-gri); }
+  .tt-sc-ekle:hover { border-color: var(--tt-sc-yesil); }
+  .tt-sc-karo[data-sc-secili] .tt-sc-ekle:hover { opacity: .9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-sc *, .tt-sc-varyant * { transition: none !important; animation: none !important; }
+}

@@ -1,0 +1,73 @@
+{%- doc -%}
+  SECIM KARTLARI BOLUMU -- TEK BIR URUN KAROSU
+
+  Kart temanin KENDI snippet'iyle basiliyor; parametreler
+  sections/product-recommendations.liquid icindeki cagriyla birebir
+  ayni, yani kart gorunumu magazanin genel urun karti ayarlarini
+  izliyor. snippets/product-card.liquid'e DOKUNULMUYOR.
+
+  Sarmalayici uc bilgi tasiyor:
+    data-sc-kime    kadin | erkek | ikisi   (koleksiyon uyeligi)
+    data-sc-tekil   1 | 0                   (sayfanin kendi koleksiyonunda mi)
+    data-sc-grup    kadin | erkek           ("Tumu" gorunumundeki grup basligi)
+
+  VARYANTLAR
+  Katalogda 9 urunun birden fazla varyanti var ve fiyat farki
+  1.100 TL'ye kadar cikiyor. Varyantlar JSON olarak karonun icinde
+  duruyor ki "Sete ekle" dogru fiyatla calissin. TUKENMIS varyantlar
+  da yaziliyor ("var": false) -- listeden atlanmalari JSON'da virgul
+  bosluklari birakirdi; ayiklamayi JS yapiyor.
+
+  @param {object} p - Urun
+  @param {string} sid - Bolum kimligi
+  @param {string} kime - kadin | erkek | ikisi
+  @param {string} tekil - '1' ya da '0'
+  @param {string} grup - kadin | erkek
+  @param {object} s - Bolum ayarlari
+{%- enddoc -%}
+
+<div class="tt-sc-karo"
+     data-sc-karo
+     data-sc-kime="{{ kime }}"
+     data-sc-tekil="{{ tekil }}"
+     data-sc-grup="{{ grup }}"
+     data-sc-urun="{{ p.id }}"
+     data-sc-ad="{{ p.title | escape }}"
+     data-sc-cok="{% if p.variants.size > 1 %}1{% else %}0{% endif %}">
+  {%- render 'product-card',
+    product: p,
+    product_id: p.id,
+    section_id: sid,
+    image_ratio: settings.product_image_ratio,
+    image_fill: settings.product_image_fill,
+    show_secondary_image: settings.product_secondary_image,
+    show_multiple_images: settings.product_multiple_images,
+    show_vendor: settings.product_vendor,
+    title_truncation: settings.product_title_truncation,
+    title_line_limit: settings.product_title_line_limit,
+    show_rating: settings.product_rating,
+    show_color_swatches: settings.product_color_swatches,
+    show_countdown: settings.product_countdown,
+    show_quick_add: settings.product_quick_add,
+    show_quick_view: settings.product_quick_view,
+    vertical_badges: settings.product_vertical_badges,
+    show_sold_out: settings.product_sold_out,
+    show_save_amount: settings.product_save_amount,
+    save_type: settings.product_save_type,
+    show_icon_list: settings.product_icon_list
+  -%}
+
+  {%- comment -%}
+    Couple modunun "Sete ekle" dugmesi. Temanin kendi hizli sepet
+    dugmesi gizlenmiyor SILINMIYOR da: Single modunda oldugu gibi
+    calismaya devam ediyor, yalnizca Couple modunda CSS ile
+    gizleniyor. Boylece mod degisimi geri alinabilir kaliyor.
+  {%- endcomment -%}
+  <button type="button" class="tt-sc-ekle" data-sc-ekle hidden>
+    <span data-sc-ekle-metin>{{ s.kart_ekle }}</span>
+  </button>
+
+  <script type="application/json" data-sc-varyantlar>
+    [{% for v in p.variants %}{"id":{{ v.id }},"ad":{{ v.title | json }},"fiyat":{{ v.price }},"var":{{ v.available | json }}}{% unless forloop.last %},{% endunless %}{% endfor %}]
+  </script>
+</div>
