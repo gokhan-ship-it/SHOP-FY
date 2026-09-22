@@ -8,9 +8,24 @@
   Halkalar SVG DEGIL, CSS ile ciziliyor (bkz. .tt-sc-halkalar):
   ikinci halkanin yesili ve -5px binmesi ayardan geliyor.
 
-  @param {string} ad - kisi | kisiler
+  @param {string} ad - takvim | kilit-acik | kisi | kisiler
 {%- enddoc -%}
 {%- case ad -%}
+  {%- when 'takvim' -%}
+    <svg class="tt-sc-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">
+      <rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/>
+      <path d="M8 3.2v4.2M16 3.2v4.2M3.5 10.2h17"/>
+      <circle cx="12" cy="15" r="1.5" fill="currentColor" stroke="none"/>
+    </svg>
+  {%- when 'kilit-acik' -%}
+    <svg class="tt-sc-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">
+      <rect x="3.5" y="11" width="12" height="9" rx="2"/>
+      <path d="M8 11V7.6a4 4 0 0 1 8 0V9.2"/>
+    </svg>
   {%- when 'kisi' -%}
     <svg class="tt-sc-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"

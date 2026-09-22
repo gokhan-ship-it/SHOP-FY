@@ -29,6 +29,9 @@
   --tt-sc-kenar: #e1e4e8;
   --tt-sc-gri: #6b6f78;
   --tt-sc-gri-koyu: #a3a6ad;
+  /* Ayirici cizgi. Acik ton kenarlik ayarindan DEGIL sabit:
+     kart kenarligindan (#e1e4e8) bir tik acik olmasi isteniyor. */
+  --tt-sc-cizgi: #eceef1;
   --tt-sc-ayrac-koyu: #2c2e33;
   --tt-sc-yesil: #30614b;
   --tt-sc-halka-yesil: #599176;
@@ -77,8 +80,8 @@
 /* ------------------------------------------------------------------
    SECIM KARTLARI
 
-   Iki kartin BUTUN satirlari birebir hizali olmali: Single'in ust
-   yazisi iki satira tassa bile "Single" ve "Couple" basliklari,
+   Iki kartin BUTUN satirlari birebir hizali olmali: Single'in acilma
+   sekli iki satira tassa bile "Single" ve "Couple" basliklari,
    ayirici cizgiler ve alt satirlar ayni yerden baslamali.
 
    Bunu subgrid sagliyor. Kartlar .tt-sc-kartlar'in DOGRUDAN cocugu
@@ -103,7 +106,7 @@
   grid-row: span 5;
   display: grid;
   grid-template-rows: subgrid;
-  padding: 22px 12px 14px;
+  padding: 22px 12px 13px;
   /* Kenarlik border DEGIL inset box-shadow: Chrome border-width'i tam
      piksele yuvarliyor, yani "1.5px" ekranda 1px cikiyordu. Inset
      golge yuvarlanmiyor ve DUZENI HIC ETKILEMIYOR -- kartin olcusu
@@ -132,7 +135,13 @@
 .tt-sc-rozet {
   position: absolute;
   top: -10px;
-  left: 10px;
+  /* Kartin ust kenarinda YATAY ORTA. Kartin kendi transform'u yok ve
+     secim degisiminde de transform kullanilmiyor (yalnizca background
+     ve box-shadow), yani translateX ile cakisma riski yok. */
+  left: 50%;
+  transform: translateX(-50%);
+  /* Dar ekranda kart kenarindan tasmasin. */
+  max-width: calc(100% - 16px);
   z-index: 1;
   padding: 3px 9px;
   border-radius: 999px;
@@ -146,9 +155,12 @@
 
 /* Secim dairesi: sag ust kosede. Seciliyken ici dolu gorunsun diye
    kalin beyaz kenarlik + koyu ic (kartin zeminiyle ayni). */
+/* Dairenin dikey merkezi BASLIGIN ILK SATIRININ ortasinda:
+   kart ust dolgusu 22 + (20px x 1.2 = 24px satir kutusu) / 2 = 34,
+   dairenin yarisi 8 -> top: 26px. */
 .tt-sc-radyo {
   position: absolute;
-  top: 12px;
+  top: 26px;
   right: 12px;
   width: 16px;
   height: 16px;
@@ -161,28 +173,45 @@
   background: var(--tt-sc-koyu);
 }
 
-.tt-sc-ustyazi {
-  display: block;
-  /* Dairenin altina girmesin. */
-  padding-right: 22px;
-  font-size: 12px;
-  line-height: 1.35;
-  color: var(--tt-sc-gri);
-}
+/* Baslik artik kartin ILK satiri; ustundeki kucuk gri yazi kaldirildi.
+   Sag dolgu secim dairesi icin: yazi daireye binmiyor. */
 .tt-sc-ad {
   display: block;
-  margin-top: 6px;
-  font-size: 19px;
+  padding-right: 22px;
+  font-size: 20px;
   font-weight: 500;
   letter-spacing: -0.01em;
   line-height: 1.2;
   color: inherit;
 }
+
+/* --- Acilma sekli: basligin hemen altinda, GRI DEGIL ---
+   "Belirledigin tarihte acilir" / "Bulusunca acilir" urunun en onemli
+   farkini anlatiyor. Once basligin USTUNDE 12px gri duruyordu, yani
+   karttaki en silik yaziydi. Artik basligin altinda, 14px medium ve
+   kartin ana yazi renginde: beyaz kartta #15171c, secili kartta beyaz
+   (color: inherit ile kendiliginden). */
+.tt-sc-acilma {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: inherit;
+}
+.tt-sc-acilma-metin { min-width: 0; }
+/* Metin iki satira kirilirsa ikon ustte, ilk satirin yaninda kaliyor.
+   14px x 1.3 = 18.2px satir kutusu, ikon 16px -> 1px ust bosluk ortaliyor. */
+.tt-sc-acilma .tt-sc-ikon { flex: none; width: 16px; height: 16px; margin-top: 1px; }
+
 .tt-sc-ayrac {
   display: block;
   height: 1px;
-  margin: 12px 0;
-  background: var(--tt-sc-kenar);
+  margin: 11px 0 9px;
+  background: var(--tt-sc-cizgi);
 }
 .tt-sc-satir {
   display: flex;
@@ -197,7 +226,7 @@
 .tt-sc-satir-metin { min-width: 0; }
 .tt-sc-ikon { flex: 0 0 auto; width: 15px; height: 15px; color: currentColor; }
 
-.tt-sc-kart[aria-checked="true"] :is(.tt-sc-ustyazi, .tt-sc-satir) { color: var(--tt-sc-gri-koyu); }
+.tt-sc-kart[aria-checked="true"] .tt-sc-satir { color: var(--tt-sc-gri-koyu); }
 .tt-sc-kart[aria-checked="true"] .tt-sc-ayrac { background: var(--tt-sc-ayrac-koyu); }
 
 /* --- Yukleme kutusu: iki kartin ASIL farki ---
@@ -229,7 +258,7 @@
    16px. align-items: flex-start ikisini ustten esitliyor. */
 .tt-sc-satir--kutu .tt-sc-ikon { flex: none; width: 16px; height: 16px; }
 
-/* Ustteki :is(...) kurali ile AYNI ozgullukte; sirayla kazaniyor.
+/* Ustteki .tt-sc-satir kurali ile AYNI ozgullukte; sirayla kazaniyor.
    Bu yuzden kutu kurallari o bloktan SONRA duruyor. */
 .tt-sc-kart[aria-checked="true"] .tt-sc-satir--kutu {
   background: var(--tt-sc-kutu-zemin-koyu);
@@ -257,12 +286,12 @@
 
 /* Subgrid desteklemeyen tarayici (Safari 15 ve oncesi): kartlar
    flex'e dusuyor ve hiza sabit min-yuksekliklerle korunuyor.
-   2.7em = 12px yazi, 1.35 satir yuksekligi, iki satir + pay. */
+   2.6em = 14px yazi, 1.3 satir yuksekligi, iki satir + pay. */
 @supports not (grid-template-rows: subgrid) {
   .tt-sc-kartlar { grid-template-rows: none; align-items: stretch; }
   .tt-sc-kart { grid-row: auto; display: flex; flex-direction: column; }
-  .tt-sc-ustyazi { min-height: 2.7em; }
   .tt-sc-ad { min-height: 1.2em; }
+  .tt-sc-acilma { min-height: 2.6em; }
   .tt-sc-satir { min-height: 15px; }
   /* Kutu karti dibine yaslaniyor: kartlar zaten esit boyda (stretch),
      boylece iki kutu da ayni cizgide bitiyor. min-height iki satirlik

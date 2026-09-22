@@ -8,10 +8,10 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 
 | Dosya | Boyut | md5 |
 |---|---|---|
-| `sections/tt-secim-kartlari.liquid` | 26.082 | `904a95e1b3c4906688970e8bb834ce17` |
+| `sections/tt-secim-kartlari.liquid` | 27.052 | `fc22f5a82144268d5eb88751d93b30bc` |
 | `snippets/tt-sc-karo.liquid` | 3.048 | `bd3847fce53aec482150767b64a9246a` |
-| `snippets/tt-sc-ikon.liquid` | 1.198 | `c4042fada7124171db3bd369c318cc92` |
-| `assets/tt-secim-kartlari.css` | 19.369 | `cb192bc259b4f6e27d523d539e8f79a0` |
+| `snippets/tt-sc-ikon.liquid` | 1.994 | `8c0939ad2fb6befbe550359ec151ce06` |
+| `assets/tt-secim-kartlari.css` | 20.806 | `307cdf2210d1a51514dddf2d99f5922d` |
 | `assets/tt-secim-kartlari.js` | 25.044 | `5abc96fb74a389ecc5e75e94fac91563` |
 
 Hiçbir paylaşılan dosyaya dokunulmadı: `sections/main-collection.liquid`,
@@ -107,6 +107,42 @@ listesi bırakmıştı.
   gerçek tutarı sepet hesaplıyor. `tutar_goster` kapatılırsa yerine
   yalnızca "İkincisi yarı fiyatına" yazıyor. **Gerçek sepetle bir kez
   karşılaştırılmalı.**
+
+## Kart düzeni (satır sırası)
+
+Karttaki beş satır, yukarıdan aşağıya. Sıra aynı zamanda ekran
+okuyucunun okuduğu sıra: başlık → açılma şekli → ürün sayısı → kim
+yükler. Rozet DOM'da **en sonda** duruyor ki adın başına girmesin;
+konumu CSS ile veriliyor.
+
+| # | Öğe | Tipografi | Not |
+|---|---|---|---|
+| 1 | `.tt-sc-ad` — "Single" / "Couple" | 20px / 500 / 1.2 | `padding-right: 22px`, radyonun altına girmiyor |
+| 2 | `.tt-sc-acilma` — açılma şekli | 14px / 500 / 1.3 | ikon 16px `flex: none`, başlıktan 6px aşağıda, rengi `inherit` — gri **değil** |
+| 3 | `.tt-sc-ayrac` | 1px çizgi | `margin: 11px 0 9px` |
+| 4 | `.tt-sc-satir` — ürün sayısı | 12px, gri | halka görseliyle |
+| 5 | `.tt-sc-satir--kutu` — kim yükler | 13px / 500 / 1.25 | aşağıdaki bölüm |
+
+Açılma şekli eskiden kartın en üstünde, başlığın **üstünde** küçük gri
+bir üst yazıydı (`.tt-sc-ustyazi`). Kaldırıldı: alıcı önce neyi aldığını
+(Single/Couple) okusun, açılma şekli onun niteliği olarak hemen altında
+gelsin diye. Ayar id'leri (`single_ust`, `couple_ust`) korundu — tema
+düzenleyicideki mevcut metinler kaybolmasın diye; yalnızca etiketleri
+"Açılma şekli metni" oldu.
+
+Radyo düğmesi `top: 26px`: 22px üst dolgu + başlığın 24px satır
+kutusunun yarısı − dairenin yarısı (8px). Başlığın ilk satırıyla
+ortalanıyor, başlık iki satıra kırılsa da yerinde kalıyor.
+
+Rozet ("İkincisi yarı fiyatına") karta ortalı:
+`left: 50%; transform: translateX(-50%)`, `max-width: calc(100% - 16px)`,
+`white-space: nowrap`. Kartın kendi `transform`'u yok ve seçim yalnızca
+`background` + `box-shadow` değiştiriyor, o yüzden çakışma yok. 11px
+yazıyla rozet 360px'te bile karta sığıyor — küçültmeye gerek kalmadı.
+
+İkonlar `snippets/tt-sc-ikon.liquid` içinde dört tane: `takvim` ve
+`kilit-acik` (açılma şekli), `kisi` ve `kisiler` (yükleme kutusu).
+Hepsi `stroke="currentColor"`, `aria-hidden="true"`.
 
 ## Yükleme kutusu (kartın son satırı)
 
@@ -217,4 +253,12 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   metin iki satıra kırıldığında diğer kutunun da uzaması, üst satırın
   değişmediği.
 
-**364/364 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).
+- `test6.mjs` — 267 test: başlığın ölçüleri ve radyoyla hizası, metnin
+  daire ile çakışmaması (`document.createRange()` ile gerçek metin
+  kutusu), açılma satırının tipografisi/rengi/ikon hizası/kırılması,
+  ayracın kenar boşlukları ve iki durumdaki rengi, alttaki iki satırın
+  değişmediği, beş satırın iki kartta da aynı hizada olduğu, kartların
+  ve kutuların eşit yüksekliği, rozetin ortalanması ve karta sığması,
+  yatay taşma yok — 360/390/430px'te.
+
+**631/631 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).

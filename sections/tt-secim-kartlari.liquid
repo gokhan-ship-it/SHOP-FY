@@ -178,6 +178,12 @@
         koyulsaydi subgrid zinciri kirilir, iki kartin satirlari
         hizasini kaybederdi.
 
+        Kart bes satir: baslik, acilma sekli, ayirici, urun sayisi,
+        yukleme kutusu. "Acilma sekli" once basligin USTUNDE 12px gri
+        duruyordu, yani karttaki en silik yaziydi; urunun en onemli
+        farkini anlattigi icin basligin altina alinip 14px medium ve
+        kartin ana yazi rengine cevrildi.
+
         Son satir (yukleme bilgisi) vurgulu bir kutu: "Sadece sen
         yuklersin" ile "Ikiniz de yuklersiniz" arasindaki fark, Single
         ile Couple arasindaki farkin ta kendisi. Kutu kendi grid
@@ -188,8 +194,11 @@
         {%- comment -%} Single {%- endcomment -%}
         <div class="tt-sc-kart" role="radio" tabindex="0" aria-checked="true" data-sc-mod="single">
           <span class="tt-sc-radyo" aria-hidden="true"></span>
-          <span class="tt-sc-ustyazi">{{ s.single_ust }}</span>
           <span class="tt-sc-ad">{{ s.single_ad }}</span>
+          <span class="tt-sc-acilma">
+            {%- render 'tt-sc-ikon', ad: 'takvim' -%}
+            <span class="tt-sc-acilma-metin">{{ s.single_ust }}</span>
+          </span>
           <span class="tt-sc-ayrac" aria-hidden="true"></span>
           <span class="tt-sc-satir">
             <span class="tt-sc-halkalar" aria-hidden="true"><i></i></span>
@@ -203,12 +212,12 @@
 
         {%- comment -%} Couple {%- endcomment -%}
         <div class="tt-sc-kart" role="radio" tabindex="-1" aria-checked="false" data-sc-mod="couple">
-          {%- if s.couple_rozet != blank -%}
-            <span class="tt-sc-rozet">{{ s.couple_rozet }}</span>
-          {%- endif -%}
           <span class="tt-sc-radyo" aria-hidden="true"></span>
-          <span class="tt-sc-ustyazi">{{ s.couple_ust }}</span>
           <span class="tt-sc-ad">{{ s.couple_ad }}</span>
+          <span class="tt-sc-acilma">
+            {%- render 'tt-sc-ikon', ad: 'kilit-acik' -%}
+            <span class="tt-sc-acilma-metin">{{ s.couple_ust }}</span>
+          </span>
           <span class="tt-sc-ayrac" aria-hidden="true"></span>
           <span class="tt-sc-satir">
             <span class="tt-sc-halkalar tt-sc-halkalar--cift" aria-hidden="true"><i></i><i></i></span>
@@ -218,6 +227,16 @@
             {%- render 'tt-sc-ikon', ad: 'kisiler' -%}
             <span class="tt-sc-satir-metin">{{ s.couple_yukleme }}</span>
           </span>
+          {%- comment -%}
+            Rozet kartin SONUNDA: mutlak konumlandirildigi icin yerlesimi
+            etkilemiyor, ama radio'nun erisilebilir adi icerikten
+            turedigi icin DOM sirasi okunma sirasi demek. Basta dururken
+            ekran okuyucu once "Ikincisi yari fiyatina" diyordu; istenen
+            sira baslik, acilma sekli, urun sayisi, yukleme bilgisi.
+          {%- endcomment -%}
+          {%- if s.couple_rozet != blank -%}
+            <span class="tt-sc-rozet">{{ s.couple_rozet }}</span>
+          {%- endif -%}
         </div>
       </div>
 
@@ -408,7 +427,7 @@
     { "type": "text", "id": "baslik", "label": "Başlık", "default": "Zaman kapsülünü seç" },
 
     { "type": "header", "content": "Single kartı" },
-    { "type": "text", "id": "single_ust", "label": "Üst küçük yazı", "default": "Belirlediğin tarihte açılır" },
+    { "type": "text", "id": "single_ust", "label": "Açılma şekli metni", "default": "Belirlediğin tarihte açılır" },
     { "type": "text", "id": "single_ad", "label": "Başlık", "default": "Single" },
     { "type": "text", "id": "single_adet", "label": "Ürün sayısı satırı", "default": "1 ürün" },
     { "type": "text", "id": "single_yukleme", "label": "Yükleme satırı (vurgulu kutu)", "default": "Sadece sen yüklersin" },
@@ -416,7 +435,7 @@
     { "type": "header", "content": "Couple kartı" },
     { "type": "text", "id": "couple_rozet", "label": "Rozet metni", "default": "İkincisi yarı fiyatına",
       "info": "Boş bırakılırsa rozet çıkmaz." },
-    { "type": "text", "id": "couple_ust", "label": "Üst küçük yazı", "default": "Buluşunca açılır" },
+    { "type": "text", "id": "couple_ust", "label": "Açılma şekli metni", "default": "Buluşunca açılır" },
     { "type": "text", "id": "couple_ad", "label": "Başlık", "default": "Couple" },
     { "type": "text", "id": "couple_adet", "label": "Ürün sayısı satırı", "default": "2 ürün" },
     { "type": "text", "id": "couple_yukleme", "label": "Yükleme satırı (vurgulu kutu)", "default": "İkiniz de yüklersiniz" },
