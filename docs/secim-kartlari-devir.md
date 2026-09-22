@@ -11,7 +11,7 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 | `sections/tt-secim-kartlari.liquid` | 26.590 | `4b4401172c878cf1f7694599410f38d8` |
 | `snippets/tt-sc-karo.liquid` | 3.048 | `bd3847fce53aec482150767b64a9246a` |
 | `snippets/tt-sc-ikon.liquid` | 1.198 | `c4042fada7124171db3bd369c318cc92` |
-| `assets/tt-secim-kartlari.css` | 16.803 | `4f8d85766e5ab4503101acb82e367837` |
+| `assets/tt-secim-kartlari.css` | 17.270 | `a38efbdee85a3eafe3414febe8edf114` |
 | `assets/tt-secim-kartlari.js` | 24.740 | `85af3ef2ca6763e7d275fb95d106f44f` |
 
 Hiçbir paylaşılan dosyaya dokunulmadı: `sections/main-collection.liquid`,
@@ -124,9 +124,17 @@ Yedek olarak `window.dataLayer`'a da yazılıyor.
 olayını tetikler; **2 kalemlik `items` dizisinde kaç kez tetiklendiği
 pixel debugger'da doğrulanmalı** — varsayılmadı.
 
-## Öğrenilen dört tuzak
+## Öğrenilen beş tuzak
 
-0. **`concat` sessizce boş döndü.** İlk sürümde
+0. **`hidden` niteliği tek başına yetmiyor.** Tarayıcının
+   `[hidden] { display: none }` kuralı, öğeye açıkça bir `display`
+   verildiğinde eziliyor. `.tt-sc-cipler`'de `display: flex` vardı ama
+   `[hidden]` kuralı yoktu: çip satırı gizlenmesi gereken yerde ekranda
+   kaldı, içindeki Kadın/Erkek çipleri (onların kuralı vardı) gizlenip
+   geriye tek başına "Tümü" kaldı. Testler `.hidden` ÖZELLİĞİNİ
+   okuduğu için bunu göremedi; `test4.mjs` artık **hesaplanmış
+   display**'i ölçüyor.
+1. **`concat` sessizce boş döndü.** İlk sürümde
    `kadin_kol.products | concat: tekil_kol.products` vardı ve vitrinde
    kadın grubu **hiç basılmadı**: Single modunda görünen tek ürün, erkek
    döngüsünden gelen ve iki koleksiyonda birden olan *Klasik Zaman
@@ -134,15 +142,15 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
    bekliyor; `collection.products` dizi değil. Birleştirme tamamen
    kaldırıldı: her kaynak kendi döngüsünde basılıyor, tekilleştirme
    ortak bir dizeyle yapılıyor.
-1. **Seçici çakışması.** `[data-sc-kime]` hem filtre çiplerinde hem 29
+2. **Seçici çakışması.** `[data-sc-kime]` hem filtre çiplerinde hem 29
    ürün karosunda vardı; `querySelectorAll` 32 öğe döndürüyordu. Çipler
    `data-sc-cip`'e ayrıldı. Aynı hata kök öğe ile kartlar arasında da
    vardı (`data-sc-mod`) — kök artık `data-sc-aktif-mod` taşıyor.
-2. **Chrome `border-width`'i tam piksele yuvarlıyor.** `1.5px` ekranda
+3. **Chrome `border-width`'i tam piksele yuvarlıyor.** `1.5px` ekranda
    1px çıkıyordu. Kart kenarlığı `inset box-shadow`'a çevrildi:
    yuvarlanmıyor ve düzeni hiç etkilemediği için seçim değişince kartlar
    yerinden oynamıyor.
-3. **İki koleksiyonda birden olan ürün.** `Klasik Zaman Kapsülü` tek
+4. **İki koleksiyonda birden olan ürün.** `Klasik Zaman Kapsülü` tek
    başına karşı cinsiyetin çipini ayakta tutuyor, müşteriye 1 ürünlük
    sahte bir "Erkek" sekmesi gösteriyordu. Cinsiyet ayrımı artık yalnızca
    kaynak iki koleksiyonu kapsadığında anlamlı sayılıyor.
@@ -168,4 +176,8 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   `cart:refresh` + `detail.open`, çekmece yoksa `/cart` yedeği, para
   biçiminin mağazadan öğrenilmesi (TR ve ABD biçimi), klavye, `?mod=`.
 
-**199/199 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).
+- `test4.mjs` — 24 test: JS'in `hidden` yazdığı **her** öğe için
+  hesaplanmış `display` ölçümü (nitelik yazılıyor mu değil, gerçekten
+  kayboluyor mu).
+
+**223/223 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).

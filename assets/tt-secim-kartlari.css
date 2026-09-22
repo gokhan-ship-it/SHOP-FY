@@ -223,7 +223,15 @@
 }
 
 /* --- Filtre satiri --- */
+/* DIKKAT: hidden niteligi tek basina YETMIYOR. Tarayicinin
+   [hidden] { display: none } kurali, ogeye acikca bir display
+   verildiginde eziliyor. Asagidaki ogelerin hepsinde acik bir display
+   var, o yuzden her birinin ayrica [hidden] kurali olmak ZORUNDA.
+   .tt-sc-cipler'de bu unutuldu ve cip satiri gizlenmesi gereken yerde
+   ekranda kaldi: icindeki Kadin/Erkek cipleri gizlenip geriye tek
+   basina "Tumu" kaldi. */
 .tt-sc-filtre[hidden] { display: none; }
+.tt-sc-cipler[hidden] { display: none; }
 .tt-sc-izgara[hidden] { display: none; }
 .tt-sc-sayac[hidden] { display: none; }
 .tt-sc-filtre {
