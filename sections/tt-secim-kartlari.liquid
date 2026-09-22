@@ -86,14 +86,6 @@
   endfor
 
   comment
-    Single modunun urun kaynagi ayardan. Varsayilan "kendi": sayfa
-    kendi koleksiyonunu listeliyor. Bu durumda tek cinsiyetli bir
-    sayfada karsi cinsiyetin cipi BOS kalirdi; cipler bu yuzden
-    JS tarafinda sayisi sifir olunca gizleniyor, musteri bos bir
-    sonuc ekraniyla karsilasmiyor.
-  endcomment
-
-  comment
     KAYNAKLAR BIRLESTIRILMIYOR, UC AYRI DONGUDE BASILIYOR
 
     Onceki surumde "kadin_kol.products | concat: tekil_kol.products"
@@ -149,7 +141,6 @@
        data-sc-para-ornek="{{ para_ornek | escape }}"
        data-sc-tutar-goster="{{ s.tutar_goster }}"
        data-sc-gizle-secici="{{ s.gizle_secici | escape }}"
-       data-sc-single-kaynak="{{ s.single_kaynak }}"
        data-sc-tekil-izgara="{{ s.tekil_izgara }}"
        data-sc-tema-izgara="{{ s.tema_izgara_secici | escape }}"
        data-sc-metin="{{ metin_json | strip | escape }}"
@@ -443,12 +434,6 @@
     { "type": "text", "id": "tema_izgara_secici", "label": "Temanın ızgara bölümü (CSS seçici)",
       "default": "#shopify-section-main-collection",
       "info": "Bu bölüm listeyi devraldığında gizlenen öğe. Şablondaki bölüm kimliği değişirse burayı güncelleyin." },
-    { "type": "select", "id": "single_kaynak", "label": "Single modunda listelenen ürünler", "default": "ikisi",
-      "options": [
-        { "value": "ikisi", "label": "Kadın + Erkek koleksiyonları" },
-        { "value": "kendi", "label": "Sayfanın kendi koleksiyonu" }
-      ],
-      "info": "Kadın/Erkek filtresinin Single modunda da çalışması için iki koleksiyon birden listelenmeli. \"Sayfanın kendi koleksiyonu\" seçilirse tek cinsiyetli bir sayfada karşı cinsiyetin çipi otomatik gizlenir." },
 
     { "type": "header", "content": "Filtre satırı" },
     { "type": "text", "id": "kime_etiket", "label": "Filtre grubu adı (ekran okuyucu)", "default": "Kime alıyorsun?" },

@@ -31,12 +31,22 @@
     var M = {};
     try { M = JSON.parse(KOK.getAttribute('data-sc-metin') || '{}'); } catch (e) { M = {}; }
 
-    var TEK_KAYNAK = KOK.getAttribute('data-sc-single-kaynak') === 'kendi';
     var TUTAR_GOSTER = KOK.getAttribute('data-sc-tutar-goster') === 'true';
-    /* Single modunda sayfanin KENDI urun izgarasi (main-collection)
-       kullaniliyor: filtreleri, siralamasi ve sayfalamasi zaten
-       calisiyor ve "Single modu sayfa bugunku gibi calissin" demek.
-       Bu bolumun izgarasi yalnizca Couple modunda devreye giriyor. */
+    /* Single modunda listeyi kim ciziyor -- TEK ayar bu.
+
+         tema   Sayfanin kendi izgarasi (main-collection). Filtreleri,
+                siralamasi ve sayfalamasi korunuyor; ama o izgara
+                yalnizca sayfanin KENDI koleksiyonunu basabildigi icin
+                Kadin/Erkek cipleri Single modunda gizleniyor.
+         kendi  Bu bolumun izgarasi, iki koleksiyon birden. Cipler
+                calisiyor.
+
+       Once ayri bir "Single modunda listelenen urunler" ayari daha
+       vardi; iki ayarin adi da "Single modunda" diye basliyordu ve
+       kurulumda yanlis olan cevrildi. Ustelik "bolumun izgarasi +
+       yalnizca sayfanin koleksiyonu" kombinasyonu anlamsizdi: tek
+       koleksiyonu filtresiz listelemeyi temanin izgarasi zaten daha
+       iyi yapiyor. Ayar kaldirildi. */
     var TEMA_IZGARA = KOK.getAttribute('data-sc-tekil-izgara') !== 'kendi';
 
     var izgara   = KOK.querySelector('[data-sc-izgara]');
@@ -129,23 +139,21 @@
       return null;
     }
 
-    /* ---------- Gorunurluk ---------- */
+    /* ---------- Gorunurluk ----------
+       Bu bolumun izgarasi her zaman iki koleksiyonu birden kapsiyor;
+       Single ile Couple arasindaki tek fark, Couple'da indirim kapsami
+       disindaki urunlerin elenmesi. */
     function karoUygun(karo, hangiKime) {
-      /* Single modunda kaynak ayardan: sayfanin kendi koleksiyonu ya da
-         iki couple koleksiyonu. Couple modunda her zaman iki koleksiyon. */
-      if (mod === 'single' && TEK_KAYNAK && karo.getAttribute('data-sc-tekil') !== '1') return false;
       var k = karo.getAttribute('data-sc-kime');
+      /* Cinsiyet isareti bos olan urun, sayfanin kendi koleksiyonunda
+         olup iki couple koleksiyonunun HICBIRINDE olmayan urundur.
+         "Ikinci Uründe %50" indiriminin kapsami disinda kaldigi icin
+         Couple modunda gosterilmiyor -- sete alinsa sayfanin veremeyecegi
+         bir indirim sozu verilmis olurdu. Single modunda gorunuyor. */
       if (mod === 'couple' && !k) return false;
       if (hangiKime === 'tumu') return true;
-      /* Kaynak TEK bir koleksiyonsa cinsiyet ayrimi anlamsiz: sayfa
-         zaten tek cinsiyetin koleksiyonu. Burada "ikisi" isaretli urun
-         (iki koleksiyonda birden olan Klasik Zaman Kapsulu) karsi
-         cinsiyetin cipini tek basina ayakta tutar ve musteri 1 urunluk
-         sahte bir "Erkek" sekmesi gorurdu. */
-      if (!ikiKaynak()) return false;
       return k === hangiKime || k === 'ikisi';
     }
-    function ikiKaynak() { return mod === 'couple' || !TEK_KAYNAK; }
 
     function kimeSayisi(hangiKime) {
       var n = 0;

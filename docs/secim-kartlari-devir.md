@@ -8,11 +8,11 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 
 | Dosya | Boyut | md5 |
 |---|---|---|
-| `sections/tt-secim-kartlari.liquid` | 26.590 | `4b4401172c878cf1f7694599410f38d8` |
+| `sections/tt-secim-kartlari.liquid` | 25.699 | `7e13025e54fdfbe7e767fac78adc5f9c` |
 | `snippets/tt-sc-karo.liquid` | 3.048 | `bd3847fce53aec482150767b64a9246a` |
 | `snippets/tt-sc-ikon.liquid` | 1.198 | `c4042fada7124171db3bd369c318cc92` |
 | `assets/tt-secim-kartlari.css` | 17.270 | `a38efbdee85a3eafe3414febe8edf114` |
-| `assets/tt-secim-kartlari.js` | 24.740 | `85af3ef2ca6763e7d275fb95d106f44f` |
+| `assets/tt-secim-kartlari.js` | 25.044 | `5abc96fb74a389ecc5e75e94fac91563` |
 
 Hiçbir paylaşılan dosyaya dokunulmadı: `sections/main-collection.liquid`,
 `snippets/product-card.liquid`, `assets/theme.js`, `assets/cart.js`
@@ -77,12 +77,18 @@ sayfalaması bu iki sayfada devre dışı kalıyor. Koleksiyonlar 17 ve 13
 ürün olduğu için sayfalamaya gerek yok; sıralama/filtre gerekiyorsa
 ayar `tema` yapılabilir.
 
-İki ayar:
+**Tek ayar var:** *Single modunda ürün ızgarası*
 
-| Ayar | Varsayılan | Diğer seçenek |
-|---|---|---|
-| Single modunda ürün ızgarası | **Bu bölümün ızgarası** — filtre çalışır | Temanın ızgarası — filtre Single'da kapanır |
-| Single modunda listelenen ürünler | **Kadın + Erkek koleksiyonları** | Sayfanın kendi koleksiyonu |
+| Değer | Sonuç |
+|---|---|
+| **Bu bölümün ızgarası** (varsayılan) | İki koleksiyon birden, Kadın/Erkek filtresi Single'da da çalışır |
+| Temanın kendi ızgarası | Sayfanın kendi filtreleri/sıralaması korunur, Kadın/Erkek çipleri Single'da gizlenir |
+
+Bir ara ikinci bir ayar daha vardı (*Single modunda listelenen ürünler*).
+İkisinin de adı "Single modunda" diye başlıyordu ve kurulumda yanlış
+olan çevrildi. Üstelik "bölümün ızgarası + yalnızca sayfanın
+koleksiyonu" kombinasyonu anlamsızdı: tek koleksiyonu filtresiz
+listelemeyi temanın ızgarası zaten daha iyi yapıyor. Ayar kaldırıldı.
 
 Temanın ızgarasını **her zaman bu bölüm yönetiyor** (seçici ayarı:
 `#shopify-section-main-collection`). Kapatmayı kullanıcıya bırakmak,
@@ -91,12 +97,11 @@ listesi bırakmıştı.
 
 ## Kurulum sırasında dikkat
 
-- **Single modunda karşı cinsiyet de listeleniyor.** Varsayılan
-  `Kadın + Erkek koleksiyonları` olduğu için kadın koleksiyon sayfasında
-  Single modunda erkek ürünleri de görünüyor ("Tümü" seçiliyken grup
-  başlıklarıyla ayrılmış olarak). Filtrenin Single modunda çalışmasının
-  koşulu bu. İstenmezse ayar `Sayfanın kendi koleksiyonu` yapılır; o
-  zaman karşı cinsiyetin çipi otomatik gizlenir.
+- **Single modunda karşı cinsiyet de listeleniyor.** Kadın koleksiyon
+  sayfasında Single modunda erkek ürünleri de görünüyor ("Tümü"
+  seçiliyken grup başlıklarıyla ayrılmış olarak). Filtrenin Single
+  modunda çalışmasının koşulu bu. İstenmezse ayar *Temanın kendi
+  ızgarası* yapılır.
 - **Tutar bir önizleme.** Pahalı ürün tam, ucuz ürün yarım. Shopify de
   BXGY'de indirimi ucuz olana uyguluyor, yani beklenen sonuç aynı; ama
   gerçek tutarı sepet hesaplıyor. `tutar_goster` kapatılırsa yerine
