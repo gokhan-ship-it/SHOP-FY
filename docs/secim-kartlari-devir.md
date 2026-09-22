@@ -8,11 +8,11 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 
 | Dosya | Boyut | md5 |
 |---|---|---|
-| `sections/tt-secim-kartlari.liquid` | 27.052 | `fc22f5a82144268d5eb88751d93b30bc` |
+| `sections/tt-secim-kartlari.liquid` | 30.141 | `c1b346f457c39f96b1b98e3a5d8fd369` |
 | `snippets/tt-sc-karo.liquid` | 3.048 | `bd3847fce53aec482150767b64a9246a` |
-| `snippets/tt-sc-ikon.liquid` | 1.994 | `8c0939ad2fb6befbe550359ec151ce06` |
-| `assets/tt-secim-kartlari.css` | 20.806 | `307cdf2210d1a51514dddf2d99f5922d` |
-| `assets/tt-secim-kartlari.js` | 25.044 | `5abc96fb74a389ecc5e75e94fac91563` |
+| `snippets/tt-sc-ikon.liquid` | 3.432 | `f8cb0504ac5d8f34e997b5e649bb5171` |
+| `assets/tt-secim-kartlari.css` | 23.940 | `36fd0eb2ca57b77d7c77a51a5d3aa853` |
+| `assets/tt-secim-kartlari.js` | 26.722 | `9548bb50a648440e88b781bb105ce5aa` |
 
 Hiçbir paylaşılan dosyaya dokunulmadı: `sections/main-collection.liquid`,
 `snippets/product-card.liquid`, `assets/theme.js`, `assets/cart.js`
@@ -171,6 +171,72 @@ Renkler bölüm ayarı **değil**, CSS'te sabit — yeni ayar istenmedi.
 Geçiş süresi eklenmedi: bölümde zaten hiçbir yerde `transition` yok,
 kart seçilince bütün renkler anında değişiyor; kutu da onlarla birlikte.
 
+## Setini oluştur kutusu
+
+Yukarıdan aşağıya: kural bandı → başlık + sayaç → ilerleme çubuğu →
+iki slot. Kutunun kendi iç boşluğu yok (`padding: 0` + `overflow:
+hidden`), boşluklar bölümlerde: koyu bandın kutunun kenarına kadar
+uzaması ve köşeleri takip etmesi için.
+
+**Kural bandı.** "Couple set için sepete 2 ürün eklenir" bilgisi
+eskiden kutunun en altında küçük gri bir nottu — yani en önemli kural
+en silik yerdeydi. Artık en üstte, koyu zeminde iki satır: 14px/500
+beyaz ana satır ve 12px `#a3a6ad` alt satır, solda 18px `#8fcbb0`
+bilgi ikonu (`flex: none`, `aria-hidden`). Eski alt not kaldırıldı.
+
+**İlerleme çubuğu.** İki eşit parça, 4px yükseklik, 4px ara, tam
+yuvarlak. Boş `#e5e8ec`, dolu `#30614b`, geçiş 160ms;
+`prefers-reduced-motion` altında geçiş yok. Dekoratif ve
+`aria-hidden`: aynı bilgi sayaçta var ve sayaç `aria-live="polite"`.
+Sayaç 0 ve 1 üründe "[n]/2 seçildi", 2 üründe "Set hazır".
+
+**Slotlar.** min-height 62px, 12px köşe, 11/10 dolgu, aralarında 8px.
+Üst satır 13px/500 + 15px ikon (boşken artı, doluyken tik — **ikisi de
+basılıyor, seçimi CSS yapıyor**, JS ikon üretmiyor). Uzun ürün adı tek
+satırda üç noktayla kısalıyor, slot bozulmuyor.
+
+| | 1. slot | 2. slot |
+|---|---|---|
+| Boş kenar | kesikli `#c9ced5` | kesikli `#599176` |
+| Boş zemin | beyaz | `#f0f7f3` |
+| Dolu kenar | düz `#15171c` | düz `#30614b` |
+| Boş alt yazı | "Tam fiyat" `#6b6f78` | "Sepette %50 indirimli" `#30614b`/500 |
+| Dolu alt yazı | Kadın/Erkek + varyant | "Sepette yarı fiyatına" |
+
+2. slot boşken de vurgulu: müşteriyi doldurmaya çağıran şey indirimin
+kendisi. "%50" rozeti slotun sağ üstünde (`top: -9px; right: 8px`),
+iki durumda da görünür. Kutunun `overflow: hidden`'ı rozeti kesmiyor:
+rozet slotun içinde ve slotun üstünde ilerleme çubuğundan gelen 12px
+boşluk var.
+
+**1.5px kenar tuzağı — yine.** Chrome `border-width`'i tam piksele
+yuvarlıyor. Dolu slotta kenarlık düz olduğu için `inset box-shadow`
+ile gerçekten 1.5px çizdirildi (kenarlık `transparent` ama yerinde
+duruyor, yani yerleşim iki durumda da aynı); **boş slotun kesikli
+kenarı gölgeyle yapılamadığı için orada Chrome'un 1px'i kalıyor.**
+
+**Slot sırası = fiyat sırası, ama `set` dizisi seçim sırasında.**
+Diziye, ekleme mantığına, üçüncü seçimde en eskinin düşmesine, sepete
+giden kalemlere ve tutar hesabına dokunulmadı. Yalnızca **slotlara
+yazarken** pahalı olan 1. slota, ucuz olan 2. slota alınıyor: 2. slot
+"sepette yarı fiyatına" diyor ve Shopify BXGY'de indirimi ucuz olana
+uyguluyor. Bu dosyadaki tutar önizlemesi de zaten `max + min/2` ile
+aynı varsayımı kullanıyordu; yeni bir fiyat mantığı eklenmedi. Hangi
+slotun dizide hangi öğeyi gösterdiği `data-sc-kaynak`'ta duruyor ve
+boşaltma dizin yerine onu okuyor.
+
+**Emekliye ayrılan ayarlar:** `slot1_alt`, `slot2_alt`,
+`set_aciklama`. Yerlerine yeni id'ler geldi (`slot1_alt_bos`,
+`slot2_alt_bos`, `slot2_alt_dolu`, `set_bant_ust`, `set_bant_alt`,
+`set_hazir`, `slot2_rozet`) — eskilerinin şablonda kayıtlı değerleri
+("Seç", "Yarı fiyatına") yeni varsayılanları ezeceği için id'ler
+yeniden kullanılmadı.
+
+Ölçülen kontrastlar, hepsi AA: `#a3a6ad`/`#15171c` **7,4:1**,
+beyaz/`#15171c` **17,9:1**, `#8fcbb0`/`#15171c` **9,7:1**,
+`#30614b`/`#f0f7f3` **6,6:1**, beyaz/`#30614b` **7,2:1**,
+`#6b6f78`/beyaz **5,0:1**. Hiçbir tonu ayarlamak gerekmedi.
+
 ## Ölçüm
 
 `layout/theme.liquid` içinde Meta Pixel yok; her şey `content_for_header`
@@ -261,4 +327,13 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   ve kutuların eşit yüksekliği, rozetin ortalanması ve karta sığması,
   yatay taşma yok — 360/390/430px'te.
 
-**631/631 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).
+- `test7.mjs` — 478 test: kural bandının ölçüleri/renkleri/ikon
+  hizası/taşmaması, ilerleme çubuğunun parçaları ve doluluğu,
+  slotların boş ve dolu halleri (kenar, zemin, metin, ikon geçişi),
+  %50 rozetinin konumu ve kesilmediği, üç sayaç durumu, uzun ürün
+  adının üç noktayla kısalması, **gösterim sırasının ters seçimde de
+  pahalıyı 1. slota koyması**, dolu slota basınca doğru ürünün
+  çıkması, eşit fiyatta seçim sırasının korunması, sepete giden
+  isteğin değişmediği — 360/390/430px'te.
+
+**1109/1109 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).

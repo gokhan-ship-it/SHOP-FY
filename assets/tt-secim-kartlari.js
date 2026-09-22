@@ -62,6 +62,7 @@
     var setKutu  = KOK.querySelector('[data-sc-set]');
     var setSayac = KOK.querySelector('[data-sc-set-sayac]');
     var slotlar  = Array.prototype.slice.call(KOK.querySelectorAll('[data-sc-slot]'));
+    var cubuklar = Array.prototype.slice.call(KOK.querySelectorAll('[data-sc-ilerleme]'));
     var cubuk    = KOK.querySelector('[data-sc-cubuk]');
     var durumEl  = KOK.querySelector('[data-sc-durum]');
     var tutarEl  = KOK.querySelector('[data-sc-tutar]');
@@ -303,25 +304,51 @@
       document.body.style.setProperty('--tt-sc-cubuk-yuk', (cubuk.offsetHeight + 12) + 'px');
     }
 
-    /* ---------- Set ---------- */
+    /* ---------- Set ----------
+
+       GOSTERIM SIRASI. `set` dizisi SECIM sirasinda duruyor ve oyle
+       kaliyor: ekleme, ucuncu secimde en eskinin dusmesi, sepete
+       gonderilen kalemler ve tutar hesabi hic degismedi. Yalniz
+       SLOTLARA yazarken pahali olan 1. slota, ucuz olan 2. slota
+       aliniyor -- cunku 2. slot "sepette yarı fiyatına" diyor ve
+       Shopify BXGY'de indirimi ucuz olana uyguluyor. Bu dosyadaki
+       tutar onizlemesi de zaten max + min/2 ile ayni varsayimi
+       kullaniyor; yeni bir fiyat mantigi eklenmiyor, var olan
+       varsayim ekrana dogru yansitiliyor.
+
+       Slot dizinden okuyamiyor artik: hangi slotun `set` icinde hangi
+       ogeyi gosterdigi data-sc-kaynak'ta duruyor, bosaltma da onu
+       okuyor. */
+    function gosterimSirasi() {
+      if (set.length < 2) return set.map(function (_, i) { return i; });
+      return set[0].fiyat >= set[1].fiyat ? [0, 1] : [1, 0];
+    }
+
     function setCiz() {
       var n = set.length;
+      var sira = gosterimSirasi();
 
       for (var i = 0; i < slotlar.length; i++) {
         var ust = slotlar[i].querySelector('[data-sc-slot-ust]');
         var alt = slotlar[i].querySelector('[data-sc-slot-alt]');
-        var e = set[i];
+        var kaynak = sira.length > i ? sira[i] : -1;
+        var e = kaynak >= 0 ? set[kaynak] : null;
         if (e) {
           slotlar[i].setAttribute('data-sc-dolu', '');
+          slotlar[i].setAttribute('data-sc-kaynak', String(kaynak));
           ust.textContent = e.ad;
-          alt.textContent = e.kimeAd + (e.varyantAd ? ' · ' + e.varyantAd : '');
+          alt.textContent = i === 0
+            ? e.kimeAd + (e.varyantAd ? ' · ' + e.varyantAd : '')
+            : (M.slot2AltDolu || '');
         } else {
           slotlar[i].removeAttribute('data-sc-dolu');
+          slotlar[i].removeAttribute('data-sc-kaynak');
           ust.textContent = i === 0 ? (M.slot1Ust || '') : (M.slot2Ust || '');
-          alt.textContent = i === 0 ? (M.slot1Alt || '') : (M.slot2Alt || '');
+          alt.textContent = i === 0 ? (M.slot1AltBos || '') : (M.slot2AltBos || '');
         }
       }
-      if (setSayac) setSayac.textContent = yaz(M.setSayac, n);
+      for (var c = 0; c < cubuklar.length; c++) cubuklar[c].toggleAttribute('data-sc-dolu', c < n);
+      if (setSayac) setSayac.textContent = n === 2 ? (M.setHazir || '') : yaz(M.setSayac, n);
 
       for (var k = 0; k < karolar.length; k++) {
         var id = karolar[k].getAttribute('data-sc-urun');
@@ -557,9 +584,14 @@
       });
     }
 
-    /* Dolu slota basmak o urunu setten cikariyor. */
-    slotlar.forEach(function (sl, i) {
+    /* Dolu slota basmak o urunu setten cikariyor. Slotun gosterdigi
+       oge `set` icinde baska sirada olabilir (bkz. gosterimSirasi),
+       o yuzden dizin degil data-sc-kaynak okunuyor. */
+    slotlar.forEach(function (sl) {
       sl.addEventListener('click', function () {
+        var k = sl.getAttribute('data-sc-kaynak');
+        if (k === null) return;
+        var i = parseInt(k, 10);
         if (!set[i]) return;
         set.splice(i, 1);
         setCiz();

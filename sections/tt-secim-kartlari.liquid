@@ -113,10 +113,12 @@
 {
   "sayacEki": {{ s.sayac_eki | json }},
   "setSayac": {{ s.set_sayac | json }},
+  "setHazir": {{ s.set_hazir | json }},
   "slot1Ust": {{ s.slot1_ust | json }},
-  "slot1Alt": {{ s.slot1_alt | json }},
+  "slot1AltBos": {{ s.slot1_alt_bos | json }},
   "slot2Ust": {{ s.slot2_ust | json }},
-  "slot2Alt": {{ s.slot2_alt | json }},
+  "slot2AltBos": {{ s.slot2_alt_bos | json }},
+  "slot2AltDolu": {{ s.slot2_alt_dolu | json }},
   "kartEkle": {{ s.kart_ekle | json }},
   "kartSecili": {{ s.kart_secili | json }},
   "durum2": {{ s.durum_2 | json }},
@@ -254,25 +256,71 @@
         SET OLUSTURUCU
         Yalnizca Couple modunda gorunuyor. Slotlar bos/dolu iki halde;
         dolu slot urun adini ve Kadin/Erkek bilgisini tasiyor.
+
+        SIRALAMA: kutunun en ustunde kural bandi duruyor -- "sepete 2
+        urun eklenmesi gerekiyor" bilgisi eskiden en altta kucuk gri bir
+        nottu, yani en onemli kural en silik yerdeydi. Ikinci vurgu 2.
+        slotta: bos haliyle bile yesil, cunku musteriyi doldurmaya
+        cagiran sey indirimin ta kendisi.
+
+        IKONLAR: bos ve dolu ikonlarin IKISI de basiliyor, hangisinin
+        gorunecegini CSS seciyor. JS ikon uretmiyor -- boylece markup
+        tek yerde kaliyor ve XSS yuzeyi acilmiyor.
       {%- endcomment -%}
       <div class="tt-sc-set" data-sc-set hidden>
-        <div class="tt-sc-set-bas">
-          <span class="tt-sc-set-baslik">{{ s.set_baslik }}</span>
-          <span class="tt-sc-set-sayac" data-sc-set-sayac aria-live="polite"></span>
-        </div>
-        <div class="tt-sc-slotlar">
-          <button type="button" class="tt-sc-slot" data-sc-slot="0">
-            <span class="tt-sc-slot-ust" data-sc-slot-ust>{{ s.slot1_ust }}</span>
-            <span class="tt-sc-slot-alt" data-sc-slot-alt>{{ s.slot1_alt }}</span>
-          </button>
-          <button type="button" class="tt-sc-slot" data-sc-slot="1">
-            <span class="tt-sc-slot-ust" data-sc-slot-ust>{{ s.slot2_ust }}</span>
-            <span class="tt-sc-slot-alt" data-sc-slot-alt>{{ s.slot2_alt }}</span>
-          </button>
-        </div>
-        {%- if s.set_aciklama != blank -%}
-          <p class="tt-sc-set-not">{{ s.set_aciklama }}</p>
+        {%- if s.set_bant_ust != blank or s.set_bant_alt != blank -%}
+          <div class="tt-sc-set-bant">
+            {%- render 'tt-sc-ikon', ad: 'bilgi', sinif: 'tt-sc-bant-ikon' -%}
+            <span class="tt-sc-set-bant-metin">
+              {%- if s.set_bant_ust != blank -%}
+                <span class="tt-sc-set-bant-ana">{{ s.set_bant_ust }}</span>
+              {%- endif -%}
+              {%- if s.set_bant_alt != blank -%}
+                <span class="tt-sc-set-bant-alt">{{ s.set_bant_alt }}</span>
+              {%- endif -%}
+            </span>
+          </div>
         {%- endif -%}
+
+        <div class="tt-sc-set-ic">
+          <div class="tt-sc-set-bas">
+            <span class="tt-sc-set-baslik">{{ s.set_baslik }}</span>
+            <span class="tt-sc-set-sayac" data-sc-set-sayac aria-live="polite"></span>
+          </div>
+
+          {%- comment -%}
+            Ilerleme cubugu DEKORATIF: ayni bilgi sayacta yaziyor ve
+            sayac aria-live. Ekran okuyucuya iki kez soyletmemek icin
+            aria-hidden.
+          {%- endcomment -%}
+          <div class="tt-sc-ilerleme" aria-hidden="true">
+            <i data-sc-ilerleme="0"></i>
+            <i data-sc-ilerleme="1"></i>
+          </div>
+
+          <div class="tt-sc-slotlar">
+            <button type="button" class="tt-sc-slot" data-sc-slot="0">
+              <span class="tt-sc-slot-ust">
+                {%- render 'tt-sc-ikon', ad: 'arti', sinif: 'tt-sc-slot-ikon tt-sc-slot-ikon--bos' -%}
+                {%- render 'tt-sc-ikon', ad: 'tik', sinif: 'tt-sc-slot-ikon tt-sc-slot-ikon--dolu' -%}
+                <span class="tt-sc-slot-ad" data-sc-slot-ust>{{ s.slot1_ust }}</span>
+              </span>
+              <span class="tt-sc-slot-alt" data-sc-slot-alt>{{ s.slot1_alt_bos }}</span>
+            </button>
+
+            <button type="button" class="tt-sc-slot tt-sc-slot--indirim" data-sc-slot="1">
+              <span class="tt-sc-slot-ust">
+                {%- render 'tt-sc-ikon', ad: 'arti', sinif: 'tt-sc-slot-ikon tt-sc-slot-ikon--bos' -%}
+                {%- render 'tt-sc-ikon', ad: 'tik', sinif: 'tt-sc-slot-ikon tt-sc-slot-ikon--dolu' -%}
+                <span class="tt-sc-slot-ad" data-sc-slot-ust>{{ s.slot2_ust }}</span>
+              </span>
+              <span class="tt-sc-slot-alt" data-sc-slot-alt>{{ s.slot2_alt_bos }}</span>
+              {%- if s.slot2_rozet != blank -%}
+                <span class="tt-sc-slot-rozet">{{ s.slot2_rozet }}</span>
+              {%- endif -%}
+            </button>
+          </div>
+        </div>
       </div>
 
       {%- comment -%}
@@ -469,14 +517,23 @@
     { "type": "text", "id": "bos_metin", "label": "Sonuç boşsa", "default": "Bu seçimle eşleşen ürün kalmadı." },
 
     { "type": "header", "content": "Setini oluştur kutusu" },
+    { "type": "text", "id": "set_bant_ust", "label": "Kural bandı — ana satır",
+      "default": "Biri senin, biri onun için iki ürün ekle",
+      "info": "Kutunun en üstündeki koyu bant. Boş bırakılırsa bant çıkmaz." },
+    { "type": "text", "id": "set_bant_alt", "label": "Kural bandı — alt satır",
+      "default": "Couple set için sepette 2 ürün olmalı." },
     { "type": "text", "id": "set_baslik", "label": "Başlık", "default": "Setini oluştur" },
+    { "type": "text", "id": "set_hazir", "label": "Sayaç: iki ürün de seçilmişken", "default": "Set hazır" },
     { "type": "text", "id": "set_sayac", "label": "Sayaç metni", "default": "[n]/2 seçildi",
       "info": "[n] seçili ürün sayısıyla değişir." },
     { "type": "text", "id": "slot1_ust", "label": "1. slot üst yazı", "default": "1. ürün" },
-    { "type": "text", "id": "slot1_alt", "label": "1. slot alt yazı", "default": "Seç" },
+    { "type": "text", "id": "slot1_alt_bos", "label": "1. slot alt yazı (boşken)", "default": "Tam fiyat",
+      "info": "Slot dolunca yerine ürünün Kadın/Erkek bilgisi yazılıyor." },
     { "type": "text", "id": "slot2_ust", "label": "2. slot üst yazı", "default": "2. ürün" },
-    { "type": "text", "id": "slot2_alt", "label": "2. slot alt yazı", "default": "Yarı fiyatına" },
-    { "type": "text", "id": "set_aciklama", "label": "Açıklama", "default": "Couple için sepete 2 ürün eklenir." },
+    { "type": "text", "id": "slot2_alt_bos", "label": "2. slot alt yazı (boşken)", "default": "Sepette %50 indirimli" },
+    { "type": "text", "id": "slot2_alt_dolu", "label": "2. slot alt yazı (doluyken)", "default": "Sepette yarı fiyatına" },
+    { "type": "text", "id": "slot2_rozet", "label": "2. slot rozeti", "default": "%50",
+      "info": "Slotun sağ üst köşesindeki yeşil etiket. Boş bırakılırsa çıkmaz." },
 
     { "type": "header", "content": "Ürün kartı butonları" },
     { "type": "text", "id": "kart_ekle", "label": "Sete ekle", "default": "+ Sete ekle" },

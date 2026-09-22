@@ -21,6 +21,7 @@
      #30614b / #f0f7f3           6.6:1
      #30614b / #eef6f1           6.5:1
      #8fcbb0 / #1f2c26           7.8:1
+     #8fcbb0 / #15171c           9.7:1
      #b42318 / beyaz             6.6:1
    ------------------------------------------------------------------ */
 .tt-sc {
@@ -344,32 +345,91 @@
 /* ------------------------------------------------------------------
    SETINI OLUSTUR
    ------------------------------------------------------------------ */
+/* SET KUTUSU
+   Ic boslugu kutunun kendisinde DEGIL, bolumlerde: en ustteki koyu
+   bandin kenara kadar uzanmasi gerekiyor. overflow: hidden bandin
+   koseleri takip etmesi icin.
+
+   "%50" rozeti slotun ustune -9px tasiyor; slot satirinin ustunde
+   ilerleme cubugundan gelen 12px bosluk var, o yuzden overflow: hidden
+   rozeti kesmiyor. Rozet kutunun DIS kenarina da yaklasmiyor. */
 .tt-sc-set {
   margin-top: 16px;
-  padding: 16px;
+  overflow: hidden;
   border: 1px solid var(--tt-sc-kenar);
   border-radius: 16px;
   background: #fff;
 }
 .tt-sc-set[hidden] { display: none; }
+
+/* --- Kural bandi --- */
+.tt-sc-set-bant {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 12px;
+  background: var(--tt-sc-koyu);
+}
+.tt-sc-set-bant .tt-sc-bant-ikon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: var(--tt-sc-yesil-acik);
+}
+.tt-sc-set-bant-metin { min-width: 0; }
+.tt-sc-set-bant-ana {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: #fff;
+}
+/* Olculdu: #a3a6ad / #15171c = 7.4:1 */
+.tt-sc-set-bant-alt {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--tt-sc-gri-koyu);
+}
+
+/* --- Ic alan --- */
+.tt-sc-set-ic { padding: 12px; }
 .tt-sc-set-bas {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
 }
-.tt-sc-set-baslik { font-size: 15px; font-weight: 500; line-height: 1.25; }
+.tt-sc-set-baslik { font-size: 15px; font-weight: 500; line-height: 1.25; color: var(--tt-sc-koyu); }
 .tt-sc-set-sayac { flex: 0 0 auto; font-size: 13px; font-weight: 500; line-height: 1.2; color: var(--tt-sc-yesil); }
 
+/* --- Ilerleme cubugu --- */
+.tt-sc-ilerleme {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  margin: 8px 0 12px;
+}
+.tt-sc-ilerleme i {
+  height: 4px;
+  border-radius: 999px;
+  background: #e5e8ec;
+  transition: background-color 160ms linear;
+}
+.tt-sc-ilerleme i[data-sc-dolu] { background: var(--tt-sc-yesil); }
+
+/* --- Slotlar --- */
 .tt-sc-slotlar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .tt-sc-slot {
+  position: relative;
   display: grid;
   align-content: center;
   gap: 3px;
-  min-height: 64px;
-  padding: 10px;
-  border: 1.5px dashed var(--tt-sc-kenar);
+  min-height: 62px;
+  padding: 11px 10px;
+  border: 1.5px dashed #c9ced5;
   border-radius: 12px;
   background: #fff;
   color: var(--tt-sc-koyu);
@@ -377,17 +437,70 @@
   text-align: left;
   cursor: pointer;
 }
+/* DOLU SLOTUN 1.5px KENARI BOX-SHADOW ILE.
+   Chrome border-width'i tam piksele yuvarliyor: "1.5px" yaziliyor,
+   1px ciziliyor (kartlarda da ayni tuzaga dusmustuk). Dolu slotta
+   kenarlik duz oldugu icin inset golge ile gercekten 1.5px
+   cizdirilebiliyor; bos slotun kesikli kenari golgeyle yapilamadigi
+   icin orada Chrome'un 1px'i kaliyor.
+   Kenarligin kendisi seffaflasiyor ama yerinde duruyor: yerlesim
+   iki durumda da ayni, slotlar zipllamiyor. */
 .tt-sc-slot[data-sc-dolu] {
   border-style: solid;
-  border-color: var(--tt-sc-yesil);
-  background: var(--tt-sc-yesil-zemin);
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--tt-sc-koyu);
 }
 .tt-sc-slot:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
-.tt-sc-slot-ust { font-size: 12px; line-height: 1.3; color: var(--tt-sc-gri); overflow-wrap: anywhere; }
-.tt-sc-slot-alt { font-size: 12px; line-height: 1.3; color: var(--tt-sc-gri); }
-.tt-sc-slot[data-sc-dolu] .tt-sc-slot-ust { font-size: 13px; font-weight: 500; color: var(--tt-sc-koyu); }
-.tt-sc-slot[data-sc-dolu] .tt-sc-slot-alt { color: var(--tt-sc-yesil); }
-.tt-sc .tt-sc-set-not { margin: 10px 0 0; font-size: 12px; line-height: 1.4; color: var(--tt-sc-gri); }
+
+.tt-sc-slot-ust {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.tt-sc-slot .tt-sc-slot-ikon { flex: none; width: 15px; height: 15px; }
+/* Bos ve dolu ikonun ikisi de basiliyor, secimi CSS yapiyor. */
+.tt-sc-slot .tt-sc-slot-ikon--dolu,
+.tt-sc-slot[data-sc-dolu] .tt-sc-slot-ikon--bos { display: none; }
+.tt-sc-slot[data-sc-dolu] .tt-sc-slot-ikon--dolu { display: block; }
+/* Uzun urun adi slotu bozmasin: tek satir, ucu uc nokta. */
+.tt-sc-slot-ad { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.tt-sc-slot-alt { font-size: 12px; line-height: 1.3; color: var(--tt-sc-gri); overflow-wrap: anywhere; }
+
+/* 2. slot: %50 indirimli urun. Bos haliyle de vurgulu -- musteriyi
+   doldurmaya cagiran sey indirimin kendisi.
+   Olculdu: #30614b / #f0f7f3 = 6.6:1, beyaz / #30614b = 7.2:1 */
+.tt-sc-slot--indirim {
+  border-color: var(--tt-sc-halka-yesil);
+  background: var(--tt-sc-yesil-zemin);
+  color: var(--tt-sc-yesil);
+}
+.tt-sc-slot--indirim[data-sc-dolu] {
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--tt-sc-yesil);
+}
+.tt-sc-slot--indirim .tt-sc-slot-alt { font-weight: 500; color: var(--tt-sc-yesil); }
+.tt-sc-slot--indirim:focus-visible { outline-color: var(--tt-sc-yesil); }
+.tt-sc-slot-rozet {
+  position: absolute;
+  top: -9px;
+  right: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--tt-sc-yesil);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45;
+  white-space: nowrap;
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-sc-ilerleme i { transition: none; }
+}
 
 /* ------------------------------------------------------------------
    URUN IZGARASI
