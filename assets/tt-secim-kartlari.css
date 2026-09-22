@@ -223,6 +223,9 @@
 }
 
 /* --- Filtre satiri --- */
+.tt-sc-filtre[hidden] { display: none; }
+.tt-sc-izgara[hidden] { display: none; }
+.tt-sc-sayac[hidden] { display: none; }
 .tt-sc-filtre {
   display: flex;
   align-items: center;

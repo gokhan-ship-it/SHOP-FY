@@ -8,11 +8,11 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 
 | Dosya | Boyut | md5 |
 |---|---|---|
-| `sections/tt-secim-kartlari.liquid` | 23.284 | `7a5e9498bc13950d13def17752fb950e` |
+| `sections/tt-secim-kartlari.liquid` | 26.331 | `b35cae14a687e9b583fd24a0c48e7742` |
 | `snippets/tt-sc-karo.liquid` | 3.048 | `bd3847fce53aec482150767b64a9246a` |
 | `snippets/tt-sc-ikon.liquid` | 1.198 | `c4042fada7124171db3bd369c318cc92` |
-| `assets/tt-secim-kartlari.css` | 16.681 | `7a5a148fe01918aacb2933e6e5c8a14e` |
-| `assets/tt-secim-kartlari.js` | 22.439 | `e8d444c19d737d7ec727c09625fa29e3` |
+| `assets/tt-secim-kartlari.css` | 16.803 | `4f8d85766e5ab4503101acb82e367837` |
+| `assets/tt-secim-kartlari.js` | 24.747 | `527cf6d25591c2528745f7ca9d4e855f` |
 
 Hiçbir paylaşılan dosyaya dokunulmadı: `sections/main-collection.liquid`,
 `snippets/product-card.liquid`, `assets/theme.js`, `assets/cart.js`
@@ -24,8 +24,9 @@ olduğu gibi duruyor.
    (`/collections/zaman-kapsulu-kolyeler` ve `.../zaman-kapsulu-bileklik`).
 2. **Bölüm ekle → Single / Couple Seçimi**. Yukarı, `main-collection`'ın
    üstüne taşı.
-3. **`main-collection` bölümünü kapat.** Yeni bölüm kendi ürün ızgarasını
-   çiziyor; ikisi açık kalırsa sayfada iki ürün listesi olur.
+3. **`main-collection` (Ürün ızgarası) AÇIK KALSIN.** Bölüm varsayılan
+   ayarıyla Single modunda o ızgarayı kullanıyor; kendi ızgarasını
+   yalnızca Couple modunda gösterip temanınkini gizliyor.
 4. Kolyeler sayfasında **eski `Deneyim Seçimi` bölümünü kapat** — yerini
    bu alıyor.
 
@@ -58,6 +59,28 @@ düzenleyici değişikliklerinin üzerine yazma riski var.
 - **Karttaki sepet butonu:** `product-card.liquid` yalnızca
   `product.variants.size == 1` iken `<product-form>` basıyor; çok
   varyantlıda buton sepete eklemiyor, quick-view açıyor.
+
+## Neden temanın kendi ızgarası
+
+Sayfanın zaten çalışan bir ürün ızgarası var (`main-collection`):
+filtreleri, sıralaması ve sayfalaması onun üzerinde. Single modu
+"sayfa bugünkü gibi çalışsın" demek olduğu için bölüm o modda kendi
+ızgarasını, filtre satırını ve sayacını gizleyip temanınkini olduğu gibi
+bırakıyor.
+
+Kendi ızgarası **yalnızca Couple modunda** devreye giriyor, çünkü orada
+iki koleksiyondan birden ürün göstermek ve her karoyu sete eklenebilir
+yapmak gerekiyor — `main-collection` yalnızca sayfanın kendi
+koleksiyonunu basıyor.
+
+Ayar: **"Single modunda ürün ızgarası"** → *Temanın kendi ızgarası*
+(varsayılan) / *Bu bölümün ızgarası*. İkincisi seçilirse temanın Ürün
+ızgarası bölümünü kapatmak gerekiyor, yoksa sayfada iki liste olur.
+Temanın bölümü `"Temanın ızgara bölümü (CSS seçici)"` ayarıyla
+bulunuyor; varsayılan `#shopify-section-main-collection`.
+
+Ayar *kendi* iken bölüm temanın ızgarasına **hiç dokunmuyor** —
+kapatması kullanıcıya bırakılıyor.
 
 ## Kurulum sırasında dikkat
 
@@ -94,8 +117,16 @@ Yedek olarak `window.dataLayer`'a da yazılıyor.
 olayını tetikler; **2 kalemlik `items` dizisinde kaç kez tetiklendiği
 pixel debugger'da doğrulanmalı** — varsayılmadı.
 
-## Öğrenilen üç tuzak
+## Öğrenilen dört tuzak
 
+0. **`concat` sessizce boş döndü.** İlk sürümde
+   `kadin_kol.products | concat: tekil_kol.products` vardı ve vitrinde
+   kadın grubu **hiç basılmadı**: Single modunda görünen tek ürün, erkek
+   döngüsünden gelen ve iki koleksiyonda birden olan *Klasik Zaman
+   Kapsülü* idi (belirti tam olarak "1 ürün"). `concat` bir dizi
+   bekliyor; `collection.products` dizi değil. Birleştirme tamamen
+   kaldırıldı: her kaynak kendi döngüsünde basılıyor, tekilleştirme
+   ortak bir dizeyle yapılıyor.
 1. **Seçici çakışması.** `[data-sc-kime]` hem filtre çiplerinde hem 29
    ürün karosunda vardı; `querySelectorAll` 32 öğe döndürüyordu. Çipler
    `data-sc-cip`'e ayrıldı. Aynı hata kök öğe ile kartlar arasında da
@@ -118,10 +149,14 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   varyantla), rozetin başlığa binmemesi, yatay taşma, seçim durumu
   renkleri, halka ölçüleri, filtre sayaçları, grup başlıkları,
   `single_kaynak` iki değeri, erkek koleksiyon sayfası.
+- `test3.mjs` — 24 test: Single modunda temanın ızgarasına devir,
+  Couple modunda geri alma, `kendi` ayarında temaya dokunulmaması,
+  `concat` hatasının geri gelmediği (Single'da 17 ürün, 1 değil),
+  `?mod=couple` ile açılış, temanın ızgarası sayfada yokken çökmeme.
 - `test2.mjs` — 73 test: set kurma/çıkarma, üçüncü seçimde en eskinin
   çıkması, varyant seçici, eksik seçim uyarısı, tek istekte iki kalem,
   aynı varyantın `quantity: 2` olarak birleşmesi, sepet hatası,
   `cart:refresh` + `detail.open`, çekmece yoksa `/cart` yedeği, para
   biçiminin mağazadan öğrenilmesi (TR ve ABD biçimi), klavye, `?mod=`.
 
-**159/159 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).
+**183/183 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).

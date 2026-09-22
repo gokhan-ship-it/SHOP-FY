@@ -33,8 +33,14 @@
 
     var TEK_KAYNAK = KOK.getAttribute('data-sc-single-kaynak') === 'kendi';
     var TUTAR_GOSTER = KOK.getAttribute('data-sc-tutar-goster') === 'true';
+    /* Single modunda sayfanin KENDI urun izgarasi (main-collection)
+       kullaniliyor: filtreleri, siralamasi ve sayfalamasi zaten
+       calisiyor ve "Single modu sayfa bugunku gibi calissin" demek.
+       Bu bolumun izgarasi yalnizca Couple modunda devreye giriyor. */
+    var TEMA_IZGARA = KOK.getAttribute('data-sc-tekil-izgara') !== 'kendi';
 
     var izgara   = KOK.querySelector('[data-sc-izgara]');
+    var filtreEl = KOK.querySelector('[data-sc-filtre]');
     var karolar  = Array.prototype.slice.call(KOK.querySelectorAll('[data-sc-karo]'));
     /* [data-sc-kime] urun karolarinda da var; cipler kendi niteligini
    tasiyor ki secici 29 karoyu birden yakalamasin. */
@@ -177,6 +183,9 @@
       /* Tek cinsiyet varsa cip satiri bilgi tasimiyor; tamamen kalkiyor. */
       var cipKapsayici = cipler.length ? cipler[0].parentNode : null;
       if (cipKapsayici) cipKapsayici.hidden = gorunurCip < 2;
+      /* Cip satiri bosalinca sayac tek basina kalir; sayfanin kenarina
+         yapisik bir "29 urun" yazisi bilgi degil gurultu olurdu. */
+      if (sayac) sayac.hidden = gorunurCip < 2;
 
       for (var c3 = 0; c3 < cipler.length; c3++) {
         var s = cipler[c3].getAttribute('data-sc-cip') === kime;
@@ -209,8 +218,16 @@
         if (sayiEl) sayiEl.textContent = String(grupSayi[ad] || 0);
       }
 
+      /* Single modunda temanin izgarasina devrediliyorsa bu bolumun
+         izgarasi, filtre satiri ve bos-sonuc metni tamamen kalkiyor:
+         gorunen liste artik bu bolumun degil. */
+      var temayaDevret = TEMA_IZGARA && mod === 'single';
+      temaIzgaraGoster(temayaDevret);
+      if (izgara) izgara.hidden = temayaDevret;
+      if (filtreEl) filtreEl.hidden = temayaDevret;
+
       if (sayac) sayac.textContent = toplam + ' ' + (M.sayacEki || '');
-      if (bos) bos.hidden = toplam > 0;
+      if (bos) bos.hidden = temayaDevret || toplam > 0;
 
       if (setKutu) setKutu.hidden = mod !== 'couple';
       if (cubuk) cubuk.hidden = mod !== 'couple';
@@ -237,6 +254,37 @@
       } else if (!acik && gizliler.length) {
         gizliler.forEach(function (el) { el.style.display = el._sc_eski || ''; });
         gizliler = [];
+      }
+    }
+
+    /* Temanin izgara bolumu sayfada bir kez aranip saklaniyor. Gizleme
+       style.display uzerinden: bolum temanin kendi siniflariyla
+       geliyor ve hidden niteligi bazi yerlesim kurallariyla
+       cakisabilir. Eski deger saklaniyor ki geri donus kayipsiz olsun. */
+    var temaIzgara, temaArandi = false;
+    function temaIzgaraBul() {
+      if (temaArandi) return temaIzgara;
+      temaArandi = true;
+      var sec = KOK.getAttribute('data-sc-tema-izgara');
+      try { temaIzgara = sec ? document.querySelector(sec) : null; }
+      catch (e) { temaIzgara = null; }
+      return temaIzgara;
+    }
+    function temaIzgaraGoster(goster) {
+      /* Ayar "kendi" ise sahiplik temada degil bu bolumde: o zaman
+         temanin izgarasina HIC dokunulmuyor, kapatmasi kullaniciya
+         birakiliyor. Aksi halde bolum, kapatilmasini soyledigimiz bir
+         bolumu Single modunda kendi kendine gizlerdi ve ayarin ne ise
+         yaradigi anlasilmazdi. */
+      if (!TEMA_IZGARA) return;
+      var el = temaIzgaraBul();
+      if (!el) return;
+      if (goster) {
+        if (el._sc_gizli) { el.style.display = el._sc_eski || ''; el._sc_gizli = false; }
+      } else if (!el._sc_gizli) {
+        el._sc_eski = el.style.display;
+        el.style.display = 'none';
+        el._sc_gizli = true;
       }
     }
 

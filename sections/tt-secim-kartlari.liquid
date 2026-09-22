@@ -94,12 +94,20 @@
   endcomment
 
   comment
-    Karo listesi: uc kaynagin birlesimi, id'ye gore tekillestirilmis.
-    Siralama ONEMLI -- "Tumu" gorunumunde once Kadin grubu, sonra
-    Erkek grubu basiliyor ve basliklar bu siraya guveniyor.
+    KAYNAKLAR BIRLESTIRILMIYOR, UC AYRI DONGUDE BASILIYOR
+
+    Onceki surumde "kadin_kol.products | concat: tekil_kol.products"
+    vardi ve vitrinde kadin grubu HIC basilmadi: Single modunda tek
+    gorunen urun, erkek dongusunden gelen ve iki koleksiyonda birden
+    olan "Klasik Zaman Kapsulu" idi. concat bir DIZI bekliyor;
+    collection.products bir dizi degil, tembel degerlendirilen bir
+    urun listesi ve filtre sessizce bos donuyor.
+
+    Bu yuzden birlestirme yok: her kaynak kendi dongusunde basiliyor,
+    tekillestirme ortak "gorulen" dizesiyle yapiliyor. Siralama
+    ONEMLI -- "Tumu" gorunumunde once Kadin grubu, sonra Erkek grubu
+    geliyor ve grup basliklari bu siraya guveniyor.
   endcomment
-  assign kadin_sirasi = kadin_kol.products | concat: tekil_kol.products
-  assign erkek_sirasi = erkek_kol.products
 
   assign para_ornek = 1234567 | money
 -%}
@@ -142,6 +150,8 @@
        data-sc-tutar-goster="{{ s.tutar_goster }}"
        data-sc-gizle-secici="{{ s.gizle_secici | escape }}"
        data-sc-single-kaynak="{{ s.single_kaynak }}"
+       data-sc-tekil-izgara="{{ s.tekil_izgara }}"
+       data-sc-tema-izgara="{{ s.tema_izgara_secici | escape }}"
        data-sc-metin="{{ metin_json | strip | escape }}"
        style="
          --tt-sc-zemin: {{ s.zemin }};
@@ -215,7 +225,7 @@
       </div>
 
       {%- comment -%} --- Filtre satiri --- {%- endcomment -%}
-      <div class="tt-sc-filtre">
+      <div class="tt-sc-filtre" data-sc-filtre>
         <div class="tt-sc-cipler" role="radiogroup" aria-label="{{ s.kime_etiket | escape }}">
           <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="tumu"  aria-checked="true"  tabindex="0">{{ s.kime_tumu }}</button>
           <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="kadin" aria-checked="false" tabindex="-1">{{ s.kime_kadin }}</button>
@@ -254,6 +264,21 @@
         Once Kadin grubu, sonra Erkek grubu. Grup baslikari izgaranin
         tam genisligini kapliyor ve yalnizca "Tumu" secildiginde
         gorunuyor.
+
+        SINGLE MODUNDA VARSAYILAN OLARAK BU IZGARA KULLANILMIYOR.
+        Sayfanin zaten calisan bir urun izgarasi var (main-collection):
+        filtreleri, siralamasi ve sayfalamasi onun uzerinde. Single
+        modu "sayfa bugunku gibi calissin" demek oldugu icin bolum o
+        moda girdiginde kendi izgarasini gizleyip temanin izgarasini
+        oldugu gibi birakiyor.
+
+        Kendi izgarasi YALNIZCA Couple modunda devreye giriyor, cunku
+        orada iki koleksiyondan birden urun gostermek ve her karoyu
+        sete eklenebilir yapmak gerekiyor; main-collection yalnizca
+        sayfanin kendi koleksiyonunu basiyor.
+
+        Ayardan (tekil_izgara) Single modunda da bu izgara
+        kullanilabilir; o zaman temanin izgarasini kapatmak gerekir.
       {%- endcomment -%}
       <div class="tt-sc-izgara" data-sc-izgara>
 
@@ -262,7 +287,7 @@
         </h3>
 
         {%- assign gorulen = ',' -%}
-        {%- for p in kadin_sirasi -%}
+        {%- for p in kadin_kol.products -%}
           {%- assign ara = ',' | append: p.id | append: ',' -%}
           {%- unless gorulen contains ara -%}
             {%- assign gorulen = gorulen | append: p.id | append: ',' -%}
@@ -287,11 +312,31 @@
           {%- endunless -%}
         {%- endfor -%}
 
+        {%- comment -%}
+          Sayfanin KENDI koleksiyonunda olup iki couple koleksiyonunda
+          da bulunmayan urunler. Kadin grubuna yaziliyorlar; cinsiyet
+          isareti bos kalir, yani Kadin/Erkek cipleri onlari suzmez ama
+          "Tumu" ve Single modunda gorunurler.
+        {%- endcomment -%}
+        {%- for p in tekil_kol.products -%}
+          {%- assign ara = ',' | append: p.id | append: ',' -%}
+          {%- unless gorulen contains ara -%}
+            {%- assign gorulen = gorulen | append: p.id | append: ',' -%}
+            {%- liquid
+              assign kime = ''
+              if erkek_ids contains ara
+                assign kime = 'erkek'
+              endif
+            -%}
+            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: '1', grup: 'kadin', s: s -%}
+          {%- endunless -%}
+        {%- endfor -%}
+
         <h3 class="tt-sc-grup" data-sc-grup="erkek" hidden>
           <span>{{ s.kime_erkek }}</span><span class="tt-sc-grup-sayi" data-sc-grup-sayi></span>
         </h3>
 
-        {%- for p in erkek_sirasi -%}
+        {%- for p in erkek_kol.products -%}
           {%- assign ara = ',' | append: p.id | append: ',' -%}
           {%- unless gorulen contains ara -%}
             {%- assign gorulen = gorulen | append: p.id | append: ',' -%}
@@ -389,6 +434,15 @@
     { "type": "paragraph", "content": "Kadın/Erkek ayrımı koleksiyon üyeliğine göre yapılıyor; katalogda cinsiyet alanı yok. Yeni ürün eklerken doğru koleksiyona da eklemeyi unutmayın." },
     { "type": "text", "id": "kadin_koleksiyon", "label": "Couple – kadın koleksiyonu (handle)", "default": "zaman-kapsulu-kolyeler" },
     { "type": "text", "id": "erkek_koleksiyon", "label": "Couple – erkek koleksiyonu (handle)", "default": "zaman-kapsulu-bileklik" },
+    { "type": "select", "id": "tekil_izgara", "label": "Single modunda ürün ızgarası", "default": "tema",
+      "options": [
+        { "value": "tema", "label": "Temanın kendi ızgarası (önerilen)" },
+        { "value": "kendi", "label": "Bu bölümün ızgarası" }
+      ],
+      "info": "\"Temanın kendi ızgarası\" seçiliyken Single modunda sayfa bugünkü gibi çalışır: filtreler, sıralama ve sayfalama korunur. Bu bölüm kendi ızgarasını yalnızca Couple modunda gösterir. \"Bu bölümün ızgarası\" seçilirse temanın Ürün ızgarası bölümünü kapatmanız gerekir, yoksa sayfada iki liste olur." },
+    { "type": "text", "id": "tema_izgara_secici", "label": "Temanın ızgara bölümü (CSS seçici)",
+      "default": "#shopify-section-main-collection",
+      "info": "Couple modunda gizlenir. Şablondaki bölüm kimliği değişirse burayı güncelleyin." },
     { "type": "select", "id": "single_kaynak", "label": "Single modunda listelenen ürünler", "default": "kendi",
       "options": [
         { "value": "kendi", "label": "Sayfanın kendi koleksiyonu" },
