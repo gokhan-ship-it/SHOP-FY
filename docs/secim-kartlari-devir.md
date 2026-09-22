@@ -8,10 +8,10 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 
 | Dosya | Boyut | md5 |
 |---|---|---|
-| `sections/tt-secim-kartlari.liquid` | 30.141 | `c1b346f457c39f96b1b98e3a5d8fd369` |
+| `sections/tt-secim-kartlari.liquid` | 30.895 | `f331ba5259b23fc3f01e93c2de8518c7` |
 | `snippets/tt-sc-karo.liquid` | 3.048 | `bd3847fce53aec482150767b64a9246a` |
 | `snippets/tt-sc-ikon.liquid` | 3.432 | `f8cb0504ac5d8f34e997b5e649bb5171` |
-| `assets/tt-secim-kartlari.css` | 23.940 | `36fd0eb2ca57b77d7c77a51a5d3aa853` |
+| `assets/tt-secim-kartlari.css` | 24.103 | `928f874cf41f8b6055e63345773972b7` |
 | `assets/tt-secim-kartlari.js` | 26.722 | `9548bb50a648440e88b781bb105ce5aa` |
 
 Hiçbir paylaşılan dosyaya dokunulmadı: `sections/main-collection.liquid`,
@@ -170,6 +170,25 @@ bozmamak gerekiyor. Subgrid'siz tarayıcıda `min-height: 47px`
 Renkler bölüm ayarı **değil**, CSS'te sabit — yeni ayar istenmedi.
 Geçiş süresi eklenmedi: bölümde zaten hiçbir yerde `transition` yok,
 kart seçilince bütün renkler anında değişiyor; kutu da onlarla birlikte.
+
+## Sayfa sırası
+
+| | Single | Couple |
+|---|---|---|
+| 1 | Seçim kartları | Seçim kartları |
+| 2 | *(set kutusu gizli)* | **Setini oluştur kutusu** |
+| 3 | Filtre satırı | **Filtre satırı** |
+| 4 | Ürün ızgarası | Ürün ızgarası |
+
+Filtre satırı DOM'da set kutusundan **sonra** duruyor. Couple modunda
+müşteri önce setin ne olduğunu ve kaçını seçtiğini görüyor, sonra
+listeyi süzüyor; filtre etkilediği şeyin — ızgaranın — hemen üstünde
+kalıyor. Single modunda set kutusu gizli olduğu için filtre yine
+kartların hemen altında çıkıyor, yani o görünümde hiçbir şey
+değişmiyor. Bu yüzden ne JS'e ne CSS `order`'ına gerek var: **DOM
+sırası tek başına yetiyor.** Set kutusunun `margin-top`'ı 20px, yani
+Single'da filtrenin kartlardan uzaklığıyla aynı — iki modda ilk boşluk
+birebir eşit.
 
 ## Setini oluştur kutusu
 
@@ -336,4 +355,11 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   çıkması, eşit fiyatta seçim sırasının korunması, sepete giden
   isteğin değişmediği — 360/390/430px'te.
 
-**1109/1109 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).
+- `test8.mjs` — 70 test: filtre satırının yeri. DOM sırası
+  (`compareDocumentPosition`), Couple'da filtrenin set kutusunun
+  altında olduğu, Single'a geçince kartların altına döndüğü, geri
+  dönüşte sıranın bozulmadığı, boşlukların 20px kaldığı, çip seçince
+  ızgaranın hâlâ süzüldüğü ve süzdükten sonra da sıranın korunduğu —
+  360/390/430px'te.
+
+**1179/1179 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü 5.0:1).

@@ -353,8 +353,11 @@
    "%50" rozeti slotun ustune -9px tasiyor; slot satirinin ustunde
    ilerleme cubugundan gelen 12px bosluk var, o yuzden overflow: hidden
    rozeti kesmiyor. Rozet kutunun DIS kenarina da yaklasmiyor. */
+/* 20px: Couple modunda kutu kartlarin hemen altinda, yani Single'da
+   filtrenin durdugu yerde. Iki modda ilk bosluk ayni kalsin diye
+   filtreyle ayni deger. */
 .tt-sc-set {
-  margin-top: 16px;
+  margin-top: 20px;
   overflow: hidden;
   border: 1px solid var(--tt-sc-kenar);
   border-radius: 16px;

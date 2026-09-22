@@ -242,16 +242,6 @@
         </div>
       </div>
 
-      {%- comment -%} --- Filtre satiri --- {%- endcomment -%}
-      <div class="tt-sc-filtre" data-sc-filtre>
-        <div class="tt-sc-cipler" role="radiogroup" aria-label="{{ s.kime_etiket | escape }}">
-          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="tumu"  aria-checked="true"  tabindex="0">{{ s.kime_tumu }}</button>
-          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="kadin" aria-checked="false" tabindex="-1">{{ s.kime_kadin }}</button>
-          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="erkek" aria-checked="false" tabindex="-1">{{ s.kime_erkek }}</button>
-        </div>
-        <span class="tt-sc-sayac" data-sc-sayac aria-live="polite"></span>
-      </div>
-
       {%- comment -%}
         SET OLUSTURUCU
         Yalnizca Couple modunda gorunuyor. Slotlar bos/dolu iki halde;
@@ -321,6 +311,28 @@
             </button>
           </div>
         </div>
+      </div>
+
+      {%- comment -%}
+        FILTRE SATIRI -- SET KUTUSUNUN ALTINDA
+
+        Couple modunda sira: kartlar -> set kutusu -> filtre -> izgara.
+        Musteri once setin ne oldugunu ve kaci sectigini goruyor, sonra
+        listeyi suzuyor; filtre setle izgara arasinda, yani etkiledigi
+        seyin hemen ustunde duruyor.
+
+        Single modunda set kutusu gizli oldugu icin filtre yine
+        kartlarin hemen altinda cikiyor -- o gorunumde hicbir sey
+        degismiyor. Bu yuzden JS'e ya da CSS order'ina gerek yok,
+        DOM sirasi tek basina yetiyor.
+      {%- endcomment -%}
+      <div class="tt-sc-filtre" data-sc-filtre>
+        <div class="tt-sc-cipler" role="radiogroup" aria-label="{{ s.kime_etiket | escape }}">
+          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="tumu"  aria-checked="true"  tabindex="0">{{ s.kime_tumu }}</button>
+          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="kadin" aria-checked="false" tabindex="-1">{{ s.kime_kadin }}</button>
+          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="erkek" aria-checked="false" tabindex="-1">{{ s.kime_erkek }}</button>
+        </div>
+        <span class="tt-sc-sayac" data-sc-sayac aria-live="polite"></span>
       </div>
 
       {%- comment -%}
@@ -509,6 +521,7 @@
       "info": "Bu bölüm listeyi devraldığında gizlenen öğe. Şablondaki bölüm kimliği değişirse burayı güncelleyin." },
 
     { "type": "header", "content": "Filtre satırı" },
+    { "type": "paragraph", "content": "Couple modunda filtre satırı \"Setini oluştur\" kutusunun altında, ürün ızgarasının hemen üstünde çıkıyor. Single modunda kutu gizli olduğu için kartların altında kalıyor." },
     { "type": "text", "id": "kime_etiket", "label": "Filtre grubu adı (ekran okuyucu)", "default": "Kime alıyorsun?" },
     { "type": "text", "id": "kime_tumu", "label": "Tümü", "default": "Tümü" },
     { "type": "text", "id": "kime_kadin", "label": "Kadın", "default": "Kadın" },
