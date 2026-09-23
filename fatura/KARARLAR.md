@@ -25,5 +25,7 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
     - Aynı kategoriden iki ürün tek satır çiftinde, adet 1 ile yazılır (elle de böyle kesiliyor).
     - Kargo ücreti ürün tutarının içinde faturalanır.
     - Shopify e-postayı veriyor; son 10 siparişin müşterileri Paraşüt'te e-postayla bulunamadı.
+13. **Müşteri kartları (musteri-kesif.js):** Elle açılan kartlarda e-posta boş, her faturada yeni kart açılmış. Program e-postayla arar; bulamazsa `name, email, contact_type=person, account_type=customer, tax_number=11111111111, city (Shopify province), district (Shopify city'de "/" sonrası), address, phone, is_abroad=false` ile açar. Alan adları gerçek kayıttan doğrulandı.
+14. **Aşama 2 tasarımı:** `node fatura.js --siparis 13575` ile seçilen siparişler. Onaydan önce plan gösterilir. Sıra: invoices.json'a "isleniyor" → (gerekirse) müşteri → taslak fatura → "tamam" + fatura no. Paraşüt reddederse kayıt silinir; bağlantı koparsa "isleniyor" kalır ve sonraki gerçek çalıştırma bu çözülmeden başlamaz. `ortak.js/gonder()` sadece `/contacts` ve `/sales_invoices` POST'una izin verir, `e_archives`/`e_invoices` ve kayıt güncelleme engelli.
 
 Henüz cevaplanmadı: kısmi iade durumunda ne yapılacağı.

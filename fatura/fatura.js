@@ -1,18 +1,20 @@
 #!/usr/bin/env node
-// Shopify siparişlerinden Paraşüt taslak satış faturası hazırlar.
-//
-// AŞAMA 1: Sadece deneme (--dry-run). Paraşüt'e ve Shopify'a HİÇBİR ŞEY YAZMAZ.
-// Son siparişleri okur, her biri için Paraşüt'e gönderilecek faturayı ekrana basar.
+// Shopify siparişlerinden Paraşüt TASLAK satış faturası oluşturur.
+// Resmileştirme YAPMAZ (e-arşiv / e-fatura çağrısı yok). Mevcut faturaya dokunmaz.
+// Paraşüt'e yazmadan önce ne yapacağını gösterir ve onay ister.
 //
 // Kullanım:
-//   node fatura.js --dry-run            (son 10 sipariş)
+//   node fatura.js --dry-run                    son 10 sipariş, hiçbir şey yazmaz
 //   node fatura.js --dry-run --adet 20
+//   node fatura.js --siparis 13575              tek sipariş için taslak fatura
+//   node fatura.js --siparis 13575,13576        birden fazla sipariş
+//   node fatura.js --siparis 13575 --dry-run    tek siparişin denemesi
 
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline/promises');
-const { hata, envOku, tokenAl, getir } = require('./ortak');
-const { shopifyTokenAl, sonSiparisler } = require('./shopify');
+const readline = require('readline');
+const { hata, envOku, tokenAl, getir, gonder } = require('./ortak');
+const { shopifyTokenAl, sonSiparisler, siparisGetir } = require('./shopify');
 const H = require('./hesap');
 
 const CIKTI_DOSYASI = path.join(__dirname, 'deneme-cikti.json');
@@ -25,16 +27,27 @@ const KATEGORI = {
   KZK: { ad: 'Klasik Zaman Kapsülü', tek: 'KZK-01' },
 };
 const URUN_KODLARI = ['BLK-01', 'BLK-02', 'KLY-01', 'KLY-02', 'CRM-01', 'CRM-02', 'KZK-01'];
+const TCKN_BIREYSEL = '11111111111';
 
 const turkiyeTarihi = (iso) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(new Date(iso));
 const tarihGoster = (t) => t.split('-').reverse().join('.');
 const tutar = (para) => H.tlKurus(para.shopMoney.amount);
+const oranGoster = (o) => (o / 100).toString().replace('.', ',');
 
 function argumanlar() {
   const a = process.argv.slice(2);
-  if (!a.includes('--dry-run')) {
-    hata('Şu an sadece deneme modu var. Şöyle çalıştırın:\n  node fatura.js --dry-run\n\nGerçek fatura kesme (Aşama 2) henüz yazılmadı.');
+  const deneme = a.includes('--dry-run');
+  let siparisler = null;
+  const s = a.indexOf('--siparis');
+  if (s >= 0) {
+    const liste = (a[s + 1] || '').split(',').map((x) => x.trim().replace(/^#/, '')).filter(Boolean);
+    if (!liste.length || liste.some((x) => !/^\d+$/.test(x))) hata('--siparis sonrasına sipariş numarası yazın. Örnek: --siparis 13575');
+    if (liste.length > 20) hata('Şimdilik en fazla 20 sipariş birden işlenebilir.');
+    siparisler = liste.map((x) => `#${x}`);
+  }
+  if (!deneme && !siparisler) {
+    hata('Nasıl çalıştırılır:\n  node fatura.js --dry-run            (deneme, hiçbir şey yazmaz)\n  node fatura.js --siparis 13575     (tek sipariş için taslak fatura)');
   }
   let adet = 10;
   const i = a.indexOf('--adet');
@@ -42,28 +55,35 @@ function argumanlar() {
     adet = Number(a[i + 1]);
     if (!Number.isInteger(adet) || adet < 1 || adet > 250) hata('--adet 1 ile 250 arasında bir sayı olmalı.');
   }
-  return { adet };
+  return { deneme, siparisler, adet };
+}
+
+// Tüm çalıştırma boyunca tek bir okuyucu (yapıştırılan cevaplar kaybolmasın diye).
+const rl = readline.createInterface({ input: process.stdin });
+const satirOkuyucu = rl[Symbol.asyncIterator]();
+async function sor(metin) {
+  process.stdout.write(metin);
+  const { value, done } = await satirOkuyucu.next();
+  if (done) hata('Cevap alınamadı, işlem durduruldu.');
+  return value.trim();
 }
 
 async function oranSor() {
-  const rl = readline.createInterface({ input: process.stdin });
-  const satirlar = rl[Symbol.asyncIterator]();
-  const sor = async (metin) => {
-    process.stdout.write(metin);
-    const { value, done } = await satirlar.next();
-    if (done) hata('Cevap alınamadı, işlem durduruldu.');
-    return value;
-  };
-  try {
-    for (;;) {
-      const oran = H.oranOku(await sor('Bu çalıştırmada uygulanacak işçilik oranı (%)? Örnek: 5 veya 4,5 → '));
-      if (oran === null) { console.log('  Geçerli bir oran yazın (örnek: 5 veya 4,5).'); continue; }
-      const onay = (await sor(`  Oran %${(oran / 100).toString().replace('.', ',')} olarak uygulanacak. Doğru mu? [e/h] `)).trim().toLowerCase();
-      if (onay === 'e') return oran;
-    }
-  } finally {
-    rl.close();
+  for (;;) {
+    const oran = H.oranOku(await sor('Bu çalıştırmada uygulanacak işçilik oranı (%)? Örnek: 5 veya 4,5 → '));
+    if (oran === null) { console.log('  Geçerli bir oran yazın (örnek: 5 veya 4,5).'); continue; }
+    if ((await sor(`  Oran %${oranGoster(oran)} olarak uygulanacak. Doğru mu? [e/h] `)).toLowerCase() === 'e') return oran;
   }
+}
+
+// Kayıt defteri (Katman 1). Her yazmada dosya baştan, güvenli şekilde yazılır.
+function kayitOku() {
+  return fs.existsSync(KAYIT_DOSYASI) ? JSON.parse(fs.readFileSync(KAYIT_DOSYASI, 'utf8')) : {};
+}
+function kayitYaz(kayit) {
+  const gecici = KAYIT_DOSYASI + '.yeni';
+  fs.writeFileSync(gecici, JSON.stringify(kayit, null, 2));
+  fs.renameSync(gecici, KAYIT_DOSYASI);
 }
 
 // Bir siparişi fatura taslağına çevirir. Atlanacaksa { atla: 'sebep' } döner.
@@ -152,14 +172,52 @@ function faturaJson(s, h, urunId, musteriId) {
   };
 }
 
+// Shopify fatura adresinden Paraşüt müşteri kartı. Alan adları gerçek bir Paraşüt
+// müşteri kaydından doğrulandı (musteri-kesif.js).
+function musteriJson(s) {
+  const b = s.billingAddress || {};
+  const ad = [b.firstName, b.lastName].filter(Boolean).join(' ').trim() || b.company || s.email;
+  const sehirMetni = (b.city || '').trim();
+  const ilce = sehirMetni.includes('/') ? sehirMetni.split('/').slice(1).join('/').trim() : sehirMetni;
+  const adres = [b.address1, b.address2, b.zip].filter(Boolean).join(' ').trim();
+  return {
+    data: {
+      type: 'contacts',
+      attributes: {
+        name: ad,
+        email: s.email,
+        contact_type: 'person',
+        account_type: 'customer',
+        tax_number: TCKN_BIREYSEL,
+        city: (b.province || sehirMetni.split('/')[0] || '').trim(),
+        district: ilce,
+        address: adres,
+        phone: b.phone || s.phone || null,
+        is_abroad: false,
+      },
+    },
+  };
+}
+
 async function main() {
-  const { adet } = argumanlar();
+  const { deneme, siparisler: istenen, adet } = argumanlar();
   H.kendiniSina();
-  console.log('Hesap testi geçti (1.898 / 2.199 / 2.299 TL örnekleri).\n');
+  console.log('Hesap testi geçti (1.898 / 2.199 / 2.299 TL örnekleri).');
+  console.log(deneme ? 'MOD: DENEME — Paraşüt\'e hiçbir şey yazılmayacak.\n' : 'MOD: GERÇEK — onayınızdan sonra Paraşüt\'te TASLAK fatura oluşturulacak.\n');
 
   const env = envOku();
   const eslesme = JSON.parse(fs.readFileSync(path.join(__dirname, 'urun-kodlari.json'), 'utf8'));
-  const kayit = fs.existsSync(KAYIT_DOSYASI) ? JSON.parse(fs.readFileSync(KAYIT_DOSYASI, 'utf8')) : {};
+  const kayit = kayitOku();
+
+  // Katman 1: yarıda kalmış kayıt varsa hiçbir şey yapma, kullanıcıya göster.
+  const takili = Object.entries(kayit).filter(([, v]) => v.durum === 'isleniyor');
+  if (takili.length && !deneme) {
+    console.log('DİKKAT: Önceki bir çalıştırmada yarıda kalmış siparişler var:');
+    for (const [no, v] of takili) console.log(`  ${no} (${v.zaman}) — ${v.not || 'fatura oluşup oluşmadığı bilinmiyor'}`);
+    console.log('\nBu siparişlerin Paraşüt\'te faturası oluşmuş mu, elle kontrol edin.');
+    console.log('Kontrol ettikten sonra invoices.json dosyasında bu satırları Claude ile birlikte düzeltin.\n');
+    hata('Yarıda kalmış kayıtlar çözülmeden gerçek fatura kesilmez.');
+  }
 
   const oran = await oranSor();
 
@@ -177,10 +235,20 @@ async function main() {
 
   console.log('Shopify\'a giriş yapılıyor...');
   const stoken = await shopifyTokenAl(env);
-  const siparisler = await sonSiparisler(env, stoken, adet);
-  console.log(`Son ${siparisler.length} sipariş okundu.\n`);
+  let siparisler;
+  if (istenen) {
+    siparisler = [];
+    for (const no of istenen) {
+      const s = await siparisGetir(env, stoken, no);
+      if (!s) hata(`Shopify'da ${no} numaralı sipariş bulunamadı. Hiçbir şey yapılmadı.`);
+      siparisler.push(s);
+    }
+  } else {
+    siparisler = await sonSiparisler(env, stoken, adet);
+  }
+  console.log(`${siparisler.length} sipariş okundu.\n`);
 
-  // Katman 2: bu tarihlerde Paraşüt'te kesilmiş faturaların açıklamalarını oku.
+  // Katman 2: bu tarihlerde Paraşüt'teki faturaların açıklamalarını oku.
   const tarihler = [...new Set(siparisler.map((s) => turkiyeTarihi(s.createdAt)))];
   const parasutAciklamalar = [];
   const gunlukFatura = {};
@@ -198,33 +266,22 @@ async function main() {
     } while (sayfa <= toplamSayfa);
   }
 
-  const hazir = [];
+  // Her sipariş için planı hazırla (henüz hiçbir şey yazılmaz).
+  const plan = [];
   const atlanan = [];
   let sira = 0;
   for (const s of siparisler) {
     sira++;
-    const baslik = `[${sira}/${siparisler.length}] ${s.name} — ${tarihGoster(turkiyeTarihi(s.createdAt))} — ${H.tlGoster(tutar(s.currentTotalPriceSet))} TL`;
     console.log('─'.repeat(70));
-    console.log(baslik);
+    console.log(`[${sira}/${siparisler.length}] ${s.name} — ${tarihGoster(turkiyeTarihi(s.createdAt))} — ${H.tlGoster(tutar(s.currentTotalPriceSet))} TL`);
+    const atla = (sebep) => { console.log(`  ATLANDI: ${sebep}`); atlanan.push({ siparis: s.name, sebep }); };
 
-    if (kayit[s.name]) {
-      console.log(`  ATLANDI: yerel kayıtta var (durum: ${kayit[s.name].durum})`);
-      atlanan.push({ siparis: s.name, sebep: 'yerel kayıtta zaten var' });
-      continue;
-    }
+    if (kayit[s.name]) { atla(`yerel kayıtta var (durum: ${kayit[s.name].durum}${kayit[s.name].fatura_id ? ', fatura no ' + kayit[s.name].fatura_id : ''})`); continue; }
     const noDeseni = new RegExp(`${s.name.replace(/[^\w#]/g, '')}(?!\\d)`);
-    if (parasutAciklamalar.some((a) => noDeseni.test(a))) {
-      console.log('  ATLANDI: Paraşüt\'te açıklamasında bu sipariş no geçen fatura var');
-      atlanan.push({ siparis: s.name, sebep: 'Paraşüt\'te zaten faturası var' });
-      continue;
-    }
+    if (parasutAciklamalar.some((a) => noDeseni.test(a))) { atla('Paraşüt\'te açıklamasında bu sipariş no geçen fatura var'); continue; }
 
     const h = siparisiHesapla(s, eslesme, oran);
-    if (h.atla) {
-      console.log(`  ATLANDI: ${h.atla}`);
-      atlanan.push({ siparis: s.name, sebep: h.atla });
-      continue;
-    }
+    if (h.atla) { atla(h.atla); continue; }
 
     for (const kat of Object.keys(h.gruplar)) {
       const g = h.gruplar[kat];
@@ -237,32 +294,119 @@ async function main() {
     }
     console.log(`  Fatura toplamı: ${H.tlGoster(h.faturaToplam)} TL = Shopify tutarı ✓`);
 
-    let musteriId = '(Aşama 2\'de belirlenecek)';
-    if (s.email) {
-      const c = await getir(ptoken, `https://api.parasut.com/v4/${firma}/contacts?filter[email]=${encodeURIComponent(s.email)}`);
-      if (c.data.length === 1) { musteriId = c.data[0].id; console.log(`  Müşteri: Paraşüt'te e-postayla bulundu (no: ${musteriId})`); }
-      else if (c.data.length > 1) { console.log(`  Müşteri: Paraşüt'te bu e-postayla ${c.data.length} kayıt var — Aşama 2'de elle seçilmeli`); }
-      else console.log('  Müşteri: Paraşüt\'te yok, Aşama 2\'de yeni açılacak (TCKN 11111111111)');
+    if (!s.email) { atla('siparişte e-posta yok, müşteri eşleştirilemez'); continue; }
+    const c = await getir(ptoken, `https://api.parasut.com/v4/${firma}/contacts?filter[email]=${encodeURIComponent(s.email)}`);
+    const eslesen = c.data.filter((k) => (k.attributes.email || '').toLowerCase() === s.email.toLowerCase());
+    let musteriId = null;
+    let yeniMusteri = null;
+    if (eslesen.length > 1) { atla(`Paraşüt'te bu e-postayla ${eslesen.length} müşteri var, hangisi olduğu belli değil`); continue; }
+    if (eslesen.length === 1) {
+      musteriId = eslesen[0].id;
+      console.log(`  Müşteri: Paraşüt'te mevcut (no: ${musteriId})`);
     } else {
-      console.log('  Müşteri: Shopify e-posta vermedi (izin eksik olabilir)');
+      yeniMusteri = musteriJson(s);
+      const m = yeniMusteri.data.attributes;
+      console.log(`  Müşteri: YENİ açılacak — TCKN ${m.tax_number}, il: ${m.city || '(boş)'}, ilçe: ${m.district || '(boş)'}`);
     }
-
-    const json = faturaJson(s, h, urunId, musteriId);
-    console.log('  Paraşüt\'e gidecek fatura:');
-    console.log(JSON.stringify(json, null, 2).split('\n').map((l) => '    ' + l).join('\n'));
-    hazir.push({ siparis: s.name, tutar: H.kurusYaz(h.siparisToplam), fatura: json });
+    plan.push({ s, h, musteriId, yeniMusteri });
   }
 
   console.log('═'.repeat(70));
-  console.log('ÖZET (deneme — Paraşüt\'e hiçbir şey yazılmadı)');
-  console.log(`  Oran: %${(oran / 100).toString().replace('.', ',')}`);
-  for (const t of tarihler) console.log(`  ${tarihGoster(t)} tarihinde Paraşüt'te zaten ${gunlukFatura[t]} fatura var`);
-  console.log(`  Kesilebilecek taslak fatura: ${hazir.length}`);
-  console.log(`  Atlanacak: ${atlanan.length}`);
-  for (const a of atlanan) console.log(`    ${a.siparis}: ${a.sebep}`);
+  console.log(`Oran: %${oranGoster(oran)}`);
+  for (const t of tarihler) console.log(`${tarihGoster(t)} tarihinde Paraşüt'te zaten ${gunlukFatura[t]} fatura var`);
+  console.log(`Kesilecek taslak fatura: ${plan.length}`);
+  console.log(`Atlanacak: ${atlanan.length}`);
+  for (const a of atlanan) console.log(`  ${a.siparis}: ${a.sebep}`);
+  const yeniSayisi = plan.filter((p) => p.yeniMusteri).length;
+  if (yeniSayisi) console.log(`Açılacak yeni müşteri kartı: ${yeniSayisi}`);
 
-  fs.writeFileSync(CIKTI_DOSYASI, JSON.stringify({ oran: oran / 100, hazir, atlanan }, null, 2));
-  console.log(`\nAyrıntılar şu dosyaya kaydedildi: ${CIKTI_DOSYASI}\n`);
+  if (deneme) {
+    const hazir = plan.map((p) => ({ siparis: p.s.name, tutar: H.kurusYaz(p.h.siparisToplam), fatura: faturaJson(p.s, p.h, urunId, p.musteriId || '(yeni müşteri)') }));
+    fs.writeFileSync(CIKTI_DOSYASI, JSON.stringify({ oran: oran / 100, hazir, atlanan }, null, 2));
+    console.log(`\nDENEME — Paraşüt'e hiçbir şey yazılmadı. Ayrıntılar: ${CIKTI_DOSYASI}\n`);
+    rl.close();
+    return;
+  }
+  if (!plan.length) { console.log('\nKesilecek fatura yok.\n'); rl.close(); return; }
+
+  console.log(`\nTahmini süre: ~${Math.ceil((plan.length * 3 * 1.3) / 60)} dakika`);
+  const onay = await sor(`\n${plan.length} TASLAK fatura Paraşüt'te oluşturulsun mu? (Resmileştirme yapılmaz.) [e/h] `);
+  rl.close();
+  if (onay.toLowerCase() !== 'e') { console.log('\nİptal edildi. Paraşüt\'e hiçbir şey yazılmadı.\n'); return; }
+
+  const sonuc = { tamam: [], hata: [], belirsiz: [] };
+  let i = 0;
+  for (const p of plan) {
+    i++;
+    const no = p.s.name;
+    process.stdout.write(`${i} / ${plan.length} — ${no}... `);
+
+    // Önce "isleniyor" olarak kaydet, sonra yaz (kopan bağlantıda mükerrer fatura olmasın).
+    kayit[no] = { durum: 'isleniyor', zaman: new Date().toISOString(), tutar: H.kurusYaz(p.h.siparisToplam) };
+    kayitYaz(kayit);
+
+    let musteriId = p.musteriId;
+    if (!musteriId) {
+      const r = await gonder(ptoken, `https://api.parasut.com/v4/${firma}/contacts`, p.yeniMusteri);
+      if (r.reddedildi) {
+        delete kayit[no]; kayitYaz(kayit);
+        console.log('HATA (müşteri açılamadı)'); console.log(`   ${r.mesaj}`);
+        sonuc.hata.push({ no, sebep: 'müşteri açılamadı' });
+        continue;
+      }
+      if (r.belirsiz) {
+        kayit[no].not = 'müşteri kartı açılırken bağlantı koptu, fatura oluşturulmadı';
+        kayitYaz(kayit);
+        console.log('BELİRSİZ (bağlantı sorunu)');
+        sonuc.belirsiz.push({ no, sebep: r.mesaj });
+        continue;
+      }
+      musteriId = r.veri.data.id;
+      kayit[no].musteri_id = musteriId;
+      kayitYaz(kayit);
+    }
+
+    const r = await gonder(ptoken, `https://api.parasut.com/v4/${firma}/sales_invoices`, faturaJson(p.s, p.h, urunId, musteriId));
+    if (r.reddedildi) {
+      delete kayit[no]; kayitYaz(kayit);
+      console.log('HATA (Paraşüt faturayı kabul etmedi)'); console.log(`   ${r.mesaj}`);
+      sonuc.hata.push({ no, sebep: 'Paraşüt faturayı kabul etmedi' });
+      continue;
+    }
+    if (r.belirsiz) {
+      kayit[no].not = 'fatura gönderilirken bağlantı koptu — Paraşüt\'te oluşmuş olabilir';
+      kayitYaz(kayit);
+      console.log('BELİRSİZ (bağlantı sorunu)');
+      sonuc.belirsiz.push({ no, sebep: r.mesaj });
+      continue;
+    }
+
+    const f = r.veri.data;
+    const parasutToplam = H.tlKurus(Number(f.attributes.net_total).toFixed(2));
+    kayit[no] = { ...kayit[no], durum: 'tamam', fatura_id: f.id, parasut_toplam: H.kurusYaz(parasutToplam) };
+    delete kayit[no].not;
+    kayitYaz(kayit);
+    if (parasutToplam !== p.h.siparisToplam) {
+      console.log(`tamam AMA TUTAR FARKLI: Paraşüt ${H.tlGoster(parasutToplam)} / Shopify ${H.tlGoster(p.h.siparisToplam)} — taslağı kontrol edin (fatura no ${f.id})`);
+      sonuc.tamam.push({ no, id: f.id, uyari: true });
+    } else {
+      console.log(`tamam (Paraşüt no ${f.id}, ${H.tlGoster(parasutToplam)} TL)`);
+      sonuc.tamam.push({ no, id: f.id });
+    }
+  }
+
+  console.log('═'.repeat(70));
+  console.log('ÖZET');
+  console.log(`  Oluşturulan taslak fatura: ${sonuc.tamam.length}`);
+  const uyarili = sonuc.tamam.filter((x) => x.uyari);
+  if (uyarili.length) console.log(`  Tutarı farklı çıkan (kontrol edin): ${uyarili.map((x) => x.no).join(', ')}`);
+  console.log(`  Paraşüt'ün kabul etmediği: ${sonuc.hata.length}${sonuc.hata.length ? ' — ' + sonuc.hata.map((x) => x.no).join(', ') : ''}`);
+  if (sonuc.belirsiz.length) {
+    console.log(`  BELİRSİZ (Paraşüt'te elle kontrol edin): ${sonuc.belirsiz.map((x) => x.no).join(', ')}`);
+  }
+  console.log(`  Atlanan: ${atlanan.length}`);
+  for (const a of atlanan) console.log(`    ${a.siparis}: ${a.sebep}`);
+  console.log('\nTaslaklar Paraşüt\'te "Satışlar > Faturalar" altında. Resmileştirmeyi oradan elle yapın.\n');
 }
 
 main().catch((e) => hata(e.message));

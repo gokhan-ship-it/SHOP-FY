@@ -1,4 +1,4 @@
-// Paraşüt'e bağlanmak için ortak yardımcılar. SADECE OKUMA (GET) içerir.
+// Paraşüt'e bağlanmak için ortak yardımcılar. Okuma: getir(). Yazma: sadece gonder().
 // Token'lar ekrana basılmaz, dosyaya yazılmaz.
 
 const fs = require('fs');
@@ -68,4 +68,39 @@ async function getir(token, url) {
   hata('Paraşüt art arda hız limiti hatası verdi, biraz sonra tekrar deneyin.');
 }
 
-module.exports = { hata, envOku, tokenAl, getir };
+// Paraşüt'e YAZAN tek fonksiyon. Sadece müşteri ve taslak satış faturası oluşturabilir.
+// Resmileştirme (e_archives / e_invoices) ve mevcut kayda dokunan her şey burada engellenir.
+const IZINLI_YAZMA = /^https:\/\/api\.parasut\.com\/v4\/\d+\/(contacts|sales_invoices)$/;
+
+async function gonder(token, url, govde) {
+  if (!IZINLI_YAZMA.test(url) || /e_archives|e_invoices/.test(url)) {
+    hata(`GÜVENLİK: izin verilmeyen yazma isteği engellendi: ${url}`);
+  }
+  if (govde && govde.data && govde.data.id) hata('GÜVENLİK: mevcut bir kaydı değiştirme isteği engellendi.');
+  for (let deneme = 1; deneme <= 5; deneme++) {
+    await bekle(BEKLEME_MS);
+    let cevap;
+    try {
+      cevap = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(govde),
+      });
+    } catch (e) {
+      // Bağlantı koptu: kayıt oluşmuş da olabilir, oluşmamış da. Tekrar DENEMEZ.
+      return { belirsiz: true, mesaj: e.message };
+    }
+    if (cevap.status === 429) {
+      console.log('  Paraşüt "yavaşla" dedi, 10 saniye bekleniyor...');
+      await bekle(10000);
+      continue;
+    }
+    const metin = await cevap.text();
+    if (cevap.ok) return { ok: true, veri: JSON.parse(metin) };
+    if (cevap.status >= 500) return { belirsiz: true, mesaj: `durum kodu ${cevap.status}: ${metin}` };
+    return { reddedildi: true, mesaj: `durum kodu ${cevap.status}: ${metin}` };
+  }
+  return { reddedildi: true, mesaj: 'art arda hız limiti hatası' };
+}
+
+module.exports = { hata, envOku, tokenAl, getir, gonder };

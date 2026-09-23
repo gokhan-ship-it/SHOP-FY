@@ -64,4 +64,12 @@ async function sonSiparisler(env, token, adet) {
   return veri.orders.nodes;
 }
 
-module.exports = { shopifyTokenAl, sonSiparisler };
+// "#13575" → o sipariş (bulunamazsa null)
+async function siparisGetir(env, token, ad) {
+  const veri = await sorgu(env, token,
+    `query($q: String!) { orders(first: 5, query: $q) { nodes { ${SIPARIS_ALANLARI} } } }`,
+    { q: `name:${ad}` });
+  return veri.orders.nodes.find((s) => s.name === ad) || null;
+}
+
+module.exports = { shopifyTokenAl, sonSiparisler, siparisGetir };
