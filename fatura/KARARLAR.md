@@ -35,6 +35,7 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
 19. **Aşama 3:** `--tarih YYYY-MM-DD` / `--dun` ile günün tüm siparişleri (Türkiye saati, Shopify'dan 50'şer sayfa). Toplu modda her sipariş tek satır, yazmadan önce CLAUDE.md formatında özet + onay, "i / N — #no... tamam" ilerleme, sonda `raporlar/` altına JSON rapor. `--elle-kesildi 13565,13566` elle kesilen siparişi yerel kayda "elle" olarak ekler.
 20. **Müşteri kartına yer tutucu e-posta:** Kullanıcı resmileştirirken her faturaya elle "hatalı" e-posta yazıyor (Paraşüt e-posta istiyor) ve vakit kaybediyor; müşteri e-postasının bozulmuş hâlini (ör. `gokha.n43@gmail.com`) önerdi. Gmail noktaları yok saydığı için bu gerçek müşteriye gider; harf değiştirmek başka bir kişiye denk gelebilir. Bunun yerine `siparis-<no>@example.com` yazılır (RFC 2606 ayrılmış alan adı, e-posta alamaz). Mükerrer kart kontrolü yine `musteriler.json` ile.
 21. **İlk toplu çalıştırma (23.09.2026):** `--tarih 2026-09-19:2026-09-23` → 34 taslak oluşturuldu, 0 red, 0 tutar farkı. Atlanan 6: #13537–#13539 (elle), #13569/#13572/#13573 (önceden programla). 19.09'da Paraşüt'teki 3 fatura elle kesilen #13537–#13539 ile örtüşüyor.
+22. **Resmileştirme (23.09.2026):** Kullanıcı 37 taslağın hepsini e-Arşiv olarak resmileştirdi (Paraşüt: "GÖNDERİLDİ (ENTEGRATÖR)"). Program günlük kullanıma geçti; kılavuz `KULLANIM.md`.
 
 Henüz cevaplanmadı (bu siparişler şimdilik otomatik atlanıp raporlanıyor):
 - Kısmi iade / sonradan değiştirilmiş sipariş
