@@ -34,5 +34,10 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
 18. **Başlangıç: #13540 (güncellendi).** Önce 23.09.2026 seçildi; sonra kullanıcı elle kesilen son faturanın #13539'a (19.09.2026) ait olduğunu, #13540–#13566 arasının hiç kesilmediğini bildirdi. `BASLANGIC_SIPARIS = 13540`, `BASLANGIC_TARIHI = 2026-09-19`. #13539 ve öncesine program fatura kesmez. `--tarih 2026-09-19:2026-09-23` ile birden fazla gün işlenebilir.
 19. **Aşama 3:** `--tarih YYYY-MM-DD` / `--dun` ile günün tüm siparişleri (Türkiye saati, Shopify'dan 50'şer sayfa). Toplu modda her sipariş tek satır, yazmadan önce CLAUDE.md formatında özet + onay, "i / N — #no... tamam" ilerleme, sonda `raporlar/` altına JSON rapor. `--elle-kesildi 13565,13566` elle kesilen siparişi yerel kayda "elle" olarak ekler.
 20. **Müşteri kartına yer tutucu e-posta:** Kullanıcı resmileştirirken her faturaya elle "hatalı" e-posta yazıyor (Paraşüt e-posta istiyor) ve vakit kaybediyor; müşteri e-postasının bozulmuş hâlini (ör. `gokha.n43@gmail.com`) önerdi. Gmail noktaları yok saydığı için bu gerçek müşteriye gider; harf değiştirmek başka bir kişiye denk gelebilir. Bunun yerine `siparis-<no>@example.com` yazılır (RFC 2606 ayrılmış alan adı, e-posta alamaz). Mükerrer kart kontrolü yine `musteriler.json` ile.
+21. **İlk toplu çalıştırma (23.09.2026):** `--tarih 2026-09-19:2026-09-23` → 34 taslak oluşturuldu, 0 red, 0 tutar farkı. Atlanan 6: #13537–#13539 (elle), #13569/#13572/#13573 (önceden programla). 19.09'da Paraşüt'teki 3 fatura elle kesilen #13537–#13539 ile örtüşüyor.
 
-Henüz cevaplanmadı: kısmi iade durumunda ne yapılacağı.
+Henüz cevaplanmadı (bu siparişler şimdilik otomatik atlanıp raporlanıyor):
+- Kısmi iade / sonradan değiştirilmiş sipariş
+- Hazır couple setleri ("Luna + Aurora" gibi tek varyantta iki kategori)
+- Hem bileklik hem kolye olup kargo ücreti alınmış sipariş (kargo hangi gruba?)
+- CLAUDE.md'deki belirsiz ürünler (hediye kutusu, ek paket, event, künye)
