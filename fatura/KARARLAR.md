@@ -30,5 +30,8 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
 15. **İlk gerçek taslak (23.09.2026):** #13572 → Paraşüt'te "Shopify #13572" taslağı; 79,0833 / 1.803,10 / KDV 15,82 / genel toplam 1.898,00 — 177 no'lu faturayla birebir aynı.
     - Hata: Shopify'ın `province` alanı güvenilmez (Kocaeli → "Istanbul", Adana → "Gaziantep"). Düzeltme: `iller.js` — müşterinin yazdığı şehir 81 ilden biriyse il o, değilse province; kalan kısım ilçe. #13572'nin müşteri kartındaki il kullanıcı tarafından Paraşüt'te elle Kocaeli yapılmalı (kod mevcut kayda dokunmaz).
 16. **Müşteri e-postası Paraşüt'e yazılmaz (kullanıcı talebi):** Müşteriler fatura e-postası istemiyor, fatura kutuda gidiyor. Kullanıcı "hatalı e-posta girelim" dedi; bunun yerine alan hiç doldurulmuyor (elle açılan kartlarla aynı, uydurma adres başkasına ait olabilir). Mükerrer müşteri kartını `musteriler.json` önler: Shopify e-postasının SHA-256 özeti → Paraşüt müşteri no. #13572 için açılan kartta e-posta var; kullanıcı resmileştirmeden önce elle silmeli.
+17. **İkinci gerçek deneme (23.09.2026):** #13569 (bileklik + kolye, 4 satır, 3.348,50) ve #13573 (Hakkari/Şemdinli, 2.399,00) taslakları doğru oluştu.
+18. **Başlangıç tarihi: 23.09.2026 (kullanıcı seçimi A).** Bu tarihten önceki siparişlere program fatura kesmez (`BASLANGIC_TARIHI`). Kullanıcı bu tarihten sonra elle kesmeyi bırakır.
+19. **Aşama 3:** `--tarih YYYY-MM-DD` / `--dun` ile günün tüm siparişleri (Türkiye saati, Shopify'dan 50'şer sayfa). Toplu modda her sipariş tek satır, yazmadan önce CLAUDE.md formatında özet + onay, "i / N — #no... tamam" ilerleme, sonda `raporlar/` altına JSON rapor. `--elle-kesildi 13565,13566` elle kesilen siparişi yerel kayda "elle" olarak ekler.
 
 Henüz cevaplanmadı: kısmi iade durumunda ne yapılacağı.

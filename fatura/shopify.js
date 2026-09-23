@@ -72,4 +72,23 @@ async function siparisGetir(env, token, ad) {
   return veri.orders.nodes.find((s) => s.name === ad) || null;
 }
 
-module.exports = { shopifyTokenAl, sonSiparisler, siparisGetir };
+// "2026-09-24" → o gün (Türkiye saati, UTC+3) oluşturulan tüm siparişler, sayfa sayfa.
+async function gunSiparisleri(env, token, tarih) {
+  const ertesi = new Date(Date.parse(`${tarih}T12:00:00+03:00`) + 86400000).toISOString().slice(0, 10);
+  const q = `created_at:>='${tarih}T00:00:00+03:00' AND created_at:<'${ertesi}T00:00:00+03:00'`;
+  const hepsi = [];
+  let imlec = null;
+  for (;;) {
+    const veri = await sorgu(env, token,
+      `query($q: String!, $after: String) { orders(first: 50, query: $q, after: $after, sortKey: CREATED_AT) {
+         pageInfo { hasNextPage endCursor } nodes { ${SIPARIS_ALANLARI} } } }`,
+      { q, after: imlec });
+    hepsi.push(...veri.orders.nodes);
+    if (!veri.orders.pageInfo.hasNextPage) break;
+    imlec = veri.orders.pageInfo.endCursor;
+    process.stdout.write(`  ${hepsi.length} sipariş okundu...\r`);
+  }
+  return hepsi;
+}
+
+module.exports = { shopifyTokenAl, sonSiparisler, siparisGetir, gunSiparisleri };
