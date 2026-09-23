@@ -11,6 +11,7 @@
 //   node fatura.js --siparis 13575 --dry-run    tek siparişin denemesi
 //   node fatura.js --dun                        dünün tüm siparişleri
 //   node fatura.js --tarih 2026-09-24           o günün tüm siparişleri
+//   node fatura.js --tarih 2026-09-19:2026-09-22   birden fazla gün
 //   node fatura.js --tarih 2026-09-24 --dry-run
 //   node fatura.js --elle-kesildi 13565,13566   bu siparişleri elle kestim, program atlasın
 
@@ -38,8 +39,11 @@ const KATEGORI = {
 };
 const URUN_KODLARI = ['BLK-01', 'BLK-02', 'KLY-01', 'KLY-02', 'CRM-01', 'CRM-02', 'KZK-01'];
 const TCKN_BIREYSEL = '11111111111';
-// Bu tarihten önceki siparişler elle faturalandı; program onlara fatura kesmez.
-const BASLANGIC_TARIHI = '2026-09-23';
+// Elle kesilen son fatura #13539'a ait (19.09.2026). Program #13540 ve sonrasını keser;
+// öncesine hiçbir koşulda fatura kesmez.
+const BASLANGIC_SIPARIS = 13540;
+const BASLANGIC_TARIHI = '2026-09-19';
+const siparisNo = (ad) => Number(String(ad).replace(/\D/g, ''));
 
 const turkiyeTarihi = (iso) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(new Date(iso));
@@ -58,20 +62,25 @@ function argumanlar() {
     if (liste.length > 20) hata('Şimdilik en fazla 20 sipariş birden işlenebilir.');
     siparisler = liste.map((x) => `#${x}`);
   }
-  let tarih = null;
+  let tarih = null; // { bas, bit }
   const t = a.indexOf('--tarih');
   if (t >= 0) {
-    tarih = a[t + 1] || '';
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(tarih) || Number.isNaN(Date.parse(tarih))) hata('Tarihi yıl-ay-gün yazın. Örnek: --tarih 2026-09-24');
+    const [bas, bit = bas] = (a[t + 1] || '').split(':');
+    const gecerli = (x) => /^\d{4}-\d{2}-\d{2}$/.test(x) && !Number.isNaN(Date.parse(x));
+    if (!gecerli(bas) || !gecerli(bit)) hata('Tarihi yıl-ay-gün yazın. Örnek: --tarih 2026-09-24 veya --tarih 2026-09-19:2026-09-22');
+    if (bit < bas) hata('Bitiş tarihi başlangıçtan önce olamaz.');
+    tarih = { bas, bit };
   }
   if (a.includes('--dun')) {
     const bugun = turkiyeTarihi(new Date().toISOString());
-    tarih = turkiyeTarihi(new Date(Date.parse(bugun + 'T12:00:00+03:00') - 86400000).toISOString());
+    const dun = turkiyeTarihi(new Date(Date.parse(bugun + 'T12:00:00+03:00') - 86400000).toISOString());
+    tarih = { bas: dun, bit: dun };
   }
   if (tarih && siparisler) hata('--tarih/--dun ile --siparis birlikte kullanılamaz.');
   if (tarih) {
-    if (tarih < BASLANGIC_TARIHI) hata(`${tarihGoster(tarih)} başlangıç tarihinden (${tarihGoster(BASLANGIC_TARIHI)}) önce. O günün faturaları elle kesildi, program kesmez.`);
-    if (tarih > turkiyeTarihi(new Date().toISOString())) hata(`${tarihGoster(tarih)} henüz gelmedi.`);
+    if (tarih.bas < BASLANGIC_TARIHI) hata(`${tarihGoster(tarih.bas)} başlangıç tarihinden (${tarihGoster(BASLANGIC_TARIHI)}) önce. O günlerin faturaları elle kesildi, program kesmez.`);
+    if (tarih.bit > turkiyeTarihi(new Date().toISOString())) hata(`${tarihGoster(tarih.bit)} henüz gelmedi.`);
+    if ((Date.parse(tarih.bit) - Date.parse(tarih.bas)) / 86400000 > 31) hata('En fazla 31 günlük aralık işlenebilir.');
   }
   if (!deneme && !siparisler && !tarih) {
     hata('Nasıl çalıştırılır:\n  node fatura.js --dun                 (dünün siparişleri)\n  node fatura.js --tarih 2026-09-24    (o günün siparişleri)\n  node fatura.js --siparis 13575       (tek sipariş)\n  Sonuna --dry-run eklerseniz hiçbir şey yazmadan dener.');
@@ -214,7 +223,10 @@ function musteriJson(s) {
       type: 'contacts',
       attributes: {
         name: ad,
-        // email bilerek yazılmaz: müşteriye Paraşüt'ten fatura e-postası gitmesin.
+        // Müşterinin gerçek e-postası bilerek yazılmaz: müşteriye fatura e-postası gitmesin.
+        // example.com e-posta almak için hiçbir zaman kullanılamayan, ayrılmış bir alan adıdır
+        // (RFC 2606); bu adrese giden e-posta kimseye ulaşmaz.
+        email: `siparis-${siparisNo(s.name)}@example.com`,
         contact_type: 'person',
         account_type: 'customer',
         tax_number: TCKN_BIREYSEL,
@@ -294,7 +306,10 @@ async function main() {
       siparisler.push(s);
     }
   } else if (tarih) {
-    siparisler = (await gunSiparisleri(env, stoken, tarih)).filter((s) => turkiyeTarihi(s.createdAt) === tarih);
+    siparisler = [];
+    for (let g = tarih.bas; g <= tarih.bit; g = turkiyeTarihi(new Date(Date.parse(g + 'T12:00:00+03:00') + 86400000).toISOString())) {
+      siparisler.push(...(await gunSiparisleri(env, stoken, g)).filter((s) => turkiyeTarihi(s.createdAt) === g));
+    }
   } else {
     siparisler = await sonSiparisler(env, stoken, adet);
   }
@@ -332,7 +347,7 @@ async function main() {
       atlanan.push({ siparis: s.name, sebep });
     };
 
-    if (turkiyeTarihi(s.createdAt) < BASLANGIC_TARIHI) { atla(`başlangıç tarihinden (${tarihGoster(BASLANGIC_TARIHI)}) önce, elle faturalandı`); continue; }
+    if (siparisNo(s.name) < BASLANGIC_SIPARIS || turkiyeTarihi(s.createdAt) < BASLANGIC_TARIHI) { atla(`#${BASLANGIC_SIPARIS - 1} ve öncesi elle faturalandı`); continue; }
     if (kayit[s.name]) { atla(`yerel kayıtta var (durum: ${kayit[s.name].durum}${kayit[s.name].fatura_id ? ', fatura no ' + kayit[s.name].fatura_id : ''})`); continue; }
     const noDeseni = new RegExp(`${s.name.replace(/[^\w#]/g, '')}(?!\\d)`);
     if (parasutAciklamalar.some((a) => noDeseni.test(a))) { atla('Paraşüt\'te açıklamasında bu sipariş no geçen fatura var'); continue; }
@@ -361,7 +376,7 @@ async function main() {
       yeniMusteri = musteriJson(s);
       if (!yeniMusteri.data.attributes.name) { atla('siparişte müşteri adı yok'); continue; }
       const m = yeniMusteri.data.attributes;
-      detay(`  Müşteri: YENİ açılacak — TCKN ${m.tax_number}, il: ${m.city || '(boş)'}, ilçe: ${m.district || '(boş)'}, e-posta: yazılmayacak`);
+      detay(`  Müşteri: YENİ açılacak — TCKN ${m.tax_number}, il: ${m.city || '(boş)'}, ilçe: ${m.district || '(boş)'}, e-posta: ${m.email}`);
     }
     if (!ayrinti) {
       const kats = Object.keys(h.gruplar).map((k) => KATEGORI[k].ad).join(' + ');
@@ -371,7 +386,7 @@ async function main() {
   }
 
   console.log('═'.repeat(70));
-  if (tarih) console.log(`${tarihGoster(tarih)} tarihli ${siparisler.length} sipariş bulundu`);
+  if (tarih) console.log(`${tarihGoster(tarih.bas)}${tarih.bit !== tarih.bas ? ' – ' + tarihGoster(tarih.bit) : ''} tarihli ${siparisler.length} sipariş bulundu`);
   console.log(`Uygulanacak oran: %${oranGoster(oran)}`);
   for (const t of tarihler) console.log(`${tarihGoster(t)} tarihinde Paraşüt'te zaten ${gunlukFatura[t]} fatura var`);
   const sebepSayilari = {};
