@@ -30,3 +30,20 @@ Müşteri kişisel bilgileri bu dosyaya bilerek alınmadı.
   - `NOT20102 ZAMAN KAPSÜLÜ BİLEKLİK` (id 1072588138, KDV %0, `code` boş)
   - İkisinde de stok takibi açık, stok -18.
   - `code` alanı boş olduğu için `filter[code]=BLK-01` bu kartları bulamaz.
+
+## Ürün kartları taraması (`urunler.js`)
+
+- Paraşüt'te 844 ürün kartı var. Ürün kodu dolu olan tek kart `shipping-ikas-product` (Kargo Bedeli).
+- Takı kartları çoğunlukla **model kısaltması + sıra numarası** ile çiftler halinde açılmış:
+  - `NOT20101` (%20) / `NOT20102` (%0), `AST21101` / `AST21102`, `NOIR23101` / `NOIR23102`, `ASCH201` / `ASCH202 COUPLE SET` vb.
+  - Kart adında model/marka kısaltması var. Bu, CLAUDE.md'deki "marka faturaya girmez" kuralıyla çelişiyor.
+- Markasız genel kartlar:
+  - `GÜMÜŞ TAKI İŞCİLİĞİ` (%20)
+  - `925 AYAR GÜMÜŞ BEDELİ` (%0)
+  - `ZAMAN KAPSÜLÜ CHARM` (%20)
+  - `ZAMAN KAPSÜLÜ CHARM 925 Ayar Gümüş` (%0)
+- Klasik adaylar:
+  - `Klasik Zaman Kapsülü` (**%0, yanlış**)
+  - `RED VELVET LİMİTED EDİTİON KLASİK ZAMAN KAPSÜLÜ` (%20)
+  - `KLASİK ZAMAN KAPSÜLÜ KKS5` (%20)
+- Markasız bir bileklik çifti ya da kolye çifti yok.
