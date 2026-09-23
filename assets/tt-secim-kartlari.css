@@ -41,6 +41,9 @@
   /* Yukleme kutusu. Bolum ayari DEGIL: iki kartin tek farkini anlatan
      sabit bir vurgu, renk secimine acilmasi istenmedi.
      Olculdu: #30614b / #eef6f1 = 6.5:1, #8fcbb0 / #1f2c26 = 7.8:1. */
+  /* Kirilimdeki "%50" cipi ve tasarruf rozeti. Olculdu:
+     #30614b / #e3f1ea = 6.1:1 */
+  --tt-sc-rozet-zemin: #e3f1ea;
   --tt-sc-kutu-zemin: #eef6f1;
   --tt-sc-kutu-yazi: #30614b;
   --tt-sc-kutu-zemin-koyu: #1f2c26;
@@ -569,6 +572,23 @@
 
 /* ------------------------------------------------------------------
    YAPISKAN SEPET CUBUGU
+
+   Cubuk KOYU degil BEYAZ: icine fiyat kirilimi girdi ve kirilimin
+   butun renkleri (urun adi, cipler, ustu cizili fiyat, ayrac) acik bir
+   yuzey icin tanimli. Koyu zeminde bunlarin hicbiri okunmuyordu.
+
+   OLCULEN KONTRASTLAR (hepsi beyaz ya da kendi zemini uzerinde)
+     #15171c / beyaz    17.9:1   urun adi
+     #6b6f78 / beyaz     5.0:1   durum yazisi, "Toplam"
+     #73767e / beyaz     4.5:1   ustu cizili liste fiyati
+     #686c75 / #eceef1   4.5:1   "1. urun" cipi
+     #30614b / #e3f1ea   6.1:1   "%50" cipi ve tasarruf rozeti
+     beyaz  / #30614b    7.2:1   buton
+     #b42318 / beyaz     6.6:1   uyari
+
+   #73767e ve #686c75, istenen #8b8e95 ve #6b6f78 tonlarinin AA'yi
+   tutturan EN AZ koyulastirilmis hali (3.3:1 ve 4.3:1 idiler); ton ve
+   doygunluk aynen korundu.
    ------------------------------------------------------------------ */
 .tt-sc-cubuk {
   position: fixed;
@@ -577,52 +597,183 @@
   z-index: 60;
   width: 100%;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-  background: var(--tt-sc-koyu);
-  color: #fff;
+  border-top: 1px solid var(--tt-sc-cizgi);
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  box-shadow: 0 -2px 12px rgb(0 0 0 / .06);
 }
 .tt-sc-cubuk[hidden] { display: none; }
 .tt-sc-cubuk-ic { max-width: var(--tt-sc-genislik); margin: 0 auto; }
-.tt-sc-cubuk-ust {
+
+/* --- Fiyat kirilimi ---
+   Acilma/kapanma grid-template-rows 0fr -> 1fr ile yapiliyor:
+   yukseklik onceden bilinmiyor, max-height tahmini de kisa metinde
+   yavas, uzun metinde kirpik olurdu. Ic sarmalayicinin min-height: 0
+   ve overflow: hidden almasi sart, yoksa kapali halde tasar. */
+.tt-sc-kirilim {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 180ms ease;
+}
+.tt-sc-kirilim[data-sc-acik] { grid-template-rows: 1fr; }
+.tt-sc-kirilim-ic {
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.tt-sc-kirilim[data-sc-acik] .tt-sc-kirilim-ic { opacity: 1; }
+
+.tt-sc-kir {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
 }
-.tt-sc-cubuk-durum { font-size: 13px; line-height: 1.3; color: var(--tt-sc-gri-koyu); }
-.tt-sc-cubuk-tutar { flex: 0 0 auto; font-size: 15px; font-weight: 500; line-height: 1.2; }
+.tt-sc-kir + .tt-sc-kir { margin-top: 4px; }
+
+.tt-sc-kir-sol {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  /* min-width: 0 olmadan uzun ad esnek kutuyu tasirir ve fiyati
+     saga dogru iter. */
+  min-width: 0;
+}
+/* Uzun urun adi satiri bozmasin: tek satir, ucu uc nokta. */
+.tt-sc-kir-ad {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: var(--tt-sc-koyu);
+}
+.tt-sc-kir-etiket {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.tt-sc-kir[data-sc-indirimli] .tt-sc-kir-etiket {
+  background: var(--tt-sc-rozet-zemin);
+  color: var(--tt-sc-yesil);
+}
+.tt-sc-kir:not([data-sc-indirimli]) .tt-sc-kir-etiket {
+  background: #eceef1;
+  color: #686c75;
+}
+
+.tt-sc-kir-sag {
+  flex: none;
+  white-space: nowrap;
+  /* Rakamlar alt alta hizali dursun. */
+  font-variant-numeric: tabular-nums;
+}
+.tt-sc-kir-eski {
+  margin-right: 5px;
+  font-size: 11.5px;
+  color: #73767e;
+}
+.tt-sc-kir-eski[hidden] { display: none; }
+.tt-sc-kir-fiyat { font-weight: 500; }
+
+.tt-sc-kir-ayrac {
+  height: 1px;
+  margin: 10px 0 9px;
+  background: var(--tt-sc-cizgi);
+}
+
+/* --- Tasarruf ve toplam --- */
+.tt-sc-cubuk-ust {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+}
+.tt-sc-cubuk-durum { font-size: 13px; line-height: 1.3; color: var(--tt-sc-gri); }
+.tt-sc-cubuk-durum[hidden] { display: none; }
+
+.tt-sc-tasarruf {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--tt-sc-rozet-zemin);
+  color: var(--tt-sc-yesil);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.tt-sc-tasarruf[hidden] { display: none; }
+.tt-sc-tasarruf .tt-sc-tasarruf-ikon { flex: none; width: 15px; height: 15px; }
+
+.tt-sc-toplam {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+.tt-sc-toplam[hidden] { display: none; }
+.tt-sc-toplam-etiket { font-size: 11px; line-height: 1.3; color: var(--tt-sc-gri); }
+.tt-sc-cubuk-tutar {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Buton --- */
 .tt-sc-cubuk-dugme {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 14px;
+  height: 48px;
+  margin-top: 11px;
+  padding: 0 16px;
   border: 0;
   border-radius: 999px;
-  background: #fff;
-  color: var(--tt-sc-koyu);
+  background: var(--tt-sc-yesil);
+  color: #fff;
   font: inherit;
   font-size: 15px;
   font-weight: 500;
   line-height: 1.2;
   cursor: pointer;
 }
-.tt-sc-cubuk[data-sc-hazir] .tt-sc-cubuk-dugme {
-  background: var(--tt-sc-yesil);
-  color: #fff;
-}
-.tt-sc-cubuk-dugme:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.tt-sc-cubuk-dugme .tt-sc-dugme-ikon { flex: none; width: 18px; height: 18px; }
+.tt-sc-cubuk-dugme:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+.tt-sc-cubuk-dugme[aria-busy="true"] { opacity: .65; }
+
 .tt-sc .tt-sc-cubuk-uyari {
   margin: 8px 0 0;
   font-size: 13px;
   line-height: 1.35;
   text-align: center;
-  /* Koyu cubukta #b42318 okunmaz; uyari burada acik tonda. */
-  color: #ffb4ab;
+  color: var(--tt-sc-uyari);
 }
 .tt-sc-cubuk-uyari[hidden] { display: none; }
 
 /* Cubuk sayfanin son satirini kapatmasin. Yukseklik JS tarafindan
-   olculup yaziliyor; burasi yalnizca yedek. */
-body.tt-sc-cubuk-acik { padding-bottom: var(--tt-sc-cubuk-yuk, 132px); }
+   olculup yaziliyor (kirilim acilinca da yeniden); burasi yalnizca
+   JS calismazsa devreye giren yedek. */
+body.tt-sc-cubuk-acik { padding-bottom: var(--tt-sc-cubuk-yuk, 210px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-sc-kirilim,
+  .tt-sc-kirilim-ic { transition: none; }
+}
 
 /* ------------------------------------------------------------------
    VARYANT SECICI
@@ -713,11 +864,13 @@ body.tt-sc-cubuk-acik { padding-bottom: var(--tt-sc-cubuk-yuk, 132px); }
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px 16px;
   }
-  .tt-sc-cubuk-ust { flex: 1 1 auto; margin-bottom: 0; justify-content: flex-start; gap: 16px; }
-  .tt-sc-cubuk-dugme { flex: 0 0 auto; width: auto; padding: 14px 32px; }
+  .tt-sc-cubuk-ust { flex: 1 1 auto; justify-content: space-between; gap: 16px; }
+  .tt-sc-cubuk-dugme { flex: 0 0 auto; width: auto; margin-top: 0; padding: 0 32px; }
   .tt-sc-cubuk-uyari { flex: 1 0 100%; margin-top: 0; text-align: left; }
+  /* Kirilim masaustunde de tam genislikte, cubugun ustunde. */
+  .tt-sc-kirilim { flex: 1 0 100%; }
 
   .tt-sc-varyant { max-width: 440px; margin: auto; }
   .tt-sc-varyant-ic { max-height: 76vh; border-radius: 18px; }

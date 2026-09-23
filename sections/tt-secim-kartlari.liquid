@@ -134,6 +134,9 @@
   "uyari": {{ s.uyari_metin | json }},
   "hata": {{ s.hata_metin | json }},
   "tutarYerine": {{ s.tutar_yerine | json }},
+  "cubukEtiketTam": {{ s.cubuk_etiket_tam | json }},
+  "cubukEtiketIndirim": {{ s.cubuk_etiket_indirim | json }},
+  "cubukTasarruf": {{ s.cubuk_tasarruf | json }},
   "varyantBaslik": {{ s.varyant_baslik | json }},
   "kadin": {{ s.kime_kadin | json }},
   "erkek": {{ s.kime_erkek | json }}
@@ -455,12 +458,63 @@
       calismadigini soylemedigi icin daha kotu.
     {%- endcomment -%}
     <div class="tt-sc-cubuk" data-sc-cubuk hidden role="region" aria-label="{{ s.set_baslik | escape }}">
-      <div class="tt-sc-cubuk-ic">
+      {%- comment -%}
+        aria-live: secim degisince ekran okuyucu guncel kirilimi,
+        tasarrufu ve toplami okuyor. Cubugun disinda kalan hicbir sey
+        canli degil, yani gereksiz duyuru olmuyor.
+      {%- endcomment -%}
+      <div class="tt-sc-cubuk-ic" aria-live="polite">
+
+        {%- comment -%}
+          KIRILIM -- yalnizca IKI urun seciliyken aciliyor.
+          Tek urunde yarim bir kirilim gostermek kafa karistirici
+          olurdu; sifir ve bir uronde kapali kaliyor.
+
+          Acilma/kapanma grid-template-rows 0fr->1fr ile: hidden
+          nitelikle gecis yapilamiyor, yukseklik de onceden bilinmiyor.
+        {%- endcomment -%}
+        <div class="tt-sc-kirilim" data-sc-kirilim>
+          <div class="tt-sc-kirilim-ic">
+            {%- for i in (0..1) -%}
+              <div class="tt-sc-kir" data-sc-kir="{{ i }}">
+                <span class="tt-sc-kir-sol">
+                  <span class="tt-sc-kir-ad" data-sc-kir-ad></span>
+                  <span class="tt-sc-kir-etiket" data-sc-kir-etiket></span>
+                </span>
+                <span class="tt-sc-kir-sag">
+                  {%- comment -%}
+                    Ustu cizili fiyat <s> icinde; gorsel gizli metin
+                    ekran okuyucuya bunun ESKI fiyat oldugunu soyluyor,
+                    cunku yalnizca cizgi sesli okunmuyor.
+                  {%- endcomment -%}
+                  <s class="tt-sc-kir-eski" data-sc-kir-eski hidden>
+                    <span class="sr-only">{{ s.cubuk_eski_fiyat }}</span>
+                    <span data-sc-kir-eski-tutar></span>
+                  </s>
+                  <span class="tt-sc-kir-fiyat" data-sc-kir-fiyat></span>
+                </span>
+              </div>
+            {%- endfor -%}
+            <div class="tt-sc-kir-ayrac" aria-hidden="true"></div>
+          </div>
+        </div>
+
         <div class="tt-sc-cubuk-ust">
           <span class="tt-sc-cubuk-durum" data-sc-durum></span>
-          <span class="tt-sc-cubuk-tutar" data-sc-tutar></span>
+          <span class="tt-sc-tasarruf" data-sc-tasarruf hidden>
+            {%- render 'tt-sc-ikon', ad: 'etiket', sinif: 'tt-sc-tasarruf-ikon' -%}
+            <span data-sc-tasarruf-metin></span>
+          </span>
+          <span class="tt-sc-toplam" data-sc-toplam hidden>
+            <span class="tt-sc-toplam-etiket">{{ s.cubuk_toplam }}</span>
+            <span class="tt-sc-cubuk-tutar" data-sc-tutar></span>
+          </span>
         </div>
-        <button type="button" class="tt-sc-cubuk-dugme" data-sc-ekle-sepet>{{ s.dugme_eksik }}</button>
+
+        <button type="button" class="tt-sc-cubuk-dugme" data-sc-ekle-sepet>
+          {%- render 'tt-sc-ikon', ad: 'canta', sinif: 'tt-sc-dugme-ikon' -%}
+          <span data-sc-dugme-metin>{{ s.dugme_eksik }}</span>
+        </button>
         <p class="tt-sc-cubuk-uyari" data-sc-uyari hidden></p>
       </div>
     </div>
@@ -587,9 +641,17 @@
     { "type": "text", "id": "kart_secili", "label": "Setinde (ekran okuyucu)", "default": "Setinde" },
 
     { "type": "header", "content": "Yapışkan çubuk" },
+    { "type": "paragraph", "content": "İki ürün seçiliyken çubukta fiyat kırılımı ve tasarruf satırı çıkıyor. Kırılım ve tasarruf rozeti sepet boşken gösteriliyor. \"Toplam\" satırı ayrıca geçerli bir indirim kodu olmamasını istiyor: kod sipariş düzeyinde indiği için satır fiyatlarını değiştirmiyor ama toplamı düşürüyor. Gösterilemeyen rakamın yerine bir tahmin yazılmıyor." },
+    { "type": "text", "id": "cubuk_etiket_tam", "label": "Kırılım — tam fiyatlı ürün etiketi", "default": "1. ürün" },
+    { "type": "text", "id": "cubuk_etiket_indirim", "label": "Kırılım — indirimli ürün etiketi", "default": "%50" },
+    { "type": "text", "id": "cubuk_eski_fiyat", "label": "Üstü çizili fiyat (ekran okuyucu)", "default": "Eski fiyat" },
+    { "type": "text", "id": "cubuk_toplam", "label": "\"Toplam\" etiketi", "default": "Toplam" },
+    { "type": "text", "id": "cubuk_tasarruf", "label": "Tasarruf rozeti", "default": "[tutar] tasarruf",
+      "info": "[tutar] hesaplanan tasarrufla değişir." },
     { "type": "text", "id": "durum_2", "label": "Hiç ürün seçilmemişken", "default": "2 ürün daha seç" },
     { "type": "text", "id": "durum_1", "label": "1 ürün seçilmişken", "default": "1 ürün daha seç" },
-    { "type": "text", "id": "durum_0", "label": "2 ürün seçilmişken", "default": "2 ürün, ikincisi yarı fiyatına" },
+    { "type": "text", "id": "durum_0", "label": "2 ürün seçilmişken", "default": "2 ürün, ikincisi yarı fiyatına",
+      "info": "Yalnızca kırılım gösterilemediğinde (sepet doluyken) çıkar; kırılım açıksa yerini tasarruf rozeti alır." },
     { "type": "text", "id": "dugme_eksik", "label": "Buton – eksik seçim", "default": "Sepete ekle ([n]/2)",
       "info": "[n] seçili ürün sayısıyla değişir." },
     { "type": "text", "id": "dugme_tam", "label": "Buton – 2 ürün seçiliyken", "default": "2 ürünü sepete ekle" },
@@ -597,7 +659,8 @@
     { "type": "text", "id": "hata_metin", "label": "Sepete eklenemezse", "default": "Sepete eklenemedi. Ürünlerden biri tükenmiş olabilir." },
     { "type": "checkbox", "id": "tutar_goster", "label": "Çubukta toplam tutarı göster", "default": true,
       "info": "Tutar bir tahmindir: pahalı ürün tam, ucuz ürün yarı fiyat. Gerçek tutarı Shopify sepette hesaplar. Kapatırsanız tutar yerine teklif metni çıkar." },
-    { "type": "text", "id": "tutar_yerine", "label": "Tutar kapalıyken yazılacak", "default": "İkincisi yarı fiyatına" },
+    { "type": "text", "id": "tutar_yerine", "label": "Tutar kapalıyken yazılacak", "default": "İkincisi yarı fiyatına",
+      "info": "Artık kullanılmıyor: tutar gösterilemediğinde çubukta yukarıdaki \"2 ürün seçilmişken\" metni çıkıyor. Ayar, mevcut içeriği kaybolmasın diye duruyor." },
     { "type": "text", "id": "gizle_secici", "label": "Couple modunda gizlenecek öğeler (CSS seçici)",
       "default": "facet-sticky.facet-sticky",
       "info": "Yapışkan çubukla çakışan öğeler. Virgülle ayırın." },

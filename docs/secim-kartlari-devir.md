@@ -8,14 +8,17 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 
 | Dosya | Boyut | md5 |
 |---|---|---|
-| `sections/tt-secim-kartlari.liquid` | 33.810 | `d7b110efa7120845b17832bc5b37a74d` |
+| `sections/tt-secim-kartlari.liquid` | 37.666 | `922dbfd0a506dfbc382084d7518db010` |
 | `snippets/tt-sc-karo.liquid` | 2.491 | `1bd4b1f99f5d98de6016556e687f5d55` |
-| `snippets/tt-sc-ikon.liquid` | 3.432 | `f8cb0504ac5d8f34e997b5e649bb5171` |
+| `snippets/tt-sc-ikon.liquid` | 4.394 | `522c58d6ffb02ad14ea8dfdce5d38552` |
 | `snippets/tt-uk-kart.liquid` | 10.126 | `a9afd0a5f97c495bdaa0f61f53b29b4d` |
-| `assets/tt-secim-kartlari.css` | 23.694 | `7c2694d79a2ea357b7aa8b737747faa3` |
-| `assets/tt-secim-kartlari.js` | 33.430 | `b2018e2007b969e5ae40a7a2075bbeae` |
+| `assets/tt-secim-kartlari.css` | 27.803 | `f6f08c9dd673d3ec9208d184acd97523` |
+| `assets/tt-secim-kartlari.js` | 39.406 | `b64ddc89cde08a1670391ac15af2d7fe` |
 | `assets/tt-uk-kart.css` | 8.298 | `b3f921a0a5dab296f502fcefa53a2adb` |
 | `assets/tt-uk-kart.js` | 5.172 | `235f918a235ce9dea82453e106ab0cf9` |
+
+Tema üzerindeki md5'ler yükleme sonrası tek tek doğrulandı; hepsi
+yerel dosyalarla birebir aynı.
 
 Hiçbir paylaşılan dosyaya dokunulmadı: `sections/main-collection.liquid`,
 `snippets/product-card.liquid`, `assets/theme.js`, `assets/cart.js`
@@ -330,6 +333,82 @@ beyaz/`#15171c` **17,9:1**, `#8fcbb0`/`#15171c` **9,7:1**,
 `#30614b`/`#f0f7f3` **6,6:1**, beyaz/`#30614b` **7,2:1**,
 `#6b6f78`/beyaz **5,0:1**. Hiçbir tonu ayarlamak gerekmedi.
 
+## Yapışkan çubuk: fiyat kırılımı
+
+İki ürün seçiliyken çubuk açılıyor ve sette ne olduğunu satır satır
+gösteriyor:
+
+```
+Kral Zincir   1. ürün                       4.299,00 TL
+Noir          %50          2.399,00 TL      1.199,50 TL
+──────────────────────────────────────────────────────
+[etiket] 1.199,50 TL tasarruf          Toplam 5.498,50 TL
+```
+
+Satır sırası **slot sırası**: 1. satır pahalı ürün (tam fiyat),
+2. satır ucuz ürün (%50). Aynı `sira` dizisi set kutusundaki slotları
+ve karttaki numara rozetini de besliyor, yani üçü birbirini tutuyor.
+
+Çubuk **koyudan beyaza** çevrildi: kırılımın bütün renkleri (ürün adı,
+çipler, üstü çizili fiyat, ayraç) açık bir yüzey için tanımlı, koyu
+zeminde hiçbiri okunmuyordu.
+
+### Rakamların Shopify ile birebir tuttuğu doğrulandı
+
+Mağazadaki indirim Admin API'den okundu: **"İkinci Üründe %50
+İndirim"**, otomatik BXGY, 1 al / 1'ini %50, beş koleksiyonu kapsıyor,
+`combinesWith.orderDiscounts / productDiscounts / shippingDiscounts`
+üçü de **açık**.
+
+Son **10 gerçek iki kalemli sipariş** üzerinde ölçüldü:
+
+| Kontrol | Sonuç |
+|---|---|
+| İndirim **ucuz** ürüne uygulanmış | 10/10 |
+| `expensive + cheap/2` = Shopify'ın kalem toplamı | 10/10, kuruşu kuruşuna |
+| Siparişte ayrıca 500 TL'lik **kod** indirimi var | 10/10 |
+
+Yani kırılım ve "%50" etiketinin yeri kesin. Ama kod **sipariş
+düzeyinde** iniyor: ara toplam kalem toplamından tam 500 TL düşük
+çıkıyor, kalemlerin indirimli birim fiyatı ise yine liste/2 kalıyor.
+
+### İki ayrı bayrak
+
+Bu yüzden tek bir "rakam göster/gösterme" anahtarı yerine ikisi ayrıldı
+(`assets/tt-secim-kartlari.js`):
+
+| Bayrak | Neyi açıyor | Koşulu |
+|---|---|---|
+| `kirilimKesin` | satır fiyatları, üstü çizili fiyat, tasarruf rozeti | ayar açık **ve** sepet boş |
+| `toplamKesin` | "Toplam" satırı | ayrıca geçerli indirim kodu yok |
+
+- **Sepet doluysa** hiçbir rakam yok: BXGY eşleşmesini Shopify bizim iki
+  ürünümüzün dışında kurabilir. Kırılım liste fiyatlarına ve yalnızca
+  "%50" etiketine düşüyor, solda `durum_0` metni kalıyor.
+- **Kod varsa** kırılım ve tasarruf rozeti duruyor, yalnızca "Toplam"
+  gizleniyor.
+
+Sepet `/cart.js` ile **bir kez** okunuyor (salt okuma, yan etkisi yok) ve
+ilk kez rakam gösterileceği anda, sayfa açılışında değil. Kodun geçerli
+olup olmadığı yeniden hesaplanmıyor: kupon katmanı
+(`assets/taksit-tablosu.js`) zaten hesaplayıp kararını kartlardaki
+`[data-tt-kart-fb]` bloğuna yazıyor, çubuk o sonucu okuyor.
+
+### Kontrast için iki ton koyulaştırıldı
+
+Beyaz çubukta istenen iki gri AA'yı tutmuyordu; ton ve doygunluk aynen
+korunarak en az miktarda koyulaştırıldı:
+
+| Nerede | İstenen | Kullanılan | Oran |
+|---|---|---|---|
+| Üstü çizili liste fiyatı (beyaz üstünde) | `#8b8e95` (3.3:1) | **`#73767e`** | 4.54:1 |
+| "1. ürün" çipi (`#eceef1` üstünde) | `#6b6f78` (4.3:1) | **`#686c75`** | 4.53:1 |
+
+Açılma/kapanma `grid-template-rows: 0fr → 1fr` ile: yükseklik önceden
+bilinmiyor, `max-height` tahmini kısa metinde yavaş, uzun metinde kırpık
+olurdu. Geçiş bitince `cubukOlc()` yeniden ölçüyor, yoksa son satırdaki
+kartlar çubuğun altında kalıyor.
+
 ## Ölçüm
 
 `layout/theme.liquid` içinde Meta Pixel yok; her şey `content_for_header`
@@ -447,6 +526,14 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   sürüklemesi Chromium'da zaten click üretmediği için naif bir test
   koruma kaldırılsa bile geçerdi).
 
-**1400/1400 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü
+- `test10.mjs` — 233 test: çubuğun kırılımı. İki satırın ölçüleri,
+  tipografisi ve renkleri, çiplerin ve tasarruf rozetinin kontrastı,
+  açılma geçişi, uzun ürün adının tek satırda üç noktayla kısalması,
+  eşit fiyatlı iki üründe hesabın doğruluğu, **sepet doluyken bütün
+  rakamların kalkması**, **kod varken yalnızca toplamın kalkması**
+  (kırılım ve rozet duruyor), kod kalkınca toplamın geri gelmesi,
+  sepete giden isteğin değişmediği — 360/390/430px'te.
+
+**1633/1633 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü
 5.0:1); tek istisna tükenen ürünün soluk metni (#8b8e95, 3.4:1) —
 WCAG 1.4.3 devre dışı bırakılmış öğeleri kapsam dışı tutuyor.

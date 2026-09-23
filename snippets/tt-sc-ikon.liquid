@@ -12,7 +12,7 @@
   ek sinif alabiliyor: bos/dolu slotta hangisinin gorunecegi CSS'te
   seciliyor, JS ikon uretmiyor.
 
-  @param {string} ad - takvim | kilit-acik | kisi | kisiler | bilgi | arti | tik
+  @param {string} ad - takvim | kilit-acik | kisi | kisiler | bilgi | arti | tik | etiket | canta
   @param {string} [sinif] - svg'ye eklenecek ek sinif
 {%- enddoc -%}
 {%- case ad -%}
@@ -66,5 +66,19 @@
          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
          aria-hidden="true" focusable="false">
       <path d="M4.8 12.6l4.6 4.6L19.2 7.4"/>
+    </svg>
+  {%- when 'etiket' -%}
+    <svg class="tt-sc-ikon{% if sinif %} {{ sinif }}{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">
+      <path d="M11.4 3.5H5.2a1.7 1.7 0 0 0-1.7 1.7v6.2c0 .45.18.88.5 1.2l7.9 7.9a1.7 1.7 0 0 0 2.4 0l6.2-6.2a1.7 1.7 0 0 0 0-2.4l-7.9-7.9a1.7 1.7 0 0 0-1.2-.5Z"/>
+      <circle cx="7.9" cy="7.9" r="1.35" fill="currentColor" stroke="none"/>
+    </svg>
+  {%- when 'canta' -%}
+    <svg class="tt-sc-ikon{% if sinif %} {{ sinif }}{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">
+      <path d="M4.6 7.5h14.8l-1.1 12.1a1.7 1.7 0 0 1-1.7 1.55H7.4a1.7 1.7 0 0 1-1.7-1.55L4.6 7.5Z"/>
+      <path d="M8.6 10V6.6a3.4 3.4 0 0 1 6.8 0V10"/>
     </svg>
 {%- endcase -%}

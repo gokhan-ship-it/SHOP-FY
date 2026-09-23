@@ -67,6 +67,12 @@
     var cubuk    = KOK.querySelector('[data-sc-cubuk]');
     var durumEl  = KOK.querySelector('[data-sc-durum]');
     var tutarEl  = KOK.querySelector('[data-sc-tutar]');
+    var kirilim  = KOK.querySelector('[data-sc-kirilim]');
+    var kirSatir = Array.prototype.slice.call(KOK.querySelectorAll('[data-sc-kir]'));
+    var tasarruf = KOK.querySelector('[data-sc-tasarruf]');
+    var tasMetin = KOK.querySelector('[data-sc-tasarruf-metin]');
+    var toplamEl = KOK.querySelector('[data-sc-toplam]');
+    var dugmeMet = KOK.querySelector('[data-sc-dugme-metin]');
     var sepetBtn = KOK.querySelector('[data-sc-ekle-sepet]');
     var uyariEl  = KOK.querySelector('[data-sc-uyari]');
     var vDialog  = KOK.querySelector('[data-sc-varyant]');
@@ -353,6 +359,61 @@
       document.body.style.setProperty('--tt-sc-cubuk-yuk', (cubuk.offsetHeight + 12) + 'px');
     }
 
+    /* ---------- Hangi rakam kesin ----------
+
+       Cubuktaki her rakam sepette ve odeme sayfasinda cikacak rakamin
+       AYNISI olmak zorunda. Iki ayri kosul var ve ikisi ayni seyi
+       bozmuyor, bu yuzden tek bayrak degil IKI bayrak:
+
+       1) SEPET BOS MU?  Indirim ("Ikinci Uronde %50 Indirim") bir
+          BXGY: kapsamdaki urunlerden 1 al, 1'ini yarim fiyata al.
+          Sepette zaten uygun bir urun varsa Shopify eslesmeyi bizim
+          iki uronumuz disinda kurabiliyor -- o zaman ne satir
+          fiyatlari ne toplam tutuyor. Sepet /cart.js ile BIR KEZ
+          okunuyor; salt okuma, yan etkisi yok.
+
+       2) GECERLI BIR INDIRIM KODU VAR MI?  Indirimin ayarinda
+          combinesWith.orderDiscounts ACIK, yani carktan gelen 500
+          TL'lik kod bunun USTUNE biniyor. Gercek siparislerde
+          dogrulandi: kod SIPARIS duzeyinde iniyor, kalemlerin
+          indirimli birim fiyati yine liste/2 kaliyor. Yani kod
+          KIRILIMI bozmuyor, yalnizca TOPLAMI bozuyor.
+          Kodun gecerliligini kupon katmani (assets/taksit-tablosu.js)
+          zaten hesapliyor ve kararini kartlardaki bloga yaziyor;
+          cerez cozumlemesini burada tekrarlamak yerine onun sonucu
+          okunuyor.
+
+       Buradan:
+         kirilimKesin -> satir fiyatlari + ustu cizili + tasarruf
+                         rozeti (sepet bos olmasi yeter)
+         toplamKesin  -> "Toplam" satiri (ayrica kod da olmayacak)
+
+       Kesin olmayan ne varsa hic gosterilmiyor: kirilim liste
+       fiyatlarina ve yalnizca "%50" etiketine dusuyor. Yanlis rakam
+       yerine rakamsizlik. */
+    var sepetBos = null;   /* null = daha okunmadi */
+    function sepetiOku() {
+      if (sepetBos !== null) return;
+      sepetBos = 'bekliyor';
+      fetch('/cart.js', { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (c) {
+          sepetBos = c ? c.item_count === 0 : false;
+          setCiz();
+        })
+        .catch(function () { sepetBos = false; setCiz(); });
+    }
+    function kodVarMi() {
+      /* Kupon katmani gecerli kod bulunca bu blogun hidden'ini kaldiriyor. */
+      return !!KOK.querySelector('[data-tt-kart-fb]:not([hidden])');
+    }
+    function kirilimKesin() {
+      return TUTAR_GOSTER && sepetBos === true;
+    }
+    function toplamKesin() {
+      return kirilimKesin() && !kodVarMi();
+    }
+
     /* ---------- Set ----------
 
        GOSTERIM SIRASI. `set` dizisi SECIM sirasinda duruyor ve oyle
@@ -430,21 +491,88 @@
         }
       }
 
-      if (durumEl) durumEl.textContent = n === 0 ? (M.durum2 || '') : (n === 1 ? (M.durum1 || '') : (M.durum0 || ''));
-      if (tutarEl) {
-        if (!TUTAR_GOSTER || n < 2) {
-          tutarEl.textContent = n === 2 ? (M.tutarYerine || '') : '';
-        } else {
-          /* Onizleme: pahali urun tam, ucuz urun yarim. Shopify de
-             BXGY'de indirimi ucuz olana uyguluyor. */
-          var a = set[0].fiyat, b = set[1].fiyat;
-          tutarEl.textContent = para(Math.max(a, b) + Math.min(a, b) / 2);
-        }
-      }
-      if (sepetBtn) sepetBtn.textContent = n === 2 ? (M.dugmeTam || '') : yaz(M.dugmeEksik, n);
+      cubukCiz(n, sira);
+      if (dugmeMet) dugmeMet.textContent = n === 2 ? (M.dugmeTam || '') : yaz(M.dugmeEksik, n);
       if (cubuk) cubuk.toggleAttribute('data-sc-hazir', n === 2);
       if (n === 2 && uyariEl) uyariEl.hidden = true;
       cubukOlc();
+    }
+
+    /* ---------- Cubugun icerigi ----------
+       Iki urun seciliyken kirilim aciliyor. Satir sirasi SLOT SIRASI:
+       sira[0] pahali urun (tam fiyat), sira[1] ucuz urun (%50).
+       Ayni dizi set kutusundaki slotlari ve kartlardaki numara
+       rozetini de besliyor, yani ucu de birbirini tutuyor.
+
+       Shopify BXGY'de indirimi EN UCUZ uygun urune uyguluyor; magaza
+       ayari da oyle ("Ikinci Uronde %50 Indirim": 1 al, 1'ini %50).
+       Bu yuzden "%50" etiketi ve ustu cizili fiyat her zaman ikinci
+       satirda. */
+    function cubukCiz(n, sira) {
+      var ikiUrun = n === 2;
+      if (kirilim) kirilim.toggleAttribute('data-sc-acik', ikiUrun);
+
+      if (!ikiUrun) {
+        if (durumEl) { durumEl.hidden = false; durumEl.textContent = n === 0 ? (M.durum2 || '') : (M.durum1 || ''); }
+        if (tasarruf) tasarruf.hidden = true;
+        if (toplamEl) toplamEl.hidden = true;
+        if (tutarEl) tutarEl.textContent = '';
+        return;
+      }
+
+      /* Sepet daha okunmadiysa simdi oku: cubuk ilk kez rakam
+         gosterecegi anda, sayfa acilisinda degil. */
+      sepetiOku();
+      var kir = kirilimKesin();
+      var top = toplamKesin();
+
+      var tam = set[sira[0]], ind = set[sira[1]];
+      var indFiyat = Math.round(ind.fiyat / 2);
+      var toplam = tam.fiyat + indFiyat;
+      var kazanc = ind.fiyat - indFiyat;
+
+      var veri = [
+        { e: tam, etiket: M.cubukEtiketTam, indirimli: false, odenen: tam.fiyat },
+        { e: ind, etiket: M.cubukEtiketIndirim, indirimli: true, odenen: indFiyat }
+      ];
+      for (var i = 0; i < kirSatir.length && i < veri.length; i++) {
+        var sat = kirSatir[i], v = veri[i];
+        sat.toggleAttribute('data-sc-indirimli', v.indirimli);
+        var ad = sat.querySelector('[data-sc-kir-ad]');
+        var et = sat.querySelector('[data-sc-kir-etiket]');
+        var es = sat.querySelector('[data-sc-kir-eski]');
+        var esT = sat.querySelector('[data-sc-kir-eski-tutar]');
+        var fi = sat.querySelector('[data-sc-kir-fiyat]');
+        if (ad) ad.textContent = v.e.ad;
+        if (et) et.textContent = v.etiket || '';
+        /* Kirilim kesin degilse satirda LISTE fiyati kaliyor ve ustu
+           cizili satir hic cikmiyor -- yarim dogru bir rakam yerine
+           yalnizca "%50" etiketi. */
+        if (fi) fi.textContent = para(kir ? v.odenen : v.e.fiyat);
+        if (es) es.hidden = !(kir && v.indirimli);
+        if (esT && kir && v.indirimli) esT.textContent = para(v.e.fiyat);
+      }
+
+      /* Solda durum cumlesi yalnizca hicbir rakam yokken kaliyor --
+         sifir ve bir uronde oldugu gibi. Kirilim aciksa ayni seyi iki
+         kez soylemis oluyordu ("2 urun, ikincisi yari fiyatina" ile
+         ustu cizili satir), o yuzden kalkiyor. */
+      if (durumEl) {
+        durumEl.hidden = kir;
+        if (!kir) durumEl.textContent = M.durum0 || '';
+      }
+      if (tasarruf) {
+        tasarruf.hidden = !kir;
+        if (kir && tasMetin) {
+          tasMetin.textContent = String(M.cubukTasarruf || '').replace('[tutar]', para(kazanc));
+        }
+      }
+      /* Toplam kod varken DUSUYOR, kirilim dusmuyor: kod siparis
+         duzeyinde iniyor. O halde rozet ve satirlar kalip yalnizca
+         "Toplam" gizleniyor -- gosterilen her rakam yine sepettekinin
+         aynisi, eksigi de yok fazlasi da yok. */
+      if (toplamEl) toplamEl.hidden = !top;
+      if (tutarEl) tutarEl.textContent = top ? para(toplam) : '';
     }
 
     function setEkle(urunId, varyant, karo) {
@@ -763,6 +891,10 @@
     }
 
     window.addEventListener('resize', cubukOlc);
+    /* Kirilim acilirken cubuk buyuyor: gecis bitince yuksekligi
+       yeniden olcup sayfanin alt boslugunu guncelliyoruz, yoksa son
+       satirdaki kartlar cubugun altinda kaliyor. */
+    if (kirilim) kirilim.addEventListener('transitionend', cubukOlc);
 
     /* ?mod=couple reklamdan dogrudan couple'a getirmek icin; bolum
        ayarindaki varsayilani EZIYOR. */
