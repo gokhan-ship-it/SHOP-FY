@@ -137,6 +137,8 @@
   "cubukEtiketTam": {{ s.cubuk_etiket_tam | json }},
   "cubukEtiketIndirim": {{ s.cubuk_etiket_indirim | json }},
   "cubukTasarruf": {{ s.cubuk_tasarruf | json }},
+  "cubukAraToplam": {{ s.cubuk_ara_toplam | json }},
+  "cubukKod": {{ s.cubuk_kod | json }},
   "varyantBaslik": {{ s.varyant_baslik | json }},
   "kadin": {{ s.kime_kadin | json }},
   "erkek": {{ s.kime_erkek | json }}
@@ -155,6 +157,16 @@
        data-sc-tekil-izgara="{{ s.tekil_izgara }}"
        data-sc-tema-izgara="{{ s.tema_izgara_secici | escape }}"
        data-sc-tukendi-sona="{{ s.uk_tukendi_sona }}"
+       {%- comment -%}
+         CARK INDIRIMI AYNI KAYNAKTAN OKUNUYOR.
+         Koleksiyon kartlarindaki "indirim kodu ile" blogu
+         (snippets/tt-kart-taksit.liquid) tutari settings.tt_indirim_tutar
+         ayarindan aliyor. Cubuk da AYNI ayari okuyor: ikisi ayri yerden
+         beslenseydi bir gun biri 500, digeri baska bir sey yazardi.
+         Katman kapaliyken 0 gonderiliyor ve cubuk kod satirini hic
+         acmiyor.
+       {%- endcomment -%}
+       data-sc-kod-kurus="{% if settings.tt_indirim_aktif %}{{ settings.tt_indirim_tutar | times: 100 | round }}{% else %}0{% endif %}"
        data-sc-metin="{{ metin_json | strip | escape }}"
        style="
          --tt-sc-zemin: {{ s.zemin }};
@@ -496,6 +508,31 @@
               </div>
             {%- endfor -%}
             <div class="tt-sc-kir-ayrac" aria-hidden="true"></div>
+
+            {%- comment -%}
+              CARK KODU SATIRLARI
+              Yalnizca gecerli bir kod varken aciliyor. Kod sepet
+              duzeyinde iniyor, yani iki urunun satir fiyatlarini
+              degistirmiyor; bu yuzden kirilimin ALTINDA ayri bir
+              satir olarak duruyor, urun satirlarina karismiyor.
+              Boylece musteri toplamin nereden geldigini goruyor.
+            {%- endcomment -%}
+            <div class="tt-sc-kir tt-sc-kir--ara" data-sc-ara hidden>
+              <span class="tt-sc-kir-sol">
+                <span class="tt-sc-kir-ad">{{ s.cubuk_ara_toplam }}</span>
+              </span>
+              <span class="tt-sc-kir-sag">
+                <span class="tt-sc-kir-fiyat" data-sc-ara-tutar></span>
+              </span>
+            </div>
+            <div class="tt-sc-kir tt-sc-kir--kod" data-sc-kod hidden>
+              <span class="tt-sc-kir-sol">
+                <span class="tt-sc-kir-ad">{{ s.cubuk_kod }}</span>
+              </span>
+              <span class="tt-sc-kir-sag">
+                <span class="tt-sc-kir-fiyat" data-sc-kod-tutar></span>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -641,13 +678,17 @@
     { "type": "text", "id": "kart_secili", "label": "Setinde (ekran okuyucu)", "default": "Setinde" },
 
     { "type": "header", "content": "Yapışkan çubuk" },
-    { "type": "paragraph", "content": "İki ürün seçiliyken çubukta fiyat kırılımı ve tasarruf satırı çıkıyor. Kırılım ve tasarruf rozeti sepet boşken gösteriliyor. \"Toplam\" satırı ayrıca geçerli bir indirim kodu olmamasını istiyor: kod sipariş düzeyinde indiği için satır fiyatlarını değiştirmiyor ama toplamı düşürüyor. Gösterilemeyen rakamın yerine bir tahmin yazılmıyor." },
+    { "type": "paragraph", "content": "İki ürün seçiliyken çubukta fiyat kırılımı çıkıyor. Tutarlar yalnızca sepet BOŞKEN gösteriliyor: sepette zaten ürün varsa Shopify \"ikinci üründe %50\" eşleşmesini başka bir kaleme kurabileceği için rakamlar gizlenip yerine aşağıdaki \"2 ürün seçilmişken\" metni yazılıyor. Geçerli bir çark kodu varsa kırılıma \"Ara toplam\" ve \"Çark indirimi\" satırları ekleniyor; kodun süresi dolunca satırlar kendiliğinden kalkıyor." },
     { "type": "text", "id": "cubuk_etiket_tam", "label": "Kırılım — tam fiyatlı ürün etiketi", "default": "1. ürün" },
     { "type": "text", "id": "cubuk_etiket_indirim", "label": "Kırılım — indirimli ürün etiketi", "default": "%50" },
     { "type": "text", "id": "cubuk_eski_fiyat", "label": "Üstü çizili fiyat (ekran okuyucu)", "default": "Eski fiyat" },
     { "type": "text", "id": "cubuk_toplam", "label": "\"Toplam\" etiketi", "default": "Toplam" },
     { "type": "text", "id": "cubuk_tasarruf", "label": "Tasarruf rozeti", "default": "[tutar] tasarruf",
-      "info": "[tutar] hesaplanan tasarrufla değişir." },
+      "info": "[tutar] hesaplanan tasarrufla değişir. Çark kodu geçerliyken kodun tutarı da bu tasarrufa dahil edilir." },
+    { "type": "text", "id": "cubuk_ara_toplam", "label": "\"Ara toplam\" satırı", "default": "Ara toplam",
+      "info": "Yalnızca geçerli bir çark kodu varken çıkar." },
+    { "type": "text", "id": "cubuk_kod", "label": "Çark indirimi satırı", "default": "Çark indirimi",
+      "info": "Tutarı tema ayarlarındaki \"İndirim tutarı\" değerinden okunuyor — koleksiyon kartlarındaki indirimli fiyatla aynı kaynak." },
     { "type": "text", "id": "durum_2", "label": "Hiç ürün seçilmemişken", "default": "2 ürün daha seç" },
     { "type": "text", "id": "durum_1", "label": "1 ürün seçilmişken", "default": "1 ürün daha seç" },
     { "type": "text", "id": "durum_0", "label": "2 ürün seçilmişken", "default": "2 ürün, ikincisi yarı fiyatına",

@@ -689,6 +689,26 @@
   background: var(--tt-sc-cizgi);
 }
 
+/* ARA TOPLAM VE CARK INDIRIMI
+   Urun satirlariyla ayni olculer, ama adlari urun adi degil -- normal
+   agirlikta ve gri, boylece goz once urunlere takiliyor. Kod satirinin
+   tutari yesil: ekrandaki tek "eksi" rakam o, ayrica indirimin nereden
+   geldigini renk de soyluyor.
+   Olculdu: #6b6f78 / beyaz = 5.0:1, #30614b / beyaz = 7.2:1 */
+.tt-sc-kir--ara[hidden],
+.tt-sc-kir--kod[hidden] { display: none; }
+.tt-sc-kir--ara .tt-sc-kir-ad,
+.tt-sc-kir--kod .tt-sc-kir-ad {
+  font-weight: 400;
+  color: var(--tt-sc-gri);
+}
+.tt-sc-kir--ara .tt-sc-kir-fiyat { font-weight: 400; color: var(--tt-sc-gri); }
+.tt-sc-kir--kod .tt-sc-kir-fiyat { color: var(--tt-sc-yesil); }
+/* Kod satiri aciksa altindaki "Toplam" ona yapisik duruyordu: iki
+   rakam alt alta tek blok gibi okunuyordu. Yalnizca satir gorunurken
+   bosluk aciliyor, kapaliyken cubuk eskisi kadar kisa kaliyor. */
+.tt-sc-kir--kod:not([hidden]) { margin-bottom: 9px; }
+
 /* --- Tasarruf ve toplam --- */
 .tt-sc-cubuk-ust {
   display: flex;

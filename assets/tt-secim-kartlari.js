@@ -32,6 +32,9 @@
     try { M = JSON.parse(KOK.getAttribute('data-sc-metin') || '{}'); } catch (e) { M = {}; }
 
     var TUTAR_GOSTER = KOK.getAttribute('data-sc-tutar-goster') === 'true';
+    /* Cark kodunun tutari KURUS cinsinden; kartlardaki indirimli fiyat
+       blogu ile AYNI tema ayarindan geliyor (bkz. bolumun Liquid'i). */
+    var KOD_KURUS = parseInt(KOK.getAttribute('data-sc-kod-kurus'), 10) || 0;
     /* Single modunda listeyi kim ciziyor -- TEK ayar bu.
 
          tema   Sayfanin kendi izgarasi (main-collection). Filtreleri,
@@ -72,6 +75,10 @@
     var tasarruf = KOK.querySelector('[data-sc-tasarruf]');
     var tasMetin = KOK.querySelector('[data-sc-tasarruf-metin]');
     var toplamEl = KOK.querySelector('[data-sc-toplam]');
+    var araEl    = KOK.querySelector('[data-sc-ara]');
+    var araTutar = KOK.querySelector('[data-sc-ara-tutar]');
+    var kodEl    = KOK.querySelector('[data-sc-kod]');
+    var kodTutar = KOK.querySelector('[data-sc-kod-tutar]');
     var dugmeMet = KOK.querySelector('[data-sc-dugme-metin]');
     var sepetBtn = KOK.querySelector('[data-sc-ekle-sepet]');
     var uyariEl  = KOK.querySelector('[data-sc-uyari]');
@@ -413,35 +420,36 @@
     /* ---------- Hangi rakam kesin ----------
 
        Cubuktaki her rakam sepette ve odeme sayfasinda cikacak rakamin
-       AYNISI olmak zorunda. Iki ayri kosul var ve ikisi ayni seyi
-       bozmuyor, bu yuzden tek bayrak degil IKI bayrak:
+       AYNISI olmak zorunda. Tek kosul var:
 
-       1) SEPET BOS MU?  Indirim ("Ikinci Uronde %50 Indirim") bir
+       SEPET BOS MU?  Indirim ("Ikinci Uronde %50 Indirim") bir
           BXGY: kapsamdaki urunlerden 1 al, 1'ini yarim fiyata al.
           Sepette zaten uygun bir urun varsa Shopify eslesmeyi bizim
           iki uronumuz disinda kurabiliyor -- o zaman ne satir
           fiyatlari ne toplam tutuyor. Sepet /cart.js ile BIR KEZ
           okunuyor; salt okuma, yan etkisi yok.
 
-       2) GECERLI BIR INDIRIM KODU VAR MI?  Indirimin ayarinda
-          combinesWith.orderDiscounts ACIK, yani carktan gelen 500
-          TL'lik kod bunun USTUNE biniyor. Gercek siparislerde
-          dogrulandi: kod SIPARIS duzeyinde iniyor, kalemlerin
-          indirimli birim fiyati yine liste/2 kaliyor. Yani kod
-          KIRILIMI bozmuyor, yalnizca TOPLAMI bozuyor.
-          Kodun gecerliligini kupon katmani (assets/taksit-tablosu.js)
-          zaten hesapliyor ve kararini kartlardaki bloga yaziyor;
-          cerez cozumlemesini burada tekrarlamak yerine onun sonucu
-          okunuyor.
+       Tutmuyorsa hic rakam gosterilmiyor: kirilim liste fiyatlarina ve
+       yalnizca "%50" etiketine dusuyor. Yanlis rakam yerine
+       rakamsizlik.
 
-       Buradan:
-         kirilimKesin -> satir fiyatlari + ustu cizili + tasarruf
-                         rozeti (sepet bos olmasi yeter)
-         toplamKesin  -> "Toplam" satiri (ayrica kod da olmayacak)
+       ------------------------------------------------------------
+       CARK KODU DA HESABA GIRIYOR
 
-       Kesin olmayan ne varsa hic gosterilmiyor: kirilim liste
-       fiyatlarina ve yalnizca "%50" etiketine dusuyor. Yanlis rakam
-       yerine rakamsizlik. */
+       Kod SIPARIS duzeyinde inen SABIT tutarli bir indirim: kalemlerin
+       birim fiyatini degistirmiyor, toplamdan dusuyor. Iki indirim de
+       birbirini kabul ediyor (BXGY'nin combinesWith.orderDiscounts'u ve
+       kodun combinesWith.productDiscounts'u acik); on gercek sipariste
+       ara toplam, kalem toplamindan tam kod tutari kadar dusuk cikti.
+       Cekmece de ayni sonucu gosteriyor -- cart.total_price sepet
+       duzeyindeki indirimler DUSULMUS degerdir.
+
+       Kodun gecerliligini kupon katmani (assets/taksit-tablosu.js)
+       zaten saniyede bir hesapliyor ve kararini kartlardaki bloga
+       yaziyor; cerez cozumlemesi burada TEKRARLANMIYOR, onun sonucu
+       okunuyor. Kodun suresi dolunca katman blogu geri gizliyor ve
+       asagidaki gozlemci cubugu yeniden cizdiriyor -- ekranda bayat
+       bir indirim kalmiyor. */
     var sepetBos = null;   /* null = daha okunmadi */
     function sepetiOku() {
       if (sepetBos !== null) return;
@@ -458,11 +466,15 @@
       /* Kupon katmani gecerli kod bulunca bu blogun hidden'ini kaldiriyor. */
       return !!KOK.querySelector('[data-tt-kart-fb]:not([hidden])');
     }
-    function kirilimKesin() {
+    function rakamKesin() {
       return TUTAR_GOSTER && sepetBos === true;
     }
-    function toplamKesin() {
-      return kirilimKesin() && !kodVarMi();
+    /* Kod satiri ancak gecerli bir kod VARSA ve tutari ara toplamdan
+       kucukse aciliyor. Ikinci kosul kartlardaki blogun da kurali:
+       indirim tutara esit ya da ondan buyukse rakam gostermiyoruz. */
+    function kodKurusu(araToplam) {
+      if (!KOD_KURUS || !kodVarMi()) return 0;
+      return KOD_KURUS < araToplam ? KOD_KURUS : 0;
     }
 
     /* ---------- Set ----------
@@ -574,13 +586,16 @@
       /* Sepet daha okunmadiysa simdi oku: cubuk ilk kez rakam
          gosterecegi anda, sayfa acilisinda degil. */
       sepetiOku();
-      var kir = kirilimKesin();
-      var top = toplamKesin();
+      var kir = rakamKesin();
 
       var tam = set[sira[0]], ind = set[sira[1]];
       var indFiyat = Math.round(ind.fiyat / 2);
-      var toplam = tam.fiyat + indFiyat;
-      var kazanc = ind.fiyat - indFiyat;
+      var araToplam = tam.fiyat + indFiyat;
+      var kod = kir ? kodKurusu(araToplam) : 0;
+      var toplam = araToplam - kod;
+      /* Tasarruf = %50'den gelen + carktan gelen. Musterinin cebinde
+         kalan tutar bu; ikisini ayri ayri saymak yerine tek rakam. */
+      var kazanc = (ind.fiyat - indFiyat) + kod;
 
       var veri = [
         { e: tam, etiket: M.cubukEtiketTam, indirimli: false, odenen: tam.fiyat },
@@ -604,6 +619,18 @@
         if (esT && kir && v.indirimli) esT.textContent = para(v.e.fiyat);
       }
 
+      /* "Ara toplam" ve "Cark indirimi" yalnizca kod varken cikiyor:
+         kod yokken ara toplam zaten toplamin kendisi, ayni rakami iki
+         kez yazmanin anlami yok. */
+      if (araEl) {
+        araEl.hidden = !kod;
+        if (kod && araTutar) araTutar.textContent = para(araToplam);
+      }
+      if (kodEl) {
+        kodEl.hidden = !kod;
+        if (kod && kodTutar) kodTutar.textContent = '-' + para(kod);
+      }
+
       /* Solda durum cumlesi yalnizca hicbir rakam yokken kaliyor --
          sifir ve bir uronde oldugu gibi. Kirilim aciksa ayni seyi iki
          kez soylemis oluyordu ("2 urun, ikincisi yari fiyatina" ile
@@ -618,12 +645,8 @@
           tasMetin.textContent = String(M.cubukTasarruf || '').replace('[tutar]', para(kazanc));
         }
       }
-      /* Toplam kod varken DUSUYOR, kirilim dusmuyor: kod siparis
-         duzeyinde iniyor. O halde rozet ve satirlar kalip yalnizca
-         "Toplam" gizleniyor -- gosterilen her rakam yine sepettekinin
-         aynisi, eksigi de yok fazlasi da yok. */
-      if (toplamEl) toplamEl.hidden = !top;
-      if (tutarEl) tutarEl.textContent = top ? para(toplam) : '';
+      if (toplamEl) toplamEl.hidden = !kir;
+      if (tutarEl) tutarEl.textContent = kir ? para(toplam) : '';
     }
 
     function setEkle(urunId, varyant, karo) {
@@ -939,6 +962,17 @@
            kendisi olur; ic kutuya tiklama degil. */
         if (e.target === vDialog) varyantKapat();
       });
+    }
+
+    /* Kupon katmani kodu bulunca ya da suresi dolunca kartlardaki
+       blogun hidden'ini degistiriyor. Cubuk o karari okuyor ama kendi
+       basina haberi olmuyordu: sayfada bekleyen musteride suresi
+       dolmus bir indirim ekranda kalirdi. Tek blogu izlemek yetiyor,
+       katman hepsini birlikte ceviriyor. */
+    var kodBlok = KOK.querySelector('[data-tt-kart-fb]');
+    if (kodBlok && window.MutationObserver) {
+      new MutationObserver(function () { setCiz(); })
+        .observe(kodBlok, { attributes: true, attributeFilter: ['hidden'] });
     }
 
     window.addEventListener('resize', cubukOlc);
