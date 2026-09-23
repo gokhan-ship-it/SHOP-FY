@@ -21,5 +21,9 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
     - Kargo 99 TL ayrı satır olarak geliyor. 177 no'lu fatura (1.898 = 2.299 − 500 çark + 99 kargo) kargonun ürün satırlarına gömüldüğünü gösteriyor. Kod kargoyu tek kategorili siparişte o kategoriye ekliyor; çok kategorili + kargolu sipariş atlanıyor (kullanıcıya teyit ettirilecek).
     - Çark kodları (`WLO...`) ve couple %50 indirimi satır indirimi olarak geliyor; kod `originalTotal − discountAllocations` kullanıyor.
     - Fatura tarihi = siparişin Türkiye saatine göre günü.
+12. **Aşama 1 onayı (23.09.2026):** 10 siparişlik deneme çıktısı bağımsız hesapla doğrulandı (10/10 kuruşu kuruşuna). Kullanıcı teyit etti:
+    - Aynı kategoriden iki ürün tek satır çiftinde, adet 1 ile yazılır (elle de böyle kesiliyor).
+    - Kargo ücreti ürün tutarının içinde faturalanır.
+    - Shopify e-postayı veriyor; son 10 siparişin müşterileri Paraşüt'te e-postayla bulunamadı.
 
 Henüz cevaplanmadı: kısmi iade durumunda ne yapılacağı.
