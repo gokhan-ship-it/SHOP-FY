@@ -10,6 +10,7 @@
 //   node fatura.js --siparis 13575,13576        birden fazla sipariş
 //   node fatura.js --siparis 13575 --dry-run    tek siparişin denemesi
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
@@ -20,6 +21,10 @@ const { ilIlce } = require('./iller');
 
 const CIKTI_DOSYASI = path.join(__dirname, 'deneme-cikti.json');
 const KAYIT_DOSYASI = path.join(__dirname, 'invoices.json');
+// Shopify e-postası → Paraşüt müşteri no. E-posta Paraşüt'e yazılmadığı için (müşteriye
+// fatura e-postası gitmesin) mükerrer müşteri kartını bu yerel dosya önler. E-postanın
+// kendisi değil, özeti (SHA-256) saklanır.
+const MUSTERI_DOSYASI = path.join(__dirname, 'musteriler.json');
 
 const KATEGORI = {
   BLK: { ad: 'Bileklik', iscilik: 'BLK-01', gumus: 'BLK-02' },
@@ -81,11 +86,14 @@ async function oranSor() {
 function kayitOku() {
   return fs.existsSync(KAYIT_DOSYASI) ? JSON.parse(fs.readFileSync(KAYIT_DOSYASI, 'utf8')) : {};
 }
-function kayitYaz(kayit) {
-  const gecici = KAYIT_DOSYASI + '.yeni';
-  fs.writeFileSync(gecici, JSON.stringify(kayit, null, 2));
-  fs.renameSync(gecici, KAYIT_DOSYASI);
+function guvenliYaz(dosya, veri) {
+  const gecici = dosya + '.yeni';
+  fs.writeFileSync(gecici, JSON.stringify(veri, null, 2));
+  fs.renameSync(gecici, dosya);
 }
+const kayitYaz = (kayit) => guvenliYaz(KAYIT_DOSYASI, kayit);
+const musteriOku = () => (fs.existsSync(MUSTERI_DOSYASI) ? JSON.parse(fs.readFileSync(MUSTERI_DOSYASI, 'utf8')) : {});
+const epostaAnahtari = (e) => crypto.createHash('sha256').update(String(e).trim().toLowerCase()).digest('hex');
 
 // Bir siparişi fatura taslağına çevirir. Atlanacaksa { atla: 'sebep' } döner.
 function siparisiHesapla(s, eslesme, oran) {
@@ -177,7 +185,7 @@ function faturaJson(s, h, urunId, musteriId) {
 // müşteri kaydından doğrulandı (musteri-kesif.js). İl/ilçe için iller.js'e bakın.
 function musteriJson(s) {
   const b = s.billingAddress || {};
-  const ad = [b.firstName, b.lastName].filter(Boolean).join(' ').trim() || b.company || s.email;
+  const ad = [b.firstName, b.lastName].filter(Boolean).join(' ').trim() || b.company;
   const { il, ilce } = ilIlce(b.city, b.province);
   const adres = [b.address1, b.address2, b.zip].filter(Boolean).join(' ').trim();
   return {
@@ -185,7 +193,7 @@ function musteriJson(s) {
       type: 'contacts',
       attributes: {
         name: ad,
-        email: s.email,
+        // email bilerek yazılmaz: müşteriye Paraşüt'ten fatura e-postası gitmesin.
         contact_type: 'person',
         account_type: 'customer',
         tax_number: TCKN_BIREYSEL,
@@ -208,6 +216,7 @@ async function main() {
   const env = envOku();
   const eslesme = JSON.parse(fs.readFileSync(path.join(__dirname, 'urun-kodlari.json'), 'utf8'));
   const kayit = kayitOku();
+  const musteriler = musteriOku();
 
   // Katman 1: yarıda kalmış kayıt varsa hiçbir şey yapma, kullanıcıya göster.
   const takili = Object.entries(kayit).filter(([, v]) => v.durum === 'isleniyor');
@@ -295,20 +304,18 @@ async function main() {
     console.log(`  Fatura toplamı: ${H.tlGoster(h.faturaToplam)} TL = Shopify tutarı ✓`);
 
     if (!s.email) { atla('siparişte e-posta yok, müşteri eşleştirilemez'); continue; }
-    const c = await getir(ptoken, `https://api.parasut.com/v4/${firma}/contacts?filter[email]=${encodeURIComponent(s.email)}`);
-    const eslesen = c.data.filter((k) => (k.attributes.email || '').toLowerCase() === s.email.toLowerCase());
-    let musteriId = null;
+    const musteriAnahtar = epostaAnahtari(s.email);
+    const musteriId = musteriler[musteriAnahtar] || null;
     let yeniMusteri = null;
-    if (eslesen.length > 1) { atla(`Paraşüt'te bu e-postayla ${eslesen.length} müşteri var, hangisi olduğu belli değil`); continue; }
-    if (eslesen.length === 1) {
-      musteriId = eslesen[0].id;
-      console.log(`  Müşteri: Paraşüt'te mevcut (no: ${musteriId})`);
+    if (musteriId) {
+      console.log(`  Müşteri: daha önce bu program açmış (Paraşüt no: ${musteriId})`);
     } else {
       yeniMusteri = musteriJson(s);
+      if (!yeniMusteri.data.attributes.name) { atla('siparişte müşteri adı yok'); continue; }
       const m = yeniMusteri.data.attributes;
-      console.log(`  Müşteri: YENİ açılacak — TCKN ${m.tax_number}, il: ${m.city || '(boş)'}, ilçe: ${m.district || '(boş)'}`);
+      console.log(`  Müşteri: YENİ açılacak — TCKN ${m.tax_number}, il: ${m.city || '(boş)'}, ilçe: ${m.district || '(boş)'}, e-posta: yazılmayacak`);
     }
-    plan.push({ s, h, musteriId, yeniMusteri });
+    plan.push({ s, h, musteriId, musteriAnahtar, yeniMusteri });
   }
 
   console.log('═'.repeat(70));
@@ -345,7 +352,8 @@ async function main() {
     kayit[no] = { durum: 'isleniyor', zaman: new Date().toISOString(), tutar: H.kurusYaz(p.h.siparisToplam) };
     kayitYaz(kayit);
 
-    let musteriId = p.musteriId;
+    // Aynı müşterinin bu çalıştırmada ikinci siparişi varsa az önce açılan kartı kullan.
+    let musteriId = p.musteriId || musteriler[p.musteriAnahtar];
     if (!musteriId) {
       const r = await gonder(ptoken, `https://api.parasut.com/v4/${firma}/contacts`, p.yeniMusteri);
       if (r.reddedildi) {
@@ -362,6 +370,8 @@ async function main() {
         continue;
       }
       musteriId = r.veri.data.id;
+      musteriler[p.musteriAnahtar] = musteriId;
+      guvenliYaz(MUSTERI_DOSYASI, musteriler);
       kayit[no].musteri_id = musteriId;
       kayitYaz(kayit);
     }
