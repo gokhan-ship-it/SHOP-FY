@@ -1,0 +1,25 @@
+{
+  "type": "custom.ttn_cark",
+  "name": "Çark – genel",
+  "sections": {
+    "ttn_cark_genel": {
+      "type": "ttn-cark-genel",
+      "name": "Çark – genel ayarlar",
+      "settings": {
+        "aktif": true,
+        "kod": "K7QX4M9TR",
+        "sure_dk": 30,
+        "bar_metin": "[tutar] indirim aktif",
+        "bar_zemin": "#0A1A1C",
+        "bar_yazi": "#FFFFFF",
+        "bar_vurgu": "#78F5AB",
+        "kaydir_secici": "#ShopifyChat, .shopify-chat, [class*='mobile-dock'], .tt-sc-cubuk",
+        "kol_gizle": true,
+        "duyuru": "[tutar] indirim kazandın, sepetine eklendi."
+      }
+    }
+  },
+  "order": [
+    "ttn_cark_genel"
+  ]
+}

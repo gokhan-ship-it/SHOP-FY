@@ -1,0 +1,128 @@
+{%- doc -%}
+  CARKIN SAYFA BASINA BIR KEZ YUKLENEN PARCASI.
+  layout/theme.liquid icinden BOLUM GRUBU olarak cagriliyor
+  ({% sections 'ttn-cark' %}), yani HER SAYFADA.
+
+  Uc isi var:
+    1. Yapilandirma dugumu  -- kod, tutar, sure, cerez adlari, metinler
+    2. Alttaki sabit bar    -- kazanildiktan sonra, her sayfada
+    3. CSS + JS yuklemesi   -- cark karti sayfada olmasa da gerekli
+
+  NEDEN CARK KARTININ BOLUMUNDE DEGIL
+  Kart tema duzenleyiciden istenen sayfaya konuyor; ama kazandiktan
+  sonraki bar, sayacin devam etmesi ve kuponun sepete yeniden
+  uygulanmasi HER sayfada surmeli. Karti tasiyan bolum orada olmayabilir.
+
+  NEDEN config/settings_schema.json'a AYAR EKLENMEDI
+  O dosya temanin (Impact) kendi dosyasi; tema guncellenince uzerine
+  yaziliyor ve eklenen ayarlar kayboluyor. Bolum grubu ayni duzenleyici
+  deneyimini veriyor ama dosya bizim. Ayni gerekce temada zaten var:
+  sections/tt-anasayfa-cubuk.json ve tt-urun-cubuk.json.
+
+  PAYLASILAN DEGERLER BURADA TANIMLANMIYOR
+  Indirim TUTARI ve CEREZ ADLARI tema ayarindan okunuyor
+  (settings.tt_indirim_tutar, settings.tt_cerez_*), cunku ayni
+  degerleri mevcut indirim katmani da okuyor. Ikinci bir kopya
+  uretilseydi bir gun biri 500, digeri baska bir sey yazardi.
+{%- enddoc -%}
+
+{%- liquid
+  assign s = section.settings
+  assign sure_dk = s.sure_dk | default: 30
+  assign tutar_tl = settings.tt_indirim_tutar | plus: 0
+  assign birim = settings.tt_para_birim | default: 'TL'
+
+  comment
+    Barda ve kupon kartinda KISA bicim: "500 TL". Kurusu olan bir tutar
+    girilirse tt-para'ya dusuluyor, boylece "499,90 TL" de dogru
+    cikiyor. Katmandaki bicimKisa() ile ayni mantik.
+  endcomment
+  assign tam = tutar_tl | round
+  if tam == tutar_tl
+    assign tutar_yazi = tam | append: ' ' | append: birim
+  else
+    assign kurus = tutar_tl | times: 100 | round
+    capture tutar_yazi
+      render 'tt-para', kurus: kurus, birim: birim
+    endcapture
+    assign tutar_yazi = tutar_yazi | strip
+  endif
+-%}
+
+{%- comment -%}
+  Kodsuz cark cevirtmek kazanani bos ele gondermek olurdu; ayar acik
+  ve kod dolu degilse hicbir sey basilmiyor (JS de yuklenmiyor).
+{%- endcomment -%}
+{%- if s.aktif and s.kod != blank -%}
+  {{ 'ttn-cark.css' | asset_url | stylesheet_tag }}
+
+  {%- capture ttn_veri -%}
+{
+  "kod": {{ s.kod | json }},
+  "sureDk": {{ sure_dk | json }},
+  "tutarYazi": {{ tutar_yazi | json }},
+  "cKod": {{ settings.tt_cerez_kod | json }},
+  "cSure": {{ settings.tt_cerez_sure | json }},
+  "cZaman": {{ settings.tt_cerez_zaman | json }},
+  "barMetin": {{ s.bar_metin | json }},
+  "kaydirSecici": {{ s.kaydir_secici | json }},
+  "kolGizle": {{ s.kol_gizle | json }},
+  "duyuruKazandi": {{ s.duyuru | json }}
+}
+  {%- endcapture -%}
+  <div data-ttn-veri="{{ ttn_veri | strip | escape }}" hidden></div>
+
+  {%- comment -%}
+    SABIT BAR. Baslangicta hidden; JS yalnizca kazanilmis ve suresi
+    dolmamis durumda aciyor.
+
+    z-index 55: temanin sepet cekmecesi (z-35) ile couple yapiskan
+    cubugumuz (z-60) arasinda. Cekmece acilinca JS bari tamamen
+    kaldiriyor, yani cekmecenin uzerine binmesi soz konusu degil;
+    buradaki sira yalnizca cekmece kapaliyken gecerli.
+  {%- endcomment -%}
+  <div class="ttn-cark-bar" data-ttn-bar hidden
+       style="
+         --ttn-bar-zemin: {{ s.bar_zemin }};
+         --ttn-bar-yazi: {{ s.bar_yazi }};
+         --ttn-bar-vurgu: {{ s.bar_vurgu }};
+       ">
+    <span class="ttn-cark-bar-ic">
+      <span class="ttn-cark-bar-metin" data-ttn-bar-metin></span>
+      <span class="ttn-cark-bar-sayac" data-ttn-bar-sayac></span>
+    </span>
+  </div>
+
+  <script src="{{ 'ttn-cark.js' | asset_url }}" defer></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Çark – genel ayarlar",
+  "settings": [
+    { "type": "paragraph", "content": "Çarkın mağaza çapındaki ayarları. Kartın kendisi ayrı bir bölüm (\"Çark\"); onu istediğiniz sayfaya tema düzenleyiciden ekleyin. İndirim TUTARI burada değil, Tema ayarları → \"İndirim tutarı\" alanında: aynı değeri ürün kartlarındaki indirimli fiyat ve taksit modalı da okuyor." },
+
+    { "type": "checkbox", "id": "aktif", "label": "Çarkı göster", "default": false,
+      "info": "Kapalıyken çark, alttaki bar ve JS hiç yüklenmez." },
+    { "type": "text", "id": "kod", "label": "Çark indirim kodu",
+      "info": "Shopify'da tanımlı, sabit tutarlı bir indirim kodu. Kazanan müşteriye bu kod sepete otomatik uygulanır." },
+    { "type": "range", "id": "sure_dk", "label": "Kupon süresi", "min": 1, "max": 60, "step": 1, "unit": "dk", "default": 30,
+      "info": "Süre site tarafında uygulanır: dolunca kod sepetten kaldırılır ve indirimli gösterim normale döner. Test için 1 dakikaya indirebilirsiniz. (Shopify aralık ayarında en fazla 101 adım olabildiği için üst sınır 60 dk.)" },
+
+    { "type": "header", "content": "Alttaki sabit bar" },
+    { "type": "text", "id": "bar_metin", "label": "Bar metni", "default": "[tutar] indirim aktif",
+      "info": "[tutar] kazanılan tutarla değişir." },
+    { "type": "color", "id": "bar_zemin", "label": "Zemin", "default": "#0A1A1C" },
+    { "type": "color", "id": "bar_yazi", "label": "Yazı", "default": "#FFFFFF" },
+    { "type": "color", "id": "bar_vurgu", "label": "Geri sayım", "default": "#78F5AB" },
+    { "type": "text", "id": "kaydir_secici", "label": "Barın üstüne çıkaracağı öğeler (CSS seçici)",
+      "default": "#ShopifyChat, .shopify-chat, [class*='mobile-dock'], .tt-sc-cubuk",
+      "info": "Ekranın altına sabitlenmiş öğeler (sohbet balonu, mobil dock) barın yüksekliği kadar yukarı kaydırılır. Virgülle ayırın." },
+    { "type": "checkbox", "id": "kol_gizle", "label": "Koleksiyon içindeki indirim şeridini gizle", "default": true,
+      "info": "Alttaki bar ile aynı şeyi söylüyor; ikisi birden gürültü. Kapatırsanız ikisi de görünür." },
+
+    { "type": "header", "content": "Erişilebilirlik" },
+    { "type": "text", "id": "duyuru", "label": "Kazanınca ekran okuyucuya", "default": "[tutar] indirim kazandın, sepetine eklendi." }
+  ]
+}
+{% endschema %}

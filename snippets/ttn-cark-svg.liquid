@@ -1,0 +1,104 @@
+{%- doc -%}
+  CARKIN KENDISI. Tek kaynak, iki boy: kompakt karttaki 60px mini cark
+  ile acilan alandaki 230px cark AYNI dosyadan cikiyor. Boylece "mini
+  cark buyugunun aynisi olsun" kurali kod tarafindan garanti ediliyor,
+  iki yeri elle esitlemek gerekmiyor.
+
+  Mini surumde yazi basilmiyor: 60px'te "1000 TL" okunmuyor, yalnizca
+  renk deseni tasiniyor. Ayni sebeple mini surumde dilim kenarlari da
+  ince kaliyor.
+
+  GEOMETRI CAGIRANDAN GELIYOR. Liquid'de sin/cos yok; yay uc noktalari
+  ve etiket konumlari bolumde onceden hesaplanmis diziler halinde
+  duruyor (bkz. sections/ttn-spin-wheel.liquid). Dilim 0 saat 12'den
+  basliyor, saat yonunde ilerliyor; JS'teki hedef aci hesabi da bu
+  siraya guveniyor.
+
+  YAZI RENGI OLCULEREK SECILIYOR: color_brightness 140'in ustundeyse
+  koyu, altindaysa beyaz. Acik yesil dilimlerde (#5CC98F, #4FB883)
+  koyu, koyu dilimlerde (#1F4648, #0A1A1C) beyaz cikiyor -- istenen
+  sonucun aynisi, ama renk ayardan degistirilince elle duzeltme
+  gerekmiyor.
+
+  @param {array} dilimler - sekiz tutar (dize)
+  @param {array} renkler - sekiz dilim rengi
+  @param {array} yollar - sekiz SVG path
+  @param {array} donus - etiket grubunun donus acisi
+  @param {array} ust - etiket merkezin ustunde mi ('1') altinda mi ('0')
+  @param {string} birim - "TL"
+  @param {boolean} mini - 60px surum mu
+{%- enddoc -%}
+<svg class="ttn-cark-svg{% if mini %} ttn-cark-svg--mini{% endif %}"
+     viewBox="0 0 200 200" role="img"
+     {% if mini %}aria-hidden="true" focusable="false"{% else %}aria-label="{{ 'İndirim çarkı' | escape }}"{% endif %}>
+  {%- comment -%}
+    Dis cerceve. Dilimlerin ALTINA ciziliyor ve tam yaricapta; cerceve
+    olarak gorunmesini dilimlerin kuculmesi sagliyor (asagida).
+  {%- endcomment -%}
+  <circle cx="100" cy="100" r="99.5" fill="var(--ttn-halka, #F2F2F2)"></circle>
+
+  {%- comment -%}
+    Dilimler 0.93 olcekle ciziliyor: geriye kalan ~7px, ustteki
+    r=99.5 daireden gelen DIS CERCEVE. Ayri bir halka cizmek yerine
+    olcek kullanmak, yay uc noktalarini yeniden hesaplamayi
+    gerektirmiyor.
+  {%- endcomment -%}
+  <g class="ttn-cark-dilimler" transform="translate(100 100) scale(0.93) translate(-100 -100)">
+    {%- for yol in yollar -%}
+      {%- assign i = forloop.index0 -%}
+      {%- assign renk = renkler[i] | default: '#1F4648' | strip -%}
+      <path d="{{ yol }}" fill="{{ renk }}" data-ttn-dilim="{{ i }}"></path>
+    {%- endfor -%}
+  </g>
+
+  {%- unless mini -%}
+    <g class="ttn-cark-yazilar">
+      {%- for yol in yollar -%}
+        {%- liquid
+          assign i = forloop.index0
+          assign renk = renkler[i] | default: '#1F4648' | strip
+          assign parlaklik = renk | color_brightness
+          assign yazi = '#FFFFFF'
+          if parlaklik > 140
+            assign yazi = '#0A1A1C'
+          endif
+          assign tutar = dilimler[i] | default: '500' | strip
+        -%}
+        {%- comment -%}
+          YAZI DILIMLE BIRLIKTE DONUYOR (klasik cark yerlesimi). Duz
+          yazi denendi ve yanlisti: cark rastgele bir acida durdugu
+          icin butun etiketler ayni tuhaf acida kaliyordu. Radyal
+          yerlesimde durmus cark dogal gorunuyor.
+
+          ALT YARIDAKILER BAS ASAGI DEGIL: acisi 90-270 arasinda olan
+          dilimlerde grup 180 derece daha cevrilip yazi merkezin
+          ALTINA aliniyor. Sonuc ayni dilim, ama okunur yazi. Donus ve
+          yon degerleri bolumde onceden hesaplanmis durumda.
+        {%- endcomment -%}
+        {%- liquid
+          if ust[i] == '1'
+            assign y_tutar = 34
+            assign y_birim = 52
+          else
+            assign y_tutar = 166
+            assign y_birim = 148
+          endif
+        -%}
+        <g data-ttn-yazi="{{ i }}" fill="{{ yazi }}" transform="rotate({{ donus[i] }} 100 100)">
+          <text x="100" y="{{ y_tutar }}" text-anchor="middle" class="ttn-cark-tutar">{{ tutar }}</text>
+          <text x="100" y="{{ y_birim }}" text-anchor="middle" class="ttn-cark-birim">{{ birim | default: 'TL' }}</text>
+        </g>
+      {%- endfor -%}
+    </g>
+  {%- endunless -%}
+
+  {%- comment -%}
+    Gobek: carkin ortasinda acik gri daire. Mini surumde de var --
+    "ortada kucuk acik gri daire" kurali iki boyda da gecerli.
+  {%- endcomment -%}
+  <circle cx="100" cy="100" r="{% if mini %}26{% else %}30{% endif %}"
+          fill="var(--ttn-halka, #F2F2F2)"></circle>
+  {%- unless mini -%}
+    <text x="100" y="107" text-anchor="middle" class="ttn-cark-gobek">ttn</text>
+  {%- endunless -%}
+</svg>

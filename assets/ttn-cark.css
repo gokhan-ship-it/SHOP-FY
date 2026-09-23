@@ -1,0 +1,312 @@
+/* ------------------------------------------------------------------
+   INDIRIM CARKI  (.ttn-cark-*)
+
+   Pop-up DEGIL. Sayfanin akisinda duran bir kart; dokununca ayni
+   kartin icinde asagi dogru aciliyor. Perde yok, scroll kilidi yok.
+
+   YER BASTAN AYRILIYOR. Kartin uc hali var (kompakt / cark acik /
+   kupon) ve hangisinin gorunecegi ancak tarayicida belli oluyor.
+   Bu yuzden .ttn-cark-ic'e sabit bir min-height verildi: durum
+   degisse de sayfa oynamiyor (layout shift yok).
+
+   OLCULEN KONTRASTLAR (hepsi AA'nin uzerinde)
+     #0A1A1C / #D3DDD2   12.8:1   kart yazisi
+     #3C4E40 / #D3DDD2    6.4:1   "Herkes kazanir"
+     #0A1A1C / #78F5AB   13.1:1   buton
+     beyaz   / #0A1A1C   17.8:1   alt bar
+     #78F5AB / #0A1A1C   13.1:1   alt bar sayaci
+     beyaz   / #1F4648   10.4:1   koyu dilim yazisi
+     #0A1A1C / #5CC98F    8.7:1   acik dilim yazisi
+     #0A1A1C / #4FB883    7.2:1   acik dilim yazisi
+   ------------------------------------------------------------------ */
+.ttn-cark {
+  --ttn-kart-zemin: #d3ddd2;
+  --ttn-vurgu: #78f5ab;
+  --ttn-koyu: #0a1a1c;
+  --ttn-alt-yazi: #3c4e40;
+  --ttn-halka: #f2f2f2;
+  --ttn-genislik: 520px;
+  --ttn-ust: 16px;
+  --ttn-alt: 16px;
+
+  max-width: var(--ttn-genislik);
+  margin: 0 auto;
+  padding: var(--ttn-ust) 16px var(--ttn-alt);
+  color: var(--ttn-koyu);
+  font-variant-numeric: tabular-nums;
+}
+.ttn-cark *, .ttn-cark *::before, .ttn-cark *::after { box-sizing: border-box; }
+
+/* Suresi dolmus musteriye cark BIR DAHA gosterilmiyor. Bolumun
+   tamami kalkiyor -- bos bir kutu birakmak da kotu olurdu. */
+.ttn-cark[data-ttn-durum="bitti"] { display: none; }
+
+.ttn-cark-ic {
+  min-height: 84px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--ttn-kart-zemin);
+}
+
+/* --- Kompakt satir (varsayilan hal) --- */
+.ttn-cark-kompakt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  cursor: pointer;
+}
+.ttn-cark-kompakt:focus-visible { outline: 2px solid var(--ttn-koyu); outline-offset: 3px; border-radius: 12px; }
+.ttn-cark[data-ttn-durum="kazandi"] .ttn-cark-kompakt,
+.ttn-cark[data-ttn-acik] .ttn-cark-kompakt { display: none; }
+
+.ttn-cark-mini { flex: none; display: block; width: 60px; height: 60px; }
+.ttn-cark-metin { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+.ttn-cark-baslik {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -.01em;
+}
+.ttn-cark-alt { font-size: 12px; line-height: 1.3; color: var(--ttn-alt-yazi); }
+
+/* --- Butonlar --- */
+.ttn-cark-dugme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ttn-vurgu);
+  color: var(--ttn-koyu);
+  font: inherit;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ttn-cark-dugme:focus-visible { outline: 2px solid var(--ttn-koyu); outline-offset: 2px; }
+.ttn-cark-dugme[disabled] { opacity: .55; cursor: default; }
+.ttn-cark-dugme--kucuk { flex: none; height: 36px; padding: 0 18px; font-size: 14px; }
+.ttn-cark-dugme--tam { width: 100%; height: 44px; margin-top: 14px; font-size: 15px; }
+
+/* --- Acilan alan ---
+   max-height ile: acilan icerigin yuksekligi sabit (cark + buton +
+   not), yani olculebilir bir tavan var ve gecis ucuz. Kapali halde
+   overflow gizli, icerik klavyeyle de gezilemesin diye visibility
+   kapali. */
+.ttn-cark-alan {
+  max-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  transition: max-height 500ms cubic-bezier(.22, 1, .36, 1), visibility 0s linear 500ms;
+}
+.ttn-cark[data-ttn-acik] .ttn-cark-alan {
+  max-height: 460px;
+  visibility: visible;
+  transition: max-height 500ms cubic-bezier(.22, 1, .36, 1), visibility 0s;
+}
+.ttn-cark-alan-ic { padding-top: 4px; }
+
+.ttn-cark-vazgec {
+  display: block;
+  margin-left: auto;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: var(--ttn-alt-yazi);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.3;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.ttn-cark-vazgec:focus-visible { outline: 2px solid var(--ttn-koyu); outline-offset: 2px; }
+
+/* --- Cark sahnesi --- */
+.ttn-cark-sahne {
+  position: relative;
+  width: 230px;
+  height: 230px;
+  margin: 6px auto 0;
+}
+.ttn-cark-carkim { width: 100%; height: 100%; }
+.ttn-cark-svg { display: block; width: 100%; height: 100%; }
+
+/* Ustteki isaretci: asagiyi gosteren ucgen. Carkin USTUNE biniyor
+   (z-index) ve donmuyor -- donen yalnizca carkin kendisi. */
+.ttn-cark-ibre {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-top: 16px solid #5cc98f;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / .25));
+}
+
+.ttn-cark-tutar { font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+.ttn-cark-birim { font-size: 10px; font-weight: 500; opacity: .85; }
+.ttn-cark-gobek { font-size: 15px; font-weight: 700; fill: #0a1a1c; letter-spacing: -.02em; }
+
+/* Kazanan dilim: renk ve yazi rengi JS tarafindan degil CSS ile
+   veriliyor, boylece "kazanan" tek bir nitelikten ibaret kaliyor. */
+.ttn-cark-dilimler path[data-ttn-kazanan] { fill: var(--ttn-vurgu); }
+.ttn-cark-yazilar g[data-ttn-kazanan] { fill: var(--ttn-koyu); }
+
+.ttn-cark-konfeti {
+  position: absolute;
+  inset: -30px;
+  width: calc(100% + 60px);
+  height: calc(100% + 60px);
+  pointer-events: none;
+}
+
+.ttn-cark .ttn-cark-not {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--ttn-alt-yazi);
+}
+
+/* --- Kupon karti (kazandiktan sonra) --- */
+.ttn-cark-kupon {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+}
+.ttn-cark[data-ttn-durum="kazandi"] .ttn-cark-kupon { display: flex; }
+
+.ttn-cark-kupon-ikon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--ttn-koyu);
+  color: var(--ttn-vurgu);
+}
+.ttn-cark-kupon-ikon svg { width: 22px; height: 22px; }
+.ttn-cark-kupon-metin { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+.ttn-cark-kupon-baslik { font-size: 15px; font-weight: 600; line-height: 1.25; letter-spacing: -.01em; }
+.ttn-cark-kupon-alt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--ttn-alt-yazi);
+}
+.ttn-cark-kupon-kod { font-weight: 600; letter-spacing: .04em; }
+.ttn-cark-kupon-sayac {
+  flex: none;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.01em;
+}
+
+.ttn-cark .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------
+   MINI CARKIN KIPIRDAMASI
+   Alti saniyede bir kisa bir donup geri gelme. Sonsuz donguye
+   yayilmis tek bir animasyon: %0-8 arasi hareket, kalani duruyor.
+   ------------------------------------------------------------------ */
+@keyframes ttn-cark-kipirda {
+  0%   { transform: rotate(0deg); }
+  3%   { transform: rotate(22deg); }
+  6%   { transform: rotate(-10deg); }
+  9%   { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+.ttn-cark-mini .ttn-cark-svg { animation: ttn-cark-kipirda 6s ease-in-out infinite; }
+/* ?cark=1 ile gelen reklam trafiginde bir kez BELIRGIN donus. */
+@keyframes ttn-cark-selam {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(720deg); }
+}
+.ttn-cark[data-ttn-selam] .ttn-cark-mini .ttn-cark-svg {
+  animation: ttn-cark-selam 1400ms cubic-bezier(.22, 1, .36, 1) 1;
+}
+
+/* ------------------------------------------------------------------
+   ALTTAKI SABIT BAR
+   Bolumden bagimsiz: snippets/ttn-cark-bar.liquid ile her sayfada.
+   ------------------------------------------------------------------ */
+.ttn-cark-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 55;
+  width: 100%;
+  padding: 9px 16px calc(9px + env(safe-area-inset-bottom, 0px));
+  background: var(--ttn-bar-zemin, #0a1a1c);
+  color: var(--ttn-bar-yazi, #fff);
+  font-variant-numeric: tabular-nums;
+}
+.ttn-cark-bar[hidden] { display: none; }
+/* Gercek sepet cekmecesi ya da baska bir katman aciklen bar kalkiyor:
+   odeme butonunun ustune hicbir sey binmemeli. Karari JS veriyor
+   (gorunurluk olculerek), burasi yalnizca sonucu uyguluyor. */
+.ttn-cark-bar[data-ttn-ortulu] { display: none; }
+.ttn-cark-bar-ic {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.ttn-cark-bar-metin { font-size: 13px; font-weight: 500; line-height: 1.3; }
+.ttn-cark-bar-sayac {
+  flex: none;
+  color: var(--ttn-bar-vurgu, #78f5ab);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* Bar acikken sayfanin son satiri ve sabit oteki ogeler (sohbet
+   balonu, mobil dock) bariyerin altinda kalmasin. Yukseklik JS
+   tarafindan olculup --ttn-cark-bar olarak yaziliyor. */
+body.ttn-cark-bar-acik { padding-bottom: var(--ttn-cark-bar, 44px); }
+
+/* ------------------------------------------------------------------
+   MASAUSTU
+   ------------------------------------------------------------------ */
+@media (min-width: 750px) {
+  .ttn-cark-ic { padding: 14px 18px; }
+  .ttn-cark-baslik { font-size: 15px; }
+  .ttn-cark-sahne { width: 260px; height: 260px; }
+  .ttn-cark[data-ttn-acik] .ttn-cark-alan { max-height: 500px; }
+  .ttn-cark-bar-metin { font-size: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ttn-cark-mini .ttn-cark-svg,
+  .ttn-cark[data-ttn-selam] .ttn-cark-mini .ttn-cark-svg { animation: none; }
+  .ttn-cark-alan { transition: none; }
+  .ttn-cark-carkim { transition: none !important; }
+}
