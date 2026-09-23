@@ -9,6 +9,6 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
 5. **Test siparişi:** Olmayacak, ayrıca kontrol gerekmez.
 6. **Kodun yeri:** Tema deposu içinde `fatura/` klasörü.
 
-7. **Ürün kartları:** Mevcut Paraşüt kartları kullanılır (ör. "NOT20101 ZAMAN KAPSÜLÜ BİLEKLİK"). Kullanıcı kartlara `BLK-01` gibi kodları elle yazar. Faturaya CLAUDE.md'deki satır adları yerine kartların mevcut adları çıkar. Gerekirse sonra revize edilecek.
+7. **Ürün kartları:** Önce A (mevcut kartlara kod yazmak) seçildi, sonra B'ye dönüldü. Mevcut 844 kart model kısaltmalı (NOT20101 vb.) ve markasız bir bileklik/kolye kartı yok. CLAUDE.md'deki 7 kart yeni açılır (`urun-olustur.js`), eski kartlara dokunulmaz. Stok takibi kapalı; kullanıcı Paraşüt'te model bazlı satış takip etmiyor.
 
 Henüz cevaplanmadı: kısmi iade durumunda ne yapılacağı.
