@@ -16,5 +16,10 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
    - CRM: Eight Stars White, Infinity Glow + Couple sürümleri
    - KZK: Klasik Zaman Kapsülü, Red Velvet
    - Bilerek eşlenmedi, sipariş atlanır: Premium Hediye Kutusu, Ek Paketler, Event Zaman Kapsülü (2 ürün), Zaman Kapsülü Künye, COUPLE ÜRÜN OLUSTUR ve hazır "X + Y Couple Zaman Kapsülü" setleri (tek varyantta iki kategori; nasıl bölüneceği sorulacak).
+10. **Shopify erişimi:** Dev Dashboard uygulaması "Parasut Fatura", client credentials (token 24 saat). `.env`: `SHOPIFY_CLIENT_ID`, `SHOPIFY_CLIENT_SECRET`. İzinler: `read_orders`, `read_customers`, `read_products` (varyant no'su için gerekli).
+11. **Siparişlerden görülenler (Eylül 2026):**
+    - Kargo 99 TL ayrı satır olarak geliyor. 177 no'lu fatura (1.898 = 2.299 − 500 çark + 99 kargo) kargonun ürün satırlarına gömüldüğünü gösteriyor. Kod kargoyu tek kategorili siparişte o kategoriye ekliyor; çok kategorili + kargolu sipariş atlanıyor (kullanıcıya teyit ettirilecek).
+    - Çark kodları (`WLO...`) ve couple %50 indirimi satır indirimi olarak geliyor; kod `originalTotal − discountAllocations` kullanıyor.
+    - Fatura tarihi = siparişin Türkiye saatine göre günü.
 
 Henüz cevaplanmadı: kısmi iade durumunda ne yapılacağı.
