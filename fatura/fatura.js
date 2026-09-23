@@ -16,6 +16,7 @@ const readline = require('readline');
 const { hata, envOku, tokenAl, getir, gonder } = require('./ortak');
 const { shopifyTokenAl, sonSiparisler, siparisGetir } = require('./shopify');
 const H = require('./hesap');
+const { ilIlce } = require('./iller');
 
 const CIKTI_DOSYASI = path.join(__dirname, 'deneme-cikti.json');
 const KAYIT_DOSYASI = path.join(__dirname, 'invoices.json');
@@ -173,12 +174,11 @@ function faturaJson(s, h, urunId, musteriId) {
 }
 
 // Shopify fatura adresinden Paraşüt müşteri kartı. Alan adları gerçek bir Paraşüt
-// müşteri kaydından doğrulandı (musteri-kesif.js).
+// müşteri kaydından doğrulandı (musteri-kesif.js). İl/ilçe için iller.js'e bakın.
 function musteriJson(s) {
   const b = s.billingAddress || {};
   const ad = [b.firstName, b.lastName].filter(Boolean).join(' ').trim() || b.company || s.email;
-  const sehirMetni = (b.city || '').trim();
-  const ilce = sehirMetni.includes('/') ? sehirMetni.split('/').slice(1).join('/').trim() : sehirMetni;
+  const { il, ilce } = ilIlce(b.city, b.province);
   const adres = [b.address1, b.address2, b.zip].filter(Boolean).join(' ').trim();
   return {
     data: {
@@ -189,7 +189,7 @@ function musteriJson(s) {
         contact_type: 'person',
         account_type: 'customer',
         tax_number: TCKN_BIREYSEL,
-        city: (b.province || sehirMetni.split('/')[0] || '').trim(),
+        city: il,
         district: ilce,
         address: adres,
         phone: b.phone || s.phone || null,
