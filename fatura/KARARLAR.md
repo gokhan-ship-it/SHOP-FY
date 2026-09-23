@@ -9,4 +9,6 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
 5. **Test siparişi:** Olmayacak, ayrıca kontrol gerekmez.
 6. **Kodun yeri:** Tema deposu içinde `fatura/` klasörü.
 
+7. **Ürün kartları:** Mevcut Paraşüt kartları kullanılır (ör. "NOT20101 ZAMAN KAPSÜLÜ BİLEKLİK"). Kullanıcı kartlara `BLK-01` gibi kodları elle yazar. Faturaya CLAUDE.md'deki satır adları yerine kartların mevcut adları çıkar. Gerekirse sonra revize edilecek.
+
 Henüz cevaplanmadı: kısmi iade durumunda ne yapılacağı.
