@@ -102,7 +102,25 @@
     geliyor ve grup basliklari bu siraya guveniyor.
   endcomment
 
-  assign para_ornek = 1234567 | money
+  comment
+    PARA BICIMI -- ornek dize temanin money filtresinden DEGIL,
+    tt-para'dan aliniyor. Bu magazanin money_format'i Ingilizce
+    gruplama uretiyor ("12,345.67TL"); karolardaki fiyatlar ise
+    tt-para ile Turkce cikiyor ("12.345,67 TL"). Ikisi ayni ekranda
+    yan yana duruyordu. Tek kaynak tt-para: bicim degisirse
+    kartlarda da cubukta da birlikte degisiyor.
+
+    12345.67 secildi cunku butun basamaklari farkli -- JS ayiraclarin
+    yerini tek anlamli okuyabiliyor. tt-para bir sebeple gelmezse
+    ornek elle yaziliyor; JS'in kendi yedegi de zaten Turkce.
+  endcomment
+  capture para_ornek
+    render 'tt-para', kurus: 1234567
+  endcapture
+  assign para_ornek = para_ornek | strip
+  unless para_ornek contains ','
+    assign para_ornek = '12.345,67 TL'
+  endunless
 -%}
 
 {%- comment -%}
@@ -129,6 +147,7 @@
   "durum2": {{ s.durum_2 | json }},
   "durum1": {{ s.durum_1 | json }},
   "durum0": {{ s.durum_0 | json }},
+  "durumDolu": {{ s.durum_dolu | json }},
   "dugmeEksik": {{ s.dugme_eksik | json }},
   "dugmeTam": {{ s.dugme_tam | json }},
   "uyari": {{ s.uyari_metin | json }},
@@ -691,8 +710,10 @@
       "info": "Tutarı tema ayarlarındaki \"İndirim tutarı\" değerinden okunuyor — koleksiyon kartlarındaki indirimli fiyatla aynı kaynak." },
     { "type": "text", "id": "durum_2", "label": "Hiç ürün seçilmemişken", "default": "2 ürün daha seç" },
     { "type": "text", "id": "durum_1", "label": "1 ürün seçilmişken", "default": "1 ürün daha seç" },
-    { "type": "text", "id": "durum_0", "label": "2 ürün seçilmişken", "default": "2 ürün, ikincisi yarı fiyatına",
-      "info": "Yalnızca kırılım gösterilemediğinde (sepet doluyken) çıkar; kırılım açıksa yerini tasarruf rozeti alır." },
+    { "type": "text", "id": "durum_0", "label": "2 ürün seçilmişken (tutar kapalıyken)", "default": "2 ürün, ikincisi yarı fiyatına",
+      "info": "Yalnızca aşağıdaki \"Çubukta toplam tutarı göster\" kapalıyken çıkar." },
+    { "type": "text", "id": "durum_dolu", "label": "2 ürün seçiliyken, sepette başka ürün varken", "default": "İndirimli toplam sepette görünür",
+      "info": "Sepette başka ürün varken indirimin hangi ürüne düşeceğine Shopify sepette karar veriyor; çubuk bu yüzden rakam yazmıyor. Boş bırakırsanız üstteki metin çıkar." },
     { "type": "text", "id": "dugme_eksik", "label": "Buton – eksik seçim", "default": "Sepete ekle ([n]/2)",
       "info": "[n] seçili ürün sayısıyla değişir." },
     { "type": "text", "id": "dugme_tam", "label": "Buton – 2 ürün seçiliyken", "default": "2 ürünü sepete ekle" },

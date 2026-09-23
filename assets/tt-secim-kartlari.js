@@ -13,13 +13,14 @@
      sepet seviyesinde kendiliginden isliyor. Cubuktaki tutar yalnizca
      bir onizleme; gercek tutari sepet hesapliyor.
 
-   PARA BICIMI TAHMIN EDILMIYOR
-     Magazanin money_format'i tema ayarindan farkli olabiliyor (burada
-     "{{amount}}TL" yaziyor ama vitrinde Turkce bicim gorunuyor). Bu
-     yuzden bicim SABITLENMIYOR: bolum Liquid'in kendi `money` filtresini
-     bilinen bir tutara (12.345,67) uygulayip sonucu data-sc-para-ornek
-     olarak veriyor, buradaki cozucu de ondan ayiraclari geri okuyor.
-     Boylece cubuktaki bicim vitrinin geri kalaniyla ayni kaliyor.
+   PARA BICIMI SABITLENMIYOR
+     Bicim burada yazili degil: bolum Liquid'i bilinen bir tutari
+     (12.345,67) bicimlendirip sonucu data-sc-para-ornek olarak
+     veriyor, buradaki cozucu de ondan ayiraclari geri okuyor.
+     Ornegi ureten tt-para, karolardaki fiyatlari da uretiyor --
+     yani cubuk ile kartlar ayni kaynaktan besleniyor. (Magazanin
+     money_format'i Ingilizce gruplama uretiyor, "12,345.67TL";
+     ekranin geri kalani Turkce oldugu icin ornek oradan alinmiyor.)
    ------------------------------------------------------------------ */
 (function () {
   'use strict';
@@ -410,11 +411,73 @@
     }
 
     function cubukOlc() {
-      if (!cubuk || cubuk.hidden) {
+      if (!cubuk) return;
+      /* Ortuluyken (gercek sepet cekmecesi acikken) cubuk display:none;
+         offsetHeight 0 cikar. Olcup yazarsak sayfanin alt boslugu
+         cekmecenin ARKASINDA kayar, cekmece kapaninca da geri ziplar.
+         O yuzden ortuluyken son olculen deger oldugu gibi kaliyor. */
+      if (cubuk.hasAttribute('data-sc-ortulu')) return;
+      if (cubuk.hidden) {
         document.body.style.removeProperty('--tt-sc-cubuk-yuk');
         return;
       }
       document.body.style.setProperty('--tt-sc-cubuk-yuk', (cubuk.offsetHeight + 12) + 'px');
+    }
+
+    /* ---------- Gercek sepet acikken cubuk kalkiyor ----------
+
+       Tema sepet cekmecesi z-35'te, bu cubuk 60'ta: cubuk cekmecenin
+       alt kismini -- ODEME butonunu -- ortuyordu ve musteri odemeye
+       gecemiyordu. Cozum z-index yarisi degil (o zaman cubuk perdenin
+       altindan yine sizerdi): katman aciksa cubuk tamamen kalkiyor.
+
+       ACIK OLMANIN ISARETI TAHMIN EDILMIYOR. Tema hangi niteligi
+       cevirirse cevirsin (hidden / open / sinif / style), sonuc hep
+       ayni: oge GORUNUR hale geliyor. Olculen sey de bu -- gorunurluk.
+       Boylece tema guncellenip mekanizma degisse bile calisiyor.
+
+       Secici yalniz sepet cekmecesi degil: ustumuze acilan her kalici
+       katmanda (menu cekmecesi, arama, hizli bakis) cubugun kalkmasi
+       dogru. Bu bolumun KENDI katmanlari disarida: kendi varyant
+       secicimiz native <dialog>, zaten ust katmanda ve cubuktan once
+       cizilmiyor. */
+    var ORTU_SEC = 'cart-drawer, #CartDrawer, [aria-modal="true"], dialog[open]';
+
+    function ortuGorunur(el) {
+      if (!el || KOK.contains(el)) return false;
+      if (el.hasAttribute('hidden')) return false;
+      var r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return false;
+      var st = window.getComputedStyle(el);
+      /* opacity BILEREK bakilmiyor: cekmece acilirken perde 0'dan
+         geliyor ve o anda cubugu birakirsak ilk kareler yine ortulu
+         gecerdi. */
+      return st.display !== 'none' && st.visibility !== 'hidden';
+    }
+
+    function ortuVar() {
+      var hepsi;
+      try { hepsi = document.querySelectorAll(ORTU_SEC); }
+      catch (e) { return false; }
+      for (var i = 0; i < hepsi.length; i++) if (ortuGorunur(hepsi[i])) return true;
+      return false;
+    }
+
+    function ortuBak() {
+      if (!cubuk) return;
+      var ortulu = ortuVar();
+      if (ortulu === cubuk.hasAttribute('data-sc-ortulu')) return;
+      cubuk.toggleAttribute('data-sc-ortulu', ortulu);
+      /* Geri gelirken yeniden olculuyor: ortuluyken atlanan olcum
+         nedeniyle alt boslugu bayat kalmasin. */
+      if (!ortulu) cubukOlc();
+    }
+
+    var ortuBekler = false;
+    function ortuPlanla() {
+      if (ortuBekler) return;
+      ortuBekler = true;
+      window.requestAnimationFrame(function () { ortuBekler = false; ortuBak(); });
     }
 
     /* ---------- Hangi rakam kesin ----------
@@ -635,9 +698,23 @@
          sifir ve bir uronde oldugu gibi. Kirilim aciksa ayni seyi iki
          kez soylemis oluyordu ("2 urun, ikincisi yari fiyatina" ile
          ustu cizili satir), o yuzden kalkiyor. */
+      /* Iki ayri "rakam yazamiyorum" hali var ve ayni cumle ikisine
+         birden uymuyor:
+           - tutar_goster KAPALI: magaza rakam istemiyor, teklifi
+             anlatan cumle dogru.
+           - SEPETTE URUN VAR: rakam kesin olmadigi icin yazilmiyor;
+             burada teklifi tekrar anlatmak, iki TAM fiyatin yaninda
+             "indirim uygulanmadi" gibi okunuyordu.
+         Sepet HENUZ OKUNMADIYSA (sepetBos null/'bekliyor') teklif
+         cumlesi kaliyor: daha bilmedigimiz bir seyi soylemiyoruz,
+         yoksa okuma bitene kadar bos sepette de yanlis cumle
+         parlardi. */
       if (durumEl) {
         durumEl.hidden = kir;
-        if (!kir) durumEl.textContent = M.durum0 || '';
+        if (!kir) {
+          var dolu = TUTAR_GOSTER && sepetBos === false;
+          durumEl.textContent = (dolu ? (M.durumDolu || M.durum0) : M.durum0) || '';
+        }
       }
       if (tasarruf) {
         tasarruf.hidden = !kir;
@@ -975,6 +1052,28 @@
         .observe(kodBlok, { attributes: true, attributeFilter: ['hidden'] });
     }
 
+    /* Cekmece/katman acilip kapanmasini yakalayan tek izleyici.
+       Nitelik SUZGECI genis tutuldu cunku hangi niteligin cevrildigi
+       temaya kalmis; karar yine de gorunurluge bakilarak veriliyor.
+       Her mutasyonda degil, kare basina en fazla bir kez olculuyor. */
+    if (window.MutationObserver) {
+      new MutationObserver(ortuPlanla).observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['hidden', 'open', 'class', 'style', 'aria-modal', 'aria-expanded']
+      });
+    }
+    /* Emniyet kemeri: sepete ekledikten sonra cekmeceyi tema aciyor.
+       Nitelik degisikligi zaten yakalaniyor, ama acilis animasyonlu
+       oldugu icin birkac noktada daha bakiliyor -- odeme butonunun
+       ortulu kalmasi kabul edilebilir bir risk degil. */
+    document.addEventListener('cart:refresh', function () {
+      ortuPlanla();
+      window.setTimeout(ortuBak, 300);
+      window.setTimeout(ortuBak, 900);
+    });
+
     window.addEventListener('resize', cubukOlc);
     /* Kirilim acilirken cubuk buyuyor: gecis bitince yuksekligi
        yeniden olcup sayfanin alt boslugunu guncelliyoruz, yoksa son
@@ -994,6 +1093,7 @@
     tukendiSona();
     siraKur();
     ciz();
+    ortuBak();
   }
 
   function hepsi() {

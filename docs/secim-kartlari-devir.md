@@ -8,12 +8,12 @@ Koleksiyon sayfası bölümü. Önek `.tt-sc-*`. Taslak tema
 
 | Dosya | Boyut | md5 |
 |---|---|---|
-| `sections/tt-secim-kartlari.liquid` | 37.666 | `922dbfd0a506dfbc382084d7518db010` |
+| `sections/tt-secim-kartlari.liquid` | 41.217 | `c1c4ef6767670ad26ced51aa9f23f85f` |
 | `snippets/tt-sc-karo.liquid` | 2.491 | `1bd4b1f99f5d98de6016556e687f5d55` |
 | `snippets/tt-sc-ikon.liquid` | 4.394 | `522c58d6ffb02ad14ea8dfdce5d38552` |
 | `snippets/tt-uk-kart.liquid` | 10.126 | `a9afd0a5f97c495bdaa0f61f53b29b4d` |
-| `assets/tt-secim-kartlari.css` | 27.803 | `f6f08c9dd673d3ec9208d184acd97523` |
-| `assets/tt-secim-kartlari.js` | 39.406 | `b64ddc89cde08a1670391ac15af2d7fe` |
+| `assets/tt-secim-kartlari.css` | 29.032 | `890eac18091ec641227872fdd57a3297` |
+| `assets/tt-secim-kartlari.js` | 47.633 | `f31ab7277168a17d33217331383dc52d` |
 | `assets/tt-uk-kart.css` | 8.298 | `b3f921a0a5dab296f502fcefa53a2adb` |
 | `assets/tt-uk-kart.js` | 5.172 | `235f918a235ce9dea82453e106ab0cf9` |
 
@@ -241,6 +241,17 @@ Sıralama Liquid'de değil JS'te: üç ayrı döngüde basılan ve ortak bir
 `gorulen` dizesiyle tekilleştirilen listeyi iki geçişe bölmek dedup'ı
 kırardı.
 
+**İki koleksiyonda birden olan ürün cinsiyet filtresinde sona alınıyor.**
+`Klasik Zaman Kapsülü` kadın döngüsünde basıldığı için DOM'da bütün
+erkek ürünlerinden **önce** duruyor. "Erkek" seçilince kadın karoları
+gizleniyordu ve o ürün listenin **en başına** çıkıyordu — oysa kendi
+koleksiyonunda (bileklik) en sonda. Çözüm tek karoyu iki yere basmak
+değil: cinsiyet seçildiğinde `data-sc-kime="ikisi"` karoları listenin
+sonuna alınıyor (`sirala()`), "Tümü"de `TEMEL_SIRA` geri geliyor —
+grup başlıkları ve grupların iç sırası hiç bozulmuyor. Sıra zaten
+doğruysa DOM'a dokunulmuyor. `TEMEL_SIRA`, `tukendiSona()`'dan **sonra**
+donduruluyor, yani tükenenlerin sona alınması korunuyor.
+
 **Fiyat satırı `price` sınıfını da taşıyor.** Kupon katmanı
 (`taksit-tablosu.js`) indirimli bloğu açarken **aynı ebeveyndeki**
 `.price` öğesini gizliyor; `tt-kart-taksit` ile normal fiyat satırının
@@ -353,6 +364,14 @@ ve karttaki numara rozetini de besliyor, yani üçü birbirini tutuyor.
 çipler, üstü çizili fiyat, ayraç) açık bir yüzey için tanımlı, koyu
 zeminde hiçbiri okunmuyordu.
 
+**Para biçimi** çubukta yazılı değil: bölüm Liquid'i bilinen bir tutarı
+(12.345,67) biçimlendirip `data-sc-para-ornek` olarak veriyor, JS de
+ondan ayraçları geri okuyor. Örneği üreten `snippets/tt-para.liquid`,
+karolardaki fiyatları da üreten snippet — yani çubuk ile kartlar aynı
+kaynaktan besleniyor. Mağazanın `money_format`'ı İngilizce gruplama
+ürettiği için ("12,345.67TL") oradan alınmıyordu: çubukta "2.699,00TL",
+kartlarda "2.699,00 TL" gibi iki biçim yan yana duruyordu.
+
 ### Rakamların Shopify ile birebir tuttuğu doğrulandı
 
 Mağazadaki indirim Admin API'den okundu: **"İkinci Üründe %50
@@ -372,27 +391,88 @@ Yani kırılım ve "%50" etiketinin yeri kesin. Ama kod **sipariş
 düzeyinde** iniyor: ara toplam kalem toplamından tam 500 TL düşük
 çıkıyor, kalemlerin indirimli birim fiyatı ise yine liste/2 kalıyor.
 
-### İki ayrı bayrak
+### Tek koşul: sepet boş mu
 
-Bu yüzden tek bir "rakam göster/gösterme" anahtarı yerine ikisi ayrıldı
-(`assets/tt-secim-kartlari.js`):
+Önce iki ayrı bayrak vardı (`kirilimKesin` / `toplamKesin`): kod varken
+kırılım duruyor, yalnızca "Toplam" gizleniyordu. Çark indirimi çubuğun
+hesabına girdikten sonra buna gerek kalmadı — kodun tutarı artık
+biliniyor ve toplamdan düşülebiliyor. Geriye tek koşul kaldı
+(`rakamKesin`, `assets/tt-secim-kartlari.js`):
 
-| Bayrak | Neyi açıyor | Koşulu |
-|---|---|---|
-| `kirilimKesin` | satır fiyatları, üstü çizili fiyat, tasarruf rozeti | ayar açık **ve** sepet boş |
-| `toplamKesin` | "Toplam" satırı | ayrıca geçerli indirim kodu yok |
+> **ayar açık** ve **sepet boş** → bütün rakamlar çıkıyor.
 
-- **Sepet doluysa** hiçbir rakam yok: BXGY eşleşmesini Shopify bizim iki
-  ürünümüzün dışında kurabilir. Kırılım liste fiyatlarına ve yalnızca
-  "%50" etiketine düşüyor, solda `durum_0` metni kalıyor.
-- **Kod varsa** kırılım ve tasarruf rozeti duruyor, yalnızca "Toplam"
-  gizleniyor.
+**Sepet doluysa** hiçbir rakam yok: BXGY eşleşmesini Shopify bizim iki
+ürünümüzün dışında kurabilir. Kırılım liste fiyatlarına ve yalnızca
+"%50" etiketine düşüyor.
 
 Sepet `/cart.js` ile **bir kez** okunuyor (salt okuma, yan etkisi yok) ve
-ilk kez rakam gösterileceği anda, sayfa açılışında değil. Kodun geçerli
-olup olmadığı yeniden hesaplanmıyor: kupon katmanı
+ilk kez rakam gösterileceği anda, sayfa açılışında değil.
+
+### Çark indirimi ayrı satır
+
+Geçerli bir çark kodu varken kırılımın altına iki satır daha açılıyor:
+
+```
+Ara toplam                                   5.498,50 TL
+Çark indirimi                                 -500,00 TL
+──────────────────────────────────────────────────────
+[etiket] 1.699,50 TL tasarruf          Toplam 4.998,50 TL
+```
+
+Kod **sipariş düzeyinde** indiği için ürün satırlarına karışmıyor;
+kırılımın altında ayrı duruyor, böylece toplamın nereden geldiği
+görünüyor. Tasarruf rozeti ikisini topluyor (%50'den gelen + koddan
+gelen): müşterinin cebinde kalan tutar bu.
+
+Tutar **tahmin edilmiyor**: `settings.tt_indirim_tutar`, yani koleksiyon
+kartlarındaki indirimli fiyat bloğunun okuduğu ayarın **ta kendisi**.
+Kodun geçerli olup olmadığı da yeniden hesaplanmıyor: kupon katmanı
 (`assets/taksit-tablosu.js`) zaten hesaplayıp kararını kartlardaki
-`[data-tt-kart-fb]` bloğuna yazıyor, çubuk o sonucu okuyor.
+`[data-tt-kart-fb]` bloğuna yazıyor, çubuk o sonucu okuyor. Kodun süresi
+dolunca katman bloğu geri gizliyor; çubuk bir `MutationObserver` ile o
+bloğu izlediği için satırlar kendiliğinden kalkıyor — ekranda bayat bir
+indirim kalmıyor.
+
+### Rakam yokken ne yazıyor
+
+Solda iki farklı cümle çıkabiliyor, çünkü "rakam yazamıyorum"un iki ayrı
+sebebi var:
+
+| Durum | Ayar | Varsayılan metin |
+|---|---|---|
+| Tutar ayarı kapalı | `durum_0` | "2 ürün, ikincisi yarı fiyatına" |
+| Sepette başka ürün var | `durum_dolu` | "İndirimli toplam sepette görünür" |
+
+Önce ikisinde de `durum_0` çıkıyordu ve sepeti dolu müşteri iki **tam**
+fiyatın yanında "ikincisi yarı fiyatına" cümlesini görüp indirimin
+uygulanmadığını sanıyordu. Sepet henüz okunmadıysa `durum_0` kalıyor:
+bilmediğimiz bir şeyi söylemiyoruz.
+
+### Gerçek sepet açılınca çubuk kalkıyor
+
+Temanın sepet çekmecesi `z-35`, çubuk `z-60`: çubuk çekmecenin
+**"Ödemeye geç" butonunu örtüyordu** ve müşteri ödemeye geçemiyordu.
+
+Çözüm z-index yarışı değil — çubuk perdenin altından yine sızardı.
+Katman açıkken çubuk `[data-sc-ortulu]` alıp tamamen kalkıyor.
+
+Açık olmanın işareti **tahmin edilmiyor**: tema hangi niteliği çevirirse
+çevirsin (`hidden` / `open` / sınıf / `style`) sonuç hep aynı, öğe
+**görünür** hale geliyor — ölçülen şey de bu. Seçici
+`cart-drawer, #CartDrawer, [aria-modal="true"], dialog[open]`, yani menü
+çekmecesi ve hızlı bakış gibi bütün kalıcı katmanları da kapsıyor.
+Bölümün kendi varyant seçicisi dışarıda (`KOK.contains`): o native
+`<dialog>`, zaten üst katmanda.
+
+Değişiklikler `document.documentElement` üzerinde tek bir
+`MutationObserver` ile yakalanıyor ve kare başına en fazla bir kez
+ölçülüyor. Emniyet kemeri olarak `cart:refresh` sonrası 300 ve 900 ms'de
+bir daha bakılıyor: çekmece animasyonlu açılıyor ve ödeme butonunun
+örtülü kalması kabul edilebilir bir risk değil.
+
+Örtülüyken **ölçüm yapılmıyor**: `offsetHeight` 0 çıkardı, sayfanın alt
+boşluğu çekmecenin arkasında kayar, çekmece kapanınca geri zıplardı.
+Çubuk geri gelirken yeniden ölçülüyor.
 
 ### Kontrast için iki ton koyulaştırıldı
 
@@ -470,7 +550,7 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   varyantla), rozetin başlığa binmemesi, yatay taşma, seçim durumu
   renkleri, halka ölçüleri, filtre sayaçları, grup başlıkları,
   `single_kaynak` iki değeri, erkek koleksiyon sayfası.
-- `test3.mjs` — 40 test: varsayılan ayarda Single modunda çiplerin
+- `test3.mjs` — 51 test: varsayılan ayarda Single modunda çiplerin
   çalışması (29 / 17 / 13 ürün, grup başlıkları, set kutusunun Single'da
   çıkmaması), Single modunda temanın ızgarasına devir,
   Couple modunda geri alma, `kendi` ayarında temaya dokunulmaması,
@@ -526,14 +606,24 @@ pixel debugger'da doğrulanmalı** — varsayılmadı.
   sürüklemesi Chromium'da zaten click üretmediği için naif bir test
   koruma kaldırılsa bile geçerdi).
 
-- `test10.mjs` — 233 test: çubuğun kırılımı. İki satırın ölçüleri,
+- `test10.mjs` — 243 test: çubuğun kırılımı. İki satırın ölçüleri,
   tipografisi ve renkleri, çiplerin ve tasarruf rozetinin kontrastı,
   açılma geçişi, uzun ürün adının tek satırda üç noktayla kısalması,
   eşit fiyatlı iki üründe hesabın doğruluğu, **sepet doluyken bütün
-  rakamların kalkması**, **kod varken yalnızca toplamın kalkması**
-  (kırılım ve rozet duruyor), kod kalkınca toplamın geri gelmesi,
+  rakamların kalkması**, çark kodu satırlarının açılması/tutarları ve
+  tasarrufa eklenmesi, kodun süresi dolunca satırların kalkması,
   sepete giden isteğin değişmediği — 360/390/430px'te.
 
-**1633/1633 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü
+- `test11.mjs` — 40 test: **gerçek sepet çekmecesi açıkken çubuğun
+  kalkması**. Ölçüt `elementFromPoint`: "Ödemeye geç" butonunun
+  merkezinde duran öğe gerçekten buton mu. Çekmecenin kapalı/açık/
+  yeniden kapalı hâlleri, sepete ekleme akışının sonunda gecikmeli
+  açılan çekmece, aç-kapa döngüsünde niteliğin yapışmaması, çekmecesi
+  olmayan mağaza, bölümün kendi varyant diyalogunun çubuğu **örtmemesi**,
+  alt boşluğun örtülüyken bozulmayıp geri gelirken yeniden ölçülmesi —
+  ve sepet doluyken/tutar ayarı kapalıyken çıkan iki ayrı cümle.
+  360/390/430px'te.
+
+**1694/1694 geçiyor.** Ölçülen kontrastların tamamı AA (en düşüğü
 5.0:1); tek istisna tükenen ürünün soluk metni (#8b8e95, 3.4:1) —
 WCAG 1.4.3 devre dışı bırakılmış öğeleri kapsam dışı tutuyor.

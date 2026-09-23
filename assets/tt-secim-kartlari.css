@@ -603,6 +603,11 @@
   box-shadow: 0 -2px 12px rgb(0 0 0 / .06);
 }
 .tt-sc-cubuk[hidden] { display: none; }
+/* Gercek sepet cekmecesi (z-35) acikken cubuk (z-60) odeme butonunu
+   ortuyordu. Z-index dusurmek yetmez -- cubuk perdenin altindan yine
+   gorunurdu; katman aciksa cubuk tamamen kalkiyor. Niteligi JS
+   koyuyor, karari da gorunurluge bakarak veriyor. */
+.tt-sc-cubuk[data-sc-ortulu] { display: none; }
 .tt-sc-cubuk-ic { max-width: var(--tt-sc-genislik); margin: 0 auto; }
 
 /* --- Fiyat kirilimi ---
