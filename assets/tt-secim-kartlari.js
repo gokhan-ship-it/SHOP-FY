@@ -209,6 +209,8 @@
         cipler[c3].setAttribute('tabindex', s ? '0' : '-1');
       }
 
+      sirala();
+
       var toplam = 0;
       var grupSayi = { kadin: 0, erkek: 0 };
       for (var k = 0; k < karolar.length; k++) {
@@ -331,6 +333,55 @@
       /* Dizi DOM sirasini yansitsin: sayimlar sirali degil ama
          okuyanin kafasi karismasin. */
       karolar = Array.prototype.slice.call(KOK.querySelectorAll('[data-sc-karo]'));
+    }
+
+    /* ---------- IKI KOLEKSIYONDA BIRDEN OLAN URUN ----------
+
+       Karolar UC ayri dongude basiliyor (kadin, sayfanin kendi
+       koleksiyonu, erkek) ve tekillestirmede ILK donguyu goren kazaniyor.
+       Iki koleksiyonda birden olan urun ("Klasik Zaman Kapsulu") bu
+       yuzden kadin grubunda basiliyor ve DOM'da butun erkek
+       urunlerinden ONCE duruyor. "Erkek" secilince kadin karolari
+       gizleniyor ve o urun listenin EN BASINA cikiyordu -- oysa kendi
+       koleksiyonunda (bileklik) en sonda duruyor.
+
+       Cozum tek bir karoyu iki yere basmak DEGIL: cinsiyet secildiginde
+       "ikisi" isaretli karolar listenin sonuna aliniyor. "Tumu"de temel
+       sira geri geliyor, yani grup basliklari ve gruplarin ic sirasi
+       hic bozulmuyor.
+
+       TEMEL SIRA tukendiSona()'dan SONRA donduruluyor: tukenenlerin
+       grup sonuna alinmasi zaten bir kez yapilmis oluyor ve burasi onun
+       uzerine biniyor. */
+    var TEMEL_SIRA = null;
+    function siraKur() {
+      if (!izgara) return;
+      TEMEL_SIRA = Array.prototype.slice.call(izgara.children);
+    }
+    function sirala() {
+      if (!izgara || !TEMEL_SIRA) return;
+      var hedef;
+      if (kime === 'tumu') {
+        hedef = TEMEL_SIRA;
+      } else {
+        var once = [], sona = [];
+        for (var i = 0; i < TEMEL_SIRA.length; i++) {
+          /* Grup basliklarinda data-sc-kime yok; null donuyor ve
+             yerinde kaliyorlar. */
+          if (TEMEL_SIRA[i].getAttribute('data-sc-kime') === 'ikisi') sona.push(TEMEL_SIRA[i]);
+          else once.push(TEMEL_SIRA[i]);
+        }
+        hedef = once.concat(sona);
+      }
+      /* Sira zaten dogruysa DOM'a hic dokunulmuyor: her ciz() cagrisinda
+         29 karoyu yeniden baglamanin anlami yok. */
+      for (var j = 0; j < hedef.length; j++) {
+        if (izgara.children[j] !== hedef[j]) break;
+      }
+      if (j === hedef.length) return;
+      var parca = document.createDocumentFragment();
+      for (var k = 0; k < hedef.length; k++) parca.appendChild(hedef[k]);
+      izgara.appendChild(parca);
     }
 
     /* ---------- Urun baglantilari ----------
@@ -907,6 +958,7 @@
        yeniden karistirmaya gerek yok, stok durumu sayfa omru boyunca
        degismiyor. */
     tukendiSona();
+    siraKur();
     ciz();
   }
 
