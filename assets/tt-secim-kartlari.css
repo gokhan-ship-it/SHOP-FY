@@ -638,6 +638,8 @@
   line-height: 1.4;
 }
 .tt-sc-kir + .tt-sc-kir { margin-top: 4px; }
+/* Satirin kendi display'i var; [hidden] tek basina yetmiyor. */
+.tt-sc-kir[hidden] { display: none; }
 
 .tt-sc-kir-sol {
   display: flex;
@@ -693,6 +695,11 @@
   margin: 10px 0 9px;
   background: var(--tt-sc-cizgi);
 }
+/* Ayrac urun satirlarini TOPLAMDAN ayiriyor. Tek urun seciliyken
+   toplam yok, yani ayiracak bir sey de yok -- yoksa satirin altinda
+   bir yere baglanmayan bir cizgi kaliyordu. Kosul JS'ten degil
+   kokteki hazir bayragindan geliyor (n === 2). */
+.tt-sc-cubuk:not([data-sc-hazir]) .tt-sc-kir-ayrac { display: none; }
 
 /* ARA TOPLAM VE CARK INDIRIMI
    Urun satirlariyla ayni olculer, ama adlari urun adi degil -- normal

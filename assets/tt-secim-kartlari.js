@@ -636,15 +636,42 @@
        satirda. */
     function cubukCiz(n, sira) {
       var ikiUrun = n === 2;
-      if (kirilim) kirilim.toggleAttribute('data-sc-acik', ikiUrun);
+      /* Kirilim TEK URUNDE DE aciliyor. Once yalnizca ikide aciliyordu
+         ve bir urun secen musteri sectigi seyin fiyatini hic
+         gormuyordu -- oysa o rakam kesin: liste fiyati, hicbir indirim
+         iddiasi yok. Ikinci satir bos kaldigi icin kapali. */
+      if (kirilim) kirilim.toggleAttribute('data-sc-acik', n > 0);
 
       if (!ikiUrun) {
+        /* Tek urun: birinci satira secilen urun, ikinci satir kapali. */
+        if (kirSatir.length) {
+          var bir = kirSatir[0];
+          bir.hidden = n === 0;
+          if (n === 1) {
+            var e1 = set[sira[0]];
+            bir.removeAttribute('data-sc-indirimli');
+            var a1 = bir.querySelector('[data-sc-kir-ad]');
+            var t1 = bir.querySelector('[data-sc-kir-etiket]');
+            var s1 = bir.querySelector('[data-sc-kir-eski]');
+            var f1 = bir.querySelector('[data-sc-kir-fiyat]');
+            if (a1) a1.textContent = e1.ad;
+            if (t1) t1.textContent = M.cubukEtiketTam || '';
+            if (s1) s1.hidden = true;
+            if (f1) f1.textContent = para(e1.fiyat);
+          }
+          for (var b = 1; b < kirSatir.length; b++) kirSatir[b].hidden = true;
+        }
+        if (araEl) araEl.hidden = true;
+        if (kodEl) kodEl.hidden = true;
         if (durumEl) { durumEl.hidden = false; durumEl.textContent = n === 0 ? (M.durum2 || '') : (M.durum1 || ''); }
         if (tasarruf) tasarruf.hidden = true;
         if (toplamEl) toplamEl.hidden = true;
         if (tutarEl) tutarEl.textContent = '';
         return;
       }
+
+      /* Iki urunde iki satir da geri geliyor. */
+      for (var g = 0; g < kirSatir.length; g++) kirSatir[g].hidden = false;
 
       /* Sepet daha okunmadiysa simdi oku: cubuk ilk kez rakam
          gosterecegi anda, sayfa acilisinda degil. */
