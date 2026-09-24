@@ -224,13 +224,73 @@
   </div>
 </div>
 
+{%- comment -%}
+  HEDEFIN ARDINA TASINMA
+
+  Kartin istenen yeri baska bir bolumun ICI olabiliyor -- ornegin
+  koleksiyondaki Kadin/Erkek filtresinin hemen alti. Tek parca olan o
+  bolumun arasina tema duzenleyiciden bolum suruklenemiyor.
+
+  Cozum o bolume dokunmak DEGIL: kart acilista, ayarda verilen CSS
+  secicisinin isaret ettigi ogenin hemen ARDINA geciriliyor. Boylece
+  hedef bolum hic degismiyor; iliski tek yonlu ve tek bir ayarda.
+  Ayni desen temada zaten var (tema_izgara_secici, gizle_secici).
+
+  BU SCRIPT KARTIN KAPANISINDAN SONRA: yukaridaki durum scripti kartin
+  ICINDE ve orada kart henuz tam ayristirilmamis durumda -- ayristirici
+  hala icine yazarken dugumu tasimak ayristirmayi bozar. Burada kart
+  bitmis oluyor.
+
+  IKI SIRA DA CALISIYOR. Cark bolumu, hedefi tasiyan bolumun ALTINA
+  konduysa hedef bu anda hazir ve tasima ilk boyamadan once bitiyor --
+  hicbir sey kipirdamiyor. USTUNE konduysa hedef henuz dogmamis olur;
+  o zaman kart gecici olarak gizlenip DOMContentLoaded'da tasiniyor.
+  Gizleme guvenli, cunku gizleyen script'in kendisi calisiyor demek ki
+  JS var ve o olay mutlaka gelecek. Boylece kart once yanlis yerde
+  gorunup sonra ziplamiyor.
+
+  Hedef hic bulunamazsa (yanlis secici, baska bir sablon) kart oldugu
+  yerde ve GORUNUR kaliyor: yanlis bir ayar carki yok etmiyor.
+{%- endcomment -%}
+{%- if s.hedef_secici != blank -%}
+  <script>
+    (function () {
+      var k = document.getElementById('ttnCark-{{ sid }}');
+      if (!k) return;
+      var sec = {{ s.hedef_secici | json }};
+
+      function tasi() {
+        var hedef;
+        try { hedef = document.querySelector(sec); } catch (e) { return true; }
+        if (!hedef) return false;
+        if (hedef.nextElementSibling !== k) {
+          hedef.insertAdjacentElement('afterend', k);
+          k.setAttribute('data-ttn-tasindi', '');
+          var sar = document.getElementById('shopify-section-{{ sid }}');
+          if (sar) sar.setAttribute('data-ttn-bosaldi', '');
+        }
+        return true;
+      }
+
+      if (tasi()) return;
+      /* Hedef daha ayristirilmamis: kart bu arada gorunmesin. */
+      var eskiGizli = k.hidden;
+      k.hidden = true;
+      document.addEventListener('DOMContentLoaded', function () {
+        tasi();
+        k.hidden = eskiGizli;
+      });
+    })();
+  </script>
+{%- endif -%}
+
 {% schema %}
 {
   "name": "Çark",
   "tag": "section",
   "class": "ttn-cark-section",
   "settings": [
-    { "type": "paragraph", "content": "Çarkın çalışması için Tema ayarları → Çark bölümündeki \"Çarkı göster\" açık ve bir indirim kodu girilmiş olmalı. İndirim tutarı, kupon süresi ve alttaki sabit bar da oradan yönetiliyor — bu bölüm yalnızca kartın görünümü." },
+    { "type": "paragraph", "content": "Çarkın çalışması için \"Çark – genel ayarlar\" bölümünde \"Çarkı göster\" açık ve bir indirim kodu girilmiş olmalı (tema düzenleyicide sol listede, en altta). İndirim tutarı Tema ayarları → \"İndirim tutarı\" alanından geliyor — aynı değeri ürün kartlarındaki indirimli fiyat ve taksit modalı da okuyor. Bu bölüm yalnızca kartın görünümü." },
 
     { "type": "header", "content": "Kompakt kart" },
     { "type": "text", "id": "kompakt_baslik", "label": "Başlık", "default": "Çarkı çevir, indirimini kazan" },
@@ -261,6 +321,11 @@
     { "type": "color", "id": "koyu", "label": "Koyu (yazı, kupon dairesi)", "default": "#0A1A1C" },
     { "type": "color", "id": "alt_yazi", "label": "Alt satır yazısı", "default": "#3C4E40" },
     { "type": "color", "id": "halka", "label": "Çark çerçevesi ve göbeği", "default": "#F2F2F2" },
+
+    { "type": "header", "content": "Yerleşim" },
+    { "type": "text", "id": "hedef_secici", "label": "Hangi öğenin hemen altına (CSS seçici)",
+      "default": ".tt-sc-filtre",
+      "info": "Kart açılışta bu öğenin hemen ardına geçer — böylece tek parça bir bölümün ortasına girebiliyor. Varsayılan değer, Single/Couple bölümündeki Kadın/Erkek filtre satırı. Boş bırakırsanız veya öğe bulunamazsa kart, bölümü koyduğunuz yerde kalır. İPUCU: Çark bölümünü hedefi içeren bölümün ALTINA koyun; üstüne koyarsanız da çalışır ama sayfa bir kez yeniden akar." },
 
     { "type": "header", "content": "Görünüm" },
     { "type": "range", "id": "genislik", "label": "En fazla genişlik", "min": 320, "max": 900, "step": 20, "unit": "px", "default": 520 },

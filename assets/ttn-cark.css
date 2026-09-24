@@ -41,6 +41,18 @@
    tamami kalkiyor -- bos bir kutu birakmak da kotu olurdu. */
 .ttn-cark[data-ttn-durum="bitti"] { display: none; }
 
+/* TASINMIS HAL. Kart baska bir bolumun kabina girdiginde o kabin
+   kendi genisligi ve YAN boslugu gecerli; kart yalnizca yatay
+   sinirlarini birakiyor, yoksa ici ice iki kap olusuyordu. Dikey
+   bosluk kartin kendi ayarindan gelmeye devam ediyor. */
+.ttn-cark[data-ttn-tasindi] {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+/* Kart tasindiktan sonra geride kalan bolum sarmalayicisi. */
+[data-ttn-bosaldi] { display: none; }
+
 .ttn-cark-ic {
   min-height: 84px;
   padding: 12px 14px;
