@@ -67,7 +67,7 @@
     if (h.d !== 'kazandi') return 0;
     return Math.max(0, h.t + SURE_MS - Date.now());
   }
-  /* Ekranda gorunen hal. "bitti" saklanmiyor, kalan sureden tureiyor:
+  /* Ekranda gorunen hal. "bitti" saklanmiyor, kalan sureden turuyor:
      boylece saat degistirme ya da baska bir sekmede gecen sure
      kendiliginden dogru okunuyor. */
   function gorunenDurum() {
@@ -175,9 +175,13 @@
         'transition:transform 200ms ease}');
     }
     /* Koleksiyon izgarasindaki serit ayni seyi soyluyor; ikisi birden
-       gurultu. Ayardan kapatilabiliyor. */
+       gurultu. Ayardan kapatilabiliyor.
+
+       KANCA "kod var", "bar gorunuyor" DEGIL: bar cekmece acilinca ya
+       da yapiskan sepet cubugu ekrandayken kalkiyor; serit o anlarda
+       geri gelseydi musteri ayni mesaji bir anda iki yerde gorurdu. */
     if (V.kolGizle) {
-      parcalar.push('body.ttn-cark-bar-acik .tt-kol{display:none !important}');
+      parcalar.push('body.ttn-cark-kod .tt-kol{display:none !important}');
     }
     if (!parcalar.length) return;
     var st = document.createElement('style');
@@ -195,6 +199,7 @@
     if (!bar) return;
     var acik = gorunenDurum() === 'kazandi';
     bar.hidden = !acik;
+    document.body.classList.toggle('ttn-cark-kod', acik);
     document.body.classList.toggle('ttn-cark-bar-acik', acik);
     if (!acik) {
       document.body.style.removeProperty('--ttn-cark-bar');
@@ -213,6 +218,18 @@
      tema hangi niteligi cevirirse cevirsin sonuc ayni. */
   var ORTU_SEC = 'cart-drawer, #CartDrawer, [aria-modal="true"], dialog[open]';
 
+  /* Ayardan gelen ekleme: ekranin altini BASKA bir cubuk tutuyorsa
+     (koleksiyondaki yapiskan sepet cubugu gibi) bizim bar cekiliyor.
+     Iki siyah serit ust uste binmesin diye: sayac zaten kupon kartinda
+     duruyor, indirim de o cubugun kendi hesabinda gorunuyor.
+     Ayari bosaltirsan bar her zaman cikar.
+
+     AYRI DEGISKENDE TUTULUYOR, yukaridakine EKLENMIYOR: ayara gecersiz
+     bir secici yazilirsa querySelectorAll atar ve tek dizede birlesmis
+     olsalardi cekmece korumasi da birlikte duserdi -- odeme butonu yine
+     ortulurdu. Ikisi ayri sorulunca kotu ayar yalnizca kendini bozar. */
+  var ORTU_EK = String(V.gizleSecici || '').trim();
+
   function ortuGorunur(el) {
     if (!el || el === bar || (bar && bar.contains(el))) return false;
     if (el.hasAttribute('hidden')) return false;
@@ -221,12 +238,16 @@
     var st = window.getComputedStyle(el);
     return st.display !== 'none' && st.visibility !== 'hidden';
   }
-  function ortuVar() {
+  function ortuSor(sec) {
+    if (!sec) return false;
     var hepsi;
-    try { hepsi = document.querySelectorAll(ORTU_SEC); }
+    try { hepsi = document.querySelectorAll(sec); }
     catch (e) { return false; }
     for (var i = 0; i < hepsi.length; i++) if (ortuGorunur(hepsi[i])) return true;
     return false;
+  }
+  function ortuVar() {
+    return ortuSor(ORTU_SEC) || ortuSor(ORTU_EK);
   }
   function ortuBak() {
     if (!bar) return;
@@ -283,8 +304,26 @@
   /* ---------- Bolum (kart) ---------- */
   var kokler = Array.prototype.slice.call(document.querySelectorAll('[data-ttn-cark]'));
 
+  /* ---------- Disariya verilen sinyal ----------
+     Kokteki data-ttn-kod, "su an gecerli bir cark kodu var" demek.
+     Koleksiyondaki yapiskan cubuk bunu okuyup cark indirimini kendi
+     hesabina katiyor.
+
+     NEDEN AYRI BIR SINYAL: cubuk bunu once kupon katmaninin DOM'undan
+     cikariyordu ([data-tt-kart-fb] gorunur mu). O katman cerezlerle
+     besleniyor ve cerezleri baska bir uygulama da (Wheelio) yonetiyor;
+     uzerine yazdiginda kart blogu kapaniyor ve cubuk kodu goremez
+     oluyordu. Oysa kodu artik BIZ veriyoruz ve durumu BIZ tutuyoruz --
+     dogru kaynak burasi. Cubuk eski yolu yedek olarak koruyor. */
+  function sinyal() {
+    var kok = document.documentElement;
+    if (gorunenDurum() === 'kazandi') kok.setAttribute('data-ttn-kod', V.kod);
+    else kok.removeAttribute('data-ttn-kod');
+  }
+
   function ciz() {
     var d = gorunenDurum();
+    sinyal();
     for (var i = 0; i < kokler.length; i++) {
       var k = kokler[i];
       k.setAttribute('data-ttn-durum', d);

@@ -66,6 +66,7 @@
   "cZaman": {{ settings.tt_cerez_zaman | json }},
   "barMetin": {{ s.bar_metin | json }},
   "kaydirSecici": {{ s.kaydir_secici | json }},
+  "gizleSecici": {{ s.gizle_secici | json }},
   "kolGizle": {{ s.kol_gizle | json }},
   "duyuruKazandi": {{ s.duyuru | json }}
 }
@@ -118,6 +119,9 @@
     { "type": "text", "id": "kaydir_secici", "label": "Barın üstüne çıkaracağı öğeler (CSS seçici)",
       "default": "#ShopifyChat, .shopify-chat, [class*='mobile-dock'], .tt-sc-cubuk",
       "info": "Ekranın altına sabitlenmiş öğeler (sohbet balonu, mobil dock) barın yüksekliği kadar yukarı kaydırılır. Virgülle ayırın." },
+    { "type": "text", "id": "gizle_secici", "label": "Bu öğeler ekrandayken barı gizle (CSS seçici)",
+      "default": ".tt-sc-cubuk",
+      "info": "Ekranın altını başka bir çubuk tutuyorsa (koleksiyondaki yapışkan sepet çubuğu) bar çekilir: geri sayım kupon kartında, indirim de o çubuğun kendi hesabında zaten görünüyor. Boşaltırsanız bar her zaman çıkar. Sepet çekmecesi ve modallar bu ayardan bağımsız olarak barı hep kaldırır." },
     { "type": "checkbox", "id": "kol_gizle", "label": "Koleksiyon içindeki indirim şeridini gizle", "default": true,
       "info": "Alttaki bar ile aynı şeyi söylüyor; ikisi birden gürültü. Kapatırsanız ikisi de görünür." },
 

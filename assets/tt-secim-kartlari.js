@@ -525,8 +525,19 @@
         })
         .catch(function () { sepetBos = false; setCiz(); });
     }
+    /* Gecerli bir cark kodu var mi?
+
+       ONCELIK CARKIN KENDI SINYALINDE. Cark (assets/ttn-cark.js) kodu
+       verirken koke data-ttn-kod yaziyor, suresi dolunca siliyor.
+       Kodun sahibi o, yani en dogru kaynak o.
+
+       YEDEK: kupon katmaninin kart blogu. Eskiden tek kaynak buydu ama
+       o katman cerezlerle besleniyor ve cerezleri baska bir uygulama da
+       yonetebiliyor; uzerine yazdiginda blok kapaniyor ve cubuk gecerli
+       bir kodu goremiyordu. Yedek yine de duruyor: cark bolumu sayfada
+       olmayabilir, o zaman katmanin verdigi kod hala gecerli. */
     function kodVarMi() {
-      /* Kupon katmani gecerli kod bulunca bu blogun hidden'ini kaldiriyor. */
+      if (document.documentElement.hasAttribute('data-ttn-kod')) return true;
       return !!KOK.querySelector('[data-tt-kart-fb]:not([hidden])');
     }
     function rakamKesin() {
@@ -546,7 +557,7 @@
        kaliyor: ekleme, ucuncu secimde en eskinin dusmesi, sepete
        gonderilen kalemler ve tutar hesabi hic degismedi. Yalniz
        SLOTLARA yazarken pahali olan 1. slota, ucuz olan 2. slota
-       aliniyor -- cunku 2. slot "sepette yarı fiyatına" diyor ve
+       aliniyor -- cunku 2. slot "sepette yarı fiyatina" diyor ve
        Shopify BXGY'de indirimi ucuz olana uyguluyor. Bu dosyadaki
        tutar onizlemesi de zaten max + min/2 ile ayni varsayimi
        kullaniyor; yeni bir fiyat mantigi eklenmiyor, var olan
@@ -1077,6 +1088,13 @@
     if (kodBlok && window.MutationObserver) {
       new MutationObserver(function () { setCiz(); })
         .observe(kodBlok, { attributes: true, attributeFilter: ['hidden'] });
+    }
+
+    /* Carkin sinyali de izleniyor: musteri sayfadayken carki cevirince
+       kod aninda hesaba girsin, suresi dolunca da aninda ciksin. */
+    if (window.MutationObserver) {
+      new MutationObserver(function () { setCiz(); })
+        .observe(document.documentElement, { attributes: true, attributeFilter: ['data-ttn-kod'] });
     }
 
     /* Cekmece/katman acilip kapanmasini yakalayan tek izleyici.
