@@ -321,8 +321,19 @@
     else kok.removeAttribute('data-ttn-kod');
   }
 
-  function ciz() {
+  /* Ekrana yazilan durum, isleyen durumdan bir yerde ayriliyor:
+     tema duzenleyicide "bitti" karti yok ediyordu ve magaza sahibi
+     duzenledigi bolumu goremez oluyordu. Yalnizca GORUNUM basa
+     donuyor -- saklanan durum, cerezler ve sepet oldugu gibi kaliyor,
+     yani vitrinde suresi dolmus kupon yine tamamen kalkiyor. */
+  function cizimDurumu() {
     var d = gorunenDurum();
+    if (d === 'bitti' && window.Shopify && window.Shopify.designMode) return 'yok';
+    return d;
+  }
+
+  function ciz() {
+    var d = cizimDurumu();
     sinyal();
     for (var i = 0; i < kokler.length; i++) {
       var k = kokler[i];

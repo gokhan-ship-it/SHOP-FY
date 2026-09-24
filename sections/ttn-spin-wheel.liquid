@@ -142,6 +142,14 @@
           d = 'red';
         }
       } catch (e) {}
+      /* TEMA DUZENLEYICIDE BOLUM KAYBOLMUYOR.
+         Vitrinde "bitti" (suresi dolmus kupon) karti tamamen kaldiriyor
+         -- dogrusu bu. Ama duzenleyicide bir kez cark cevirip 30 dakika
+         bekleyen magaza sahibi, duzenlemeye calistigi bolumu bir daha
+         goremiyordu: sol listede duruyor, ekranda yok. Yalnizca
+         GORUNUM baslangica donuyor; saklanan durum, cerezler ve sepet
+         hic ellenmiyor. */
+      if (d === 'bitti' && window.Shopify && window.Shopify.designMode) d = 'yok';
       k.setAttribute('data-ttn-durum', d);
     })();
   </script>
