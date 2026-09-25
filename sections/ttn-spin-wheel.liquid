@@ -137,19 +137,16 @@
         var sure = (parseFloat(V.sureDk) || 30) * 60000;
         var h = JSON.parse(window.localStorage.getItem('ttnCark') || 'null');
         if (h && h.d === 'kazandi') {
-          d = (h.t + sure > Date.now()) ? 'kazandi' : 'bitti';
+          /* SURESI DOLMUSSA BASA DONUYOR, gizlenmiyor: musteri carki
+             yeniden gorup cevirebilsin. Kaydin kendisini ttn-cark.js
+             siliyor, cerezleri ve sepetteki kodu da o temizliyor.
+             Burasi yalnizca ilk boyamada dogru karti gostermek icin --
+             kart bir an gizlenip sonra geri gelirse sayfa ziplardi. */
+          d = (h.t + sure > Date.now()) ? 'kazandi' : 'yok';
         } else if (h && h.d === 'red') {
           d = 'red';
         }
       } catch (e) {}
-      /* TEMA DUZENLEYICIDE BOLUM KAYBOLMUYOR.
-         Vitrinde "bitti" (suresi dolmus kupon) karti tamamen kaldiriyor
-         -- dogrusu bu. Ama duzenleyicide bir kez cark cevirip 30 dakika
-         bekleyen magaza sahibi, duzenlemeye calistigi bolumu bir daha
-         goremiyordu: sol listede duruyor, ekranda yok. Yalnizca
-         GORUNUM baslangica donuyor; saklanan durum, cerezler ve sepet
-         hic ellenmiyor. */
-      if (d === 'bitti' && window.Shopify && window.Shopify.designMode) d = 'yok';
       k.setAttribute('data-ttn-durum', d);
     })();
   </script>

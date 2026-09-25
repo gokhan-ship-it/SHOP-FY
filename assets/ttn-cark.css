@@ -37,9 +37,13 @@
 }
 .ttn-cark *, .ttn-cark *::before, .ttn-cark *::after { box-sizing: border-box; }
 
-/* Suresi dolmus musteriye cark BIR DAHA gosterilmiyor. Bolumun
-   tamami kalkiyor -- bos bir kutu birakmak da kotu olurdu. */
-.ttn-cark[data-ttn-durum="bitti"] { display: none; }
+/* KARTI GIZLEYEN KURAL KALDIRILDI.
+   Once "bitti" (suresi dolmus kupon) butun bolumu kaldiriyordu; boylece
+   bir kez ceviren musteri o tarayicida carki BIR DAHA hic goremiyordu.
+   31. dakikada donen kisiye magaza hicbir kampanya sunmamis oluyordu.
+   Artik sure dolunca kayit siliniyor ve kart basa donuyor (bkz.
+   assets/ttn-cark.js > sureBitti). Kural bilerek geri konmadi: kartin
+   kaybolmasi en kotu basarisizlik bicimi, fail-visible tercih edildi. */
 
 /* TASINMIS HAL. Kart baska bir bolumun kabina girdiginde o kabin
    kendi genisligi ve YAN boslugu gecerli; kart yalnizca yatay

@@ -62,6 +62,14 @@
     try { window.localStorage.setItem(ANAHTAR, JSON.stringify({ d: d, t: t || 0 })); }
     catch (e) {}
   }
+  /* Suresi dolan kupon kaydi SILINIYOR, "bitti" diye saklanmiyor.
+     Sebep: saklansaydi o tarayicida cark bir daha hic gorunmezdi --
+     31. dakikada donen musteriye magaza hicbir kampanya sunmamis
+     olurdu. Kayit gidince durum dogal olarak "yok" oluyor ve musteri
+     carki yeniden cevirebiliyor. */
+  function durumSil() {
+    try { window.localStorage.removeItem(ANAHTAR); } catch (e) {}
+  }
   function kalanMs() {
     var h = durumOku();
     if (h.d !== 'kazandi') return 0;
@@ -335,11 +343,52 @@
     if (tik) { window.clearInterval(tik); tik = null; }
   }
 
+  /* ---------- Sure dolunca ----------
+     Temizlik + BASA DONUS. Musteri carki yeniden gorup cevirebiliyor;
+     karar magaza sahibinin (25.09.2026): "kampanya hicbir musteriye
+     kapanmasin, 31. dakikada donen kisi de indirimi gorebilsin".
+
+     Iki yerden cagriliyor:
+       1. Sayac sifira inince (musteri sayfadayken)
+       2. Acilista, kaydi suresi dolmus bulursak (musteri sekmeyi
+          kapatip sonra donmus). Bu ikincisi olmasa kod SEPETTE ASILI
+          kalirdi -- cerezler kendi kendine dusuyor ama sepetteki
+          indirimi kaldiran tek yer burasi.
+
+     Tek seferlik: kodKaldir() bir ag istegi, iki kez gitmesin. */
+  var kapatildi = false;
   function sureBitti() {
+    if (kapatildi) return;
+    kapatildi = true;
     sayacDurdur();
     cerezleriSil();
     kodKaldir();
+    durumSil();
+    kartiSifirla();
     ciz();
+  }
+
+  /* Cevirme sirasinda karta birakilan izler geri aliniyor: dugme
+     yeniden basilabilir olmali, kazanan dilim parlamamali ve cark
+     baslangic acisina donmeli. Yoksa sure dolup kart geri gelince
+     olu bir cark gorunurdu. */
+  function kartiSifirla() {
+    for (var i = 0; i < kokler.length; i++) {
+      var k = kokler[i];
+      k._ttnDonuyor = false;
+      var btn = k.querySelector('[data-ttn-cevir]');
+      if (btn) btn.disabled = false;
+      var isaretli = k.querySelectorAll('[data-ttn-kazanan]');
+      for (var j = 0; j < isaretli.length; j++) isaretli[j].removeAttribute('data-ttn-kazanan');
+      var carkim = k.querySelector('[data-ttn-carkim]');
+      if (carkim) {
+        /* Gecisi kapatmadan sifirlarsak cark geri sarardi. */
+        carkim.style.transition = 'none';
+        carkim.style.transform = '';
+        /* Bir sonraki cevirmede gecis yeniden kurulacak; burada
+           yalnizca anlik sifirlama icin kapatildi. */
+      }
+    }
   }
 
   /* ---------- Bolum (kart) ---------- */
@@ -362,15 +411,17 @@
     else kok.removeAttribute('data-ttn-kod');
   }
 
-  /* Ekrana yazilan durum, isleyen durumdan bir yerde ayriliyor:
-     tema duzenleyicide "bitti" karti yok ediyordu ve magaza sahibi
-     duzenledigi bolumu goremez oluyordu. Yalnizca GORUNUM basa
-     donuyor -- saklanan durum, cerezler ve sepet oldugu gibi kaliyor,
-     yani vitrinde suresi dolmus kupon yine tamamen kalkiyor. */
+  /* "bitti" ekranda ASLA cizilmiyor, basa donuyor.
+
+     Normalde buraya hic dusulmuyor: sure dolunca sureBitti() kaydi
+     siliyor ve durum zaten "yok" oluyor. Bu satir emniyet kemeri --
+     temizlik herhangi bir sebeple gec kalirsa (acilista ilk cizimden
+     onceki an, depolama yazilamamis olmasi) kart YOK OLMAK yerine
+     basa donmus gorunuyor. Kaybolmak en kotu basarisizlik bicimi:
+     musteri kampanyayi hic gormezdi. */
   function cizimDurumu() {
     var d = gorunenDurum();
-    if (d === 'bitti' && window.Shopify && window.Shopify.designMode) return 'yok';
-    return d;
+    return d === 'bitti' ? 'yok' : d;
   }
 
   function ciz() {
@@ -492,6 +543,8 @@
 
   function kazandi(k) {
     var simdi = Date.now();
+    /* Yeni kupon: bir sonraki sure dolumu yine kapatilabilsin. */
+    kapatildi = false;
     durumYaz('kazandi', simdi);
     cerezleriYaz();
     kodUygula(true);
@@ -621,6 +674,14 @@
 
   /* ---------- Acilis ---------- */
   stilleriKur();
+
+  /* SURESI DOLMUS KUPONU ILK CIZIMDEN ONCE KAPAT.
+     Musteri sekmeyi kapatip 30 dakikadan sonra donduyse kayit hala
+     "kazandi" yaziyor ama suresi gecmis. Temizligi burada yapmazsak
+     kod SEPETTE asili kalirdi. Cizimden ONCE cagriliyor ki kart bir
+     an gizlenip sonra geri gelmesin -- yerlesim ziplamiyor. */
+  if (durumOku().d === 'kazandi' && kalanMs() <= 0) sureBitti();
+
   ciz();
   ortuBak();
   if (gorunenDurum() === 'kazandi') {
