@@ -873,7 +873,39 @@ body.tt-sc-cubuk-acik { padding-bottom: var(--tt-sc-cubuk-yuk, 210px); }
 }
 .tt-sc-varyant-sec:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
 .tt-sc-varyant-sec[disabled] { opacity: .45; cursor: not-allowed; }
-.tt-sc-varyant-fiyat { flex: 0 0 auto; font-weight: 500; }
+.tt-sc-varyant-fiyat { flex: 0 0 auto; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* CARK KODU VARKEN: karttaki blogun ayni duzeni -- etiket, yesil tutar,
+   ustu cizili liste fiyati. Kartta alt alta uc satir; burada da oyle,
+   ama saga dayali cunku secenek adi solda duruyor.
+   Olculdu: #30614b / beyaz = 7.2:1, #73767e / beyaz = 4.5:1 */
+.tt-sc-varyant-fiyat[data-sc-indirimli] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  text-align: right;
+}
+.tt-sc-varyant-kod-etiket {
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--tt-sc-yesil);
+}
+.tt-sc-varyant-yeni {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -.01em;
+  color: var(--tt-sc-yesil);
+}
+.tt-sc-varyant-eski {
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: #73767e;
+  text-decoration-thickness: 1px;
+}
 
 /* ------------------------------------------------------------------
    MASAUSTU

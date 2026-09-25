@@ -793,6 +793,65 @@
        iki modda da ayni. */
     var vHedef = null;
     var vAmac = 'set';
+
+    /* SECICIDEKI FIYAT, KARTTAKI FIYATIN AYNISI OLMAK ZORUNDA.
+       Kart "Indirim kodu ile 1.799,00 TL / 2.299,00 TL" derken secici
+       cipsiz 2.299,00 TL gosteriyordu: musteri urune dokunmadan once
+       bir fiyat, secerken baska bir fiyat goruyordu.
+
+       Yeni bir hesap YOK. Tutar yine data-sc-kod-kurus (tema ayari
+       tt_indirim_tutar), kosul yine kodKurusu() -- karttaki Liquid
+       blogunun ve yapiskan cubugun kullandigi kuralin ta kendisi:
+       gecerli kod varsa ve tutar fiyattan kucukse. */
+
+    /* Etiket icin bolume AYRI BIR AYAR EKLENMEDI: metin dogrudan
+       karttaki blogun kendisinden okunuyor. Boylece iki yerin
+       ayrismasi imkansiz -- magaza sahibi tema ayarindan "Indirim
+       kodu ile" yazisini degistirdiginde secici de ayni anda
+       degisiyor. Blok gizliyken de metni tasiyor, gorunur olmasi
+       gerekmiyor. Blok hic yoksa KOD_KURUS da o urunde 0 oluyor,
+       yani etikete zaten ihtiyac kalmiyor. */
+    var kodEtiket = null;
+    function kodEtiketi() {
+      if (kodEtiket === null) {
+        var el = KOK.querySelector('[data-tt-kart-fb] .tt-kart-etiket');
+        kodEtiket = el ? el.textContent.trim() : '';
+      }
+      return kodEtiket;
+    }
+
+    function varyantFiyatYaz(f, v) {
+      var ind = kodKurusu(v.fiyat);
+      f.textContent = '';
+      f.toggleAttribute('data-sc-indirimli', !!ind);
+      if (!ind) { f.textContent = para(v.fiyat); return; }
+
+      var et = document.createElement('span');
+      et.className = 'tt-sc-varyant-kod-etiket';
+      et.textContent = kodEtiketi();
+      var yeni = document.createElement('span');
+      yeni.className = 'tt-sc-varyant-yeni';
+      yeni.textContent = para(v.fiyat - ind);
+      var eski = document.createElement('s');
+      eski.className = 'tt-sc-varyant-eski';
+      eski.textContent = para(v.fiyat);
+      f.appendChild(et);
+      f.appendChild(yeni);
+      f.appendChild(eski);
+    }
+
+    /* Kupon secici ACIKKEN suresi dolabilir; o zaman listedeki rakamlar
+       bayat kalirdi. Odak ve kaydirma korunuyor -- yalnizca rakamlar
+       yeniden yaziliyor, liste bastan kurulmuyor. */
+    function varyantFiyatlariTazele() {
+      if (!vDialog || !vDialog.open) return;
+      var btn = vListe.querySelectorAll('button');
+      for (var i = 0; i < btn.length; i++) {
+        var f = btn[i].querySelector('.tt-sc-varyant-fiyat');
+        if (f && btn[i]._sc_v) varyantFiyatYaz(f, btn[i]._sc_v);
+      }
+    }
+
     function varyantAc(karo, amac) {
       vAmac = amac || 'set';
       var vs = varyantlar(karo);
@@ -804,11 +863,12 @@
         b.type = 'button';
         b.className = 'tt-sc-varyant-sec';
         b.setAttribute('role', 'listitem');
+        b._sc_v = v;
         var ad = document.createElement('span');
         ad.textContent = v.ad;
         var f = document.createElement('span');
         f.className = 'tt-sc-varyant-fiyat';
-        f.textContent = para(v.fiyat);
+        varyantFiyatYaz(f, v);
         b.appendChild(ad);
         b.appendChild(f);
         b.addEventListener('click', function () {
@@ -1084,16 +1144,21 @@
        basina haberi olmuyordu: sayfada bekleyen musteride suresi
        dolmus bir indirim ekranda kalirdi. Tek blogu izlemek yetiyor,
        katman hepsini birlikte ceviriyor. */
+    function kodDegisti() {
+      setCiz();
+      varyantFiyatlariTazele();
+    }
+
     var kodBlok = KOK.querySelector('[data-tt-kart-fb]');
     if (kodBlok && window.MutationObserver) {
-      new MutationObserver(function () { setCiz(); })
+      new MutationObserver(kodDegisti)
         .observe(kodBlok, { attributes: true, attributeFilter: ['hidden'] });
     }
 
     /* Carkin sinyali de izleniyor: musteri sayfadayken carki cevirince
        kod aninda hesaba girsin, suresi dolunca da aninda ciksin. */
     if (window.MutationObserver) {
-      new MutationObserver(function () { setCiz(); })
+      new MutationObserver(kodDegisti)
         .observe(document.documentElement, { attributes: true, attributeFilter: ['data-ttn-kod'] });
     }
 
