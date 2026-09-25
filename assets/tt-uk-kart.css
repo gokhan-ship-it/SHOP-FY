@@ -24,6 +24,7 @@
   --tt-uk-zemin: #f1f2f5;
   --tt-uk-nokta: #b9bec5;
 
+  position: relative;
   display: flex;
   flex-direction: column;
   /* Izgara ogesi olarak esnedigi icin ayni satirdaki kartlar esit
@@ -31,15 +32,32 @@
   height: 100%;
   overflow: hidden;
   border-radius: 14px;
-  /* Cerceve border DEGIL inset box-shadow. Iki sebep:
-     1) Chrome border-width'i tam piksele yuvarliyor -- "1.5px" ekranda
-        1px cikiyordu (kartlarda ve slotlarda da ayni tuzak).
-     2) Golge yerlesimi HIC etkilemiyor: seffaf halden yesile gecerken
-        kartin kutusu bir piksel bile degismiyor, izgara yeniden akmiyor.
-     Bkz. [data-sc-secili] .tt-uk asagida. */
-  box-shadow: inset 0 0 0 1.5px transparent;
   background: #fff;
   color: var(--tt-uk-koyu);
+}
+
+/* CERCEVE AYRI BIR KATMANDA (::after), KARTIN KENDI GOLGESINDE DEGIL.
+   Once kartin uzerinde "box-shadow: inset" duruyordu; ama inset golge
+   kartin KENDI kutusuna cizildigi icin cocuklarin zemini onun ustune
+   biniyor. Gorsel alaninin (.tt-uk-gorsel) kendi zemini var ve karti
+   bastan asagi kapladigi icin cercevenin UST YARISI gorunmuyordu:
+   secili kartta yalnizca metin bolumu cerceveleniyordu.
+
+   Cozum, cerceveyi butun cocuklarin USTUNDE duran bir katmana almak.
+   Kazanimlar korundu:
+     - border DEGIL, yani Chrome'un 1.5px'i 1px'e yuvarlama tuzagi yok
+     - mutlak konumlu, yani yerlesimi HIC etkilemiyor; seffaftan yesile
+       gecerken kart bir piksel bile buyumuyor, izgara yeniden akmiyor
+   pointer-events yok: gorsel seridinin kaydirmasini ve karttaki
+   baglantilari yutmasin. */
+.tt-uk::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1.5px transparent;
+  pointer-events: none;
 }
 
 /* --- Gorsel alani --- */
@@ -221,9 +239,10 @@
 .tt-uk[data-uk-var="0"] .tt-uk-fiyat { color: var(--tt-uk-soluk); }
 .tt-uk[data-uk-var="0"] .tt-uk-satis { color: var(--tt-uk-soluk); }
 
-/* Couple'da secili kartin cercevesi. Seffaf cerceve zaten yerinde
-   duruyor, yalnizca rengi degisiyor: kart bir piksel bile buyumuyor. */
-[data-sc-secili] .tt-uk { box-shadow: inset 0 0 0 1.5px var(--tt-uk-yesil); }
+/* Couple'da secili kartin cercevesi. Seffaf cerceve katmani zaten
+   yerinde duruyor (.tt-uk::after), yalnizca rengi degisiyor: kart bir
+   piksel bile buyumuyor, gorsel dahil KARTIN TAMAMINI sariyor. */
+[data-sc-secili] .tt-uk::after { box-shadow: inset 0 0 0 1.5px var(--tt-uk-yesil); }
 
 /* --- Metin alani --- */
 .tt-uk-metin {
