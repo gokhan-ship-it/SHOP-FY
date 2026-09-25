@@ -81,15 +81,54 @@
      Gecerlilik katmanda "zaman + sure*1000 > simdi" diye hesaplaniyor,
      o yuzden sure ve zaman HER ZAMAN baslangic degerleri; yalnizca
      cerezin max-age'i kalan sureye gore kisaliyor. */
+  function cerezVar(ad) {
+    return ('; ' + document.cookie).indexOf('; ' + ad + '=') >= 0;
+  }
+  /* SameSite=Lax dogru varsayilan: cerez yalnizca kendi sitemizde
+     gecerli. Ama TEMA DUZENLEYICISININ onizlemesi CAPRAZ-SITE bir
+     iframe (ust cerceve admin.shopify.com, ic cerceve magaza) ve orada
+     tarayici Lax cerezi SESSIZCE dusuruyor -- olctuk: ust duzeyde
+     yaziliyor, iframe icinde yazilmiyor. Kupon katmani da o cerezleri
+     okudugu icin duzenleyicide fiyatlar indirimli gorunmuyordu.
+
+     Yazamadiysak SameSite=None ile bir kez daha deniyoruz. Vitrinde
+     (ust duzey) ilk yazma zaten tutuyor, yani bu ikinci satir gercek
+     musteride HIC calismiyor; yalnizca onizleme icin. */
   function cerezYaz(ad, deger, saniye) {
     if (!ad) return;
-    document.cookie = ad + '=' + encodeURIComponent(deger) +
-      '; path=/; max-age=' + Math.max(0, Math.round(saniye)) + '; SameSite=Lax';
+    var govde = ad + '=' + encodeURIComponent(deger) +
+      '; path=/; max-age=' + Math.max(0, Math.round(saniye));
+    document.cookie = govde + '; SameSite=Lax';
+    if (!cerezVar(ad)) document.cookie = govde + '; SameSite=None; Secure';
   }
   function cerezSil(ad) {
     if (!ad) return;
     document.cookie = ad + '=; path=/; max-age=0; SameSite=Lax';
+    if (cerezVar(ad)) document.cookie = ad + '=; path=/; max-age=0; SameSite=None; Secure';
   }
+
+  /* ---------- Katmanin localStorage aynasi ----------
+     assets/taksit-tablosu.js gecerli bir kodu ilk gordugunde
+     localStorage.ttKod = { k: kod, b: bitisMs } olarak sakliyor ve
+     cerez kaybolsa bile suresi bitene kadar oradan okuyor (kodBul).
+
+     Ayni kaydi biz de yaziyoruz. NEDEN: ucuncu taraf cerezleri kapali
+     bir tarayicida onizleme iframe'inde HICBIR cerez yazilamiyor ama
+     localStorage calisiyor (olculdu). O durumda katman kodu bir
+     sonraki sayfa yuklemesinde buradan goruyor.
+
+     Ikinci bir indirim mantigi DEGIL: yazdigimiz sey cerezlerdekiyle
+     birebir ayni bilgi (kod + bitis ani). Sure dolunca siliyoruz;
+     katman da kendi basina suresi gecmis kaydi atiyor. */
+  var AYNA = 'ttKod';
+  function aynaYaz(bitis) {
+    try { window.localStorage.setItem(AYNA, JSON.stringify({ k: V.kod, b: bitis })); }
+    catch (e) {}
+  }
+  function aynaSil() {
+    try { window.localStorage.removeItem(AYNA); } catch (e) {}
+  }
+
   function cerezleriYaz() {
     var h = durumOku();
     var kalan = kalanMs();
@@ -98,11 +137,13 @@
     cerezYaz(V.cKod, V.kod, sn);
     cerezYaz(V.cSure, SURE_SN, sn);
     cerezYaz(V.cZaman, h.t, sn);
+    aynaYaz(h.t + SURE_MS);
   }
   function cerezleriSil() {
     cerezSil(V.cKod);
     cerezSil(V.cSure);
     cerezSil(V.cZaman);
+    aynaSil();
   }
 
   /* ---------- Sepet ----------
