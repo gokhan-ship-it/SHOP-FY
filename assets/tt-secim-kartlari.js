@@ -480,24 +480,27 @@
       window.requestAnimationFrame(function () { ortuBekler = false; ortuBak(); });
     }
 
-    /* ---------- Hangi rakam kesin ----------
+    /* ---------- Rakamlar HER DURUMDA gosteriliyor ----------
 
-       Cubuktaki her rakam sepette ve odeme sayfasinda cikacak rakamin
-       AYNISI olmak zorunda. Tek kosul var:
+       Cubuk once sepeti /cart.js ile okuyup SEPET BOSSA rakam
+       gosteriyordu. Sebep: "Ikinci Uronde %50" bir BXGY (1 al, 1'ini
+       yarim fiyata) ve sepette zaten uygun bir urun varsa Shopify
+       eslesmeyi bizim iki uronumuz disinda kurabiliyor; cark kodu da
+       SIPARIS duzeyinde bir kez indigi icin dolu sepette zaten
+       harcanmis olabiliyor. O hallerde rakamin tutacagi garanti degil.
 
-       SEPET BOS MU?  Indirim ("Ikinci Uronde %50 Indirim") bir
-          BXGY: kapsamdaki urunlerden 1 al, 1'ini yarim fiyata al.
-          Sepette zaten uygun bir urun varsa Shopify eslesmeyi bizim
-          iki uronumuz disinda kurabiliyor -- o zaman ne satir
-          fiyatlari ne toplam tutuyor. Sepet /cart.js ile BIR KEZ
-          okunuyor; salt okuma, yan etkisi yok.
+       MAGAZA SAHIBI, riski bilerek, rakamlarin HER DURUMDA
+       gosterilmesini istedi (25.09.2026). Sepetsiz kontrol kalkti;
+       kosul yalnizca bolum ayari.
 
-       Tutmuyorsa hic rakam gosterilmiyor: kirilim liste fiyatlarina ve
-       yalnizca "%50" etiketine dusuyor. Yanlis rakam yerine
-       rakamsizlik.
+       Bunun pratik sonucu: musterinin sepetinde %50 kapsamina giren
+       baska bir urun varsa ya da cark kodu mevcut sepete zaten
+       uygulanmissa, cubuktaki TOPLAM ile odeme sayfasindaki toplam
+       ayrisabilir. Geri almak icin tek satir yeter -- asagidaki
+       rakamKesin() yeniden sepete bakar hale getirilir.
 
        ------------------------------------------------------------
-       CARK KODU DA HESABA GIRIYOR
+       CARK KODU
 
        Kod SIPARIS duzeyinde inen SABIT tutarli bir indirim: kalemlerin
        birim fiyatini degistirmiyor, toplamdan dusuyor. Iki indirim de
@@ -513,18 +516,7 @@
        okunuyor. Kodun suresi dolunca katman blogu geri gizliyor ve
        asagidaki gozlemci cubugu yeniden cizdiriyor -- ekranda bayat
        bir indirim kalmiyor. */
-    var sepetBos = null;   /* null = daha okunmadi */
-    function sepetiOku() {
-      if (sepetBos !== null) return;
-      sepetBos = 'bekliyor';
-      fetch('/cart.js', { headers: { 'Accept': 'application/json' } })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (c) {
-          sepetBos = c ? c.item_count === 0 : false;
-          setCiz();
-        })
-        .catch(function () { sepetBos = false; setCiz(); });
-    }
+
     /* Gecerli bir cark kodu var mi?
 
        ONCELIK CARKIN KENDI SINYALINDE. Cark (assets/ttn-cark.js) kodu
@@ -541,7 +533,7 @@
       return !!KOK.querySelector('[data-tt-kart-fb]:not([hidden])');
     }
     function rakamKesin() {
-      return TUTAR_GOSTER && sepetBos === true;
+      return TUTAR_GOSTER;
     }
     /* Kod satiri ancak gecerli bir kod VARSA ve tutari ara toplamdan
        kucukse aciliyor. Ikinci kosul kartlardaki blogun da kurali:
@@ -684,9 +676,6 @@
       /* Iki urunde iki satir da geri geliyor. */
       for (var g = 0; g < kirSatir.length; g++) kirSatir[g].hidden = false;
 
-      /* Sepet daha okunmadiysa simdi oku: cubuk ilk kez rakam
-         gosterecegi anda, sayfa acilisinda degil. */
-      sepetiOku();
       var kir = rakamKesin();
 
       var tam = set[sira[0]], ind = set[sira[1]];
@@ -735,24 +724,20 @@
       /* Solda durum cumlesi yalnizca hicbir rakam yokken kaliyor --
          sifir ve bir uronde oldugu gibi. Kirilim aciksa ayni seyi iki
          kez soylemis oluyordu ("2 urun, ikincisi yari fiyatina" ile
-         ustu cizili satir), o yuzden kalkiyor. */
-      /* Iki ayri "rakam yazamiyorum" hali var ve ayni cumle ikisine
-         birden uymuyor:
-           - tutar_goster KAPALI: magaza rakam istemiyor, teklifi
-             anlatan cumle dogru.
-           - SEPETTE URUN VAR: rakam kesin olmadigi icin yazilmiyor;
-             burada teklifi tekrar anlatmak, iki TAM fiyatin yaninda
-             "indirim uygulanmadi" gibi okunuyordu.
-         Sepet HENUZ OKUNMADIYSA (sepetBos null/'bekliyor') teklif
-         cumlesi kaliyor: daha bilmedigimiz bir seyi soylemiyoruz,
-         yoksa okuma bitene kadar bos sepette de yanlis cumle
-         parlardi. */
+         ustu cizili satir), o yuzden kalkiyor.
+
+         Geriye tek bir "rakam yazmiyorum" hali kaldi: tutar_goster
+         KAPALI, yani magaza rakam istemiyor. Teklifi anlatan cumle o
+         zaman dogru. ("Sepette baska urun var" hali artik yok -- bkz.
+         rakamKesin(); bolum ayarindaki durum_dolu metni de bu yuzden
+         hicbir yerde kullanilmiyor.) */
       if (durumEl) {
+        /* Metin GIZLIYKEN DE guncelleniyor. Eskiden yalnizca gorunur
+           olacagi zaman yaziliyordu ve gizli dugumde bir onceki adimin
+           cumlesi ("1 urun daha sec") asili kaliyordu; tutar_goster
+           kapatilip cumle geri gorunur oldugunda o bayat yazi cikardi. */
+        durumEl.textContent = M.durum0 || '';
         durumEl.hidden = kir;
-        if (!kir) {
-          var dolu = TUTAR_GOSTER && sepetBos === false;
-          durumEl.textContent = (dolu ? (M.durumDolu || M.durum0) : M.durum0) || '';
-        }
       }
       if (tasarruf) {
         tasarruf.hidden = !kir;
