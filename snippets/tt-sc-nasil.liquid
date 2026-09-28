@@ -1,0 +1,129 @@
+{%- doc -%}
+  "NASIL CALISIR?" POP-UP'I  (.tt-sc-nasil-*)
+
+  Single ve Couple icin AYNI snippet iki kez basiliyor; fark yalnizca
+  parametrelerde. Icerigin tamami tema duzenleyiciden geliyor
+  (bkz. bolumun schema'sindaki "Single - Nasil calisir?" ve
+  "Couple - Nasil calisir?" basliklari), yani metni degistirmek icin
+  bu dosyaya girmek gerekmiyor.
+
+  ------------------------------------------------------------------
+  NEDEN NATIVE <dialog>
+
+  Bolumde zaten bir tane var (varyant secici, .tt-sc-varyant) ve
+  tarayici bedavaya su dortunu veriyor:
+    - ESC ile kapanma
+    - odagin iceride kalmasi (focus trap) ve kapaninca geri donmesi
+    - arka planin kaymamasi (ust katman + inert)
+    - ::backdrop ile yari saydam ortu
+  Ayrica yapiskan cubugun "beni orten bir sey var mi" kontrolu
+  (assets/tt-secim-kartlari.js icindeki ORTU_SEC) zaten dialog[open]
+  ariyor, yani pop-up acilinca cubuk kendiliginden cekiliyor.
+
+  Kendi modal'imizi yazsaydik bu dordunu de elle kurmamiz ve cubuk
+  kuralini ayrica guncellememiz gerekirdi.
+
+  ------------------------------------------------------------------
+  ACMA / KAPAMA
+  JS tarafinda: [data-sc-nasil-ac] dugmesi [data-sc-nasil="<mod>"]
+  dialog'unu aciyor. Alttaki onay dugmesi ([data-sc-nasil-onay]) once
+  kapatiyor, sonra ilgili modu seciyor.
+
+  @param {string} sid    - Bolum kimligi (id'ler benzersiz olsun diye)
+  @param {string} mod    - single | couple
+  @param {string} etiket - Ustteki kucuk etiket
+  @param {string} baslik - Pop-up basligi
+  @param {object} gorsel - Gorsel (bos birakilirsa placeholder kutu)
+  @param {string} a1b, a1m, a2b, a2m, a3b, a3m - Uc adimin baslik ve metni
+  @param {string} onay   - Alttaki tam genislikteki dugmenin metni
+  @param {string} kapat  - Kapat dugmesinin erisilebilir adi
+{%- enddoc -%}
+
+{%- assign bid = 'ttScNasilBas-' | append: sid | append: '-' | append: mod -%}
+
+<dialog class="tt-sc-nasil"
+        data-sc-nasil="{{ mod }}"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="{{ bid }}">
+  <div class="tt-sc-nasil-ic">
+    {%- comment -%}
+      Tutamac yalnizca mobilde gorunuyor: alttan acilan sheet'in
+      "yukari cekilebilir" oldugunu anlatan gorsel isaret. Masaustunde
+      pop-up ortada durdugu icin anlamsiz, CSS'te gizleniyor.
+    {%- endcomment -%}
+    <span class="tt-sc-nasil-tutamac" aria-hidden="true"></span>
+
+    <div class="tt-sc-nasil-bas">
+      <div class="tt-sc-nasil-bas-yazi">
+        {%- if etiket != blank -%}
+          <span class="tt-sc-nasil-etiket">{{ etiket }}</span>
+        {%- endif -%}
+        <h3 class="tt-sc-nasil-baslik" id="{{ bid }}">{{ baslik }}</h3>
+      </div>
+      <button type="button" class="tt-sc-nasil-kapat" data-sc-nasil-kapat
+              aria-label="{{ kapat | escape }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+
+    {%- comment -%}
+      Kaydirma YALNIZCA govdede: baslik ve alttaki onay dugmesi
+      sabit kaliyor, icerik uzasa da dugme her zaman parmagin
+      altinda duruyor.
+    {%- endcomment -%}
+    <div class="tt-sc-nasil-govde">
+      <ol class="tt-sc-nasil-adimlar">
+        {%- if a1b != blank or a1m != blank -%}
+          <li class="tt-sc-nasil-adim">
+            <span class="tt-sc-nasil-no" aria-hidden="true">1</span>
+            <span class="tt-sc-nasil-adim-yazi">
+              {%- if a1b != blank -%}<span class="tt-sc-nasil-adim-bas">{{ a1b }}</span>{%- endif -%}
+              {%- if a1m != blank -%}<span class="tt-sc-nasil-adim-metin">{{ a1m }}</span>{%- endif -%}
+            </span>
+          </li>
+        {%- endif -%}
+        {%- if a2b != blank or a2m != blank -%}
+          <li class="tt-sc-nasil-adim">
+            <span class="tt-sc-nasil-no" aria-hidden="true">2</span>
+            <span class="tt-sc-nasil-adim-yazi">
+              {%- if a2b != blank -%}<span class="tt-sc-nasil-adim-bas">{{ a2b }}</span>{%- endif -%}
+              {%- if a2m != blank -%}<span class="tt-sc-nasil-adim-metin">{{ a2m }}</span>{%- endif -%}
+            </span>
+          </li>
+        {%- endif -%}
+        {%- if a3b != blank or a3m != blank -%}
+          <li class="tt-sc-nasil-adim">
+            <span class="tt-sc-nasil-no" aria-hidden="true">3</span>
+            <span class="tt-sc-nasil-adim-yazi">
+              {%- if a3b != blank -%}<span class="tt-sc-nasil-adim-bas">{{ a3b }}</span>{%- endif -%}
+              {%- if a3m != blank -%}<span class="tt-sc-nasil-adim-metin">{{ a3m }}</span>{%- endif -%}
+            </span>
+          </li>
+        {%- endif -%}
+      </ol>
+
+      {%- comment -%}
+        Gorsel alani. Ayardan bir gorsel secilene kadar bos placeholder
+        kutu duruyor -- oran bastan sabit (16/10), yani gorsel eklenince
+        ya da cikarilinca pop-up ziplayamiyor.
+      {%- endcomment -%}
+      {%- if gorsel != blank -%}
+        <div class="tt-sc-nasil-gorsel">
+          {{ gorsel | image_url: width: 1040 | image_tag:
+             loading: 'lazy', sizes: '(min-width: 750px) 480px, 92vw',
+             widths: '400,600,800,1040', class: 'tt-sc-nasil-gorsel-img', alt: '' }}
+        </div>
+      {%- else -%}
+        <div class="tt-sc-nasil-gorsel tt-sc-nasil-gorsel--bos" aria-hidden="true"></div>
+      {%- endif -%}
+    </div>
+
+    {%- if onay != blank -%}
+      <div class="tt-sc-nasil-ayak">
+        <button type="button" class="tt-sc-nasil-onay" data-sc-nasil-onay="{{ mod }}">{{ onay }}</button>
+      </div>
+    {%- endif -%}
+  </div>
+</dialog>

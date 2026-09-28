@@ -1124,6 +1124,152 @@
       });
     }
 
+    /* ---------- "Nasil calisir?" pop-up'lari ----------
+       Iki dialog var, mod adiyla ayriliyorlar. ESC, odak tuzagi ve
+       arka planin kaymamasi native <dialog>'dan geliyor; burada
+       yalnizca acma, kapama ve onay dugmesi baglaniyor. */
+    function nasilBul(mod) {
+      return KOK.querySelector('[data-sc-nasil="' + mod + '"]');
+    }
+
+    var nasilDonus = null;   /* kapaninca odagin geri verilecegi dugme */
+
+    /* ---------- Arka plan kaydirma kilidi ----------
+       Native <dialog>.showModal() arka plani INERT yapiyor ama
+       KAYDIRMAYI engellemiyor: ortunun uzerinde tekerlek cevirince
+       ya da parmakla suruklerken sayfa kayiyor (olculdu: Chrome'da
+       240px'den 640px'e gitti). Kilit elle kuruluyor.
+
+       position:fixed + top:-Y yontemi secildi, overflow:hidden degil:
+       iOS Safari html/body'deki overflow:hidden'i yok sayiyor ve
+       magaza mobil agirlikli. Gorunum ayni kaliyor cunku sayfa
+       kaydigi kadar yukari cekiliyor; kapaninca tam ayni noktaya
+       geri donuluyor.
+
+       Kaydirma cubugunun genisligi kadar sag dolgu veriliyor ki
+       masaustunde cubuk kaybolunca sayfa yana ziplamasin. */
+    var kilitY = 0;
+
+    function kaydirmaKilitle() {
+      if (document.body.hasAttribute('data-tt-sc-kilit')) return;
+      kilitY = window.pageYOffset || document.documentElement.scrollTop || 0;
+      var bosluk = window.innerWidth - document.documentElement.clientWidth;
+      var g = document.body.style;
+      g.position = 'fixed';
+      g.top = -kilitY + 'px';
+      g.left = '0';
+      g.right = '0';
+      g.width = '100%';
+      if (bosluk > 0) g.paddingRight = bosluk + 'px';
+      document.body.setAttribute('data-tt-sc-kilit', '');
+    }
+
+    function kaydirmaCoz() {
+      if (!document.body.hasAttribute('data-tt-sc-kilit')) return;
+      document.body.removeAttribute('data-tt-sc-kilit');
+      var g = document.body.style;
+      g.position = ''; g.top = ''; g.left = ''; g.right = ''; g.width = ''; g.paddingRight = '';
+      window.scrollTo(0, kilitY);
+    }
+
+    function nasilAc(mod, dugme) {
+      var d = nasilBul(mod);
+      if (!d) return;
+      nasilDonus = dugme || null;
+      kaydirmaKilitle();
+      if (typeof d.showModal === 'function') d.showModal();
+      else d.setAttribute('open', '');
+      /* Odak pop-up'in ICINE gitsin: ilk hedef kapat dugmesi.
+         showModal zaten odagi iceri aliyor, ama tarayicilar arasinda
+         "ilk odaklanabilir oge" secimi degisiyor; burada sabitleniyor. */
+      var ilk = d.querySelector('[data-sc-nasil-kapat]');
+      if (ilk) ilk.focus();
+    }
+
+    /* Kapanisin BUTUN yollari (X, ortu, ESC, onay dugmesi) sonunda
+       dialog'un 'close' olayina dusuyor; temizlik orada, tek yerde.
+       Yedek yolda (showModal yoksa) olay tetiklenmiyor, o yuzden
+       asagida elle cagriliyor. */
+    function nasilTemizle() {
+      kaydirmaCoz();
+      if (nasilDonus && typeof nasilDonus.focus === 'function') {
+        /* preventScroll: odagi geri verirken tarayici sayfayi
+           dugmeye dogru kaydirmasin -- kaydirmayi az once biz
+           geri koyduk. */
+        try { nasilDonus.focus({ preventScroll: true }); }
+        catch (e) { nasilDonus.focus(); }
+      }
+      nasilDonus = null;
+    }
+
+    function nasilKapat(mod) {
+      var d = nasilBul(mod);
+      if (!d) return;
+      if (typeof d.close === 'function' && d.open) {
+        d.close();          /* 'close' olayi nasilTemizle'yi cagiriyor */
+      } else {
+        d.removeAttribute('open');
+        nasilTemizle();
+      }
+    }
+
+    Array.prototype.slice.call(KOK.querySelectorAll('[data-sc-nasil-ac]')).forEach(function (b) {
+      var mod = b.getAttribute('data-sc-nasil-ac');
+
+      /* DUGME KARTI SECMEMELI.
+         Dugme role="radio" olan kartin icinde; kartin kendi click ve
+         keydown dinleyicileri var (bkz. kartlar.forEach). Ikisini de
+         durdurmak SART: yalnizca click durdurulsaydi klavyeyle
+         Enter/Space basan kullanicida hem pop-up acilir hem mod
+         degisirdi. Ok tuslari da kart secimini tasidigi icin onlar da
+         dugme odaktayken kartla konusmasin. */
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        nasilAc(mod, b);
+      });
+      b.addEventListener('keydown', function (e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          e.stopPropagation();
+          nasilAc(mod, b);
+          return;
+        }
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' ||
+            e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
+            e.key === 'Home' || e.key === 'End') {
+          e.stopPropagation();
+        }
+      });
+    });
+
+    Array.prototype.slice.call(KOK.querySelectorAll('[data-sc-nasil]')).forEach(function (d) {
+      var mod = d.getAttribute('data-sc-nasil');
+
+      var kapatBtn = d.querySelector('[data-sc-nasil-kapat]');
+      if (kapatBtn) kapatBtn.addEventListener('click', function () { nasilKapat(mod); });
+
+      /* Backdrop: varyant secicideki mantigin aynisi. */
+      d.addEventListener('click', function (e) { if (e.target === d) nasilKapat(mod); });
+
+      /* ESC'te dialog'u tarayici kapatiyor, close() cagrilmiyor.
+         Kaydirma kilidinin cozulmesi ve odagin geri donmesi bu
+         olaya bagli -- boylece hangi yoldan kapanirsa kapansin
+         temizlik ayni yerden geciyor. */
+      d.addEventListener('close', nasilTemizle);
+
+      var onayBtn = d.querySelector('[data-sc-nasil-onay]');
+      if (onayBtn) {
+        onayBtn.addEventListener('click', function () {
+          var hedef = onayBtn.getAttribute('data-sc-nasil-onay') || mod;
+          nasilKapat(mod);
+          /* modSec kendi icinde "zaten secili" durumunu eliyor, yani
+             secili karttan acilip onaylanirsa hicbir sey degismiyor. */
+          modSec(hedef);
+        });
+      }
+    });
+
     /* Kupon katmani kodu bulunca ya da suresi dolunca kartlardaki
        blogun hidden'ini degistiriyor. Cubuk o karari okuyor ama kendi
        basina haberi olmuyordu: sayfada bekleyen musteride suresi

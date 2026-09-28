@@ -12,7 +12,7 @@
   ek sinif alabiliyor: bos/dolu slotta hangisinin gorunecegi CSS'te
   seciliyor, JS ikon uretmiyor.
 
-  @param {string} ad - takvim | kilit-acik | kisi | kisiler | bilgi | arti | tik | etiket | canta
+  @param {string} ad - takvim | kilit-acik | kisi | kisiler | bilgi | arti | tik | etiket | canta | kum-saati | kalp | chevron
   @param {string} [sinif] - svg'ye eklenecek ek sinif
 {%- enddoc -%}
 {%- case ad -%}
@@ -80,5 +80,30 @@
          aria-hidden="true" focusable="false">
       <path d="M4.6 7.5h14.8l-1.1 12.1a1.7 1.7 0 0 1-1.7 1.55H7.4a1.7 1.7 0 0 1-1.7-1.55L4.6 7.5Z"/>
       <path d="M8.6 10V6.6a3.4 3.4 0 0 1 6.8 0V10"/>
+    </svg>
+  {%- comment -%}
+    "Nasil calisir?" dugmesinin ikonlari. Daire icinde 13px kullaniliyor,
+    o yuzden cizgi kalinligi digerlerinden biraz yuksek (1.8): kucultunce
+    1.6 soluk kaliyordu.
+  {%- endcomment -%}
+  {%- when 'kum-saati' -%}
+    <svg class="tt-sc-ikon{% if sinif %} {{ sinif }}{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">
+      <path d="M7 3.6h10M7 20.4h10"/>
+      <path d="M8.2 3.6v2.9c0 1.2.5 2.4 1.4 3.2L12 12l-2.4 2.3a4.4 4.4 0 0 0-1.4 3.2v2.9"/>
+      <path d="M15.8 3.6v2.9c0 1.2-.5 2.4-1.4 3.2L12 12l2.4 2.3c.9.8 1.4 2 1.4 3.2v2.9"/>
+    </svg>
+  {%- when 'kalp' -%}
+    <svg class="tt-sc-ikon{% if sinif %} {{ sinif }}{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">
+      <path d="M12 20.3 4.9 13.5a4.3 4.3 0 1 1 7.1-4.7 4.3 4.3 0 1 1 7.1 4.7L12 20.3Z"/>
+    </svg>
+  {%- when 'chevron' -%}
+    <svg class="tt-sc-ikon{% if sinif %} {{ sinif }}{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">
+      <path d="M9.5 5.5 16 12l-6.5 6.5"/>
     </svg>
 {%- endcase -%}

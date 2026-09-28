@@ -233,9 +233,29 @@
         satirini dolduruyor, yani metinlerden biri iki satira kirilsa
         bile iki kartta ayni boyda kaliyor.
       {%- endcomment -%}
+      {%- comment -%}
+        KARTLARIN ERISILEBILIR ADI ARTIK ACIKCA YAZILIYOR.
+
+        Once icerikten turetiliyordu ve istenen sira da buna gore
+        kurulmustu. Karta "Nasil calisir?" dugmesi eklenince o dugmenin
+        metni de adin sonuna takiliyordu: ekran okuyucu radio'yu
+        "... Sadece sen yuklersin, Nasil calisir?" diye okuyordu.
+
+        aria-label ayni sirayi AYNI AYARLARDAN kuruyor -- deger
+        kopyalanmiyor, yalnizca dizilis sabitleniyor -- ve dugmeyi
+        disarida birakiyor. Rozet yine en sonda.
+      {%- endcomment -%}
+      {%- capture single_etiket -%}
+        {{ s.single_ad }}. {{ s.single_ust }}. {{ s.single_adet }}. {{ s.single_yukleme }}
+      {%- endcapture -%}
+      {%- capture couple_etiket -%}
+        {{ s.couple_ad }}. {{ s.couple_ust }}. {{ s.couple_adet }}. {{ s.couple_yukleme }}
+        {%- if s.couple_rozet != blank %}. {{ s.couple_rozet }}{% endif -%}
+      {%- endcapture -%}
       <div class="tt-sc-kartlar" role="radiogroup" aria-label="{{ s.baslik | default: 'Deneyim' | escape }}">
         {%- comment -%} Single {%- endcomment -%}
-        <div class="tt-sc-kart" role="radio" tabindex="0" aria-checked="true" data-sc-mod="single">
+        <div class="tt-sc-kart" role="radio" tabindex="0" aria-checked="true" data-sc-mod="single"
+             aria-label="{{ single_etiket | strip | escape }}">
           <span class="tt-sc-radyo" aria-hidden="true"></span>
           <span class="tt-sc-ad">{{ s.single_ad }}</span>
           <span class="tt-sc-acilma">
@@ -251,10 +271,37 @@
             {%- render 'tt-sc-ikon', ad: 'kisi' -%}
             <span class="tt-sc-satir-metin">{{ s.single_yukleme }}</span>
           </span>
+          {%- comment -%}
+            "Nasil calisir?" -- kartin ALTINCI satiri.
+
+            Neden kart flex yapilmadi: kartlar subgrid ve iki kartin
+            satirlari birbirine kilitli (bkz. yukaridaki not). Flex'e
+            cevirmek o zinciri kirardi. Bunun yerine .tt-sc-kartlar'a
+            6. satir eklendi; dugme iki kartta da ayni satirda, yani
+            hizalanmasi YAKLASIK degil GARANTI -- Single'in "Belirledigin
+            tarihte acilir" metni iki satira dusse bile.
+
+            Dugme radio'nun ICINDE: gorsel istek boyle. Odaklanabilir
+            bir ogenin role="radio" icinde olmasi ARIA'ya tam uygun
+            degil; karsiliginda dugme kartin icinde duruyor. Kart
+            secimini tetiklememesi icin JS hem click hem keydown
+            yayilimini durduruyor.
+          {%- endcomment -%}
+          <button type="button" class="tt-sc-nasil-ac" data-sc-nasil-ac="single"
+                  aria-haspopup="dialog" aria-label="{{ s.nasil_single_baslik | default: s.nasil_dugme | escape }}">
+            <span class="tt-sc-nasil-ac-ikon" aria-hidden="true">
+              {%- render 'tt-sc-ikon', ad: 'kum-saati' -%}
+            </span>
+            <span class="tt-sc-nasil-ac-yazi">{{ s.nasil_dugme }}</span>
+            <span class="tt-sc-nasil-ac-ok" aria-hidden="true">
+              {%- render 'tt-sc-ikon', ad: 'chevron' -%}
+            </span>
+          </button>
         </div>
 
         {%- comment -%} Couple {%- endcomment -%}
-        <div class="tt-sc-kart" role="radio" tabindex="-1" aria-checked="false" data-sc-mod="couple">
+        <div class="tt-sc-kart" role="radio" tabindex="-1" aria-checked="false" data-sc-mod="couple"
+             aria-label="{{ couple_etiket | strip | escape }}">
           <span class="tt-sc-radyo" aria-hidden="true"></span>
           <span class="tt-sc-ad">{{ s.couple_ad }}</span>
           <span class="tt-sc-acilma">
@@ -280,6 +327,22 @@
           {%- if s.couple_rozet != blank -%}
             <span class="tt-sc-rozet">{{ s.couple_rozet }}</span>
           {%- endif -%}
+          {%- comment -%}
+            Single kartindaki dugmenin esi; gerekce orada.
+            Rozetten SONRA geliyor, cunku rozet mutlak konumlu ve
+            okunma sirasinda en sona birakilmis durumda -- dugme de
+            kartin son ogesi, dolayisiyla iki kartta DOM sirasi ayni.
+          {%- endcomment -%}
+          <button type="button" class="tt-sc-nasil-ac" data-sc-nasil-ac="couple"
+                  aria-haspopup="dialog" aria-label="{{ s.nasil_couple_baslik | default: s.nasil_dugme | escape }}">
+            <span class="tt-sc-nasil-ac-ikon" aria-hidden="true">
+              {%- render 'tt-sc-ikon', ad: 'kalp' -%}
+            </span>
+            <span class="tt-sc-nasil-ac-yazi">{{ s.nasil_dugme }}</span>
+            <span class="tt-sc-nasil-ac-ok" aria-hidden="true">
+              {%- render 'tt-sc-ikon', ad: 'chevron' -%}
+            </span>
+          </button>
         </div>
       </div>
 
@@ -595,6 +658,29 @@
         <div class="tt-sc-varyant-liste" data-sc-varyant-liste role="list"></div>
       </div>
     </dialog>
+
+    {%- comment -%}
+      "NASIL CALISIR?" POP-UP'LARI
+      Iki kez ayni snippet; icerik tamamen ayardan geliyor. Kartlardan
+      sonra basiliyorlar ama konumlari onemsiz: native <dialog>
+      showModal() ile ust katmana tasiniyor.
+    {%- endcomment -%}
+    {%- render 'tt-sc-nasil',
+          sid: sid, mod: 'single',
+          etiket: s.nasil_single_etiket, baslik: s.nasil_single_baslik,
+          gorsel: s.nasil_single_gorsel,
+          a1b: s.nasil_single_a1_bas, a1m: s.nasil_single_a1_metin,
+          a2b: s.nasil_single_a2_bas, a2m: s.nasil_single_a2_metin,
+          a3b: s.nasil_single_a3_bas, a3m: s.nasil_single_a3_metin,
+          onay: s.nasil_single_onay, kapat: s.kapat_etiket -%}
+    {%- render 'tt-sc-nasil',
+          sid: sid, mod: 'couple',
+          etiket: s.nasil_couple_etiket, baslik: s.nasil_couple_baslik,
+          gorsel: s.nasil_couple_gorsel,
+          a1b: s.nasil_couple_a1_bas, a1m: s.nasil_couple_a1_metin,
+          a2b: s.nasil_couple_a2_bas, a2m: s.nasil_couple_a2_metin,
+          a3b: s.nasil_couple_a3_bas, a3m: s.nasil_couple_a3_metin,
+          onay: s.nasil_couple_onay, kapat: s.kapat_etiket -%}
   </div>
 
   <script src="{{ 'tt-uk-kart.js' | asset_url }}" defer></script>
@@ -626,6 +712,38 @@
     { "type": "text", "id": "couple_ad", "label": "Başlık", "default": "Couple" },
     { "type": "text", "id": "couple_adet", "label": "Ürün sayısı satırı", "default": "2 ürün" },
     { "type": "text", "id": "couple_yukleme", "label": "Yükleme satırı (vurgulu kutu)", "default": "İkiniz de yüklersiniz" },
+
+    { "type": "header", "content": "\"Nasıl çalışır?\" butonu" },
+    { "type": "paragraph", "content": "Her iki kartın da en altında çıkan buton. Metin ikisinde de aynı; içerikler aşağıda ayrı ayrı." },
+    { "type": "text", "id": "nasil_dugme", "label": "Buton metni", "default": "Nasıl çalışır?" },
+
+    { "type": "header", "content": "Single – Nasıl çalışır? pop-up'ı" },
+    { "type": "text", "id": "nasil_single_etiket", "label": "Üst küçük etiket", "default": "Single" },
+    { "type": "text", "id": "nasil_single_baslik", "label": "Başlık", "default": "Single nasıl çalışır?" },
+    { "type": "text", "id": "nasil_single_a1_bas", "label": "1. adım – başlık", "default": "Kapsülünü seç" },
+    { "type": "textarea", "id": "nasil_single_a1_metin", "label": "1. adım – açıklama", "default": "Beğendiğin zaman kapsülünü seç ve sepete ekle." },
+    { "type": "text", "id": "nasil_single_a2_bas", "label": "2. adım – başlık", "default": "İçeriğini yükle" },
+    { "type": "textarea", "id": "nasil_single_a2_metin", "label": "2. adım – açıklama", "default": "Fotoğraf, video ve mesajlarını yalnızca sen yüklersin." },
+    { "type": "text", "id": "nasil_single_a3_bas", "label": "3. adım – başlık", "default": "Tarihi belirle" },
+    { "type": "textarea", "id": "nasil_single_a3_metin", "label": "3. adım – açıklama", "default": "Belirlediğin tarihte kapsül açılır ve içerik ortaya çıkar." },
+    { "type": "image_picker", "id": "nasil_single_gorsel", "label": "Görsel",
+      "info": "Boş bırakılırsa yerine boş bir alan çıkar." },
+    { "type": "text", "id": "nasil_single_onay", "label": "Alttaki buton metni", "default": "Anladım, Single'ı seç",
+      "info": "Boş bırakılırsa buton çıkmaz." },
+
+    { "type": "header", "content": "Couple – Nasıl çalışır? pop-up'ı" },
+    { "type": "text", "id": "nasil_couple_etiket", "label": "Üst küçük etiket", "default": "Couple" },
+    { "type": "text", "id": "nasil_couple_baslik", "label": "Başlık", "default": "Couple nasıl çalışır?" },
+    { "type": "text", "id": "nasil_couple_a1_bas", "label": "1. adım – başlık", "default": "İkili setini kur" },
+    { "type": "textarea", "id": "nasil_couple_a1_metin", "label": "1. adım – açıklama", "default": "İki kapsül seç; ikincisi yarı fiyatına gelir." },
+    { "type": "text", "id": "nasil_couple_a2_bas", "label": "2. adım – başlık", "default": "İkiniz de yükleyin" },
+    { "type": "textarea", "id": "nasil_couple_a2_metin", "label": "2. adım – açıklama", "default": "Her ikiniz de kendi fotoğraf, video ve mesajlarınızı yüklersiniz." },
+    { "type": "text", "id": "nasil_couple_a3_bas", "label": "3. adım – başlık", "default": "Buluşunca açılın" },
+    { "type": "textarea", "id": "nasil_couple_a3_metin", "label": "3. adım – açıklama", "default": "Kapsüller yan yana geldiğinde açılır ve içerikler birleşir." },
+    { "type": "image_picker", "id": "nasil_couple_gorsel", "label": "Görsel",
+      "info": "Boş bırakılırsa yerine boş bir alan çıkar." },
+    { "type": "text", "id": "nasil_couple_onay", "label": "Alttaki buton metni", "default": "Anladım, Couple'ı seç",
+      "info": "Boş bırakılırsa buton çıkmaz." },
 
     { "type": "header", "content": "Açılışta seçili" },
     { "type": "select", "id": "varsayilan_mod", "label": "Açılışta seçili deneyim",
