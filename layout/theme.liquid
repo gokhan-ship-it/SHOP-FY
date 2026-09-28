@@ -58,6 +58,75 @@
     {%- endcomment -%}
     {%- if template.suffix == 'couple-daha-fazla-bilgial' -%}
       {%- render 'tt-couple' -%}
+      {%- comment -%}
+        Ayni katmanin devami. Ayri dosya olmasinin tek sebebi
+        tt-couple.liquid'in buyumesi; kapsam ayni, hemen ardindan
+        geldigi icin kaynak sirasi da dogru kaliyor.
+      {%- endcomment -%}
+      {%- render 'tt-couple-izgara' -%}
+      {%- render 'tt-couple-eksen' -%}
+      {%- render 'tt-couple-banka' -%}
+      {%- render 'tt-aln-mavi' -%}
+      {%- comment -%}
+        Yapiskan cubuktaki "Urunleri Gor" dugmesi ikiye bolunmesin,
+        dogrudan couple koleksiyonuna gitsin. Gerekce dosyanin icinde.
+      {%- endcomment -%}
+      {%- render 'tt-couple-cubuk' -%}
+    {%- elsif template.suffix == 'hediye-daha-fazla-bilgial' -%}
+      {%- comment -%}
+        Ayni katmanin tekli (hediye) surumu: yalnizca olcu tarafi --
+        tipografik olcek, dikey ritim, kenar boslugu, buton metrigi.
+        Couple sayfasina ozel RENK kurallari (siyah kart slayti, mavi
+        CTA) alinmadi.
+
+        Alttaki uc dosya couple'la ayni; kapsam sinifi parametreden
+        geliyor. Sonuncusu tekliye ozel: video slaytinin surukleme
+        davranisi ve mozaik isik kutusu.
+      {%- endcomment -%}
+      {%- render 'tt-tekli' -%}
+      {%- render 'tt-couple-izgara', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-couple-eksen', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-couple-banka', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-aln-mavi', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-tekli-gorunum' -%}
+    {%- elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' -%}
+      {%- comment -%}
+        Urun sayfasinda katmanin YALNIZCA avantaj kartlari parcasi:
+        mobilde 2x2 izgara ve "Odeme kolayliklari" penceresindeki
+        taksit kartlari. Sayfanin tipografi/ritim katmani (tt-tekli)
+        bilerek alinmadi -- urun sayfasinin kendi olculeri var.
+
+        Sonuncusu "Boyutlar" ve "Taksit tablosu" baglantilarini hap
+        bicimine cevirip dokunma hedefini 44px'e cikariyor.
+
+        "contains" kullaniliyor ki hem product.zaman-kapsulu hem de
+        product.zaman-kapsulu-couple sablonlari ayni katmani alsin.
+        template.name kontrolu, ayni son eki tasiyan baska bir sayfa
+        turu olusursa yanlislikla eslesmesin diye.
+      {%- endcomment -%}
+      {%- render 'tt-couple-izgara', kok: '.tt-urun-page' -%}
+      {%- render 'tt-couple-banka', kok: '.tt-urun-page' -%}
+      {%- render 'tt-urun-hap' -%}
+    {%- elsif template.name == 'collection' and template.suffix == 'couple-urunler' -%}
+      {%- comment -%}
+        Couple koleksiyon sayfasina ozel yerel duzeltmeler. Su an tek
+        is: ekranin altinda yuzen "Filtrele ve sirala" dugmesini
+        gizlemek -- izgaranin ustunde zaten bir filtre dugmesi var.
+        Ayrinti dosyanin icinde.
+      {%- endcomment -%}
+      {%- render 'tt-couple-koleksiyon' -%}
+    {%- endif -%}
+
+    {%- comment -%}
+      Butun koleksiyon sayfalari. Yukaridaki zincir if/elsif oldugu
+      icin ayri bir blok: couple-urunler zaten ilk dalda eslesiyor,
+      ama bu kural onda da gecerli olmali.
+
+      Cok secenekli urunlerde karttaki sepet butonu hizli gorunum
+      yerine urun sayfasini acsin. Gerekce dosyanin icinde.
+    {%- endcomment -%}
+    {%- if template.name == 'collection' -%}
+      {%- render 'tt-koleksiyon-kart' -%}
     {%- endif -%}
 
     {{ content_for_header }}
@@ -116,8 +185,79 @@
       sections 'overlay-group'
     -%}
 
+    {%- comment -%}
+      CARKIN SAYFA BASINA BIR KEZ YUKLENEN PARCASI
+      (sections/ttn-cark.json -> sections/ttn-cark-genel.liquid)
+
+      Uc isi var: yapilandirma dugumu [data-ttn-veri], alttaki sabit
+      bar ve carkin CSS + JS yuklemesi. Her sayfada gerekli, cunku
+      kazandiktan sonra sayacin devam etmesi ve kuponun sepete yeniden
+      uygulanmasi carkin kartini tasimayan sayfalarda da surmeli.
+
+      SIRASI ONEMLI -- page-container'dan ONCE olmali.
+      Cark kartinin bolumu (sections/ttn-spin-wheel.liquid) daha ilk
+      boyamadan once calisan SENKRON bir script tasiyor ve
+      [data-ttn-veri] dugumunu ariyor:
+
+          var v = document.querySelector('[data-ttn-veri]');
+          if (!v) { k.hidden = true; return; }
+
+      Dugum sablon bolumlerinden SONRA basilsa kart kendini gizler.
+      assets/ttn-cark.js de ayni dugum yoksa hemen return ediyor.
+      Yani bu satir asagi kayarsa cark sessizce kaybolur.
+
+      Bolum grubu olmasinin sebebi tt-anasayfa-cubuk ile ayni:
+      duzenleyicide normal bir bolum gibi gorunuyor ve ayarlanabiliyor,
+      ama dosya bizim -- tema guncellemesi uzerine yazamiyor.
+    {%- endcomment -%}
+    {% sections 'ttn-cark' %}
+
+    {%- comment -%}
+      ANASAYFA URUN CUBUGU
+
+      Couple koleksiyon sayfasindaki yapiskan urun cubugunun
+      (apple-local-nav) birebir aynisi, yalnizca anasayfada. Ayarlar
+      templates/collection.couple-urunler.json icindeki degerlerden
+      kopyalandi; bolum grubu dosyasi sections/tt-anasayfa-cubuk.json.
+
+      Neden bolum grubu: cubugu dogrudan templates/index.json'a yazmak
+      icin o dosyanin tamamini gondermek gerekiyor. index.json otomatik
+      uretiliyor ve 100 KB'in uzerinde; tema duzenleyicide es zamanli
+      yapilan degisikliklerin uzerine yazma riski var. Bolum grubu ayni
+      sonucu veriyor, duzenleyicide de normal bir bolum gibi gorunuyor
+      ve duzenlenebiliyor.
+
+      Anasayfa header'i icin ayrica bir sey yapilmadi: bolumun kendi
+      CSS'i header_modu aciktayken mod_gizle_secici'yi
+      ([id$='__header']) gizliyor.
+    {%- endcomment -%}
+    {%- if template.name == 'index' -%}
+      {% sections 'tt-anasayfa-cubuk' %}
+    {%- endif -%}
+
+    {%- comment -%}
+      URUN SAYFASI CUBUGU
+
+      Ayni gerekce, ayri bir sebeple: urun sablonlari (product.zaman-
+      kapsulu ve product.zaman-kapsulu-couple) 25 bolumle Shopify'in
+      JSON sablon sinirina dayanmis durumda. 26. bolum eklenen dosya
+      sessizce reddediliyor -- userError donmuyor, upsert bos liste ile
+      "basarili" gorunuyor. Bu yuzden cubuk sablonun icine degil, bolum
+      grubu olarak yukleniyor; grup bu sinira dahil degil.
+
+      Iki ayri grup var cunku dugmenin gidecegi yer farkli: tekli urun
+      hediye sayfasina, couple urun couple sayfasina.
+
+      Sablondaki eski apple-local-nav kapatildi; onun yerini bu aliyor.
+    {%- endcomment -%}
+    {%- if template.name == 'product' and template.suffix == 'zaman-kapsulu-couple' -%}
+      {% sections 'tt-couple-urun' %}
+    {%- elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' -%}
+      {% sections 'tt-urun-cubuk' %}
+    {%- endif -%}
+
     <div class="page-container" id="PageContainer">
-      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% endif %}" id="MainContent" role="main">
+      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' %} tt-urun-page{% endif %}" id="MainContent" role="main">
         {{ content_for_layout }}
       </main>
 
@@ -134,6 +274,26 @@
     {%- if request.design_mode == false and settings.preload_links -%}
       <script src="{{ 'instant-page.js' | asset_url }}" type="module" fetchpriority="low" defer="defer"></script>
     {%- endif -%}
+    {%- comment -%}
+      Header'daki sepet ikonu cekmeceyi acsin. Sablondan bagimsiz,
+      butun sayfalarda gecerli; ayrintili gerekce dosyanin icinde.
+    {%- endcomment -%}
+    {%- render 'tt-sepet-cekmece' -%}
+    {%- comment -%}
+      tt-kupon-cubugu BU TEMADA CAGRILMIYOR.
+
+      O snippet yalnizca WHEELIO uygulamasinin kendi seridini
+      ([id*="wlo"]) header'in altina tasimak icin vardi. Bu taslakta
+      Wheelio app embed'i kapali ve yerini temaya gomulu cark aldi;
+      serit artik ttn-cark-genel'den geliyor. Dosya silinmeyi bekliyor.
+      Canli temada (Wheelio hala acik) cagri duruyor.
+    {%- endcomment -%}
     {%- render 'tt-yapilandirma' -%}
+    {%- comment -%}
+      Indirim seridi bazi koleksiyonlarda sayfaya gore kayik
+      duruyordu; cizildikten sonra olcup ekrana gore ortaliyor.
+      tt-yapilandirma'dan SONRA cagriliyor -- seridi o basiyor.
+    {%- endcomment -%}
+    {%- render 'tt-serit-ortala' -%}
   </body>
 </html>
