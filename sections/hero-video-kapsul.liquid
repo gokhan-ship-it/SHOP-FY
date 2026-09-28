@@ -1,0 +1,1263 @@
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+  assign stat_blocks = section.blocks | where: 'type', 'istatistik'
+
+  comment
+    METIN ANIMASYONU
+
+    Cumleler BLOK olarak geliyor; boylece magaza sahibi ekleyip
+    cikarabiliyor ve siralayabiliyor. Ama mevcut bir bolum ornegine
+    blok kendiliginden EKLENEMEZ -- animasyon acildiginda hicbir blok
+    yoksa alan bos kalirdi. Bu yuzden blok yoksa yerlesik uc cumle
+    devreye giriyor. Ilk blogu ekledigin anda kontrol tamamen sende.
+  endcomment
+  assign cumle_blocks = section.blocks | where: 'type', 'cumle'
+  assign anim_var = false
+  if s.anim_ac
+    assign anim_var = true
+  endif
+-%}
+
+<style>
+  #shopify-section-{{ sid }} .hv-root {
+    background: {{ s.arkaplan }};
+    padding-top: {{ s.p_top_m }}px;
+    padding-bottom: {{ s.p_bot_m }}px;
+  }
+  #shopify-section-{{ sid }} .hv-inner {
+    max-width: {{ s.max_w }}px;
+    margin: 0 auto;
+    padding-left: {{ s.edge_m }}px;
+    padding-right: {{ s.edge_m }}px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: {% if s.hizalama == 'left' %}flex-start{% else %}center{% endif %};
+    text-align: {% if s.hizalama == 'left' %}left{% else %}center{% endif %};
+  }
+
+  /* --- yildizlar + degisen istatistik --- */
+  #shopify-section-{{ sid }} .hv-social {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 {{ s.sosyal_bosluk }}px;
+  }
+  #shopify-section-{{ sid }} .hv-stars {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    line-height: 0;
+  }
+  #shopify-section-{{ sid }} .hv-stars svg {
+    width: {{ s.yildiz_boyutu }}px;
+    height: {{ s.yildiz_boyutu }}px;
+    display: block;
+    fill: {{ s.yildiz_rengi }};
+  }
+  /* tek hucreli grid: kapsayici her zaman en uzun metnin olculerinde kalir,
+     bu yuzden metin degisince yildizlar kipirdamaz ve layout shift olmaz */
+  #shopify-section-{{ sid }} .hv-stats {
+    display: grid;
+    align-items: center;
+    justify-items: start;
+    text-align: left;
+  }
+  #shopify-section-{{ sid }} .hv-stat {
+    grid-area: 1 / 1;
+    margin: 0;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 400ms ease, transform 400ms ease;
+    pointer-events: none;
+    font-size: {{ s.istatistik_boyutu_mobil }}px;
+    line-height: 1.35;
+    font-weight: {{ s.istatistik_kalinligi }};
+    color: {{ s.istatistik_rengi }};
+    white-space: nowrap;
+  }
+  #shopify-section-{{ sid }} .hv-stat.is-on {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  /* --- baslik ve metin --- */
+  #shopify-section-{{ sid }} .hv-title {
+    margin: 0 0 {{ s.baslik_bosluk }}px;
+    font-size: {{ s.baslik_boyutu_mobil }}px;
+    line-height: 1.15;
+    font-weight: {{ s.baslik_kalinligi }};
+    color: {{ s.baslik_rengi }};
+    text-wrap: balance;
+    /* temanin kaydirma animasyonu bu bolume dokunmasin */
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    visibility: visible !important;
+  }
+  #shopify-section-{{ sid }} .hv-body {
+    margin: 0;
+    max-width: {{ s.metin_genisligi }}px;
+    font-size: {{ s.metin_boyutu_mobil }}px;
+    line-height: 1.6;
+    color: {{ s.metin_rengi }};
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    visibility: visible !important;
+  }
+  #shopify-section-{{ sid }} .hv-body p { margin: 0 0 10px; }
+  #shopify-section-{{ sid }} .hv-body p:last-child { margin-bottom: 0; }
+  #shopify-section-{{ sid }} .hv-body a { color: inherit; }
+
+  /* ==================================================================
+     METIN ANIMASYONU
+
+     ILERLEMELI IYILESTIRME (progressive enhancement)
+     Varsayilan hal = SON HAL: gercek <h1> ve aciklama gorunur,
+     animasyon katmani ile noktalar display:none. JS calisirsa koke
+     data-hv-oynat konuyor ve katman devreye giriyor; dizi bitince
+     nitelik kalkip yine son hale donuluyor. Yani JS hic yuklenmese
+     de, hata verse de, prefers-reduced-motion aciksa da ekranda
+     dogru icerik duruyor.
+
+     ZIPLAMA YOK
+     .hv-alan'in min-height'i SATIR SAYISINDAN turetiliyor
+     (calc(1.15em * n)) ve cumleler o alanda mutlak konumlu. Alanin
+     yuksekligi hic degismedigi icin altindaki aciklama ve gorsel
+     kipirdamiyor. Animasyonlarin tamami transform / opacity /
+     filter -- yerlesim tetikleyen hicbir ozellik yok.
+     ================================================================== */
+  #shopify-section-{{ sid }} .hv-alan {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: {% if s.hizalama == 'left' %}flex-start{% else %}center{% endif %};
+    width: 100%;
+    /* Baslik olculeri TEK YERDE: icerideki h1 ve cumleler 1em ile
+       buradan miras aliyor, uc breakpoint'te ayri ayri yazilmiyor. */
+    font-size: {{ s.baslik_boyutu_mobil }}px;
+    min-height: calc(1.15em * {{ s.anim_satir }});
+    margin: 0 0 {{ s.baslik_bosluk }}px;
+  }
+  #shopify-section-{{ sid }} .hv-alan .hv-title,
+  #shopify-section-{{ sid }} .hv-alan .hv-c {
+    font-size: 1em;
+    margin: 0;
+  }
+
+  /* Animasyon katmani: h1'in TAM USTUNDE, ayni kutuda. */
+  #shopify-section-{{ sid }} .hv-anim {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: inherit;
+  }
+  #shopify-section-{{ sid }} .hv-c {
+    display: none;
+    line-height: 1.15;
+    font-weight: {{ s.baslik_kalinligi }};
+    color: {{ s.baslik_rengi }};
+    text-wrap: balance;
+  }
+  #shopify-section-{{ sid }} .hv-c.is-on { display: block; }
+
+  /* Kelime bolunmesin: harfler kelime kutusunun icinde. */
+  #shopify-section-{{ sid }} .hv-k { display: inline-block; white-space: nowrap; }
+  #shopify-section-{{ sid }} .hv-h {
+    display: inline-block;
+    will-change: transform, opacity, filter;
+  }
+
+  /* --- Oynarken: h1 gizli, aciklama gizli, katman acik ---
+
+     !important ZORUNLU. Yukarida .hv-title ve .hv-body'ye
+     "opacity/visibility: ... !important" veriliyor (temanin kaydirma
+     animasyonu bu bolume dokunmasin diye). O kurallar olmasaydi
+     buradaki gizleme yeterdi; onlar dururken normal ozgulluk
+     yetmiyor ve h1 animasyonun UZERINE biniyordu. */
+  #shopify-section-{{ sid }}[data-hv-oynat] .hv-anim { display: flex; }
+  #shopify-section-{{ sid }}[data-hv-oynat] .hv-alan .hv-title { visibility: hidden !important; }
+  /* transition: none SART. Gecis yalnizca ASAGIDAKI kuralda, yani
+     nitelik KALKARKEN calisiyor -- aciklama 0'dan 1'e yumusakca
+     geliyor. Burada da gecis olsaydi aciklama 1'den 0'a 800ms
+     boyunca sonerdi ve ilk cumle oynarken hala ekranda olurdu. */
+  #shopify-section-{{ sid }}[data-hv-oynat] .hv-body {
+    opacity: 0 !important;
+    transition: none !important;
+  }
+  #shopify-section-{{ sid }}[data-hv-hazir] .hv-noktalar { display: flex; }
+
+  /* Aciklama son cumleden sonra yumusakca geliyor. */
+  #shopify-section-{{ sid }} .hv-body { transition: opacity 800ms ease; }
+
+  /* --- GIRIS: harfler tek tek, asagidan --- */
+  @keyframes hv-gir-{{ sid }} {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+  #shopify-section-{{ sid }} .hv-c[data-durum="gir"] .hv-h {
+    opacity: 0;
+    animation: hv-gir-{{ sid }} 500ms ease forwards;
+    animation-delay: var(--g);
+  }
+
+  /* --- SOLMA (cicek): dusup donerek griye --- */
+  @keyframes hv-solma-{{ sid }} {
+    from { opacity: 1; transform: none; color: {{ s.baslik_rengi }}; }
+    to   { opacity: 0; transform: translateY(34px) rotate(18deg); color: #6B7280; }
+  }
+  #shopify-section-{{ sid }} .hv-c[data-durum="cik"][data-efekt="solma"] .hv-h {
+    animation: hv-solma-{{ sid }} 900ms cubic-bezier(.4,.1,.7,1) forwards;
+    animation-delay: var(--r);
+  }
+
+  /* --- BUHARLASMA (parfum): yukari ucup bulaniklasarak --- */
+  @keyframes hv-buhar-{{ sid }} {
+    from { opacity: 1; transform: none; filter: blur(0); }
+    to   { opacity: 0; transform: translateY(-30px) scale(1.15); filter: blur(6px); }
+  }
+  #shopify-section-{{ sid }} .hv-c[data-durum="cik"][data-efekt="buharlasma"] .hv-h {
+    animation: hv-buhar-{{ sid }} 900ms ease-out forwards;
+    animation-delay: var(--r);
+  }
+
+  /* --- ESKIME (cuzdan): once ustu cizilir, sonra soldan saga silinir --- */
+  #shopify-section-{{ sid }} .hv-c[data-efekt="eskime"] { position: relative; }
+  #shopify-section-{{ sid }} .hv-cizgi {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    background: #6B7280;
+    transform: scaleX(0);
+    transform-origin: left center;
+    pointer-events: none;
+  }
+  @keyframes hv-cizgi-{{ sid }} {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  #shopify-section-{{ sid }} .hv-c[data-durum="cik"][data-efekt="eskime"] .hv-cizgi {
+    animation: hv-cizgi-{{ sid }} 500ms ease-out forwards;
+  }
+  @keyframes hv-eski-{{ sid }} {
+    from { opacity: 1; color: {{ s.baslik_rengi }}; filter: blur(0); }
+    to   { opacity: 0; color: #3A4048; filter: blur(2px); }
+  }
+  #shopify-section-{{ sid }} .hv-c[data-durum="cik"][data-efekt="eskime"] .hv-h {
+    /* Cizgi bitince basliyor (500ms), soldan saga sirayla. */
+    animation: hv-eski-{{ sid }} 400ms ease-in forwards;
+    animation-delay: var(--s);
+  }
+
+  /* --- SON CUMLE: bulaniktan netlesir --- */
+  @keyframes hv-son-{{ sid }} {
+    from { opacity: 0; transform: scale(.92); filter: blur(8px); }
+    to   { opacity: 1; transform: none; filter: blur(0); }
+  }
+  #shopify-section-{{ sid }} .hv-c[data-durum="son"] .hv-h {
+    opacity: 0;
+    animation: hv-son-{{ sid }} 700ms cubic-bezier(.2,.7,.3,1) forwards;
+    animation-delay: var(--g);
+  }
+
+  /* Vurgulu kelimeler: h1'de de animasyon katmaninda da ayni. */
+  #shopify-section-{{ sid }} .hv-vurgu {
+    font-style: normal;
+    color: #9FD4BD;
+    text-shadow: 0 0 18px rgba(159, 212, 189, .45);
+  }
+
+  /* --- Ilerleme noktalari --- */
+  #shopify-section-{{ sid }} .hv-noktalar {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 {{ s.baslik_bosluk }}px;
+  }
+  #shopify-section-{{ sid }} .hv-noktalar i {
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #39414B;
+    transition: width 320ms ease, background-color 320ms ease;
+  }
+  #shopify-section-{{ sid }} .hv-noktalar i.is-on {
+    width: 18px;
+    background: #9FD4BD;
+  }
+
+  /* --- 21:9 video alani --- */
+  #shopify-section-{{ sid }} .hv-media {
+    position: relative;
+    width: 100%;
+    max-width: {{ s.video_genisligi }}px;
+    margin-top: {{ s.video_bosluk }}px;
+    aspect-ratio: {{ s.oran }};
+    border-radius: {{ s.video_kose }}px;
+    overflow: hidden;
+    background: {{ s.video_arkaplan }};
+    {% if s.video_kenarlik %}border: 1px solid {{ s.video_kenarlik_rengi }};{% endif %}
+  }
+  #shopify-section-{{ sid }} .hv-media video,
+  #shopify-section-{{ sid }} .hv-media iframe,
+  #shopify-section-{{ sid }} .hv-media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border: 0;
+  }
+  #shopify-section-{{ sid }} .hv-ph {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.4;
+    color: {{ s.metin_rengi }};
+  }
+
+  @media (min-width: 768px) {
+    #shopify-section-{{ sid }} .hv-root {
+      padding-top: {{ s.p_top_d }}px;
+      padding-bottom: {{ s.p_bot_d }}px;
+    }
+    #shopify-section-{{ sid }} .hv-inner {
+      padding-left: {{ s.edge_d }}px;
+      padding-right: {{ s.edge_d }}px;
+    }
+    #shopify-section-{{ sid }} .hv-stat { font-size: {{ s.istatistik_boyutu }}px; }
+    #shopify-section-{{ sid }} .hv-title { font-size: {{ s.baslik_boyutu_tablet }}px; }
+    #shopify-section-{{ sid }} .hv-alan { font-size: {{ s.baslik_boyutu_tablet }}px; }
+    #shopify-section-{{ sid }} .hv-body { font-size: {{ s.metin_boyutu }}px; }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ sid }} .hv-title { font-size: {{ s.baslik_boyutu }}px; }
+    #shopify-section-{{ sid }} .hv-alan { font-size: {{ s.baslik_boyutu }}px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .hv-stat { transition: none; transform: none; }
+    /* Animasyon HIC oynamiyor (JS de baslatmiyor); bu kurallar
+       yalnizca emniyet kemeri -- bir sekilde nitelik konsa bile
+       ekranda son hal kalir. */
+    #shopify-section-{{ sid }} .hv-anim { display: none !important; }
+    #shopify-section-{{ sid }} .hv-alan .hv-title { visibility: visible !important; }
+    #shopify-section-{{ sid }} .hv-body { opacity: 1 !important; transition: none; }
+    #shopify-section-{{ sid }} .hv-noktalar { display: none !important; }
+  }
+</style>
+
+<div class="hv-root">
+  <div
+    class="hv-inner"
+    data-hv-root
+    data-stat-wait="{{ s.istatistik_bekleme_suresi | times: 1000 | round }}"
+  >
+    {%- if s.yildiz_goster or stat_blocks.size > 0 -%}
+      <div class="hv-social">
+        {%- if s.yildiz_goster -%}
+          <span class="hv-stars" role="img" aria-label="5 üzerinden 5 yıldız">
+            {%- for i in (1..5) -%}
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 2.4l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.2l-5.8 3.06 1.11-6.46-4.7-4.58 6.49-.94z"/>
+              </svg>
+            {%- endfor -%}
+          </span>
+        {%- endif -%}
+        {%- if stat_blocks.size > 0 -%}
+          <div class="hv-stats" aria-live="off">
+            {%- for block in stat_blocks -%}
+              <p
+                class="hv-stat{% if forloop.first %} is-on{% endif %}"
+                aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}"
+                {{ block.shopify_attributes }}
+              >{{ block.settings.metin }}</p>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if anim_var -%}
+      {%- comment -%}
+        SON CUMLE = SAYFANIN GERCEK H1'I
+
+        Animasyon katmani aria-hidden; ekran okuyucu ve Google
+        yalnizca bu h1'i ve aciklamayi goruyor. h1 en bastan DOM'da
+        ve CSS varsayilaninda GORUNUR -- JS calismazsa da dogru
+        icerik ekranda. Oynatirken JS onu visibility ile gizliyor,
+        dizi bitince geri veriyor (display degil visibility: kutu
+        yerinde kaldigi icin hicbir sey kaymiyor).
+      {%- endcomment -%}
+      {%- assign son = s.anim_son | default: 'Bu, bir ömür saklar.' -%}
+      {%- capture son_html -%}
+        {%- if s.anim_vurgu != blank and son contains s.anim_vurgu -%}
+          {%- assign parcalar = son | split: s.anim_vurgu -%}
+          {%- for parca in parcalar -%}
+            {%- unless forloop.first -%}<em class="hv-vurgu">{{ s.anim_vurgu | escape }}</em>{%- endunless -%}
+            {{- parca | escape -}}
+          {%- endfor -%}
+          {%- comment -%}
+            split sondaki BOS parcayi atiyor: vurgu cumlenin sonundaysa
+            dongude hic <em> basilmaz ve vurgu sessizce kaybolurdu.
+            Kuyruk acikca olculup tamamlaniyor.
+          {%- endcomment -%}
+          {%- assign vlen = s.anim_vurgu.size -%}
+          {%- assign neg = 0 | minus: vlen -%}
+          {%- assign kuyruk = son | slice: neg, vlen -%}
+          {%- if kuyruk == s.anim_vurgu -%}
+            <em class="hv-vurgu">{{ s.anim_vurgu | escape }}</em>
+          {%- endif -%}
+        {%- else -%}
+          {{- son | escape -}}
+        {%- endif -%}
+      {%- endcapture -%}
+
+      <div class="hv-alan">
+        <h1 class="hv-title">{{ son_html }}</h1>
+        <div class="hv-anim" aria-hidden="true" data-hv-anim
+             data-bekleme="{{ s.anim_bekleme | times: 1000 | round }}">
+          {%- if cumle_blocks.size > 0 -%}
+            {%- for block in cumle_blocks -%}
+              <p class="hv-c" data-efekt="{{ block.settings.efekt }}" {{ block.shopify_attributes }}>
+                {{- block.settings.metin -}}
+              </p>
+            {%- endfor -%}
+          {%- else -%}
+            {%- comment -%} Hic blok yokken yerlesik uc cumle. {%- endcomment -%}
+            <p class="hv-c" data-efekt="solma">Çiçek bir haftada solar.</p>
+            <p class="hv-c" data-efekt="buharlasma">Parfüm üç ayda biter.</p>
+            <p class="hv-c" data-efekt="eskime">Cüzdan bir yılda eskir.</p>
+          {%- endif -%}
+          {%- comment -%}
+            Animasyon kopyasi DUZ METIN: vurgu <em> ile degil,
+            data-vurgu indeksiyle isaretleniyor (bkz. bol()).
+            Boylece "saklar" ile onu izleyen nokta ayni kelime
+            kutusunda kalir ve satir sonunda ayrilmaz.
+          {%- endcomment -%}
+          <p class="hv-c" data-efekt="son" data-vurgu="{{ s.anim_vurgu | escape }}">{{ son | escape }}</p>
+        </div>
+      </div>
+
+      {%- comment -%} Nokta sayisi = cumle sayisi + 1 (son cumle). {%- endcomment -%}
+      {%- assign nokta = 4 -%}
+      {%- if cumle_blocks.size > 0 -%}
+        {%- assign nokta = cumle_blocks.size | plus: 1 -%}
+      {%- endif -%}
+      <div class="hv-noktalar" aria-hidden="true" data-hv-noktalar>
+        {%- for i in (1..nokta) -%}<i></i>{%- endfor -%}
+      </div>
+    {%- elsif s.baslik != blank -%}
+      <{{ s.baslik_etiketi }} class="hv-title">{{ s.baslik }}</{{ s.baslik_etiketi }}>
+    {%- endif -%}
+
+    {%- if s.metin != blank -%}
+      <div class="hv-body rte" data-hv-aciklama>{{ s.metin }}</div>
+    {%- endif -%}
+
+    <div class="hv-media">
+      {%- if s.video != blank -%}
+        {{
+          s.video
+          | video_tag:
+            image_size: '1600x',
+            autoplay: s.otomatik_oynat,
+            loop: s.dongu,
+            muted: s.sessiz,
+            controls: s.kontroller,
+            playsinline: true
+        }}
+      {%- elsif s.video_url != blank -%}
+        {%- if s.video_url.type == 'youtube' -%}
+          <iframe
+            src="https://www.youtube.com/embed/{{ s.video_url.id }}?autoplay={% if s.otomatik_oynat %}1{% else %}0{% endif %}&mute={% if s.sessiz %}1{% else %}0{% endif %}&loop={% if s.dongu %}1{% else %}0{% endif %}&playlist={{ s.video_url.id }}&controls={% if s.kontroller %}1{% else %}0{% endif %}&rel=0&playsinline=1&modestbranding=1"
+            title="{{ s.baslik | strip_html | escape }}"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        {%- elsif s.video_url.type == 'vimeo' -%}
+          <iframe
+            src="https://player.vimeo.com/video/{{ s.video_url.id }}?autoplay={% if s.otomatik_oynat %}1{% else %}0{% endif %}&muted={% if s.sessiz %}1{% else %}0{% endif %}&loop={% if s.dongu %}1{% else %}0{% endif %}&background={% if s.kontroller %}0{% else %}1{% endif %}"
+            title="{{ s.baslik | strip_html | escape }}"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        {%- endif -%}
+      {%- elsif s.poster != blank -%}
+        {%- assign poster_alt = s.baslik | strip_html | escape -%}
+        {{ s.poster | image_url: width: 1800 | image_tag: loading: 'lazy', alt: poster_alt }}
+      {%- else -%}
+        <span class="hv-ph">{{ s.video_bos_yazi }}</span>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    if (window.hvKapsulReady) { window.hvKapsulInit(); return; }
+    window.hvKapsulReady = true;
+
+    var roots = [];
+
+    function stop(root) {
+      if (root.hvTimer) { clearInterval(root.hvTimer); root.hvTimer = null; }
+    }
+
+    function start(root) {
+      if (root.hvReduce || document.hidden) return;
+      stop(root);
+      if (root.hvStats.length < 2) return;
+      root.hvTimer = setInterval(function () {
+        root.hvIndex = (root.hvIndex + 1) % root.hvStats.length;
+        for (var i = 0; i < root.hvStats.length; i++) {
+          var on = i === root.hvIndex;
+          root.hvStats[i].classList.toggle('is-on', on);
+          root.hvStats[i].setAttribute('aria-hidden', on ? 'false' : 'true');
+        }
+      }, root.hvWait);
+    }
+
+    /* ================= METIN ANIMASYONU =================
+       Cumleyi HARFLERE boluyor. Kelimeler kendi kutusunda
+       (white-space: nowrap) kaliyor, yani harf harf animasyon
+       kelimeyi satir sonunda ORTADAN bolmuyor.
+
+       Vurgu <em> ile DEGIL, harflerin ORIJINAL METINDEKI INDEKSI
+       ile isaretleniyor: araya element girseydi o kelime iki
+       kutuya bolunur ve noktalama tek basina alt satira dusebilirdi.
+       Gercek <h1> zaten <em> tasiyor -- SEO tarafi ondan besleniyor. */
+    function bol(p) {
+      var metin = (p.textContent || '').replace(/\s+/g, ' ').trim();
+      p.textContent = '';
+      var harfler = [];
+      var kelimeler = metin.split(' ');
+      var idx = 0;
+      for (var w = 0; w < kelimeler.length; w++) {
+        var kutu = document.createElement('span');
+        kutu.className = 'hv-k';
+        for (var c = 0; c < kelimeler[w].length; c++) {
+          var h = document.createElement('span');
+          h.className = 'hv-h';
+          h.textContent = kelimeler[w].charAt(c);
+          h._i = idx++;
+          kutu.appendChild(h);
+          harfler.push(h);
+        }
+        p.appendChild(kutu);
+        if (w < kelimeler.length - 1) {
+          p.appendChild(document.createTextNode(' '));
+          idx++;
+        }
+      }
+      var vurgu = p.getAttribute('data-vurgu');
+      if (vurgu) {
+        var bas = metin.indexOf(vurgu);
+        if (bas > -1) {
+          for (var i = 0; i < harfler.length; i++) {
+            if (harfler[i]._i >= bas && harfler[i]._i < bas + vurgu.length) {
+              harfler[i].classList.add('hv-vurgu');
+            }
+          }
+        }
+      }
+      if (p.getAttribute('data-efekt') === 'eskime') {
+        var cizgi = document.createElement('span');
+        cizgi.className = 'hv-cizgi';
+        p.appendChild(cizgi);
+      }
+      return harfler;
+    }
+
+    function metinAnim(root) {
+      var katman = root.querySelector('[data-hv-anim]');
+      if (!katman) return;
+      /* Azaltilmis hareket: hic baslatilmiyor. CSS varsayilani zaten
+         son hal (h1 + aciklama gorunur), yani dogru icerik ekranda. */
+      if (root.hvReduce) return;
+
+      var bolum = root.closest ? root.closest('.shopify-section') : null;
+      if (!bolum) return;
+
+      var cumleler = Array.prototype.slice.call(katman.querySelectorAll('.hv-c'));
+      if (!cumleler.length) return;
+      var noktalar = [];
+      var nk = root.querySelector('[data-hv-noktalar]');
+      if (nk) noktalar = Array.prototype.slice.call(nk.querySelectorAll('i'));
+      var bekleme = parseInt(katman.getAttribute('data-bekleme'), 10) || 1500;
+
+      var harfler = cumleler.map(bol);
+      bolum.setAttribute('data-hv-hazir', '');
+
+      function nokta(n) {
+        for (var i = 0; i < noktalar.length; i++) noktalar[i].classList.toggle('is-on', i === n);
+      }
+
+      var zamanlar = [];
+      function sonra(fn, ms) { zamanlar.push(window.setTimeout(fn, ms)); }
+
+      var sirada = 0;
+      function adim() {
+        var p = cumleler[sirada];
+        var h = harfler[sirada];
+        var sonMu = sirada === cumleler.length - 1;
+        for (var i = 0; i < h.length; i++) h[i].style.setProperty('--g', i * 25 + 'ms');
+        nokta(sirada);
+        p.classList.add('is-on');
+        p.setAttribute('data-durum', sonMu ? 'son' : 'gir');
+
+        var girisSure = (sonMu ? 700 : 500) + (h.length - 1) * 25;
+
+        if (sonMu) {
+          /* Son cumle KALICI. Giris bitiminden 0.7s sonra gercek h1
+             devreye giriyor ve aciklama yumusakca aciliyor; ikisi
+             ayni karede oldugu icin gecis gorunmuyor. */
+          sonra(function () {
+            bolum.removeAttribute('data-hv-oynat');
+            p.classList.remove('is-on');
+          }, girisSure + 700);
+          return;
+        }
+
+        sonra(function () {
+          for (var i = 0; i < h.length; i++) {
+            h[i].style.setProperty('--r', Math.round(Math.random() * 350) + 'ms');
+            h[i].style.setProperty('--s', 500 + i * 20 + 'ms');
+          }
+          p.setAttribute('data-durum', 'cik');
+          var cikisSure = p.getAttribute('data-efekt') === 'eskime'
+            ? 500 + (h.length - 1) * 20 + 400
+            : 900 + 350;
+          sonra(function () {
+            p.classList.remove('is-on');
+            p.removeAttribute('data-durum');
+            sirada++;
+            adim();
+          }, cikisSure);
+        }, girisSure + bekleme);
+      }
+
+      function basla() {
+        if (root.hvAnimBasladi) return;
+        root.hvAnimBasladi = true;
+        bolum.setAttribute('data-hv-oynat', '');
+        adim();
+      }
+
+      root.hvAnimDur = function () {
+        for (var i = 0; i < zamanlar.length; i++) clearTimeout(zamanlar[i]);
+        zamanlar = [];
+      };
+
+      /* Bolum ekrana girince basliyor. Hero en ustte oldugu icin bu
+         pratikte sayfa acilisi demek; ama bolum baska bir yere
+         tasinirsa da dogru anda basliyor. */
+      if (!window.IntersectionObserver) { basla(); return; }
+      var izci = new IntersectionObserver(function (girisler) {
+        for (var i = 0; i < girisler.length; i++) {
+          if (girisler[i].isIntersecting) { izci.disconnect(); basla(); return; }
+        }
+      }, { threshold: 0.25 });
+      izci.observe(bolum);
+    }
+
+    function setup(root) {
+      if (!root || root.hvInited) return;
+      root.hvInited = true;
+      root.hvReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      root.hvStats = root.querySelectorAll('.hv-stat');
+      root.hvIndex = 0;
+      root.hvWait = parseInt(root.getAttribute('data-stat-wait'), 10) || 3500;
+      if (roots.indexOf(root) === -1) roots.push(root);
+      start(root);
+      metinAnim(root);
+    }
+
+    function teardown(root) {
+      if (!root) return;
+      stop(root);
+      /* Tema duzenleyicide bolum yeniden cizilince eski dizinin
+         zamanlayicilari bosa calisip yeni kopyaya karisirdi. */
+      if (typeof root.hvAnimDur === 'function') root.hvAnimDur();
+      root.hvAnimBasladi = false;
+      root.hvInited = false;
+      var i = roots.indexOf(root);
+      if (i > -1) roots.splice(i, 1);
+    }
+
+    window.hvKapsulInit = function (scope) {
+      var list = (scope || document).querySelectorAll('[data-hv-root]');
+      for (var i = 0; i < list.length; i++) setup(list[i]);
+    };
+
+    document.addEventListener('visibilitychange', function () {
+      for (var i = 0; i < roots.length; i++) {
+        if (document.hidden) stop(roots[i]);
+        else start(roots[i]);
+      }
+    });
+
+    document.addEventListener('shopify:section:load', function (e) {
+      window.hvKapsulInit(e.target);
+    });
+    document.addEventListener('shopify:section:unload', function (e) {
+      var list = e.target.querySelectorAll('[data-hv-root]');
+      for (var i = 0; i < list.length; i++) teardown(list[i]);
+    });
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { window.hvKapsulInit(); });
+    } else {
+      window.hvKapsulInit();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Video Hero — Kapsül",
+  "tag": "section",
+  "class": "hero-video-kapsul-section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Yıldızlar ve İstatistik"
+    },
+    {
+      "type": "checkbox",
+      "id": "yildiz_goster",
+      "label": "Yıldızları göster",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "yildiz_rengi",
+      "label": "Yıldız rengi",
+      "default": "#f5a623"
+    },
+    {
+      "type": "range",
+      "id": "yildiz_boyutu",
+      "label": "Yıldız boyutu",
+      "min": 10,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "istatistik_rengi",
+      "label": "İstatistik yazı rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "select",
+      "id": "istatistik_kalinligi",
+      "label": "İstatistik kalınlığı",
+      "default": "500",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "istatistik_boyutu_mobil",
+      "label": "İstatistik boyutu (mobil)",
+      "min": 10,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "istatistik_boyutu",
+      "label": "İstatistik boyutu (masaüstü)",
+      "min": 10,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "istatistik_bekleme_suresi",
+      "label": "İstatistik bekleme süresi",
+      "min": 2,
+      "max": 8,
+      "step": 0.5,
+      "unit": "sn",
+      "default": 3.5
+    },
+    {
+      "type": "range",
+      "id": "sosyal_bosluk",
+      "label": "Yıldız satırı ile başlık arası",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "header",
+      "content": "Başlık"
+    },
+    {
+      "type": "text",
+      "id": "baslik",
+      "label": "Başlık",
+      "info": "Satır kırmak için araya <br> yazabilirsiniz.",
+      "default": "Bir anı sakla, zamanı gelince açılsın."
+    },
+    {
+      "type": "select",
+      "id": "baslik_etiketi",
+      "label": "Başlık etiketi (SEO)",
+      "default": "h2",
+      "options": [
+        { "value": "h1", "label": "H1" },
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "p", "label": "Normal metin" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "baslik_rengi",
+      "label": "Başlık rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "select",
+      "id": "baslik_kalinligi",
+      "label": "Başlık kalınlığı",
+      "default": "700",
+      "options": [
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" },
+        { "value": "800", "label": "Çok kalın" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "baslik_boyutu_mobil",
+      "label": "Başlık boyutu (mobil)",
+      "min": 18,
+      "max": 44,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "baslik_boyutu_tablet",
+      "label": "Başlık boyutu (tablet)",
+      "min": 20,
+      "max": 56,
+      "step": 1,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "baslik_boyutu",
+      "label": "Başlık boyutu (masaüstü)",
+      "min": 24,
+      "max": 72,
+      "step": 1,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "baslik_bosluk",
+      "label": "Başlık ile metin arası",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "header",
+      "content": "Metin Animasyonu"
+    },
+    {
+      "type": "paragraph",
+      "content": "Açıkken başlığın yerine sırayla oynayan cümleler gelir; son cümlede durur ve o cümle sayfanın H1'i olur. Cümleleri aşağıdan \"Animasyon cümlesi\" bloğu ekleyerek düzenleyin. Hiç blok eklemezseniz yerleşik üç cümle (çiçek / parfüm / cüzdan) kullanılır."
+    },
+    {
+      "type": "checkbox",
+      "id": "anim_ac",
+      "label": "Metin animasyonunu aç",
+      "info": "Kapalıyken bölüm eskisi gibi çalışır: yukarıdaki \"Başlık\" alanı gösterilir.",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "anim_son",
+      "label": "Son cümle (kalıcı)",
+      "info": "Animasyon bittiğinde ekranda kalan cümle. Sayfanın H1'i budur.",
+      "default": "Bu, bir ömür saklar."
+    },
+    {
+      "type": "text",
+      "id": "anim_vurgu",
+      "label": "Son cümlede vurgulanacak kısım",
+      "info": "Son cümlenin içinde geçiyorsa bu kısım yeşil ve parıltılı görünür. Boş bırakabilirsiniz.",
+      "default": "bir ömür saklar"
+    },
+    {
+      "type": "range",
+      "id": "anim_bekleme",
+      "label": "Cümle bekleme süresi",
+      "min": 1,
+      "max": 3,
+      "step": 0.1,
+      "unit": "sn",
+      "default": 1.5
+    },
+    {
+      "type": "range",
+      "id": "anim_satir",
+      "label": "Başlık alanı yüksekliği (satır)",
+      "info": "Kaç satırlık yer ayrılsın. Cümleler değişirken sayfanın zıplamaması için bu alan sabittir; en uzun cümlenin sığacağı değeri seçin.",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "unit": "sat",
+      "default": 2
+    },
+    {
+      "type": "header",
+      "content": "Metin"
+    },
+    {
+      "type": "richtext",
+      "id": "metin",
+      "label": "Metin",
+      "info": "Kalın, italik, madde işareti ve bağlantı ekleyebilirsiniz.",
+      "default": "<p>NFC Zaman Kapsülü ile fotoğraflarını, videolarını ve mesajlarını kilitle; belirlediğin tarihte sevdiklerin tek dokunuşla açsın.</p>"
+    },
+    {
+      "type": "color",
+      "id": "metin_rengi",
+      "label": "Metin rengi",
+      "default": "#c9c9c9"
+    },
+    {
+      "type": "range",
+      "id": "metin_boyutu_mobil",
+      "label": "Metin boyutu (mobil)",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "metin_boyutu",
+      "label": "Metin boyutu (masaüstü)",
+      "min": 11,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "metin_genisligi",
+      "label": "Metin genişliği",
+      "min": 320,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 680
+    },
+    {
+      "type": "header",
+      "content": "Video"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Video (Shopify)",
+      "info": "Shopify'a yüklediğiniz videoyu buradan seçin. 21:9 videonuz için önerilen alan budur."
+    },
+    {
+      "type": "video_url",
+      "id": "video_url",
+      "label": "Video bağlantısı (YouTube / Vimeo)",
+      "info": "Yalnızca yukarıdaki alan boşsa kullanılır.",
+      "accept": ["youtube", "vimeo"]
+    },
+    {
+      "type": "image_picker",
+      "id": "poster",
+      "label": "Kapak görseli",
+      "info": "Video yoksa bu görsel gösterilir."
+    },
+    {
+      "type": "text",
+      "id": "video_bos_yazi",
+      "label": "Video yokken görünecek yazı",
+      "default": "video: 21:9 tanıtım"
+    },
+    {
+      "type": "select",
+      "id": "oran",
+      "label": "Video oranı",
+      "default": "21 / 9",
+      "options": [
+        { "value": "21 / 9", "label": "Sinematik (21:9)" },
+        { "value": "2.39 / 1", "label": "Ultra geniş (2.39:1)" },
+        { "value": "16 / 9", "label": "Geniş (16:9)" },
+        { "value": "4 / 3", "label": "Klasik (4:3)" },
+        { "value": "1 / 1", "label": "Kare (1:1)" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "otomatik_oynat",
+      "label": "Otomatik oynat",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "sessiz",
+      "label": "Sessiz başlat",
+      "info": "Otomatik oynatmanın çalışması için açık olmalıdır.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "dongu",
+      "label": "Döngüye al",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "kontroller",
+      "label": "Oynatma kontrollerini göster",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "video_genisligi",
+      "label": "Video genişliği",
+      "min": 400,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1100
+    },
+    {
+      "type": "range",
+      "id": "video_kose",
+      "label": "Video köşe yuvarlaklığı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "video_arkaplan",
+      "label": "Video alanı arka planı",
+      "default": "#1b1d1f"
+    },
+    {
+      "type": "checkbox",
+      "id": "video_kenarlik",
+      "label": "Videoya kenarlık ekle",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "video_kenarlik_rengi",
+      "label": "Video kenarlık rengi",
+      "default": "#33363a"
+    },
+    {
+      "type": "range",
+      "id": "video_bosluk",
+      "label": "Metin ile video arası",
+      "min": 8,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "header",
+      "content": "Bölüm Görünümü"
+    },
+    {
+      "type": "select",
+      "id": "hizalama",
+      "label": "Hizalama",
+      "default": "center",
+      "options": [
+        { "value": "center", "label": "Ortala" },
+        { "value": "left", "label": "Sola yasla" }
+      ]
+    },
+    {
+      "type": "color_background",
+      "id": "arkaplan",
+      "label": "Bölüm arka planı",
+      "default": "#181B1E"
+    },
+    {
+      "type": "range",
+      "id": "max_w",
+      "label": "İçerik genişliği",
+      "min": 600,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "edge_m",
+      "label": "Kenar boşluğu (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "edge_d",
+      "label": "Kenar boşluğu (masaüstü)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "p_top_m",
+      "label": "Üst boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "p_bot_m",
+      "label": "Alt boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "p_top_d",
+      "label": "Üst boşluk (masaüstü)",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "p_bot_d",
+      "label": "Alt boşluk (masaüstü)",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "blocks": [
+    {
+      "type": "istatistik",
+      "name": "İstatistik yazısı",
+      "settings": [
+        {
+          "type": "text",
+          "id": "metin",
+          "label": "Metin",
+          "default": "100.000'den fazla kişi kullanıyor"
+        }
+      ]
+    },
+    {
+      "type": "cumle",
+      "name": "Animasyon cümlesi",
+      "settings": [
+        {
+          "type": "text",
+          "id": "metin",
+          "label": "Cümle",
+          "default": "Çiçek bir haftada solar."
+        },
+        {
+          "type": "select",
+          "id": "efekt",
+          "label": "Kaybolma efekti",
+          "default": "solma",
+          "options": [
+            { "value": "solma", "label": "Solma — harfler düşüp griye döner" },
+            { "value": "buharlasma", "label": "Buharlaşma — harfler yukarı uçup bulanıklaşır" },
+            { "value": "eskime", "label": "Eskime — üstü çizilir, soldan sağa silinir" }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video Hero — Kapsül",
+      "blocks": [
+        {
+          "type": "istatistik",
+          "settings": { "metin": "100.000'den fazla kişi kullanıyor" }
+        },
+        {
+          "type": "istatistik",
+          "settings": { "metin": "16M fotoğraf yüklendi" }
+        },
+        {
+          "type": "istatistik",
+          "settings": { "metin": "190.000 kez kapsül kilitlendi" }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
