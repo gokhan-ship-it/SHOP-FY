@@ -62,9 +62,34 @@
 
     {{ content_for_header }}
 
+    {%- comment -%}
+      PARA BICIMI JS'E ORNEKLENEREK VERILIYOR.
+
+      tt-sepet-toplam.js sepetin ara toplaminda indirim oncesi tutari ustu
+      cizili gosteriyor. O tutari Shopify /cart.js'ten KURUS olarak
+      veriyor, bicimli metin olarak degil. Bicimi kodun icinde tahmin
+      etmek yerine (virgul mu nokta mi, para birimi basta mi sonda mi)
+      Shopify'in KENDI ciktisi ornek olarak veriliyor: JS ornegi cozup
+      ayni kurali uyguluyor ve cozdugu kurali ornege geri uygulayip
+      dogruluyor. Uymazsa hicbir sey cizilmiyor.
+
+      Boylece magazanin para birimi ya da bicim ayari degisirse ornek de
+      kendiliginden degisir; JS'te elle guncellenecek bir sey kalmaz.
+      Kosul, sepet sablonlarinin kullandigi kosulun AYNISI.
+    {%- endcomment -%}
+    {%- capture tt_para_ornek -%}
+      {%- if settings.currency_code_enabled -%}
+        {{- 123456789 | money_with_currency -}}
+      {%- else -%}
+        {{- 123456789 | money -}}
+      {%- endif -%}
+    {%- endcapture -%}
+    <script>window.ttParaOrnek = { k: 123456789, s: {{ tt_para_ornek | strip | json }} };</script>
+
     <script src="{{ 'vendor.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'custom-tt.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'tt-sepet-toplam.js' | asset_url }}" defer="defer"></script>
 
     {%- if settings.enable_tab_attention -%}
       <script src="{{ 'tab-attention.js' | asset_url }}" defer="defer"></script>
