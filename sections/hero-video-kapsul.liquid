@@ -2,21 +2,39 @@
   assign sid = section.id
   assign s = section.settings
   assign stat_blocks = section.blocks | where: 'type', 'istatistik'
+  assign ticker_blocks = section.blocks | where: 'type', 'ticker'
 
   comment
-    METIN ANIMASYONU
+    DUZEN
 
-    Cumleler BLOK olarak geliyor; boylece magaza sahibi ekleyip
-    cikarabiliyor ve siralayabiliyor. Ama mevcut bir bolum ornegine
-    blok kendiliginden EKLENEMEZ -- animasyon acildiginda hicbir blok
-    yoksa alan bos kalirdi. Bu yuzden blok yoksa yerlesik uc cumle
-    devreye giriyor. Ilk blogu ekledigin anda kontrol tamamen sende.
+    Bu bolum anasayfada da kullaniliyor (acik zeminli, farkli baslikli
+    bir ornek). Yeni dizilim -- ticker + sabit baslik + log line +
+    ALTA tasinmis sosyal kanit -- bu yuzden bir ayara bagli;
+    varsayilan "klasik", yani mevcut ornekler oldugu gibi kaliyor.
+    Yeni dizilimi istedigin ornekte tema editorunden seciyorsun.
   endcomment
-  assign cumle_blocks = section.blocks | where: 'type', 'cumle'
-  assign anim_var = false
-  if s.anim_ac
-    assign anim_var = true
+  assign yeni = false
+  if s.duzen == 'yeni'
+    assign yeni = true
   endif
+
+  comment
+    TICKER IFADELERI
+
+    Ifadeler BLOK; eklenip cikarilabiliyor ve siralanabiliyor. Ama
+    mevcut bir bolum ornegine blok kendiliginden EKLENEMEZ -- yeni
+    dizilime gecince ticker bos kalirdi. Bu yuzden blok yoksa
+    yerlesik dort ifade devreye giriyor.
+  endcomment
+  assign tk_ham = ''
+  if ticker_blocks.size > 0
+    for block in ticker_blocks
+      assign tk_ham = tk_ham | append: block.settings.metin | append: '|' | append: block.settings.ikon | append: '|' | append: block.settings.efekt | append: '~~'
+    endfor
+  else
+    assign tk_ham = 'Çiçek solar|lale|solma~~Parfüm uçar|parfum|buharlasma~~Cüzdan eskir|cuzdan|eskime~~Kapsül kalır|kilit|vurgu~~'
+  endif
+  assign tk_items = tk_ham | split: '~~'
 -%}
 
 <style>
@@ -37,7 +55,7 @@
     text-align: {% if s.hizalama == 'left' %}left{% else %}center{% endif %};
   }
 
-  /* --- yildizlar + degisen istatistik --- */
+  /* --- yildizlar + degisen istatistik (klasik dizilim) --- */
   #shopify-section-{{ sid }} .hv-social {
     display: flex;
     align-items: center;
@@ -114,184 +132,171 @@
   #shopify-section-{{ sid }} .hv-body a { color: inherit; }
 
   /* ==================================================================
-     METIN ANIMASYONU
-
-     ILERLEMELI IYILESTIRME (progressive enhancement)
-     Varsayilan hal = SON HAL: gercek <h1> ve aciklama gorunur,
-     animasyon katmani ile noktalar display:none. JS calisirsa koke
-     data-hv-oynat konuyor ve katman devreye giriyor; dizi bitince
-     nitelik kalkip yine son hale donuluyor. Yani JS hic yuklenmese
-     de, hata verse de, prefers-reduced-motion aciksa da ekranda
-     dogru icerik duruyor.
-
-     ZIPLAMA YOK
-     .hv-alan'in min-height'i SATIR SAYISINDAN turetiliyor
-     (calc(1.15em * n)) ve cumleler o alanda mutlak konumlu. Alanin
-     yuksekligi hic degismedigi icin altindaki aciklama ve gorsel
-     kipirdamiyor. Animasyonlarin tamami transform / opacity /
-     filter -- yerlesim tetikleyen hicbir ozellik yok.
+     YENI DIZILIM
+     ticker  ->  sabit H1  ->  log line  ->  sosyal kanit  ->  gorsel
      ================================================================== */
-  #shopify-section-{{ sid }} .hv-alan {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: {% if s.hizalama == 'left' %}flex-start{% else %}center{% endif %};
-    width: 100%;
-    /* Baslik olculeri TEK YERDE: icerideki h1 ve cumleler 1em ile
-       buradan miras aliyor, uc breakpoint'te ayri ayri yazilmiyor. */
-    font-size: {{ s.baslik_boyutu_mobil }}px;
-    min-height: calc(1.15em * {{ s.anim_satir }});
-    margin: 0 0 {{ s.baslik_bosluk }}px;
-  }
-  #shopify-section-{{ sid }} .hv-alan .hv-title,
-  #shopify-section-{{ sid }} .hv-alan .hv-c {
-    font-size: 1em;
-    margin: 0;
-  }
-
-  /* Animasyon katmani: h1'in TAM USTUNDE, ayni kutuda. */
-  #shopify-section-{{ sid }} .hv-anim {
-    display: none;
+  #shopify-section-{{ sid }} .hv-gizli {
     position: absolute;
-    inset: 0;
-    align-items: center;
-    justify-content: inherit;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
-  #shopify-section-{{ sid }} .hv-c {
-    display: none;
-    line-height: 1.15;
-    font-weight: {{ s.baslik_kalinligi }};
-    color: {{ s.baslik_rengi }};
-    text-wrap: balance;
-  }
-  #shopify-section-{{ sid }} .hv-c.is-on { display: block; }
 
-  /* Kelime bolunmesin: harfler kelime kutusunun icinde. */
-  #shopify-section-{{ sid }} .hv-k { display: inline-block; white-space: nowrap; }
-  #shopify-section-{{ sid }} .hv-h {
-    display: inline-block;
+  /* --- Ticker pill ---
+     Yukseklik SABIT (34px) ve ifadelerin tamami tek hucreli bir
+     grid'te ust uste duruyor: pill her zaman EN UZUN ifadenin
+     olculerinde kalir, ifade degisince ne pill ne de altindaki
+     baslik/gorsel kipirdar. */
+  #shopify-section-{{ sid }} .hv-ticker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    position: relative;
+    height: 34px;
+    min-width: 170px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: {{ s.ticker_zemin }};
+    border: 1px solid {{ s.ticker_kenarlik }};
+    margin: 0 0 18px;
+  }
+  #shopify-section-{{ sid }} .hv-tk-katman { display: grid; place-items: center; }
+  #shopify-section-{{ sid }} .hv-tk {
+    grid-area: 1 / 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    color: {{ s.ticker_rengi }};
+    opacity: 0;
     will-change: transform, opacity, filter;
   }
-
-  /* --- Oynarken: h1 gizli, aciklama gizli, katman acik ---
-
-     !important ZORUNLU. Yukarida .hv-title ve .hv-body'ye
-     "opacity/visibility: ... !important" veriliyor (temanin kaydirma
-     animasyonu bu bolume dokunmasin diye). O kurallar olmasaydi
-     buradaki gizleme yeterdi; onlar dururken normal ozgulluk
-     yetmiyor ve h1 animasyonun UZERINE biniyordu. */
-  #shopify-section-{{ sid }}[data-hv-oynat] .hv-anim { display: flex; }
-  #shopify-section-{{ sid }}[data-hv-oynat] .hv-alan .hv-title { visibility: hidden !important; }
-  /* transition: none SART. Gecis yalnizca ASAGIDAKI kuralda, yani
-     nitelik KALKARKEN calisiyor -- aciklama 0'dan 1'e yumusakca
-     geliyor. Burada da gecis olsaydi aciklama 1'den 0'a 800ms
-     boyunca sonerdi ve ilk cumle oynarken hala ekranda olurdu. */
-  #shopify-section-{{ sid }}[data-hv-oynat] .hv-body {
-    opacity: 0 !important;
-    transition: none !important;
+  #shopify-section-{{ sid }} .hv-tk svg {
+    width: 17px;
+    height: 17px;
+    flex: none;
+    display: block;
   }
-  #shopify-section-{{ sid }}[data-hv-hazir] .hv-noktalar { display: flex; }
-
-  /* Aciklama son cumleden sonra yumusakca geliyor. */
-  #shopify-section-{{ sid }} .hv-body { transition: opacity 800ms ease; }
-
-  /* --- GIRIS: harfler tek tek, asagidan --- */
-  @keyframes hv-gir-{{ sid }} {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: none; }
-  }
-  #shopify-section-{{ sid }} .hv-c[data-durum="gir"] .hv-h {
-    opacity: 0;
-    animation: hv-gir-{{ sid }} 500ms ease forwards;
-    animation-delay: var(--g);
-  }
-
-  /* --- SOLMA (cicek): dusup donerek griye --- */
-  @keyframes hv-solma-{{ sid }} {
-    from { opacity: 1; transform: none; color: {{ s.baslik_rengi }}; }
-    to   { opacity: 0; transform: translateY(34px) rotate(18deg); color: #6B7280; }
-  }
-  #shopify-section-{{ sid }} .hv-c[data-durum="cik"][data-efekt="solma"] .hv-h {
-    animation: hv-solma-{{ sid }} 900ms cubic-bezier(.4,.1,.7,1) forwards;
-    animation-delay: var(--r);
-  }
-
-  /* --- BUHARLASMA (parfum): yukari ucup bulaniklasarak --- */
-  @keyframes hv-buhar-{{ sid }} {
-    from { opacity: 1; transform: none; filter: blur(0); }
-    to   { opacity: 0; transform: translateY(-30px) scale(1.15); filter: blur(6px); }
-  }
-  #shopify-section-{{ sid }} .hv-c[data-durum="cik"][data-efekt="buharlasma"] .hv-h {
-    animation: hv-buhar-{{ sid }} 900ms ease-out forwards;
-    animation-delay: var(--r);
-  }
-
-  /* --- ESKIME (cuzdan): once ustu cizilir, sonra soldan saga silinir --- */
-  #shopify-section-{{ sid }} .hv-c[data-efekt="eskime"] { position: relative; }
-  #shopify-section-{{ sid }} .hv-cizgi {
+  #shopify-section-{{ sid }} .hv-tk-yazi { position: relative; }
+  #shopify-section-{{ sid }} .hv-tk-cizgi {
     position: absolute;
     left: 0;
     right: 0;
     top: 50%;
-    height: 2px;
-    background: #6B7280;
+    height: 1.5px;
+    background: #8B939D;
     transform: scaleX(0);
     transform-origin: left center;
     pointer-events: none;
   }
-  @keyframes hv-cizgi-{{ sid }} {
+  /* JS yokken / azaltilmis harekette ekranda duran ifade. */
+  #shopify-section-{{ sid }} .hv-tk[data-efekt="vurgu"] {
+    opacity: 1;
+    color: {{ s.ticker_vurgu_rengi }};
+    text-shadow: 0 0 12px rgba(159, 212, 189, .4);
+  }
+  /* JS devrede: gorunurlugu artik sira belirliyor. */
+  #shopify-section-{{ sid }} .hv-tk-katman[data-hv-ticker-on] .hv-tk { opacity: 0; }
+
+  @keyframes hv-tk-gir-{{ sid }} {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+  #shopify-section-{{ sid }} .hv-tk[data-durum="gir"] {
+    animation: hv-tk-gir-{{ sid }} 350ms ease forwards;
+  }
+
+  /* SOLMA: dusup donerek griye */
+  @keyframes hv-tk-solma-{{ sid }} {
+    from { opacity: 1; transform: none; color: {{ s.ticker_rengi }}; }
+    to   { opacity: 0; transform: translateY(12px) rotate(8deg); color: #6B7280; }
+  }
+  #shopify-section-{{ sid }} .hv-tk[data-durum="cik"][data-efekt="solma"] {
+    animation: hv-tk-solma-{{ sid }} 450ms cubic-bezier(.4,.1,.7,1) forwards;
+  }
+
+  /* BUHARLASMA: yukari kalkip bulaniklasarak (vurgulu ifade de bunu kullanir) */
+  @keyframes hv-tk-buhar-{{ sid }} {
+    from { opacity: 1; transform: none; filter: blur(0); }
+    to   { opacity: 0; transform: translateY(-12px) scale(1.1); filter: blur(4px); }
+  }
+  #shopify-section-{{ sid }} .hv-tk[data-durum="cik"][data-efekt="buharlasma"],
+  #shopify-section-{{ sid }} .hv-tk[data-durum="cik"][data-efekt="vurgu"] {
+    animation: hv-tk-buhar-{{ sid }} 450ms ease-out forwards;
+  }
+
+  /* ESKIME: once cizgi soldan saga, sonra metin koyu griye */
+  @keyframes hv-tk-cizgi-{{ sid }} {
     from { transform: scaleX(0); }
     to   { transform: scaleX(1); }
   }
-  #shopify-section-{{ sid }} .hv-c[data-durum="cik"][data-efekt="eskime"] .hv-cizgi {
-    animation: hv-cizgi-{{ sid }} 500ms ease-out forwards;
+  @keyframes hv-tk-eski-{{ sid }} {
+    from { opacity: 1; color: {{ s.ticker_rengi }}; filter: blur(0); }
+    to   { opacity: 0; color: #3A4048; filter: blur(1px); }
   }
-  @keyframes hv-eski-{{ sid }} {
-    from { opacity: 1; color: {{ s.baslik_rengi }}; filter: blur(0); }
-    to   { opacity: 0; color: #3A4048; filter: blur(2px); }
+  #shopify-section-{{ sid }} .hv-tk[data-durum="cik"][data-efekt="eskime"] .hv-tk-cizgi {
+    animation: hv-tk-cizgi-{{ sid }} 250ms ease-out forwards;
   }
-  #shopify-section-{{ sid }} .hv-c[data-durum="cik"][data-efekt="eskime"] .hv-h {
-    /* Cizgi bitince basliyor (500ms), soldan saga sirayla. */
-    animation: hv-eski-{{ sid }} 400ms ease-in forwards;
-    animation-delay: var(--s);
-  }
-
-  /* --- SON CUMLE: bulaniktan netlesir --- */
-  @keyframes hv-son-{{ sid }} {
-    from { opacity: 0; transform: scale(.92); filter: blur(8px); }
-    to   { opacity: 1; transform: none; filter: blur(0); }
-  }
-  #shopify-section-{{ sid }} .hv-c[data-durum="son"] .hv-h {
-    opacity: 0;
-    animation: hv-son-{{ sid }} 700ms cubic-bezier(.2,.7,.3,1) forwards;
-    animation-delay: var(--g);
+  #shopify-section-{{ sid }} .hv-tk[data-durum="cik"][data-efekt="eskime"] {
+    /* Cizgi bittikten sonra basliyor. */
+    animation: hv-tk-eski-{{ sid }} 400ms ease-in 250ms forwards;
   }
 
-  /* Vurgulu kelimeler: h1'de de animasyon katmaninda da ayni. */
+  /* Sekme arka plandayken kare kare donmesin. */
+  #shopify-section-{{ sid }}[data-hv-duraklat] .hv-tk,
+  #shopify-section-{{ sid }}[data-hv-duraklat] .hv-tk-cizgi {
+    animation-play-state: paused;
+  }
+
+  /* --- Sabit baslik + log line + sosyal kanit --- */
+  #shopify-section-{{ sid }} .hv-yeni .hv-title {
+    margin-bottom: 0;
+    letter-spacing: -0.02em;
+  }
   #shopify-section-{{ sid }} .hv-vurgu {
     font-style: normal;
-    color: #9FD4BD;
-    text-shadow: 0 0 18px rgba(159, 212, 189, .45);
+    color: {{ s.ticker_vurgu_rengi }};
   }
-
-  /* --- Ilerleme noktalari --- */
-  #shopify-section-{{ sid }} .hv-noktalar {
-    display: none;
+  #shopify-section-{{ sid }} .hv-log {
+    margin: 10px 0 0;
+    max-width: 320px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: {{ s.log_rengi }};
+  }
+  #shopify-section-{{ sid }} .hv-log p { margin: 0 0 8px; }
+  #shopify-section-{{ sid }} .hv-log p:last-child { margin-bottom: 0; }
+  #shopify-section-{{ sid }} .hv-kanit {
+    display: flex;
     align-items: center;
-    gap: 6px;
-    margin: 0 0 {{ s.baslik_bosluk }}px;
+    gap: 7px;
+    margin: 14px 0 0;
+    font-size: 12px;
+    line-height: 1.3;
+    color: {{ s.kanit_rengi }};
   }
-  #shopify-section-{{ sid }} .hv-noktalar i {
+  #shopify-section-{{ sid }} .hv-kanit-yildiz {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    line-height: 0;
+  }
+  #shopify-section-{{ sid }} .hv-kanit-yildiz svg {
+    width: 13px;
+    height: 13px;
     display: block;
-    width: 6px;
-    height: 6px;
-    border-radius: 999px;
-    background: #39414B;
-    transition: width 320ms ease, background-color 320ms ease;
-  }
-  #shopify-section-{{ sid }} .hv-noktalar i.is-on {
-    width: 18px;
-    background: #9FD4BD;
+    fill: {{ s.kanit_yildiz_rengi }};
   }
 
   /* --- 21:9 video alani --- */
@@ -341,134 +346,172 @@
     }
     #shopify-section-{{ sid }} .hv-stat { font-size: {{ s.istatistik_boyutu }}px; }
     #shopify-section-{{ sid }} .hv-title { font-size: {{ s.baslik_boyutu_tablet }}px; }
-    #shopify-section-{{ sid }} .hv-alan { font-size: {{ s.baslik_boyutu_tablet }}px; }
     #shopify-section-{{ sid }} .hv-body { font-size: {{ s.metin_boyutu }}px; }
+    #shopify-section-{{ sid }} .hv-log { max-width: 520px; font-size: 15px; }
   }
   @media (min-width: 1024px) {
     #shopify-section-{{ sid }} .hv-title { font-size: {{ s.baslik_boyutu }}px; }
-    #shopify-section-{{ sid }} .hv-alan { font-size: {{ s.baslik_boyutu }}px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     #shopify-section-{{ sid }} .hv-stat { transition: none; transform: none; }
-    /* Animasyon HIC oynamiyor (JS de baslatmiyor); bu kurallar
-       yalnizca emniyet kemeri -- bir sekilde nitelik konsa bile
-       ekranda son hal kalir. */
-    #shopify-section-{{ sid }} .hv-anim { display: none !important; }
-    #shopify-section-{{ sid }} .hv-alan .hv-title { visibility: visible !important; }
-    #shopify-section-{{ sid }} .hv-body { opacity: 1 !important; transition: none; }
-    #shopify-section-{{ sid }} .hv-noktalar { display: none !important; }
+    /* Ticker JS tarafinda zaten hic baslamiyor; bu kurallar emniyet
+       kemeri -- bir sekilde baslasa bile vurgulu ifade sabit kalir. */
+    #shopify-section-{{ sid }} .hv-tk { animation: none !important; }
+    #shopify-section-{{ sid }} .hv-tk-katman[data-hv-ticker-on] .hv-tk { opacity: 0; }
+    #shopify-section-{{ sid }} .hv-tk[data-efekt="vurgu"] { opacity: 1 !important; }
   }
 </style>
 
 <div class="hv-root">
   <div
-    class="hv-inner"
+    class="hv-inner{% if yeni %} hv-yeni{% endif %}"
     data-hv-root
     data-stat-wait="{{ s.istatistik_bekleme_suresi | times: 1000 | round }}"
   >
-    {%- if s.yildiz_goster or stat_blocks.size > 0 -%}
-      <div class="hv-social">
-        {%- if s.yildiz_goster -%}
-          <span class="hv-stars" role="img" aria-label="5 üzerinden 5 yıldız">
+    {%- if yeni -%}
+      {%- comment -%}
+        ----- 1) TICKER -----
+        Ekran okuyucu donen ifadeleri degil, tek bir ozet cumle duyar.
+      {%- endcomment -%}
+      {%- if s.ticker_ac -%}
+        {%- capture tk_ozet -%}
+          {%- for item in tk_items -%}
+            {%- assign p = item | split: '|' -%}
+            {{- p[0] -}}{%- if forloop.last -%}.{%- else -%}, {% endif -%}
+          {%- endfor -%}
+        {%- endcapture -%}
+        <div class="hv-ticker">
+          <span class="hv-gizli">{{ tk_ozet | strip }}</span>
+          <span
+            class="hv-tk-katman"
+            aria-hidden="true"
+            data-hv-ticker
+            data-bekleme="{{ s.ticker_bekleme | times: 1000 | round }}"
+          >
+            {%- for item in tk_items -%}
+              {%- assign p = item | split: '|' -%}
+              {%- assign bidx = forloop.index0 -%}
+              {%- assign bblock = ticker_blocks[bidx] -%}
+              <span
+                class="hv-tk"
+                data-efekt="{{ p[2] | default: 'solma' | escape }}"
+                {% if bblock %}{{ bblock.shopify_attributes }}{% endif %}
+              >
+                {%- case p[1] -%}
+                  {%- when 'parfum' -%}
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M10 2.8h4v3h-4z"/>
+                      <path d="M8.4 9.4a3 3 0 0 1 2.3-3.6h2.6a3 3 0 0 1 2.3 3.6l-.5 9a2 2 0 0 1-2 1.9h-2.2a2 2 0 0 1-2-1.9z"/>
+                      <path d="M18.6 6.6h1.8M18.6 9.6h1.8M18.6 12.6h1.8"/>
+                    </svg>
+                  {%- when 'cuzdan' -%}
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4.2 7.4a2 2 0 0 1 2-2h11a1.6 1.6 0 0 1 1.6 1.6v1.4"/>
+                      <path d="M4.2 7.4v9.8a2 2 0 0 0 2 2h11.6a1.6 1.6 0 0 0 1.6-1.6v-6.4a1.6 1.6 0 0 0-1.6-1.6H6.2a2 2 0 0 1-2-2z"/>
+                      <path d="M16.2 13.3h.01"/>
+                    </svg>
+                  {%- when 'kilit' -%}
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="4.8" y="10.4" width="14.4" height="9.4" rx="2"/>
+                      <path d="M8.2 10.4V7.6a3.8 3.8 0 0 1 7.6 0v2.8"/>
+                      <path d="M12 14.2v2"/>
+                    </svg>
+                  {%- else -%}
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M8.6 4.6 V8.2 a3.4 3.4 0 0 0 6.8 0 V4.6 L13.7 6.6 L12 4 L10.3 6.6 Z"/>
+                      <path d="M12 11.6 V21"/>
+                      <path d="M12 17.5 C9.2 17.2 7.6 15.2 7.2 12.8 C9.8 13.3 11.6 15 12 17.5"/>
+                    </svg>
+                {%- endcase -%}
+                <span class="hv-tk-yazi">{{ p[0] | escape }}<i class="hv-tk-cizgi"></i></span>
+              </span>
+            {%- endfor -%}
+          </span>
+        </div>
+      {%- endif -%}
+
+      {%- comment -%}
+        ----- 2) SABIT BASLIK (sayfanin gercek H1'i) -----
+        Vurgulanacak kisim baslikta geciyorsa <em> ile isaretleniyor.
+      {%- endcomment -%}
+      {%- assign bas = s.sabit_baslik | default: 'Bu, bir ömür saklar.' -%}
+      <h1 class="hv-title">
+        {%- if s.sabit_vurgu != blank and bas contains s.sabit_vurgu -%}
+          {%- assign parcalar = bas | split: s.sabit_vurgu -%}
+          {%- for parca in parcalar -%}
+            {%- unless forloop.first -%}<em class="hv-vurgu">{{ s.sabit_vurgu | escape }}</em>{%- endunless -%}
+            {{- parca | escape -}}
+          {%- endfor -%}
+          {%- comment -%}
+            split sondaki BOS parcayi atiyor: vurgu basligin sonundaysa
+            dongude hic <em> basilmaz ve vurgu sessizce kaybolurdu.
+            Kuyruk acikca olculup tamamlaniyor.
+          {%- endcomment -%}
+          {%- assign vlen = s.sabit_vurgu.size -%}
+          {%- assign neg = 0 | minus: vlen -%}
+          {%- assign kuyruk = bas | slice: neg, vlen -%}
+          {%- if kuyruk == s.sabit_vurgu -%}<em class="hv-vurgu">{{ s.sabit_vurgu | escape }}</em>{%- endif -%}
+        {%- else -%}
+          {{- bas | escape -}}
+        {%- endif -%}
+      </h1>
+
+      {%- comment -%} ----- 3) LOG LINE ----- {%- endcomment -%}
+      {%- if s.log_line != blank -%}
+        <div class="hv-log rte">{{ s.log_line }}</div>
+      {%- endif -%}
+
+      {%- comment -%} ----- 4) SOSYAL KANIT (en ustten buraya tasindi) ----- {%- endcomment -%}
+      {%- if s.kanit_metin != blank -%}
+        <div class="hv-kanit">
+          <span class="hv-kanit-yildiz" role="img" aria-label="5 üzerinden 5 yıldız">
             {%- for i in (1..5) -%}
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M12 2.4l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.2l-5.8 3.06 1.11-6.46-4.7-4.58 6.49-.94z"/>
               </svg>
             {%- endfor -%}
           </span>
-        {%- endif -%}
-        {%- if stat_blocks.size > 0 -%}
-          <div class="hv-stats" aria-live="off">
-            {%- for block in stat_blocks -%}
-              <p
-                class="hv-stat{% if forloop.first %} is-on{% endif %}"
-                aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}"
-                {{ block.shopify_attributes }}
-              >{{ block.settings.metin }}</p>
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
-      </div>
-    {%- endif -%}
-
-    {%- if anim_var -%}
-      {%- comment -%}
-        SON CUMLE = SAYFANIN GERCEK H1'I
-
-        Animasyon katmani aria-hidden; ekran okuyucu ve Google
-        yalnizca bu h1'i ve aciklamayi goruyor. h1 en bastan DOM'da
-        ve CSS varsayilaninda GORUNUR -- JS calismazsa da dogru
-        icerik ekranda. Oynatirken JS onu visibility ile gizliyor,
-        dizi bitince geri veriyor (display degil visibility: kutu
-        yerinde kaldigi icin hicbir sey kaymiyor).
-      {%- endcomment -%}
-      {%- assign son = s.anim_son | default: 'Bu, bir ömür saklar.' -%}
-      {%- capture son_html -%}
-        {%- if s.anim_vurgu != blank and son contains s.anim_vurgu -%}
-          {%- assign parcalar = son | split: s.anim_vurgu -%}
-          {%- for parca in parcalar -%}
-            {%- unless forloop.first -%}<em class="hv-vurgu">{{ s.anim_vurgu | escape }}</em>{%- endunless -%}
-            {{- parca | escape -}}
-          {%- endfor -%}
-          {%- comment -%}
-            split sondaki BOS parcayi atiyor: vurgu cumlenin sonundaysa
-            dongude hic <em> basilmaz ve vurgu sessizce kaybolurdu.
-            Kuyruk acikca olculup tamamlaniyor.
-          {%- endcomment -%}
-          {%- assign vlen = s.anim_vurgu.size -%}
-          {%- assign neg = 0 | minus: vlen -%}
-          {%- assign kuyruk = son | slice: neg, vlen -%}
-          {%- if kuyruk == s.anim_vurgu -%}
-            <em class="hv-vurgu">{{ s.anim_vurgu | escape }}</em>
-          {%- endif -%}
-        {%- else -%}
-          {{- son | escape -}}
-        {%- endif -%}
-      {%- endcapture -%}
-
-      <div class="hv-alan">
-        <h1 class="hv-title">{{ son_html }}</h1>
-        <div class="hv-anim" aria-hidden="true" data-hv-anim
-             data-bekleme="{{ s.anim_bekleme | times: 1000 | round }}">
-          {%- if cumle_blocks.size > 0 -%}
-            {%- for block in cumle_blocks -%}
-              <p class="hv-c" data-efekt="{{ block.settings.efekt }}" {{ block.shopify_attributes }}>
-                {{- block.settings.metin -}}
-              </p>
-            {%- endfor -%}
-          {%- else -%}
-            {%- comment -%} Hic blok yokken yerlesik uc cumle. {%- endcomment -%}
-            <p class="hv-c" data-efekt="solma">Çiçek bir haftada solar.</p>
-            <p class="hv-c" data-efekt="buharlasma">Parfüm üç ayda biter.</p>
-            <p class="hv-c" data-efekt="eskime">Cüzdan bir yılda eskir.</p>
-          {%- endif -%}
-          {%- comment -%}
-            Animasyon kopyasi DUZ METIN: vurgu <em> ile degil,
-            data-vurgu indeksiyle isaretleniyor (bkz. bol()).
-            Boylece "saklar" ile onu izleyen nokta ayni kelime
-            kutusunda kalir ve satir sonunda ayrilmaz.
-          {%- endcomment -%}
-          <p class="hv-c" data-efekt="son" data-vurgu="{{ s.anim_vurgu | escape }}">{{ son | escape }}</p>
+          <span>{{ s.kanit_metin }}</span>
         </div>
-      </div>
-
-      {%- comment -%} Nokta sayisi = cumle sayisi + 1 (son cumle). {%- endcomment -%}
-      {%- assign nokta = 4 -%}
-      {%- if cumle_blocks.size > 0 -%}
-        {%- assign nokta = cumle_blocks.size | plus: 1 -%}
       {%- endif -%}
-      <div class="hv-noktalar" aria-hidden="true" data-hv-noktalar>
-        {%- for i in (1..nokta) -%}<i></i>{%- endfor -%}
-      </div>
-    {%- elsif s.baslik != blank -%}
-      <{{ s.baslik_etiketi }} class="hv-title">{{ s.baslik }}</{{ s.baslik_etiketi }}>
+    {%- else -%}
+      {%- comment -%} ===== KLASIK DIZILIM (anasayfa ornegi bunu kullaniyor) ===== {%- endcomment -%}
+      {%- if s.yildiz_goster or stat_blocks.size > 0 -%}
+        <div class="hv-social">
+          {%- if s.yildiz_goster -%}
+            <span class="hv-stars" role="img" aria-label="5 üzerinden 5 yıldız">
+              {%- for i in (1..5) -%}
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 2.4l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.2l-5.8 3.06 1.11-6.46-4.7-4.58 6.49-.94z"/>
+                </svg>
+              {%- endfor -%}
+            </span>
+          {%- endif -%}
+          {%- if stat_blocks.size > 0 -%}
+            <div class="hv-stats" aria-live="off">
+              {%- for block in stat_blocks -%}
+                <p
+                  class="hv-stat{% if forloop.first %} is-on{% endif %}"
+                  aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}"
+                  {{ block.shopify_attributes }}
+                >{{ block.settings.metin }}</p>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if s.baslik != blank -%}
+        <{{ s.baslik_etiketi }} class="hv-title">{{ s.baslik }}</{{ s.baslik_etiketi }}>
+      {%- endif -%}
+
+      {%- if s.metin != blank -%}
+        <div class="hv-body rte">{{ s.metin }}</div>
+      {%- endif -%}
     {%- endif -%}
 
-    {%- if s.metin != blank -%}
-      <div class="hv-body rte" data-hv-aciklama>{{ s.metin }}</div>
-    {%- endif -%}
-
+    {%- comment -%} ----- 5) URUN GORSELI / VIDEO (degismedi) ----- {%- endcomment -%}
     <div class="hv-media">
       {%- if s.video != blank -%}
         {{
@@ -516,6 +559,36 @@
 
     var roots = [];
 
+    /* Duraklatilabilen TEK zamanlayici.
+
+       Ticker'da her an yalnizca bir bekleyis var. Diziyi bir zamanlayici
+       yigini yerine bununla surdurmek, sekme arka plandan donunce
+       zamanlayicilarin birikip ifadelerin ust uste binmesini yapisal
+       olarak imkansiz kiliyor: kurulan her yeni bekleyis oncekini
+       temizliyor. */
+    function Sayac() { this.id = null; this.fn = null; this.kalan = 0; this.bas = 0; }
+    Sayac.prototype.temizle = function () {
+      if (this.id) { clearTimeout(this.id); this.id = null; }
+    };
+    Sayac.prototype.kur = function (fn, ms) {
+      this.temizle();
+      this.fn = fn;
+      this.kalan = ms;
+      this.bas = Date.now();
+      this.id = setTimeout(fn, ms);
+    };
+    Sayac.prototype.duraklat = function () {
+      if (!this.id) return;
+      this.kalan -= (Date.now() - this.bas);
+      if (this.kalan < 0) this.kalan = 0;
+      this.temizle();
+    };
+    Sayac.prototype.surdur = function () {
+      if (this.id || !this.fn) return;
+      this.bas = Date.now();
+      this.id = setTimeout(this.fn, this.kalan);
+    };
+
     function stop(root) {
       if (root.hvTimer) { clearInterval(root.hvTimer); root.hvTimer = null; }
     }
@@ -534,147 +607,56 @@
       }, root.hvWait);
     }
 
-    /* ================= METIN ANIMASYONU =================
-       Cumleyi HARFLERE boluyor. Kelimeler kendi kutusunda
-       (white-space: nowrap) kaliyor, yani harf harf animasyon
-       kelimeyi satir sonunda ORTADAN bolmuyor.
+    /* ===================== TICKER =====================
+       Ifadeler DOM'da ust uste duruyor; sadece siradaki gorunur.
+       Boylece pill her zaman en uzun ifadenin genisliginde kalir. */
+    var GIRIS = 350;
+    var CIKIS = 450;
+    var CIKIS_ESKIME = 650;   /* 250ms cizgi + 400ms metin */
+    var VURGU_EK = 800;       /* vurgulu ifade bu kadar fazla durur */
 
-       Vurgu <em> ile DEGIL, harflerin ORIJINAL METINDEKI INDEKSI
-       ile isaretleniyor: araya element girseydi o kelime iki
-       kutuya bolunur ve noktalama tek basina alt satira dusebilirdi.
-       Gercek <h1> zaten <em> tasiyor -- SEO tarafi ondan besleniyor. */
-    function bol(p) {
-      var metin = (p.textContent || '').replace(/\s+/g, ' ').trim();
-      p.textContent = '';
-      var harfler = [];
-      var kelimeler = metin.split(' ');
-      var idx = 0;
-      for (var w = 0; w < kelimeler.length; w++) {
-        var kutu = document.createElement('span');
-        kutu.className = 'hv-k';
-        for (var c = 0; c < kelimeler[w].length; c++) {
-          var h = document.createElement('span');
-          h.className = 'hv-h';
-          h.textContent = kelimeler[w].charAt(c);
-          h._i = idx++;
-          kutu.appendChild(h);
-          harfler.push(h);
-        }
-        p.appendChild(kutu);
-        if (w < kelimeler.length - 1) {
-          p.appendChild(document.createTextNode(' '));
-          idx++;
-        }
-      }
-      var vurgu = p.getAttribute('data-vurgu');
-      if (vurgu) {
-        var bas = metin.indexOf(vurgu);
-        if (bas > -1) {
-          for (var i = 0; i < harfler.length; i++) {
-            if (harfler[i]._i >= bas && harfler[i]._i < bas + vurgu.length) {
-              harfler[i].classList.add('hv-vurgu');
-            }
-          }
-        }
-      }
-      if (p.getAttribute('data-efekt') === 'eskime') {
-        var cizgi = document.createElement('span');
-        cizgi.className = 'hv-cizgi';
-        p.appendChild(cizgi);
-      }
-      return harfler;
-    }
-
-    function metinAnim(root) {
-      var katman = root.querySelector('[data-hv-anim]');
+    function tickerKur(root) {
+      var katman = root.querySelector('[data-hv-ticker]');
       if (!katman) return;
-      /* Azaltilmis hareket: hic baslatilmiyor. CSS varsayilani zaten
-         son hal (h1 + aciklama gorunur), yani dogru icerik ekranda. */
+      /* Azaltilmis hareket: hic baslamiyor. CSS varsayilani vurgulu
+         ifadeyi gosterdigi icin pill dolu kalir. */
       if (root.hvReduce) return;
 
-      var bolum = root.closest ? root.closest('.shopify-section') : null;
-      if (!bolum) return;
+      var ogeler = Array.prototype.slice.call(katman.querySelectorAll('.hv-tk'));
+      if (!ogeler.length) return;
 
-      var cumleler = Array.prototype.slice.call(katman.querySelectorAll('.hv-c'));
-      if (!cumleler.length) return;
-      var noktalar = [];
-      var nk = root.querySelector('[data-hv-noktalar]');
-      if (nk) noktalar = Array.prototype.slice.call(nk.querySelectorAll('i'));
-      var bekleme = parseInt(katman.getAttribute('data-bekleme'), 10) || 1500;
+      katman.setAttribute('data-hv-ticker-on', '');
 
-      var harfler = cumleler.map(bol);
-      bolum.setAttribute('data-hv-hazir', '');
-
-      function nokta(n) {
-        for (var i = 0; i < noktalar.length; i++) noktalar[i].classList.toggle('is-on', i === n);
+      if (ogeler.length === 1) {
+        ogeler[0].classList.add('is-on');
+        ogeler[0].setAttribute('data-durum', 'gir');
+        return;
       }
 
-      var zamanlar = [];
-      function sonra(fn, ms) { zamanlar.push(window.setTimeout(fn, ms)); }
+      var bekleme = parseInt(katman.getAttribute('data-bekleme'), 10) || 1400;
+      var sayac = new Sayac();
+      root.hvSayac = sayac;
+      var i = -1;
 
-      var sirada = 0;
-      function adim() {
-        var p = cumleler[sirada];
-        var h = harfler[sirada];
-        var sonMu = sirada === cumleler.length - 1;
-        for (var i = 0; i < h.length; i++) h[i].style.setProperty('--g', i * 25 + 'ms');
-        nokta(sirada);
-        p.classList.add('is-on');
-        p.setAttribute('data-durum', sonMu ? 'son' : 'gir');
-
-        var girisSure = (sonMu ? 700 : 500) + (h.length - 1) * 25;
-
-        if (sonMu) {
-          /* Son cumle KALICI. Giris bitiminden 0.7s sonra gercek h1
-             devreye giriyor ve aciklama yumusakca aciliyor; ikisi
-             ayni karede oldugu icin gecis gorunmuyor. */
-          sonra(function () {
-            bolum.removeAttribute('data-hv-oynat');
-            p.classList.remove('is-on');
-          }, girisSure + 700);
-          return;
+      function sonraki() {
+        if (i > -1) {
+          ogeler[i].classList.remove('is-on');
+          ogeler[i].removeAttribute('data-durum');
         }
+        i = (i + 1) % ogeler.length;
+        var o = ogeler[i];
+        var efekt = o.getAttribute('data-efekt');
+        o.classList.add('is-on');
+        o.setAttribute('data-durum', 'gir');
 
-        sonra(function () {
-          for (var i = 0; i < h.length; i++) {
-            h[i].style.setProperty('--r', Math.round(Math.random() * 350) + 'ms');
-            h[i].style.setProperty('--s', 500 + i * 20 + 'ms');
-          }
-          p.setAttribute('data-durum', 'cik');
-          var cikisSure = p.getAttribute('data-efekt') === 'eskime'
-            ? 500 + (h.length - 1) * 20 + 400
-            : 900 + 350;
-          sonra(function () {
-            p.classList.remove('is-on');
-            p.removeAttribute('data-durum');
-            sirada++;
-            adim();
-          }, cikisSure);
-        }, girisSure + bekleme);
+        var dur = efekt === 'vurgu' ? bekleme + VURGU_EK : bekleme;
+        sayac.kur(function () {
+          o.setAttribute('data-durum', 'cik');
+          sayac.kur(sonraki, efekt === 'eskime' ? CIKIS_ESKIME : CIKIS);
+        }, GIRIS + dur);
       }
 
-      function basla() {
-        if (root.hvAnimBasladi) return;
-        root.hvAnimBasladi = true;
-        bolum.setAttribute('data-hv-oynat', '');
-        adim();
-      }
-
-      root.hvAnimDur = function () {
-        for (var i = 0; i < zamanlar.length; i++) clearTimeout(zamanlar[i]);
-        zamanlar = [];
-      };
-
-      /* Bolum ekrana girince basliyor. Hero en ustte oldugu icin bu
-         pratikte sayfa acilisi demek; ama bolum baska bir yere
-         tasinirsa da dogru anda basliyor. */
-      if (!window.IntersectionObserver) { basla(); return; }
-      var izci = new IntersectionObserver(function (girisler) {
-        for (var i = 0; i < girisler.length; i++) {
-          if (girisler[i].isIntersecting) { izci.disconnect(); basla(); return; }
-        }
-      }, { threshold: 0.25 });
-      izci.observe(bolum);
+      sonraki();
     }
 
     function setup(root) {
@@ -684,18 +666,18 @@
       root.hvStats = root.querySelectorAll('.hv-stat');
       root.hvIndex = 0;
       root.hvWait = parseInt(root.getAttribute('data-stat-wait'), 10) || 3500;
+      root.hvBolum = root.closest ? root.closest('.shopify-section') : null;
       if (roots.indexOf(root) === -1) roots.push(root);
       start(root);
-      metinAnim(root);
+      tickerKur(root);
     }
 
     function teardown(root) {
       if (!root) return;
       stop(root);
       /* Tema duzenleyicide bolum yeniden cizilince eski dizinin
-         zamanlayicilari bosa calisip yeni kopyaya karisirdi. */
-      if (typeof root.hvAnimDur === 'function') root.hvAnimDur();
-      root.hvAnimBasladi = false;
+         zamanlayicisi bosa calisip yeni kopyaya karisirdi. */
+      if (root.hvSayac) { root.hvSayac.temizle(); root.hvSayac = null; }
       root.hvInited = false;
       var i = roots.indexOf(root);
       if (i > -1) roots.splice(i, 1);
@@ -708,8 +690,16 @@
 
     document.addEventListener('visibilitychange', function () {
       for (var i = 0; i < roots.length; i++) {
-        if (document.hidden) stop(roots[i]);
-        else start(roots[i]);
+        var r = roots[i];
+        if (document.hidden) {
+          stop(r);
+          if (r.hvSayac) r.hvSayac.duraklat();
+          if (r.hvBolum) r.hvBolum.setAttribute('data-hv-duraklat', '');
+        } else {
+          start(r);
+          if (r.hvBolum) r.hvBolum.removeAttribute('data-hv-duraklat');
+          if (r.hvSayac) r.hvSayac.surdur();
+        }
       }
     });
 
@@ -734,11 +724,124 @@
   "name": "Video Hero — Kapsül",
   "tag": "section",
   "class": "hero-video-kapsul-section",
-  "max_blocks": 8,
+  "max_blocks": 12,
   "settings": [
     {
       "type": "header",
-      "content": "Yıldızlar ve İstatistik"
+      "content": "Düzen"
+    },
+    {
+      "type": "select",
+      "id": "duzen",
+      "label": "Dizilim",
+      "info": "Yeni dizilim: ticker → başlık → açıklama → sosyal kanıt → görsel. Klasik: yıldız satırı en üstte.",
+      "default": "klasik",
+      "options": [
+        { "value": "klasik", "label": "Klasik (yıldızlar en üstte)" },
+        { "value": "yeni", "label": "Yeni (ticker + alta sosyal kanıt)" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Ticker"
+    },
+    {
+      "type": "paragraph",
+      "content": "Yalnızca \"Yeni\" dizilimde görünür. İfadeleri aşağıdan \"Ticker ifadesi\" bloğu ekleyerek düzenleyin; hiç blok eklemezseniz yerleşik dört ifade kullanılır."
+    },
+    {
+      "type": "checkbox",
+      "id": "ticker_ac",
+      "label": "Ticker'ı göster",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "ticker_bekleme",
+      "label": "İfade bekleme süresi",
+      "info": "Vurgulu son ifade bundan 0,8 saniye daha uzun durur.",
+      "min": 0.8,
+      "max": 3,
+      "step": 0.1,
+      "unit": "sn",
+      "default": 1.4
+    },
+    {
+      "type": "color",
+      "id": "ticker_zemin",
+      "label": "Ticker zemini",
+      "default": "#1C232B"
+    },
+    {
+      "type": "color",
+      "id": "ticker_kenarlik",
+      "label": "Ticker kenarlığı",
+      "default": "#2A323C"
+    },
+    {
+      "type": "color",
+      "id": "ticker_rengi",
+      "label": "Ticker yazı rengi",
+      "default": "#E6E8EB"
+    },
+    {
+      "type": "color",
+      "id": "ticker_vurgu_rengi",
+      "label": "Vurgu rengi",
+      "info": "Vurgulu ticker ifadesi ve başlıktaki vurgulu kısım.",
+      "default": "#9FD4BD"
+    },
+    {
+      "type": "header",
+      "content": "Sabit Başlık (Yeni dizilim)"
+    },
+    {
+      "type": "text",
+      "id": "sabit_baslik",
+      "label": "Başlık",
+      "info": "Sayfanın H1'i budur.",
+      "default": "Bu, bir ömür saklar."
+    },
+    {
+      "type": "text",
+      "id": "sabit_vurgu",
+      "label": "Başlıkta vurgulanacak kısım",
+      "info": "Başlığın içinde geçiyorsa bu kısım yeşil görünür. Boş bırakabilirsiniz.",
+      "default": "bir ömür"
+    },
+    {
+      "type": "richtext",
+      "id": "log_line",
+      "label": "Açıklama (log line)",
+      "default": "<p>Ona bir zaman kapsülü hediye et ya da birlikte doldurun. Anılarınız kilitlensin, doğru anda açılsın.</p>"
+    },
+    {
+      "type": "color",
+      "id": "log_rengi",
+      "label": "Açıklama rengi",
+      "default": "#B8BEC6"
+    },
+    {
+      "type": "text",
+      "id": "kanit_metin",
+      "label": "Sosyal kanıt metni",
+      "default": "100.000'den fazla kişi kullanıyor"
+    },
+    {
+      "type": "color",
+      "id": "kanit_rengi",
+      "label": "Sosyal kanıt yazı rengi",
+      "default": "#8B939D"
+    },
+    {
+      "type": "color",
+      "id": "kanit_yildiz_rengi",
+      "label": "Sosyal kanıt yıldız rengi",
+      "default": "#E0A95A"
+    },
+    {
+      "type": "header",
+      "content": "Yıldızlar ve İstatistik (Klasik dizilim)"
     },
     {
       "type": "checkbox",
@@ -821,7 +924,7 @@
     },
     {
       "type": "header",
-      "content": "Başlık"
+      "content": "Başlık (Klasik dizilim)"
     },
     {
       "type": "text",
@@ -902,57 +1005,7 @@
     },
     {
       "type": "header",
-      "content": "Metin Animasyonu"
-    },
-    {
-      "type": "paragraph",
-      "content": "Açıkken başlığın yerine sırayla oynayan cümleler gelir; son cümlede durur ve o cümle sayfanın H1'i olur. Cümleleri aşağıdan \"Animasyon cümlesi\" bloğu ekleyerek düzenleyin. Hiç blok eklemezseniz yerleşik üç cümle (çiçek / parfüm / cüzdan) kullanılır."
-    },
-    {
-      "type": "checkbox",
-      "id": "anim_ac",
-      "label": "Metin animasyonunu aç",
-      "info": "Kapalıyken bölüm eskisi gibi çalışır: yukarıdaki \"Başlık\" alanı gösterilir.",
-      "default": false
-    },
-    {
-      "type": "text",
-      "id": "anim_son",
-      "label": "Son cümle (kalıcı)",
-      "info": "Animasyon bittiğinde ekranda kalan cümle. Sayfanın H1'i budur.",
-      "default": "Bu, bir ömür saklar."
-    },
-    {
-      "type": "text",
-      "id": "anim_vurgu",
-      "label": "Son cümlede vurgulanacak kısım",
-      "info": "Son cümlenin içinde geçiyorsa bu kısım yeşil ve parıltılı görünür. Boş bırakabilirsiniz.",
-      "default": "bir ömür saklar"
-    },
-    {
-      "type": "range",
-      "id": "anim_bekleme",
-      "label": "Cümle bekleme süresi",
-      "min": 1,
-      "max": 3,
-      "step": 0.1,
-      "unit": "sn",
-      "default": 1.5
-    },
-    {
-      "type": "range",
-      "id": "anim_satir",
-      "label": "Başlık alanı yüksekliği (satır)",
-      "info": "Kaç satırlık yer ayrılsın. Cümleler değişirken sayfanın zıplamaması için bu alan sabittir; en uzun cümlenin sığacağı değeri seçin.",
-      "min": 1,
-      "max": 3,
-      "step": 1,
-      "unit": "sat",
-      "default": 2
-    },
-    {
-      "type": "header",
-      "content": "Metin"
+      "content": "Metin (Klasik dizilim)"
     },
     {
       "type": "richtext",
@@ -1130,7 +1183,7 @@
       "type": "color_background",
       "id": "arkaplan",
       "label": "Bölüm arka planı",
-      "default": "#181B1E"
+      "default": "#11161C"
     },
     {
       "type": "range",
@@ -1205,8 +1258,44 @@
   ],
   "blocks": [
     {
+      "type": "ticker",
+      "name": "Ticker ifadesi",
+      "settings": [
+        {
+          "type": "text",
+          "id": "metin",
+          "label": "Metin",
+          "default": "Çiçek solar"
+        },
+        {
+          "type": "select",
+          "id": "ikon",
+          "label": "İkon",
+          "default": "lale",
+          "options": [
+            { "value": "lale", "label": "Lale" },
+            { "value": "parfum", "label": "Parfüm" },
+            { "value": "cuzdan", "label": "Cüzdan" },
+            { "value": "kilit", "label": "Kilit" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "efekt",
+          "label": "Çıkış efekti",
+          "default": "solma",
+          "options": [
+            { "value": "solma", "label": "Solma — düşerek griye döner" },
+            { "value": "buharlasma", "label": "Buharlaşma — yukarı uçup bulanıklaşır" },
+            { "value": "eskime", "label": "Eskime — üstü çizilir, sonra silinir" },
+            { "value": "vurgu", "label": "Vurgulu son ifade — yeşil, daha uzun durur" }
+          ]
+        }
+      ]
+    },
+    {
       "type": "istatistik",
-      "name": "İstatistik yazısı",
+      "name": "İstatistik (Klasik)",
       "settings": [
         {
           "type": "text",
@@ -1215,46 +1304,28 @@
           "default": "100.000'den fazla kişi kullanıyor"
         }
       ]
-    },
-    {
-      "type": "cumle",
-      "name": "Animasyon cümlesi",
-      "settings": [
-        {
-          "type": "text",
-          "id": "metin",
-          "label": "Cümle",
-          "default": "Çiçek bir haftada solar."
-        },
-        {
-          "type": "select",
-          "id": "efekt",
-          "label": "Kaybolma efekti",
-          "default": "solma",
-          "options": [
-            { "value": "solma", "label": "Solma — harfler düşüp griye döner" },
-            { "value": "buharlasma", "label": "Buharlaşma — harfler yukarı uçup bulanıklaşır" },
-            { "value": "eskime", "label": "Eskime — üstü çizilir, soldan sağa silinir" }
-          ]
-        }
-      ]
     }
   ],
   "presets": [
     {
       "name": "Video Hero — Kapsül",
+      "settings": { "duzen": "yeni" },
       "blocks": [
         {
-          "type": "istatistik",
-          "settings": { "metin": "100.000'den fazla kişi kullanıyor" }
+          "type": "ticker",
+          "settings": { "metin": "Çiçek solar", "ikon": "lale", "efekt": "solma" }
         },
         {
-          "type": "istatistik",
-          "settings": { "metin": "16M fotoğraf yüklendi" }
+          "type": "ticker",
+          "settings": { "metin": "Parfüm uçar", "ikon": "parfum", "efekt": "buharlasma" }
         },
         {
-          "type": "istatistik",
-          "settings": { "metin": "190.000 kez kapsül kilitlendi" }
+          "type": "ticker",
+          "settings": { "metin": "Cüzdan eskir", "ikon": "cuzdan", "efekt": "eskime" }
+        },
+        {
+          "type": "ticker",
+          "settings": { "metin": "Kapsül kalır", "ikon": "kilit", "efekt": "vurgu" }
         }
       ]
     }
