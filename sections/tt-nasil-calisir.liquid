@@ -110,12 +110,20 @@
       geliyor cunku bolum grubundaki anahtar degistirilebilir.
 
   Acik hali de burada: ikisi ayni ozgullukte, ikincisi kazaniyor.
-  Varlik dosyasi display'e hic dokunmuyor.
+  Varlik dosyasi display'e hic dokunmuyor -- dokunamaz da: buradaki
+  secici id tabanli, oradaki sinif tabanli, yani bu kural her zaman
+  kazaniyor.
+
+  Acik hali "flex" cunku icerik ekrandan kisa kaldiginda kartin
+  DIKEYDE ORTALANMASI gerekiyor; ortalamayi cocuktaki margin: auto
+  yapiyor (varlik dosyasinda). justify-content: center degil, cunku
+  icerik ekrandan uzun oldugunda o kuralin ustu kirpiliyor ve
+  kaydirma cubugunun basina donulemiyor.
 {%- endcomment -%}
 {%- if s.fark_secici != blank -%}
   <style>
     {{ s.fark_secici }} { display: none; }
-    body[data-tt-nc-fark] {{ s.fark_secici }} { display: block; }
+    body[data-tt-nc-fark] {{ s.fark_secici }} { display: flex; }
   </style>
 {%- endif -%}
 

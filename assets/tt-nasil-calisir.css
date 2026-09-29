@@ -346,7 +346,7 @@ button.tt-nc-kart {
    burada yalnizca konumlandiriliyor. Boylece metinler/gorseller tek
    yerde kaliyor.
 
-   display: none / block bolumun KENDI <style> etiketinde, cunku
+   display: none / flex bolumun KENDI <style> etiketinde, cunku
    seciciyi ayardan aliyor (bkz. sections/tt-nasil-calisir.liquid).
    Bu dosya yalnizca konum ve gorunum veriyor -- display'e hic
    dokunmuyor ki oradaki kural bozulmasin.
@@ -354,6 +354,10 @@ button.tt-nc-kart {
 .tt-nc-fark-kat {
   position: fixed;
   inset: 0;
+  /* display BURADA DEGIL: bolumun kendi <style> etiketinde
+     (none / flex). Oradaki secici id tabanli, bu dosyadaki sinif
+     secicisini eziyor -- bir kez buraya "display: flex" yazildi ve
+     sessizce gecersiz kaldi. */
   /* Panel <dialog>+showModal() ile UST KATMANA cikiyor, z-index'e
      ihtiyaci yok. Bu katman duz bir fixed oge, yani sirasini
      z-index belirliyor ve temadaki her seyin ustunde olmali:
@@ -403,9 +407,15 @@ body[data-tt-nc-fark="acik"] .tt-nc-fark-kat { opacity: 1; }
 .tt-nc-fark-kapat:hover { background: rgba(255, 255, 255, .24); }
 .tt-nc-fark-kapat:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
 
-/* Bolumun kendi ust boslugu (32px) kapat dugmesinin altina denk
-   geliyordu; baslik iki satira dustugunde ikisi cakisiyordu. */
-.tt-nc-fark-kat > div { padding-top: 56px; }
+/* Katmanin tek cocugu bolumun kendi kok ogesi.
+   margin: auto -> dikey (ve masaustunde yatay) ortalama.
+   Ust bosluk 56px: bolumun kendi 32px'i kapat dugmesinin altina denk
+   geliyordu, baslik iki satira dustugunde ikisi cakisiyordu. */
+.tt-nc-fark-kat > div {
+  width: 100%;
+  margin: auto;
+  padding-top: 56px;
+}
 
 /* ALTTAKI TEK DUGME.
    Bolumun kendi iki secim butonu ("Single'i sec" / "Couple'i sec")
@@ -442,7 +452,6 @@ body[data-tt-nc-fark="acik"] .tt-nc-fark-kat { opacity: 1; }
   .tt-nc-fark-kat { padding: 24px 16px; }
   .tt-nc-fark-kat > div {
     max-width: 720px;
-    margin: 0 auto;
     border-radius: 26px;
     overflow: hidden;
   }
