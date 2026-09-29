@@ -98,6 +98,37 @@
     return farkKok;
   }
 
+  /* Bolumun kendi iki secim butonunu ("Single'i sec" / "Couple'i
+     sec") gizleyip yerine tek bir "devam" dugmesi koyuyor.
+
+     Neden burada ve neden secici ile: karsilastirma bolumunun kendi
+     dosyasina dokunulmuyor -- ana sayfada ayni bolum iki butonuyla
+     calismaya devam ediyor. Katmanda ise musteriyi baska bir sayfaya
+     atmak istemiyoruz; bilgiye baktiktan sonra bulundugu yerde
+     kalmali.
+
+     Buton bolumun KOK ogesinin icine konuyor ki --tt-catal-* renk
+     degiskenlerini miras alsin. */
+  function farkDevamKur(metin) {
+    if (!farkKok || farkKok.ttNcDevam) return;
+    farkKok.ttNcDevam = true;
+
+    var sira = farkKok.querySelector('[class*="tt-catal-btns-"]');
+    if (sira) sira.style.display = 'none';
+
+    var d = document.createElement('button');
+    d.type = 'button';
+    d.className = 'tt-nc-fark-devam';
+    d.textContent = metin;
+    d.addEventListener('click', farkKapat);
+
+    /* Iki butonun durdugu yere; o satir yoksa icerigin sonuna. */
+    var kap = sira ? sira.parentNode : farkKok.querySelector('[class*="tt-catal-inner-"]');
+    if (!kap) kap = farkKok.firstElementChild || farkKok;
+    if (sira) kap.insertBefore(d, sira.nextSibling);
+    else kap.appendChild(d);
+  }
+
   function farkKapatKur(etiket, ikon) {
     if (farkKapatDugme) return;
     farkKapatDugme = document.createElement('button');
@@ -237,6 +268,8 @@
           kok.getAttribute('data-tt-nc-fark-etiket'),
           kapatIkon ? kapatIkon.innerHTML : ''
         );
+        var devam = kok.getAttribute('data-tt-nc-fark-devam');
+        if (devam) farkDevamKur(devam);
         /* Katman kapaninca odak panelin icindeki karta degil, sabit
            butona doner: panel o sirada kapali, icindeki oge odak
            alamaz. */

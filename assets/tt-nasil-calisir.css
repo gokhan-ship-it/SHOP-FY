@@ -354,7 +354,13 @@ button.tt-nc-kart {
 .tt-nc-fark-kat {
   position: fixed;
   inset: 0;
-  z-index: 61;
+  /* Panel <dialog>+showModal() ile UST KATMANA cikiyor, z-index'e
+     ihtiyaci yok. Bu katman duz bir fixed oge, yani sirasini
+     z-index belirliyor ve temadaki her seyin ustunde olmali:
+     yapiskan baslik (tt-baslik > z_kat, varsayilan 1000), Sohbet
+     balonu, indirim cubugu. 61'de baslik katmanin ustunde kaliyor,
+     kapat dugmesi de onun altinda kalip erisilemiyordu. */
+  z-index: 1200;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -396,6 +402,39 @@ body[data-tt-nc-fark="acik"] .tt-nc-fark-kat { opacity: 1; }
 .tt-nc-fark-kapat .tt-nc-ikon { width: 18px; height: 18px; }
 .tt-nc-fark-kapat:hover { background: rgba(255, 255, 255, .24); }
 .tt-nc-fark-kapat:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+
+/* Bolumun kendi ust boslugu (32px) kapat dugmesinin altina denk
+   geliyordu; baslik iki satira dustugunde ikisi cakisiyordu. */
+.tt-nc-fark-kat > div { padding-top: 56px; }
+
+/* ALTTAKI TEK DUGME.
+   Bolumun kendi iki secim butonu ("Single'i sec" / "Couple'i sec")
+   katmanda gizleniyor: burasi bir bilgi ekrani, musteriyi baska bir
+   sayfaya atmasi degil, bulundugu yere birakmasi gerekiyor. Yerine
+   JS tek bir dugme koyuyor ve o dugme yalnizca katmani kapatiyor.
+
+   Renkler bolumun KENDI degiskenlerinden geliyor -- dugme bolumun
+   kok ogesinin icine konuyor, yani onlari miras aliyor. Boylece
+   tema editorunden CTA rengi degisince bu da degisiyor. */
+.tt-nc-fark-devam {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px 20px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--tt-catal-cta, #0071e3);
+  color: var(--tt-catal-btn-text, #FFFFFF);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.tt-nc-fark-devam:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
 
 /* Masaustunde ortada duran bir kart; mobilde tam ekran kaliyor.
    Katmanin tek cocuk <div>'i bolumun kendi kok ogesi. */

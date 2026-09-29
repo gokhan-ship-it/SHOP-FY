@@ -127,6 +127,7 @@
     data-tt-nc
     data-tt-nc-fark-secici="{{ s.fark_secici | escape }}"
     data-tt-nc-fark-etiket="{{ s.fark_kapat_etiket | default: s.kapat_etiket | escape }}"
+    data-tt-nc-fark-devam="{{ s.fark_devam_metin | escape }}"
     data-nabiz="{% if s.nabiz %}1{% else %}0{% endif %}"
     style="
       --tt-nc-zemin: {{ s.dugme_zemin }};
@@ -361,6 +362,8 @@
     { "type": "text", "id": "fark_secici", "label": "Karşılaştırma bölümünün CSS seçicisi", "default": "[id$=\"tt_nc_fark\"]",
       "info": "Bölüm grubundaki anahtarı değiştirmediyseniz bu değere dokunmayın. Boş bırakılırsa 3. kart hiç görünmez." },
     { "type": "text", "id": "fark_kapat_etiket", "label": "Kapat butonu (ekran okuyucu)", "default": "Karşılaştırmayı kapat" },
+    { "type": "text", "id": "fark_devam_metin", "label": "Alttaki butonun yazısı", "default": "Alışverişe devam et",
+      "info": "Bu buton yalnızca ekranı kapatır, müşteri bulunduğu sayfada kalır. Karşılaştırma bölümünün kendi \"Single'ı seç / Couple'ı seç\" butonları bu ekranda gizlenir; bölümün kendi sayfasında (ana sayfa) aynen durur. Boş bırakılırsa buton eklenmez ve iki seçim butonu görünür kalır." },
 
     { "type": "header", "content": "Panel renkleri" },
     { "type": "color", "id": "panel_zemin", "label": "Panel zemini", "default": "#F6F7F5" },
