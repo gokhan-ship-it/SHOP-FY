@@ -129,6 +129,17 @@
     else kap.appendChild(d);
   }
 
+  /* Bolumun kok ogesi: katmanin ilk DIV cocugu. firstElementChild
+     kullanilmiyor cunku bolum kendi <style> etiketiyle basliyor. */
+  function farkKart() {
+    if (!farkKok) return null;
+    var c = farkKok.children;
+    for (var i = 0; i < c.length; i++) {
+      if (c[i].tagName === 'DIV') return c[i];
+    }
+    return null;
+  }
+
   function farkKapatKur(etiket, ikon) {
     if (farkKapatDugme) return;
     farkKapatDugme = document.createElement('button');
@@ -137,7 +148,9 @@
     farkKapatDugme.setAttribute('aria-label', etiket || 'Kapat');
     farkKapatDugme.innerHTML = ikon || '&times;';
     farkKapatDugme.addEventListener('click', farkKapat);
-    farkKok.appendChild(farkKapatDugme);
+    /* Ekranin degil KARTIN icine: kart ortalandiginda dugme de
+       onunla birlikte gelsin. */
+    (farkKart() || farkKok).appendChild(farkKapatDugme);
   }
 
   function farkTus(e) {

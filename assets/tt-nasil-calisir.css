@@ -383,10 +383,14 @@ body[data-tt-nc-fark="acik"] .tt-nc-fark-kat { opacity: 1; }
 
 /* Kapat dugmesi JS ile ekleniyor: katman acilmadan once sayfada
    gorunur bir dugme birakmamak icin. JS yoksa katman zaten hic
-   acilmiyor, yani kapatilamayan bir sey de olusmuyor. */
+   acilmiyor, yani kapatilamayan bir sey de olusmuyor.
+
+   KARTIN ICINDE, ekranin degil: kart dikeyde ortalandiktan sonra
+   position: fixed olan dugme ekranin tepesinde tek basina kaliyordu.
+   Kartin cocugu ve absolute, boylece kartla birlikte hareket ediyor. */
 .tt-nc-fark-kapat {
-  position: fixed;
-  top: calc(12px + env(safe-area-inset-top, 0px));
+  position: absolute;
+  top: 12px;
   right: 12px;
   z-index: 2;
   display: flex;
@@ -412,10 +416,17 @@ body[data-tt-nc-fark="acik"] .tt-nc-fark-kat { opacity: 1; }
    Ust bosluk 56px: bolumun kendi 32px'i kapat dugmesinin altina denk
    geliyordu, baslik iki satira dustugunde ikisi cakisiyordu. */
 .tt-nc-fark-kat > div {
+  position: relative;   /* kapat dugmesinin capasi */
   width: 100%;
   margin: auto;
   padding-top: 56px;
+  /* ACILIS: asagidan yukari. Katmanin kendisi yalnizca soluyordu,
+     hicbir hareket yoktu; ekran birden beliriyor gibi duruyordu.
+     Panelin diliyle ayni: ayni egri, ayni sure. */
+  transform: translateY(56px);
+  transition: transform 320ms cubic-bezier(.22, 1, .36, 1);
 }
+body[data-tt-nc-fark="acik"] .tt-nc-fark-kat > div { transform: none; }
 
 /* ALTTAKI TEK DUGME.
    Bolumun kendi iki secim butonu ("Single'i sec" / "Couple'i sec")
@@ -464,4 +475,7 @@ body[data-tt-nc-fark="acik"] .tt-nc-fark-kat { opacity: 1; }
   .tt-nc-ortu,
   .tt-nc-fark-kat,
   .tt-nc-panel { transition: none; }
+  /* Hareket kapaliyken kart kaymasin ama YERINDE de kalmasin:
+     gecis kaldiriliyor, baslangic otelemesi de sifirlaniyor. */
+  .tt-nc-fark-kat > div { transform: none; transition: none; }
 }
