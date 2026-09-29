@@ -296,30 +296,31 @@
     {%- endcomment -%}
     {%- render 'tt-serit-ortala' -%}
     {%- comment -%}
-      URUN SAYFASI "NASIL CALISIR?" BUTONU
+      "NASIL CALISIR?" BUTONU
 
-      Sablona degil buraya bagli: boylece BUTUN urun sablonlarinda
-      (zaman-kapsulu, -couple, varsayilan ve ileride eklenecekler)
-      tek seferde cikiyor, urun disindaki sayfalarda hic cikmiyor ve
-      sablon JSON'larina dokunulmuyor -- urun sablonlari zaten 25
-      bolumle Shopify'in sinirina dayanmis durumda. Buton ile panel
-      position: fixed oldugu icin sayfadaki SIRASI gorunumu
-      etkilemiyor.
+      Sablona degil buraya bagli: tek seferde butun sablonlari
+      kapsiyor ve sablon JSON'larina dokunulmuyor -- urun sablonlari
+      zaten 25 bolumle Shopify'in sinirina dayanmis durumda. Buton
+      ile panel position: fixed oldugu icin sayfadaki SIRASI
+      gorunumu etkilemiyor.
 
       BOLUM GRUBU, statik "section" cagrisi DEGIL. Once statik cagri
       kullanildi; o haliyle bolum tema duzenleyicinin bolum
-      listesinde HIC gorunmuyor, dolayisiyla 44 ayarinin hicbirine
+      listesinde HIC gorunmuyor, dolayisiyla ayarlarina
       erisilemiyordu. tt-urun-cubuk / tt-anasayfa-cubuk ile ayni
       cozum: grup, duzenleyicide normal bir bolum gibi cikiyor ve
       duzenlenebiliyor.
 
-      Grup yalnizca urun sablonunda cagrildigi icin duzenleyicide de
-      yalnizca bir URUN sayfasi onizlenirken listede gorunur.
+      BURADA SABLON KOSULU YOK. Onceki surumde template.name ==
+      'product' kosulu vardi; o zaman grup duzenleyicide yalnizca
+      urun sayfasi onizlenirken listede cikiyordu ve gorunurlugu
+      degistirmek her seferinde kod degisikligi demekti. Artik
+      hangi sayfa turlerinde cizilecegini bolumun kendi
+      "Hangi sayfalarda" ayarlari kararlastiriyor; kosul secili
+      degilse bolum CSS'ini bile yuklemiyor.
 
       Kapatmak icin bolumun kendi "Butonu goster" ayari var.
     {%- endcomment -%}
-    {%- if template.name == 'product' -%}
-      {% sections 'tt-nasil-calisir-grup' %}
-    {%- endif -%}
+    {% sections 'tt-nasil-calisir-grup' %}
   </body>
 </html>

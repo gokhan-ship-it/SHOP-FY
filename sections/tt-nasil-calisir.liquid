@@ -7,21 +7,35 @@
   ------------------------------------------------------------------
   NEDEN SABLONA DEGIL LAYOUT'A BAGLI
 
-  layout/theme.liquid icinde template.name == 'product' kosuluyla
-  cagriliyor. Boylece:
+  layout/theme.liquid icinde, sections/tt-nasil-calisir-grup.json
+  bolum grubu olarak, HER sayfada cagriliyor. Boylece:
 
-    - BUTUN urun sablonlarinda cikiyor (zaman-kapsulu, -couple,
-      varsayilan product.json ve ileride eklenecek olanlar),
-      her birine ayri ayri eklemek gerekmiyor;
-    - urun disindaki hicbir sayfada cikmiyor;
-    - sablon JSON'larina hic dokunulmuyor.
+    - tek bir yerden butun sablonlari kapsiyor (urun, koleksiyon,
+      anasayfa, icerik sayfalari; ileride eklenecekler dahil),
+      her sablona ayri ayri eklemek gerekmiyor;
+    - sablon JSON'larina hic dokunulmuyor -- urun sablonlari zaten
+      25 bolumle Shopify'in sinirina dayanmis durumda;
+    - duzenleyicide HANGI sayfayi onizlersen onizle listede cikiyor,
+      yani ayarlarina her zaman erisiliyor.
+
+  Statik "section" cagrisi DEGIL: o bicimde bolum duzenleyicinin
+  bolum listesinde hic gorunmuyor, ayarlarina erisilemiyor.
 
   Buton ve panel position: fixed oldugu icin bolumun sayfadaki
   SIRASI zaten gorunumu etkilemiyor -- sablona eklemenin tek kazanci
   siralama olurdu, o da burada anlamsiz.
 
-  Kapatmak icin: tema duzenleyici > urun sayfasi > "Nasil calisir?
-  butonu" > "Butonu goster".
+  ------------------------------------------------------------------
+  HANGI SAYFADA CIKACAGI AYARDAN GELIYOR
+
+  Kosul artik layout'ta degil, asagidaki "goster" hesabinda: dort
+  sayfa turu icin ayri birer onay kutusu, koleksiyonlar icin ayrica
+  istege bagli bir kisa ad listesi. Hicbiri secili degilse bolum
+  hicbir yerde cizilmiyor -- CSS'i de yuklemiyor, cunku varlik
+  etiketi bu kosulun ICINDE.
+
+  Kapatmak icin: tema duzenleyici > "Nasil calisir? butonu" >
+  "Butonu goster".
 
   ------------------------------------------------------------------
   DOKUNULMAYAN SEYLER
@@ -48,9 +62,40 @@
   endif
 
   assign bid = 'ttNcBas-' | append: sid
+
+  comment
+    Sayfa turu kapisi. Bolum her sayfada cagriliyor, gorunurlugu
+    burada kararlastiriliyor.
+  endcomment
+  assign goster = false
+  if template.name == 'collection' and s.yer_koleksiyon
+    assign goster = true
+  elsif template.name == 'product' and s.yer_urun
+    assign goster = true
+  elsif template.name == 'index' and s.yer_anasayfa
+    assign goster = true
+  elsif template.name == 'page' and s.yer_sayfa
+    assign goster = true
+  endif
+
+  comment
+    Istege bagli koleksiyon suzgeci. Bos birakilirsa butun
+    koleksiyonlar gecerli; doluysa yalnizca listedekiler.
+  endcomment
+  if goster and template.name == 'collection' and s.koleksiyon_liste != blank
+    assign goster = false
+    assign izinli = s.koleksiyon_liste | split: ','
+    for kisa_ad in izinli
+      assign temiz = kisa_ad | strip
+      if temiz != blank and temiz == collection.handle
+        assign goster = true
+        break
+      endif
+    endfor
+  endif
 -%}
 
-{%- if s.aktif -%}
+{%- if s.aktif and goster -%}
   {{ 'tt-nasil-calisir.css' | asset_url | stylesheet_tag }}
 
   <div
@@ -183,8 +228,16 @@
 {
   "name": "Nasıl çalışır? butonu",
   "settings": [
-    { "type": "paragraph", "content": "Sol altta sabit duran buton ve dokununca açılan panel. Yalnızca ürün sayfalarında çıkar. Sağdaki Sohbet balonuyla aynı hizada durması için alt boşluğunu aşağıdan ayarlayın; alttaki indirim çubuğu göründüğünde buton kendiliğinden yukarı kalkar." },
+    { "type": "paragraph", "content": "Sol altta sabit duran buton ve dokununca açılan panel. Sağdaki Sohbet balonuyla aynı hizada durması için alt boşluğunu aşağıdan ayarlayın; alttaki indirim çubuğu göründüğünde buton kendiliğinden yukarı kalkar." },
     { "type": "checkbox", "id": "aktif", "label": "Butonu göster", "default": true },
+
+    { "type": "header", "content": "Hangi sayfalarda" },
+    { "type": "paragraph", "content": "Buton ve paneli yalnızca işaretlediğiniz sayfa türlerinde çıkar. Hiçbiri işaretli değilse hiçbir yerde görünmez." },
+    { "type": "checkbox", "id": "yer_koleksiyon", "label": "Koleksiyon sayfaları", "default": true },
+    { "type": "checkbox", "id": "yer_urun", "label": "Ürün sayfaları", "default": false },
+    { "type": "checkbox", "id": "yer_anasayfa", "label": "Ana sayfa", "default": false },
+    { "type": "checkbox", "id": "yer_sayfa", "label": "İçerik sayfaları", "default": false },
+    { "type": "text", "id": "koleksiyon_liste", "label": "Yalnızca bu koleksiyonlar", "info": "Koleksiyon adresindeki kısa adlar, virgülle: zaman-kapsulu-kolyeler, erkek-zaman-kapsulu. Boş bırakılırsa bütün koleksiyonlarda çıkar." },
 
     { "type": "header", "content": "Buton" },
     { "type": "text", "id": "dugme_metin", "label": "Buton yazısı", "default": "Nasıl çalışır?" },

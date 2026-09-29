@@ -7,6 +7,11 @@
       "name": "Nasıl çalışır? butonu",
       "settings": {
         "aktif": true,
+        "yer_koleksiyon": true,
+        "yer_urun": false,
+        "yer_anasayfa": false,
+        "yer_sayfa": false,
+        "koleksiyon_liste": "",
         "dugme_metin": "Nasıl çalışır?",
         "dugme_aria": "Nasıl çalışır? Bilgi panelini aç",
         "nabiz": true,
