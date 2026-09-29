@@ -1,0 +1,217 @@
+{%- doc -%}
+  CARK KARTI (.ttn-cark-*)
+
+  Kompakt satir -> acilan cark -> kupon karti. Tek parca bir kart;
+  pop-up yok, perde yok, sayfa akisinin icinde duruyor.
+
+  NEDEN SNIPPET
+
+  Kartin durmasi gereken yer baska bir bolumun ICI: koleksiyondaki
+  Single/Couple kartlarinin hemen alti. Tema duzenleyiciden bir bolum
+  baska bir bolumun arasina suruklenemez. Onceden bu, karti acilista
+  bir CSS secicisinin ardina TASIYARAK cozuluyordu; artik kart dogrudan
+  o bolumun markupunda basiliyor -- tasima yok, ilk boyamada dogru
+  yerde.
+
+  Iki yerden cagriliyor:
+    sections/tt-secim-kartlari.liquid  (kartlarin hemen altinda)
+    sections/ttn-spin-wheel.liquid     (kendi basina bir bolum olarak)
+
+  Ayarlar cagirandan parametre olarak geliyor; snippet'in kendi ayari
+  yok. Boylece iki cagiran da kendi bolumunden yonetiliyor.
+
+  BU KART INDIRIMI KENDI GOSTERMIYOR
+
+  Kazanildiginda yapilan tek sey uc CEREZI yazmak (assets/ttn-cark.js).
+  Mevcut indirim katmani (assets/taksit-tablosu.js) o cerezleri saniyede
+  bir okuyup urun sayfasini, koleksiyon kartlarini ve taksit modalini
+  kendisi guncelliyor. Burada ikinci bir fiyat mantigi YOK; indirim
+  tutari da settings.tt_indirim_tutar, yani katmanin okudugu ayarin
+  ta kendisi.
+
+  CSS ve JS bu snippet'te DEGIL: assets/ttn-cark.css ve ttn-cark.js
+  sections/ttn-cark-genel.liquid'den (layout'taki bolum grubu) her
+  sayfada yukleniyor. Kod, sure ve alttaki sabit bar da orada.
+{%- enddoc -%}
+
+{%- liquid
+  comment
+    SEKIZ DILIM. Tutarlar ve renkler virgulle geliyor.
+  endcomment
+  assign dilim_dizi = dilimler | split: ','
+  assign renk_dizi = dilim_renkleri | split: ','
+
+  comment
+    GEOMETRI SABIT: 8 dilim x 45 derece, 200x200 viewBox, r=100.
+    Liquid'de sin/cos yok; yay uc noktalari onceden hesaplanip
+    buraya yazildi. Dilim 0 saat 12'den basliyor ve saat yonunde
+    ilerliyor -- JS'teki hedef aci hesabi da bu siraya guveniyor.
+  endcomment
+  assign yollar = 'M100,100 L100,0 A100,100 0 0 1 170.71,29.29 Z|M100,100 L170.71,29.29 A100,100 0 0 1 200,100 Z|M100,100 L200,100 A100,100 0 0 1 170.71,170.71 Z|M100,100 L170.71,170.71 A100,100 0 0 1 100,200 Z|M100,100 L100,200 A100,100 0 0 1 29.29,170.71 Z|M100,100 L29.29,170.71 A100,100 0 0 1 0,100 Z|M100,100 L0,100 A100,100 0 0 1 29.29,29.29 Z|M100,100 L29.29,29.29 A100,100 0 0 1 100,0 Z' | split: '|'
+  comment
+    ETIKET YERLESIMI. Etiket dilimle birlikte donuyor; acisi 90-270
+    arasinda kalan dort dilimde 180 derece daha cevrilip merkezin
+    altina aliniyor ki yazi bas asagi durmasin.
+  endcomment
+  assign donus = '22.5|67.5|292.5|337.5|22.5|67.5|292.5|337.5' | split: '|'
+  assign ust = '1|1|0|0|0|0|1|1' | split: '|'
+
+  comment
+    KAZANABILIR DILIMLER. Sonuc her zaman tema ayarindaki indirim
+    tutari; cark o tutari yazan dilimlerden birinde duruyor. Hangileri
+    oldugu BURADA hesaplaniyor, JS'te degil -- tutar ve dilimler ayni
+    yerden okundugu icin ikisinin birbirini tutmamasi imkansiz.
+
+    Hicbir dilim tutara esit degilse (yanlis girilmis ayar) liste bos
+    kaliyor ve JS ilk dilime dusuyor; cark yine calisiyor ama o zaman
+    dilim yazisi kazanilan tutari tutmuyor -- ayarin dogru girilmesi
+    gerekiyor.
+  endcomment
+  assign hedef_tutar = settings.tt_indirim_tutar | plus: 0
+  assign kazananlar = ''
+  for d in dilim_dizi
+    assign v = d | strip | plus: 0
+    if v == hedef_tutar
+      if kazananlar == ''
+        assign kazananlar = forloop.index0 | append: ''
+      else
+        assign kazananlar = kazananlar | append: ',' | append: forloop.index0
+      endif
+    endif
+  endfor
+-%}
+
+{%- capture ttn_metin -%}
+{ "kuponBaslik": {{ kupon_baslik | json }} }
+{%- endcapture -%}
+<div class="ttn-cark" data-ttn-cark data-ttn-durum="yok"
+     id="ttnCark-{{ sid }}"
+     data-ttn-kazananlar="{{ kazananlar }}"
+     data-ttn-metin="{{ ttn_metin | strip | escape }}"
+     style="
+       --ttn-kart-zemin: {{ kart_zemin }};
+       --ttn-vurgu: {{ vurgu }};
+       --ttn-koyu: {{ koyu }};
+       --ttn-alt-yazi: {{ alt_yazi }};
+       --ttn-halka: {{ halka }};
+       --ttn-genislik: {{ genislik }}px;
+       --ttn-ust: {{ ust_bosluk }}px;
+       --ttn-alt: {{ alt_bosluk }}px;
+     ">
+
+  {%- comment -%}
+    SENKRON DURUM. Bu script BILEREK inline ve defer degil: kok
+    niteligini ilk boyamadan once yaziyor, yoksa kazanmis musteri bir
+    an "Carki cevir" kartini gorup sonra kupon kartina atlardi.
+    Yalnizca nitelik yaziyor -- butun davranis ttn-cark.js'te.
+
+    Sure de buradan degil YAPILANDIRMA DUGUMUNDEN okunuyor. Dugum
+    bolum grubunda ve layout icinde bu karttan ONCE basiliyor, yani
+    burada hazir. Tek kaynak: sure iki yerde tanimlanmis olmuyor.
+
+    Dugum hic yoksa genel ayar kapali demektir; kart CSS'e ihtiyac
+    duymadan, hidden niteligiyle kalkiyor.
+  {%- endcomment -%}
+  <script>
+    (function () {
+      var k = document.getElementById('ttnCark-{{ sid }}');
+      if (!k) return;
+      var v = document.querySelector('[data-ttn-veri]');
+      if (!v) { k.hidden = true; return; }
+      var d = 'yok';
+      try {
+        var V = JSON.parse(v.getAttribute('data-ttn-veri') || '{}');
+        var sure = (parseFloat(V.sureDk) || 30) * 60000;
+        var h = JSON.parse(window.localStorage.getItem('ttnCark') || 'null');
+        if (h && h.d === 'kazandi') {
+          /* SURESI DOLMUSSA BASA DONUYOR, gizlenmiyor: musteri carki
+             yeniden gorup cevirebilsin. Kaydin kendisini ttn-cark.js
+             siliyor, cerezleri ve sepetteki kodu da o temizliyor.
+             Burasi yalnizca ilk boyamada dogru karti gostermek icin --
+             kart bir an gizlenip sonra geri gelirse sayfa ziplardi. */
+          d = (h.t + sure > Date.now()) ? 'kazandi' : 'yok';
+        } else if (h && h.d === 'red') {
+          d = 'red';
+        }
+      } catch (e) {}
+      k.setAttribute('data-ttn-durum', d);
+    })();
+  </script>
+
+  <div class="ttn-cark-ic">
+
+    {%- comment -%}
+      KOMPAKT SATIR. Kartin tamami tiklanabilir olmali ama ic ice
+      buton olmamali: kok bir <button> degil, tiklamayi JS satirin
+      kendisinden yakaliyor. Sagdaki "Cevir" gorsel olarak buton,
+      eristirilebilirlik icin de gercek buton.
+    {%- endcomment -%}
+    <div class="ttn-cark-kompakt" data-ttn-kompakt role="button" tabindex="0"
+         aria-expanded="false" aria-controls="ttnCarkAlan-{{ sid }}">
+      <span class="ttn-cark-mini" data-ttn-mini aria-hidden="true">
+        {%- render 'ttn-cark-svg',
+            dilimler: dilim_dizi, renkler: renk_dizi, yollar: yollar,
+            donus: donus, ust: ust, birim: birim, mini: true -%}
+      </span>
+      <span class="ttn-cark-metin">
+        <span class="ttn-cark-baslik">{{ kompakt_baslik }}</span>
+        <span class="ttn-cark-alt">{{ kompakt_alt }}</span>
+      </span>
+      <button type="button" class="ttn-cark-dugme ttn-cark-dugme--kucuk" data-ttn-ac>
+        {{- kompakt_dugme -}}
+      </button>
+    </div>
+
+    {%- comment -%}
+      ACILAN ALAN. Gecis max-height ile: acilan icerigin yuksekligi
+      sabit (cark + buton + not), yani grid 0fr->1fr numarasina gerek
+      yok; max-height olculebilir ve gecisi daha ucuz.
+    {%- endcomment -%}
+    <div class="ttn-cark-alan" data-ttn-alan id="ttnCarkAlan-{{ sid }}">
+      <div class="ttn-cark-alan-ic">
+        <button type="button" class="ttn-cark-vazgec" data-ttn-kapat>
+          {{ vazgec }}<span aria-hidden="true"> ×</span>
+        </button>
+
+        <div class="ttn-cark-sahne">
+          <span class="ttn-cark-ibre" aria-hidden="true"></span>
+          <div class="ttn-cark-carkim" data-ttn-carkim>
+            {%- render 'ttn-cark-svg',
+                dilimler: dilim_dizi, renkler: renk_dizi, yollar: yollar,
+                donus: donus, ust: ust, birim: birim, mini: false -%}
+          </div>
+          <canvas class="ttn-cark-konfeti" data-ttn-konfeti aria-hidden="true"></canvas>
+        </div>
+
+        <button type="button" class="ttn-cark-dugme ttn-cark-dugme--tam" data-ttn-cevir>
+          {{- cevir_dugme -}}
+        </button>
+        <p class="ttn-cark-not">{{ cark_not }}</p>
+      </div>
+    </div>
+
+    {%- comment -%}
+      KUPON KARTI. Kazandiktan sonra kompakt satirin yerini aliyor.
+      Sayac aria-live degil: her saniye degisen bir rakami ekran
+      okuyucuya okutmak iskence olurdu; kalan sure zaten metinde.
+    {%- endcomment -%}
+    <div class="ttn-cark-kupon" data-ttn-kupon>
+      <span class="ttn-cark-kupon-ikon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+        </svg>
+      </span>
+      <span class="ttn-cark-kupon-metin">
+        <span class="ttn-cark-kupon-baslik" data-ttn-kupon-baslik></span>
+        <span class="ttn-cark-kupon-alt">
+          <span class="ttn-cark-kupon-onay">{{ kupon_onay }}</span>
+          <span class="ttn-cark-kupon-kod" data-ttn-kupon-kod></span>
+        </span>
+      </span>
+      <span class="ttn-cark-kupon-sayac" data-ttn-kupon-sayac></span>
+    </div>
+
+    <p class="ttn-cark-duyuru sr-only" data-ttn-duyuru aria-live="polite"></p>
+  </div>
+</div>

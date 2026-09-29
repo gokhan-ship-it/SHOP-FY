@@ -38,6 +38,15 @@
   dugumunden okuyor. Genel ayar kapaliysa o dugum hic basilmiyor ve
   kart kendini gizliyor.
 
+  ------------------------------------------------------------------
+  KOLEKSIYONDAKI CARK BU BOLUM DEGIL
+
+  Single/Couple kartlarinin altindaki cark artik
+  sections/tt-secim-kartlari.liquid icinde, dogrudan markupta
+  basiliyor (ayni snippet: ttn-cark-kart). Bu bolum karti BASKA bir
+  yere koymak isteyenler icin duruyor; iki yerde birden acilirsa
+  sayfada iki cark olur.
+
   @example
   {% section 'ttn-spin-wheel' %}
 {%- enddoc -%}
@@ -45,189 +54,39 @@
 {%- liquid
   assign s = section.settings
   assign sid = section.id
-
-  comment
-    SEKIZ DILIM. Tutarlar ve renkler ayardan virgulle geliyor; eksik
-    girilirse son deger tekrarlanmiyor, dilim bosa dusmesin diye
-    varsayilanlar aynen yaziliyor.
-  endcomment
-  assign dilimler = s.dilimler | split: ','
-  assign renkler = s.dilim_renkleri | split: ','
-
-  comment
-    GEOMETRI SABIT: 8 dilim x 45 derece, 200x200 viewBox, r=100.
-    Liquid'de sin/cos yok; yay uc noktalari onceden hesaplanip
-    buraya yazildi. Dilim 0 saat 12'den basliyor ve saat yonunde
-    ilerliyor -- JS'teki hedef aci hesabi da bu siraya guveniyor.
-  endcomment
-  assign yollar = 'M100,100 L100,0 A100,100 0 0 1 170.71,29.29 Z|M100,100 L170.71,29.29 A100,100 0 0 1 200,100 Z|M100,100 L200,100 A100,100 0 0 1 170.71,170.71 Z|M100,100 L170.71,170.71 A100,100 0 0 1 100,200 Z|M100,100 L100,200 A100,100 0 0 1 29.29,170.71 Z|M100,100 L29.29,170.71 A100,100 0 0 1 0,100 Z|M100,100 L0,100 A100,100 0 0 1 29.29,29.29 Z|M100,100 L29.29,29.29 A100,100 0 0 1 100,0 Z' | split: '|'
-  comment
-    ETIKET YERLESIMI. Etiket dilimle birlikte donuyor; acisi 90-270
-    arasinda kalan dort dilimde 180 derece daha cevrilip merkezin
-    altina aliniyor ki yazi bas asagi durmasin.
-  endcomment
-  assign donus = '22.5|67.5|292.5|337.5|22.5|67.5|292.5|337.5' | split: '|'
-  assign ust = '1|1|0|0|0|0|1|1' | split: '|'
-
-  comment
-    KAZANABILIR DILIMLER. Sonuc her zaman tema ayarindaki indirim
-    tutari; cark o tutari yazan dilimlerden birinde duruyor. Hangileri
-    oldugu BURADA hesaplaniyor, JS'te degil -- tutar ve dilimler ayni
-    yerden okundugu icin ikisinin birbirini tutmamasi imkansiz.
-
-    Hicbir dilim tutara esit degilse (yanlis girilmis ayar) liste bos
-    kaliyor ve JS ilk dilime dusuyor; cark yine calisiyor ama o zaman
-    dilim yazisi kazanilan tutari tutmuyor -- ayarin dogru girilmesi
-    gerekiyor.
-  endcomment
-  assign hedef_tutar = settings.tt_indirim_tutar | plus: 0
-  assign kazananlar = ''
-  for d in dilimler
-    assign v = d | strip | plus: 0
-    if v == hedef_tutar
-      if kazananlar == ''
-        assign kazananlar = forloop.index0 | append: ''
-      else
-        assign kazananlar = kazananlar | append: ',' | append: forloop.index0
-      endif
-    endif
-  endfor
 -%}
 
-{%- capture ttn_metin -%}
-{ "kuponBaslik": {{ s.kupon_baslik | json }} }
-{%- endcapture -%}
-<div class="ttn-cark" data-ttn-cark data-ttn-durum="yok"
-     id="ttnCark-{{ sid }}"
-     data-ttn-kazananlar="{{ kazananlar }}"
-     data-ttn-metin="{{ ttn_metin | strip | escape }}"
-     style="
-       --ttn-kart-zemin: {{ s.kart_zemin }};
-       --ttn-vurgu: {{ s.vurgu }};
-       --ttn-koyu: {{ s.koyu }};
-       --ttn-alt-yazi: {{ s.alt_yazi }};
-       --ttn-halka: {{ s.halka }};
-       --ttn-genislik: {{ s.genislik }}px;
-       --ttn-ust: {{ s.ust_bosluk }}px;
-       --ttn-alt: {{ s.alt_bosluk }}px;
-     ">
+{%- comment -%}
+  KARTIN KENDISI BURADA DEGIL
 
-  {%- comment -%}
-    SENKRON DURUM. Bu script BILEREK inline ve defer degil: kok
-    niteligini ilk boyamadan once yaziyor, yoksa kazanmis musteri bir
-    an "Carki cevir" kartini gorup sonra kupon kartina atlardi.
-    Yalnizca nitelik yaziyor -- butun davranis ttn-cark.js'te.
-
-    Sure de buradan degil YAPILANDIRMA DUGUMUNDEN okunuyor. Dugum
-    bolum grubunda ve layout icinde bu bolumden ONCE basiliyor, yani
-    burada hazir. Tek kaynak: sure iki yerde tanimlanmis olmuyor.
-
-    Dugum hic yoksa genel ayar kapali demektir; kart CSS'e ihtiyac
-    duymadan, hidden niteligiyle kalkiyor.
-  {%- endcomment -%}
-  <script>
-    (function () {
-      var k = document.getElementById('ttnCark-{{ sid }}');
-      if (!k) return;
-      var v = document.querySelector('[data-ttn-veri]');
-      if (!v) { k.hidden = true; return; }
-      var d = 'yok';
-      try {
-        var V = JSON.parse(v.getAttribute('data-ttn-veri') || '{}');
-        var sure = (parseFloat(V.sureDk) || 30) * 60000;
-        var h = JSON.parse(window.localStorage.getItem('ttnCark') || 'null');
-        if (h && h.d === 'kazandi') {
-          /* SURESI DOLMUSSA BASA DONUYOR, gizlenmiyor: musteri carki
-             yeniden gorup cevirebilsin. Kaydin kendisini ttn-cark.js
-             siliyor, cerezleri ve sepetteki kodu da o temizliyor.
-             Burasi yalnizca ilk boyamada dogru karti gostermek icin --
-             kart bir an gizlenip sonra geri gelirse sayfa ziplardi. */
-          d = (h.t + sure > Date.now()) ? 'kazandi' : 'yok';
-        } else if (h && h.d === 'red') {
-          d = 'red';
-        }
-      } catch (e) {}
-      k.setAttribute('data-ttn-durum', d);
-    })();
-  </script>
-
-  <div class="ttn-cark-ic">
-
-    {%- comment -%}
-      KOMPAKT SATIR. Kartin tamami tiklanabilir olmali ama ic ice
-      buton olmamali: kok bir <button> degil, tiklamayi JS satirin
-      kendisinden yakaliyor. Sagdaki "Cevir" gorsel olarak buton,
-      eristirilebilirlik icin de gercek buton.
-    {%- endcomment -%}
-    <div class="ttn-cark-kompakt" data-ttn-kompakt role="button" tabindex="0"
-         aria-expanded="false" aria-controls="ttnCarkAlan-{{ sid }}">
-      <span class="ttn-cark-mini" data-ttn-mini aria-hidden="true">
-        {%- render 'ttn-cark-svg',
-            dilimler: dilimler, renkler: renkler, yollar: yollar,
-            donus: donus, ust: ust, birim: s.birim, mini: true -%}
-      </span>
-      <span class="ttn-cark-metin">
-        <span class="ttn-cark-baslik">{{ s.kompakt_baslik }}</span>
-        <span class="ttn-cark-alt">{{ s.kompakt_alt }}</span>
-      </span>
-      <button type="button" class="ttn-cark-dugme ttn-cark-dugme--kucuk" data-ttn-ac>
-        {{- s.kompakt_dugme -}}
-      </button>
-    </div>
-
-    {%- comment -%}
-      ACILAN ALAN. Gecis max-height ile: acilan icerigin yuksekligi
-      sabit (cark + buton + not), yani grid 0fr->1fr numarasina gerek
-      yok; max-height olculebilir ve gecisi daha ucuz.
-    {%- endcomment -%}
-    <div class="ttn-cark-alan" data-ttn-alan id="ttnCarkAlan-{{ sid }}">
-      <div class="ttn-cark-alan-ic">
-        <button type="button" class="ttn-cark-vazgec" data-ttn-kapat>
-          {{ s.vazgec }}<span aria-hidden="true"> ×</span>
-        </button>
-
-        <div class="ttn-cark-sahne">
-          <span class="ttn-cark-ibre" aria-hidden="true"></span>
-          <div class="ttn-cark-carkim" data-ttn-carkim>
-            {%- render 'ttn-cark-svg',
-                dilimler: dilimler, renkler: renkler, yollar: yollar,
-                donus: donus, ust: ust, birim: s.birim, mini: false -%}
-          </div>
-          <canvas class="ttn-cark-konfeti" data-ttn-konfeti aria-hidden="true"></canvas>
-        </div>
-
-        <button type="button" class="ttn-cark-dugme ttn-cark-dugme--tam" data-ttn-cevir>
-          {{- s.cevir_dugme -}}
-        </button>
-        <p class="ttn-cark-not">{{ s.cark_not }}</p>
-      </div>
-    </div>
-
-    {%- comment -%}
-      KUPON KARTI. Kazandiktan sonra kompakt satirin yerini aliyor.
-      Sayac aria-live degil: her saniye degisen bir rakami ekran
-      okuyucuya okutmak iskence olurdu; kalan sure zaten metinde.
-    {%- endcomment -%}
-    <div class="ttn-cark-kupon" data-ttn-kupon>
-      <span class="ttn-cark-kupon-ikon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-             stroke-linecap="round" stroke-linejoin="round" focusable="false">
-          <path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-        </svg>
-      </span>
-      <span class="ttn-cark-kupon-metin">
-        <span class="ttn-cark-kupon-baslik" data-ttn-kupon-baslik></span>
-        <span class="ttn-cark-kupon-alt">
-          <span class="ttn-cark-kupon-onay">{{ s.kupon_onay }}</span>
-          <span class="ttn-cark-kupon-kod" data-ttn-kupon-kod></span>
-        </span>
-      </span>
-      <span class="ttn-cark-kupon-sayac" data-ttn-kupon-sayac></span>
-    </div>
-
-    <p class="ttn-cark-duyuru sr-only" data-ttn-duyuru aria-live="polite"></p>
-  </div>
-</div>
+  Markup snippets/ttn-cark-kart.liquid'de. Ayni kart
+  sections/tt-secim-kartlari.liquid icinden de basiliyor -- orada
+  Single/Couple kartlarinin hemen altinda, tasinmadan, dogru yerde
+  ciziliyor. Bu bolum karti BASKA bir yere tek basina koymak icin
+  duruyor; ayarlari da burada.
+{%- endcomment -%}
+{%- render 'ttn-cark-kart',
+    sid: sid,
+    kompakt_baslik: s.kompakt_baslik,
+    kompakt_alt: s.kompakt_alt,
+    kompakt_dugme: s.kompakt_dugme,
+    vazgec: s.vazgec,
+    cevir_dugme: s.cevir_dugme,
+    cark_not: s.cark_not,
+    dilimler: s.dilimler,
+    birim: s.birim,
+    dilim_renkleri: s.dilim_renkleri,
+    kupon_baslik: s.kupon_baslik,
+    kupon_onay: s.kupon_onay,
+    kart_zemin: s.kart_zemin,
+    vurgu: s.vurgu,
+    koyu: s.koyu,
+    alt_yazi: s.alt_yazi,
+    halka: s.halka,
+    genislik: s.genislik,
+    ust_bosluk: s.ust_bosluk,
+    alt_bosluk: s.alt_bosluk
+-%}
 
 {%- comment -%}
   HEDEFIN ARDINA TASINMA
@@ -295,7 +154,7 @@
   "tag": "section",
   "class": "ttn-cark-section",
   "settings": [
-    { "type": "paragraph", "content": "Çarkın çalışması için \"Çark – genel ayarlar\" bölümünde \"Çarkı göster\" açık ve bir indirim kodu girilmiş olmalı (tema düzenleyicide sol listede, en altta). İndirim tutarı Tema ayarları → \"İndirim tutarı\" alanından geliyor — aynı değeri ürün kartlarındaki indirimli fiyat ve taksit modalı da okuyor. Bu bölüm yalnızca kartın görünümü." },
+    { "type": "paragraph", "content": "Single/Couple kartlarının altındaki çark BU BÖLÜM DEĞİL — o, \"Single / Couple Seçimi\" bölümünün içinde (orada → Çark). Bu bölüm çarkı başka bir yere koymak için. Her iki yerde birden açarsanız sayfada iki çark olur. Çalışması için \"Çark – genel ayarlar\" bölümünde \"Çarkı göster\" açık ve bir indirim kodu girilmiş olmalı; indirim tutarı Tema ayarları → \"İndirim tutarı\" alanından geliyor." },
 
     { "type": "header", "content": "Kompakt kart" },
     { "type": "text", "id": "kompakt_baslik", "label": "Başlık", "default": "Çarkı çevir, indirimini kazan" },
@@ -329,8 +188,7 @@
 
     { "type": "header", "content": "Yerleşim" },
     { "type": "text", "id": "hedef_secici", "label": "Hangi öğenin hemen altına (CSS seçici)",
-      "default": ".tt-sc-filtre",
-      "info": "Kart açılışta bu öğenin hemen ardına geçer — böylece tek parça bir bölümün ortasına girebiliyor. Varsayılan değer, Single/Couple bölümündeki Kadın/Erkek filtre satırı. Boş bırakırsanız veya öğe bulunamazsa kart, bölümü koyduğunuz yerde kalır. İPUCU: Çark bölümünü hedefi içeren bölümün ALTINA koyun; üstüne koyarsanız da çalışır ama sayfa bir kez yeniden akar." },
+      "info": "Boş bırakılırsa kart, bölümü koyduğunuz yerde kalır — normal kullanım budur. Bir değer girerseniz kart açılışta o öğenin hemen ardına taşınır; tek parça bir bölümün ortasına girmek için. Single/Couple bölümündeki çark için buna gerek YOK: o kart artık bölümün kendi içinde basılıyor (Single / Couple Seçimi → Çark)." },
 
     { "type": "header", "content": "Görünüm" },
     { "type": "range", "id": "genislik", "label": "En fazla genişlik", "min": 320, "max": 900, "step": 20, "unit": "px", "default": 520 },
