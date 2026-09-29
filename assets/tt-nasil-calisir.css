@@ -1,0 +1,329 @@
+/* ------------------------------------------------------------------
+   URUN SAYFASI "NASIL CALISIR?"  (.tt-nc-*)
+
+   Sol altta sabit bir hap buton + dokununca alttan acilan panel.
+   Sagdaki Sohbet balonu (Shopify Inbox) ile ayni yatay hizada
+   durmasi icin ikisi de ekranin altindan ayni mesafede.
+
+   BUTUN RENKLER DEGISKEN. Degerler bolumun kok ogesine
+   (sections/tt-nasil-calisir.liquid) inline yaziliyor, yani tema
+   duzenleyicisinden geliyor; buradaki degerler yalnizca yedek.
+
+   NEDEN AYRI DOSYA (bolum icinde <style> degil)
+   Buton ve panel position: fixed. Bolum sarmalayicisina baglanan
+   secicilerle yazilsaydi, ogeler DOM'da baska bir yere tasindiginda
+   (ornegin native <dialog> ust katmana cikarken) stil kopardi.
+   Duz sinif secicileri her durumda gecerli.
+   ------------------------------------------------------------------ */
+.tt-nc {
+  --tt-nc-zemin: #16181D;
+  --tt-nc-cerceve: #9FC4B0;
+  --tt-nc-yazi: #FFFFFF;
+  --tt-nc-panel-zemin: #F6F7F5;
+  --tt-nc-ortu: rgba(10, 12, 14, .55);
+  --tt-nc-tutamac: #D0D3CF;
+  --tt-nc-etiket-zemin: #E3EEE7;
+  --tt-nc-etiket-renk: #3E5E4A;
+  --tt-nc-baslik-renk: #111111;
+  --tt-nc-alt-renk: #777777;
+  --tt-nc-kapat-zemin: #E9EBE8;
+  --tt-nc-kart-zemin: #FFFFFF;
+  --tt-nc-kart-kenar: #E6E8E5;
+  --tt-nc-ikon-zemin: #E3EEE7;
+  --tt-nc-ikon-renk: #3E5E4A;
+  --tt-nc-ok-zemin: #F2F4F1;
+  --tt-nc-halka-1: #3E5E4A;
+  --tt-nc-halka-2: #7FAE95;
+  --tt-nc-yan: 16px;
+  --tt-nc-alt: 20px;
+}
+.tt-nc *, .tt-nc *::before, .tt-nc *::after { box-sizing: border-box; }
+
+/* ==================================================================
+   SABIT BUTON
+   ================================================================== */
+.tt-nc-dugme {
+  position: fixed;
+  left: var(--tt-nc-yan);
+  bottom: calc(var(--tt-nc-alt) + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 18px 8px 8px;
+  border: 2px solid var(--tt-nc-cerceve);
+  border-radius: 999px;
+  background: var(--tt-nc-zemin);
+  color: var(--tt-nc-yazi);
+  font: inherit;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+
+/* INDIRIM CUBUGUYLA CAKISMA.
+   assets/ttn-cark.js cubuk gorunurken body'ye .ttn-cark-bar-acik
+   koyuyor ve --ttn-cark-bar'a olculen yuksekligi yaziyor. Buton o
+   kadar yukari kalkiyor; cubuk yoksa degisken de yok, buton kendi
+   yerinde kaliyor. Sagdaki Sohbet balonu ayni mekanizmayla (carkin
+   "kaydir_secici" ayari) kalktigi icin ikisi hizada kaliyor. */
+body.ttn-cark-bar-acik .tt-nc-dugme {
+  transform: translateY(calc(-1 * var(--ttn-cark-bar, 0px)));
+}
+.tt-nc-dugme:active { transform: scale(.97); }
+body.ttn-cark-bar-acik .tt-nc-dugme:active {
+  transform: translateY(calc(-1 * var(--ttn-cark-bar, 0px))) scale(.97);
+}
+.tt-nc-dugme:focus-visible { outline: 2px solid var(--tt-nc-cerceve); outline-offset: 3px; }
+
+/* Panel acikken buton perdenin arkasinda kalir; tamamen kaldirmak
+   hem titremeyi hem de klavyeyle oraya sekmeyi onluyor. */
+body[data-tt-nc-acik] .tt-nc-dugme { opacity: 0; pointer-events: none; }
+
+.tt-nc-dugme-ikon {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--tt-nc-cerceve);
+  color: var(--tt-nc-zemin);
+}
+.tt-nc-dugme-ikon .tt-nc-ikon { width: 16px; height: 16px; }
+
+/* NABIZ. Halka ikonun KENDISI degil, ::after -- boylece ikon
+   kipirdamiyor, yalnizca cevresindeki halka buyuyup soluyor. */
+.tt-nc-dugme-ikon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--tt-nc-cerceve);
+  border-radius: 50%;
+  animation: tt-nc-nabiz 2s cubic-bezier(.22, .68, .32, 1) infinite;
+  pointer-events: none;
+}
+@keyframes tt-nc-nabiz {
+  0%   { transform: scale(1);    opacity: .5; }
+  70%  { transform: scale(1.7);  opacity: 0; }
+  100% { transform: scale(1.7);  opacity: 0; }
+}
+/* Ayardan kapatilabiliyor. */
+.tt-nc[data-nabiz="0"] .tt-nc-dugme-ikon::after { animation: none; opacity: 0; }
+
+.tt-nc-dugme-yazi {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* ==================================================================
+   PANEL
+
+   <dialog> KENDISI perde: tam ekran ve saydam. Gorunen ortu ile
+   sheet onun COCUGU. Boylece ortunun rengi de sheet'in gecisi de
+   normal CSS ile yonetilebiliyor -- ::backdrop'ta ozel ozellik
+   kalitimi tarayicilar arasinda tutarli degil.
+
+   showModal() bedavaya ust katman, odak tuzagi ve ESC veriyor.
+   Sayfa kaydirma kilidini JS ayrica kuruyor: <dialog> onu YAPMIYOR.
+   ================================================================== */
+.tt-nc-kat {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+.tt-nc-kat::backdrop { background: transparent; }
+
+.tt-nc-ortu {
+  position: absolute;
+  inset: 0;
+  background: var(--tt-nc-ortu);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.tt-nc-kat[data-acik] .tt-nc-ortu { opacity: 1; }
+
+.tt-nc-panel {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  max-height: 88vh;
+  max-height: 88dvh;
+  overflow-y: auto;
+  padding: 10px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  border-radius: 26px 26px 0 0;
+  background: var(--tt-nc-panel-zemin);
+  transform: translateY(100%);
+  transition: transform 300ms cubic-bezier(.22, 1, .36, 1);
+  -webkit-overflow-scrolling: touch;
+}
+.tt-nc-kat[data-acik] .tt-nc-panel { transform: translateY(0); }
+/* Parmak surukleme sirasinda konumu JS yaziyor; gecis o an kapali
+   olmali, yoksa hareket parmagin gerisinde kalir. */
+.tt-nc-panel[data-suruklu] { transition: none; }
+
+.tt-nc-tut {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 12px;
+  border-radius: 999px;
+  background: var(--tt-nc-tutamac);
+}
+
+.tt-nc-bas {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 0 14px;
+}
+.tt-nc-bas-yazi { flex: 1 1 auto; min-width: 0; }
+.tt-nc-etiket {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--tt-nc-etiket-zemin);
+  color: var(--tt-nc-etiket-renk);
+  font-size: 11px;
+  line-height: 1.3;
+}
+.tt-nc-etiket .tt-nc-ikon { width: 12px; height: 12px; }
+.tt-nc-baslik {
+  margin: 8px 0 0;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -.01em;
+  color: var(--tt-nc-baslik-renk);
+}
+.tt-nc-altbaslik {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--tt-nc-alt-renk);
+}
+.tt-nc-kapat {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--tt-nc-kapat-zemin);
+  color: #4A4F4B;
+  cursor: pointer;
+}
+.tt-nc-kapat .tt-nc-ikon { width: 14px; height: 14px; }
+.tt-nc-kapat:focus-visible { outline: 2px solid var(--tt-nc-etiket-renk); outline-offset: 2px; }
+
+/* ==================================================================
+   KARTLAR
+   Ucu de ayni: renk farki yok, yalnizca ikon degisiyor.
+   ================================================================== */
+.tt-nc-kart {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--tt-nc-kart-kenar);
+  border-radius: 18px;
+  background: var(--tt-nc-kart-zemin);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 160ms ease, transform 140ms ease;
+}
+.tt-nc-kart + .tt-nc-kart { margin-top: 10px; }
+.tt-nc-kart:hover { border-color: var(--tt-nc-cerceve); }
+.tt-nc-kart:active { transform: scale(.98); }
+.tt-nc-kart:focus-visible { outline: 2px solid var(--tt-nc-etiket-renk); outline-offset: 2px; }
+
+.tt-nc-kart-ikon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: var(--tt-nc-ikon-zemin);
+  color: var(--tt-nc-ikon-renk);
+}
+.tt-nc-kart-ikon .tt-nc-ikon { width: 24px; height: 24px; }
+
+.tt-nc-kart-metin { flex: 1 1 auto; min-width: 0; }
+.tt-nc-kart-bas {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--tt-nc-baslik-renk);
+}
+.tt-nc-kart-alt {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--tt-nc-alt-renk);
+}
+.tt-nc-kart-ok {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--tt-nc-ok-zemin);
+  color: var(--tt-nc-ikon-renk);
+}
+.tt-nc-kart-ok .tt-nc-ikon { width: 16px; height: 16px; }
+
+/* ==================================================================
+   MASAUSTU: ortada, dort kosesi yuvarlak modal
+   ================================================================== */
+@media (min-width: 768px) {
+  .tt-nc-panel {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    width: min(420px, calc(100% - 32px));
+    max-height: 86vh;
+    padding-bottom: 20px;
+    border-radius: 26px;
+    /* Acilirken yine ASAGIDAN yukari, ama ekranin ortasina. */
+    transform: translate(-50%, calc(-50% + 28px));
+    opacity: 0;
+    transition: transform 300ms cubic-bezier(.22, 1, .36, 1), opacity 220ms ease;
+  }
+  .tt-nc-kat[data-acik] .tt-nc-panel {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-nc-dugme-ikon::after { animation: none; opacity: 0; }
+  .tt-nc-dugme,
+  .tt-nc-kart,
+  .tt-nc-ortu,
+  .tt-nc-panel { transition: none; }
+}

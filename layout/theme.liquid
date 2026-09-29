@@ -295,5 +295,19 @@
       tt-yapilandirma'dan SONRA cagriliyor -- seridi o basiyor.
     {%- endcomment -%}
     {%- render 'tt-serit-ortala' -%}
+    {%- comment -%}
+      URUN SAYFASI "NASIL CALISIR?" BUTONU
+
+      Sablona degil buraya bagli: boylece BUTUN urun sablonlarinda
+      (zaman-kapsulu, -couple, varsayilan ve ileride eklenecekler)
+      tek seferde cikiyor, urun disindaki sayfalarda hic cikmiyor ve
+      sablon JSON'larina dokunulmuyor. Buton ile panel position:
+      fixed oldugu icin sayfadaki SIRASI gorunumu etkilemiyor.
+
+      Kapatmak icin bolumun kendi "Butonu goster" ayari var.
+    {%- endcomment -%}
+    {%- if template.name == 'product' -%}
+      {% section 'tt-nasil-calisir' %}
+    {%- endif -%}
   </body>
 </html>
