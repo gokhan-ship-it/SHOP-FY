@@ -213,16 +213,16 @@
     to   { opacity: 1; transform: none; }
   }
   #shopify-section-{{ sid }} .hv-tk[data-durum="gir"] {
-    animation: hv-tk-gir-{{ sid }} 350ms ease forwards;
+    animation: hv-tk-gir-{{ sid }} 250ms ease forwards;
   }
 
-  /* SOLMA: dusup donerek griye */
+  /* SOLMA: yumusak fade-out -- hareket yok */
   @keyframes hv-tk-solma-{{ sid }} {
-    from { opacity: 1; transform: none; color: {{ s.ticker_rengi }}; }
-    to   { opacity: 0; transform: translateY(12px) rotate(8deg); color: #6B7280; }
+    from { opacity: 1; }
+    to   { opacity: 0; }
   }
   #shopify-section-{{ sid }} .hv-tk[data-durum="cik"][data-efekt="solma"] {
-    animation: hv-tk-solma-{{ sid }} 450ms cubic-bezier(.4,.1,.7,1) forwards;
+    animation: hv-tk-solma-{{ sid }} 300ms ease-out forwards;
   }
 
   /* BUHARLASMA: yukari kalkip bulaniklasarak (vurgulu ifade de bunu kullanir) */
@@ -232,7 +232,7 @@
   }
   #shopify-section-{{ sid }} .hv-tk[data-durum="cik"][data-efekt="buharlasma"],
   #shopify-section-{{ sid }} .hv-tk[data-durum="cik"][data-efekt="vurgu"] {
-    animation: hv-tk-buhar-{{ sid }} 450ms ease-out forwards;
+    animation: hv-tk-buhar-{{ sid }} 300ms ease-out forwards;
   }
 
   /* ESKIME: once cizgi soldan saga, sonra metin koyu griye */
@@ -245,11 +245,17 @@
     to   { opacity: 0; color: #3A4048; filter: blur(1px); }
   }
   #shopify-section-{{ sid }} .hv-tk[data-durum="cik"][data-efekt="eskime"] .hv-tk-cizgi {
-    animation: hv-tk-cizgi-{{ sid }} 250ms ease-out forwards;
+    animation: hv-tk-cizgi-{{ sid }} 180ms ease-out forwards;
   }
   #shopify-section-{{ sid }} .hv-tk[data-durum="cik"][data-efekt="eskime"] {
-    /* Cizgi bittikten sonra basliyor. */
-    animation: hv-tk-eski-{{ sid }} 400ms ease-in 250ms forwards;
+    /* Cizgi bittikten sonra basliyor.
+
+       fill-mode BOTH sart, "forwards" DEGIL: gecikme suresince
+       elemana henuz animasyon uygulanmaz ve temel stiline
+       (opacity: 0) duserdi -- metin cizgi cizilirken kaybolup
+       animasyon baslayinca geri gelirdi. "both" gecikme boyunca
+       "from" karesini uygular, yani metin yerinde durur. */
+    animation: hv-tk-eski-{{ sid }} 280ms ease-in 180ms both;
   }
 
   /* Sekme arka plandayken kare kare donmesin. */
@@ -610,10 +616,10 @@
     /* ===================== TICKER =====================
        Ifadeler DOM'da ust uste duruyor; sadece siradaki gorunur.
        Boylece pill her zaman en uzun ifadenin genisliginde kalir. */
-    var GIRIS = 350;
-    var CIKIS = 450;
-    var CIKIS_ESKIME = 650;   /* 250ms cizgi + 400ms metin */
-    var VURGU_EK = 800;       /* vurgulu ifade bu kadar fazla durur */
+    var GIRIS = 250;
+    var CIKIS = 300;
+    var CIKIS_ESKIME = 460;   /* 180ms cizgi + 280ms metin */
+    var VURGU_EK = 600;       /* vurgulu ifade bu kadar fazla durur */
 
     function tickerKur(root) {
       var katman = root.querySelector('[data-hv-ticker]');
@@ -633,7 +639,7 @@
         return;
       }
 
-      var bekleme = parseInt(katman.getAttribute('data-bekleme'), 10) || 1400;
+      var bekleme = parseInt(katman.getAttribute('data-bekleme'), 10) || 900;
       var sayac = new Sayac();
       root.hvSayac = sayac;
       var i = -1;
@@ -759,12 +765,12 @@
       "type": "range",
       "id": "ticker_bekleme",
       "label": "İfade bekleme süresi",
-      "info": "Vurgulu son ifade bundan 0,8 saniye daha uzun durur.",
-      "min": 0.8,
+      "info": "Vurgulu son ifade bundan 0,6 saniye daha uzun durur.",
+      "min": 0.4,
       "max": 3,
       "step": 0.1,
       "unit": "sn",
-      "default": 1.4
+      "default": 0.9
     },
     {
       "type": "color",
@@ -1285,7 +1291,7 @@
           "label": "Çıkış efekti",
           "default": "solma",
           "options": [
-            { "value": "solma", "label": "Solma — düşerek griye döner" },
+            { "value": "solma", "label": "Solma — yumuşakça kaybolur" },
             { "value": "buharlasma", "label": "Buharlaşma — yukarı uçup bulanıklaşır" },
             { "value": "eskime", "label": "Eskime — üstü çizilir, sonra silinir" },
             { "value": "vurgu", "label": "Vurgulu son ifade — yeşil, daha uzun durur" }
