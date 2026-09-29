@@ -1,0 +1,56 @@
+{
+  "type": "custom.tt_nasil_calisir",
+  "name": "Nasıl Çalışır? Butonu",
+  "sections": {
+    "tt_nasil_calisir": {
+      "type": "tt-nasil-calisir",
+      "name": "Nasıl çalışır? butonu",
+      "settings": {
+        "aktif": true,
+        "dugme_metin": "Nasıl çalışır?",
+        "dugme_aria": "Nasıl çalışır? Bilgi panelini aç",
+        "nabiz": true,
+        "yan_bosluk": 16,
+        "alt_bosluk": 20,
+        "dugme_zemin": "#16181D",
+        "dugme_cerceve": "#9FC4B0",
+        "dugme_yazi": "#FFFFFF",
+        "etiket_metin": "Zamana kilitli hediye",
+        "panel_baslik": "Nasıl çalışır?",
+        "panel_alt": "Merak ettiğin konuyu seç",
+        "kapat_etiket": "Kapat",
+        "kart1_baslik": "Couple Zaman Kapsülü nasıl çalışır?",
+        "kart1_alt": "2 ürün · Buluşunca açılır",
+        "kart1_url": "/pages/couple-daha-fazla-bilgi-al",
+        "kart1_ikon": "halkalar",
+        "kart2_baslik": "Single Zaman Kapsülü nasıl çalışır?",
+        "kart2_alt": "1 ürün · Belirlediğin tarihte açılır",
+        "kart2_url": "/pages/hediye-daha-fazla-bilgi-al",
+        "kart2_ikon": "takvim-kalp",
+        "kart3_baslik": "Couple ve Single farkı nedir?",
+        "kart3_alt": "Hangisi sana uygun, karşılaştır",
+        "kart3_url": "",
+        "kart3_ikon": "oklar",
+        "panel_zemin": "#F6F7F5",
+        "ortu_renk": "#0A0C0E",
+        "ortu_opaklik": 55,
+        "tutamac_renk": "#D0D3CF",
+        "etiket_zemin": "#E3EEE7",
+        "etiket_renk": "#3E5E4A",
+        "baslik_renk": "#111111",
+        "alt_renk": "#777777",
+        "kapat_zemin": "#E9EBE8",
+        "kart_zemin": "#FFFFFF",
+        "kart_kenar": "#E6E8E5",
+        "kart_ikon_zemin": "#E3EEE7",
+        "kart_ikon_renk": "#3E5E4A",
+        "kart_ok_zemin": "#F2F4F1",
+        "halka_1": "#3E5E4A",
+        "halka_2": "#7FAE95"
+      }
+    }
+  },
+  "order": [
+    "tt_nasil_calisir"
+  ]
+}
