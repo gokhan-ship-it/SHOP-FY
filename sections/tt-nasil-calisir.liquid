@@ -95,12 +95,38 @@
   endif
 -%}
 
+{%- comment -%}
+  KARSILASTIRMA BOLUMUNU BASTAN GIZLE.
+
+  Ucuncu kart, ayni bolum grubunun ikinci uyesi olan "Catal
+  Karsilastirma" bolumunu tam ekran aciyor. O bolum sayfaya normal
+  bir blok olarak basiliyor; katmana donusmesi JS ile oluyor. Arada
+  gorunmesin diye display kurali BURADA, kapinin DISINDA basiliyor:
+
+    - Kapinin icinde olsaydi butonun gizli oldugu sayfalarda kural
+      hic basilmaz, karsilastirma bolumu sayfanin altinda oldugu
+      gibi gorunurdu.
+    - Varlik dosyasinda olsaydi secici sabitlenirdi; secici ayardan
+      geliyor cunku bolum grubundaki anahtar degistirilebilir.
+
+  Acik hali de burada: ikisi ayni ozgullukte, ikincisi kazaniyor.
+  Varlik dosyasi display'e hic dokunmuyor.
+{%- endcomment -%}
+{%- if s.fark_secici != blank -%}
+  <style>
+    {{ s.fark_secici }} { display: none; }
+    body[data-tt-nc-fark] {{ s.fark_secici }} { display: block; }
+  </style>
+{%- endif -%}
+
 {%- if s.aktif and goster -%}
   {{ 'tt-nasil-calisir.css' | asset_url | stylesheet_tag }}
 
   <div
     class="tt-nc"
     data-tt-nc
+    data-tt-nc-fark-secici="{{ s.fark_secici | escape }}"
+    data-tt-nc-fark-etiket="{{ s.fark_kapat_etiket | default: s.kapat_etiket | escape }}"
     data-nabiz="{% if s.nabiz %}1{% else %}0{% endif %}"
     style="
       --tt-nc-zemin: {{ s.dugme_zemin }};
@@ -177,11 +203,18 @@
 
         {%- comment -%}
           KARTLAR. Ucu de ayni stilde; yalnizca ikon degisiyor.
-          Basligi ya da bagi bos olan kart hic basilmiyor -- ucuncu
-          kartin adresi girilene kadar yarim bir kart gorunmesin.
+
+          Ucuncu kart iki turlu calisabiliyor: bir sayfaya gitmek ya
+          da karsilastirma katmanini acmak. Katman secildiginde kart
+          <a> degil <button> oluyor -- gidilecek bir adres yok, bu
+          yuzden "baglanti bos" kurali da ona uygulanmiyor.
+
+          Kartin ici iki durumda birebir ayni; tek yerde kurulup
+          ikisine de basiliyor.
         {%- endcomment -%}
         {%- for i in (1..3) -%}
           {%- liquid
+            assign fark_kart = false
             case i
               when 1
                 assign k_bas = s.kart1_baslik
@@ -198,10 +231,22 @@
                 assign k_alt = s.kart3_alt
                 assign k_url = s.kart3_url
                 assign k_ikon = s.kart3_ikon
+                if s.kart3_eylem == 'fark'
+                  assign fark_kart = true
+                endif
             endcase
+
+            assign kart_ciz = false
+            if k_bas != blank
+              if fark_kart
+                assign kart_ciz = true
+              elsif k_url != blank
+                assign kart_ciz = true
+              endif
+            endif
           -%}
-          {%- if k_bas != blank and k_url != blank -%}
-            <a class="tt-nc-kart" href="{{ k_url }}">
+          {%- if kart_ciz -%}
+            {%- capture kart_ic -%}
               <span class="tt-nc-kart-ikon" aria-hidden="true">
                 {%- render 'tt-nc-ikon', ad: k_ikon -%}
               </span>
@@ -214,7 +259,16 @@
               <span class="tt-nc-kart-ok" aria-hidden="true">
                 {%- render 'tt-nc-ikon', ad: 'ok' -%}
               </span>
-            </a>
+            {%- endcapture -%}
+            {%- if fark_kart -%}
+              <button type="button" class="tt-nc-kart" data-tt-nc-fark aria-haspopup="dialog">
+                {{- kart_ic -}}
+              </button>
+            {%- else -%}
+              <a class="tt-nc-kart" href="{{ k_url }}">
+                {{- kart_ic -}}
+              </a>
+            {%- endif -%}
           {%- endif -%}
         {%- endfor -%}
       </div>
@@ -284,10 +338,15 @@
       ] },
 
     { "type": "header", "content": "3. kart" },
-    { "type": "paragraph", "content": "Bağlantı girilene kadar bu kart görünmez." },
+    { "type": "paragraph", "content": "Bu kart karşılaştırma ekranını açar. \"Bağlantıya git\" seçilirse bunun yerine bir sayfaya gider ve bağlantı girilene kadar görünmez." },
     { "type": "text", "id": "kart3_baslik", "label": "Başlık", "default": "Couple ve Single farkı nedir?" },
     { "type": "text", "id": "kart3_alt", "label": "Açıklama", "default": "Hangisi sana uygun, karşılaştır" },
-    { "type": "url", "id": "kart3_url", "label": "Bağlantı" },
+    { "type": "select", "id": "kart3_eylem", "label": "Tıklanınca", "default": "fark",
+      "options": [
+        { "value": "fark", "label": "Karşılaştırma ekranını aç" },
+        { "value": "bag", "label": "Bağlantıya git" }
+      ] },
+    { "type": "url", "id": "kart3_url", "label": "Bağlantı", "info": "Yalnızca \"Bağlantıya git\" seçiliyken kullanılır." },
     { "type": "select", "id": "kart3_ikon", "label": "İkon", "default": "oklar",
       "options": [
         { "value": "halkalar", "label": "İç içe iki halka (couple)" },
@@ -296,6 +355,12 @@
         { "value": "kilit", "label": "Kilit" },
         { "value": "parilti", "label": "Parıltı" }
       ] },
+
+    { "type": "header", "content": "Karşılaştırma ekranı" },
+    { "type": "paragraph", "content": "İçeriği bu bölümde değil, hemen altındaki \"Çatal Karşılaştırma\" bölümünde düzenlenir. Orası sayfada normalde görünmez; yalnızca 3. karta basılınca tam ekran açılır." },
+    { "type": "text", "id": "fark_secici", "label": "Karşılaştırma bölümünün CSS seçicisi", "default": "[id$=\"tt_nc_fark\"]",
+      "info": "Bölüm grubundaki anahtarı değiştirmediyseniz bu değere dokunmayın. Boş bırakılırsa 3. kart hiç görünmez." },
+    { "type": "text", "id": "fark_kapat_etiket", "label": "Kapat butonu (ekran okuyucu)", "default": "Karşılaştırmayı kapat" },
 
     { "type": "header", "content": "Panel renkleri" },
     { "type": "color", "id": "panel_zemin", "label": "Panel zemini", "default": "#F6F7F5" },

@@ -250,6 +250,23 @@ body[data-tt-nc-acik] .tt-nc-dugme { opacity: 0; pointer-events: none; }
   text-decoration: none;
   transition: border-color 160ms ease, transform 140ms ease;
 }
+/* Ucuncu kart bir sayfaya gitmiyor, karsilastirma katmanini aciyor;
+   bu yuzden <a> degil <button>. Tarayici varsayilanlari (ortalanmis
+   yazi, kendi yazi tipi, tam genislik olmamasi) temizleniyor ki
+   digerlerinden ayirt edilemesin. */
+button.tt-nc-kart {
+  width: 100%;
+  margin: 0;
+  font: inherit;
+  text-align: left;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+/* display: flex, [hidden] niteliginin tarayici varsayilanini
+   eziyordu; karsilastirma bolumu sayfada olmadiginda JS'in gizledigi
+   3. kart yine gorunuyordu. */
+.tt-nc-kart[hidden] { display: none; }
 .tt-nc-kart + .tt-nc-kart { margin-top: 10px; }
 .tt-nc-kart:hover { border-color: var(--tt-nc-cerceve); }
 .tt-nc-kart:active { transform: scale(.98); }
@@ -320,10 +337,83 @@ body[data-tt-nc-acik] .tt-nc-dugme { opacity: 0; pointer-events: none; }
   }
 }
 
+/* ==================================================================
+   KARSILASTIRMA KATMANI  (3. kart)
+
+   Ucuncu kart "Catal Karsilastirma" bolumunu tam ekran acar. O bolum
+   BURAYA KOPYALANMADI: ayni bolum grubunun ikinci uyesi olarak bir
+   kez basiliyor, kendi 35 ayariyla tema duzenleyicide duruyor ve
+   burada yalnizca konumlandiriliyor. Boylece metinler/gorseller tek
+   yerde kaliyor.
+
+   display: none / block bolumun KENDI <style> etiketinde, cunku
+   seciciyi ayardan aliyor (bkz. sections/tt-nasil-calisir.liquid).
+   Bu dosya yalnizca konum ve gorunum veriyor -- display'e hic
+   dokunmuyor ki oradaki kural bozulmasin.
+   ================================================================== */
+.tt-nc-fark-kat {
+  position: fixed;
+  inset: 0;
+  z-index: 61;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* Katmanin KENDI kaydirma cubugu icerigi yana kaydiriyordu;
+     masaustunde ortalanmis kart birkac piksel sola kaciyordu. */
+  scrollbar-gutter: stable both-edges;
+  /* Icerik ekrandan kisa kalirsa arkadaki sayfa gorunmesin. Bolumun
+     kendi zemini bunun uzerine biniyor. Degisken yerine duz deger:
+     --tt-nc-* degiskenleri butonun kok ogesinde tanimli, bu katman
+     ise bolum grubunun BASKA bir uyesi, yani mirasi almiyor. */
+  background: rgba(10, 12, 14, .92);
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+body[data-tt-nc-fark="acik"] .tt-nc-fark-kat { opacity: 1; }
+
+/* Kapat dugmesi JS ile ekleniyor: katman acilmadan once sayfada
+   gorunur bir dugme birakmamak icin. JS yoksa katman zaten hic
+   acilmiyor, yani kapatilamayan bir sey de olusmuyor. */
+.tt-nc-fark-kapat {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .14);
+  color: #FFFFFF;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.tt-nc-fark-kapat .tt-nc-ikon { width: 18px; height: 18px; }
+.tt-nc-fark-kapat:hover { background: rgba(255, 255, 255, .24); }
+.tt-nc-fark-kapat:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+
+/* Masaustunde ortada duran bir kart; mobilde tam ekran kaliyor.
+   Katmanin tek cocuk <div>'i bolumun kendi kok ogesi. */
+@media (min-width: 768px) {
+  .tt-nc-fark-kat { padding: 24px 16px; }
+  .tt-nc-fark-kat > div {
+    max-width: 720px;
+    margin: 0 auto;
+    border-radius: 26px;
+    overflow: hidden;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tt-nc-dugme-ikon::after { animation: none; opacity: 0; }
   .tt-nc-dugme,
   .tt-nc-kart,
   .tt-nc-ortu,
+  .tt-nc-fark-kat,
   .tt-nc-panel { transition: none; }
 }

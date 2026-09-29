@@ -34,8 +34,11 @@
         "kart2_ikon": "takvim-kalp",
         "kart3_baslik": "Couple ve Single farkı nedir?",
         "kart3_alt": "Hangisi sana uygun, karşılaştır",
+        "kart3_eylem": "fark",
         "kart3_url": "",
         "kart3_ikon": "oklar",
+        "fark_secici": "[id$=\"tt_nc_fark\"]",
+        "fark_kapat_etiket": "Karşılaştırmayı kapat",
         "panel_zemin": "#F6F7F5",
         "ortu_renk": "#0A0C0E",
         "ortu_opaklik": 55,
@@ -53,9 +56,40 @@
         "halka_1": "#3E5E4A",
         "halka_2": "#7FAE95"
       }
+    },
+    "tt_nc_fark": {
+      "type": "tt-catal-karsilastirma",
+      "name": "Çatal Karşılaştırma (panel)",
+      "settings": {
+        "heading": "Bir fikir iki farklı deneyim.",
+        "subheading": "Sana en uygun kapsül türünü seç.",
+        "label_a": "Hediye et",
+        "image_a": "shopify://shop_images/yeni_site2.png",
+        "name_a": "Single Kapsül",
+        "btn_a_label": "Single'ı seç",
+        "btn_a_link": "https://texttonext.com/pages/hediye-daha-fazla-bilgi-al",
+        "label_b": "Birlikte kullan",
+        "image_b": "shopify://shop_images/yeni_site.png",
+        "name_b": "Couple Kapsül",
+        "btn_b_label": "Couple'ı seç",
+        "btn_b_link": "https://texttonext.com/pages/couple-daha-fazla-bilgi-al",
+        "q1": "Kutuda kaç kapsül var?",
+        "a1_a": "1 kapsül",
+        "a1_b": "2 kapsül",
+        "q2": "İçeriği kim yükler?",
+        "a2_a": "Sen",
+        "a2_b": "İkiniz",
+        "q3": "Ne zaman açılır?",
+        "a3_a": "Belirlediğin tarihte",
+        "a3_b": "Yan yana geldiğinizde",
+        "q4": "Nasıl tekrar kilitlenir?",
+        "a4_a": "Sen kilitlersin",
+        "a4_b": "Uzaklaşınca kendi kilitlenir"
+      }
     }
   },
   "order": [
-    "tt_nasil_calisir"
+    "tt_nasil_calisir",
+    "tt_nc_fark"
   ]
 }

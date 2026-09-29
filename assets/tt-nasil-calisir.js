@@ -28,12 +28,16 @@
   var ESIK = 90;          /* bu kadar asagi cekilince kapaniyor */
   var BASLA = 6;          /* surukleme bu kadar hareketten sonra baslar */
 
-  /* ---- sayfa kaydirma kilidi ---- */
+  /* ---- sayfa kaydirma kilidi ----
+     SAYAC, bayrak degil: panelden karsilastirma katmanina gecerken
+     ikisi kisa bir sure ayni anda aciktir (panelin kapanis gecisi
+     surerken katman aciliyor). Bayrak olsaydi panelin kapanisi
+     katmanin kilidini de cozer, arkadaki sayfa kayardi. */
   var kilitY = 0;
-  var kilitli = false;
+  var kilitSay = 0;
   function kilitle() {
-    if (kilitli) return;
-    kilitli = true;
+    kilitSay++;
+    if (kilitSay > 1) return;
     kilitY = window.pageYOffset || document.documentElement.scrollTop || 0;
     var b = document.body;
     b.style.position = 'fixed';
@@ -43,8 +47,9 @@
     b.style.width = '100%';
   }
   function coz() {
-    if (!kilitli) return;
-    kilitli = false;
+    if (kilitSay === 0) return;
+    kilitSay--;
+    if (kilitSay > 0) return;
     var b = document.body;
     b.style.position = '';
     b.style.top = '';
@@ -56,6 +61,120 @@
 
   function mobilMi() {
     return !window.matchMedia || window.matchMedia('(max-width: 767px)').matches;
+  }
+
+  /* ------------------------------------------------------------------
+     KARSILASTIRMA KATMANI
+
+     Ucuncu kart "Catal Karsilastirma" bolumunu tam ekran aciyor. O
+     bolum bu bolumun ICINDE degil: ayni bolum grubunun ikinci uyesi,
+     yani DOM'da ayri bir kardes. Tasinmiyor, kopyalanmiyor -- oldugu
+     yerde position: fixed'e aliniyor. Tasima denenmedi bilerek: bu
+     temada bir bolumu JS ile tasimak daha once sessiz kayiplara yol
+     acti.
+
+     <dialog> kullanilamiyor (oge bizim degil), o yuzden showModal()
+     ile bedava gelen uc sey elle kuruluyor: rol, odak tuzagi, ESC.
+     ------------------------------------------------------------------ */
+  var farkKok = null;      /* katman ogesi */
+  var farkAcan = null;     /* katmani acan kart; kapanista odak ona doner */
+  var farkKapatDugme = null;
+
+  var ODAKLANIR = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+  function farkBul(secici) {
+    if (farkKok || !secici) return farkKok;
+    try {
+      farkKok = document.querySelector(secici);
+    } catch (e) {
+      farkKok = null;
+    }
+    if (!farkKok) return null;
+
+    farkKok.classList.add('tt-nc-fark-kat');
+    farkKok.setAttribute('role', 'dialog');
+    farkKok.setAttribute('aria-modal', 'true');
+    farkKok.setAttribute('tabindex', '-1');
+    return farkKok;
+  }
+
+  function farkKapatKur(etiket, ikon) {
+    if (farkKapatDugme) return;
+    farkKapatDugme = document.createElement('button');
+    farkKapatDugme.type = 'button';
+    farkKapatDugme.className = 'tt-nc-fark-kapat';
+    farkKapatDugme.setAttribute('aria-label', etiket || 'Kapat');
+    farkKapatDugme.innerHTML = ikon || '&times;';
+    farkKapatDugme.addEventListener('click', farkKapat);
+    farkKok.appendChild(farkKapatDugme);
+  }
+
+  function farkTus(e) {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+      e.preventDefault();
+      farkKapat();
+      return;
+    }
+    if (e.key !== 'Tab' && e.keyCode !== 9) return;
+    var liste = farkKok.querySelectorAll(ODAKLANIR);
+    if (!liste.length) { e.preventDefault(); return; }
+    var ilk = liste[0];
+    var son = liste[liste.length - 1];
+    if (e.shiftKey && (document.activeElement === ilk || document.activeElement === farkKok)) {
+      e.preventDefault();
+      son.focus();
+    } else if (!e.shiftKey && document.activeElement === son) {
+      e.preventDefault();
+      ilk.focus();
+    }
+  }
+
+  function farkAc(acan) {
+    if (!farkKok || document.body.getAttribute('data-tt-nc-fark')) return;
+    farkAcan = acan || null;
+    /* display'i once acik yaz, gecisi bir sonraki karede baslat:
+       ayni karede yazilirsa tarayici gecisi atliyor. */
+    document.body.setAttribute('data-tt-nc-fark', 'hazir');
+    kilitle();
+    document.addEventListener('keydown', farkTus, true);
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () {
+        document.body.setAttribute('data-tt-nc-fark', 'acik');
+        farkKok.scrollTop = 0;
+        farkOdak();
+      });
+    });
+    /* Odak IKI kez veriliyor. Katman panelden aciliyorsa panelin
+       <dialog>'u GECIS ms sonra close() ediliyor; close() odagi
+       kendiliginden dialog'u acan ogeye geri veriyor ve buradaki
+       odagi calardi. Ikinci deneme o andan sonra. */
+    window.setTimeout(function () {
+      if (document.body.getAttribute('data-tt-nc-fark') === 'acik') farkOdak();
+    }, GECIS + 40);
+  }
+
+  function farkOdak() {
+    var hedef = farkKapatDugme || farkKok;
+    /* Kullanici bu arada katmanin icinde baska bir yere gectiyse
+       odagi geri almiyoruz. */
+    if (!hedef || (farkKok && farkKok.contains(document.activeElement))) return;
+    try { hedef.focus({ preventScroll: true }); } catch (e) { hedef.focus(); }
+  }
+
+  function farkKapat() {
+    if (!farkKok || !document.body.getAttribute('data-tt-nc-fark')) return;
+    document.body.setAttribute('data-tt-nc-fark', 'hazir');
+    document.removeEventListener('keydown', farkTus, true);
+    window.setTimeout(function () {
+      /* Arada yeniden acilmissa kapatma. */
+      if (document.body.getAttribute('data-tt-nc-fark') !== 'hazir') return;
+      document.body.removeAttribute('data-tt-nc-fark');
+      coz();
+      if (farkAcan) {
+        try { farkAcan.focus({ preventScroll: true }); } catch (e) { farkAcan.focus(); }
+        farkAcan = null;
+      }
+    }, GECIS);
   }
 
   function kur(kok) {
@@ -82,7 +201,9 @@
       });
     }
 
-    function kapat() {
+    /* odakVerme: panelden karsilastirma katmanina geciliyorsa odak
+       butona DONMEMELI -- odak artik katmanda. */
+    function kapat(odakVerme) {
       if (!kat.open) return;
       kat.removeAttribute('data-acik');
       if (panel) { panel.style.transform = ''; panel.removeAttribute('data-suruklu'); }
@@ -92,6 +213,7 @@
         else kat.removeAttribute('open');
         coz();
         document.body.removeAttribute('data-tt-nc-acik');
+        if (odakVerme === true) return;
         try { dugme.focus({ preventScroll: true }); } catch (e) { dugme.focus(); }
       }, GECIS);
     }
@@ -100,6 +222,30 @@
     kat.addEventListener('click', function (e) {
       if (e.target.closest('[data-tt-nc-kapat]')) kapat();
     });
+
+    /* ---- 3. kart: karsilastirma katmani ---- */
+    var farkKart = kat.querySelector('[data-tt-nc-fark]');
+    if (farkKart) {
+      var bulundu = farkBul(kok.getAttribute('data-tt-nc-fark-secici'));
+      if (!bulundu) {
+        /* Bolum sayfada yoksa kart hicbir yere gitmez -- gosterilmiyor.
+           Yarim bir kart birakmaktansa hic olmasin. */
+        farkKart.hidden = true;
+      } else {
+        var kapatIkon = kok.querySelector('.tt-nc-kapat');
+        farkKapatKur(
+          kok.getAttribute('data-tt-nc-fark-etiket'),
+          kapatIkon ? kapatIkon.innerHTML : ''
+        );
+        /* Katman kapaninca odak panelin icindeki karta degil, sabit
+           butona doner: panel o sirada kapali, icindeki oge odak
+           alamaz. */
+        farkKart.addEventListener('click', function () {
+          kapat(true);
+          farkAc(dugme);
+        });
+      }
+    }
     /* ESC: varsayilan davranis dialog'u ANINDA kapatirdi, gecis
        gorunmezdi. Iptal edilip kendi kapanisimiz calistiriliyor. */
     kat.addEventListener('cancel', function (e) { e.preventDefault(); kapat(); });
