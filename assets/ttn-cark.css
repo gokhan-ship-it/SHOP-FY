@@ -49,7 +49,14 @@
    kendi genisligi ve YAN boslugu gecerli; kart yalnizca yatay
    sinirlarini birakiyor, yoksa ici ice iki kap olusuyordu. Dikey
    bosluk kartin kendi ayarindan gelmeye devam ediyor. */
-.ttn-cark[data-ttn-tasindi] {
+.ttn-cark[data-ttn-tasindi],
+/* Secim bolumunun ICINDE basilan kart (snippets/ttn-cark-kart.liquid,
+   sections/tt-secim-kartlari.liquid'den). Tasinmis kartla ayni durum:
+   kap (.tt-sc-ic) kendi yan boslugunu ve genisligini zaten veriyor.
+   Ayri bir kural gerekiyor cunku [data-ttn-tasindi] yalnizca TASIMA
+   scripti tarafindan yaziliyor; burada tasima yok, kart dogrudan
+   markupun icinde. */
+.tt-sc .ttn-cark {
   max-width: none;
   padding-left: 0;
   padding-right: 0;
