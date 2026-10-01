@@ -319,18 +319,13 @@
       outline: 2px solid var(--tt-sc-yesil);
       outline-offset: 2px;
     }
-    #shopify-section-{{ sid }} .tt-sc-setkart-gorsel {
-      position: relative;
-      display: block;
-      aspect-ratio: 1 / 1;
-      background: #f4f5f6;
-    }
-    #shopify-section-{{ sid }} .tt-sc-setkart-img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    {%- comment -%}
+      Gorsel alani, serit, kareler ve noktalar KOLEKSIYON KARTININ
+      siniflarini kullaniyor (.tt-uk-gorsel / -serit / -kare / -img /
+      -noktalar). Burada o kurallarin kopyasi YOK: assets/tt-uk-kart.css
+      zaten bu bolumde yukleniyor ve tek kaynak kalmasi, iki kart
+      turunun ileride ayrisma ihtimalini bastan kapatiyor.
+    {%- endcomment -%}
     #shopify-section-{{ sid }} .tt-sc-setkart-rozet {
       position: absolute;
       top: 8px;
@@ -343,9 +338,15 @@
       font-weight: 600;
       line-height: 1.2;
     }
+    {%- comment -%}
+      "Tukendi" SAG USTTE: sol altta nokta gostergesi var, alta
+      yaslansaydi uzerine binerdi.
+    {%- endcomment -%}
     #shopify-section-{{ sid }} .tt-sc-setkart-tukendi {
       position: absolute;
-      inset: auto 8px 8px;
+      top: 8px;
+      right: 8px;
+      z-index: 2;
       padding: 4px 8px;
       border-radius: 8px;
       background: rgba(21, 23, 28, 0.86);
@@ -366,12 +367,56 @@
       line-height: 1.3;
       color: var(--tt-sc-koyu);
     }
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyatlar {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    {%- comment -%}
+      Fiyat satiri "price" sinifini da tasiyor (cark katmani onu
+      ariyor). Temanin .price kurallarini ezmek icin ek bir numaraya
+      gerek yok: #shopify-section-... kapsami zaten ozgullukte onde.
+    {%- endcomment -%}
     #shopify-section-{{ sid }} .tt-sc-setkart-fiyat {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      margin: 0;
+      color: var(--tt-sc-koyu);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-kisi {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-kisi-et {
+      font-size: 11px;
+      line-height: 1.2;
+      color: var(--tt-sc-gri);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-set {
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
+      gap: 5px;
+      margin-top: 3px;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.25;
+      color: var(--tt-sc-gri);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-set .tt-sc-setkart-satis {
+      font-weight: 600;
+      color: var(--tt-sc-koyu);
+    }
+    {%- comment -%}
+      Kisi basi kapaliyken set toplami kartin ANA fiyati; o zaman
+      buyuk ve koyu yaziliyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-set--ana {
+      margin-top: 0;
       gap: 6px;
-      margin: 0;
       font-size: 14px;
       font-weight: 600;
       color: var(--tt-sc-koyu);
@@ -380,6 +425,62 @@
       font-size: 12px;
       font-weight: 400;
       color: var(--tt-sc-gri);
+    }
+
+    {%- comment -%}
+      SERIT GEZINTI CUBUGU
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setler-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-nav[hidden] { display: none; }
+    #shopify-section-{{ sid }} .tt-sc-setler-ok {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid var(--tt-sc-kenar);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--tt-sc-koyu);
+      cursor: pointer;
+      transition: border-color 160ms ease, opacity 160ms ease;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-ok:hover:not(:disabled) {
+      border-color: var(--tt-sc-halka-yesil);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-ok:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-ok svg { width: 16px; height: 16px; }
+    #shopify-section-{{ sid }} .tt-sc-setler-nokta {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-nokta i {
+      display: block;
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--tt-sc-kenar);
+      transition: width 160ms ease, background-color 160ms ease;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-nokta i[data-sc-aktif] {
+      width: 16px;
+      background: var(--tt-sc-yesil);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ sid }} .tt-sc-setler-ok,
+      #shopify-section-{{ sid }} .tt-sc-setler-nokta i { transition: none; }
     }
     @media (prefers-reduced-motion: reduce) {
       #shopify-section-{{ sid }} .tt-sc-setkart { transition: none; }
@@ -705,18 +806,94 @@
                 endcomment
                 assign srozet = s.setler_rozet
               -%}
-              <a class="tt-sc-setkart" href="{{ sp.url }}">
-                <span class="tt-sc-setkart-gorsel">
-                  {%- if sp.featured_media -%}
-                    {{ sp.featured_media | image_url: width: 600 | image_tag:
-                         loading: 'lazy',
-                         width: 600,
-                         height: 600,
-                         sizes: '(min-width: 1024px) 320px, 45vw',
-                         widths: '200,300,400,600',
-                         alt: salt,
-                         class: 'tt-sc-setkart-img',
-                         draggable: 'false' }}
+              {%- comment -%}
+                TOPLAM (= SEPETE GIDECEK TUTAR) TEK YERDE KURULUYOR.
+                Iki gorunumde de AYNI dize basiliyor; kisi basi acikken
+                altta kucuk, kapaliyken basta buyuk. Boylece ekranda
+                gosterilen set tutari ile sepete gidecek tutar
+                arasinda ikinci bir hesap yolu olusmuyor.
+              {%- endcomment -%}
+              {%- capture stoplam -%}
+                {%- if sp.price_varies -%}
+                  {%- comment -%}
+                    Filtre zincirinde ic ice filtre yazilamiyor:
+                    once bicimlendirip sonra yerlestiriyoruz.
+                    (Ayni not tt-uk-kart.liquid'de de var.)
+                  {%- endcomment -%}
+                  {%- assign staban = sp.price_min | money -%}
+                  <span class="tt-sc-setkart-satis">{{ s.uk_baslangic | replace: '[FIYAT]', staban }}</span>
+                {%- else -%}
+                  <span class="tt-sc-setkart-satis">{{ sp.price | money }}</span>
+                  {%- if sv.compare_at_price > sv.price -%}
+                    <s class="tt-sc-setkart-eski">{{ sv.compare_at_price | money }}</s>
+                  {%- endif -%}
+                {%- endif -%}
+              {%- endcapture -%}
+
+              {%- comment -%}
+                KART KOKU .tt-uk SINIFINI DA TASIYOR.
+
+                Galeri davranisi assets/tt-uk-kart.js'te ve o dosya
+                nokta gostergesini ararken serit.closest('.tt-uk')
+                diyor; gorselleri geciktirip yukleyen gozlemci de ayni
+                koke bakiyor. Sinifi eklemek, o dosyayi hic degistirmeden
+                koleksiyon kartlarindaki galerinin AYNISINI veriyor --
+                ikinci bir galeri kodu yazmaya gerek kalmiyor.
+
+                .tt-uk kuralari zaten bu kartin kurdugunun ayni
+                (position: relative, flex sutun, overflow hidden, ayni
+                kose yaricapi); ustune yazdigimiz her sey
+                #shopify-section-... kapsaminda oldugu icin
+                ozgullukte onde. ::after cercevesi [data-sc-secili]
+                olmadan saydam, yani burada gorunmuyor.
+
+                Kareler <a> ILE SARILMIYOR: kartin kendisi zaten bir
+                baglanti, ic ice <a> gecersiz olurdu. Gorsele basmak
+                yine karti aciyor; kaydirma ile dokunmayi tt-uk-kart.js
+                ayiriyor.
+              {%- endcomment -%}
+              {%- assign sgorseller = sp.media | where: 'media_type', 'image' -%}
+              <a class="tt-sc-setkart tt-uk" href="{{ sp.url }}">
+                <span class="tt-uk-gorsel">
+                  {%- if sgorseller.size > 0 -%}
+                    <span class="tt-uk-serit" data-uk-serit{% if sgorseller.size < 2 %} data-uk-tek{% endif %}>
+                      {%- for sm in sgorseller limit: s.setler_gorsel_sayisi -%}
+                        <span class="tt-uk-kare">
+                          {%- if forloop.first -%}
+                            {{ sm | image_url: width: 600 | image_tag:
+                                 loading: 'lazy',
+                                 width: 600,
+                                 height: 600,
+                                 sizes: '(min-width: 1024px) 320px, 45vw',
+                                 widths: '200,300,400,600',
+                                 alt: salt,
+                                 class: 'tt-uk-img',
+                                 draggable: 'false' }}
+                          {%- else -%}
+                            {%- comment -%}
+                              Ilk kareden sonrakiler ancak kart gorus
+                              alanina yaklasinca iniyor: serit altinci
+                              sete kadar uzayabiliyor ve hepsini bastan
+                              indirmek ilk boyamayi gereksiz yere
+                              agirlastirirdi. Acma isini tt-uk-kart.js
+                              yapiyor (data-uk-src / data-uk-srcset).
+                            {%- endcomment -%}
+                            <img class="tt-uk-img" draggable="false" alt="{{ salt | escape }}"
+                                 width="600" height="600" loading="lazy" decoding="async"
+                                 data-uk-src="{{ sm | image_url: width: 600 }}"
+                                 data-uk-srcset="{{ sm | image_url: width: 200 }} 200w, {{ sm | image_url: width: 300 }} 300w, {{ sm | image_url: width: 400 }} 400w, {{ sm | image_url: width: 600 }} 600w"
+                                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3C/svg%3E">
+                          {%- endif -%}
+                        </span>
+                      {%- endfor -%}
+                    </span>
+                    {%- if sgorseller.size > 1 -%}
+                      <span class="tt-uk-noktalar" data-uk-noktalar aria-hidden="true">
+                        {%- for sm in sgorseller limit: s.setler_gorsel_sayisi -%}
+                          <i{% if forloop.first %} data-uk-aktif{% endif %}></i>
+                        {%- endfor -%}
+                      </span>
+                    {%- endif -%}
                   {%- endif -%}
                   {%- if srozet != blank -%}
                     <span class="tt-sc-setkart-rozet">{{ srozet }}</span>
@@ -728,26 +905,109 @@
 
                 <span class="tt-sc-setkart-metin">
                   <span class="tt-sc-setkart-ad">{{ sad }}</span>
-                  <span class="tt-sc-setkart-fiyat">
-                    {%- if sp.price_varies -%}
-                      {%- comment -%}
-                        Filtre zincirinde ic ice filtre yazilamiyor:
-                        once bicimlendirip sonra yerlestiriyoruz.
-                        (Ayni not tt-uk-kart.liquid'de de var.)
-                      {%- endcomment -%}
-                      {%- assign staban = sp.price_min | money -%}
-                      <span class="tt-sc-setkart-satis">{{ s.uk_baslangic | replace: '[FIYAT]', staban }}</span>
-                    {%- else -%}
-                      <span class="tt-sc-setkart-satis">{{ sp.price | money }}</span>
-                      {%- if sv.compare_at_price > sv.price -%}
-                        <s class="tt-sc-setkart-eski">{{ sv.compare_at_price | money }}</s>
+
+                  {%- comment -%}
+                    FIYAT SATIRI + CARK INDIRIM BLOGU
+
+                    Blok ile fiyat satiri KARDES olmak zorunda ve fiyat
+                    satiri "price" sinifini tasimak zorunda:
+                    assets/taksit-tablosu.js kodu gecerliyken blogu
+                    aciyor ve AYNI EBEVEYNDEKI .price ogesini gizliyor
+                    (kolCiz(), :905). Bu iki kosul eksikti, hazir set
+                    kartlarinda cark indirimi hic gorunmuyordu.
+
+                    Tutari snippet Liquid'de settings.tt_indirim_tutar'dan
+                    hesapliyor -- koleksiyon kartlariyla, taksit modaliyla
+                    ve yapiskan cubukla ayni tek kaynak. Burada yeni bir
+                    indirim hesabi yok; yalnizca mevcut katmanin aradigi
+                    yapi kuruluyor.
+                  {%- endcomment -%}
+                  <span class="tt-sc-setkart-fiyatlar">
+                    <span class="price tt-sc-setkart-fiyat">
+                      {%- if s.setler_kisi_goster -%}
+                        {%- comment -%}
+                          KISI BASI TUTAR TUREV BIR RAKAM.
+                          Set iki urun iceriyor, bu satir set tutarinin
+                          yarisi. Sepete giden tutar bu DEGIL; o yuzden
+                          hemen altinda set toplami her zaman yaziyor ve
+                          bu satir etiketiyle birlikte cikiyor.
+                          Fiyatlar kurus cinsinden tam sayi ve hep 00 ile
+                          bittigi icin ikiye bolme tam, yuvarlama yok.
+                        {%- endcomment -%}
+                        {%- if sp.price_varies -%}
+                          {%- assign skisi_kurus = sp.price_min | divided_by: 2 -%}
+                        {%- else -%}
+                          {%- assign skisi_kurus = sp.price | divided_by: 2 -%}
+                        {%- endif -%}
+                        {%- assign skisi = skisi_kurus | money -%}
+                        <span class="tt-sc-setkart-kisi">
+                          {%- if sp.price_varies -%}
+                            {{- s.uk_baslangic | replace: '[FIYAT]', skisi -}}
+                          {%- else -%}
+                            {{- skisi -}}
+                          {%- endif -%}
+                        </span>
+                        {%- if s.setler_kisi_etiket != blank -%}
+                          <span class="tt-sc-setkart-kisi-et">{{ s.setler_kisi_etiket }}</span>
+                        {%- endif -%}
+                        <span class="tt-sc-setkart-set">
+                          {%- if s.setler_set_etiket != blank -%}
+                            <span class="tt-sc-setkart-set-et">{{ s.setler_set_etiket }}</span>
+                          {%- endif -%}
+                          {{ stoplam }}
+                        </span>
+                      {%- else -%}
+                        <span class="tt-sc-setkart-set tt-sc-setkart-set--ana">{{ stoplam }}</span>
                       {%- endif -%}
-                    {%- endif -%}
+                    </span>
+                    {%- render 'tt-kart-taksit', product: sp -%}
                   </span>
                 </span>
               </a>
             {%- endfor -%}
           </div>
+
+          {%- comment -%}
+            SERIT GEZINTISI -- OKLAR + NOKTALAR
+
+            Serit tek basina yeterli degildi: kartin icindeki galeri de
+            yatayda kayiyor ve overscroll-behavior: contain yuzunden
+            gorselin uzerinden yapilan kaydirma SERIDE GECMIYOR. Yani
+            gorsel alanindan seridi surukleyemiyorsun. Oklar bu yuzden
+            susleme degil, tek guvenilir gezinme yolu.
+
+            Noktalar ayrica "sagda daha var" bilgisini veriyor; serit
+            kaydirilamayacak kadar kisaysa (kartlar zaten sigiyorsa)
+            cubugun tamami gizleniyor. Gizleme JS'te, cunku karar
+            olcuye bagli; ilk hal GIZLI, yani sigan listede cubuk bir
+            an gorunup kaybolmuyor.
+
+            Noktalar Liquid'de basiliyor, JS uretmiyor: sayi bastan
+            belli ve markup tek yerde kaliyor.
+          {%- endcomment -%}
+          {%- if s.setler_nav_goster -%}
+            <div class="tt-sc-setler-nav" data-sc-setler-nav hidden>
+              <button type="button" class="tt-sc-setler-ok" data-sc-setler-ok="-1"
+                      aria-label="{{ s.setler_onceki | escape }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                  <path d="M14.5 5.5 8 12l6.5 6.5"/>
+                </svg>
+              </button>
+              <span class="tt-sc-setler-nokta" data-sc-setler-nokta aria-hidden="true">
+                {%- for sp in setler_kol.products limit: s.setler_adet -%}
+                  <i{% if forloop.first %} data-sc-aktif{% endif %}></i>
+                {%- endfor -%}
+              </span>
+              <button type="button" class="tt-sc-setler-ok" data-sc-setler-ok="1"
+                      aria-label="{{ s.setler_sonraki | escape }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                  <path d="M9.5 5.5 16 12l-6.5 6.5"/>
+                </svg>
+              </button>
+            </div>
+          {%- endif -%}
         </div>
       {%- endif -%}
 
@@ -1095,6 +1355,9 @@
 
   <script src="{{ 'tt-uk-kart.js' | asset_url }}" defer></script>
   <script src="{{ 'tt-secim-kartlari.js' | asset_url }}" defer></script>
+  {%- if s.setler_goster and s.setler_nav_goster -%}
+    <script src="{{ 'tt-sc-setler.js' | asset_url }}" defer></script>
+  {%- endif -%}
 {%- endif -%}
 
 {% schema %}
@@ -1219,6 +1482,19 @@
     { "type": "range", "id": "setler_sutun_d", "label": "Görünen kart — masaüstü", "min": 2, "max": 5, "step": 1, "default": 3 },
     { "type": "range", "id": "setler_goz", "label": "Göz ucu", "min": 0, "max": 48, "step": 2, "unit": "px", "default": 18,
       "info": "Sonraki kartın kenarından görünen pay. Şeridin kaydırılabildiğini bu anlatıyor. Yalnızca şerit açıkken geçerli." },
+    { "type": "checkbox", "id": "setler_nav_goster", "label": "Şeridin altına ok ve nokta koy", "default": true,
+      "info": "Kartın içindeki görsel galerisi de yanlara kayıyor; görselin üstünden yapılan kaydırma şeride geçmediği için şeridi okla çevirmek gerekiyor. Kapatmanız önerilmez. Kartlar zaten sıraya sığıyorsa çubuk kendiliğinden çıkmaz." },
+    { "type": "text", "id": "setler_onceki", "label": "Geri oku (ekran okuyucu)", "default": "Önceki setler" },
+    { "type": "text", "id": "setler_sonraki", "label": "İleri oku (ekran okuyucu)", "default": "Sonraki setler" },
+    { "type": "range", "id": "setler_gorsel_sayisi", "label": "Kart başına görsel sayısı", "min": 1, "max": 6, "step": 1, "default": 3,
+      "info": "Kartın içinde parmakla kaydırılabilen galeri. Ürünün Shopify'daki medya sırasını takip eder." },
+
+    { "type": "checkbox", "id": "setler_kisi_goster", "label": "Kişi başı fiyatı göster", "default": true,
+      "info": "Set tutarının ikiye bölünmüşü büyük yazılır, set toplamı hemen altında kalır. Sepete giden tutar her zaman set toplamıdır; kişi başı rakam sadece bilgi amaçlıdır, bu yüzden etiketiyle birlikte çıkar ve set toplamı hiçbir zaman gizlenmez." },
+    { "type": "text", "id": "setler_kisi_etiket", "label": "Kişi başı etiketi", "default": "kişi başı",
+      "info": "Boş bırakırsanız etiket çıkmaz — önerilmez, rakam o zaman set fiyatı sanılabilir." },
+    { "type": "text", "id": "setler_set_etiket", "label": "Set toplamı etiketi", "default": "Set",
+      "info": "Kişi başı fiyatın altındaki satırın başına gelir." },
     { "type": "text", "id": "setler_rozet", "label": "Kart rozeti", "default": "2 ürün içerir",
       "info": "Kartın sol üst köşesindeki etiket. Her kartta aynı yazar, hesap yapmaz. Boş bırakırsanız rozet hiç çıkmaz." },
     { "type": "checkbox", "id": "setler_ad_temizle", "label": "Üründeki \"Kişi/...\" ekini gizle", "default": true,
