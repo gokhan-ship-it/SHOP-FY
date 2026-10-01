@@ -121,6 +121,37 @@
   unless para_ornek contains ','
     assign para_ornek = '12.345,67 TL'
   endunless
+
+  comment
+    KAMPANYALI COUPLE SETLER -- KAYNAK VE BIR ON SORU
+
+    Koleksiyon ve "blok cizilecek mi" burada, cunku bolumun CSS'i
+    markuptan ONCE basiliyor ve kurallardan biri listenin icerigine
+    bakiyor: listede HIC ustu cizili fiyat var mi?
+
+    Dar kartta "2.898 TL  3.399 TL" tek satira sigmiyor; cizili fiyati
+    OLAN kartlarda satir ikiye cikip ana fiyati yukari itiyor, olmayan
+    kartlarda itmiyordu -- seritte ana fiyatlar birbirini tutmuyordu.
+    Yer ayirma kurali bu yuzden var, ama yalnizca gercekten cizili
+    fiyat varken basiliyor; yoksa hicbir kartta sarma olmaz ve bos
+    yer ayirmak kartlari gereksiz uzatirdi.
+  endcomment
+  assign setler_kol = collections[s.setler_koleksiyon]
+  assign setler_var = false
+  if s.setler_goster and setler_kol.products.size > 0
+    assign setler_var = true
+  endif
+
+  assign setler_cizili = false
+  if setler_var
+    for sp in setler_kol.products limit: s.setler_adet
+      assign sv = sp.selected_or_first_available_variant
+      if sv.compare_at_price > sv.price
+        assign setler_cizili = true
+        break
+      endif
+    endfor
+  endif
 -%}
 
 {%- comment -%}
@@ -231,7 +262,25 @@
       yok. Ayni sey "Setini olustur" kutusunda da boyle (markupta
       hidden) -- iki blok da ayni anda, titremesiz gorunuyor.
     {%- endcomment -%}
-    #shopify-section-{{ sid }} .tt-sc-setler { display: none; margin-top: 20px; }
+    {%- comment -%}
+      Kart renkleri degisken olarak burada toplaniyor: hepsi ayardan
+      geliyor ve asagidaki kurallar tek tek ayara bakmak yerine
+      degiskeni okuyor. Tema editorunden bir rengi degistirmek, o rengi
+      kullanan butun satirlari birden degistiriyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setler {
+      display: none;
+      margin-top: 20px;
+      --tt-sc-set-rozet: {{ s.setler_rozet_zemin }};
+      --tt-sc-set-ind-kenar: {{ s.setler_ind_kenar }};
+      --tt-sc-set-vurgu: {{ s.setler_vurgu }};
+      --tt-sc-set-etiket: {{ s.setler_etiket_renk }};
+      --tt-sc-set-fiyat: {{ s.setler_fiyat_renk }};
+      --tt-sc-set-eski: {{ s.setler_eski_renk }};
+      --tt-sc-set-ayrac: {{ s.setler_ayrac_renk }};
+      --tt-sc-set-fiyat-px: 19px;
+      --tt-sc-set-eski-px: 12px;
+    }
     #shopify-section-{{ sid }} .tt-sc[data-sc-aktif-mod="couple"] .tt-sc-setler { display: block; }
     #shopify-section-{{ sid }} .tt-sc-setler-bas { display: grid; gap: 2px; margin-bottom: 12px; }
     #shopify-section-{{ sid }} .tt-sc-setler-baslik {
@@ -330,13 +379,35 @@
       position: absolute;
       top: 8px;
       left: 8px;
+      z-index: 2;
       padding: 3px 7px;
       border-radius: 999px;
-      background: var(--tt-sc-yesil);
+      background: var(--tt-sc-set-rozet);
       color: #fff;
       font-size: 11px;
       font-weight: 600;
       line-height: 1.2;
+    }
+    {%- comment -%}
+      Indirim rozeti SAG USTTE ve ters kontrastta: sol ustteki koyu
+      rozetle ayni gorunumde olsalardi iki ayri bilgi tek bir sey gibi
+      okunurdu. Beyaz zemin + ince cerceve, gorselin uzerinde de
+      okunakli kaliyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-ind {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 2;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--tt-sc-set-ind-kenar);
+      background: #fff;
+      color: var(--tt-sc-set-vurgu);
+      font-size: 10.5px;
+      font-weight: 500;
+      line-height: 1.2;
+      white-space: nowrap;
     }
     {%- comment -%}
       "Tukendi" SAG USTTE: sol altta nokta gostergesi var, alta
@@ -355,22 +426,35 @@
       font-weight: 600;
       text-align: center;
     }
+    {%- comment -%}
+      FIYAT SATIRLARI BUTUN KARTLARDA AYNI HIZADA.
+
+      Urun adlari iki ve uc satir arasinda degisiyor; adin altina sabit
+      bir bosluk koymak hizayi tutturmuyordu. Iki onlem birlikte:
+      ad alanina iki satirlik taban yukseklik, fiyat blogunu da
+      "margin-top: auto" ile kartin ALTINA yasla. Kartlar zaten esit
+      boyda (izgara ogesi stretch) oldugu icin fiyatlar da esit
+      hizada bitiyor -- ad kac satir olursa olsun.
+    {%- endcomment -%}
     #shopify-section-{{ sid }} .tt-sc-setkart-metin {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      flex: 1 1 auto;
+      gap: 0;
       padding: 10px 10px 12px;
     }
     #shopify-section-{{ sid }} .tt-sc-setkart-ad {
       font-size: 13px;
       font-weight: 500;
       line-height: 1.3;
+      min-height: 2.6em;
       color: var(--tt-sc-koyu);
     }
     #shopify-section-{{ sid }} .tt-sc-setkart-fiyatlar {
       display: flex;
       flex-direction: column;
       gap: 4px;
+      margin-top: auto;
     }
     {%- comment -%}
       Fiyat satiri "price" sinifini da tasiyor (cark katmani onu
@@ -380,51 +464,91 @@
     #shopify-section-{{ sid }} .tt-sc-setkart-fiyat {
       display: flex;
       flex-direction: column;
-      gap: 1px;
       margin: 0;
-      color: var(--tt-sc-koyu);
     }
-    #shopify-section-{{ sid }} .tt-sc-setkart-kisi {
-      font-size: 16px;
-      font-weight: 700;
+    #shopify-section-{{ sid }} .tt-sc-setkart-etiket {
+      margin-top: 10px;
+      font-size: 10px;
+      font-weight: 500;
       line-height: 1.2;
-      letter-spacing: -0.01em;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      color: var(--tt-sc-set-etiket);
     }
-    #shopify-section-{{ sid }} .tt-sc-setkart-kisi-et {
-      font-size: 11px;
-      line-height: 1.2;
-      color: var(--tt-sc-gri);
-    }
-    #shopify-section-{{ sid }} .tt-sc-setkart-set {
+    {%- comment -%}
+      Odenecek tutar ile ustu cizili fiyat AYNI SATIRDA ve taban
+      cizgisinde hizali: karsilastirmanin neyle yapildigi ancak yan
+      yana dururken okunuyor. Dar kartta alta kayarsa diye wrap acik.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-satir {
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
-      gap: 5px;
-      margin-top: 3px;
-      font-size: 12px;
-      font-weight: 400;
-      line-height: 1.25;
-      color: var(--tt-sc-gri);
+      align-content: start;
+      column-gap: 6px;
+      row-gap: 2px;
+      margin-top: 4px;
     }
-    #shopify-section-{{ sid }} .tt-sc-setkart-set .tt-sc-setkart-satis {
-      font-weight: 600;
-      color: var(--tt-sc-koyu);
-    }
-    {%- comment -%}
-      Kisi basi kapaliyken set toplami kartin ANA fiyati; o zaman
-      buyuk ve koyu yaziliyor.
-    {%- endcomment -%}
-    #shopify-section-{{ sid }} .tt-sc-setkart-set--ana {
-      margin-top: 0;
-      gap: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--tt-sc-koyu);
+    #shopify-section-{{ sid }} .tt-sc-setkart-satis {
+      font-size: var(--tt-sc-set-fiyat-px);
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--tt-sc-set-fiyat);
     }
     #shopify-section-{{ sid }} .tt-sc-setkart-eski {
-      font-size: 12px;
+      font-size: var(--tt-sc-set-eski-px);
       font-weight: 400;
-      color: var(--tt-sc-gri);
+      line-height: 1.2;
+      color: var(--tt-sc-set-eski);
+      text-decoration: line-through;
+    }
+    {%- if setler_cizili -%}
+    {%- comment -%}
+      DAR KARTTA FIYAT SATIRI IKI SATIRLIK YER AYIRIYOR.
+
+      360 px'de kart ~144 px kaliyor ve "2.898 TL  3.399 TL" tek satira
+      sigmiyor; cizili fiyat alta kayinca O KARTIN ana fiyati bir satir
+      yukarida kaliyor, cizili fiyati olmayan kartlarda kalmiyordu --
+      seritte ana fiyatlar birbirini tutmuyordu.
+
+      Olcu karta bagli, ekrana degil (ayni ekranda 1 veya 2 kart
+      gorunebiliyor), o yuzden medya sorgusu degil KONTEYNER sorgusu.
+      Kural yalnizca listede gercekten cizili fiyat varsa basiliyor --
+      yoksa hicbir kartta sarma olmaz ve bos yer ayirmanin anlami
+      kalmaz.
+
+      Yukseklik iki satir kutusu + aradaki bosluk olarak yaziliyor;
+      punto degiskenden geldigi icin punto degisince kendiliginden
+      guncelleniyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart { container-type: inline-size; }
+    @container (max-width: 152px) {
+      #shopify-section-{{ sid }} .tt-sc-setkart-satir {
+        min-height: calc(var(--tt-sc-set-fiyat-px) * 1.2 + var(--tt-sc-set-eski-px) * 1.2 + 2px);
+      }
+    }
+    {%- endif -%}
+    {%- comment -%}
+      Kisi basi satiri kesik cizginin ALTINDA: cizgi, bunun ayri bir
+      okuma oldugunu -- ustteki tutarin bir parcasi degil, ondan
+      turetilmis bir bilgi oldugunu -- tek basina anlatiyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-kisi {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--tt-sc-set-ayrac);
+      font-size: 11px;
+      line-height: 1.25;
+      color: var(--tt-sc-set-vurgu);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-kisi-ikon {
+      flex: 0 0 auto;
+      width: 13px;
+      height: 13px;
     }
 
     {%- comment -%}
@@ -741,13 +865,11 @@
         desen: text + handle. Siralama koleksiyonun kendi
         siralamasi (MANUAL), yani sirayi Shopify'dan degistiriyorsun.
       {%- endcomment -%}
-      {%- liquid
-        assign setler_kol = collections[s.setler_koleksiyon]
-        assign setler_var = false
-        if s.setler_goster and setler_kol.products.size > 0
-          assign setler_var = true
-        endif
-      -%}
+      {%- comment -%}
+        setler_kol / setler_var / setler_cizili dosyanin basindaki
+        liquid blogunda hesaplaniyor: CSS kurallari buradan ONCE
+        basiliyor ve biri (yer ayirma) setler_cizili'ye bakiyor.
+      {%- endcomment -%}
       {%- if setler_var -%}
         <div class="tt-sc-setler">
           {%- if s.setler_baslik != blank or s.setler_alt != blank -%}
@@ -800,35 +922,82 @@
                   Artik tek is yapiyor: musterinin bilmesi gereken
                   seyi soyluyor, "bu kart tek urun degil". Metin
                   ayardan geliyor, hesap yok, her kartta ayni.
-                  Fiyatlar asagida zaten urunun kendi alanlarindan
-                  yaziliyor -- indirim bilgisi ustu cizili eski
-                  fiyatta duruyor.
                 endcomment
                 assign srozet = s.setler_rozet
+
+                comment
+                  FIYAT KAYNAGI: SECILI/ILK UYGUN VARYANT.
+
+                  Cok varyantli tek urun var (Luna + Aurora: celik /
+                  gumus). Onceki surum price_min alip "...'dan" yaziyordu;
+                  artik varyantin kendi fiyati yaziliyor, cunku urun
+                  sayfasi acildiginda da ayni varyant secili geliyor --
+                  karttaki rakamla sayfadaki rakam birbirini tutuyor.
+                endcomment
+                assign sfiyat = sv.price
+                assign skarsi = sv.compare_at_price
+
+                assign sind = 0
+                if skarsi > sfiyat
+                  assign sind = skarsi | minus: sfiyat
+                endif
+
+                comment
+                  INDIRIM ROZETI ESIGI.
+
+                  Katalogda karsilastirma fiyati satis fiyatindan
+                  yalnizca 1 TL buyuk girilmis urunler var (Noir +
+                  Chloe: 3.398 / 3.399). Esiksiz bir rozet orada
+                  "1 TL indirim" yazardi -- rakam dogru olsa bile
+                  musteriye indirim diye sunulmasi yanlis olurdu.
+                  Esik ayardan geliyor, varsayilani %5.
+
+                  Tam sayi aritmetigi: sind >= sfiyat * esik / 100.
+                endcomment
+                assign sind_goster = false
+                if sp.available and sind > 0 and s.setler_ind_rozet != blank
+                  assign sesik = sfiyat | times: s.setler_ind_esik | divided_by: 100
+                  if sind >= sesik
+                    assign sind_goster = true
+                  endif
+                endif
+
+                comment
+                  KISI BASI TUREV BIR RAKAM: set iki urun iceriyor.
+                  Fiyatlar kurus cinsinden tam sayi oldugu icin bolme
+                  yuvarlama uretmiyor; tek sayida TL'de yarim kurus
+                  degil, yarim TL cikiyor (3.499 -> 1.749,50) ve
+                  bicimleyici onu oldugu gibi yaziyor.
+                endcomment
+                assign skisi_kurus = sfiyat | divided_by: 2
+
+                comment
+                  BICIM TEK YERDEN: snippets/tt-para.liquid.
+                  "sade" yalnizca sifir kurusu dusuruyor, yani
+                  "2.898 TL" ama "1.749,50 TL". Temanin money filtresi
+                  bu magazada Ingilizce gruplama uretiyor
+                  ("2,898.00TL"), o yuzden burada kullanilmiyor.
+                endcomment
+                capture s_fiyat_m
+                  render 'tt-para', kurus: sfiyat, sade: true
+                endcapture
+                assign s_fiyat_m = s_fiyat_m | strip
+
+                capture s_karsi_m
+                  render 'tt-para', kurus: skarsi, sade: true
+                endcapture
+                assign s_karsi_m = s_karsi_m | strip
+
+                capture s_kisi_m
+                  render 'tt-para', kurus: skisi_kurus, sade: true
+                endcapture
+                assign s_kisi_m = s_kisi_m | strip
+
+                capture s_ind_m
+                  render 'tt-para', kurus: sind, sade: true
+                endcapture
+                assign s_ind_m = s_ind_m | strip
               -%}
-              {%- comment -%}
-                TOPLAM (= SEPETE GIDECEK TUTAR) TEK YERDE KURULUYOR.
-                Iki gorunumde de AYNI dize basiliyor; kisi basi acikken
-                altta kucuk, kapaliyken basta buyuk. Boylece ekranda
-                gosterilen set tutari ile sepete gidecek tutar
-                arasinda ikinci bir hesap yolu olusmuyor.
-              {%- endcomment -%}
-              {%- capture stoplam -%}
-                {%- if sp.price_varies -%}
-                  {%- comment -%}
-                    Filtre zincirinde ic ice filtre yazilamiyor:
-                    once bicimlendirip sonra yerlestiriyoruz.
-                    (Ayni not tt-uk-kart.liquid'de de var.)
-                  {%- endcomment -%}
-                  {%- assign staban = sp.price_min | money -%}
-                  <span class="tt-sc-setkart-satis">{{ s.uk_baslangic | replace: '[FIYAT]', staban }}</span>
-                {%- else -%}
-                  <span class="tt-sc-setkart-satis">{{ sp.price | money }}</span>
-                  {%- if sv.compare_at_price > sv.price -%}
-                    <s class="tt-sc-setkart-eski">{{ sv.compare_at_price | money }}</s>
-                  {%- endif -%}
-                {%- endif -%}
-              {%- endcapture -%}
 
               {%- comment -%}
                 KART KOKU .tt-uk SINIFINI DA TASIYOR.
@@ -898,9 +1067,20 @@
                   {%- if srozet != blank -%}
                     <span class="tt-sc-setkart-rozet">{{ srozet }}</span>
                   {%- endif -%}
-                  {%- unless sp.available -%}
+                  {%- comment -%}
+                    SAG UST KOSE TEK ISGALCI: ya indirim rozeti ya
+                    "Tukendi". Tukenen uronde indirim rozeti zaten
+                    anlamsiz (alinamayan bir seyin indirimi), bu yuzden
+                    ikisi ayni kosulun iki dali -- ust uste binmeleri
+                    yapisal olarak imkansiz.
+                  {%- endcomment -%}
+                  {%- if sp.available -%}
+                    {%- if sind_goster -%}
+                      <span class="tt-sc-setkart-ind">{{ s.setler_ind_rozet | replace: '[tutar]', s_ind_m }}</span>
+                    {%- endif -%}
+                  {%- else -%}
                     <span class="tt-sc-setkart-tukendi">{{ s.uk_tukendi }}</span>
-                  {%- endunless -%}
+                  {%- endif -%}
                 </span>
 
                 <span class="tt-sc-setkart-metin">
@@ -924,40 +1104,32 @@
                   {%- endcomment -%}
                   <span class="tt-sc-setkart-fiyatlar">
                     <span class="price tt-sc-setkart-fiyat">
-                      {%- if s.setler_kisi_goster -%}
-                        {%- comment -%}
-                          KISI BASI TUTAR TUREV BIR RAKAM.
-                          Set iki urun iceriyor, bu satir set tutarinin
-                          yarisi. Sepete giden tutar bu DEGIL; o yuzden
-                          hemen altinda set toplami her zaman yaziyor ve
-                          bu satir etiketiyle birlikte cikiyor.
-                          Fiyatlar kurus cinsinden tam sayi ve hep 00 ile
-                          bittigi icin ikiye bolme tam, yuvarlama yok.
-                        {%- endcomment -%}
-                        {%- if sp.price_varies -%}
-                          {%- assign skisi_kurus = sp.price_min | divided_by: 2 -%}
-                        {%- else -%}
-                          {%- assign skisi_kurus = sp.price | divided_by: 2 -%}
+                      {%- comment -%}
+                        SIRA: kucuk etiket -> SET FIYATI -> kisi basi.
+
+                        Onceki surumde en buyuk rakam kisi basi tutardi
+                        ve ustu cizili fiyat onun altinda duruyordu;
+                        musteri seti o fiyata aliyor saniyor, cizili
+                        rakamin neyle karsilastirildigi da anlasilmiyordu.
+                        Artik ekranin en buyuk rakami ODENECEK tutar,
+                        cizili fiyat onun hemen yaninda -- karsilastirma
+                        ayni satirda oldugu icin kendi kendini anlatiyor.
+                        Kisi basi tutar kesik cizginin altinda, ikincil.
+                      {%- endcomment -%}
+                      {%- if s.setler_set_etiket != blank -%}
+                        <span class="tt-sc-setkart-etiket">{{ s.setler_set_etiket }}</span>
+                      {%- endif -%}
+                      <span class="tt-sc-setkart-satir">
+                        <span class="tt-sc-setkart-satis">{{ s_fiyat_m }}</span>
+                        {%- if skarsi > sfiyat -%}
+                          <s class="tt-sc-setkart-eski">{{ s_karsi_m }}</s>
                         {%- endif -%}
-                        {%- assign skisi = skisi_kurus | money -%}
+                      </span>
+                      {%- if s.setler_kisi_goster and s.setler_kisi_etiket != blank -%}
                         <span class="tt-sc-setkart-kisi">
-                          {%- if sp.price_varies -%}
-                            {{- s.uk_baslangic | replace: '[FIYAT]', skisi -}}
-                          {%- else -%}
-                            {{- skisi -}}
-                          {%- endif -%}
+                          {%- render 'tt-sc-ikon', ad: 'kisiler', sinif: 'tt-sc-setkart-kisi-ikon' -%}
+                          <span>{{ s.setler_kisi_etiket | replace: '[tutar]', s_kisi_m }}</span>
                         </span>
-                        {%- if s.setler_kisi_etiket != blank -%}
-                          <span class="tt-sc-setkart-kisi-et">{{ s.setler_kisi_etiket }}</span>
-                        {%- endif -%}
-                        <span class="tt-sc-setkart-set">
-                          {%- if s.setler_set_etiket != blank -%}
-                            <span class="tt-sc-setkart-set-et">{{ s.setler_set_etiket }}</span>
-                          {%- endif -%}
-                          {{ stoplam }}
-                        </span>
-                      {%- else -%}
-                        <span class="tt-sc-setkart-set tt-sc-setkart-set--ana">{{ stoplam }}</span>
                       {%- endif -%}
                     </span>
                     {%- render 'tt-kart-taksit', product: sp -%}
@@ -1472,7 +1644,7 @@
     { "type": "text", "id": "setler_koleksiyon", "label": "Set koleksiyonu (handle)", "default": "kampanyali-couple-setler",
       "info": "Koleksiyon boşsa veya bulunamazsa blok hiç çıkmaz." },
     { "type": "text", "id": "setler_baslik", "label": "Başlık", "default": "Kampanyalı Couple Setler" },
-    { "type": "text", "id": "setler_alt", "label": "Alt satır", "default": "Hazır ikili setler — seçmekle uğraşmadan" },
+    { "type": "text", "id": "setler_alt", "label": "Alt satır", "default": "İkili setler, tek fiyat. Seçmekle uğraşmadan." },
     { "type": "range", "id": "setler_adet", "label": "En fazla set", "min": 2, "max": 12, "step": 1, "default": 6 },
     { "type": "checkbox", "id": "setler_kaydir", "label": "Yan yana kayan şerit", "default": true,
       "info": "Kapatırsanız kartlar alt alta ızgara olarak dizilir." },
@@ -1489,16 +1661,27 @@
     { "type": "range", "id": "setler_gorsel_sayisi", "label": "Kart başına görsel sayısı", "min": 1, "max": 6, "step": 1, "default": 3,
       "info": "Kartın içinde parmakla kaydırılabilen galeri. Ürünün Shopify'daki medya sırasını takip eder." },
 
-    { "type": "checkbox", "id": "setler_kisi_goster", "label": "Kişi başı fiyatı göster", "default": true,
-      "info": "Set tutarının ikiye bölünmüşü büyük yazılır, set toplamı hemen altında kalır. Sepete giden tutar her zaman set toplamıdır; kişi başı rakam sadece bilgi amaçlıdır, bu yüzden etiketiyle birlikte çıkar ve set toplamı hiçbir zaman gizlenmez." },
-    { "type": "text", "id": "setler_kisi_etiket", "label": "Kişi başı etiketi", "default": "kişi başı",
-      "info": "Boş bırakırsanız etiket çıkmaz — önerilmez, rakam o zaman set fiyatı sanılabilir." },
-    { "type": "text", "id": "setler_set_etiket", "label": "Set toplamı etiketi", "default": "Set",
-      "info": "Kişi başı fiyatın altındaki satırın başına gelir." },
-    { "type": "text", "id": "setler_rozet", "label": "Kart rozeti", "default": "2 ürün içerir",
-      "info": "Kartın sol üst köşesindeki etiket. Her kartta aynı yazar, hesap yapmaz. Boş bırakırsanız rozet hiç çıkmaz." },
+    { "type": "paragraph", "content": "Karttaki en büyük rakam, müşterinin ÖDEYECEĞİ set fiyatıdır; üstü çizili karşılaştırma fiyatı onun hemen yanında durur. Kişi başı tutar set fiyatının yarısıdır ve kesik çizginin altında, ikincil bilgi olarak çıkar. Tüm tutarlar üründen okunur, hiçbiri elle yazılmaz." },
+    { "type": "text", "id": "setler_set_etiket", "label": "Fiyatın üstündeki küçük etiket", "default": "SET FİYATI · 2 ÜRÜN",
+      "info": "Rakamın neyin fiyatı olduğunu söyler. Boş bırakırsanız çıkmaz." },
+    { "type": "checkbox", "id": "setler_kisi_goster", "label": "Kişi başı satırını göster", "default": true },
+    { "type": "text", "id": "setler_kisi_etiket", "label": "Kişi başı satırı", "default": "Kişi başı [tutar]",
+      "info": "[tutar] set fiyatının yarısıyla değişir. Boş bırakırsanız satır hiç çıkmaz." },
+    { "type": "text", "id": "setler_rozet", "label": "Sol üst rozet", "default": "2'li set",
+      "info": "Her kartta aynı yazar, hesap yapmaz. Boş bırakırsanız rozet hiç çıkmaz." },
+    { "type": "text", "id": "setler_ind_rozet", "label": "Sağ üst indirim rozeti", "default": "[tutar] indirim",
+      "info": "[tutar] = karşılaştırma fiyatı − satış fiyatı. Boş bırakırsanız rozet hiç çıkmaz. Tükenmiş üründe de çıkmaz." },
+    { "type": "range", "id": "setler_ind_esik", "label": "İndirim rozeti eşiği", "min": 0, "max": 25, "step": 1, "unit": "%", "default": 5,
+      "info": "İndirim, satış fiyatının en az bu kadarı değilse rozet çıkmaz. Katalogda karşılaştırma fiyatı satış fiyatından 1 TL fazla girilmiş ürünler var; eşik olmasaydı orada \"1 TL indirim\" yazardı." },
     { "type": "checkbox", "id": "setler_ad_temizle", "label": "Üründeki \"Kişi/...\" ekini gizle", "default": true,
       "info": "Dört set ürününün adında eski fiyat kalıntısı var (\"... Kapsülü Kişi/2279\"). Bu ayar yalnızca vitrinde gösterilen başlığı kırpar, fiyatlara dokunmaz. Kalıcı çözüm ürünleri yönetimden yeniden adlandırmak." },
+    { "type": "color", "id": "setler_rozet_zemin", "label": "Sol üst rozet zemini", "default": "#3E5E4A" },
+    { "type": "color", "id": "setler_vurgu", "label": "İndirim rozeti ve kişi başı yazısı", "default": "#3E5E4A" },
+    { "type": "color", "id": "setler_ind_kenar", "label": "İndirim rozeti çerçevesi", "default": "#CFE0D5" },
+    { "type": "color", "id": "setler_etiket_renk", "label": "Fiyat üstü küçük etiket", "default": "#777777" },
+    { "type": "color", "id": "setler_fiyat_renk", "label": "Set fiyatı", "default": "#16181D" },
+    { "type": "color", "id": "setler_eski_renk", "label": "Üstü çizili fiyat", "default": "#999999" },
+    { "type": "color", "id": "setler_ayrac_renk", "label": "Kesik çizgi", "default": "#E3E5E8" },
 
     { "type": "header", "content": "Setini oluştur kutusu" },
     { "type": "text", "id": "set_bant_ust", "label": "Kural bandı — ana satır",

@@ -1,0 +1,53 @@
+{%- comment -%}
+  Kurus -> Turkce para bicimi. Ornek: 95780 -> "957,80 TL"
+
+  NEDEN TEMANIN money FILTRESI DEGIL:
+  Bu magazanin para bicimi Ingilizce gruplama uretiyor ("2,599.00TL").
+  Referans tasarim ve taksit modali Turkce bicim kullaniyor; ikisi ayni
+  ekranda catismasin diye fiyat blogunda bicimi burada uretiyoruz.
+
+  @param {number} kurus - tutar, kurus cinsinden
+  @param {string} [birim] - para birimi eki, varsayilan "TL"
+  @param {boolean} [sade] - kurus SIFIRSA ",00" yazilmaz
+{%- endcomment -%}
+{%- liquid
+  assign k = kurus | round
+  if k < 0
+    assign k = 0
+  endif
+
+  assign tam = k | divided_by: 100
+  assign ond = k | modulo: 100
+  assign ond_s = ond | prepend: '0' | slice: -2, 2
+
+  assign bin = tam | divided_by: 1000
+  assign kal = tam | modulo: 1000
+
+  if bin > 0
+    assign kal_s = kal | prepend: '00' | slice: -3, 3
+    assign tam_s = bin | append: '.' | append: kal_s
+  else
+    assign tam_s = tam
+  endif
+
+  assign b = birim | default: 'TL'
+
+  comment
+    "sade" YALNIZCA SIFIR KURUSU DUSURUYOR, YUVARLAMIYOR.
+
+    Katalogdaki tutarlarin cogu tam TL ("2.898,00 TL"); ekranda her
+    satirin sonunda duran ",00" bilgi tasimiyor, yalnizca rakami
+    uzatiyor. Kurus VARSA yine yaziliyor -- ornegin set tutarinin
+    yarisi (3.499 / 2 = 1.749,50) sessizce 1.750'ye yuvarlanmiyor.
+    Shopify'in kendi para bicimi bu ayrimi yapamiyor: kurusu ya hep
+    gosteriyor ya hic.
+
+    Varsayilan KAPALI: parametreyi gecmeyen eski cagrilarin ciktisi
+    bir karakter bile degismiyor.
+  endcomment
+  if sade and ond == 0
+    echo tam_s | append: ' ' | append: b
+  else
+    echo tam_s | append: ',' | append: ond_s | append: ' ' | append: b
+  endif
+-%}
