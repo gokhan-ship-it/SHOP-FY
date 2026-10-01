@@ -279,6 +279,7 @@
       --tt-sc-set-eski: {{ s.setler_eski_renk }};
       --tt-sc-set-ayrac: {{ s.setler_ayrac_renk }};
       --tt-sc-set-kod: {{ s.setler_kod_renk }};
+      --tt-sc-set-oran: {{ s.setler_gorsel_oran | default: '3 / 4' }};
       --tt-sc-set-fiyat-px: 19px;
       --tt-sc-set-eski-px: 12px;
     }
@@ -375,7 +376,34 @@
       -noktalar). Burada o kurallarin kopyasi YOK: assets/tt-uk-kart.css
       zaten bu bolumde yukleniyor ve tek kaynak kalmasi, iki kart
       turunun ileride ayrisma ihtimalini bastan kapatiyor.
+
+      TEK ISTISNA asagidaki kural. tt-uk-kart.css gorsel alanina
+      "aspect-ratio: 1/1" veriyor, ama KOLEKSIYON kartinda o alan
+      height:100% olan bir kartin icinde ve tasan kisim overflow:hidden
+      ile kirpiliyor. Set kartinin boyle sabit bir yuksekligi yok:
+      .tt-sc-setkart bir sutun flex kutusu, gorsel alani da onun flex
+      ogesi, ve flex ogesinin "min-height: auto" otomatik en kucuk
+      olcusu ICERIGIN boyu. Katalogdaki gorseller dikey (1500x2000,
+      1792x2400, Luna'nin yasam karelerinde 1536x2752), dolayisiyla
+      gorselin kendi boyu 1/1 oranini eziyordu.
+
+      Gorunen sonuc bir sicrama idi: serideki 2. kareden itibaren
+      gorseller TEMBEL iniyor ve inene kadar yerlerinde 600x600 kare
+      bir yer tutucu duruyor. Kullanici Luna kartinda kaydirinca
+      gercek gorsel iniyor, oran 1.333'ten 1.792'ye atliyor ve butun
+      kart birden uzuyordu.
+
+      min-height: 0 otomatik en kucuk olcuyu kapatiyor, flex: 0 0 auto
+      da alani esnemez yapiyor; boylece oran NE OLURSA OLSUN hem ilk
+      boyamada hem gorsel indikten sonra ayni kaliyor. Oran artik
+      ayardan geliyor (--tt-sc-set-oran); object-fit: cover zaten
+      tt-uk-kart.css'te, yani tasan kisim kirpiliyor.
     {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart > .tt-uk-gorsel {
+      flex: 0 0 auto;
+      min-height: 0;
+      aspect-ratio: var(--tt-sc-set-oran, 3 / 4);
+    }
     #shopify-section-{{ sid }} .tt-sc-setkart-rozet {
       position: absolute;
       top: 8px;
@@ -1759,6 +1787,13 @@
     { "type": "text", "id": "setler_sonraki", "label": "İleri oku (ekran okuyucu)", "default": "Sonraki setler" },
     { "type": "range", "id": "setler_gorsel_sayisi", "label": "Kart başına görsel sayısı", "min": 1, "max": 6, "step": 1, "default": 3,
       "info": "Kartın içinde parmakla kaydırılabilen galeri. Ürünün Shopify'daki medya sırasını takip eder." },
+    { "type": "select", "id": "setler_gorsel_oran", "label": "Görsel alanının oranı", "default": "3 / 4",
+      "info": "Bütün kartlarda ve galerinin bütün karelerinde aynı yükseklik. Taşan kısım ortadan kırpılır; farklı boyda ürün fotoğrafları kartı uzatıp kısaltamaz.",
+      "options": [
+        { "value": "1 / 1", "label": "Kare (1:1) — koleksiyon kartlarıyla aynı" },
+        { "value": "4 / 5", "label": "Hafif dikey (4:5)" },
+        { "value": "3 / 4", "label": "Dikey (3:4) — katalogdaki çoğu fotoğrafın oranı" }
+      ] },
 
     { "type": "paragraph", "content": "Karttaki en büyük rakam, müşterinin ÖDEYECEĞİ set fiyatıdır; üstü çizili karşılaştırma fiyatı onun hemen yanında durur. Kişi başı tutar set fiyatının yarısıdır ve kesik çizginin altında, ikincil bilgi olarak çıkar. Tüm tutarlar üründen okunur, hiçbiri elle yazılmaz." },
     { "type": "text", "id": "setler_set_etiket", "label": "Fiyatın üstündeki küçük etiket", "default": "SET FİYATI · 2 ÜRÜN",
