@@ -214,6 +214,133 @@
       #shopify-section-{{ sid }} .tt-sc-kart { grid-row: span 5; }
     }
     {%- endunless -%}
+
+    {%- comment -%}
+      KAMPANYALI COUPLE SETLER
+
+      Kurallar ortak varlik dosyasinda DEGIL burada, cunku sutun
+      sayilari ve gorunurluk bolum ayarindan geliyor ve blok yalnizca
+      bu bolumde var.
+
+      GORUNURLUK SAF CSS: kok oge Couple'a gecince
+      assets/tt-secim-kartlari.js zaten data-sc-aktif-mod="couple"
+      yaziyor (ciz(), :184). O niteligi okumak JS'e tek satir
+      eklemekten daha saglam -- blok JS'in bilmedigi bir sey.
+
+      Baslangic hali "display: none": nitelik ilk ciz() calisana kadar
+      yok. Ayni sey "Setini olustur" kutusunda da boyle (markupta
+      hidden) -- iki blok da ayni anda, titremesiz gorunuyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setler { display: none; margin-top: 20px; }
+    #shopify-section-{{ sid }} .tt-sc[data-sc-aktif-mod="couple"] .tt-sc-setler { display: block; }
+    #shopify-section-{{ sid }} .tt-sc-setler-bas { display: grid; gap: 2px; margin-bottom: 12px; }
+    #shopify-section-{{ sid }} .tt-sc-setler-baslik {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      color: var(--tt-sc-koyu);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-alt {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--tt-sc-gri);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-izgara {
+      display: grid;
+      grid-template-columns: repeat({{ s.setler_sutun_m }}, minmax(0, 1fr));
+      gap: 8px;
+      align-items: stretch;
+    }
+    @media (min-width: 1024px) {
+      #shopify-section-{{ sid }} .tt-sc-setler-izgara {
+        grid-template-columns: repeat({{ s.setler_sutun_d }}, minmax(0, 1fr));
+      }
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--tt-sc-kenar);
+      border-radius: 14px;
+      background: #fff;
+      color: inherit;
+      text-decoration: none;
+      transition: border-color 160ms ease;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart:hover { border-color: var(--tt-sc-halka-yesil); }
+    #shopify-section-{{ sid }} .tt-sc-setkart:focus-visible {
+      outline: 2px solid var(--tt-sc-yesil);
+      outline-offset: 2px;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-gorsel {
+      position: relative;
+      display: block;
+      aspect-ratio: 1 / 1;
+      background: #f4f5f6;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-rozet {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: var(--tt-sc-yesil);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-tukendi {
+      position: absolute;
+      inset: auto 8px 8px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(21, 23, 28, 0.86);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-metin {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px 10px 12px;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-ad {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.3;
+      color: var(--tt-sc-koyu);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyat {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 6px;
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--tt-sc-koyu);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-eski {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--tt-sc-gri);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ sid }} .tt-sc-setkart { transition: none; }
+    }
   </style>
 
   <div class="tt-sc" data-tt-sc
@@ -444,6 +571,130 @@
             ust_bosluk: s.cark_ust_bosluk,
             alt_bosluk: s.cark_alt_bosluk
         -%}
+      {%- endif -%}
+
+      {%- comment -%}
+        KAMPANYALI COUPLE SETLER  (.tt-sc-setler)
+
+        Hazir ikili setler. Couple'i secen musteri once bunlari
+        goruyor, begenmezse hemen altinda kendi setini kuruyor --
+        kolay yol once.
+
+        YENI BIR FIYAT HESABI YOK. Tutarlar urunun kendi price /
+        compare_at_price alanlarindan, bicimlendirme temanin money
+        filtresinden; snippets/tt-uk-kart.liquid'deki satirin
+        AYNISI. Rozet orani da ayni korumayi tasiyor: compare_at
+        fiyattan kucuk girilmis urunlerde (katalogda uc tane var)
+        oran negatif cikardi, o yuzden oran > 0 sarti duruyor.
+
+        SEPETE DOKUNMUYOR: kart duz bir baglanti, urun sayfasini
+        aciyor. Set mantigi, indirim ve sepet akisi oldugu gibi
+        kaliyor.
+
+        KAYNAK bir koleksiyon handle'i (ayar). "collection" turu
+        ayar default kabul etmiyor, bu yuzden mevcut
+        kadin_koleksiyon / erkek_koleksiyon ayarlariyla ayni
+        desen: text + handle. Siralama koleksiyonun kendi
+        siralamasi (MANUAL), yani sirayi Shopify'dan degistiriyorsun.
+      {%- endcomment -%}
+      {%- liquid
+        assign setler_kol = collections[s.setler_koleksiyon]
+        assign setler_var = false
+        if s.setler_goster and setler_kol.products.size > 0
+          assign setler_var = true
+        endif
+      -%}
+      {%- if setler_var -%}
+        <div class="tt-sc-setler">
+          {%- if s.setler_baslik != blank or s.setler_alt != blank -%}
+            <div class="tt-sc-setler-bas">
+              {%- if s.setler_baslik != blank -%}
+                <h3 class="tt-sc-setler-baslik">{{ s.setler_baslik }}</h3>
+              {%- endif -%}
+              {%- if s.setler_alt != blank -%}
+                <p class="tt-sc-setler-alt">{{ s.setler_alt }}</p>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+
+          <div class="tt-sc-setler-izgara">
+            {%- for sp in setler_kol.products limit: s.setler_adet -%}
+              {%- liquid
+                assign sv = sp.selected_or_first_available_variant
+
+                comment
+                  AD TEMIZLIGI YALNIZCA EKRANDA.
+                  Dort set urununun adinda eski fiyat kalintisi var
+                  ("... Kapsulu Kisi/2279"). Kalici cozum urunleri
+                  yonetimden yeniden adlandirmak; bu ayar o gune
+                  kadar vitrini temiz tutuyor. Hicbir fiyati
+                  etkilemiyor, yalnizca gosterilen basligi kirpiyor.
+                endcomment
+                assign sad = sp.title
+                if s.setler_ad_temizle
+                  assign sad = sad | split: ' Kişi/' | first | strip
+                endif
+
+                comment
+                  Alt metni de TEMIZLENMIS adi kullaniyor: ekran
+                  okuyucuya "... Kapsulu Kisi/2279" diye okutmanin
+                  anlami yok.
+                endcomment
+                assign salt = sp.featured_media.alt | default: sad
+
+                assign srozet = ''
+                if sp.available and s.setler_rozet != blank and sv.compare_at_price > sv.price
+                  assign sfark = sv.compare_at_price | minus: sv.price | times: 100.0
+                  assign soran = sfark | divided_by: sv.compare_at_price | round
+                  if soran > 0
+                    assign srozet = s.setler_rozet | replace: '[indirim]', soran
+                  endif
+                endif
+              -%}
+              <a class="tt-sc-setkart" href="{{ sp.url }}">
+                <span class="tt-sc-setkart-gorsel">
+                  {%- if sp.featured_media -%}
+                    {{ sp.featured_media | image_url: width: 600 | image_tag:
+                         loading: 'lazy',
+                         width: 600,
+                         height: 600,
+                         sizes: '(min-width: 1024px) 320px, 45vw',
+                         widths: '200,300,400,600',
+                         alt: salt,
+                         class: 'tt-sc-setkart-img',
+                         draggable: 'false' }}
+                  {%- endif -%}
+                  {%- if srozet != blank -%}
+                    <span class="tt-sc-setkart-rozet">{{ srozet }}</span>
+                  {%- endif -%}
+                  {%- unless sp.available -%}
+                    <span class="tt-sc-setkart-tukendi">{{ s.uk_tukendi }}</span>
+                  {%- endunless -%}
+                </span>
+
+                <span class="tt-sc-setkart-metin">
+                  <span class="tt-sc-setkart-ad">{{ sad }}</span>
+                  <span class="tt-sc-setkart-fiyat">
+                    {%- if sp.price_varies -%}
+                      {%- comment -%}
+                        Filtre zincirinde ic ice filtre yazilamiyor:
+                        once bicimlendirip sonra yerlestiriyoruz.
+                        (Ayni not tt-uk-kart.liquid'de de var.)
+                      {%- endcomment -%}
+                      {%- assign staban = sp.price_min | money -%}
+                      <span class="tt-sc-setkart-satis">{{ s.uk_baslangic | replace: '[FIYAT]', staban }}</span>
+                    {%- else -%}
+                      <span class="tt-sc-setkart-satis">{{ sp.price | money }}</span>
+                      {%- if sv.compare_at_price > sv.price -%}
+                        <s class="tt-sc-setkart-eski">{{ sv.compare_at_price | money }}</s>
+                      {%- endif -%}
+                    {%- endif -%}
+                  </span>
+                </span>
+              </a>
+            {%- endfor -%}
+          </div>
+        </div>
       {%- endif -%}
 
       {%- comment -%}
@@ -897,6 +1148,23 @@
     { "type": "text", "id": "kime_erkek", "label": "Erkek", "default": "Erkek" },
     { "type": "text", "id": "sayac_eki", "label": "Sayaç eki", "default": "ürün" },
     { "type": "text", "id": "bos_metin", "label": "Sonuç boşsa", "default": "Bu seçimle eşleşen ürün kalmadı." },
+
+    { "type": "header", "content": "Kampanyalı Couple Setler" },
+    { "type": "paragraph", "content": "Hazır ikili setler, \"Setini oluştur\" kutusunun hemen ÜSTÜNDE ve yalnızca Couple modunda çıkar. Karta tıklayınca ürün sayfası açılır; sepete veya indirime dokunmaz. Sıra, aşağıda yazdığınız koleksiyonun kendi sırasıdır — sırayı değiştirmek için Shopify'da koleksiyonu düzenleyin." },
+    { "type": "checkbox", "id": "setler_goster", "label": "Hazır setleri göster", "default": true },
+    { "type": "text", "id": "setler_koleksiyon", "label": "Set koleksiyonu (handle)", "default": "kampanyali-couple-setler",
+      "info": "Koleksiyon boşsa veya bulunamazsa blok hiç çıkmaz." },
+    { "type": "text", "id": "setler_baslik", "label": "Başlık", "default": "Kampanyalı Couple Setler" },
+    { "type": "text", "id": "setler_alt", "label": "Alt satır", "default": "Hazır ikili setler — seçmekle uğraşmadan" },
+    { "type": "range", "id": "setler_adet", "label": "En fazla set", "min": 2, "max": 12, "step": 1, "default": 6 },
+    { "type": "select", "id": "setler_sutun_m", "label": "Sütun — telefon", "default": "2",
+      "options": [ { "value": "1", "label": "1 sütun" }, { "value": "2", "label": "2 sütun" } ],
+      "info": "range olarak yazılamıyor: Shopify aralık ayarında en az 3 adım istiyor." },
+    { "type": "range", "id": "setler_sutun_d", "label": "Sütun — masaüstü", "min": 2, "max": 5, "step": 1, "default": 3 },
+    { "type": "text", "id": "setler_rozet", "label": "İndirim rozeti", "default": "%[indirim] indirim",
+      "info": "[indirim] oranla değişir. Rozet yalnızca ürünün karşılaştırma fiyatı satış fiyatından büyükse çıkar. Boş bırakırsanız rozet hiç çıkmaz." },
+    { "type": "checkbox", "id": "setler_ad_temizle", "label": "Üründeki \"Kişi/...\" ekini gizle", "default": true,
+      "info": "Dört set ürününün adında eski fiyat kalıntısı var (\"... Kapsülü Kişi/2279\"). Bu ayar yalnızca vitrinde gösterilen başlığı kırpar, fiyatlara dokunmaz. Kalıcı çözüm ürünleri yönetimden yeniden adlandırmak." },
 
     { "type": "header", "content": "Setini oluştur kutusu" },
     { "type": "text", "id": "set_bant_ust", "label": "Kural bandı — ana satır",
