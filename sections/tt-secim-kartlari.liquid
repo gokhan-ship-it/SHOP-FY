@@ -168,6 +168,54 @@
   {{ 'tt-secim-kartlari.css' | asset_url | stylesheet_tag }}
   {{ 'tt-uk-kart.css' | asset_url | stylesheet_tag }}
 
+  {%- comment -%}
+    BASLIK GORUNUMU + KART DUGMESININ KALKMASI
+
+    Bu kurallar ortak varlik dosyasinda DEGIL, burada: ikisi de bolum
+    ayarindan besleniyor ve yalnizca bu bolumu ilgilendiriyor.
+    #shopify-section-... ile kapsamlaniyor, yani ozgullugu varlik
+    dosyasindaki .tt-sc .tt-sc-baslik kuralindan yuksek -- kim once
+    yuklenirse yuklensin bu kazaniyor, sira oyununa gerek yok.
+
+    Olculer sayfanin basindaki hero basligindan alindi
+    (sections/hero-video-kapsul.liquid): 28 / 36 / 44 px, 700,
+    satir yuksekligi 1.15, harf araligi -0.02em. Yazi tipi iki
+    bolumde de temadan miras; hicbiri kendi font-family'sini
+    tanimlamiyor, "ayni font" bundan geliyor.
+  {%- endcomment -%}
+  <style>
+    #shopify-section-{{ sid }} .tt-sc-bas { text-align: {{ s.bas_hiza }}; }
+    #shopify-section-{{ sid }} .tt-sc-baslik {
+      font-size: {{ s.bas_boyut_m }}px;
+      font-weight: {{ s.bas_kalinlik }};
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+    }
+    @media (min-width: 750px) {
+      #shopify-section-{{ sid }} .tt-sc-baslik { font-size: {{ s.bas_boyut_t }}px; }
+    }
+    @media (min-width: 1024px) {
+      #shopify-section-{{ sid }} .tt-sc-baslik { font-size: {{ s.bas_boyut_d }}px; }
+    }
+    {%- unless s.nasil_goster -%}
+    {%- comment -%}
+      Dugme yokken kartlar BES satir. Subgrid zinciri satir sayisina
+      gore kuruluyor: hem kapsayicinin sablonu hem kartin span'i
+      kuculmeli, yoksa altta bos bir 6. satir kalir.
+
+      @supports icinde, cunku subgrid desteklemeyen tarayicida
+      (Safari 15 ve oncesi) varlik dosyasi kartlari flex'e dusuruyor
+      ve orada satir sayisinin bir anlami yok -- bu kurallar o
+      yedegi bozmamali.
+    {%- endcomment -%}
+    @supports (grid-template-rows: subgrid) {
+      #shopify-section-{{ sid }} .tt-sc-kartlar { grid-template-rows: repeat(5, auto); }
+      #shopify-section-{{ sid }} .tt-sc-kart { grid-row: span 5; }
+    }
+    {%- endunless -%}
+  </style>
+
   <div class="tt-sc" data-tt-sc
        data-sc-varsayilan="{{ s.varsayilan_mod }}"
        data-sc-para-ornek="{{ para_ornek | escape }}"
@@ -286,7 +334,13 @@
             degil; karsiliginda dugme kartin icinde duruyor. Kart
             secimini tetiklememesi icin JS hem click hem keydown
             yayilimini durduruyor.
+
+            AYARDAN KAPATILABILIYOR ve varsayilani KAPALI: ayni bilgi
+            artik sayfanin sol altindaki sabit "Nasil calisir?"
+            butonundan (sections/tt-nasil-calisir.liquid) veriliyor,
+            kartlarin icinde ikinci kez durmasina gerek yok.
           {%- endcomment -%}
+          {%- if s.nasil_goster -%}
           <button type="button" class="tt-sc-nasil-ac" data-sc-nasil-ac="single"
                   aria-haspopup="dialog" aria-label="{{ s.nasil_single_baslik | default: s.nasil_dugme | escape }}">
             <span class="tt-sc-nasil-ac-ikon" aria-hidden="true">
@@ -297,6 +351,7 @@
               {%- render 'tt-sc-ikon', ad: 'chevron' -%}
             </span>
           </button>
+          {%- endif -%}
         </div>
 
         {%- comment -%} Couple {%- endcomment -%}
@@ -333,6 +388,7 @@
             okunma sirasinda en sona birakilmis durumda -- dugme de
             kartin son ogesi, dolayisiyla iki kartta DOM sirasi ayni.
           {%- endcomment -%}
+          {%- if s.nasil_goster -%}
           <button type="button" class="tt-sc-nasil-ac" data-sc-nasil-ac="couple"
                   aria-haspopup="dialog" aria-label="{{ s.nasil_couple_baslik | default: s.nasil_dugme | escape }}">
             <span class="tt-sc-nasil-ac-ikon" aria-hidden="true">
@@ -343,6 +399,7 @@
               {%- render 'tt-sc-ikon', ad: 'chevron' -%}
             </span>
           </button>
+          {%- endif -%}
         </div>
       </div>
 
@@ -707,7 +764,11 @@
       Iki kez ayni snippet; icerik tamamen ayardan geliyor. Kartlardan
       sonra basiliyorlar ama konumlari onemsiz: native <dialog>
       showModal() ile ust katmana tasiniyor.
+
+      Dugme kapaliysa bunlari acacak bir sey kalmiyor, o yuzden hic
+      basilmiyorlar -- sayfada olu markup birakmanin anlami yok.
     {%- endcomment -%}
+    {%- if s.nasil_goster -%}
     {%- render 'tt-sc-nasil',
           sid: sid, mod: 'single',
           etiket: s.nasil_single_etiket, baslik: s.nasil_single_baslik,
@@ -724,6 +785,7 @@
           a2b: s.nasil_couple_a2_bas, a2m: s.nasil_couple_a2_metin,
           a3b: s.nasil_couple_a3_bas, a3m: s.nasil_couple_a3_metin,
           onay: s.nasil_couple_onay, kapat: s.kapat_etiket -%}
+    {%- endif -%}
   </div>
 
   <script src="{{ 'tt-uk-kart.js' | asset_url }}" defer></script>
@@ -741,6 +803,24 @@
     { "type": "header", "content": "Başlık" },
     { "type": "text", "id": "ust_yazi", "label": "Üst küçük yazı", "info": "Boş bırakılırsa koleksiyonun adı kullanılır." },
     { "type": "text", "id": "baslik", "label": "Başlık", "default": "Zaman kapsülünü seç" },
+    { "type": "paragraph", "content": "Varsayılan ölçüler sayfanın başındaki hero başlığıyla aynı (28 / 36 / 44 px, kalın). Yazı tipi ikisinde de temadan geliyor. Hero'nun ölçüsünü değiştirirseniz burayı da elle eşitlemeniz gerekir." },
+    { "type": "select", "id": "bas_hiza", "label": "Hizalama", "default": "center",
+      "options": [
+        { "value": "center", "label": "Ortada" },
+        { "value": "left", "label": "Solda" }
+      ] },
+    { "type": "select", "id": "bas_kalinlik", "label": "Kalınlık", "default": "700",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" }
+      ] },
+    { "type": "range", "id": "bas_boyut_m", "label": "Boyut – mobil", "min": 16, "max": 48, "step": 1, "unit": "px", "default": 28 },
+    { "type": "range", "id": "bas_boyut_t", "label": "Boyut – tablet", "min": 16, "max": 64, "step": 1, "unit": "px", "default": 36,
+      "info": "750 px ve üzeri." },
+    { "type": "range", "id": "bas_boyut_d", "label": "Boyut – masaüstü", "min": 16, "max": 72, "step": 1, "unit": "px", "default": 44,
+      "info": "1024 px ve üzeri." },
 
     { "type": "header", "content": "Single kartı" },
     { "type": "text", "id": "single_ust", "label": "Açılma şekli metni", "default": "Belirlediğin tarihte açılır" },
@@ -757,7 +837,8 @@
     { "type": "text", "id": "couple_yukleme", "label": "Yükleme satırı (vurgulu kutu)", "default": "İkiniz de yüklersiniz" },
 
     { "type": "header", "content": "\"Nasıl çalışır?\" butonu" },
-    { "type": "paragraph", "content": "Her iki kartın da en altında çıkan buton. Metin ikisinde de aynı; içerikler aşağıda ayrı ayrı." },
+    { "type": "paragraph", "content": "Her iki kartın da en altında çıkan buton. Aynı bilgi sayfanın sol altındaki sabit \"Nasıl çalışır?\" butonundan da veriliyor, bu yüzden varsayılanı kapalı. Açarsanız aşağıdaki iki pop-up da geri gelir." },
+    { "type": "checkbox", "id": "nasil_goster", "label": "Kartların içinde göster", "default": false },
     { "type": "text", "id": "nasil_dugme", "label": "Buton metni", "default": "Nasıl çalışır?" },
 
     { "type": "header", "content": "Single – Nasıl çalışır? pop-up'ı" },
