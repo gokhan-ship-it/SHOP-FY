@@ -250,15 +250,58 @@
     }
     #shopify-section-{{ sid }} .tt-sc-setler-izgara {
       display: grid;
-      grid-template-columns: repeat({{ s.setler_sutun_m }}, minmax(0, 1fr));
       gap: 8px;
       align-items: stretch;
+    }
+    {%- if s.setler_kaydir -%}
+    {%- comment -%}
+      KAYAN SERIT
+
+      Tasiyici hala grid; yalnizca akis sutuna cevriliyor ve kutu
+      yatayda kayiyor. Kart sayisi degisse de markup ayni kaliyor,
+      JS'e kaydirma kodu yazilmiyor -- tarayicinin kendi kaydirmasi
+      ve scroll-snap'i dokunmatikte her zaman daha akici.
+
+      Kart genisligi: gorunecek kart sayisi (ayar) kadar bolunuyor,
+      sonra "goz ucu" kadar kisaltiliyor ki bir sonraki kartin
+      kenari gorunsun -- serit oldugunu anlatan sey bu. Kisaltma
+      olmasaydi son kart tam kenara otururdu ve kutu kaydirilabilir
+      gorunmezdi.
+
+      overflow-x kart kutusunda, sayfada degil: yatay sayfa
+      kaydirmasi acilmiyor.
+    {%- endcomment -%}
+    {%- assign setler_ara_m = s.setler_sutun_m | minus: 1 | times: 8 -%}
+    {%- assign setler_ara_d = s.setler_sutun_d | minus: 1 | times: 8 -%}
+    #shopify-section-{{ sid }} .tt-sc-setler-izgara {
+      grid-auto-flow: column;
+      grid-template-columns: none;
+      grid-auto-columns: calc((100% - {{ setler_ara_m }}px - {{ s.setler_goz }}px) / {{ s.setler_sutun_m }});
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scroll-padding-inline-start: 0;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-izgara::-webkit-scrollbar { display: none; }
+    #shopify-section-{{ sid }} .tt-sc-setkart { scroll-snap-align: start; }
+    @media (min-width: 1024px) {
+      #shopify-section-{{ sid }} .tt-sc-setler-izgara {
+        grid-auto-columns: calc((100% - {{ setler_ara_d }}px - {{ s.setler_goz }}px) / {{ s.setler_sutun_d }});
+      }
+    }
+    {%- else -%}
+    #shopify-section-{{ sid }} .tt-sc-setler-izgara {
+      grid-template-columns: repeat({{ s.setler_sutun_m }}, minmax(0, 1fr));
     }
     @media (min-width: 1024px) {
       #shopify-section-{{ sid }} .tt-sc-setler-izgara {
         grid-template-columns: repeat({{ s.setler_sutun_d }}, minmax(0, 1fr));
       }
     }
+    {%- endif -%}
     #shopify-section-{{ sid }} .tt-sc-setkart {
       display: flex;
       flex-direction: column;
@@ -642,14 +685,25 @@
                 endcomment
                 assign salt = sp.featured_media.alt | default: sad
 
-                assign srozet = ''
-                if sp.available and s.setler_rozet != blank and sv.compare_at_price > sv.price
-                  assign sfark = sv.compare_at_price | minus: sv.price | times: 100.0
-                  assign soran = sfark | divided_by: sv.compare_at_price | round
-                  if soran > 0
-                    assign srozet = s.setler_rozet | replace: '[indirim]', soran
-                  endif
-                endif
+                comment
+                  ROZET BIR INDIRIM ROZETI DEGIL, ICERIK ETIKETI.
+
+                  Once indirim orani yaziyordu. Oran bu listede
+                  yaniltici: setin "indirimi" zaten iki urun bir
+                  arada olmasindan geliyor, ustune bir de yuzde
+                  yazmak ayni seyi iki kez sayiyor gibi duruyordu --
+                  ve Noir + Chloe'de karsilastirma fiyati yalnizca
+                  1 TL buyuk oldugu icin oran 0 cikip rozet hic
+                  basilmiyordu.
+
+                  Artik tek is yapiyor: musterinin bilmesi gereken
+                  seyi soyluyor, "bu kart tek urun degil". Metin
+                  ayardan geliyor, hesap yok, her kartta ayni.
+                  Fiyatlar asagida zaten urunun kendi alanlarindan
+                  yaziliyor -- indirim bilgisi ustu cizili eski
+                  fiyatta duruyor.
+                endcomment
+                assign srozet = s.setler_rozet
               -%}
               <a class="tt-sc-setkart" href="{{ sp.url }}">
                 <span class="tt-sc-setkart-gorsel">
@@ -1150,19 +1204,23 @@
     { "type": "text", "id": "bos_metin", "label": "Sonuç boşsa", "default": "Bu seçimle eşleşen ürün kalmadı." },
 
     { "type": "header", "content": "Kampanyalı Couple Setler" },
-    { "type": "paragraph", "content": "Hazır ikili setler, \"Setini oluştur\" kutusunun hemen ÜSTÜNDE ve yalnızca Couple modunda çıkar. Karta tıklayınca ürün sayfası açılır; sepete veya indirime dokunmaz. Sıra, aşağıda yazdığınız koleksiyonun kendi sırasıdır — sırayı değiştirmek için Shopify'da koleksiyonu düzenleyin." },
+    { "type": "paragraph", "content": "Hazır ikili setler, \"Setini oluştur\" kutusunun hemen ÜSTÜNDE ve yalnızca Couple modunda çıkar. Kartlar yan yana kayan bir şerit halinde dizilir. Karta tıklayınca ürün sayfası açılır; sepete veya indirime dokunmaz. Sıra, aşağıda yazdığınız koleksiyonun kendi sırasıdır — sırayı değiştirmek için Shopify'da koleksiyonu düzenleyin." },
     { "type": "checkbox", "id": "setler_goster", "label": "Hazır setleri göster", "default": true },
     { "type": "text", "id": "setler_koleksiyon", "label": "Set koleksiyonu (handle)", "default": "kampanyali-couple-setler",
       "info": "Koleksiyon boşsa veya bulunamazsa blok hiç çıkmaz." },
     { "type": "text", "id": "setler_baslik", "label": "Başlık", "default": "Kampanyalı Couple Setler" },
     { "type": "text", "id": "setler_alt", "label": "Alt satır", "default": "Hazır ikili setler — seçmekle uğraşmadan" },
     { "type": "range", "id": "setler_adet", "label": "En fazla set", "min": 2, "max": 12, "step": 1, "default": 6 },
-    { "type": "select", "id": "setler_sutun_m", "label": "Sütun — telefon", "default": "2",
-      "options": [ { "value": "1", "label": "1 sütun" }, { "value": "2", "label": "2 sütun" } ],
+    { "type": "checkbox", "id": "setler_kaydir", "label": "Yan yana kayan şerit", "default": true,
+      "info": "Kapatırsanız kartlar alt alta ızgara olarak dizilir." },
+    { "type": "select", "id": "setler_sutun_m", "label": "Görünen kart — telefon", "default": "2",
+      "options": [ { "value": "1", "label": "1 kart" }, { "value": "2", "label": "2 kart" } ],
       "info": "range olarak yazılamıyor: Shopify aralık ayarında en az 3 adım istiyor." },
-    { "type": "range", "id": "setler_sutun_d", "label": "Sütun — masaüstü", "min": 2, "max": 5, "step": 1, "default": 3 },
-    { "type": "text", "id": "setler_rozet", "label": "İndirim rozeti", "default": "%[indirim] indirim",
-      "info": "[indirim] oranla değişir. Rozet yalnızca ürünün karşılaştırma fiyatı satış fiyatından büyükse çıkar. Boş bırakırsanız rozet hiç çıkmaz." },
+    { "type": "range", "id": "setler_sutun_d", "label": "Görünen kart — masaüstü", "min": 2, "max": 5, "step": 1, "default": 3 },
+    { "type": "range", "id": "setler_goz", "label": "Göz ucu", "min": 0, "max": 48, "step": 2, "unit": "px", "default": 18,
+      "info": "Sonraki kartın kenarından görünen pay. Şeridin kaydırılabildiğini bu anlatıyor. Yalnızca şerit açıkken geçerli." },
+    { "type": "text", "id": "setler_rozet", "label": "Kart rozeti", "default": "2 ürün içerir",
+      "info": "Kartın sol üst köşesindeki etiket. Her kartta aynı yazar, hesap yapmaz. Boş bırakırsanız rozet hiç çıkmaz." },
     { "type": "checkbox", "id": "setler_ad_temizle", "label": "Üründeki \"Kişi/...\" ekini gizle", "default": true,
       "info": "Dört set ürününün adında eski fiyat kalıntısı var (\"... Kapsülü Kişi/2279\"). Bu ayar yalnızca vitrinde gösterilen başlığı kırpar, fiyatlara dokunmaz. Kalıcı çözüm ürünleri yönetimden yeniden adlandırmak." },
 
