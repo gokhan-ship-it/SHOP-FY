@@ -278,6 +278,7 @@
       --tt-sc-set-fiyat: {{ s.setler_fiyat_renk }};
       --tt-sc-set-eski: {{ s.setler_eski_renk }};
       --tt-sc-set-ayrac: {{ s.setler_ayrac_renk }};
+      --tt-sc-set-kod: {{ s.setler_kod_renk }};
       --tt-sc-set-fiyat-px: 19px;
       --tt-sc-set-eski-px: 12px;
     }
@@ -465,6 +466,20 @@
       display: flex;
       flex-direction: column;
       margin: 0;
+    }
+    {%- comment -%}
+      display: flex, hidden niteligini eziyor. Kural olmadan cark
+      katmani blogu "gizledigi" halde ekranda kaliyordu.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyat[hidden] { display: none; }
+    {%- comment -%}
+      Indirimli satir kendi renginde: ayni kutuda ayni puntoda ama
+      baska bir renkte duran rakam, "bu normal fiyat degil" bilgisini
+      metin okunmadan veriyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyat--kod .tt-sc-setkart-etiket,
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyat--kod .tt-sc-setkart-satis {
+      color: var(--tt-sc-set-kod);
     }
     #shopify-section-{{ sid }} .tt-sc-setkart-etiket {
       margin-top: 10px;
@@ -997,6 +1012,42 @@
                   render 'tt-para', kurus: sind, sade: true
                 endcapture
                 assign s_ind_m = s_ind_m | strip
+
+                comment
+                  CARK KODU GECERLIYKEN GOSTERILECEK TUTARLAR.
+
+                  Kaynak snippets/tt-kart-taksit.liquid ile AYNI:
+                  settings.tt_indirim_aktif + settings.tt_indirim_tutar,
+                  ayni korumalar (urun satista, tutar > 0 ve urun
+                  fiyatindan KUCUK). Koleksiyon kartlari, taksit modali
+                  ve yapiskan cubuk da ayni ayardan besleniyor.
+
+                  Tabanin sfiyat olmasi onemli: kartta yazan tutar bu,
+                  dolayisiyla indirimli satir da onunla hesaplaniyor ve
+                  ustu cizili rakam karttaki normal fiyatin ta kendisi
+                  oluyor.
+                endcomment
+                assign skod_goster = false
+                if sp.available and settings.tt_indirim_aktif
+                  assign skod_ind = settings.tt_indirim_tutar | times: 100 | round
+                  if skod_ind > 0 and skod_ind < sfiyat
+                    assign skod_goster = true
+                    assign skod_net = sfiyat | minus: skod_ind
+                    assign skod_kisi = skod_net | divided_by: 2
+                  endif
+                endif
+
+                if skod_goster
+                  capture s_kod_m
+                    render 'tt-para', kurus: skod_net, sade: true
+                  endcapture
+                  assign s_kod_m = s_kod_m | strip
+
+                  capture s_kod_kisi_m
+                    render 'tt-para', kurus: skod_kisi, sade: true
+                  endcapture
+                  assign s_kod_kisi_m = s_kod_kisi_m | strip
+                endif
               -%}
 
               {%- comment -%}
@@ -1132,7 +1183,55 @@
                         </span>
                       {%- endif -%}
                     </span>
-                    {%- render 'tt-kart-taksit', product: sp -%}
+                    {%- comment -%}
+                      INDIRIMLI DURUM -- KARTIN KENDI BLOGU
+
+                      Burada paylasilan snippets/tt-kart-taksit.liquid
+                      KULLANILMIYOR, cunku o blok tek satirlik bir
+                      fiyat basiyor; kod gecerliyken katman ustteki
+                      .price satirinin TAMAMINI gizledigi icin kisi
+                      basi satiri da onunla birlikte kayboluyordu.
+                      Musterinin gordugu rakam duserken "kisi basi"
+                      bilgisinin ekrandan silinmesi, tam da indirimi
+                      en somut anlatacak yeri bosa dusuruyordu.
+
+                      Blok katmanin SOZLESMESINI aynen tasiyor:
+                      [data-tt-kart-fb] + data-tt-kart-fiyat ve ayni
+                      ebeveynde .price. taksit-tablosu.js kolCiz()
+                      (:896-906) bunu kendi blogu gibi acip kapatiyor;
+                      sure dolunca da ayni yoldan geri aliniyor.
+                      Tutar snippet'le AYNI ayardan hesaplaniyor,
+                      ikinci bir indirim kaynagi yok.
+
+                      [hidden] ACIKCA GIZLIYOR: .tt-sc-setkart-fiyat
+                      display: flex tasidigi icin hidden niteligi tek
+                      basina yetmiyordu.
+                    {%- endcomment -%}
+                    {%- if skod_goster -%}
+                      {%- comment -%}
+                        "price" sinifi BU blokta YOK, bilerek: kolCiz()
+                        gizlenecek satiri b.parentNode.querySelector('.price')
+                        ile buluyor. Sarmalayicida tek bir .price kalmasi,
+                        blogun bir gun kendini gizlemesi ihtimalini
+                        bastan kapatiyor.
+                      {%- endcomment -%}
+                      <span class="tt-sc-setkart-fiyat tt-sc-setkart-fiyat--kod"
+                            data-tt-kart-fb data-tt-kart-fiyat="{{ sfiyat }}" hidden>
+                        {%- if s.setler_kod_etiket != blank -%}
+                          <span class="tt-sc-setkart-etiket">{{ s.setler_kod_etiket }}</span>
+                        {%- endif -%}
+                        <span class="tt-sc-setkart-satir">
+                          <span class="tt-sc-setkart-satis">{{ s_kod_m }}</span>
+                          <s class="tt-sc-setkart-eski">{{ s_fiyat_m }}</s>
+                        </span>
+                        {%- if s.setler_kisi_goster and s.setler_kisi_etiket != blank -%}
+                          <span class="tt-sc-setkart-kisi">
+                            {%- render 'tt-sc-ikon', ad: 'kisiler', sinif: 'tt-sc-setkart-kisi-ikon' -%}
+                            <span>{{ s.setler_kisi_etiket | replace: '[tutar]', s_kod_kisi_m }}</span>
+                          </span>
+                        {%- endif -%}
+                      </span>
+                    {%- endif -%}
                   </span>
                 </span>
               </a>
@@ -1666,7 +1765,10 @@
       "info": "Rakamın neyin fiyatı olduğunu söyler. Boş bırakırsanız çıkmaz." },
     { "type": "checkbox", "id": "setler_kisi_goster", "label": "Kişi başı satırını göster", "default": true },
     { "type": "text", "id": "setler_kisi_etiket", "label": "Kişi başı satırı", "default": "Kişi başı [tutar]",
-      "info": "[tutar] set fiyatının yarısıyla değişir. Boş bırakırsanız satır hiç çıkmaz." },
+      "info": "[tutar] set fiyatının yarısıyla değişir. Çark kodu geçerliyken indirimli fiyatın yarısına döner. Boş bırakırsanız satır hiç çıkmaz." },
+    { "type": "text", "id": "setler_kod_etiket", "label": "Çark kodu geçerliyken küçük etiket", "default": "İNDİRİM KODU İLE",
+      "info": "Kod geçerliyken kartın fiyat alanı bu satırla birlikte indirimli tutara ve indirimli kişi başı tutara geçer; süre dolunca kendiliğinden geri döner. Tutar Tema ayarları → \"İndirim tutarı\" değerinden gelir — koleksiyon kartlarıyla aynı kaynak." },
+    { "type": "color", "id": "setler_kod_renk", "label": "Çark kodu geçerliyken fiyat rengi", "default": "#3E5E4A" },
     { "type": "text", "id": "setler_rozet", "label": "Sol üst rozet", "default": "2'li set",
       "info": "Her kartta aynı yazar, hesap yapmaz. Boş bırakırsanız rozet hiç çıkmaz." },
     { "type": "text", "id": "setler_ind_rozet", "label": "Sağ üst indirim rozeti", "default": "[tutar] indirim",
