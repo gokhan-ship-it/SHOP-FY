@@ -472,7 +472,39 @@
       gap: 0;
       padding: 10px 10px 12px;
     }
+    {%- comment -%}
+      ADIN USTUNDEKI ETIKET.
+
+      Rengi "2'li set" rozetinin zemin rengiyle AYNI degiskenden
+      geliyor (--tt-sc-set-rozet): tema editorunden o rengi
+      degistiren, ikisini birden degistiriyor.
+
+      Buyuk harfe cevirmeyi CSS yapiyor, Liquid degil -- ayara
+      girilen metin okunabilir kaliyor ve Turkce harf eslemesi
+      ogedeki lang="tr" sayesinde dogru calisiyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-ust {
+      margin-bottom: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--tt-sc-set-rozet);
+    }
+    {%- comment -%}
+      AD ALANI IKI SATIRLIK: taban yukseklik (min-height) iki satir
+      yer ayiriyor, line-clamp da UC satira tasmayi kesiyor. Ikisi
+      birlikte oldugu icin ad bir satir da olsa uc satir da olsa
+      alanin boyu degismiyor -- fiyat bloklari butun kartlarda ayni
+      hizada kaliyor.
+    {%- endcomment -%}
     #shopify-section-{{ sid }} .tt-sc-setkart-ad {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      overflow: hidden;
       font-size: 13px;
       font-weight: 500;
       line-height: 1.3;
@@ -932,16 +964,40 @@
                 assign sv = sp.selected_or_first_available_variant
 
                 comment
-                  AD TEMIZLIGI YALNIZCA EKRANDA.
-                  Dort set urununun adinda eski fiyat kalintisi var
-                  ("... Kapsulu Kisi/2279"). Kalici cozum urunleri
-                  yonetimden yeniden adlandirmak; bu ayar o gune
-                  kadar vitrini temiz tutuyor. Hicbir fiyati
-                  etkilemiyor, yalnizca gosterilen basligi kirpiyor.
+                  KART BASLIGI -- IKI KADEMELI, HEPSI EKRAN SEVIYESINDE.
+
+                  SHOPIFY'DAKI URUN BASLIGI HIC DEGISMIYOR: burasi
+                  yalnizca KARTTA yazani belirliyor. Urun sayfasi,
+                  arama, site haritasi ve SEO oldugu gibi kaliyor.
+
+                  1) Urunun "custom.card_title" metafield'i doluysa
+                     AYNEN o yaziliyor. Kurali bozan tek bir urun
+                     cikinca Liquid'e istisna eklemek yerine
+                     yoneticiden o alan dolduruluyor.
+
+                  2) Bos ise basliktan ekran icin fazla olan kisimlar
+                     kirpiliyor: once eski fiyat kalintisi
+                     (" Kisi/2279"), sonra her kartta tekrar eden tur
+                     adi ("Couple Zaman Kapsulu"). O bilgi artik adin
+                     USTUNDEKI etikette duruyor; ayni seyi iki kez
+                     yazmanin anlami yok.
+
+                  Kirpma sonucu BOS kalirsa (baslik bastan sona o
+                  ifadeden ibaretse) tam baslik geri geliyor: kart
+                  adsiz kalmaktansa uzun ad yazsin.
                 endcomment
-                assign sad = sp.title
-                if s.setler_ad_temizle
-                  assign sad = sad | split: ' Kişi/' | first | strip
+                assign sad = sp.metafields.custom.card_title | default: '' | strip
+                if sad == blank
+                  assign sad = sp.title
+                  if s.setler_ad_temizle
+                    assign sad = sad | split: ' Kişi/' | first | strip
+                  endif
+                  if s.setler_ad_cikar != blank
+                    assign sad_kisa = sad | remove: s.setler_ad_cikar | strip
+                    if sad_kisa != blank
+                      assign sad = sad_kisa
+                    endif
+                  endif
                 endif
 
                 comment
@@ -1202,6 +1258,23 @@
                 </span>
 
                 <span class="tt-sc-setkart-metin">
+                  {%- comment -%}
+                    URUN ADININ USTUNDEKI ETIKET.
+
+                    Baslikta artik yazmayan tur adini ("Couple Zaman
+                    Kapsulu") burasi soyluyor: bilgi kaybolmuyor,
+                    yalnizca her kartta tekrar eden kisim ADIN DISINA
+                    cikip daha kucuk bir satira tasiniyor.
+
+                    lang="tr" SART: buyuk harfe cevirme CSS'te
+                    (text-transform) yapiliyor ve tarayici harf
+                    esleme kurallarini ogeye gore seciyor. lang
+                    olmadan "Kapsulu"nun i'si "I" olurdu; lang="tr"
+                    ile dogru bicimde "İ" cikiyor.
+                  {%- endcomment -%}
+                  {%- if s.setler_etiket_ust != blank -%}
+                    <span class="tt-sc-setkart-ust" lang="tr">{{ s.setler_etiket_ust }}</span>
+                  {%- endif -%}
                   <span class="tt-sc-setkart-ad">{{ sad }}</span>
 
                   {%- comment -%}
@@ -1851,6 +1924,10 @@
       "info": "VARSAYILAN OLARAK KAPALI: boş olduğu için rozet hiç çıkmaz. Setin indirimi zaten üstü çizili fiyattan okunuyordu, köşedeki ikinci rozet aynı şeyi tekrar söylüyordu. Geri isterseniz \"[tutar] indirim\" yazın; [tutar] = karşılaştırma fiyatı − satış fiyatı. Tükenmiş üründe yine çıkmaz." },
     { "type": "range", "id": "setler_ind_esik", "label": "İndirim rozeti eşiği", "min": 0, "max": 25, "step": 1, "unit": "%", "default": 5,
       "info": "İndirim, satış fiyatının en az bu kadarı değilse rozet çıkmaz. Katalogda karşılaştırma fiyatı satış fiyatından 1 TL fazla girilmiş ürünler var; eşik olmasaydı orada \"1 TL indirim\" yazardı." },
+    { "type": "text", "id": "setler_etiket_ust", "label": "Ürün adının üstündeki etiket", "default": "Couple Zaman Kapsülü",
+      "info": "Kartta ürün adının hemen üstünde, küçük ve büyük harfle çıkar. Büyük harfe çevirmeyi tema yapar — buraya normal yazın. Rengi \"Sol üst rozet zemini\" ayarıyla aynıdır. Boş bırakırsanız etiket hiç çıkmaz." },
+    { "type": "text", "id": "setler_ad_cikar", "label": "Üründen kırpılacak ifade", "default": "Couple Zaman Kapsülü",
+      "info": "Kartta gösterilen ÜRÜN ADINDAN silinir; \"Astor + Chloe Couple Zaman Kapsülü\" kartta \"Astor + Chloe\" olur. Aynı bilgi zaten üstteki etikette durduğu için ikinci kez yazılmıyor. Shopify'daki ürün başlığına ve SEO'ya DOKUNMAZ, yalnızca bu karttaki görüntüyü kırpar. Bir üründe sonuç yanlış çıkarsa o ürüne \"Kart başlığı (vitrin)\" metafield'ini yazın; dolu olduğunda burası hiç çalışmaz." },
     { "type": "checkbox", "id": "setler_ad_temizle", "label": "Üründeki \"Kişi/...\" ekini gizle", "default": true,
       "info": "Dört set ürününün adında eski fiyat kalıntısı var (\"... Kapsülü Kişi/2279\"). Bu ayar yalnızca vitrinde gösterilen başlığı kırpar, fiyatlara dokunmaz. Kalıcı çözüm ürünleri yönetimden yeniden adlandırmak." },
     { "type": "color", "id": "setler_rozet_zemin", "label": "Sol üst rozet zemini", "default": "#3E5E4A" },
