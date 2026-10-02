@@ -1100,7 +1100,17 @@
                 yine karti aciyor; kaydirma ile dokunmayi tt-uk-kart.js
                 ayiriyor.
               {%- endcomment -%}
+              {%- comment -%}
+                Basilan KARE SAYISI: medya sayisi ile ayarin kucugu.
+                Nokta penceresi buna bakiyor -- pencere yalnizca
+                gercekten sigmayacak kadar cok kare varsa aciliyor,
+                yoksa gosterge eskisi gibi butun noktalari gosteriyor.
+              {%- endcomment -%}
               {%- assign sgorseller = sp.media | where: 'media_type', 'image' -%}
+              {%- assign skare = sgorseller.size -%}
+              {%- if skare > s.setler_gorsel_sayisi -%}
+                {%- assign skare = s.setler_gorsel_sayisi -%}
+              {%- endif -%}
               <a class="tt-sc-setkart tt-uk" href="{{ sp.url }}">
                 <span class="tt-uk-gorsel">
                   {%- if sgorseller.size > 0 -%}
@@ -1136,9 +1146,38 @@
                       {%- endfor -%}
                     </span>
                     {%- if sgorseller.size > 1 -%}
-                      <span class="tt-uk-noktalar" data-uk-noktalar aria-hidden="true">
+                      {%- comment -%}
+                        Nokta sayisi KARE SAYISI kadar; gorunen nokta
+                        sayisini pencere sinirliyor (assets/tt-uk-kart.css).
+                        Noktalari pencere kadar basmak daha kolay olurdu
+                        ama o zaman gosterge kac fotograf oldugunu
+                        bilmezdi: kaydirma orani buradaki tam sayiya
+                        dayaniyor.
+                      {%- endcomment -%}
+                      {%- assign spen = false -%}
+                      {%- if skare > s.setler_nokta_pencere -%}
+                        {%- assign spen = true -%}
+                        {%- assign spen_son = s.setler_nokta_pencere | minus: 1 -%}
+                      {%- endif -%}
+                      <span class="tt-uk-noktalar" data-uk-noktalar aria-hidden="true"
+                            {%- if spen %} data-uk-pencere="{{ s.setler_nokta_pencere }}"{% endif -%}>
                         {%- for sm in sgorseller limit: s.setler_gorsel_sayisi -%}
-                          <i{% if forloop.first %} data-uk-aktif{% endif %}></i>
+                          {%- comment -%}
+                            ILK PENCERE LIQUID'DE: JS yalnizca kaydirma
+                            olayinda calisiyor, bu yuzden baslangic
+                            halini o cizseydi ilk boyamada yedi nokta
+                            gorunup sonra uce dusuyor olurdu. Markup
+                            dogru halle geliyor, JS yalnizca devrali-
+                            yor -- JS hic calismasa bile gosterge
+                            dogru.
+                          {%- endcomment -%}
+                          <i
+                            {%- if forloop.first %} data-uk-aktif{% endif -%}
+                            {%- if spen -%}
+                              {%- if forloop.index0 > spen_son %} data-uk-disarda{% endif -%}
+                              {%- if forloop.index0 == spen_son %} data-uk-uc{% endif -%}
+                            {%- endif -%}
+                          ></i>
                         {%- endfor -%}
                       </span>
                     {%- endif -%}
@@ -1785,8 +1824,10 @@
       "info": "Kartın içindeki görsel galerisi de yanlara kayıyor; görselin üstünden yapılan kaydırma şeride geçmediği için şeridi okla çevirmek gerekiyor. Kapatmanız önerilmez. Kartlar zaten sıraya sığıyorsa çubuk kendiliğinden çıkmaz." },
     { "type": "text", "id": "setler_onceki", "label": "Geri oku (ekran okuyucu)", "default": "Önceki setler" },
     { "type": "text", "id": "setler_sonraki", "label": "İleri oku (ekran okuyucu)", "default": "Sonraki setler" },
-    { "type": "range", "id": "setler_gorsel_sayisi", "label": "Kart başına görsel sayısı", "min": 1, "max": 6, "step": 1, "default": 3,
-      "info": "Kartın içinde parmakla kaydırılabilen galeri. Ürünün Shopify'daki medya sırasını takip eder." },
+    { "type": "range", "id": "setler_gorsel_sayisi", "label": "Kart başına görsel sayısı", "min": 1, "max": 10, "step": 1, "default": 10,
+      "info": "Kartın içinde parmakla kaydırılabilen galeri. Ürünün Shopify'daki medya sırasını takip eder. Varsayılan 10, yani katalogdaki ürünlerin BÜTÜN fotoğrafları geçilebiliyor; fotoğraflar hepsi birden değil, kaydırdıkça iniyor." },
+    { "type": "range", "id": "setler_nokta_pencere", "label": "Görünen nokta sayısı", "min": 2, "max": 6, "step": 1, "default": 3,
+      "info": "Görselin üstündeki gösterge en fazla bu kadar nokta gösterir; fotoğraf sayısı bundan fazlaysa noktalar kaymaya başlar, çoğalmaz. Fotoğraf sayısı bu değerin altındaysa hepsi görünür." },
     { "type": "select", "id": "setler_gorsel_oran", "label": "Görsel alanının oranı", "default": "3 / 4",
       "info": "Bütün kartlarda ve galerinin bütün karelerinde aynı yükseklik. Taşan kısım ortadan kırpılır; farklı boyda ürün fotoğrafları kartı uzatıp kısaltamaz.",
       "options": [
@@ -1806,8 +1847,8 @@
     { "type": "color", "id": "setler_kod_renk", "label": "Çark kodu geçerliyken fiyat rengi", "default": "#3E5E4A" },
     { "type": "text", "id": "setler_rozet", "label": "Sol üst rozet", "default": "2'li set",
       "info": "Her kartta aynı yazar, hesap yapmaz. Boş bırakırsanız rozet hiç çıkmaz." },
-    { "type": "text", "id": "setler_ind_rozet", "label": "Sağ üst indirim rozeti", "default": "[tutar] indirim",
-      "info": "[tutar] = karşılaştırma fiyatı − satış fiyatı. Boş bırakırsanız rozet hiç çıkmaz. Tükenmiş üründe de çıkmaz." },
+    { "type": "text", "id": "setler_ind_rozet", "label": "Sağ üst indirim rozeti",
+      "info": "VARSAYILAN OLARAK KAPALI: boş olduğu için rozet hiç çıkmaz. Setin indirimi zaten üstü çizili fiyattan okunuyordu, köşedeki ikinci rozet aynı şeyi tekrar söylüyordu. Geri isterseniz \"[tutar] indirim\" yazın; [tutar] = karşılaştırma fiyatı − satış fiyatı. Tükenmiş üründe yine çıkmaz." },
     { "type": "range", "id": "setler_ind_esik", "label": "İndirim rozeti eşiği", "min": 0, "max": 25, "step": 1, "unit": "%", "default": 5,
       "info": "İndirim, satış fiyatının en az bu kadarı değilse rozet çıkmaz. Katalogda karşılaştırma fiyatı satış fiyatından 1 TL fazla girilmiş ürünler var; eşik olmasaydı orada \"1 TL indirim\" yazardı." },
     { "type": "checkbox", "id": "setler_ad_temizle", "label": "Üründeki \"Kişi/...\" ekini gizle", "default": true,

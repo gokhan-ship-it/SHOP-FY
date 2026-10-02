@@ -125,15 +125,21 @@
 .tt-uk-rozet--kampanya { background: var(--tt-uk-yesil); color: #fff; }
 .tt-uk-rozet--etiket { background: #fff; color: var(--tt-uk-koyu); }
 
-/* --- Nokta gostergesi --- */
+/* --- Nokta gostergesi ---
+   Olculer degisken: tek yerde durmalari, birini degistirince
+   otekilerin sessizce uyumsuz kalmasini bastan engelliyor. */
 .tt-uk-noktalar {
+  --tt-uk-nokta-c: 5px;    /* normal nokta */
+  --tt-uk-nokta-a: 13px;   /* aktif nokta */
+  --tt-uk-nokta-ara: 3px;  /* aradaki bosluk */
+
   position: absolute;
   left: 8px;
   bottom: 8px;
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--tt-uk-nokta-ara);
   padding: 4px 6px;
   border-radius: 999px;
   background: rgb(255 255 255 / .85);
@@ -141,13 +147,43 @@
 }
 .tt-uk-noktalar i {
   display: block;
-  width: 5px;
-  height: 5px;
+  /* Flex ogesi olduklari icin: dar bir kapta esneyip daralmasinlar,
+     olculeri yukaridaki degiskenlerin dedigi gibi kalsin. */
+  flex: 0 0 auto;
+  width: var(--tt-uk-nokta-c);
+  height: var(--tt-uk-nokta-c);
   border-radius: 999px;
   background: var(--tt-uk-nokta);
-  transition: width 160ms ease, background-color 160ms ease;
+  transition: width 160ms ease, background-color 160ms ease, opacity 160ms ease;
 }
-.tt-uk-noktalar i[data-uk-aktif] { width: 13px; background: var(--tt-uk-koyu); }
+.tt-uk-noktalar i[data-uk-aktif] {
+  width: var(--tt-uk-nokta-a);
+  background: var(--tt-uk-koyu);
+}
+
+/* --- Nokta PENCERESI ---
+   Urunun BUTUN fotograflari seritte duruyor ama gosterge sabit sayida
+   nokta gosteriyor: yedi fotografli bir uronde yedi nokta, dar kartin
+   ustunde bir cizgi gibi duruyordu.
+
+   Pencere disinda kalan noktalar CIZILMIYOR (display: none). Once
+   satiri kaydirip kabi kirpmak denendi; overflow DOLGU kutusunda
+   kirptigi icin sagdaki dolgu kadar, bir sonraki noktanin ucu
+   sizmaya devam ediyordu -- sol tarafta karsiligi olmadigi icin de
+   hata gibi duruyordu. Cizmemek hem kusursuz hem daha az kural:
+   genislik kendiliginden sabit, cunku pencerede her zaman bir aktif
+   ve (p-1) normal nokta var.
+
+   SOLUK UC: pencerenin otesinde baska fotograf varsa oradaki nokta
+   soluk cikiyor. Uc nokta sabit kalsaydi musteri daha fazlasi
+   oldugunu hic bilemezdi; bu, sayiyi buyutmeden "devami var"
+   diyen tek isaret. Genisligi degistirmiyor, yani gosterge
+   kaydirirken ziplamiyor.
+
+   Hangi noktanin disarda ve hangisinin uc oldugunu JS isaretliyor
+   (bkz. assets/tt-uk-kart.js). */
+.tt-uk-noktalar i[data-uk-disarda] { display: none; }
+.tt-uk-noktalar i[data-uk-uc] { opacity: .45; }
 
 /* --- Kose dugmesi --- */
 .tt-uk-dugme {
