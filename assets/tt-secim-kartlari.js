@@ -393,9 +393,28 @@
     }
 
     /* ---------- Urun baglantilari ----------
-       Couple modunda urun sayfasi Couple secili acilsin diye linklere
-       ?mod=couple ekleniyor. Kartlar yeniden BASILMIYOR -- yalnizca
-       mevcut <a>'larin href'i yaziliyor, mod degisimi ani kaliyor. */
+       Couple modunda urun sayfasi couple haliyle acilsin diye linklere
+       IKI parametre ekleniyor:
+
+         mod=couple   bolumun kendi parametresi; geri donuldugunde
+                      Couple secili aciliyor.
+         view=couple  Shopify'in ALTERNATIF SABLON parametresi. Sayfa
+                      templates/product.couple.json ile basiliyor; o
+                      sablonun eki "couple" oldugu icin
+                      snippets/tt-akis-seridi yonlendiricisi couple
+                      akisini (Yukleyin -> Bulusun -> Acilsin) ciziyor,
+                      yani hazir set sayfalarindaki akisin aynisi.
+
+       Karar neden sunucuda: ?mod Liquid'den OKUNAMIYOR, query
+       parametreleri sablona gecmiyor. Ayni gorunumu tarayicida kurmak
+       her urun sayfasina couple akisinin ikinci bir kopyasini
+       basmak demekti; alternatif sablon bunu tek satirla cozuyor.
+
+       Single modunda hicbir parametre eklenmiyor: sayfa bugunku
+       haliyle, klasik akis seridiyle aciliyor.
+
+       Kartlar yeniden BASILMIYOR -- yalnizca mevcut <a>'larin href'i
+       yaziliyor, mod degisimi ani kaliyor. */
     function baglantilariYaz() {
       for (var k = 0; k < karolar.length; k++) {
         var kart = karolar[k].querySelector('[data-uk]');
@@ -403,7 +422,7 @@
         var u = kart.getAttribute('data-uk-url');
         if (!u) continue;
         var hedef = mod === 'couple'
-          ? u + (u.indexOf('?') >= 0 ? '&' : '?') + 'mod=couple'
+          ? u + (u.indexOf('?') >= 0 ? '&' : '?') + 'mod=couple&view=couple'
           : u;
         var baglar = karolar[k].querySelectorAll('[data-uk-bag]');
         for (var b = 0; b < baglar.length; b++) baglar[b].setAttribute('href', hedef);
