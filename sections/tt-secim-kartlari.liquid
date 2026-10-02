@@ -493,11 +493,25 @@
       color: var(--tt-sc-set-rozet);
     }
     {%- comment -%}
-      AD ALANI IKI SATIRLIK: taban yukseklik (min-height) iki satir
-      yer ayiriyor, line-clamp da UC satira tasmayi kesiyor. Ikisi
-      birlikte oldugu icin ad bir satir da olsa uc satir da olsa
-      alanin boyu degismiyor -- fiyat bloklari butun kartlarda ayni
-      hizada kaliyor.
+      AD ALANI EN FAZLA IKI SATIR -- ama IKI SATIRLIK YER AYIRMIYOR.
+
+      Burada once "min-height: 2.6em" vardi, yani ad tek satir olsa
+      bile iki satirlik yer tutuluyordu. Adlar kisaldiktan sonra
+      (artik "Astor + Chloe" yaziyor) o ikinci satir hicbir kartta
+      dolmuyor ve bos satir, ad ile fiyat arasinda duran bir bosluga
+      donusuyordu -- 375 px'de olculdu: 17 px.
+
+      Kaldirmak hizayi BOZMUYOR, cunku fiyatlari hizalayan sey o
+      taban yukseklik degil: kartlar izgara ogesi olarak esit boyda
+      ve fiyat blogu "margin-top: auto" ile kartin altina yasli
+      (bkz. .tt-sc-setkart-fiyatlar). Ad kac satir olursa olsun
+      fiyatlar ayni cizgide bitiyor.
+
+      line-clamp DURUYOR: cok uzun bir ad uc satira tasip karti
+      uzatmasin. 360 px'de "Luna + Infinity Charm" gercekten iki
+      satira dusuyor; orada kartlar o kartin boyuna gore esitleniyor
+      ve digerlerinde ayni 17 px bosluk kaliyor -- yani 360 px'de
+      durum eskisiyle ayni, daha genis ekranlarda bosluk kapaniyor.
     {%- endcomment -%}
     #shopify-section-{{ sid }} .tt-sc-setkart-ad {
       display: -webkit-box;
@@ -508,7 +522,6 @@
       font-size: 13px;
       font-weight: 500;
       line-height: 1.3;
-      min-height: 2.6em;
       color: var(--tt-sc-koyu);
     }
     #shopify-section-{{ sid }} .tt-sc-setkart-fiyatlar {
