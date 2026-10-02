@@ -690,6 +690,49 @@
       width: 16px;
       background: var(--tt-sc-yesil);
     }
+    {%- comment -%}
+      SET OLUSTURUCUNUN USTUNDEKI BASLIK
+
+      Hazir setlerden sonra gelen "kendin kur" bolumunu acikca
+      baslatiyor: musteri serit bitince dogrudan koyu kural bandina
+      giriyordu ve iki alanin ayri seyler oldugu yalnizca kutunun
+      kenarindan anlasiliyordu.
+
+      Gorunurluk SAF CSS, tipki hazir setler blogunda oldugu gibi:
+      kok oge Couple'a gecince assets/tt-secim-kartlari.js zaten
+      data-sc-aktif-mod="couple" yaziyor. Boylece baslik, altindaki
+      kutuyla ayni anda geliyor ve JS'e tek satir eklenmiyor.
+
+      Olculer hazir setler basligiyla AYNI (18/13 px): ikisi de ayni
+      seviyede, birbirini izleyen iki alt bolum -- biri otekinden
+      buyuk gorunurse sayfada olmayan bir hiyerarsi uydurulmus olur.
+
+      Baslik varken kutunun kendi 20px ust boslugu 8px'e iniyor:
+      baslik ile anlattigi kutu birbirine yakin dursun, ustteki
+      seritten ise acikca ayrilsin.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-set-ust {
+      display: none;
+      gap: 2px;
+      margin-top: 20px;
+    }
+    #shopify-section-{{ sid }} .tt-sc[data-sc-aktif-mod="couple"] .tt-sc-set-ust { display: grid; }
+    #shopify-section-{{ sid }} .tt-sc-set-ust + .tt-sc-set { margin-top: 8px; }
+    #shopify-section-{{ sid }} .tt-sc-set-ust-baslik {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      color: var(--tt-sc-koyu);
+    }
+    #shopify-section-{{ sid }} .tt-sc-set-ust-alt {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--tt-sc-gri);
+    }
+
     @media (prefers-reduced-motion: reduce) {
       #shopify-section-{{ sid }} .tt-sc-setler-ok,
       #shopify-section-{{ sid }} .tt-sc-setler-nokta i { transition: none; }
@@ -1450,6 +1493,23 @@
         gorunecegini CSS seciyor. JS ikon uretmiyor -- boylece markup
         tek yerde kaliyor ve XSS yuzeyi acilmiyor.
       {%- endcomment -%}
+      {%- comment -%}
+        Baslik kutunun DISINDA, cunku .tt-sc-set cerceveli ve
+        overflow: hidden olan bir kart; icine girse kartin bir
+        parcasiymis gibi okunurdu. Kutuyla ayni anda gorunmesini
+        yukaridaki CSS sagliyor (bkz. .tt-sc-set-ust).
+      {%- endcomment -%}
+      {%- if s.set_ust_baslik != blank or s.set_ust_alt != blank -%}
+        <div class="tt-sc-set-ust">
+          {%- if s.set_ust_baslik != blank -%}
+            <h3 class="tt-sc-set-ust-baslik">{{ s.set_ust_baslik }}</h3>
+          {%- endif -%}
+          {%- if s.set_ust_alt != blank -%}
+            <p class="tt-sc-set-ust-alt">{{ s.set_ust_alt }}</p>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
       <div class="tt-sc-set" data-sc-set hidden>
         {%- if s.set_bant_ust != blank or s.set_bant_alt != blank -%}
           <div class="tt-sc-set-bant">
@@ -1952,6 +2012,12 @@
     { "type": "color", "id": "setler_ayrac_renk", "label": "Kesik çizgi", "default": "#E3E5E8" },
 
     { "type": "header", "content": "Setini oluştur kutusu" },
+    { "type": "paragraph", "content": "Bu kutu yalnızca Couple modunda, hazır setlerin altında çıkar. Aşağıdaki üst başlık kutunun dışında, onun hemen üstünde durur." },
+    { "type": "text", "id": "set_ust_baslik", "label": "Üst başlık",
+      "default": "Kendi setini oluşturmak ister misin?",
+      "info": "Kutunun üstündeki başlık. Boş bırakılırsa başlık çıkmaz." },
+    { "type": "text", "id": "set_ust_alt", "label": "Üst başlık — alt satır",
+      "info": "İsteğe bağlı açıklama. Boşsa çıkmaz." },
     { "type": "text", "id": "set_bant_ust", "label": "Kural bandı — ana satır",
       "default": "Biri senin, biri onun için iki ürün ekle",
       "info": "Kutunun en üstündeki koyu bant. Boş bırakılırsa bant çıkmaz." },
