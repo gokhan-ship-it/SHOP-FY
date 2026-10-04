@@ -36,6 +36,7 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
 20. **Müşteri kartına yer tutucu e-posta:** Kullanıcı resmileştirirken her faturaya elle "hatalı" e-posta yazıyor (Paraşüt e-posta istiyor) ve vakit kaybediyor; müşteri e-postasının bozulmuş hâlini (ör. `gokha.n43@gmail.com`) önerdi. Gmail noktaları yok saydığı için bu gerçek müşteriye gider; harf değiştirmek başka bir kişiye denk gelebilir. Bunun yerine `siparis-<no>@example.com` yazılır (RFC 2606 ayrılmış alan adı, e-posta alamaz). Mükerrer kart kontrolü yine `musteriler.json` ile.
 21. **İlk toplu çalıştırma (23.09.2026):** `--tarih 2026-09-19:2026-09-23` → 34 taslak oluşturuldu, 0 red, 0 tutar farkı. Atlanan 6: #13537–#13539 (elle), #13569/#13572/#13573 (önceden programla). 19.09'da Paraşüt'teki 3 fatura elle kesilen #13537–#13539 ile örtüşüyor.
 22. **Resmileştirme (23.09.2026):** Kullanıcı 37 taslağın hepsini e-Arşiv olarak resmileştirdi (Paraşüt: "GÖNDERİLDİ (ENTEGRATÖR)"). Program günlük kullanıma geçti; kılavuz `KULLANIM.md`.
+23. **Program 24.09–04.10 arası kullanılmadı (04.10.2026):** Eleman #13577–#13584'ü elle kesti (son: NX22026000000220, Aylin Barzegar = #13584, 24.09). #13585'ten itibaren ~90 sipariş kesilmedi. `--elle-kesildi` aralık kabul ediyor (`13577-13584`). Açık soru: 7 günden eski siparişlerin fatura tarihi (sipariş tarihi mi, bugün mü) — mali müşavire soruluyor.
 
 Henüz cevaplanmadı (bu siparişler şimdilik otomatik atlanıp raporlanıyor):
 - Kısmi iade / sonradan değiştirilmiş sipariş

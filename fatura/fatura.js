@@ -14,6 +14,7 @@
 //   node fatura.js --tarih 2026-09-19:2026-09-22   birden fazla gün
 //   node fatura.js --tarih 2026-09-24 --dry-run
 //   node fatura.js --elle-kesildi 13565,13566   bu siparişleri elle kestim, program atlasın
+//   node fatura.js --elle-kesildi 13577-13584   aralık olarak
 
 const crypto = require('crypto');
 const fs = require('fs');
@@ -245,8 +246,16 @@ function elleKesildiIsaretle() {
   const a = process.argv.slice(2);
   const i = a.indexOf('--elle-kesildi');
   if (i < 0) return false;
-  const liste = (a[i + 1] || '').split(',').map((x) => x.trim().replace(/^#/, '')).filter(Boolean);
-  if (!liste.length || liste.some((x) => !/^\d+$/.test(x))) hata('Örnek: node fatura.js --elle-kesildi 13565,13566');
+  // "13565,13566" veya aralık "13577-13584" (ikisi karışık da olabilir)
+  const liste = [];
+  for (const parca of (a[i + 1] || '').split(',').map((x) => x.trim().replace(/#/g, '')).filter(Boolean)) {
+    const m = parca.match(/^(\d+)(?:-(\d+))?$/);
+    if (!m) hata('Örnek: node fatura.js --elle-kesildi 13565,13566  veya  --elle-kesildi 13577-13584');
+    const bas = Number(m[1]), bit = Number(m[2] || m[1]);
+    if (bit < bas || bit - bas > 500) hata(`Aralık hatalı: ${parca}`);
+    for (let n = bas; n <= bit; n++) liste.push(String(n));
+  }
+  if (!liste.length) hata('Örnek: node fatura.js --elle-kesildi 13577-13584');
   const kayit = kayitOku();
   for (const x of liste) {
     const no = `#${x}`;
