@@ -94,6 +94,20 @@
       ],
       "name": "Video Hero — Kapsül",
       "settings": {
+        "duzen": "klasik",
+        "ticker_ac": true,
+        "ticker_bekleme": 0.9,
+        "ticker_zemin": "#1c232b",
+        "ticker_kenarlik": "#2a323c",
+        "ticker_rengi": "#e6e8eb",
+        "ticker_vurgu_rengi": "#9fd4bd",
+        "sabit_baslik": "Bu, bir ömür saklar.",
+        "sabit_vurgu": "bir ömür",
+        "log_line": "<p>Ona bir zaman kapsülü hediye et ya da birlikte doldurun. Anılarınız kilitlensin, doğru anda açılsın.</p>",
+        "log_rengi": "#b8bec6",
+        "kanit_metin": "100.000'den fazla kişi kullanıyor",
+        "kanit_rengi": "#8b939d",
+        "kanit_yildiz_rengi": "#e0a95a",
         "yildiz_goster": true,
         "yildiz_rengi": "#f5a623",
         "yildiz_boyutu": 16,
@@ -139,6 +153,227 @@
         "p_bot_m": 36,
         "p_top_d": 64,
         "p_bot_d": 64
+      }
+    },
+    "tt_cok_satanlar_1": {
+      "type": "tt-cok-satanlar",
+      "blocks": {
+        "k1": {
+          "type": "urun",
+          "settings": {
+            "urun": "luna-aurora-couple-zaman-kapsulu-kopya",
+            "kategori": "couple",
+            "rozet": "",
+            "ust": "",
+            "ad": "Astor + Chloe"
+          }
+        },
+        "k2": {
+          "type": "urun",
+          "settings": {
+            "urun": "full-tasli-kapsul-zaman-kapsulu-kolye",
+            "kategori": "kadin",
+            "rozet": "",
+            "ust": "",
+            "ad": ""
+          }
+        },
+        "k3": {
+          "type": "urun",
+          "settings": {
+            "urun": "astor-zaman-kapsulu-bileklik",
+            "kategori": "erkek",
+            "rozet": "",
+            "ust": "",
+            "ad": ""
+          }
+        },
+        "k4": {
+          "type": "urun",
+          "settings": {
+            "urun": "luna-infinity-charm-couple-zaman-kapsulu-kisi-2279-kopya",
+            "kategori": "couple",
+            "rozet": "",
+            "ust": "",
+            "ad": "Noir + Chloe"
+          }
+        },
+        "k5": {
+          "type": "urun",
+          "settings": {
+            "urun": "vera-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+            "kategori": "kadin",
+            "rozet": "",
+            "ust": "",
+            "ad": ""
+          }
+        },
+        "k6": {
+          "type": "urun",
+          "settings": {
+            "urun": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+            "kategori": "erkek",
+            "rozet": "",
+            "ust": "",
+            "ad": ""
+          }
+        },
+        "k7": {
+          "type": "urun",
+          "settings": {
+            "urun": "zaman-kapsulu-kolye-classic-white-925-ayar-gumus-couple-kopya",
+            "kategori": "couple",
+            "rozet": "",
+            "ust": "",
+            "ad": "Luna + Aurora"
+          }
+        },
+        "k8": {
+          "type": "urun",
+          "settings": {
+            "urun": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+            "kategori": "kadin",
+            "rozet": "",
+            "ust": "",
+            "ad": ""
+          }
+        },
+        "k9": {
+          "type": "urun",
+          "settings": {
+            "urun": "nova-zaman-kapsulu-bileklik316l-paslanmaz-celik",
+            "kategori": "erkek",
+            "rozet": "",
+            "ust": "",
+            "ad": ""
+          }
+        },
+        "k10": {
+          "type": "urun",
+          "settings": {
+            "urun": "nora-vera-couple-zaman-kapsulu-kopya",
+            "kategori": "couple",
+            "rozet": "",
+            "ust": "",
+            "ad": "Nova + Chloe"
+          }
+        },
+        "k11": {
+          "type": "urun",
+          "settings": {
+            "urun": "zaman-kapsulu-kolye-classic-ocean-blue",
+            "kategori": "kadin",
+            "rozet": "",
+            "ust": "",
+            "ad": ""
+          }
+        },
+        "k12": {
+          "type": "urun",
+          "settings": {
+            "urun": "astor-zaman-kapsulu-bileklik-kopya",
+            "kategori": "erkek",
+            "rozet": "",
+            "ust": "",
+            "ad": ""
+          }
+        },
+        "k13": {
+          "type": "urun",
+          "settings": {
+            "urun": "lumin-charm",
+            "kategori": "couple",
+            "rozet": "",
+            "ust": "",
+            "ad": "Lumin + Charm"
+          }
+        },
+        "k14": {
+          "type": "urun",
+          "settings": {
+            "urun": "klasik-zaman-kapsulu-kolye-pembe",
+            "kategori": "kadin",
+            "rozet": "",
+            "ust": "",
+            "ad": ""
+          }
+        },
+        "k15": {
+          "type": "urun",
+          "settings": {
+            "urun": "diamond-vantablack-zaman-kapsulu-erkek-kolye",
+            "kategori": "erkek",
+            "rozet": "",
+            "ust": "",
+            "ad": ""
+          }
+        }
+      },
+      "block_order": [
+        "k1",
+        "k2",
+        "k3",
+        "k4",
+        "k5",
+        "k6",
+        "k7",
+        "k8",
+        "k9",
+        "k10",
+        "k11",
+        "k12",
+        "k13",
+        "k14",
+        "k15"
+      ],
+      "settings": {
+        "aktif": true,
+        "bos_metin": "Henüz ürün kartı eklenmedi — soldaki \"Ürün kartı\" bloklarından ekleyin.",
+        "baslik": "En çok tercih edilenler",
+        "alt_baslik": "Bu sezon en çok hediye edilen kapsüller.",
+        "bas_boyut_m": 24,
+        "bas_boyut_d": 30,
+        "cip_goster": true,
+        "cip_etiket": "Kategori",
+        "cip_tumu": "Tümü",
+        "cip_couple": "Couple",
+        "cip_kadin": "Kadın",
+        "cip_erkek": "Erkek",
+        "sira_goster": true,
+        "sira_metin": "#[n] çok satan",
+        "kadin_link": "https://texttonext.com/collections/zaman-kapsulu-kolyeler",
+        "erkek_link": "https://texttonext.com/collections/zaman-kapsulu-bileklik",
+        "couple_link": "https://texttonext.com/collections/couple-urunler",
+        "couple_uyari_metin": "Couple linkini girin — şu an Couple kartları tıklanamıyor.",
+        "rozet_couple": "2'li set",
+        "rozet_kadin": "Kadın",
+        "rozet_erkek": "Erkek",
+        "ust_couple": "Couple Zaman Kapsülü",
+        "ust_tekli": "Single Zaman Kapsülü",
+        "etiket_normal": "",
+        "kod_etiket": "İNDİRİM KODU İLE",
+        "kisi_etiket": "Kişi başı [tutar]",
+        "kadin_metin": "Kadın koleksiyonunu gör",
+        "erkek_metin": "Erkek koleksiyonunu gör",
+        "onceki": "Önceki kartlar",
+        "sonraki": "Sonraki kartlar",
+        "gorsel_oran": "1 / 1",
+        "zemin": "#f7f8fa",
+        "genislik": 1200,
+        "bosluk_ust_m": 32,
+        "bosluk_alt_m": 32,
+        "bosluk_ust_d": 56,
+        "bosluk_alt_d": 56,
+        "rozet_zemin": "#3e5e4a",
+        "vurgu": "#3e5e4a",
+        "kod_renk": "#3e5e4a",
+        "etiket_renk": "#777777",
+        "fiyat_renk": "#16181d",
+        "eski_renk": "#999999",
+        "ayrac_renk": "#e3e5e8",
+        "kenar": "#e3e5e8",
+        "koyu": "#15171c",
+        "gri": "#6b7280"
       }
     },
     "story_choice_cards_v1": {
@@ -337,7 +572,17 @@
         "a3_b": "Yan yana geldiğinizde",
         "q4": "Nasıl tekrar kilitlenir?",
         "a4_a": "Sen kilitlersin",
-        "a4_b": "Uzaklaşınca kendi kilitlenir"
+        "a4_b": "Uzaklaşınca kendi kilitlenir",
+        "c_name": "#0071e3",
+        "c_cta": "#0071e3",
+        "c_btn_text": "#ffffff",
+        "c_text": "#f5f5f7",
+        "c_muted": "#86868b",
+        "c_bg": "#000000",
+        "c_surface": "#1d1d1f",
+        "c_media": "#000000",
+        "c_line": "#2a2a2c",
+        "c_pill_bg": "#2d2d2f"
       }
     },
     "hediye_omru_4cjEHU": {
@@ -2689,196 +2934,14 @@
         "yan_bosluk_d": 40,
         "z_kat": 1000
       }
-    },
-    "tt_cok_satanlar_1": {
-      "type": "tt-cok-satanlar",
-      "blocks": {
-        "k1": {
-          "type": "urun",
-          "settings": {
-            "urun": "luna-aurora-couple-zaman-kapsulu-kopya",
-            "kategori": "couple",
-            "rozet": "",
-            "ust": "",
-            "ad": "Astor + Chloe"
-          }
-        },
-        "k2": {
-          "type": "urun",
-          "settings": {
-            "urun": "full-tasli-kapsul-zaman-kapsulu-kolye",
-            "kategori": "kadin",
-            "rozet": "",
-            "ust": "",
-            "ad": ""
-          }
-        },
-        "k3": {
-          "type": "urun",
-          "settings": {
-            "urun": "astor-zaman-kapsulu-bileklik",
-            "kategori": "erkek",
-            "rozet": "",
-            "ust": "",
-            "ad": ""
-          }
-        },
-        "k4": {
-          "type": "urun",
-          "settings": {
-            "urun": "luna-infinity-charm-couple-zaman-kapsulu-kisi-2279-kopya",
-            "kategori": "couple",
-            "rozet": "",
-            "ust": "",
-            "ad": "Noir + Chloe"
-          }
-        },
-        "k5": {
-          "type": "urun",
-          "settings": {
-            "urun": "vera-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
-            "kategori": "kadin",
-            "rozet": "",
-            "ust": "",
-            "ad": ""
-          }
-        },
-        "k6": {
-          "type": "urun",
-          "settings": {
-            "urun": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
-            "kategori": "erkek",
-            "rozet": "",
-            "ust": "",
-            "ad": ""
-          }
-        },
-        "k7": {
-          "type": "urun",
-          "settings": {
-            "urun": "zaman-kapsulu-kolye-classic-white-925-ayar-gumus-couple-kopya",
-            "kategori": "couple",
-            "rozet": "",
-            "ust": "",
-            "ad": "Luna + Aurora"
-          }
-        },
-        "k8": {
-          "type": "urun",
-          "settings": {
-            "urun": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
-            "kategori": "kadin",
-            "rozet": "",
-            "ust": "",
-            "ad": ""
-          }
-        },
-        "k9": {
-          "type": "urun",
-          "settings": {
-            "urun": "nova-zaman-kapsulu-bileklik316l-paslanmaz-celik",
-            "kategori": "erkek",
-            "rozet": "",
-            "ust": "",
-            "ad": ""
-          }
-        },
-        "k10": {
-          "type": "urun",
-          "settings": {
-            "urun": "nora-vera-couple-zaman-kapsulu-kopya",
-            "kategori": "couple",
-            "rozet": "",
-            "ust": "",
-            "ad": "Nova + Chloe"
-          }
-        },
-        "k11": {
-          "type": "urun",
-          "settings": {
-            "urun": "zaman-kapsulu-kolye-classic-ocean-blue",
-            "kategori": "kadin",
-            "rozet": "",
-            "ust": "",
-            "ad": ""
-          }
-        },
-        "k12": {
-          "type": "urun",
-          "settings": {
-            "urun": "astor-zaman-kapsulu-bileklik-kopya",
-            "kategori": "erkek",
-            "rozet": "",
-            "ust": "",
-            "ad": ""
-          }
-        },
-        "k13": {
-          "type": "urun",
-          "settings": {
-            "urun": "lumin-charm",
-            "kategori": "couple",
-            "rozet": "",
-            "ust": "",
-            "ad": "Lumin + Charm"
-          }
-        },
-        "k14": {
-          "type": "urun",
-          "settings": {
-            "urun": "klasik-zaman-kapsulu-kolye-pembe",
-            "kategori": "kadin",
-            "rozet": "",
-            "ust": "",
-            "ad": ""
-          }
-        },
-        "k15": {
-          "type": "urun",
-          "settings": {
-            "urun": "diamond-vantablack-zaman-kapsulu-erkek-kolye",
-            "kategori": "erkek",
-            "rozet": "",
-            "ust": "",
-            "ad": ""
-          }
-        }
-      },
-      "block_order": [
-        "k1",
-        "k2",
-        "k3",
-        "k4",
-        "k5",
-        "k6",
-        "k7",
-        "k8",
-        "k9",
-        "k10",
-        "k11",
-        "k12",
-        "k13",
-        "k14",
-        "k15"
-      ],
-      "settings": {
-        "aktif": true,
-        "baslik": "En çok tercih edilenler",
-        "alt_baslik": "Bu sezon en çok hediye edilen kapsüller.",
-        "cip_goster": true,
-        "sira_goster": true,
-        "kadin_link": "https://texttonext.com/collections/zaman-kapsulu-kolyeler",
-        "erkek_link": "https://texttonext.com/collections/zaman-kapsulu-bileklik",
-        "couple_link": "https://texttonext.com/collections/couple-urunler"
-      }
     }
   },
   "order": [
     "video_hero_ChLUTb",
     "hero_video_kapsul_ALtinB",
+    "tt_cok_satanlar_1",
     "story_choice_cards_v1",
     "tt_catal_karsilastirma_DR3MX8",
-    "tt_cok_satanlar_1",
     "hediye_omru_4cjEHU",
     "video_slider_kapsul_P4MECP",
     "mozaik_kartlar_WJaRVA",
