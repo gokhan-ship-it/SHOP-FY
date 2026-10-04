@@ -378,7 +378,19 @@
     {%- endcomment -%}
     #shopify-section-{{ sid }} .tt-cs-ust {
       margin-bottom: 4px;
-      font-size: {{ s.ust_boyut }}px;
+      {%- comment -%}
+        Punto KART GENISLIGINE bagli, ust siniri ayar.
+
+        Olculdu: "COUPLE ZAMAN KAPSÜLÜ" 0.04em aralikla, metin
+        kutusunun genisliginin yaklasik 6,2'de biri kadar punto ile
+        tam siginiyor. 360 px'de kart 144 px: 8,9 px cikiyor ve
+        sigiyor; genis kartta ayardaki degere (varsayilan 9 px)
+        dayaniyor. Sabit punto verildiginde en dar kartta kil payi
+        tasip noktalaniyordu.
+
+        Alt sinir 7 px: ne olursa olsun okunmaz bir boya dusmesin.
+      {%- endcomment -%}
+      font-size: clamp(7px, 6.2cqw, {{ s.ust_boyut }}px);
       font-weight: 500;
       /* 1.6: dar satir kutusunda overflow: hidden BUYUK HARF
          UZERINDEKI isaretleri kirpiyor -- "KAPSÜLÜ" ekranda
@@ -459,6 +471,12 @@
       color: var(--tt-cs-eski);
       text-decoration: line-through;
     }
+    {%- comment -%}
+      Kart KONTEYNER: hem ust etiketin puntosu hem asagidaki fiyat
+      satiri kuralii kartin kendi genisligini okuyor. Ekran degil kart
+      onemli, cunku kart genisligi ayardan degisebiliyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-kart { container-type: inline-size; }
     {%- if cizili_var -%}
     {%- comment -%}
       DAR KARTTA FIYAT SATIRI IKI SATIRLIK YER AYIRIYOR.
@@ -473,7 +491,6 @@
       sorgusu. Kural yalnizca listede gercekten cizili fiyat varsa
       basiliyor.
     {%- endcomment -%}
-    #shopify-section-{{ sid }} .tt-cs-kart { container-type: inline-size; }
     @container (max-width: 190px) {
       #shopify-section-{{ sid }} .tt-cs-satir { min-height: calc(19px * 1.2 + 12px * 1.2 + 2px); }
     }
@@ -547,6 +564,49 @@
 
   <section class="tt-cs" data-tt-cs>
     <div class="tt-cs-ic">
+      {%- comment -%}
+        CARK BOLUMUN EN BASINDA.
+
+        Markup snippets/ttn-cark-kart.liquid'de; sitedeki obur
+        cagiranlarla (tt-secim-kartlari, ttn-spin-wheel) AYNI snippet,
+        ayni sozlesme. Kazanildiginda kart yalnizca uc cerezi yaziyor;
+        indirimi gosteren sey mevcut katman (assets/taksit-tablosu.js),
+        yani bu bolumdeki kartlar da ayni anda indirimli fiyata
+        geciyor. Burada ikinci bir indirim ya da fiyat mantigi YOK.
+
+        Kod, sure ve alttaki sabit bar "Çark – genel" bolum grubundan
+        (sections/ttn-cark.json) geliyor; bu bolum yalnizca gorunumu
+        ve metinleri tasiyor.
+
+        ttn-cark.js sayfadaki butun [data-ttn-cark] koklerini birden
+        tariyor, yani ayni sayfada baska bir cark karti olsa da ikisi
+        birbirini bozmuyor.
+      {%- endcomment -%}
+      {%- if s.cark_goster -%}
+        {%- render 'ttn-cark-kart',
+            sid: sid,
+            kompakt_baslik: s.cark_kompakt_baslik,
+            kompakt_alt: s.cark_kompakt_alt,
+            kompakt_dugme: s.cark_kompakt_dugme,
+            vazgec: s.cark_vazgec,
+            cevir_dugme: s.cark_cevir_dugme,
+            cark_not: s.cark_not,
+            dilimler: s.cark_dilimler,
+            birim: s.cark_birim,
+            dilim_renkleri: s.cark_dilim_renkleri,
+            kupon_baslik: s.cark_kupon_baslik,
+            kupon_onay: s.cark_kupon_onay,
+            kart_zemin: s.cark_kart_zemin,
+            vurgu: s.cark_vurgu,
+            koyu: s.cark_koyu,
+            alt_yazi: s.cark_alt_yazi,
+            halka: s.cark_halka,
+            genislik: s.cark_genislik,
+            ust_bosluk: s.cark_ust_bosluk,
+            alt_bosluk: s.cark_alt_bosluk
+        -%}
+      {%- endif -%}
+
       {%- if s.baslik != blank or s.alt_baslik != blank -%}
         <div class="tt-cs-bas">
           {%- if s.baslik != blank -%}<h2 class="tt-cs-baslik">{{ s.baslik }}</h2>{%- endif -%}
@@ -904,10 +964,34 @@
     { "type": "range", "id": "bosluk_ust_d", "label": "Üst boşluk – masaüstü", "min": 0, "max": 160, "step": 2, "unit": "px", "default": 56 },
     { "type": "range", "id": "bosluk_alt_d", "label": "Alt boşluk – masaüstü", "min": 0, "max": 160, "step": 2, "unit": "px", "default": 56 },
 
+    { "type": "header", "content": "Çark" },
+    { "type": "paragraph", "content": "Bölümün en üstünde ince bir çark kartı. Sitedeki diğer çarklarla AYNI kaynaktan çalışır: kazanınca aynı çerezleri yazar, indirim katmanı da bu bölümdeki fiyatları aynı anda indirimli hale getirir. Kod, süre ve alttaki sabit bar \"Çark – genel\" bölüm grubundan gelir." },
+    { "type": "checkbox", "id": "cark_goster", "label": "Çarkı göster", "default": true },
+    { "type": "text", "id": "cark_kompakt_baslik", "label": "Kapalıyken başlık", "default": "Çarkı çevir, indirimini kazan" },
+    { "type": "text", "id": "cark_kompakt_alt", "label": "Kapalıyken alt satır", "default": "Herkes kazanır" },
+    { "type": "text", "id": "cark_kompakt_dugme", "label": "Kapalıyken buton", "default": "Çevir" },
+    { "type": "text", "id": "cark_vazgec", "label": "Vazgeç metni", "default": "İstemiyorum" },
+    { "type": "text", "id": "cark_cevir_dugme", "label": "Çevir butonu", "default": "Çarkı çevir" },
+    { "type": "text", "id": "cark_not", "label": "Çarkın altındaki not", "default": "Kupon 30 dakika geçerli, sepete otomatik eklenir" },
+    { "type": "text", "id": "cark_dilimler", "label": "Dilim tutarları", "default": "500,1000,500,750,500,750,500,1000" },
+    { "type": "text", "id": "cark_birim", "label": "Para birimi eki", "default": "TL" },
+    { "type": "text", "id": "cark_dilim_renkleri", "label": "Dilim renkleri", "default": "#1F4648,#5CC98F,#0A1A1C,#4FB883,#1F4648,#5CC98F,#0A1A1C,#4FB883" },
+    { "type": "text", "id": "cark_kupon_baslik", "label": "Kazanınca başlık", "default": "[tutar] kazandın" },
+    { "type": "text", "id": "cark_kupon_onay", "label": "Kazanınca onay satırı", "default": "✓ Sepetine eklendi" },
+    { "type": "color", "id": "cark_kart_zemin", "label": "Çark kartı zemini", "default": "#EAF3FD" },
+    { "type": "color", "id": "cark_vurgu", "label": "Çark vurgusu", "default": "#0071E3" },
+    { "type": "color", "id": "cark_koyu", "label": "Çark yazısı", "default": "#0A1A1C" },
+    { "type": "color", "id": "cark_alt_yazi", "label": "Çark alt yazısı", "default": "#3C4E40" },
+    { "type": "color", "id": "cark_halka", "label": "Çark halkası", "default": "#F2F2F2" },
+    { "type": "range", "id": "cark_genislik", "label": "Çark kartı genişliği", "min": 260, "max": 640, "step": 10, "unit": "px", "default": 420,
+      "info": "Açılan çarkın boyu da buna bağlı; küçültünce bölüm daha az yer kaplar." },
+    { "type": "range", "id": "cark_ust_bosluk", "label": "Çark üst boşluğu", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 0 },
+    { "type": "range", "id": "cark_alt_bosluk", "label": "Çark alt boşluğu", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 14 },
+
     { "type": "header", "content": "Renkler" },
-    { "type": "color", "id": "rozet_zemin", "label": "Rozet ve üst etiket", "default": "#3E5E4A" },
-    { "type": "color", "id": "vurgu", "label": "Vurgu (kişi başı, nokta, ok)", "default": "#3E5E4A" },
-    { "type": "color", "id": "kod_renk", "label": "İndirimli fiyat", "default": "#3E5E4A" },
+    { "type": "color", "id": "rozet_zemin", "label": "Rozet ve üst etiket", "default": "#0071E3" },
+    { "type": "color", "id": "vurgu", "label": "Vurgu (kişi başı, nokta, ok)", "default": "#0071E3" },
+    { "type": "color", "id": "kod_renk", "label": "İndirimli fiyat", "default": "#0071E3" },
     { "type": "color", "id": "etiket_renk", "label": "Fiyat üstü küçük etiket", "default": "#777777" },
     { "type": "color", "id": "fiyat_renk", "label": "Fiyat", "default": "#16181D" },
     { "type": "color", "id": "eski_renk", "label": "Üstü çizili fiyat", "default": "#999999" },
