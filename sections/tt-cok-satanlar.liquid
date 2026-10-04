@@ -70,6 +70,7 @@
   assign say_erkek = 0
   assign kart_var = 0
   assign couple_var = false
+  assign cizili_var = false
   for b in section.blocks
     if b.settings.urun != blank
       assign kart_var = kart_var | plus: 1
@@ -82,6 +83,17 @@
         when 'erkek'
           assign say_erkek = say_erkek | plus: 1
       endcase
+
+      comment
+        Listede HIC ustu cizili fiyat var mi? Dar kartta fiyat satiri
+        ikiye kiriliyor; yer ayirma kurali (asagida, CSS icinde)
+        yalnizca gercekten cizili fiyat varsa basiliyor. CSS markuptan
+        ONCE basildigi icin burada hesaplaniyor.
+      endcomment
+      assign bv = b.settings.urun.selected_or_first_available_variant
+      if bv.compare_at_price > bv.price
+        assign cizili_var = true
+      endif
     endif
   endfor
 
@@ -230,14 +242,17 @@
     {%- comment -%}
       SERIT
       Tasiyici grid; akis sutuna cevriliyor ve kutu yatayda kayiyor.
-      Kart genisligi mobilde %74 -- bir sonraki kartin kenari
-      gorunuyor, serit oldugu anlasiliyor. Masaustunde 3,2 kart.
+      Kart genisligi AYARDAN: mobilde yuzde, masaustunde "kac kart
+      gorunsun". Masaustu bolmesinde 0,2 fazlasi var -- bir sonraki
+      kartin kenari gorunsun diye; serit oldugunu anlatan sey bu.
       overflow-x kutuda, sayfada degil: yatay sayfa kaydirmasi yok.
     {%- endcomment -%}
+    {%- assign d_bol = s.kart_adet_d | plus: 0.2 -%}
+    {%- assign d_ara = s.kart_adet_d | times: 12 -%}
     #shopify-section-{{ sid }} .tt-cs-serit {
       display: grid;
       grid-auto-flow: column;
-      grid-auto-columns: 74%;
+      grid-auto-columns: {{ s.kart_genislik_m }}%;
       gap: 12px;
       align-items: stretch;
       margin-top: 14px;
@@ -251,7 +266,7 @@
     #shopify-section-{{ sid }} .tt-cs-serit::-webkit-scrollbar { display: none; }
     @media (min-width: 1024px) {
       #shopify-section-{{ sid }} .tt-cs-serit {
-        grid-auto-columns: calc((100% - 3 * 12px) / 3.2);
+        grid-auto-columns: calc((100% - {{ d_ara }}px) / {{ d_bol }});
       }
     }
 
@@ -293,11 +308,27 @@
       height: 100%;
       object-fit: cover;
     }
-    #shopify-section-{{ sid }} .tt-cs-rozet {
+    {%- comment -%}
+      IKI ROZET TEK SATIRDA, KENDI KENDINE SARILIYOR.
+
+      Kart dar olabiliyor (genislik ayardan). Rozetler ayri ayri
+      "top/left" ve "top/right" ile konumlandirildiginda dar kartta
+      ust uste biniyor ve ikisi de okunmaz oluyordu. Artik ikisi de
+      ayni satirin icinde: sigmazsa sira rozeti alt satira iniyor ve
+      margin-left: auto sayesinde orada da saga yasli kaliyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-rozetler {
       position: absolute;
       top: 8px;
       left: 8px;
+      right: 8px;
       z-index: 2;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    #shopify-section-{{ sid }} .tt-cs-rozet {
       padding: 3px 7px;
       border-radius: 999px;
       background: var(--tt-cs-rozet);
@@ -307,14 +338,11 @@
       line-height: 1.2;
     }
     {%- comment -%}
-      Sira rozeti SAG USTTE ve ters kontrastta: soldaki koyu rozetle
-      ayni gorunumde olsalardi iki ayri bilgi tek sey gibi okunurdu.
+      Sira rozeti ters kontrastta: soldaki koyu rozetle ayni
+      gorunumde olsalardi iki ayri bilgi tek sey gibi okunurdu.
     {%- endcomment -%}
     #shopify-section-{{ sid }} .tt-cs-sira {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      z-index: 2;
+      margin-left: auto;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -414,6 +442,25 @@
       color: var(--tt-cs-eski);
       text-decoration: line-through;
     }
+    {%- if cizili_var -%}
+    {%- comment -%}
+      DAR KARTTA FIYAT SATIRI IKI SATIRLIK YER AYIRIYOR.
+
+      Kart kucuk oldugunda "2.398 TL  2.898 TL" tek satira sigmiyor;
+      cizili fiyat alta kayinca O KARTIN ana fiyati bir satir yukarida
+      kaliyor, cizili fiyati olmayan kartlarda kalmiyor -- seritte ana
+      fiyatlar birbirini tutmuyordu.
+
+      Olcu KARTA bagli, ekrana degil (ayni ekranda kart genisligi
+      ayardan degisebiliyor), o yuzden medya sorgusu degil KONTEYNER
+      sorgusu. Kural yalnizca listede gercekten cizili fiyat varsa
+      basiliyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-kart { container-type: inline-size; }
+    @container (max-width: 190px) {
+      #shopify-section-{{ sid }} .tt-cs-satir { min-height: calc(19px * 1.2 + 12px * 1.2 + 2px); }
+    }
+    {%- endif -%}
     {%- comment -%}
       Kesik cizginin altindaki satir: ustteki tutardan TURETILMIS ya da
       ondan ayri bir bilgi oldugunu cizgi tek basina anlatiyor.
@@ -647,17 +694,21 @@
                      class: 'tt-cs-img',
                      draggable: 'false' }}
               {%- endif -%}
-              {%- if rozet != blank -%}
-                <span class="tt-cs-rozet">{{ rozet }}</span>
-              {%- endif -%}
-              {%- if s.sira_goster -%}
-                {%- assign sira_metin = s.sira_metin | replace: '[n]', sira_no -%}
-                <span class="tt-cs-sira">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                    <path d="M12 3c.6 2.6 2.2 3.6 3.4 5A6.8 6.8 0 0 1 17.5 12a5.5 5.5 0 1 1-11 0c0-1.3.5-2.4 1.2-3.3.3.8.9 1.4 1.7 1.7-.2-2.4.6-4.8 2.6-7.4Z"/>
-                  </svg>
-                  <span>{{ sira_metin }}</span>
+              {%- if rozet != blank or s.sira_goster -%}
+                <span class="tt-cs-rozetler">
+                  {%- if rozet != blank -%}
+                    <span class="tt-cs-rozet">{{ rozet }}</span>
+                  {%- endif -%}
+                  {%- if s.sira_goster -%}
+                    {%- assign sira_metin = s.sira_metin | replace: '[n]', sira_no -%}
+                    <span class="tt-cs-sira">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M12 3c.6 2.6 2.2 3.6 3.4 5A6.8 6.8 0 0 1 17.5 12a5.5 5.5 0 1 1-11 0c0-1.3.5-2.4 1.2-3.3.3.8.9 1.4 1.7 1.7-.2-2.4.6-4.8 2.6-7.4Z"/>
+                      </svg>
+                      <span>{{ sira_metin }}</span>
+                    </span>
+                  {%- endif -%}
                 </span>
               {%- endif -%}
             </span>
@@ -821,7 +872,11 @@
     { "type": "header", "content": "Görünüm" },
     { "type": "select", "id": "gorsel_oran", "label": "Görsel oranı",
       "options": [ { "value": "1 / 1", "label": "Kare" }, { "value": "4 / 5", "label": "4:5" }, { "value": "3 / 4", "label": "3:4" } ],
-      "default": "3 / 4" },
+      "default": "1 / 1" },
+    { "type": "range", "id": "kart_genislik_m", "label": "Kart genişliği – mobil", "min": 30, "max": 90, "step": 1, "unit": "%", "default": 44,
+      "info": "%44'te iki kart ve bir sonrakinin kenarı görünür." },
+    { "type": "range", "id": "kart_adet_d", "label": "Görünen kart sayısı – masaüstü", "min": 2, "max": 6, "step": 1, "default": 4,
+      "info": "Bir sonraki kartın kenarı her zaman görünür." },
     { "type": "color", "id": "zemin", "label": "Arka plan rengi", "default": "#F7F8FA" },
     { "type": "range", "id": "genislik", "label": "En fazla genişlik", "min": 600, "max": 1600, "step": 20, "unit": "px", "default": 1200 },
     { "type": "range", "id": "bosluk_ust_m", "label": "Üst boşluk – mobil", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 32 },
