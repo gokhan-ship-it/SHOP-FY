@@ -1623,8 +1623,12 @@
           {%- comment -%}
             Secili cip ILK BOYAMADA dogru: JS'i beklemeden, acilis
             degeri neyse o isaretli basiliyor.
+
+            Dizi YUKARIDA assign ediliyor: Shopify Liquid "for" etiketinin
+            kaynak ifadesinde filtre kabul etmiyor (… in 'a,b' | split).
           {%- endcomment -%}
-          {%- for c in 'tumu,kadin,erkek' | split: ',' -%}
+          {%- assign cip_ler = 'tumu,kadin,erkek' | split: ',' -%}
+          {%- for c in cip_ler -%}
             {%- if c == 'tumu' -%}{%- assign c_ad = s.kime_tumu -%}
             {%- elsif c == 'kadin' -%}{%- assign c_ad = s.kime_kadin -%}
             {%- else -%}{%- assign c_ad = s.kime_erkek -%}{%- endif -%}
