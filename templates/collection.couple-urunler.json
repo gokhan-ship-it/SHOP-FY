@@ -86,8 +86,103 @@
         "z_kat": 1000
       }
     },
+    "tt_couple_kapsul": {
+      "type": "tt-couple-kapsul",
+      "blocks": {
+        "bulusma_1": {
+          "type": "bulusma",
+          "settings": {
+            "etiket": "12 Mar",
+            "yil": 2025,
+            "ay": 3,
+            "foto": 86
+          }
+        },
+        "bulusma_2": {
+          "type": "bulusma",
+          "settings": {
+            "etiket": "3 Ara",
+            "yil": 2025,
+            "ay": 12,
+            "foto": 920
+          }
+        },
+        "bulusma_3": {
+          "type": "bulusma",
+          "settings": {
+            "etiket": "14 Ağu",
+            "yil": 2026,
+            "ay": 8,
+            "foto": 2350
+          }
+        },
+        "bulusma_4": {
+          "type": "bulusma",
+          "settings": {
+            "etiket": "2 Haz",
+            "yil": 2027,
+            "ay": 6,
+            "foto": 4700
+          }
+        }
+      },
+      "block_order": [
+        "bulusma_1",
+        "bulusma_2",
+        "bulusma_3",
+        "bulusma_4"
+      ],
+      "name": "TT Couple Kapsül",
+      "settings": {
+        "hap_metni": "Couple Zaman Kapsülü",
+        "baslik_1": "Yalnızca",
+        "baslik_vurgu": "buluştuğunuzda",
+        "baslik_2": "açılır.",
+        "alt_metin": "Her buluşmanızda kullanın. Kapsüller yan yana gelince açılır, uzaklaşınca kilitlenir.",
+        "kanit_ac": true,
+        "kanit_metin": "100.000'den fazla kişi kullanıyor",
+        "gorsel_1": "shopify://shop_images/aurora1.webp",
+        "gorsel_2": "shopify://shop_images/vantablack2_94e4a80c-4df2-4fb8-a042-d23111b98216.webp",
+        "gorsel_kose": 14,
+        "kart_boyut": 32,
+        "sayac_etiket": "Medya",
+        "sayac_sure": 800,
+        "yil_bas": 2025,
+        "yil_son": 2027,
+        "adim_1": "Yükleyin",
+        "adim_2": "Buluşun",
+        "adim_3": "Biriktirin",
+        "adim_4": "Tekrarlayın",
+        "arkaplan": "#181b1e",
+        "hap_zemin": "#1c232b",
+        "hap_kenar": "#2a323c",
+        "hap_renk": "#e6e8eb",
+        "baslik_renk": "#ffffff",
+        "vurgu_renk": "#9fd4bd",
+        "alt_renk": "#b8bec6",
+        "yildiz_renk": "#e0a95a",
+        "kanit_renk": "#8b939d",
+        "sahne_renk_1": "#edeff2",
+        "sahne_renk_2": "#d9dde3",
+        "sayac_daire": "#3e5e4a",
+        "adim_renk": "#7d858e",
+        "adim_aktif_renk": "#16231c",
+        "baslik_m": 28,
+        "baslik_t": 36,
+        "baslik_d": 44,
+        "max_w": 1200,
+        "sahne_genislik": 1100,
+        "sahne_bosluk": 32,
+        "kose": 16,
+        "p_top_m": 36,
+        "p_bot_m": 36,
+        "p_top_d": 64,
+        "p_bot_d": 64
+      }
+    },
     "kampanya_bandi": {
       "type": "kampanya-bandi",
+      "disabled": true,
       "name": "Kampanya Bandı",
       "settings": {
         "aktif": true,
@@ -407,7 +502,7 @@
         "setler_adet": 6,
         "setler_kaydir": true,
         "setler_sutun_m": "2",
-        "setler_sutun_d": 3,
+        "setler_sutun_d": 4,
         "setler_goz": 18,
         "setler_nav_goster": true,
         "setler_onceki": "Önceki setler",
@@ -415,6 +510,7 @@
         "setler_gorsel_sayisi": 10,
         "setler_nokta_pencere": 3,
         "setler_gorsel_oran": "3 / 4",
+        "setler_gorsel_oran_d": "1 / 1",
         "setler_set_etiket": "SET FİYATI · 2 ÜRÜN",
         "setler_kisi_goster": true,
         "setler_kisi_etiket": "Kişi başı [tutar]",
@@ -512,98 +608,6 @@
         "cark_genislik": 520,
         "cark_ust_bosluk": 16,
         "cark_alt_bosluk": 16
-      }
-    },
-    "tt_couple_kapsul": {
-      "type": "tt-couple-kapsul",
-      "blocks": {
-        "bulusma_1": {
-          "type": "bulusma",
-          "settings": {
-            "etiket": "12 Mar",
-            "yil": 2025,
-            "ay": 3,
-            "foto": 86
-          }
-        },
-        "bulusma_2": {
-          "type": "bulusma",
-          "settings": {
-            "etiket": "3 Ara",
-            "yil": 2025,
-            "ay": 12,
-            "foto": 920
-          }
-        },
-        "bulusma_3": {
-          "type": "bulusma",
-          "settings": {
-            "etiket": "14 Ağu",
-            "yil": 2026,
-            "ay": 8,
-            "foto": 2350
-          }
-        },
-        "bulusma_4": {
-          "type": "bulusma",
-          "settings": {
-            "etiket": "2 Haz",
-            "yil": 2027,
-            "ay": 6,
-            "foto": 4700
-          }
-        }
-      },
-      "block_order": [
-        "bulusma_1",
-        "bulusma_2",
-        "bulusma_3",
-        "bulusma_4"
-      ],
-      "name": "TT Couple Kapsül",
-      "settings": {
-        "hap_metni": "Couple Zaman Kapsülü",
-        "baslik_1": "Yalnızca",
-        "baslik_vurgu": "buluştuğunuzda",
-        "baslik_2": "açılır.",
-        "alt_metin": "Her buluşmanızda kullanın. Kapsüller yan yana gelince açılır, uzaklaşınca kilitlenir.",
-        "kanit_ac": true,
-        "kanit_metin": "100.000'den fazla kişi kullanıyor",
-        "gorsel_1": "shopify://shop_images/aurora1.webp",
-        "gorsel_2": "shopify://shop_images/vantablack2_94e4a80c-4df2-4fb8-a042-d23111b98216.webp",
-        "sayac_etiket": "Fotoğraf",
-        "sayac_sure": 800,
-        "yil_bas": 2025,
-        "yil_son": 2027,
-        "adim_1": "Yükleyin",
-        "adim_2": "Buluşun",
-        "adim_3": "Biriktirin",
-        "adim_4": "Tekrarlayın",
-        "arkaplan": "#181b1e",
-        "hap_zemin": "#1c232b",
-        "hap_kenar": "#2a323c",
-        "hap_renk": "#e6e8eb",
-        "baslik_renk": "#ffffff",
-        "vurgu_renk": "#9fd4bd",
-        "alt_renk": "#b8bec6",
-        "yildiz_renk": "#e0a95a",
-        "kanit_renk": "#8b939d",
-        "sahne_renk_1": "#edeff2",
-        "sahne_renk_2": "#d9dde3",
-        "sayac_daire": "#3e5e4a",
-        "adim_renk": "#7d858e",
-        "adim_aktif_renk": "#16231c",
-        "baslik_m": 28,
-        "baslik_t": 36,
-        "baslik_d": 44,
-        "max_w": 1200,
-        "sahne_genislik": 1100,
-        "sahne_bosluk": 32,
-        "kose": 16,
-        "p_top_m": 36,
-        "p_bot_m": 36,
-        "p_top_d": 64,
-        "p_bot_d": 64
       }
     },
     "main-collection": {
@@ -723,6 +727,7 @@
     },
     "dongu_seridi": {
       "type": "dongu-seridi",
+      "disabled": true,
       "name": "Döngü Şeridi",
       "settings": {
         "aktif": true,
@@ -1440,6 +1445,7 @@
   },
   "order": [
     "apple_local_nav_couple",
+    "tt_couple_kapsul",
     "kampanya_bandi",
     "video_hero_QEwiAC",
     "blocks_3DqLbT",
@@ -1448,7 +1454,6 @@
     "featured_collection_kQPefY",
     "1782308930a5adb660",
     "tt_secim_kartlari_MqYNcr",
-    "tt_couple_kapsul",
     "main-collection",
     "dongu_seridi",
     "blocks_PRExA7",

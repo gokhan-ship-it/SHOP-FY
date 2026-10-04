@@ -314,6 +314,21 @@
       --tt-sc-set-fiyat-px: 19px;
       --tt-sc-set-eski-px: 12px;
     }
+    {%- comment -%}
+      MASAUSTUNDE AYRI ORAN
+
+      Masaustunde kart cok daha genis oldugu icin ayni dikey oran
+      kartin tamamini asiri uzatiyor. Bu ayar BOS birakilinca hicbir
+      sey degismiyor -- degisken mobildekiyle ayni kaliyor; yalnizca
+      bir oran secilince masaustunde ustune yaziliyor.
+    {%- endcomment -%}
+    {%- if s.setler_gorsel_oran_d != blank -%}
+      @media (min-width: 1024px) {
+        #shopify-section-{{ sid }} .tt-sc-setler {
+          --tt-sc-set-oran: {{ s.setler_gorsel_oran_d }};
+        }
+      }
+    {%- endif -%}
     #shopify-section-{{ sid }} .tt-sc[data-sc-aktif-mod="couple"] .tt-sc-setler { display: block; }
     #shopify-section-{{ sid }} .tt-sc-setler-bas { display: grid; gap: 2px; margin-bottom: 12px; }
     #shopify-section-{{ sid }} .tt-sc-setler-baslik {
@@ -2066,7 +2081,15 @@
       "info": "Kartın içinde parmakla kaydırılabilen galeri. Ürünün Shopify'daki medya sırasını takip eder. Varsayılan 10, yani katalogdaki ürünlerin BÜTÜN fotoğrafları geçilebiliyor; fotoğraflar hepsi birden değil, kaydırdıkça iniyor." },
     { "type": "range", "id": "setler_nokta_pencere", "label": "Görünen nokta sayısı", "min": 2, "max": 6, "step": 1, "default": 3,
       "info": "Görselin üstündeki gösterge en fazla bu kadar nokta gösterir; fotoğraf sayısı bundan fazlaysa noktalar kaymaya başlar, çoğalmaz. Fotoğraf sayısı bu değerin altındaysa hepsi görünür." },
-    { "type": "select", "id": "setler_gorsel_oran", "label": "Görsel alanının oranı", "default": "3 / 4",
+    { "type": "select", "id": "setler_gorsel_oran_d", "label": "Görsel alanının oranı — masaüstü", "default": "",
+      "info": "Masaüstünde kart çok daha geniş olduğu için aynı dikey oran kartı aşırı uzatabilir. \"Mobille aynı\" seçiliyken hiçbir şey değişmez.",
+      "options": [
+        { "value": "", "label": "Mobille aynı" },
+        { "value": "1 / 1", "label": "Kare (1:1)" },
+        { "value": "4 / 5", "label": "Hafif dikey (4:5)" },
+        { "value": "3 / 4", "label": "Dikey (3:4)" }
+      ] },
+    { "type": "select", "id": "setler_gorsel_oran", "label": "Görsel alanının oranı — mobil", "default": "3 / 4",
       "info": "Bütün kartlarda ve galerinin bütün karelerinde aynı yükseklik. Taşan kısım ortadan kırpılır; farklı boyda ürün fotoğrafları kartı uzatıp kısaltamaz.",
       "options": [
         { "value": "1 / 1", "label": "Kare (1:1) — koleksiyon kartlarıyla aynı" },
