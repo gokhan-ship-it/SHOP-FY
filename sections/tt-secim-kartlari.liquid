@@ -77,6 +77,25 @@
     assign vk = 'tumu'
   endunless
 
+  comment
+    MOD KILIDI
+    Tek deneyimli sayfalarda (orn. couple koleksiyonu) Single/Couple
+    secimi anlamsiz, hatta yaniltici. Kilitliyse secim kartlari hic
+    basilmiyor ve mod bastan sabit. Taninmayan deger = kilit yok.
+  endcomment
+  assign kilit = s.mod_kilit
+  unless kilit == 'couple' or kilit == 'single'
+    assign kilit = ''
+  endunless
+
+  comment
+    Kilit varsa acilis modu da odur; yoksa ayardaki varsayilan.
+  endcomment
+  assign acilis_mod = s.varsayilan_mod
+  if kilit != blank
+    assign acilis_mod = kilit
+  endif
+
   assign tekil_kol = collection
   assign kadin_kol = collections[s.kadin_koleksiyon]
   assign erkek_kol = collections[s.erkek_koleksiyon]
@@ -773,7 +792,8 @@
   </style>
 
   <div class="tt-sc" data-tt-sc
-       data-sc-varsayilan="{{ s.varsayilan_mod }}"
+       data-sc-varsayilan="{{ acilis_mod }}"
+       {%- if kilit != blank %} data-sc-kilit="{{ kilit }}"{% endif -%}
        {%- comment -%}
          Filtrenin acilis degeri. data-sc-ilk yalnizca ILK BOYAMA icin:
          JS ilk cizimi bitirince kaldiriyor, boylece acilista yanlis
@@ -865,6 +885,17 @@
         {{ s.couple_ad }}. {{ s.couple_ust }}. {{ s.couple_adet }}. {{ s.couple_yukleme }}
         {%- if s.couple_rozet != blank %}. {{ s.couple_rozet }}{% endif -%}
       {%- endcapture -%}
+      {%- comment -%}
+        MOD SECIMI KILITLIYSE KARTLAR HIC BASILMIYOR.
+
+        Couple koleksiyonu gibi tek deneyimli bir sayfada "Single"
+        secenegi yanlis yere goturuyor. Kilit ayarda: kartlar
+        basilmiyor, mod bastan sabit ve ?mod= parametresi de
+        yoksayiliyor (assets/tt-secim-kartlari.js). Geri kalan her sey
+        -- filtre cipleri, izgara, set kutusu, yapiskan cubuk --
+        oldugu gibi calisiyor.
+      {%- endcomment -%}
+      {%- if kilit == blank -%}
       <div class="tt-sc-kartlar" role="radiogroup" aria-label="{{ s.baslik | default: 'Deneyim' | escape }}">
         {%- comment -%} Single {%- endcomment -%}
         <div class="tt-sc-kart" role="radio" tabindex="0" aria-checked="true" data-sc-mod="single"
@@ -967,6 +998,7 @@
           {%- endif -%}
         </div>
       </div>
+      {%- endif -%}
 
       {%- comment -%}
         CARK KARTI -- KARTLARIN HEMEN ALTINDA
@@ -1978,6 +2010,10 @@
       "options": [ { "value": "single", "label": "Single" }, { "value": "couple", "label": "Couple" } ],
       "default": "single",
       "info": "Adres satırında ?mod=couple varsa o kazanır." },
+    { "type": "select", "id": "mod_kilit", "label": "Deneyim seçimini kilitle",
+      "options": [ { "value": "yok", "label": "Kilitleme (Single + Couple)" }, { "value": "couple", "label": "Yalnızca Couple" }, { "value": "single", "label": "Yalnızca Single" } ],
+      "default": "yok",
+      "info": "Tek deneyimli sayfalarda kullanın (ör. Couple koleksiyonu). Kilitliyken Single/Couple kartları hiç çıkmaz, mod baştan sabittir ve adres satırındaki ?mod= yoksayılır." },
     { "type": "select", "id": "varsayilan_kime", "label": "Açılışta seçili filtre",
       "options": [ { "value": "tumu", "label": "Tümü" }, { "value": "kadin", "label": "Kadın" }, { "value": "erkek", "label": "Erkek" } ],
       "default": "tumu",

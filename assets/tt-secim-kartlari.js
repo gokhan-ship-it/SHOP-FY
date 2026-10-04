@@ -87,7 +87,14 @@
     var vBaslik  = KOK.querySelector('[data-sc-varyant-baslik]');
     var vListe   = KOK.querySelector('[data-sc-varyant-liste]');
 
-    var mod = KOK.getAttribute('data-sc-varsayilan') === 'couple' ? 'couple' : 'single';
+    /* MOD KILIDI: tek deneyimli sayfada (orn. couple koleksiyonu)
+       secim kartlari hic basilmiyor ve mod sabit. Kilitliyken
+       ?mod= parametresi de yoksayiliyor -- yoksa adresle girilen
+       bir deger sayfayi geri donulemez bir moda sokardi. */
+    var KILIT = KOK.getAttribute('data-sc-kilit');
+    if (KILIT !== 'couple' && KILIT !== 'single') KILIT = '';
+
+    var mod = KILIT || (KOK.getAttribute('data-sc-varsayilan') === 'couple' ? 'couple' : 'single');
     /* Filtrenin ACILIS degeri ayardan geliyor. Erkek koleksiyonu
        sayfasinda "Tumu" ile acilmak ziyaretciyi geldigi yerden
        uzaklastiriyordu: once kadin grubunu goruyordu. Tanimsiz ya da
@@ -1361,7 +1368,7 @@
        ayarindaki varsayilani EZIYOR. */
     try {
       var p = new URLSearchParams(window.location.search).get('mod');
-      if (p === 'couple' || p === 'single') mod = p;
+      if (!KILIT && (p === 'couple' || p === 'single')) mod = p;
     } catch (e) {}
 
     /* Bir kez, ilk cizimden once: sonraki her ciz() cagrisinda DOM'u
