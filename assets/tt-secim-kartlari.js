@@ -88,7 +88,14 @@
     var vListe   = KOK.querySelector('[data-sc-varyant-liste]');
 
     var mod = KOK.getAttribute('data-sc-varsayilan') === 'couple' ? 'couple' : 'single';
-    var kime = 'tumu';
+    /* Filtrenin ACILIS degeri ayardan geliyor. Erkek koleksiyonu
+       sayfasinda "Tumu" ile acilmak ziyaretciyi geldigi yerden
+       uzaklastiriyordu: once kadin grubunu goruyordu. Tanimsiz ya da
+       taninmayan deger "tumu" sayiliyor. */
+    var VARSAYILAN_KIME = KOK.getAttribute('data-sc-varsayilan-kime');
+    if (VARSAYILAN_KIME !== 'kadin' && VARSAYILAN_KIME !== 'erkek') VARSAYILAN_KIME = 'tumu';
+    var kime = VARSAYILAN_KIME;
+    var kimeOnceki = null;   /* couple'a gecerken saklanan secim */
     var set = [];          /* en fazla 2: {urunId, varyantId, ad, kime, fiyat} */
     var gonderiyor = false;
 
@@ -260,6 +267,13 @@
       gizlenenler(mod === 'couple');
       setCiz();
       cubukOlc();
+
+      /* Ilk cizim bitti. Bolumun CSS'indeki ILK BOYAMA kurallari
+         ([data-sc-ilk]) filtrenin acilis degerine gore karolari
+         gizliyordu; artik gorunurlugu bu dongu belirliyor. Nitelik
+         kalsaydi ziyaretci "Tumu"ye bastiginda o karolar CSS yuzunden
+         gizli kalirdi. */
+      if (KOK.hasAttribute('data-sc-ilk')) KOK.removeAttribute('data-sc-ilk');
     }
 
     /* Couple modunda yapiskan cubukla cakisan ogeler (temanin yuzen
@@ -1029,8 +1043,11 @@
       mod = yeni;
       if (mod === 'single') { set = []; }
       /* Couple'a gecince filtre "Tumu"ye donuyor: iki cinsiyetten de
-         urun secilebilmesi bu modun butun amaci. */
-      if (mod === 'couple') kime = 'tumu';
+         urun secilebilmesi bu modun butun amaci. Single'a donuldugunde
+         ziyaretcinin oradaki secimi geri geliyor -- Tumu'ye gecis onun
+         karari degildi, modun geregiydi. */
+      if (mod === 'couple') { kimeOnceki = kime; kime = 'tumu'; }
+      else if (kimeOnceki) { kime = kimeOnceki; kimeOnceki = null; }
       ciz();
       adresYaz();
       olc('tt_mod_secim', { mod: mod });

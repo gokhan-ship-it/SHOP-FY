@@ -65,6 +65,18 @@
   assign s = section.settings
   assign sid = section.id
 
+  comment
+    FILTRENIN ACILIS DEGERI
+    Burada hesaplaniyor cunku hem bolumun CSS'i (markuptan ONCE
+    basiliyor) hem de cip satiri ayni degeri okuyor. Taninmayan deger
+    "tumu" sayiliyor: ayar bir gun baska bir sey tutarsa sayfa
+    bozulmak yerine eski davranisina donuyor.
+  endcomment
+  assign vk = s.varsayilan_kime | default: 'tumu'
+  unless vk == 'kadin' or vk == 'erkek'
+    assign vk = 'tumu'
+  endunless
+
   assign tekil_kol = collection
   assign kadin_kol = collections[s.kadin_koleksiyon]
   assign erkek_kol = collections[s.erkek_koleksiyon]
@@ -733,6 +745,24 @@
       color: var(--tt-sc-gri);
     }
 
+    {%- if vk != 'tumu' -%}
+    {%- comment -%}
+      ILK BOYAMA -- FILTRE ACILIS DEGERI
+
+      Karolarin gorunurlugunu JS belirliyor ama script "defer" ile
+      yukleniyor; tarayici ondan once bir kare boyayabiliyor. Acilista
+      "Erkek" seciliyken o karede butun karolar gorunup hemen
+      kayboluyordu. Asagidaki kural yalnizca [data-sc-ilk] dururken
+      gecerli; JS ilk cizimi bitirince nitelik kalkiyor ve gorunurlugu
+      tamamen dongu yonetiyor.
+
+      Esleme karoUygun() ile ayni: secilen cinsiyet ya da "ikisi".
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc[data-sc-ilk] .tt-sc-karo:not([data-sc-kime="{{ vk }}"]):not([data-sc-kime="ikisi"]) {
+      display: none;
+    }
+    {%- endif -%}
+
     @media (prefers-reduced-motion: reduce) {
       #shopify-section-{{ sid }} .tt-sc-setler-ok,
       #shopify-section-{{ sid }} .tt-sc-setler-nokta i { transition: none; }
@@ -744,6 +774,15 @@
 
   <div class="tt-sc" data-tt-sc
        data-sc-varsayilan="{{ s.varsayilan_mod }}"
+       {%- comment -%}
+         Filtrenin acilis degeri. data-sc-ilk yalnizca ILK BOYAMA icin:
+         JS ilk cizimi bitirince kaldiriyor, boylece acilista yanlis
+         karolar bir an gorunmuyor ama filtre degisince CSS yolu
+         kapaniyor (bkz. yukaridaki ILK BOYAMA kurallari ve
+         assets/tt-secim-kartlari.js > ciz sonu).
+       {%- endcomment -%}
+       data-sc-varsayilan-kime="{{ vk }}"
+       {%- if vk != 'tumu' %} data-sc-ilk{% endif -%}
        data-sc-para-ornek="{{ para_ornek | escape }}"
        data-sc-tutar-goster="{{ s.tutar_goster }}"
        data-sc-gizle-secici="{{ s.gizle_secici | escape }}"
@@ -1581,9 +1620,18 @@
       {%- endcomment -%}
       <div class="tt-sc-filtre" data-sc-filtre>
         <div class="tt-sc-cipler" role="radiogroup" aria-label="{{ s.kime_etiket | escape }}">
-          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="tumu"  aria-checked="true"  tabindex="0">{{ s.kime_tumu }}</button>
-          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="kadin" aria-checked="false" tabindex="-1">{{ s.kime_kadin }}</button>
-          <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="erkek" aria-checked="false" tabindex="-1">{{ s.kime_erkek }}</button>
+          {%- comment -%}
+            Secili cip ILK BOYAMADA dogru: JS'i beklemeden, acilis
+            degeri neyse o isaretli basiliyor.
+          {%- endcomment -%}
+          {%- for c in 'tumu,kadin,erkek' | split: ',' -%}
+            {%- if c == 'tumu' -%}{%- assign c_ad = s.kime_tumu -%}
+            {%- elsif c == 'kadin' -%}{%- assign c_ad = s.kime_kadin -%}
+            {%- else -%}{%- assign c_ad = s.kime_erkek -%}{%- endif -%}
+            {%- if c == vk -%}{%- assign c_sec = 'true' -%}{%- assign c_tab = '0' -%}
+            {%- else -%}{%- assign c_sec = 'false' -%}{%- assign c_tab = '-1' -%}{%- endif -%}
+            <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="{{ c }}" aria-checked="{{ c_sec }}" tabindex="{{ c_tab }}">{{ c_ad }}</button>
+          {%- endfor -%}
         </div>
         <span class="tt-sc-sayac" data-sc-sayac aria-live="polite"></span>
       </div>
@@ -1926,6 +1974,10 @@
       "options": [ { "value": "single", "label": "Single" }, { "value": "couple", "label": "Couple" } ],
       "default": "single",
       "info": "Adres satırında ?mod=couple varsa o kazanır." },
+    { "type": "select", "id": "varsayilan_kime", "label": "Açılışta seçili filtre",
+      "options": [ { "value": "tumu", "label": "Tümü" }, { "value": "kadin", "label": "Kadın" }, { "value": "erkek", "label": "Erkek" } ],
+      "default": "tumu",
+      "info": "Kadın/Erkek filtresinin açılış değeri. Erkek koleksiyonu sayfasında \"Erkek\" seçilirse ziyaretçi doğrudan aradığı listeyle karşılaşır. Couple'a geçince filtre geçici olarak Tümü'ye dönüyor, Single'a dönünce bu değer geri geliyor." },
 
     { "type": "header", "content": "Ürün kaynağı" },
     { "type": "paragraph", "content": "Kadın/Erkek ayrımı koleksiyon üyeliğine göre yapılıyor; katalogda cinsiyet alanı yok. Yeni ürün eklerken doğru koleksiyona da eklemeyi unutmayın." },
