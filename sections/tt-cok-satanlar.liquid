@@ -213,18 +213,18 @@
     #shopify-section-{{ sid }} .tt-cs-cipler {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       margin-top: 14px;
       min-width: 0;
     }
     #shopify-section-{{ sid }} .tt-cs-cip {
-      padding: 7px 14px;
+      padding: 6px 12px;
       border: 1px solid var(--tt-cs-kenar);
       border-radius: 999px;
       background: #fff;
       color: var(--tt-cs-koyu);
       font: inherit;
-      font-size: 13px;
+      font-size: 12px;
       line-height: 1.2;
       white-space: nowrap;
       cursor: pointer;
@@ -365,12 +365,24 @@
       gap: 0;
       padding: 10px 10px 12px;
     }
+    {%- comment -%}
+      UST ETIKET
+      10px: kart dar oldugu icin 11px'te "COUPLE ZAMAN KAPSÜLÜ" iki
+      satira dusuyordu.
+
+      text-transform: uppercase DURUYOR ama varsayilan metinler zaten
+      BUYUK HARFLE yaziliyor. Sebebi Turkce harf eslemesi: sayfa
+      lang="tr" oldugu icin "Single" -> "SİNGLE" cikiyor (noktali I).
+      Metin bastan "SINGLE" yazilinca buyuk harfe cevirme onu
+      degistirmiyor ve Ingilizce kelime dogru gorunuyor. Kural yine de
+      duruyor ki ayara kucuk harfle bir sey yazilirsa gorunum bozulmasin.
+    {%- endcomment -%}
     #shopify-section-{{ sid }} .tt-cs-ust {
       margin-bottom: 4px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 500;
-      line-height: 1.2;
-      letter-spacing: 0.06em;
+      line-height: 1.25;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
       color: var(--tt-cs-rozet);
     }
@@ -857,8 +869,9 @@
     { "type": "text", "id": "rozet_couple", "label": "Varsayılan rozet – Couple", "default": "2'li set" },
     { "type": "text", "id": "rozet_kadin", "label": "Varsayılan rozet – Kadın", "default": "Kadın" },
     { "type": "text", "id": "rozet_erkek", "label": "Varsayılan rozet – Erkek", "default": "Erkek" },
-    { "type": "text", "id": "ust_couple", "label": "Varsayılan üst etiket – Couple", "default": "Couple Zaman Kapsülü" },
-    { "type": "text", "id": "ust_tekli", "label": "Varsayılan üst etiket – Kadın/Erkek", "default": "Single Zaman Kapsülü" },
+    { "type": "text", "id": "ust_couple", "label": "Varsayılan üst etiket – Couple", "default": "COUPLE ZAMAN KAPSÜLÜ",
+      "info": "Büyük harfle yazın: sayfa Türkçe olduğu için CSS ile büyütülen \"Single\" kelimesi \"SİNGLE\" (noktalı İ) çıkıyor." },
+    { "type": "text", "id": "ust_tekli", "label": "Varsayılan üst etiket – Kadın/Erkek", "default": "SINGLE ZAMAN KAPSÜLÜ" },
     { "type": "text", "id": "etiket_normal", "label": "Fiyatın üstündeki küçük etiket",
       "info": "Çark kodu yokken görünen satır. Boş bırakılırsa etiket çıkmaz." },
     { "type": "text", "id": "kod_etiket", "label": "Çark kodu geçerliyken küçük etiket", "default": "İNDİRİM KODU İLE" },
