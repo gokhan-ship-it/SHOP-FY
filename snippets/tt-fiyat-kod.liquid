@@ -1,0 +1,75 @@
+{%- comment -%}
+  CARK KODU AKTIFKEN SAYFANIN ANA FIYATI = ODENECEK TUTAR
+
+  SORUN
+  Koleksiyon kartinda kod gecerliyken BUYUK yazan rakam indirimli
+  tutardi: taksit-tablosu.js > kolCiz() kartin kendi blogunu acip
+  temanin .price satirini gizliyor. Urun sayfasinda ise buyuk rakam
+  urun fiyati olarak kaliyor, indirimli tutar altta ince yesil
+  seritte duruyordu. Ayni urun iki ekranda iki farkli "fiyat"
+  gosteriyordu (kartta 2.398, sayfada 2.898).
+
+  YENI BIR TUTAR URETILMIYOR
+  Ekrandaki iki rakam da zaten sayfada duruyor:
+    - buyuyen rakam SERIDIN kendi rakami. Onu fbCiz() yaziyor; varyant
+      degisince (fbIzle) ve sure dolunca (sureBittiIc) kendiliginden
+      guncelleniyor.
+    - ustu cizilen rakam temanin kendi fiyat satiri.
+  Yalnizca hangisinin buyuk oldugu degisiyor. Tek satir JS yazilmadi,
+  hicbir fiyat hesabi kopyalanmadi.
+
+  ANAHTAR: SERIDIN [hidden] NITELIGI
+  fbCiz() gecerli kod yoksa serdi gizli tutuyor, sure dolunca geri
+  gizliyor. :has() o anda butun kurallari birakiyor ve sayfa bugunku
+  gorunumune donuyor -- sayfa yenilenmeden.
+
+  NEDEN KARSILASTIRMA FIYATI GIZLENIYOR
+  Kod aktifken ekranda zaten bir ustu cizili rakam oluyor (urun
+  fiyati). Yaninda ikinci bir ustu cizili rakam (compare_at) durursa
+  "hangisi neydi" sorusu dogar. Kartta da tek cizili rakam var.
+
+  :has() desteklemeyen tarayicida hicbir kural uygulanmiyor; sayfa
+  eski haliyle calisiyor. Bozulma degil, yalnizca eski gorunum.
+
+  KAPSAM: product-info. Sayfanin altindaki urun onerileri de .price
+  tasiyor; kapsam olmasaydi onlarin fiyatlari da degisirdi. Onlar
+  zaten kolCiz()'in kendi islerinden.
+{%- endcomment -%}
+<style>
+  product-info:has([data-tt-fb-serit]:not([hidden])) .product__price .price__regular {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.2;
+    {%- comment -%}
+      Renk sabit degil: sayfanin kendi yazi renginden geliyor, yalnizca
+      soluyor. Boylece tema rengi degisirse burasi da degisiyor ve
+      snippet'e hicbir renk ayari eklenmiyor.
+    {%- endcomment -%}
+    color: inherit;
+    opacity: .55;
+    text-decoration: line-through;
+  }
+  product-info:has([data-tt-fb-serit]:not([hidden])) .product__price .price__sale {
+    display: none;
+  }
+
+  {%- comment -%}
+    Serit artik bilgi satiri degil, sayfanin fiyati.
+    Sarma acik: 360 px'de "Kodunuzla 2.398,00 TL" ile geri sayim tek
+    satira sigmiyor, sayac alta iniyor -- ustuste binmiyor.
+  {%- endcomment -%}
+  product-info:has([data-tt-fb-serit]:not([hidden])) .tt-fb-serit {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+  product-info:has([data-tt-fb-serit]:not([hidden])) .tt-fb-serit-metin {
+    font-size: 22px;
+    line-height: 1.25;
+    letter-spacing: -.02em;
+  }
+  @media (max-width: 767px) {
+    product-info:has([data-tt-fb-serit]:not([hidden])) .tt-fb-serit-metin {
+      font-size: 20px;
+    }
+  }
+</style>
