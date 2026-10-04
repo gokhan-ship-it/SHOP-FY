@@ -49,6 +49,20 @@
   endif
 
   comment
+    KAPSUL YUVALARININ ORANI
+    Gorselin kendi oraniyla cizilince contain bos kenar birakmiyor;
+    kose yuvarlatmasi ve kilit rozeti gorselin uzerine oturuyor.
+  endcomment
+  assign oran1 = '86 / 106'
+  if s.gorsel_1 != blank
+    assign oran1 = s.gorsel_1.aspect_ratio
+  endif
+  assign oran2 = '86 / 106'
+  if s.gorsel_2 != blank
+    assign oran2 = s.gorsel_2.aspect_ratio
+  endif
+
+  comment
     ON GECIS: sayacin statik (son) degeri icin son blogun sayisi.
     Isaretlemede sayac sahnenin en ustunde, noktalar en altinda --
     bu yuzden son deger noktalar cizilmeden once gerekiyor.
@@ -91,6 +105,8 @@
     --ck-kapsul-g: 86px;
     --ck-kapsul-y: 106px;
     --ck-ayrik: 34px;
+    --ck-gorsel-kose: {{ s.gorsel_kose }}px;
+    --ck-kart: {{ s.kart_boyut }}px;
     background: {{ s.arkaplan }};
     padding-top: {{ s.p_top_m }}px;
     padding-bottom: {{ s.p_bot_m }}px;
@@ -294,18 +310,29 @@
     opacity: 1;
     pointer-events: none;
   }
+  {%- comment -%}
+    Yuvanin oranini GORSELIN kendi orani belirliyor: boylece
+    object-fit: contain hic bos kenar birakmiyor, kose yuvarlatmasi
+    gercekten gorunuyor ve kilit rozeti gorselin kosesinde kaliyor.
+    Gorsel yoksa eski 86/106 orani.
+  {%- endcomment -%}
   #shopify-section-{{ sid }} .tt-ck-kapsul {
     position: relative;
     flex: none;
-    width: var(--ck-kapsul-g);
+    width: auto;
     height: var(--ck-kapsul-y);
+    /* cok yatay bir gorsel sahneyi dagitmasin */
+    max-width: calc(var(--ck-kapsul-y) * 1.3);
     will-change: transform;
   }
+  #shopify-section-{{ sid }} .tt-ck-kapsul--sol { aspect-ratio: {{ oran1 }}; }
+  #shopify-section-{{ sid }} .tt-ck-kapsul--sag { aspect-ratio: {{ oran2 }}; }
   #shopify-section-{{ sid }} .tt-ck-kapsul img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: contain;
+    border-radius: var(--ck-gorsel-kose);
     filter: drop-shadow(0 6px 14px rgba(24, 32, 40, .22));
   }
   #shopify-section-{{ sid }} .tt-ck-bos {
@@ -346,20 +373,22 @@
     z-index: 4;
     display: grid;
     place-items: center;
-    width: 22px;
-    height: 22px;
-    margin: -11px 0 0 -11px;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, .78);
-    box-shadow: 0 2px 8px rgba(20, 28, 36, .14);
+    box-sizing: border-box;
+    width: var(--ck-kart);
+    height: var(--ck-kart);
+    margin: calc(var(--ck-kart) / -2) 0 0 calc(var(--ck-kart) / -2);
+    border-radius: calc(var(--ck-kart) * .27);
+    background: rgba(255, 255, 255, .94);
+    border: 1px solid rgba(255, 255, 255, .9);
+    box-shadow: 0 5px 16px rgba(20, 28, 36, .26);
     opacity: 0;
     pointer-events: none;
   }
   #shopify-section-{{ sid }} .tt-ck-kart svg {
-    width: 12px;
-    height: 12px;
+    width: calc(var(--ck-kart) * .54);
+    height: calc(var(--ck-kart) * .54);
     display: block;
-    stroke: #46515C;
+    stroke: #39434E;
   }
 
   /* 3. asamada kapsullerden ayrilip cizelgeye giden foto karti */
@@ -585,16 +614,16 @@
     animation: tt-ck-gel-sag-{{ sid }} 760ms cubic-bezier(.3, .7, .2, 1) var(--g, 0ms) both;
   }
   @keyframes tt-ck-gel-sol-{{ sid }} {
-    0%   { transform: translate(-150px, var(--dy, 0px)) scale(1); opacity: 0; }
-    18%  { opacity: .95; }
-    82%  { opacity: .95; }
-    100% { transform: translate(0, 0) scale(.22); opacity: 0; }
+    0%   { transform: translate(-160px, var(--dy, 0px)) scale(1); opacity: 0; }
+    14%  { opacity: 1; }
+    86%  { opacity: 1; }
+    100% { transform: translate(0, 0) scale(.26); opacity: 0; }
   }
   @keyframes tt-ck-gel-sag-{{ sid }} {
-    0%   { transform: translate(150px, var(--dy, 0px)) scale(1); opacity: 0; }
-    18%  { opacity: .95; }
-    82%  { opacity: .95; }
-    100% { transform: translate(0, 0) scale(.22); opacity: 0; }
+    0%   { transform: translate(160px, var(--dy, 0px)) scale(1); opacity: 0; }
+    14%  { opacity: 1; }
+    86%  { opacity: 1; }
+    100% { transform: translate(0, 0) scale(.26); opacity: 0; }
   }
 
   /* 3. asama: kapsullerden cizelgeye giden foto karti */
@@ -643,6 +672,7 @@
       --ck-kapsul-g: 118px;
       --ck-kapsul-y: 146px;
       --ck-ayrik: 48px;
+      --ck-kart: {{ s.kart_boyut | times: 1.25 | round }}px;
     }
     #shopify-section-{{ sid }} .tt-ck-baslik { font-size: {{ s.baslik_d }}px; }
     #shopify-section-{{ sid }} .tt-ck-sahne { height: 400px; }
@@ -933,6 +963,11 @@
     { "type": "image_picker", "id": "gorsel_1", "label": "Ürün görseli 1",
       "info": "Arka planı saydam PNG önerilir. Boşsa yuva canlı sayfada boş kalır." },
     { "type": "image_picker", "id": "gorsel_2", "label": "Ürün görseli 2" },
+    { "type": "range", "id": "gorsel_kose", "label": "Ürün görseli köşe yarıçapı", "unit": "px",
+      "min": 0, "max": 32, "step": 1, "default": 14 },
+    { "type": "range", "id": "kart_boyut", "label": "Uçan anı kartı boyutu", "unit": "px",
+      "min": 18, "max": 48, "step": 1, "default": 32,
+      "info": "Kapsüllerin içine giren küçük kartlar. Masaüstünde 1,25 kat büyür." },
     { "type": "text", "id": "sayac_etiket", "label": "Sayaç etiketi", "default": "fotoğraf" },
     { "type": "range", "id": "sayac_sure", "label": "Sayaç sayma süresi", "unit": "ms",
       "min": 300, "max": 1600, "step": 50, "default": 800 },
