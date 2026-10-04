@@ -1,0 +1,865 @@
+{%- doc -%}
+  COK SATANLAR -- YATAY URUN KARTI SERIDI  (.tt-cs-*)
+
+  Ana sayfada "cok satanlar" kurgusu: kategoriye gore filtrelenebilen,
+  yatay kayan, fiyatli urun kartlari.
+
+  ------------------------------------------------------------------
+  KARTLAR URUN SAYFASINA GITMIYOR -- BILEREK
+
+  Her kart tek bir baglanti ve hedefi KOLEKSIYON:
+    Kadin -> kadin koleksiyonu, Erkek -> erkek koleksiyonu,
+    Couple -> ayardan girilen couple baglantisi.
+  Kartta sepete ekleme, varyant secici ya da hizli gorunum YOK; bu
+  bolum bir vitrin, bir satin alma akisi degil. product.url bu dosyada
+  hic kullanilmiyor.
+
+  ------------------------------------------------------------------
+  FIYAT MANTIGI KOPYALANMADI, AYNI KAYNAKTAN
+
+  "Kampanyali Couple Setler" kartiyla (sections/tt-secim-kartlari.liquid,
+  .tt-sc-setkart-*) ayni:
+
+    fiyat        selected_or_first_available_variant.price
+    eski fiyat   ayni varyantin compare_at_price'i
+    kod fiyati   settings.tt_indirim_tutar * 100, ayni korumalarla
+                 (urun satista, tutar > 0 VE urun fiyatindan kucuk)
+    kisi basi    iki urunluk sette tutarin yarisi
+    bicim        snippets/tt-para.liquid (sade: true) -> "2.398 TL"
+
+  Gorunurlugu de ayni mekanizma yonetiyor: indirimli blok
+  [data-tt-kart-fb] + data-tt-kart-fiyat tasiyor, assets/taksit-tablosu.js
+  icindeki kolCiz() cark cerezini gorunce onu aciyor ve ayni
+  sarmalayicidaki .price satirini gizliyor. Sure dolunca kendiliginden
+  geri aliniyor. Bu yuzden o dosyaya ve koleksiyon karti snippet'ine
+  DOKUNULMADI; yeni bir indirim kaynagi da kurulmadi.
+
+  ------------------------------------------------------------------
+  GORSEL ALANI: TEK KARE, IC GALERI YOK
+
+  Koleksiyon kartinda gorselin kendi yatay galerisi var. Burada serit
+  zaten yatay kaydigi icin ikinci bir yatay kaydirma ic ice gelir ve
+  parmak hangisini surukledigini bilemez. Bu yuzden yalnizca urunun
+  ilk gorseli basiliyor ve kart .tt-uk sinifini TASIMIYOR -- boylece
+  assets/tt-uk-kart.js bu karta hic baglanmiyor.
+
+  Gorsel alaninin olculeri .tt-uk-gorsel'den kopyalandi (acik gri
+  zemin #f1f2f5, sabit oran, object-fit: cover). Kopyalandi cunku bu
+  bolumun kendi onekiyle (.tt-cs-*) bagimsiz kalmasi istendi; ortak
+  dosya ileride koleksiyon karti icin degisirse burasi etkilenmiyor.
+
+  @param {string} [baslik] - Bolum basligi
+  @param {string} [alt_baslik] - Baslik altindaki satir
+
+  @example
+  {% section 'tt-cok-satanlar' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign s = section.settings
+  assign sid = section.id
+
+  comment
+    KATEGORI SAYIMI CIZIMDEN ONCE
+    Cip satiri yalnizca gercekten karti olan kategorileri basiyor ve
+    tek kategori kalirsa hic basilmiyor. Markuptan once bilinmesi
+    gerekiyor, o yuzden burada.
+  endcomment
+  assign say_couple = 0
+  assign say_kadin = 0
+  assign say_erkek = 0
+  assign kart_var = 0
+  assign couple_var = false
+  for b in section.blocks
+    if b.settings.urun != blank
+      assign kart_var = kart_var | plus: 1
+      case b.settings.kategori
+        when 'couple'
+          assign say_couple = say_couple | plus: 1
+          assign couple_var = true
+        when 'kadin'
+          assign say_kadin = say_kadin | plus: 1
+        when 'erkek'
+          assign say_erkek = say_erkek | plus: 1
+      endcase
+    endif
+  endfor
+
+  assign dolu_kategori = 0
+  if say_couple > 0
+    assign dolu_kategori = dolu_kategori | plus: 1
+  endif
+  if say_kadin > 0
+    assign dolu_kategori = dolu_kategori | plus: 1
+  endif
+  if say_erkek > 0
+    assign dolu_kategori = dolu_kategori | plus: 1
+  endif
+
+  comment
+    Cipler: ayar acik, birden fazla dolu kategori var ve en az iki
+    kart varsa. Tek kategorili bir seritte filtre bilgi tasimiyor.
+  endcomment
+  assign cip_goster = false
+  if s.cip_goster and dolu_kategori > 1
+    assign cip_goster = true
+  endif
+
+  comment
+    Couple baglantisi bos ve couple karti varsa: canli sitede kart
+    linksiz cikiyor (gorunur ama tiklanamaz), tema editorunde ise
+    sebebini yazan bir uyari satiri basiliyor. request.design_mode
+    yalnizca editorde true.
+  endcomment
+  assign couple_uyari = false
+  if couple_var and s.couple_link == blank and request.design_mode
+    assign couple_uyari = true
+  endif
+-%}
+
+{%- if s.aktif and kart_var == 0 and request.design_mode -%}
+  {%- comment -%}
+    Hic urun secilmemisken bolum canli sitede HIC basilmiyor (bos bir
+    baslik gurultuden baska bir sey degil). Tema editorunde ise sebebi
+    yazan bir yer tutucu cikiyor, yoksa bolum "bozuk" gorunurdu.
+  {%- endcomment -%}
+  <section class="tt-cs" style="background: {{ s.zemin }}; padding: 24px 16px;">
+    <p style="margin:0;text-align:center;font-size:13.5px;line-height:1.4;color:#6e6e73;">
+      {{ s.bos_metin }}
+    </p>
+  </section>
+{%- endif -%}
+
+{%- if s.aktif and kart_var > 0 -%}
+  <style>
+    #shopify-section-{{ sid }} .tt-cs {
+      --tt-cs-rozet: {{ s.rozet_zemin }};
+      --tt-cs-vurgu: {{ s.vurgu }};
+      --tt-cs-etiket: {{ s.etiket_renk }};
+      --tt-cs-fiyat: {{ s.fiyat_renk }};
+      --tt-cs-eski: {{ s.eski_renk }};
+      --tt-cs-ayrac: {{ s.ayrac_renk }};
+      --tt-cs-kod: {{ s.kod_renk }};
+      --tt-cs-kenar: {{ s.kenar }};
+      --tt-cs-koyu: {{ s.koyu }};
+      --tt-cs-gri: {{ s.gri }};
+      --tt-cs-oran: {{ s.gorsel_oran | default: '3 / 4' }};
+      background: {{ s.zemin }};
+      padding-top: {{ s.bosluk_ust_m }}px;
+      padding-bottom: {{ s.bosluk_alt_m }}px;
+    }
+    @media (min-width: 1024px) {
+      #shopify-section-{{ sid }} .tt-cs {
+        padding-top: {{ s.bosluk_ust_d }}px;
+        padding-bottom: {{ s.bosluk_alt_d }}px;
+      }
+    }
+
+    {%- comment -%}
+      Ic sarmalayici sayfanin kenar boslugunu tasiyor; serit de ONUN
+      icinde. Boylece ilk kartin sol kenari basligin sol kenariyla
+      ayni cizgide duruyor (istek buydu) -- serit kenara kadar
+      tasmiyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-ic {
+      max-width: {{ s.genislik }}px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+    #shopify-section-{{ sid }} .tt-cs-bas { display: grid; gap: 4px; }
+    #shopify-section-{{ sid }} .tt-cs-baslik {
+      margin: 0;
+      font-size: {{ s.bas_boyut_m }}px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--tt-cs-koyu);
+      text-wrap: balance;
+    }
+    @media (min-width: 1024px) {
+      #shopify-section-{{ sid }} .tt-cs-baslik { font-size: {{ s.bas_boyut_d }}px; }
+    }
+    #shopify-section-{{ sid }} .tt-cs-alt {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--tt-cs-gri);
+    }
+    {%- comment -%} Yalnizca tema editorunde gorunen uyari. {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-uyari {
+      margin: 10px 0 0;
+      padding: 8px 10px;
+      border: 1px dashed #c2410c;
+      border-radius: 10px;
+      background: #fff7ed;
+      color: #9a3412;
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
+    {%- comment -%} Cipler: mevcut filtre cipleriyle ayni olcu. {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-cipler {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+      min-width: 0;
+    }
+    #shopify-section-{{ sid }} .tt-cs-cip {
+      padding: 7px 14px;
+      border: 1px solid var(--tt-cs-kenar);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--tt-cs-koyu);
+      font: inherit;
+      font-size: 13px;
+      line-height: 1.2;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    #shopify-section-{{ sid }} .tt-cs-cip[aria-checked="true"] {
+      border-color: var(--tt-cs-rozet);
+      background: var(--tt-cs-rozet);
+      color: #fff;
+    }
+    #shopify-section-{{ sid }} .tt-cs-cip:focus-visible {
+      outline: 2px solid var(--tt-cs-koyu);
+      outline-offset: 2px;
+    }
+
+    {%- comment -%}
+      SERIT
+      Tasiyici grid; akis sutuna cevriliyor ve kutu yatayda kayiyor.
+      Kart genisligi mobilde %74 -- bir sonraki kartin kenari
+      gorunuyor, serit oldugu anlasiliyor. Masaustunde 3,2 kart.
+      overflow-x kutuda, sayfada degil: yatay sayfa kaydirmasi yok.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-serit {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 74%;
+      gap: 12px;
+      align-items: stretch;
+      margin-top: 14px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    #shopify-section-{{ sid }} .tt-cs-serit::-webkit-scrollbar { display: none; }
+    @media (min-width: 1024px) {
+      #shopify-section-{{ sid }} .tt-cs-serit {
+        grid-auto-columns: calc((100% - 3 * 12px) / 3.2);
+      }
+    }
+
+    #shopify-section-{{ sid }} .tt-cs-kart {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--tt-cs-kenar);
+      border-radius: 14px;
+      background: #fff;
+      color: inherit;
+      text-decoration: none;
+      scroll-snap-align: start;
+      transition: border-color 160ms ease;
+    }
+    #shopify-section-{{ sid }} .tt-cs-kart[hidden] { display: none; }
+    #shopify-section-{{ sid }} a.tt-cs-kart:hover { border-color: var(--tt-cs-vurgu); }
+    #shopify-section-{{ sid }} .tt-cs-kart:focus-visible {
+      outline: 2px solid var(--tt-cs-vurgu);
+      outline-offset: 2px;
+    }
+
+    {%- comment -%}
+      Gorsel alani: olculer .tt-uk-gorsel'den. flex ogesinin otomatik
+      en kucuk olcusu ICERIGIN boyu oldugu icin min-height: 0 sart --
+      dikey bir fotograf oran kuralini yoksa eziyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-gorsel {
+      position: relative;
+      flex: 0 0 auto;
+      min-height: 0;
+      aspect-ratio: var(--tt-cs-oran, 3 / 4);
+      background: #f1f2f5;
+    }
+    #shopify-section-{{ sid }} .tt-cs-img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #shopify-section-{{ sid }} .tt-cs-rozet {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 2;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: var(--tt-cs-rozet);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    {%- comment -%}
+      Sira rozeti SAG USTTE ve ters kontrastta: soldaki koyu rozetle
+      ayni gorunumde olsalardi iki ayri bilgi tek sey gibi okunurdu.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-sira {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--tt-cs-ayrac);
+      background: #fff;
+      color: var(--tt-cs-vurgu);
+      font-size: 10.5px;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    #shopify-section-{{ sid }} .tt-cs-sira svg { flex: 0 0 auto; width: 11px; height: 11px; }
+
+    #shopify-section-{{ sid }} .tt-cs-metin {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      gap: 0;
+      padding: 10px 10px 12px;
+    }
+    #shopify-section-{{ sid }} .tt-cs-ust {
+      margin-bottom: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--tt-cs-rozet);
+    }
+    #shopify-section-{{ sid }} .tt-cs-ad {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.3;
+      color: var(--tt-cs-koyu);
+    }
+    {%- comment -%}
+      Fiyat blogu kartin ALTINA yaslaniyor; kartlar esit boyda oldugu
+      icin butun fiyatlar ayni cizgide bitiyor -- ad kac satir olursa
+      olsun.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-fiyatlar {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: auto;
+    }
+    #shopify-section-{{ sid }} .tt-cs-fiyat {
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+    }
+    {%- comment -%}
+      display: flex, hidden niteligini eziyor; kural olmadan kolCiz()
+      blogu "gizledigi" halde ekranda kalirdi.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-fiyat[hidden] { display: none; }
+    #shopify-section-{{ sid }} .tt-cs-fiyat--kod .tt-cs-etiket,
+    #shopify-section-{{ sid }} .tt-cs-fiyat--kod .tt-cs-satis {
+      color: var(--tt-cs-kod);
+    }
+    #shopify-section-{{ sid }} .tt-cs-etiket {
+      margin-top: 10px;
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      color: var(--tt-cs-etiket);
+    }
+    #shopify-section-{{ sid }} .tt-cs-satir {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      align-content: start;
+      column-gap: 6px;
+      row-gap: 2px;
+      margin-top: 4px;
+    }
+    #shopify-section-{{ sid }} .tt-cs-satis {
+      font-size: 19px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--tt-cs-fiyat);
+    }
+    #shopify-section-{{ sid }} .tt-cs-eski {
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--tt-cs-eski);
+      text-decoration: line-through;
+    }
+    {%- comment -%}
+      Kesik cizginin altindaki satir: ustteki tutardan TURETILMIS ya da
+      ondan ayri bir bilgi oldugunu cizgi tek basina anlatiyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-alt-satir {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--tt-cs-ayrac);
+      font-size: 11px;
+      line-height: 1.25;
+      color: var(--tt-cs-vurgu);
+    }
+    #shopify-section-{{ sid }} .tt-cs-alt-ikon { flex: 0 0 auto; width: 13px; height: 13px; }
+    #shopify-section-{{ sid }} .tt-cs-alt-ok { flex: 0 0 auto; width: 13px; height: 13px; margin-left: auto; }
+
+    {%- comment -%} Gezinti: mevcut serit cubugunun olculeriyle ayni. {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #shopify-section-{{ sid }} .tt-cs-nav[hidden] { display: none; }
+    #shopify-section-{{ sid }} .tt-cs-ok {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid var(--tt-cs-kenar);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--tt-cs-koyu);
+      cursor: pointer;
+      transition: border-color 160ms ease, opacity 160ms ease;
+    }
+    #shopify-section-{{ sid }} .tt-cs-ok:hover:not(:disabled) { border-color: var(--tt-cs-vurgu); }
+    #shopify-section-{{ sid }} .tt-cs-ok:disabled { opacity: 0.35; cursor: default; }
+    #shopify-section-{{ sid }} .tt-cs-ok svg { width: 16px; height: 16px; }
+    #shopify-section-{{ sid }} .tt-cs-noktalar { display: flex; align-items: center; gap: 5px; }
+    #shopify-section-{{ sid }} .tt-cs-noktalar i {
+      display: block;
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--tt-cs-kenar);
+      transition: width 160ms ease, background-color 160ms ease;
+    }
+    #shopify-section-{{ sid }} .tt-cs-noktalar i[data-cs-aktif] {
+      width: 16px;
+      background: var(--tt-cs-vurgu);
+    }
+    #shopify-section-{{ sid }} .tt-cs-noktalar i[hidden] { display: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ sid }} .tt-cs-kart,
+      #shopify-section-{{ sid }} .tt-cs-ok,
+      #shopify-section-{{ sid }} .tt-cs-noktalar i { transition: none; }
+    }
+  </style>
+
+  <section class="tt-cs" data-tt-cs>
+    <div class="tt-cs-ic">
+      {%- if s.baslik != blank or s.alt_baslik != blank -%}
+        <div class="tt-cs-bas">
+          {%- if s.baslik != blank -%}<h2 class="tt-cs-baslik">{{ s.baslik }}</h2>{%- endif -%}
+          {%- if s.alt_baslik != blank -%}<p class="tt-cs-alt">{{ s.alt_baslik }}</p>{%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if couple_uyari -%}
+        <p class="tt-cs-uyari">{{ s.couple_uyari_metin }}</p>
+      {%- endif -%}
+
+      {%- if cip_goster -%}
+        <div class="tt-cs-cipler" role="radiogroup" aria-label="{{ s.cip_etiket | escape }}">
+          <button type="button" class="tt-cs-cip" role="radio" data-cs-cip="tumu" aria-checked="true" tabindex="0">{{ s.cip_tumu }}</button>
+          {%- if say_couple > 0 -%}
+            <button type="button" class="tt-cs-cip" role="radio" data-cs-cip="couple" aria-checked="false" tabindex="-1">{{ s.cip_couple }}</button>
+          {%- endif -%}
+          {%- if say_kadin > 0 -%}
+            <button type="button" class="tt-cs-cip" role="radio" data-cs-cip="kadin" aria-checked="false" tabindex="-1">{{ s.cip_kadin }}</button>
+          {%- endif -%}
+          {%- if say_erkek > 0 -%}
+            <button type="button" class="tt-cs-cip" role="radio" data-cs-cip="erkek" aria-checked="false" tabindex="-1">{{ s.cip_erkek }}</button>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="tt-cs-serit" data-cs-serit>
+        {%- assign sira_no = 0 -%}
+        {%- for b in section.blocks -%}
+          {%- assign p = b.settings.urun -%}
+          {%- if p == blank -%}{%- continue -%}{%- endif -%}
+          {%- liquid
+            assign sira_no = sira_no | plus: 1
+            assign kat = b.settings.kategori
+
+            comment
+              FIYATLAR -- sections/tt-secim-kartlari.liquid ile ayni
+              kaynak ve ayni korumalar. Yeni bir hesap yok.
+            endcomment
+            assign v = p.selected_or_first_available_variant
+            assign fiyat = v.price
+            assign karsi = v.compare_at_price
+
+            assign kod_goster = false
+            if p.available and settings.tt_indirim_aktif
+              assign kod_ind = settings.tt_indirim_tutar | times: 100 | round
+              if kod_ind > 0 and kod_ind < fiyat
+                assign kod_goster = true
+                assign kod_net = fiyat | minus: kod_ind
+              endif
+            endif
+
+            capture fiyat_m
+              render 'tt-para', kurus: fiyat, sade: true
+            endcapture
+            assign fiyat_m = fiyat_m | strip
+
+            capture karsi_m
+              render 'tt-para', kurus: karsi, sade: true
+            endcapture
+            assign karsi_m = karsi_m | strip
+
+            if kod_goster
+              capture kod_m
+                render 'tt-para', kurus: kod_net, sade: true
+              endcapture
+              assign kod_m = kod_m | strip
+            endif
+
+            comment
+              KISI BASI yalnizca Couple kartinda: set iki urun iceriyor
+              ve tutar ikiye bolunuyor. Kurus cinsinden tam sayi oldugu
+              icin bolme yuvarlama uretmiyor.
+            endcomment
+            if kat == 'couple'
+              assign kisi = fiyat | divided_by: 2
+              capture kisi_m
+                render 'tt-para', kurus: kisi, sade: true
+              endcapture
+              assign kisi_m = kisi_m | strip
+              assign kisi_satir = s.kisi_etiket | replace: '[tutar]', kisi_m
+
+              if kod_goster
+                assign kod_kisi = kod_net | divided_by: 2
+                capture kod_kisi_m
+                  render 'tt-para', kurus: kod_kisi, sade: true
+                endcapture
+                assign kod_kisi_m = kod_kisi_m | strip
+                assign kod_kisi_satir = s.kisi_etiket | replace: '[tutar]', kod_kisi_m
+              endif
+            endif
+
+            comment
+              ROZET, UST ETIKET ve AD: blok bos birakilirsa kategoriye
+              gore varsayilan. Varsayilanlar da ayar, yani editorden
+              degistirilebiliyor.
+            endcomment
+            assign rozet = b.settings.rozet
+            if rozet == blank
+              case kat
+                when 'couple'
+                  assign rozet = s.rozet_couple
+                when 'kadin'
+                  assign rozet = s.rozet_kadin
+                else
+                  assign rozet = s.rozet_erkek
+              endcase
+            endif
+
+            assign ust = b.settings.ust
+            if ust == blank
+              if kat == 'couple'
+                assign ust = s.ust_couple
+              else
+                assign ust = s.ust_tekli
+              endif
+            endif
+
+            assign ad = b.settings.ad | default: p.title
+
+            comment
+              HEDEF: her zaman bir KOLEKSIYON (ya da couple baglantisi).
+              product.url bu dosyada hic kullanilmiyor.
+            endcomment
+            case kat
+              when 'kadin'
+                assign hedef = s.kadin_link
+                assign kat_ad = s.cip_kadin
+              when 'erkek'
+                assign hedef = s.erkek_link
+                assign kat_ad = s.cip_erkek
+              else
+                assign hedef = s.couple_link
+                assign kat_ad = s.cip_couple
+            endcase
+
+            assign kart_etiket = ad | append: ' — ' | append: kat_ad
+            assign gorsel = p.featured_media
+          -%}
+
+          {%- comment -%}
+            Hedef bos olabilir (couple baglantisi girilmemis). O zaman
+            kart <a> degil <div> olarak cikiyor: gorunur ama tiklanamaz.
+            Bos href'li bir <a> sayfayi bastan yukler, en kotu secenek
+            o olurdu.
+          {%- endcomment -%}
+          {%- if hedef != blank -%}
+            <a class="tt-cs-kart" href="{{ hedef }}" data-cs-kart data-cs-kat="{{ kat }}"
+               aria-label="{{ kart_etiket | escape }}">
+          {%- else -%}
+            <div class="tt-cs-kart" data-cs-kart data-cs-kat="{{ kat }}">
+          {%- endif -%}
+            <span class="tt-cs-gorsel">
+              {%- if gorsel != blank -%}
+                {{ gorsel | image_url: width: 600 | image_tag:
+                     loading: 'lazy',
+                     width: 600,
+                     height: 600,
+                     sizes: '(min-width: 1024px) 320px, 74vw',
+                     widths: '200,300,400,600',
+                     alt: ad,
+                     class: 'tt-cs-img',
+                     draggable: 'false' }}
+              {%- endif -%}
+              {%- if rozet != blank -%}
+                <span class="tt-cs-rozet">{{ rozet }}</span>
+              {%- endif -%}
+              {%- if s.sira_goster -%}
+                {%- assign sira_metin = s.sira_metin | replace: '[n]', sira_no -%}
+                <span class="tt-cs-sira">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M12 3c.6 2.6 2.2 3.6 3.4 5A6.8 6.8 0 0 1 17.5 12a5.5 5.5 0 1 1-11 0c0-1.3.5-2.4 1.2-3.3.3.8.9 1.4 1.7 1.7-.2-2.4.6-4.8 2.6-7.4Z"/>
+                  </svg>
+                  <span>{{ sira_metin }}</span>
+                </span>
+              {%- endif -%}
+            </span>
+
+            <span class="tt-cs-metin">
+              {%- if ust != blank -%}<span class="tt-cs-ust">{{ ust }}</span>{%- endif -%}
+              <span class="tt-cs-ad">{{ ad }}</span>
+
+              <span class="tt-cs-fiyatlar">
+                {%- comment -%}
+                  NORMAL SATIR. "price" sinifini tasiyor: kolCiz() kod
+                  gecerliyken bu satiri ariyor ve gizliyor. Sarmalayicida
+                  tek bir .price olmali, o yuzden indirimli blokta bu
+                  sinif YOK.
+                {%- endcomment -%}
+                <span class="price tt-cs-fiyat">
+                  {%- if s.etiket_normal != blank -%}
+                    <span class="tt-cs-etiket">{{ s.etiket_normal }}</span>
+                  {%- endif -%}
+                  <span class="tt-cs-satir">
+                    <span class="tt-cs-satis">{{ fiyat_m }}</span>
+                    {%- if karsi > fiyat -%}<s class="tt-cs-eski">{{ karsi_m }}</s>{%- endif -%}
+                  </span>
+                  {%- if kat == 'couple' and s.kisi_etiket != blank -%}
+                    <span class="tt-cs-alt-satir">
+                      {%- render 'tt-sc-ikon', ad: 'kisiler', sinif: 'tt-cs-alt-ikon' -%}
+                      <span>{{ kisi_satir }}</span>
+                    </span>
+                  {%- endif -%}
+                </span>
+
+                {%- if kod_goster -%}
+                  {%- comment -%}
+                    INDIRIMLI SATIR. Ilk boyamada [hidden]; kolCiz()
+                    cark cerezini gorunce aciyor, sure dolunca geri
+                    gizliyor. Tutar Liquid'de, ayni ayardan hesaplandi.
+                  {%- endcomment -%}
+                  <span class="tt-cs-fiyat tt-cs-fiyat--kod"
+                        data-tt-kart-fb data-tt-kart-fiyat="{{ fiyat }}" hidden>
+                    {%- if s.kod_etiket != blank -%}
+                      <span class="tt-cs-etiket">{{ s.kod_etiket }}</span>
+                    {%- endif -%}
+                    <span class="tt-cs-satir">
+                      <span class="tt-cs-satis">{{ kod_m }}</span>
+                      <s class="tt-cs-eski">{{ fiyat_m }}</s>
+                    </span>
+                    {%- if kat == 'couple' and s.kisi_etiket != blank -%}
+                      <span class="tt-cs-alt-satir">
+                        {%- render 'tt-sc-ikon', ad: 'kisiler', sinif: 'tt-cs-alt-ikon' -%}
+                        <span>{{ kod_kisi_satir }}</span>
+                      </span>
+                    {%- endif -%}
+                  </span>
+                {%- endif -%}
+
+                {%- if kat != 'couple' -%}
+                  {%- comment -%}
+                    Kadin/Erkek kartinda alt satir fiyattan turemiyor,
+                    bu yuzden iki fiyat blogunun DISINDA: kod acilip
+                    kapandiginda yerinde kaliyor.
+                  {%- endcomment -%}
+                  {%- if kat == 'kadin' -%}
+                    {%- assign kol_metin = s.kadin_metin -%}
+                  {%- else -%}
+                    {%- assign kol_metin = s.erkek_metin -%}
+                  {%- endif -%}
+                  {%- if kol_metin != blank -%}
+                    <span class="tt-cs-alt-satir">
+                      <span>{{ kol_metin }}</span>
+                      <svg class="tt-cs-alt-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                           aria-hidden="true" focusable="false"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>
+                    </span>
+                  {%- endif -%}
+                {%- endif -%}
+              </span>
+            </span>
+          {%- if hedef != blank -%}</a>{%- else -%}</div>{%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      <div class="tt-cs-nav" data-cs-nav hidden>
+        <button type="button" class="tt-cs-ok" data-cs-ok="-1" aria-label="{{ s.onceki | escape }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M14.5 5.5 8 12l6.5 6.5"/>
+          </svg>
+        </button>
+        <span class="tt-cs-noktalar" data-cs-noktalar aria-hidden="true"></span>
+        <button type="button" class="tt-cs-ok" data-cs-ok="1" aria-label="{{ s.sonraki | escape }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M9.5 5.5 16 12l-6.5 6.5"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <script src="{{ 'tt-cs-carousel.js' | asset_url }}" defer></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "TT Çok Satanlar",
+  "tag": "section",
+  "class": "tt-cs-bolum",
+  "max_blocks": 50,
+  "settings": [
+    { "type": "checkbox", "id": "aktif", "label": "Bölümü göster", "default": true },
+    { "type": "text", "id": "bos_metin", "label": "Ürün seçilmemişken editörde çıkan not",
+      "default": "Henüz ürün kartı eklenmedi — soldaki \"Ürün kartı\" bloklarından ekleyin.",
+      "info": "Yalnızca tema editöründe görünür; canlı sitede bölüm hiç basılmaz." },
+
+    { "type": "header", "content": "Başlık" },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "En çok tercih edilenler" },
+    { "type": "text", "id": "alt_baslik", "label": "Alt başlık", "default": "Bu sezon en çok hediye edilen kapsüller." },
+    { "type": "range", "id": "bas_boyut_m", "label": "Başlık boyutu – mobil", "min": 18, "max": 34, "step": 1, "unit": "px", "default": 24 },
+    { "type": "range", "id": "bas_boyut_d", "label": "Başlık boyutu – masaüstü", "min": 20, "max": 44, "step": 1, "unit": "px", "default": 30 },
+
+    { "type": "header", "content": "Filtre çipleri" },
+    { "type": "checkbox", "id": "cip_goster", "label": "Filtre çiplerini göster", "default": true,
+      "info": "Yalnızca birden fazla kategoride kart varsa çıkar. Kartı olmayan kategorinin çipi hiç basılmaz." },
+    { "type": "text", "id": "cip_etiket", "label": "Çip satırının erişilebilirlik adı", "default": "Kategori" },
+    { "type": "text", "id": "cip_tumu", "label": "Tümü", "default": "Tümü" },
+    { "type": "text", "id": "cip_couple", "label": "Couple", "default": "Couple" },
+    { "type": "text", "id": "cip_kadin", "label": "Kadın", "default": "Kadın" },
+    { "type": "text", "id": "cip_erkek", "label": "Erkek", "default": "Erkek" },
+
+    { "type": "header", "content": "Sıra rozeti" },
+    { "type": "checkbox", "id": "sira_goster", "label": "Sıra rozetini göster", "default": true },
+    { "type": "text", "id": "sira_metin", "label": "Rozet metni", "default": "#[n] çok satan",
+      "info": "[n] kartın sırasıyla değişir. Sıra blok sırasından gelir; filtrelense bile değişmez." },
+
+    { "type": "header", "content": "Bağlantılar" },
+    { "type": "paragraph", "content": "Kartlar ürün sayfasına değil, aşağıdaki adreslere gider." },
+    { "type": "text", "id": "kadin_link", "label": "Kadın linki", "default": "https://texttonext.com/collections/zaman-kapsulu-kolyeler" },
+    { "type": "text", "id": "erkek_link", "label": "Erkek linki", "default": "https://texttonext.com/collections/zaman-kapsulu-bileklik" },
+    { "type": "url", "id": "couple_link", "label": "Couple linki",
+      "info": "Boş bırakılırsa Couple kartları tıklanamaz görünür (bozuk link yerine linksiz kart)." },
+    { "type": "text", "id": "couple_uyari_metin", "label": "Couple linki boşken editörde çıkan uyarı",
+      "default": "Couple linkini girin — şu an Couple kartları tıklanamıyor.",
+      "info": "Yalnızca tema editöründe görünür, canlı sitede hiç basılmaz." },
+
+    { "type": "header", "content": "Kart metinleri" },
+    { "type": "text", "id": "rozet_couple", "label": "Varsayılan rozet – Couple", "default": "2'li set" },
+    { "type": "text", "id": "rozet_kadin", "label": "Varsayılan rozet – Kadın", "default": "Kadın" },
+    { "type": "text", "id": "rozet_erkek", "label": "Varsayılan rozet – Erkek", "default": "Erkek" },
+    { "type": "text", "id": "ust_couple", "label": "Varsayılan üst etiket – Couple", "default": "Couple Zaman Kapsülü" },
+    { "type": "text", "id": "ust_tekli", "label": "Varsayılan üst etiket – Kadın/Erkek", "default": "Single Zaman Kapsülü" },
+    { "type": "text", "id": "etiket_normal", "label": "Fiyatın üstündeki küçük etiket",
+      "info": "Çark kodu yokken görünen satır. Boş bırakılırsa etiket çıkmaz." },
+    { "type": "text", "id": "kod_etiket", "label": "Çark kodu geçerliyken küçük etiket", "default": "İNDİRİM KODU İLE" },
+    { "type": "text", "id": "kisi_etiket", "label": "Couple kartında kesikli çizgi altı", "default": "Kişi başı [tutar]",
+      "info": "[tutar] kişi başı tutarla değişir. Boş bırakılırsa satır çıkmaz." },
+    { "type": "text", "id": "kadin_metin", "label": "Kadın kartında kesikli çizgi altı", "default": "Kadın koleksiyonunu gör" },
+    { "type": "text", "id": "erkek_metin", "label": "Erkek kartında kesikli çizgi altı", "default": "Erkek koleksiyonunu gör" },
+    { "type": "text", "id": "onceki", "label": "Sol ok – erişilebilirlik adı", "default": "Önceki kartlar" },
+    { "type": "text", "id": "sonraki", "label": "Sağ ok – erişilebilirlik adı", "default": "Sonraki kartlar" },
+
+    { "type": "header", "content": "Görünüm" },
+    { "type": "select", "id": "gorsel_oran", "label": "Görsel oranı",
+      "options": [ { "value": "1 / 1", "label": "Kare" }, { "value": "4 / 5", "label": "4:5" }, { "value": "3 / 4", "label": "3:4" } ],
+      "default": "3 / 4" },
+    { "type": "color", "id": "zemin", "label": "Arka plan rengi", "default": "#F7F8FA" },
+    { "type": "range", "id": "genislik", "label": "En fazla genişlik", "min": 600, "max": 1600, "step": 20, "unit": "px", "default": 1200 },
+    { "type": "range", "id": "bosluk_ust_m", "label": "Üst boşluk – mobil", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 32 },
+    { "type": "range", "id": "bosluk_alt_m", "label": "Alt boşluk – mobil", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 32 },
+    { "type": "range", "id": "bosluk_ust_d", "label": "Üst boşluk – masaüstü", "min": 0, "max": 160, "step": 2, "unit": "px", "default": 56 },
+    { "type": "range", "id": "bosluk_alt_d", "label": "Alt boşluk – masaüstü", "min": 0, "max": 160, "step": 2, "unit": "px", "default": 56 },
+
+    { "type": "header", "content": "Renkler" },
+    { "type": "color", "id": "rozet_zemin", "label": "Rozet ve üst etiket", "default": "#3E5E4A" },
+    { "type": "color", "id": "vurgu", "label": "Vurgu (kişi başı, nokta, ok)", "default": "#3E5E4A" },
+    { "type": "color", "id": "kod_renk", "label": "İndirimli fiyat", "default": "#3E5E4A" },
+    { "type": "color", "id": "etiket_renk", "label": "Fiyat üstü küçük etiket", "default": "#777777" },
+    { "type": "color", "id": "fiyat_renk", "label": "Fiyat", "default": "#16181D" },
+    { "type": "color", "id": "eski_renk", "label": "Üstü çizili fiyat", "default": "#999999" },
+    { "type": "color", "id": "ayrac_renk", "label": "Kesik çizgi", "default": "#E3E5E8" },
+    { "type": "color", "id": "kenar", "label": "Kart çerçevesi", "default": "#E3E5E8" },
+    { "type": "color", "id": "koyu", "label": "Başlık ve ürün adı", "default": "#15171C" },
+    { "type": "color", "id": "gri", "label": "Alt başlık", "default": "#6B7280" }
+  ],
+  "blocks": [
+    {
+      "type": "urun",
+      "name": "Ürün kartı",
+      "settings": [
+        { "type": "product", "id": "urun", "label": "Ürün",
+          "info": "Görsel, fiyat ve eski fiyat bu üründen gelir. Kart ürün sayfasına değil, kategorinin koleksiyonuna gider." },
+        { "type": "select", "id": "kategori", "label": "Kategori",
+          "options": [ { "value": "couple", "label": "Couple" }, { "value": "kadin", "label": "Kadın" }, { "value": "erkek", "label": "Erkek" } ],
+          "default": "couple" },
+        { "type": "text", "id": "rozet", "label": "Rozet metni",
+          "info": "Boşsa kategoriye göre otomatik." },
+        { "type": "text", "id": "ust", "label": "Üst etiket",
+          "info": "Boşsa kategoriye göre otomatik." },
+        { "type": "text", "id": "ad", "label": "Ürün adı",
+          "info": "Boşsa ürünün kendi adı kullanılır." }
+      ]
+    }
+  ],
+  "presets": [ { "name": "TT Çok Satanlar", "blocks": [ { "type": "urun" }, { "type": "urun" }, { "type": "urun" } ] } ]
+}
+{% endschema %}
