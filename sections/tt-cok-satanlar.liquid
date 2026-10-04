@@ -178,6 +178,21 @@
       margin: 0 auto;
       padding: 0 16px;
     }
+    {%- comment -%}
+      CARK KARTI YATAYDA BOLUMLE AYNI HIZADA.
+
+      Snippet'in kendi kurali var: max-width: var(--ttn-genislik) ve
+      yanlarda 16px dolgu. Bu bolumun ic sarmalayicisi zaten 16px
+      dolgu tasidigi icin ikisi ust uste binip karti iceri kacirmisti
+      -- kart basliktan ve kartlardan dar duruyordu. Dolgu burada
+      sifirlaniyor; genislik ayari (--ttn-genislik) duruyor, yani
+      istenirse yine daraltilabiliyor. Paylasilan dosyaya
+      DOKUNULMUYOR, kural bu bolumun kapsaminda.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-ic .ttn-cark {
+      padding-left: 0;
+      padding-right: 0;
+    }
     #shopify-section-{{ sid }} .tt-cs-bas { display: grid; gap: 4px; }
     #shopify-section-{{ sid }} .tt-cs-baslik {
       margin: 0;
@@ -415,15 +430,19 @@
       color: var(--tt-cs-koyu);
     }
     {%- comment -%}
-      Fiyat blogu kartin ALTINA yaslaniyor; kartlar esit boyda oldugu
-      icin butun fiyatlar ayni cizgide bitiyor -- ad kac satir olursa
-      olsun.
+      FIYAT ADIN HEMEN ALTINDA.
+
+      Once "margin-top: auto" vardi: fiyat blogu kartin altina
+      yasliyordu ve kartlar esit boyda oldugu icin bosluk ad ile fiyat
+      ARASINA dusuyordu -- kisa adli kartta aradaki bosluk gozle
+      gorulur haldeydi. Artik bos yer kartin ALTINDA kaliyor; kart
+      zemini beyaz oldugu icin orada gorunmuyor.
     {%- endcomment -%}
     #shopify-section-{{ sid }} .tt-cs-fiyatlar {
       display: flex;
       flex-direction: column;
       gap: 4px;
-      margin-top: auto;
+      margin-top: 8px;
     }
     #shopify-section-{{ sid }} .tt-cs-fiyat {
       display: flex;
@@ -440,7 +459,7 @@
       color: var(--tt-cs-kod);
     }
     #shopify-section-{{ sid }} .tt-cs-etiket {
-      margin-top: 10px;
+      margin-top: 0;
       font-size: 10px;
       font-weight: 500;
       line-height: 1.2;
@@ -510,6 +529,12 @@
       line-height: 1.25;
       color: var(--tt-cs-vurgu);
     }
+    {%- comment -%}
+      Kisi basi bir TUTAR, dolayisiyla fiyatla ayni renkte.
+      "Koleksiyonu gor" satiri tutar degil, gezinme; o vurgu renginde
+      kaliyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-alt-satir--kisi { color: var(--tt-cs-kod); }
     #shopify-section-{{ sid }} .tt-cs-alt-ikon { flex: 0 0 auto; width: 13px; height: 13px; }
     #shopify-section-{{ sid }} .tt-cs-alt-ok { flex: 0 0 auto; width: 13px; height: 13px; margin-left: auto; }
 
@@ -810,7 +835,7 @@
                     {%- if karsi > fiyat -%}<s class="tt-cs-eski">{{ karsi_m }}</s>{%- endif -%}
                   </span>
                   {%- if kat == 'couple' and s.kisi_etiket != blank -%}
-                    <span class="tt-cs-alt-satir">
+                    <span class="tt-cs-alt-satir tt-cs-alt-satir--kisi">
                       {%- render 'tt-sc-ikon', ad: 'kisiler', sinif: 'tt-cs-alt-ikon' -%}
                       <span>{{ kisi_satir }}</span>
                     </span>
@@ -833,7 +858,7 @@
                       <s class="tt-cs-eski">{{ fiyat_m }}</s>
                     </span>
                     {%- if kat == 'couple' and s.kisi_etiket != blank -%}
-                      <span class="tt-cs-alt-satir">
+                      <span class="tt-cs-alt-satir tt-cs-alt-satir--kisi">
                         {%- render 'tt-sc-ikon', ad: 'kisiler', sinif: 'tt-cs-alt-ikon' -%}
                         <span>{{ kod_kisi_satir }}</span>
                       </span>
@@ -978,20 +1003,20 @@
     { "type": "text", "id": "cark_dilim_renkleri", "label": "Dilim renkleri", "default": "#1F4648,#5CC98F,#0A1A1C,#4FB883,#1F4648,#5CC98F,#0A1A1C,#4FB883" },
     { "type": "text", "id": "cark_kupon_baslik", "label": "Kazanınca başlık", "default": "[tutar] kazandın" },
     { "type": "text", "id": "cark_kupon_onay", "label": "Kazanınca onay satırı", "default": "✓ Sepetine eklendi" },
-    { "type": "color", "id": "cark_kart_zemin", "label": "Çark kartı zemini", "default": "#EAF3FD" },
-    { "type": "color", "id": "cark_vurgu", "label": "Çark vurgusu", "default": "#0071E3" },
+    { "type": "color", "id": "cark_kart_zemin", "label": "Çark kartı zemini", "default": "#D3DDD2" },
+    { "type": "color", "id": "cark_vurgu", "label": "Çark vurgusu", "default": "#78F5AB" },
     { "type": "color", "id": "cark_koyu", "label": "Çark yazısı", "default": "#0A1A1C" },
     { "type": "color", "id": "cark_alt_yazi", "label": "Çark alt yazısı", "default": "#3C4E40" },
     { "type": "color", "id": "cark_halka", "label": "Çark halkası", "default": "#F2F2F2" },
-    { "type": "range", "id": "cark_genislik", "label": "Çark kartı genişliği", "min": 260, "max": 640, "step": 10, "unit": "px", "default": 420,
-      "info": "Açılan çarkın boyu da buna bağlı; küçültünce bölüm daha az yer kaplar." },
+    { "type": "range", "id": "cark_genislik", "label": "Çark kartı en fazla genişlik", "min": 260, "max": 1200, "step": 20, "unit": "px", "default": 1200,
+      "info": "Varsayılanda bölümün tamamı kadar geniş. Çarkın kendi boyu sabittir, bu ayar yalnızca kartın genişliğini sınırlar." },
     { "type": "range", "id": "cark_ust_bosluk", "label": "Çark üst boşluğu", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 0 },
     { "type": "range", "id": "cark_alt_bosluk", "label": "Çark alt boşluğu", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 14 },
 
     { "type": "header", "content": "Renkler" },
     { "type": "color", "id": "rozet_zemin", "label": "Rozet ve üst etiket", "default": "#0071E3" },
     { "type": "color", "id": "vurgu", "label": "Vurgu (kişi başı, nokta, ok)", "default": "#0071E3" },
-    { "type": "color", "id": "kod_renk", "label": "İndirimli fiyat", "default": "#0071E3" },
+    { "type": "color", "id": "kod_renk", "label": "İndirimli fiyat ve kişi başı", "default": "#3E5E4A" },
     { "type": "color", "id": "etiket_renk", "label": "Fiyat üstü küçük etiket", "default": "#777777" },
     { "type": "color", "id": "fiyat_renk", "label": "Fiyat", "default": "#16181D" },
     { "type": "color", "id": "eski_renk", "label": "Üstü çizili fiyat", "default": "#999999" },
