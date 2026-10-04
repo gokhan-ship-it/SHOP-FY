@@ -461,6 +461,96 @@
       },
       "disabled": true
     },
+    "tt_couple_kapsul": {
+      "type": "tt-couple-kapsul",
+      "name": "TT Couple Kapsül",
+      "blocks": {
+        "bulusma_1": {
+          "type": "bulusma",
+          "settings": {
+            "etiket": "12 Mar",
+            "yil": 2025,
+            "ay": 3,
+            "foto": 86
+          }
+        },
+        "bulusma_2": {
+          "type": "bulusma",
+          "settings": {
+            "etiket": "3 Ara",
+            "yil": 2025,
+            "ay": 12,
+            "foto": 920
+          }
+        },
+        "bulusma_3": {
+          "type": "bulusma",
+          "settings": {
+            "etiket": "14 Ağu",
+            "yil": 2026,
+            "ay": 8,
+            "foto": 2350
+          }
+        },
+        "bulusma_4": {
+          "type": "bulusma",
+          "settings": {
+            "etiket": "2 Haz",
+            "yil": 2027,
+            "ay": 6,
+            "foto": 4700
+          }
+        }
+      },
+      "block_order": [
+        "bulusma_1",
+        "bulusma_2",
+        "bulusma_3",
+        "bulusma_4"
+      ],
+      "settings": {
+        "hap_metni": "Buluşunca açılır",
+        "baslik_1": "Ayrıyken biriktirin,",
+        "baslik_vurgu": "buluşunca",
+        "baslik_2": "açın.",
+        "alt_metin": "İkiniz de anı yükleyin. Kapsüller yan yana gelince açılır, uzaklaşınca kilitlenir.",
+        "kanit_ac": true,
+        "kanit_metin": "100.000'den fazla kişi kullanıyor",
+        "sayac_etiket": "fotoğraf",
+        "sayac_sure": 800,
+        "yil_bas": 2025,
+        "yil_son": 2027,
+        "adim_1": "Yükleyin",
+        "adim_2": "Buluşun",
+        "adim_3": "Biriktirin",
+        "adim_4": "Tekrarlayın",
+        "arkaplan": "#181B1E",
+        "hap_zemin": "#1C232B",
+        "hap_kenar": "#2A323C",
+        "hap_renk": "#E6E8EB",
+        "baslik_renk": "#FFFFFF",
+        "vurgu_renk": "#9FD4BD",
+        "alt_renk": "#B8BEC6",
+        "yildiz_renk": "#E0A95A",
+        "kanit_renk": "#8B939D",
+        "sahne_renk_1": "#EDEFF2",
+        "sahne_renk_2": "#D9DDE3",
+        "sayac_daire": "#3E5E4A",
+        "adim_renk": "#7D858E",
+        "adim_aktif_renk": "#16231C",
+        "baslik_m": 28,
+        "baslik_t": 36,
+        "baslik_d": 44,
+        "max_w": 1200,
+        "sahne_genislik": 1100,
+        "sahne_bosluk": 32,
+        "kose": 16,
+        "p_top_m": 36,
+        "p_bot_m": 36,
+        "p_top_d": 64,
+        "p_bot_d": 64
+      }
+    },
     "dongu_seridi": {
       "type": "dongu-seridi",
       "name": "Döngü Şeridi",
@@ -1356,6 +1446,7 @@
     "featured_collection_kQPefY",
     "1782308930a5adb660",
     "tt_secim_kartlari_MqYNcr",
+    "tt_couple_kapsul",
     "main-collection",
     "dongu_seridi",
     "blocks_PRExA7",
