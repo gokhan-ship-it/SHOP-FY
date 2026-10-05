@@ -80,7 +80,19 @@
     seritYuvasi). grid-column emniyet kemeri: ileride bir sekilde izgaranin
     icine duserse en azindan butun satiri kaplasin, tek sutuna sikismasin.
   {%- endcomment -%}
-  .tt-kol { margin: 0 0 18px; grid-column: 1 / -1; }
+  {%- comment -%}
+    Serit hangi kapsayiciya dusuyorsa orada TAM SATIR olmali; yoksa
+    icindeki 720px'lik kutu dar bir kabin ortasina hizalanip sayfaya
+    gore sola kayiyor (zaman-kapsulu-bileklik koleksiyonunda oldu).
+    Uc olasiligi da kapatiyoruz: normal akis (width), izgara
+    (grid-column), esnek kutu (flex-basis).
+  {%- endcomment -%}
+  .tt-kol {
+    margin: 0 0 18px;
+    width: 100%;
+    grid-column: 1 / -1;
+    flex: 0 0 100%;
+  }
   .tt-kol-serit {
     display: flex; align-items: center; justify-content: space-between;
     gap: 10px; padding: 10px 13px; border-radius: 12px;
