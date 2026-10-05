@@ -33,14 +33,18 @@ kayboldu. Canlı temadan okunarak yeniden kuruldu.
 
 ## Temalar
 
+**2026-10-05: roller değişti — üzerinde çalıştığımız tema yayına alındı.**
+
 | Tema | ID | Rol |
 |---|---|---|
-| Urun sagsutun - 2026-09-04 | `188045295936` | **taslak — bütün iş burada** |
-| Catal renk ayarlari - 2026-09-04 | `188044443968` | **MAIN (canlı) — sadece OKU** |
+| Urun sagsutun - 2026-09-04 | `188045295936` | **MAIN (canlı)** — bütün iş buradaydı |
+| Catal renk ayarlari - 2026-09-04 | `188044443968` | eski canlı, artık taslak — sadece OKU |
 
-Canlı temaya **hiçbir koşulda yazma**. Yayına alma kullanıcının onayıyla.
-Canlı tema, taslağın bayatlamış bir dosyasını kurtarmak için iyi bir
-referans kaynağıdır (yalnızca okuma).
+Canlı temaya **hiçbir koşulda yazma**. `themeFilesUpsert` canlı temayı
+zaten reddediyor; o tarafa iş yapılacaksa önce canlıdan bir taslak
+kopya çıkarılıp onun üzerinde çalışılır, yayına alma kullanıcının
+onayıyla olur. Rolleri **her oturum başında doğrula** (`theme(id:){role}`);
+bu tablo bayatlayabilir ve yanlış tarafa yazmaya yol açar.
 
 ## layout/theme.liquid — sıra bağımlılığı
 

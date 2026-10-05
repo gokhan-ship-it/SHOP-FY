@@ -113,6 +113,36 @@
   }
   .tt-kol-bilgi .tt-kol-metin { color: #1d1d1f; }
   .tt-kol-bilgi .tt-kol-saat { color: #6e6e73; opacity: 1; }
+
+  {%- comment -%}
+    SOHBET BALONU (Shopify Inbox) -- katman acikken cekiliyor.
+
+    Balon uygulamanin kendi kodu; cok yuksek bir z-index ile ekranin
+    sag altina sabitleniyor ve sepet cekmecesi acilinca "Odeme ekrani"
+    dugmesinin sag yarisini ortuyordu. Uygulamanin koduna
+    dokunulamadigi icin tek cozum onu bizim tarafimizdan gizlemek.
+
+    Secici depoda zaten kullanilan ve bu magazada dogrulanmis olan:
+    carkin "kaydir_secici" ayari da balonu ayni ikiliyle buluyor
+    (sections/ttn-cark-genel.liquid). Isaret yine temanin kendi
+    sinifi: DrawerElement/XModal acilirken <body>'ye
+    .has-modal-opening, acilinca .has-modal-open koyuyor.
+
+    display: none DEGIL -- balon bir iframe; kutudan cikarilirsa
+    sohbet yeniden yukleniyor ve musterinin yazdigi mesaj gidiyor.
+    Gorunurluk kapatiliyor, iframe ayakta kaliyor.
+
+    Secici tutmazsa (uygulama isaretlemeyi degistirirse) kural sessizce
+    bos geciyor; bugunku davranistan kotu bir hale dusmuyor.
+  {%- endcomment -%}
+  body.has-modal-opening #ShopifyChat,
+  body.has-modal-open #ShopifyChat,
+  body.has-modal-opening .shopify-chat,
+  body.has-modal-open .shopify-chat {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
 </style>
 
 {%- capture tt_kart_veri -%}

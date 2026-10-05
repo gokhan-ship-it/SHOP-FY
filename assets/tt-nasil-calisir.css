@@ -80,6 +80,22 @@ body.ttn-cark-bar-acik .tt-nc-dugme:active {
    hem titremeyi hem de klavyeyle oraya sekmeyi onluyor. */
 body[data-tt-nc-acik] .tt-nc-dugme { opacity: 0; pointer-events: none; }
 
+/* TEMANIN KENDI KATMANLARI: sepet cekmecesi, menu, arama, modallar.
+
+   Cekmece z-35, bu buton z-50 -- yani buton cekmecenin USTUNDE kalip
+   "Odeme ekrani" dugmesinin sol yarisini ortuyordu. Ayni hata indirim
+   cubugunda da cikmisti (bkz. assets/ttn-cark.js, ORTU_SEC).
+
+   Isaret tahmin edilmiyor: Impact'in DrawerElement ve XModal siniflari
+   (ikisinde de shouldLock = true) acilisin BASINDA <body>'ye
+   .has-modal-opening, acilis bitince .has-modal-open koyuyor; kapanista
+   acik katman sayisi sifirlaninca geri aliyor
+   (assets/theme.js -> ModalElement.show / afterShow / afterHide).
+   Ikisi birden dinleniyor, yoksa buton acilis animasyonu boyunca
+   ekranda kalirdi. */
+body.has-modal-opening .tt-nc-dugme,
+body.has-modal-open .tt-nc-dugme { opacity: 0; pointer-events: none; }
+
 .tt-nc-dugme-ikon {
   position: relative;
   flex: none;
