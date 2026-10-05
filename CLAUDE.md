@@ -37,8 +37,14 @@ kayboldu. Canlı temadan okunarak yeniden kuruldu.
 
 | Tema | ID | Rol |
 |---|---|---|
-| Urun sagsutun - 2026-09-04 | `188045295936` | **MAIN (canlı)** — bütün iş buradaydı |
+| Calisma taslagi - 2026-10-05 | `188825207104` | **taslak — yeni iş burada** |
+| Urun sagsutun - 2026-09-04 | `188045295936` | **MAIN (canlı)** — sadece OKU |
 | Catal renk ayarlari - 2026-09-04 | `188044443968` | eski canlı, artık taslak — sadece OKU |
+
+Taslak 2026-10-05'te canlıdan kopyalandı. Canlı tema düzenleyiciden
+değiştirilirse taslak bayatlar: **yüklemeden önce dosyanın md5'ini her
+iki temada da oku**, taslak canlıdan geriyse önce canlıdakini taslağa
+indir.
 
 Canlı temaya **hiçbir koşulda yazma**. `themeFilesUpsert` canlı temayı
 zaten reddediyor; o tarafa iş yapılacaksa önce canlıdan bir taslak
