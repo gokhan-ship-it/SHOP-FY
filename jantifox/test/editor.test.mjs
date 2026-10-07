@@ -210,3 +210,16 @@ test('PNG ölçüleri: harf başına genişlik, rakam/ikon varyant ölçüsü ö
   // Dar harflerle daha uzun isim sığar
   assert.equal(ic.isimAnaliz(m, y, tasarim(m, 'IIIIIII')).sigiyor, true);
 });
+
+test('PNG şekli eski şekil kaydından önceliklidir', () => {
+  const v = ornekVeri();
+  // Futbol Topu kayıtta daire; PNG yuvarlak değilse png_sekil 'rect' gelir
+  v.ikonlar[1].png_sekil = 'rect';
+  // Sevimli Köpek kayıtta dikdörtgen; PNG yuvarlaksa 'circle'
+  v.ikonlar[2].png_sekil = 'circle';
+  const { m } = kur(v);
+  assert.equal(m.ikonHarita[2].sekil, 'rect');
+  assert.equal(m.ikonHarita[3].sekil, 'circle');
+  // png_sekil yoksa eski kayıt kullanılır
+  assert.equal(kur().m.ikonHarita[2].sekil, 'circle');
+});

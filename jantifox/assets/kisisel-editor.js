@@ -331,7 +331,7 @@
         set: p.set,
         en: en,
         boy: boy,
-        sekil: p.sekil === 'circle' ? 'circle' : 'rect',
+        sekil: (p.png_sekil || p.sekil) === 'circle' ? 'circle' : 'rect',
         etiketler: p.etiketler || [],
         gorsel: p.gorsel,
         png: !!p.png,

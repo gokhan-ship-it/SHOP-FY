@@ -1,6 +1,6 @@
 {%- comment -%}
   Bir patch ürününü (harf seti, rakam seti veya ikon) editör için JSON nesnesi olarak basar.
-  png_en / png_boy: kırpılmış şeffaf PNG'den hesaplanan ölçüler (varsa editör bunları kullanır).
+  png_en / png_boy / png_sekil: kırpılmış şeffaf PNG'den hesaplanan ölçü ve şekil (varsa editör bunları kullanır).
   Kullanım: {% render 'kisisel-veri-patch', p: product %}
 {%- endcomment -%}
 {%- liquid
@@ -21,6 +21,7 @@
   "png_en": {{ mf.png_genislik_cm.value | json }},
   "png_boy": {{ mf.png_yukseklik_cm.value | json }},
   "sekil": {{ mf.sekil.value | default: 'rect' | json }},
+  "png_sekil": {{ mf.png_sekil.value | json }},
   "etiketler": {{ p.tags | json }},
   "gorsel": {%- if urun_png != blank -%}{{ urun_png | image_url: width: 300 | json }}{%- elsif p.featured_media -%}{{ p.featured_media | image_url: width: 300 | json }}{%- else -%}null{%- endif -%},
   "png": {{ urun_png_var }},
