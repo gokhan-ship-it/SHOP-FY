@@ -1,0 +1,17 @@
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+const require = createRequire(import.meta.url);
+const { chromium, devices } = require('playwright');
+const html = readFileSync(new URL('sayfa.html', import.meta.url), 'utf8');
+const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+const c = await t.newContext({ ...devices['iPhone 13'] });
+const s = await c.newPage();
+s.on('pageerror', (e) => console.log('ERR', e.message));
+await s.route('https://jantifox.test/**', (r) => r.fulfill({ contentType: 'text/html', body: html }));
+await s.goto('https://jantifox.test/p');
+await s.getByRole('radio', { name: 'Kişiselleştir' }).tap();
+await s.locator('#kp-isim').fill('abdulkadir');
+await s.waitForTimeout(300);
+console.log(await s.locator('[data-kp-isim-uyari]').innerText());
+console.log(await s.locator('[data-kp-kapasite]').innerText());
+await t.close();
