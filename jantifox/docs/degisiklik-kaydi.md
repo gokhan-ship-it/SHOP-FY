@@ -24,6 +24,7 @@ Bu proje kapsamında mağazada yapılan her yazma işlemi burada listelenir. Mev
 | 2026-10-07 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js`, `assets/kisisel-editor.css`, `snippets/kisisel-kart.liquid`, `snippets/kisisel-veri-patch.liquid` | Commit 9e70630, MD5 doğrulandı. PNG ölçü ve şekli (`png_*`) öncelikli, "İndirimler sepette uygulanır" notu |
 | 2026-10-07 | `fileCreate` ×4 | A, D, H, L (Photoroom, kullanıcı onaylı): `kisisel-harf-{A,D,H,L}.webp` | Commit 2501338, `veri/png/hazir-png.py` ile kırpıldı (arka plan temizleme yok; L'de kenara yapışık 2 beyaz nokta temizlendi). Ürün/varyant medyasına bağlanmadı |
 | 2026-10-07 | `metafieldsSet` ×12 | A, D, H, L varyantları: `onizleme_png`, `png_genislik_cm`, `png_yukseklik_cm` | Ölçüler aşağıdaki tabloda; önizleme linkinde kontrol edildi |
+| 2026-10-07 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js`, `assets/kisisel-editor.css` | Commit fe06b14, MD5 doğrulandı. Patch döndürme: seçim çerçevesi ve tutamaç, iki parmak, araç çubuğu, klavye; dönük dikdörtgenle sığma/çakışma; `_tasarim_konum` v2 (her parçada açı `a`). Mağaza verisine yazılmadı |
 
 ## Metafield tanımları
 
