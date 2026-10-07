@@ -16,7 +16,7 @@ const sepet = { items: [
   { key: 'k-c', variant_id: 1002, quantity: 1, variant_title: 'C', product_title: 'Cool Alfabe Patch', properties: ozel('patch', { 'Harf sırası': '2', _adet_birim: '1' }) },
   { key: 'k-7', variant_id: 2007, quantity: 1, variant_title: '7', product_title: 'Janti Rakam Patch', properties: ozel('patch', { _adet_birim: '1' }) }
 ] };
-const satir = (k, i) => `<div id="CartDrawer-Item-${i + 1}" class="cart-item"><a class="cart-item__name">${k.product_title} ${k.variant_title}</a>
+const satir = (k, i) => `<div id="CartDrawer-Item-${i + 1}" class="cart-item"><a class="cart-item__name">${k.product_title} ${k.variant_title}</a>${k.properties['Tasarım'] ? `<dl><dt class="visually-hidden">Tasarım:</dt><dd>${k.properties['Tasarım']}</dd></dl>` : ''}
 <quantity-input><input class="quantity__input" name="updates[]" data-index="${i + 1}" value="${k.quantity}"></quantity-input>
 <cart-remove-button data-index="${i + 1}"><button type="button" class="cart-remove-button">Sil</button></cart-remove-button></div>`;
 const html = `<!doctype html><html><head><meta charset="utf-8"><script>window.routes={cart_url:'/cart',cart_update_url:'/cart/update',cart_change_url:'/cart/change'};</script></head><body>

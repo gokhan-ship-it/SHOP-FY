@@ -90,7 +90,9 @@
       return;
     }
     var mevcut = satirlar();
-    if (!mevcut.length) return;
+    // Görünür "Tasarım" özelliği olan satır yoksa sepeti hiç sorgulama
+    var adayVar = mevcut.some(function (s) { return s.textContent.indexOf('Tasarım') !== -1; });
+    if (!adayVar) return;
     calisiyor = true;
     sepetGetir()
       .then(function (sepet) {
