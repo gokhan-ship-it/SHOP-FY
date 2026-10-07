@@ -297,12 +297,12 @@
       return sekle(z);
     });
 
+    // Ölçü önceliği: kırpılmış PNG'den hesaplanan ölçü (png_en/png_boy) > kayıtlı ölçü > varsayılan
     function patchHazirla(p, varsayilanEn) {
-      var en = sayi(p.en) || varsayilanEn || null;
-      var boy = sayi(p.boy);
-      if (!en || !boy) return null;
       var varyantlar = (p.varyantlar || []).map(function (v) {
         return {
+          en: sayi(v.png_en),
+          boy: sayi(v.png_boy),
           id: v.id,
           baslik: v.baslik,
           karakter: v.karakter ? buyukHarf(String(v.karakter)) : null,
@@ -314,6 +314,15 @@
           png: !!(v.png || (!v.gorsel && p.png))
         };
       });
+      var en = sayi(p.png_en) || sayi(p.en);
+      var boy = sayi(p.png_boy) || sayi(p.boy);
+      // Varyant ölçüleri varsa (harf/rakam) temsili ölçü onların ortancası
+      var vEn = varyantlar.map(function (v) { return v.en; }).filter(Boolean).sort(function (a, b) { return a - b; });
+      var vBoy = varyantlar.map(function (v) { return v.boy; }).filter(Boolean).sort(function (a, b) { return a - b; });
+      if (!en && vEn.length) en = vEn[Math.floor(vEn.length / 2)];
+      if (!boy && vBoy.length) boy = vBoy[Math.floor(vBoy.length / 2)];
+      en = en || varsayilanEn || null;
+      if (!en || !boy) return null;
       return {
         id: p.id,
         baslik: p.baslik,
@@ -411,20 +420,37 @@
   }
 
   // İsim harflerini verilen merkeze, verilen satır sayısıyla dizer
-  Yerlesim.prototype.isimDiz = function (adet, set, cx, cy, satir) {
+  // Harfin gerçek ölçüsü: varyantın PNG ölçüsü, yoksa setin temsili ölçüsü
+  function harfOlcu(set, h) {
+    var v = set.karakterler[h];
+    return { en: (v && v.en) || set.en, boy: (v && v.boy) || set.boy };
+  }
+
+  // İsim harflerini verilen merkeze, verilen satır sayısıyla dizer. olculer: [{en, boy}] (harf sırasıyla)
+  Yerlesim.prototype.isimDiz = function (olculer, cx, cy, satir) {
     var a = this.m.ayar;
+    var adet = olculer.length;
     var satirlar = satir === 1 ? [adet] : [Math.ceil(adet / 2), Math.floor(adet / 2)];
     satirlar = satirlar.filter(function (k) { return k > 0; });
-    var toplamBoy = satirlar.length * set.boy + (satirlar.length - 1) * a.satirBosluk;
-    var ust = cy - toplamBoy / 2;
+    var parcalar = [];
+    var bas = 0;
+    satirlar.forEach(function (k) {
+      parcalar.push(olculer.slice(bas, bas + k));
+      bas += k;
+    });
+    var satirBoylari = parcalar.map(function (p) { return Math.max.apply(null, p.map(function (o) { return o.boy; })); });
+    var toplamBoy = satirBoylari.reduce(function (t, b) { return t + b; }, 0) + (parcalar.length - 1) * a.satirBosluk;
+    var y = cy - toplamBoy / 2;
     var sonuc = [];
-    satirlar.forEach(function (k, i) {
-      var satirEn = k * set.en + (k - 1) * a.bosluk;
-      var sol = cx - satirEn / 2;
-      var y = ust + i * (set.boy + a.satirBosluk) + set.boy / 2;
-      for (var j = 0; j < k; j++) {
-        sonuc.push({ cx: sol + j * (set.en + a.bosluk) + set.en / 2, cy: y });
-      }
+    parcalar.forEach(function (p, i) {
+      var satirEn = p.reduce(function (t, o) { return t + o.en; }, 0) + (p.length - 1) * a.bosluk;
+      var x = cx - satirEn / 2;
+      var orta = y + satirBoylari[i] / 2;
+      p.forEach(function (o) {
+        sonuc.push({ cx: x + o.en / 2, cy: orta, en: o.en, boy: o.boy });
+        x += o.en + a.bosluk;
+      });
+      y += satirBoylari[i] + a.satirBosluk;
     });
     return sonuc;
   };
@@ -445,20 +471,29 @@
   };
 
   // İsim, alana tek başına (diğer patch'ler olmadan) kaç satırda sığıyor? 0 = sığmıyor
-  Yerlesim.prototype.isimSatiri = function (adet, set) {
+  // olculer: harflerin gerçek ölçüleri [{en, boy}]
+  Yerlesim.prototype.isimSatiriOlcu = function (olculer) {
+    var adet = olculer.length;
     var alan = this.m.alanBul('letter');
     if (!alan || adet === 0) return adet === 0 ? 1 : 0;
     var c = merkez(alan.sekil);
+    var self = this;
     for (var satir = 1; satir <= Math.min(this.m.ayar.satir, 2); satir++) {
       if (satir === 2 && adet < 2) break;
-      var self = this;
-      var dizi = this.isimDiz(adet, set, c[0], c[1], satir);
+      var dizi = this.isimDiz(olculer, c[0], c[1], satir);
       var tamam = dizi.every(function (p) {
-        return self.alanaUygun(dikdortgen(p.cx, p.cy, set.en, set.boy), 'letter');
+        return self.alanaUygun(dikdortgen(p.cx, p.cy, p.en, p.boy), 'letter');
       });
       if (tamam) return satir;
     }
     return 0;
+  };
+
+  // Temsili (ortanca) harf ölçüsüyle: kapasite göstergesi için
+  Yerlesim.prototype.isimSatiri = function (adet, set) {
+    var olculer = [];
+    for (var i = 0; i < adet; i++) olculer.push({ en: set.en, boy: set.boy });
+    return this.isimSatiriOlcu(olculer);
   };
 
   Yerlesim.prototype.kapasite = function (set) {
@@ -479,8 +514,9 @@
       var harfler = Array.from(t.isim);
       var alan = m.alanBul('letter');
       var c = t.isimMerkez || (alan ? merkez(alan.sekil) : [m.Wcm / 2, m.Hcm / 2]);
-      var satir = this.isimSatiri(harfler.length, set) || Math.min(m.ayar.satir, harfler.length > 1 ? 2 : 1);
-      var dizi = this.isimDiz(harfler.length, set, c[0], c[1], satir);
+      var olculer = harfler.map(function (h) { return harfOlcu(set, h); });
+      var satir = this.isimSatiriOlcu(olculer) || Math.min(m.ayar.satir, harfler.length > 1 ? 2 : 1);
+      var dizi = this.isimDiz(olculer, c[0], c[1], satir);
       var ayri = !!t.harfAyri;
       harfler.forEach(function (h, i) {
         var v = set.karakterler[h] || null;
@@ -494,7 +530,7 @@
           tanim: set,
           varyant: v,
           etiket: h,
-          sekil: dikdortgen(k[0], k[1], set.en, set.boy)
+          sekil: dikdortgen(k[0], k[1], dizi[i].en, dizi[i].boy)
         });
       });
     }
@@ -512,14 +548,19 @@
         tanim: tanim,
         varyant: varyant,
         etiket: p.tip === 'number' ? (varyant && varyant.karakter) || '' : tanim.ad,
-        sekil:
-          tanim.sekil === 'circle'
-            ? { t: 'circle', cx: p.cx, cy: p.cy, r: Math.min(tanim.en, tanim.boy) / 2 }
-            : dikdortgen(p.cx, p.cy, tanim.en, tanim.boy)
+        sekil: parcaSekli(tanim, varyant, p.cx, p.cy)
       });
     });
     return liste;
   };
+
+  // Rakam/ikon şekli: varyantın PNG ölçüsü varsa o, yoksa ürünün ölçüsü
+  function parcaSekli(tanim, varyant, cx, cy) {
+    var en = (varyant && varyant.en) || tanim.en;
+    var boy = (varyant && varyant.boy) || tanim.boy;
+    if (tanim.sekil === 'circle') return { t: 'circle', cx: cx, cy: cy, r: Math.max(en, boy) / 2 };
+    return dikdortgen(cx, cy, en, boy);
+  }
 
   // Bir grubun (isim ya da tek patch) tüm parçaları geçerli mi?
   Yerlesim.prototype.grupGecerli = function (grupParcalari, digerleri) {
@@ -645,7 +686,9 @@
       var mevcut = !v.satilabilir ? 0 : v.stok == null ? Infinity : v.stok;
       if (mevcut < sayim[h]) sonuc.stokSorunlari.push({ harf: h, gereken: sayim[h], mevcut: mevcut });
     });
-    if (harfler.length) sonuc.sigiyor = yer.isimSatiri(harfler.length, set) > 0;
+    if (harfler.length) {
+      sonuc.sigiyor = yer.isimSatiriOlcu(harfler.map(function (h) { return harfOlcu(set, h); })) > 0;
+    }
     sonuc.engel = sonuc.eksikler.length > 0 || sonuc.yoklar.length > 0 || sonuc.stokSorunlari.length > 0 || !sonuc.sigiyor;
     return sonuc;
   }
@@ -986,7 +1029,7 @@
       '</div>' +
       '</div>' +
       '<div class="kp-alt">' +
-      '<div class="kp-alt__fiyat"><span>Toplam</span><strong data-kp-toplam></strong></div>' +
+      '<div class="kp-alt__fiyat"><span>Toplam</span><strong data-kp-toplam></strong><small class="kp-indirim-notu">İndirimler sepette uygulanır</small></div>' +
       '<button type="button" class="btn btn-primary kp-alt__ileri" data-kp-ileri>İleri</button>' +
       '</div>';
     document.body.appendChild(el);
@@ -1340,7 +1383,8 @@
       return false;
     }
     var parcalar = this.durum.parcalar;
-    var ornek = tanim.sekil === 'circle' ? { t: 'circle', cx: 0, cy: 0, r: Math.min(tanim.en, tanim.boy) / 2 } : dikdortgen(0, 0, tanim.en, tanim.boy);
+    var ornek = parcaSekli(tanim, varyant, 0, 0);
+    var ornekKutu = kutu(ornek);
     var alan = this.m.alanBul(tip);
     if (!alan) return false;
     var c = merkez(alan.sekil);
@@ -1349,7 +1393,7 @@
     var isimP = parcalar.filter(function (p) { return p.grup === 'isim'; });
     if (isimP.length) {
       var altSinir = Math.max.apply(null, isimP.map(function (p) { var k = kutu(p.sekil); return k.y + k.h; }));
-      hedefY = altSinir + this.m.ayar.bosluk + tanim.boy / 2;
+      hedefY = altSinir + this.m.ayar.bosluk + ornekKutu.h / 2;
     }
     var baslangic = kaydir(ornek, c[0], hedefY);
     var tasima = this.yer.enYakin([{ tip: tip, sekil: baslangic }], parcalar.filter(function (p) { return !this.durum.hatalar[p.uid]; }, this), 0, 0);
@@ -1538,6 +1582,7 @@
       (engelliAdim ? '<p class="kp-uyari kp-uyari--hata">' + engelliAdim.ad + ' adımında çözülmesi gereken bir sorun var.</p>' : '') +
       '<table class="kp-ozet"><tbody>' + satirlar + '</tbody>' +
       '<tfoot><tr><th scope="row">Toplam</th><td>' + p(f.toplam) + '</td></tr></tfoot></table>' +
+      '<p class="kp-indirim-notu kp-indirim-notu--ozet">İndirimler sepette uygulanır.</p>' +
       '<p class="kp-bilgi">Patch\'ler cırt cırtlı. Çanta eline geçince istediğin yere takar, istediğin zaman yerini değiştirirsin.</p>';
   };
 
@@ -1749,6 +1794,8 @@
     this.querySelector('[data-kisisel-bos]').hidden = !bos;
     ozet.hidden = bos;
     toplam.hidden = bos;
+    var indirimNotu = this.querySelector('[data-kisisel-indirim-notu]');
+    if (indirimNotu) indirimNotu.hidden = bos;
     acButon.textContent = bos ? 'Tasarla' : 'Tasarımı düzenle';
     var f = null;
     if (!bos) {

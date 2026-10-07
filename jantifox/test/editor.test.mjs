@@ -190,3 +190,23 @@ test('ayrı modda isme harf eklenince yeni harf geçerli bir yere yerleşir', ()
   assert.equal(t.harfKonumlari.length, 3);
   assert.deepEqual(duz(d.hatalar), {});
 });
+
+test('PNG ölçüleri: harf başına genişlik, rakam/ikon varyant ölçüsü öncelikli', () => {
+  const v = ornekVeri();
+  // I dar, W geniş; ortanca harf genişliği temsili ölçü olur
+  v.setler[0].varyantlar.forEach((x) => { x.png_en = x.karakter === 'I' ? 2.1 : x.karakter === 'W' ? 7.4 : 5.0; x.png_boy = 6; });
+  v.rakamlar[0].varyantlar.forEach((x) => { x.png_en = x.karakter === '1' ? 3.2 : 5.1; x.png_boy = 6; });
+  v.ikonlar[0].png_en = 5; v.ikonlar[0].png_boy = 4.6; // kalp: yükseklik PNG'den tamamlandı
+  const { m, y } = kur(v);
+  assert.equal(m.setler[0].en, 5.0, 'temsili harf genişliği ortanca');
+  assert.ok(m.ikonHarita[1], 'yüksekliği PNG\'den gelen kalp artık listede');
+  const c = m.alanlar[0].sekil;
+  const t = tasarim(m, 'WIW', [{ uid: 'r1', tip: 'number', urunId: 9722985382174, varyantId: 2001, cx: c.cx, cy: c.cy + 7 }]);
+  const d = ic.duzenle(m, y, t);
+  const h = d.parcalar.filter((p) => p.tip === 'letter');
+  assert.deepEqual(duz(h.map((p) => +p.sekil.w.toFixed(2))), [7.4, 2.1, 7.4]);
+  const r = d.parcalar.find((p) => p.tip === 'number');
+  assert.equal(+r.sekil.w.toFixed(2), 3.2, 'rakam 1 kendi genişliğinde');
+  // Dar harflerle daha uzun isim sığar
+  assert.equal(ic.isimAnaliz(m, y, tasarim(m, 'IIIIIII')).sigiyor, true);
+});

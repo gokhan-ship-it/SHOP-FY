@@ -840,3 +840,21 @@ html.kp-kilit body {
     transition: outline-color 0.15s;
   }
 }
+
+/* İndirim notu: fiyatlar liste fiyatıdır, otomatik indirimler sepette uygulanır */
+.kp-indirim-notu {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--kp-ikincil);
+}
+.kp-indirim-notu[hidden] {
+  display: none;
+}
+.kisisel-kart__toplam:not([hidden]) + .kisisel-kart__not {
+  margin: -0.6rem 0 1rem;
+}
+.kp-indirim-notu--ozet {
+  margin: -0.4rem 0 1.2rem;
+  text-align: right;
+}
