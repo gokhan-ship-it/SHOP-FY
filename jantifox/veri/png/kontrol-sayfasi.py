@@ -31,7 +31,9 @@ def main():
     kartlar = []
     for n, r in enumerate(sonuclar, 1):
         s, o = r['sonuc'], r['olcu']
-        isaret = list(r['isaretler']) + elle.get(r['anahtar'], [])
+        notlar = elle.get(r['anahtar'], [])
+        bilgi = [n[6:].strip() for n in notlar if n.startswith('BİLGİ:')]
+        isaret = list(r['isaretler']) + [n for n in notlar if not n.startswith('BİLGİ:')]
         if r.get('not_'):
             isaret.append(r['not_'])
         orj = gom(r['orijinal'], 260, 'JPEG')
@@ -51,9 +53,12 @@ def main():
     <dt>Eski kayıt</dt><dd>{html.escape(eski_yazi)}</dd>
   </dl>
   {''.join(f'<p class="uyari">⚠️ {html.escape(i)}</p>' for i in isaret)}
+  {''.join(f'<p class="bilgi">ℹ️ {html.escape(i)}</p>' for i in bilgi)}
   <label class="onay"><input type="checkbox" {'' if isaret else 'checked'} data-onay> Onaylıyorum</label>
 </article>""")
-    sayac = {'tum': len(sonuclar), 'isaretli': sum(1 for r in sonuclar if r['isaretler'] or elle.get(r['anahtar']) or r.get('not_'))}
+    def isaretli_mi(r):
+        return bool(r['isaretler'] or r.get('not_') or [n for n in elle.get(r['anahtar'], []) if not n.startswith('BİLGİ:')])
+    sayac = {'tum': len(sonuclar), 'isaretli': sum(1 for r in sonuclar if isaretli_mi(r))}
     sayfa = f"""<!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Patch PNG Kontrolü</title>
@@ -83,6 +88,7 @@ dl {{ display:grid; grid-template-columns:auto 1fr; gap:2px 8px; margin:0; }}
 dt {{ color:var(--ikincil); }} dd {{ margin:0; }}
 .ince {{ color:var(--ikincil); font-size:12px; }}
 .uyari {{ margin:0; padding:6px 8px; border-radius:6px; background:var(--uyari-zemin); color:var(--uyari); font-size:12.5px; }}
+.bilgi {{ margin:0; padding:6px 8px; border-radius:6px; background:#eef3fb; color:#1d3a66; font-size:12.5px; }}
 .onay {{ display:flex; gap:6px; align-items:center; font-weight:600; margin-top:auto; padding-top:4px; cursor:pointer; }}
 .onay input {{ width:18px; height:18px; }}
 [hidden] {{ display:none !important; }}

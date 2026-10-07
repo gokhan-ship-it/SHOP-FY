@@ -64,11 +64,29 @@ def isle(kayit, oturum, cikti):
         temiz = np.isin(etiket, tut)
         a = np.where(temiz, a, 0).astype(np.uint8)
         maske = temiz
+    # İç delikleri doldur: model, patch'in beyaz/açık renkli iç bölgelerini (ör. futbol topunun beyaz
+    # parçaları, beyaz kalbin içi) arka plan sanıp silebiliyor. İkonlarda gerçek delik yok, hepsi dolar.
+    # Harf ve rakamlarda gerçek iç boşluklar (A, B, O, 0, 8...) korunur, yalnızca küçük delikler kapanır.
+    dolu = ndimage.binary_fill_holes(maske)
+    delikler = dolu & ~maske
+    if kayit['tur'] == 'ikon':
+        doldur = delikler
+    else:
+        d_etiket, d_n = ndimage.label(delikler)
+        doldur = np.zeros_like(maske)
+        if d_n:
+            d_alan = ndimage.sum(delikler, d_etiket, range(1, d_n + 1))
+            kucuk = [i + 1 for i, s in enumerate(d_alan) if s < 0.01 * maske.sum()]
+            doldur = np.isin(d_etiket, kucuk)
+    doldurulan = int(doldur.sum())
+    maske = maske | doldur
+    a = np.where(doldur, 255, a).astype(np.uint8)
     ys, xs = np.nonzero(maske)
     if not len(xs):
         return {'hata': 'Patch bulunamadı (maske boş)'}
     x1, x2, y1, y2 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
-    rgba = np.asarray(sonuc).copy()
+    # Renkler her zaman orijinalden: model, sildiği piksellerin rengini siyaha çeviriyor
+    rgba = np.asarray(kaynak.convert('RGBA')).copy()
     rgba[..., 3] = a
     kirp = Image.fromarray(rgba).crop((x1, y1, x2, y2))
     w, h = kirp.size
@@ -98,6 +116,7 @@ def isle(kayit, oturum, cikti):
         'yari_seffaf': round(yari, 3),
         'kutu_orani': round(kutu_orani, 3),
         'bilesenler': bilesenler[:5],
+        'doldurulan_oran': round(doldurulan / max(1, int(maske.sum())), 3),
     }
 
 
@@ -136,6 +155,8 @@ def isaretler(kayit, s, o):
         i.append(f"Kutunun yalnızca %{round(s['doluluk'] * 100)}'i dolu: eksik kesim ya da ince/dağınık şekil")
     if len(s['bilesenler']) > 1 and s['bilesenler'][1] > 0.02 * s['bilesenler'][0]:
         i.append(f"{len(s['bilesenler'])} ayrı parça var: arka plan kalıntısı ya da kopuk kesim olabilir")
+    if s.get('doldurulan_oran', 0) > 0.03:
+        i.append(f"Patch'in %{round(s['doldurulan_oran'] * 100)}'i iç delik doldurularak tamamlandı (model iç bölgeyi silmişti): renkleri kontrol et")
     if s['yari_seffaf'] > 0.12:
         i.append(f"Kenarların %{round(s['yari_seffaf'] * 100)}'i yarı saydam: bulanık kenar")
     if kayit.get('sekil') == 'circle' and abs(s['oran'] - 1) > 0.06:
