@@ -318,11 +318,88 @@ html.kp-kilit body {
   padding: 0.8rem;
 }
 .kp-onizleme__ic {
-  width: min(100%, 40vh, 560px);
+  position: relative;
+  width: min(100%, calc(40vh * var(--kp-oran, 1)), 560px);
 }
-.kp-onizleme__ic .kp-sahne {
+.kp-gorunum {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
   border-radius: 8px;
+  background: #fff;
   touch-action: none;
+}
+.kp-gorunum .kp-sahne {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  overflow: visible;
+  background: transparent;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .kp-gorunum .kp-sahne {
+    transition: width 0.3s ease, left 0.3s ease, top 0.3s ease;
+  }
+}
+.kp-onizleme__dugme {
+  position: absolute;
+  z-index: 3;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0.3rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--kp-murekkep);
+  font-size: 1.2rem;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+/* Görsel küçük, dokunma alanı 44px */
+.kp-onizleme__dugme::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+.kp-onizleme__dugme[hidden] {
+  display: none;
+}
+.kp-harf-mod {
+  min-height: var(--kp-dokunma);
+  padding: 0.4rem 1.2rem;
+  border: 1px solid var(--kp-murekkep);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--kp-murekkep);
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.kp-harf-mod[aria-pressed='true'] {
+  background: var(--kp-murekkep);
+  color: #fff;
+}
+.kp-harf-mod[hidden] {
+  display: none;
+}
+.kp-isim-alt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.6rem;
+}
+.kp-isim-alt .kp-kapasite {
+  margin-left: auto;
+}
+.kp-baglanti[hidden] {
+  display: none;
 }
 .kp-onizleme__not {
   margin: 0.4rem 0 0;
@@ -748,7 +825,7 @@ html.kp-kilit body {
     justify-content: center;
   }
   .kp-onizleme__ic {
-    width: min(100%, 70vh, 640px);
+    width: min(100%, calc(70vh * var(--kp-oran, 1)), 640px);
   }
   .kp-adimlar {
     grid-column: 2;

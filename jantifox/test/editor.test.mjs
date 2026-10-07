@@ -133,3 +133,60 @@ test('ikon için kalan yer sayısı', () => {
   const n = y.kalanYer([], 6, 6, 'rect', 'icon');
   assert.ok(n >= 4, 'boş 25 cm dairede en az 4 tane 6x6 ikon olmalı: ' + n);
 });
+
+test('fiyat her zaman Türkçe biçimde', () => {
+  assert.equal(ic.paraBicimle(498000), '4.980 TL');
+  assert.equal(ic.paraBicimle(498050), '4.980,50 TL');
+  assert.equal(ic.paraBicimle(33000), '330 TL');
+  assert.equal(ic.paraBicimle(123456789), '1.234.567,89 TL');
+});
+
+test('ölçek dairenin gerçek çapından (cap_cm) gelir; kırpılmış görselde de doğru', () => {
+  const v = ornekVeri();
+  // Kırpılmış PNG: 1000x1100, daire görselin %60'ı genişliğinde, gerçek çap 25 cm
+  v.gorsel = { en: 1000, boy: 1100, kucuk: 'k', buyuk: 'b' };
+  v.harita = { zones: [{ id: 'on-daire', shape: 'circle', x: 20, y: 30, w: 60, h: 54.545, cap_cm: 25, allowed_types: ['letter', 'number', 'icon'] }], forbidden: [] };
+  const { m } = kur(v);
+  assert.ok(Math.abs(m.alanlar[0].sekil.r * 2 - 25) < 0.01);
+  assert.ok(Math.abs(m.Wcm - 1000 / (600 / 25)) < 0.01);
+});
+
+test('harita başka boyuttaki görsele aitse kalibre değil sayılır', () => {
+  const v = ornekVeri();
+  v.harita.gorsel = { en: 1000, boy: 1500 };
+  assert.equal(kur(v).m.kalibre, false);
+});
+
+test('harfleri ayır: her harf ayrı grup, birleştir: düzenli blok', () => {
+  const { m, y } = kur();
+  const t = tasarim(m, 'ECE');
+  ic.duzenle(m, y, t);
+  ic.harfleriAyir(y, t);
+  assert.equal(t.harfAyri, true);
+  let d = ic.duzenle(m, y, t);
+  const harfler = d.parcalar.filter((p) => p.tip === 'letter');
+  assert.deepEqual(duz(harfler.map((p) => p.grup)), ['harf-0', 'harf-1', 'harf-2']);
+  // Bir harfi diğerinin üstüne koy: düzenle en yakın boş yere taşımalı
+  t.harfKonumlari[2] = t.harfKonumlari[0].slice();
+  d = ic.duzenle(m, y, t);
+  const h = d.parcalar.filter((p) => p.tip === 'letter');
+  assert.deepEqual(duz(d.hatalar), {});
+  assert.equal(ic.geometri.cakisir(h[0].sekil, h[2].sekil, 0), false);
+  // Birleştir: tek blok, hepsi aynı satırda eşit aralıklı
+  ic.harfleriBirlestir(t);
+  d = ic.duzenle(m, y, t);
+  const b = d.parcalar.filter((p) => p.tip === 'letter');
+  assert.ok(b.every((p) => p.grup === 'isim'));
+  assert.ok(Math.abs(b[0].sekil.y - b[2].sekil.y) < 1e-9);
+  assert.ok(Math.abs((b[1].sekil.x - b[0].sekil.x) - (b[2].sekil.x - b[1].sekil.x)) < 1e-9);
+});
+
+test('ayrı modda isme harf eklenince yeni harf geçerli bir yere yerleşir', () => {
+  const { m, y } = kur();
+  const t = tasarim(m, 'EC');
+  ic.harfleriAyir(y, t);
+  t.isim = 'ECE';
+  const d = ic.duzenle(m, y, t);
+  assert.equal(t.harfKonumlari.length, 3);
+  assert.deepEqual(duz(d.hatalar), {});
+});

@@ -40,32 +40,15 @@
       .replace(/"/g, '&quot;');
   }
 
-  function paraBicimle(kurus, bicim) {
-    var tutar = kurus / 100;
-    function grupla(sayi, ondalik, binlik, kesir) {
-      var parcalar = sayi.toFixed(ondalik).split('.');
-      parcalar[0] = parcalar[0].replace(/\B(?=(\d{3})+(?!\d))/g, binlik);
-      return parcalar.length > 1 ? parcalar[0] + kesir + parcalar[1] : parcalar[0];
-    }
-    var sablon = bicim || '{{amount}} TL';
-    return sablon.replace(/\{\{\s*(\w+)\s*\}\}/, function (_, ad) {
-      switch (ad) {
-        case 'amount_no_decimals':
-          return grupla(tutar, 0, ',', '.');
-        case 'amount_with_comma_separator':
-          return grupla(tutar, 2, '.', ',');
-        case 'amount_no_decimals_with_comma_separator':
-          return grupla(tutar, 0, '.', ',');
-        case 'amount_with_apostrophe_separator':
-          return grupla(tutar, 2, "'", '.');
-        case 'amount_no_decimals_with_space_separator':
-          return grupla(tutar, 0, ' ', ',');
-        case 'amount_with_space_separator':
-          return grupla(tutar, 2, ' ', ',');
-        default:
-          return grupla(tutar, 2, ',', '.');
-      }
-    });
+  // Mağazanın money_format ayarından bağımsız olarak Türkçe biçim: 4.980 TL, 4.980,50 TL
+  function paraBicimle(kurus) {
+    var negatif = kurus < 0;
+    var toplamKurus = Math.round(Math.abs(Number(kurus) || 0));
+    var lira = Math.floor(toplamKurus / 100);
+    var kalan = toplamKurus % 100;
+    var metin = String(lira).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    if (kalan) metin += ',' + (kalan < 10 ? '0' : '') + kalan;
+    return (negatif ? '-' : '') + metin + ' TL';
   }
 
   function olayYayinla(ad, veri) {
@@ -253,15 +236,37 @@
     };
 
     var harita = ham.harita;
-    if (!harita || !harita.zones || !harita.zones.length || !sayi(harita.real_width_cm)) {
+    if (!harita || !harita.zones || !harita.zones.length) {
       throw new Error('Kişiselleştirme haritası eksik');
     }
-    this.kalibre = harita.kalibre !== false;
-
     var W = Number(ham.gorsel.en);
     var H = Number(ham.gorsel.boy);
-    var kutuGenislik = harita.urun_kutusu && sayi(harita.urun_kutusu.w) ? (harita.urun_kutusu.w / 100) * W : W;
-    var pxCm = kutuGenislik / Number(harita.real_width_cm);
+
+    // Harita belirli bir görsele göre çizilir. Görsel değiştiyse (ör. yeni PNG yüklendi,
+    // harita henüz güncellenmedi) önizleme "kalibre edilmedi" olarak işaretlenir.
+    var haritaGorsel = harita.gorsel || {};
+    var gorselUyumlu = !sayi(haritaGorsel.en) || !sayi(haritaGorsel.boy) ||
+      Math.abs(haritaGorsel.en / haritaGorsel.boy - W / H) < 0.01;
+    this.kalibre = harita.kalibre !== false && gorselUyumlu;
+
+    // Ölçek (piksel/cm) önceliği:
+    // 1) Gerçek ölçüsü bilinen bir alan (cap_cm ya da genislik_cm): görsel kırpılsa da doğru kalır.
+    // 2) Ürünün görseldeki kutusu + gerçek genişlik.
+    // 3) Görselin tamamı = gerçek genişlik.
+    var pxCm = null;
+    harita.zones.some(function (z) {
+      var gercek = sayi(z.cap_cm) || sayi(z.genislik_cm);
+      var wpx = ((Number(z.w) || 0) / 100) * W;
+      var hpx = ((Number(z.h) || 0) / 100) * H;
+      var olcu = z.shape === 'circle' ? Math.min(wpx, hpx) : wpx;
+      if (gercek && olcu > 0) pxCm = olcu / gercek;
+      return !!pxCm;
+    });
+    if (!pxCm && sayi(harita.real_width_cm)) {
+      var kutuGenislik = harita.urun_kutusu && sayi(harita.urun_kutusu.w) ? (harita.urun_kutusu.w / 100) * W : W;
+      pxCm = kutuGenislik / Number(harita.real_width_cm);
+    }
+    if (!pxCm) throw new Error('Haritada ölçek bilgisi yok (cap_cm ya da real_width_cm)');
     this.Wcm = W / pxCm;
     this.Hcm = H / pxCm;
 
@@ -476,16 +481,20 @@
       var c = t.isimMerkez || (alan ? merkez(alan.sekil) : [m.Wcm / 2, m.Hcm / 2]);
       var satir = this.isimSatiri(harfler.length, set) || Math.min(m.ayar.satir, harfler.length > 1 ? 2 : 1);
       var dizi = this.isimDiz(harfler.length, set, c[0], c[1], satir);
+      var ayri = !!t.harfAyri;
       harfler.forEach(function (h, i) {
         var v = set.karakterler[h] || null;
+        // Ayrı modda her harf kendi konumunda ve kendi grubunda sürüklenir
+        var k = ayri && t.harfKonumlari && t.harfKonumlari[i] ? t.harfKonumlari[i] : [dizi[i].cx, dizi[i].cy];
         liste.push({
-          uid: 'isim-' + i,
-          grup: 'isim',
+          uid: (ayri ? 'harf-' : 'isim-') + i,
+          grup: ayri ? 'harf-' + i : 'isim',
+          sira: i,
           tip: 'letter',
           tanim: set,
           varyant: v,
           etiket: h,
-          sekil: dikdortgen(dizi[i].cx, dizi[i].cy, set.en, set.boy)
+          sekil: dikdortgen(k[0], k[1], set.en, set.boy)
         });
       });
     }
@@ -642,13 +651,50 @@
   }
 
   // Tasarımın tüm parçalarını doğrular, çakışan parçaları en yakın geçerli yere taşır
+  // Bir parçanın kayıtlı konumunu kaydırır (harf ya da rakam/ikon)
+  function konumKaydir(t, p, dx, dy) {
+    if (p.grup === 'isim') {
+      return;
+    }
+    if (String(p.grup).indexOf('harf-') === 0) {
+      var k = t.harfKonumlari[p.sira];
+      t.harfKonumlari[p.sira] = [k[0] + dx, k[1] + dy];
+      return;
+    }
+    t.parcalar.forEach(function (x) {
+      if (x.uid === p.uid) {
+        x.cx += dx;
+        x.cy += dy;
+      }
+    });
+  }
+
+  // Ayrı modda harf konum listesini isimle aynı uzunlukta tutar.
+  // Yeni eklenen harfler blok dizilimindeki yerinden başlar; çakışırsa düzenle() en yakın boş yere taşır.
+  function harfKonumlariniEsitle(yer, t) {
+    if (!t.harfAyri) {
+      t.harfKonumlari = null;
+      return;
+    }
+    var adet = Array.from(t.isim || '').length;
+    var mevcut = Array.isArray(t.harfKonumlari) ? t.harfKonumlari.slice(0, adet) : [];
+    if (mevcut.length < adet) {
+      var blok = yer.parcalar({ setId: t.setId, isim: t.isim, isimMerkez: t.isimMerkez, parcalar: [] });
+      for (var i = mevcut.length; i < adet; i++) mevcut.push(merkez(blok[i].sekil));
+    }
+    t.harfKonumlari = mevcut;
+    if (!adet) t.harfAyri = false;
+  }
+
+  // Tasarımın tüm parçalarını doğrular, çakışan parçaları en yakın geçerli yere taşır
   function duzenle(model, yer, t) {
+    harfKonumlariniEsitle(yer, t);
     var parcalar = yer.parcalar(t);
     var isimP = parcalar.filter(function (p) { return p.grup === 'isim'; });
     var digerleri = parcalar.filter(function (p) { return p.grup !== 'isim'; });
     var hatalar = {};
 
-    // İsim konumu: kullanıcı taşıdıysa ve hâlâ geçerliyse koru, değilse merkeze al
+    // Blok isim: kullanıcı taşıdıysa ve hâlâ geçerliyse koru, değilse merkeze al
     if (isimP.length && t.isimMerkez && !yer.grupGecerli(isimP, [])) {
       t.isimMerkez = null;
       parcalar = yer.parcalar(t);
@@ -658,24 +704,50 @@
     var isimGecerli = isimP.length === 0 || yer.grupGecerli(isimP, []);
     if (!isimGecerli) isimP.forEach(function (p) { hatalar[p.uid] = true; });
 
+    // Ayrı harfler listenin başında olduğu için rakam ve ikonlardan önce yerleşir
     var yerlesmis = isimGecerli ? isimP.slice() : [];
     digerleri.forEach(function (p) {
-      var kayit = t.parcalar.filter(function (x) { return x.uid === p.uid; })[0];
       if (yer.grupGecerli([p], yerlesmis)) {
         yerlesmis.push(p);
         return;
       }
       var tasima = yer.enYakin([p], yerlesmis, 0, 0);
       if (tasima) {
-        kayit.cx += tasima[0];
-        kayit.cy += tasima[1];
+        konumKaydir(t, p, tasima[0], tasima[1]);
         p.sekil = kaydir(p.sekil, tasima[0], tasima[1]);
         yerlesmis.push(p);
       } else {
         hatalar[p.uid] = true;
       }
     });
-    return { parcalar: yer.parcalar(t), hatalar: hatalar, isimGecerli: isimGecerli };
+    var harfHatali = parcalar.some(function (p) { return p.tip === 'letter' && hatalar[p.uid]; });
+    return { parcalar: yer.parcalar(t), hatalar: hatalar, isimGecerli: isimGecerli && !harfHatali };
+  }
+
+  // Blok ismi ayrı harflere böler: her harf bulunduğu yerde kalır
+  function harfleriAyir(yer, t) {
+    if (!t.isim || t.harfAyri) return;
+    var blok = yer.parcalar(t).filter(function (p) { return p.grup === 'isim'; });
+    t.harfKonumlari = blok.map(function (p) { return merkez(p.sekil); });
+    t.harfAyri = true;
+  }
+
+  // Ayrı harfleri, harflerin ortalama konumunda düzenli bir blok olarak birleştirir.
+  // Blok orada sığmazsa düzenle() alan merkezine alır; çakışan rakam/ikonlar en yakın boş yere taşınır.
+  function harfleriBirlestir(t) {
+    if (!t.harfAyri) return;
+    var k = t.harfKonumlari || [];
+    if (k.length) {
+      var sx = 0;
+      var sy = 0;
+      k.forEach(function (c) {
+        sx += c[0];
+        sy += c[1];
+      });
+      t.isimMerkez = [sx / k.length, sy / k.length];
+    }
+    t.harfAyri = false;
+    t.harfKonumlari = null;
   }
 
   function stokKontrol(model, t, yer, adet) {
@@ -772,16 +844,58 @@
         return '<ellipse class="kp-yasak" cx="' + s.cx + '" cy="' + s.cy + '" rx="' + rx + '" ry="' + ry + '" />';
       })
       .join('');
-    this.kok.innerHTML =
+    var srcset = kacis(g.kucuk) + ' 750w, ' + kacis(g.buyuk) + ' 1200w' + (g.dev ? ', ' + kacis(g.dev) + ' 1800w' : '');
+    var sahneHtml =
       '<div class="kp-sahne' + (this.etkilesimli ? ' kp-sahne--etkilesimli' : '') + '" style="aspect-ratio:' + g.en + ' / ' + g.boy + '">' +
-      '<img class="kp-sahne__urun" src="' + kacis(g.kucuk) + '" srcset="' + kacis(g.kucuk) + ' 750w, ' + kacis(g.buyuk) + ' 1200w" sizes="(min-width: 990px) 600px, 100vw" alt="' + kacis(m.urun.baslik) + '" draggable="false" decoding="async">' +
+      '<img class="kp-sahne__urun" src="' + kacis(g.kucuk) + '" srcset="' + srcset + '" sizes="(min-width: 990px) 600px, 100vw" alt="' + kacis(m.urun.baslik) + '" draggable="false" decoding="async">' +
       (this.etkilesimli
         ? '<svg class="kp-sahne__alanlar" viewBox="0 0 ' + m.Wcm + ' ' + m.Hcm + '" preserveAspectRatio="none" aria-hidden="true">' + yasakSvg + alanSvg + '</svg>'
         : '') +
       '<div class="kp-sahne__parcalar"></div>' +
       '</div>';
+    // Editörde sahne bir görünüm penceresi içinde durur; yakınlaştırma sahnenin
+    // genişliği ve konumuyla yapılır (transform yok), böylece tüm hesaplar aynı kalır.
+    this.kok.innerHTML = this.etkilesimli
+      ? '<div class="kp-gorunum" style="aspect-ratio:' + g.en + ' / ' + g.boy + '">' + sahneHtml + '</div>'
+      : sahneHtml;
+    this.gorunum = this.kok.querySelector('.kp-gorunum');
     this.sahne = this.kok.querySelector('.kp-sahne');
     this.katman = this.kok.querySelector('.kp-sahne__parcalar');
+  };
+
+  // Yakın görünüm: takılabilir alan(lar) pencere genişliğinin ~%80'ini kaplar.
+  Sahne.prototype.gorunumAyarla = function (yakin) {
+    if (!this.gorunum) return;
+    var m = this.m;
+    var olcek = 1;
+    var sol = 0;
+    var ust = 0;
+    if (yakin && m.alanlar.length) {
+      var x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+      m.alanlar.forEach(function (a) {
+        var k = kutu(a.sekil);
+        x1 = Math.min(x1, k.x);
+        y1 = Math.min(y1, k.y);
+        x2 = Math.max(x2, k.x + k.w);
+        y2 = Math.max(y2, k.y + k.h);
+      });
+      var oranX = (x2 - x1) / m.Wcm;
+      var oranY = (y2 - y1) / m.Hcm;
+      olcek = Math.max(1, Math.min(0.8 / oranX, 0.8 / oranY));
+      var cx = (x1 + x2) / 2 / m.Wcm;
+      var cy = (y1 + y2) / 2 / m.Hcm;
+      // Alan merkezi pencerenin ortasına; görselin dışına taşmayacak şekilde sınırla
+      sol = Math.min(0, Math.max(100 - olcek * 100, 50 - cx * olcek * 100));
+      ust = Math.min(0, Math.max(100 - olcek * 100, 50 - cy * olcek * 100));
+    }
+    this.yakin = !!yakin && olcek > 1;
+    if (yakin) this.yakinlasabilir = olcek > 1.01;
+    this.sahne.style.width = olcek * 100 + '%';
+    this.sahne.style.left = sol + '%';
+    this.sahne.style.top = ust + '%';
+    var img = this.sahne.querySelector('.kp-sahne__urun');
+    var genislik = this.gorunum.getBoundingClientRect().width;
+    if (img && genislik) img.sizes = Math.ceil(genislik * olcek) + 'px';
   };
 
   Sahne.prototype.ciz = function (parcalar, hatalar, alanHatali) {
@@ -853,7 +967,10 @@
       '</button>' +
       '</div>' +
       '<div class="kp-kaydir">' +
-      '<div class="kp-onizleme"><div class="kp-onizleme__ic" data-kp-sahne></div>' +
+      '<div class="kp-onizleme"><div class="kp-onizleme__ic" style="--kp-oran:' + (this.m.gorsel.en / this.m.gorsel.boy) + '">' +
+      '<div data-kp-sahne></div>' +
+      '<button type="button" class="kp-onizleme__dugme kp-onizleme__dugme--gorunum" data-kp-gorunum aria-pressed="false">Tüm çantayı gör</button>' +
+      '</div>' +
       (this.m.kalibre ? '' : '<p class="kp-onizleme__not">Önizleme ölçüleri henüz kalibre edilmedi.</p>') +
       '</div>' +
       '<nav class="kp-adimlar" aria-label="Tasarım adımları"><ol>' +
@@ -890,6 +1007,7 @@
     document.documentElement.classList.add('kp-kilit');
     document.body.style.top = -this.kaydirmaY + 'px';
     this.el.hidden = false;
+    this.sahne.gorunumAyarla(true);
     this.adimaGit(adim || 'yazi', true);
     this.yenile();
     var self = this;
@@ -919,6 +1037,15 @@
       var hedef = e.target.closest('button');
       if (!hedef || !el.contains(hedef)) return;
       if (hedef.hasAttribute('data-kp-kapat')) return self.kapat(false);
+      if (hedef.hasAttribute('data-kp-gorunum')) {
+        self.sahne.gorunumAyarla(!self.sahne.yakin);
+        return self.dugmeleriGuncelle();
+      }
+      if (hedef.hasAttribute('data-kp-harf-mod')) {
+        if (self.t.harfAyri) harfleriBirlestir(self.t);
+        else harfleriAyir(self.yer, self.t);
+        return self.yenile();
+      }
       if (hedef.hasAttribute('data-kp-adim')) return self.adimaGit(hedef.getAttribute('data-kp-adim'));
       if (hedef.hasAttribute('data-kp-ileri')) return self.ileri();
       if (hedef.hasAttribute('data-kp-oneri-kabul')) return self.harfDegistir(hedef.getAttribute('data-harf'), hedef.getAttribute('data-oneri'));
@@ -966,6 +1093,9 @@
       if (girdi.value !== temiz) girdi.value = temiz;
       self.t.isim = temiz;
       self.yenile();
+    });
+    window.addEventListener('resize', function () {
+      if (!self.el.hidden) self.sahne.gorunumAyarla(self.sahne.yakin);
     });
     this.surukleBagla();
   };
@@ -1117,7 +1247,10 @@
       '<div class="kp-alan-girdi">' +
       '<label for="kp-isim" class="kp-etiket">İsim <span class="kp-etiket__not">(isteğe bağlı)</span></label>' +
       '<input id="kp-isim" class="kp-girdi" type="text" data-kp-isim autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" maxlength="24" enterkeyhint="done" aria-describedby="kp-kapasite kp-isim-uyari">' +
+      '<div class="kp-isim-alt">' +
+      '<button type="button" class="kp-harf-mod" data-kp-harf-mod aria-pressed="false" hidden>Harfleri ayır</button>' +
       '<p id="kp-kapasite" class="kp-kapasite" data-kp-kapasite></p>' +
+      '</div>' +
       '</div>' +
       '<div id="kp-isim-uyari" class="kp-uyarilar" data-kp-isim-uyari aria-live="polite"></div>' +
       '<button type="button" class="kp-baglanti" data-kp-isimsiz>İsim istemiyorum, sadece ikonla devam et</button>';
@@ -1188,7 +1321,7 @@
           '<button type="button" class="kp-secim kp-secim--ikon" data-kp-ikon="' + i.id + '"' + (tukendi ? ' disabled' : '') + '>' +
           (v.gorsel ? '<img src="' + kacis(v.gorsel) + '" alt="" loading="lazy">' : '') +
           '<span class="kp-secim__ad">' + kacis(i.ad) + '</span>' +
-          '<span class="kp-secim__fiyat">' + (tukendi ? 'Tükendi' : paraBicimle(v.fiyat, m.para)) + '</span>' +
+          '<span class="kp-secim__fiyat">' + (tukendi ? 'Tükendi' : paraBicimle(v.fiyat)) + '</span>' +
           '</button>'
         );
       })
@@ -1261,6 +1394,7 @@
     this.stokSorunlari = stokKontrol(this.m, this.t, this.yer, 1);
     var alanHatali = !this.durum.isimGecerli || Object.keys(this.durum.hatalar).length > 0;
     this.sahne.ciz(this.durum.parcalar, this.durum.hatalar, alanHatali);
+    this.dugmeleriGuncelle();
     this.yaziDurumGuncelle();
     this.eklenenleriCiz('number');
     this.eklenenleriCiz('icon');
@@ -1268,7 +1402,7 @@
     var ipucu = this.el.querySelector('[data-kp-rakam-ipucu]');
     if (ipucu) ipucu.innerHTML = this.rakamIpucu ? '<p class="kp-uyari kp-uyari--bilgi">Şimdi baş harfinin yanına bir rakam seç.</p>' : '';
     var f = fiyatHesapla(this.m, this.yer, this.t);
-    this.el.querySelector('[data-kp-toplam]').textContent = paraBicimle(f.toplam, this.m.para);
+    this.el.querySelector('[data-kp-toplam]').textContent = paraBicimle(f.toplam);
     var ileri = this.el.querySelector('[data-kp-ileri]');
     var engel = this.adimEngeli(this.adim);
     if (this.adim === 'ozet') {
@@ -1278,6 +1412,20 @@
     ileri.setAttribute('aria-disabled', engel ? 'true' : 'false');
     ileri.classList.toggle('kp-alt__ileri--engelli', !!engel);
     if (this.adim === 'ozet') this.ozetCiz();
+  };
+
+  Editor.prototype.dugmeleriGuncelle = function () {
+    var ayri = !!this.t.harfAyri;
+    var harfSayisi = Array.from(this.t.isim || '').length;
+    this.el.querySelectorAll('[data-kp-harf-mod]').forEach(function (b) {
+      b.hidden = harfSayisi < 2;
+      b.textContent = ayri ? 'Harfleri birleştir' : 'Harfleri ayır';
+      b.setAttribute('aria-pressed', ayri ? 'true' : 'false');
+    });
+    var gorunum = this.el.querySelector('[data-kp-gorunum]');
+    gorunum.hidden = !this.sahne.yakinlasabilir;
+    gorunum.textContent = this.sahne.yakin ? 'Tüm çantayı gör' : 'Alana yakınlaş';
+    gorunum.setAttribute('aria-pressed', this.sahne.yakin ? 'false' : 'true');
   };
 
   Editor.prototype.yaziDurumGuncelle = function () {
@@ -1371,7 +1519,7 @@
     var m = this.m;
     var panel = this.el.querySelector('[data-kp-panel="ozet"]');
     var f = fiyatHesapla(m, this.yer, this.t);
-    var p = function (k) { return paraBicimle(k, m.para); };
+    var p = function (k) { return paraBicimle(k); };
     var satirlar = '<tr><th scope="row">' + kacis(m.urun.baslik) + '</th><td>' + p(f.urun) + '</td></tr>';
     if (f.harfAdet) satirlar += '<tr><th scope="row">Harfler: ' + kacis(this.t.isim) + ' <span>(' + f.harfAdet + ' harf)</span></th><td>' + p(f.harf) + '</td></tr>';
     if (f.rakamAdet) {
@@ -1478,12 +1626,7 @@
         }
         self.t.isimMerkez = [c[0] + dx, c[1] + dy];
       } else {
-        self.t.parcalar.forEach(function (p) {
-          if (p.uid === a.grup) {
-            p.cx += dx;
-            p.cy += dy;
-          }
-        });
+        konumKaydir(self.t, a.parcalar[0], dx, dy);
       }
       self.yenile();
     }
@@ -1557,6 +1700,14 @@
     if (!t || !Array.isArray(t.parcalar)) return null;
     t.setId = m.set(t.setId).id;
     t.isim = typeof t.isim === 'string' ? t.isim : '';
+    t.harfAyri = !!t.harfAyri && Array.isArray(t.harfKonumlari);
+    if (t.harfAyri) {
+      t.harfKonumlari = t.harfKonumlari.filter(function (k) {
+        return Array.isArray(k) && isFinite(k[0]) && isFinite(k[1]);
+      });
+    } else {
+      t.harfKonumlari = null;
+    }
     t.parcalar = t.parcalar.filter(function (p) {
       if (p.tip === 'number') return !!m.rakamSeti();
       return p.tip === 'icon' && !!m.ikonHarita[p.urunId];
@@ -1610,7 +1761,7 @@
       var ikonlar = parcalar.filter(function (p) { return p.tip === 'icon'; }).map(function (p) { return p.etiket; });
       if (ikonlar.length) maddeler.push(kacis(ikonlar.join(', ')) + ' · ' + ikonlar.length + ' ikon');
       ozet.innerHTML = maddeler.map(function (x) { return '<li>' + x + '</li>'; }).join('');
-      toplam.textContent = 'Toplam: ' + paraBicimle(f.toplam, m.para);
+      toplam.textContent = 'Toplam: ' + paraBicimle(f.toplam);
     }
     this.butonlariGuncelle(f);
     this.galeriGuncelle();
@@ -1644,7 +1795,7 @@
       } else if (bos) {
         yazi.textContent = 'Önce tasarımını yap';
       } else {
-        yazi.textContent = 'Tasarımımla sepete ekle · ' + paraBicimle(f.toplam, m.para);
+        yazi.textContent = 'Tasarımımla sepete ekle · ' + paraBicimle(f.toplam);
       }
     });
   };
@@ -1875,6 +2026,8 @@
     Yerlesim: Yerlesim,
     isimAnaliz: isimAnaliz,
     duzenle: duzenle,
+    harfleriAyir: harfleriAyir,
+    harfleriBirlestir: harfleriBirlestir,
     fiyatHesapla: fiyatHesapla,
     tasarimOzeti: tasarimOzeti,
     paraBicimle: paraBicimle,

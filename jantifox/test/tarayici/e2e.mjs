@@ -40,6 +40,27 @@ await sayfa.screenshot({ path: cikti + '01-urun-sayfasi.png' });
 await sayfa.getByRole('radio', { name: 'Kişiselleştir' }).tap();
 const editor = sayfa.locator('.kp-editor');
 await editor.waitFor({ state: 'visible' });
+await sayfa.waitForTimeout(400);
+
+// Yakın görünüm: siyah daire pencere genişliğinin ~%80'i
+const oran = () => sayfa.evaluate(() => {
+  const g = document.querySelector('.kp-gorunum').getBoundingClientRect();
+  const e = document.querySelector('.kp-gorunum ellipse').getBoundingClientRect();
+  return e.width / g.width;
+});
+const yakinOran = await oran();
+console.log('yakın görünüm daire oranı:', yakinOran.toFixed(3));
+assert.ok(Math.abs(yakinOran - 0.8) < 0.03);
+await sayfa.locator('[data-kp-gorunum]').tap();
+await sayfa.waitForTimeout(400);
+const uzakOran = await oran();
+console.log('tüm çanta daire oranı:', uzakOran.toFixed(3));
+assert.ok(Math.abs(uzakOran - 840 / 1344) < 0.01);
+assert.equal(await sayfa.locator('[data-kp-gorunum]').textContent(), 'Alana yakınlaş');
+await sayfa.screenshot({ path: cikti + '01b-tum-canta.png' });
+await sayfa.locator('[data-kp-gorunum]').tap();
+await sayfa.waitForTimeout(400);
+assert.equal(await sayfa.locator('[data-kp-gorunum]').textContent(), 'Tüm çantayı gör');
 
 // ELİF yaz → İ uyarısı
 const girdi = sayfa.locator('#kp-isim');
@@ -59,6 +80,70 @@ await girdi.fill('ece');
 assert.equal(await sayfa.locator('[data-kp-ileri]').getAttribute('aria-disabled'), 'false');
 assert.match(await sayfa.locator('[data-kp-kapasite]').textContent(), /^3 \/ \d+$/);
 await sayfa.screenshot({ path: cikti + '04-ece.png' });
+
+// --- Harfleri ayır ---
+const cdp0 = await baglam.newCDPSession(sayfa);
+const surukle = async (secici, dx, dy) => {
+  const b = await sayfa.locator(secici).boundingBox();
+  const x = b.x + b.width / 2, y = b.y + b.height / 2;
+  await cdp0.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+  for (let i = 1; i <= 8; i++) await cdp0.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + (dx * i) / 8, y: y + (dy * i) / 8 }] });
+  await cdp0.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await sayfa.waitForTimeout(80);
+};
+const kutular = () => sayfa.$$eval('.kp-onizleme .kp-parca--letter', (l) => l.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; }));
+const daire = () => sayfa.evaluate(() => { const r = document.querySelector('.kp-gorunum ellipse').getBoundingClientRect(); return { cx: r.x + r.width / 2, cy: r.y + r.height / 2, r: r.width / 2 }; });
+const icinde = (k, d) => [[k.x, k.y], [k.x + k.w, k.y], [k.x, k.y + k.h], [k.x + k.w, k.y + k.h]].every(([x, y]) => Math.hypot(x - d.cx, y - d.cy) <= d.r + 1);
+const ust = (a, b) => a.x < b.x + b.w - 1 && b.x < a.x + a.w - 1 && a.y < b.y + b.h - 1 && b.y < a.y + a.h - 1;
+
+// Blok modda bir harfi sürüklemek tüm ismi taşır
+let once = await kutular();
+await surukle('[data-uid="isim-1"]', 0, -40);
+let sonra = await kutular();
+assert.ok(sonra.every((k, i) => Math.abs(k.y - (once[i].y - 40)) < 4), 'blok birlikte taşınmalı');
+
+await sayfa.locator('[data-kp-harf-mod]').tap();
+assert.equal(await sayfa.locator('[data-kp-harf-mod]').textContent(), 'Harfleri birleştir');
+// Ayrı modda yalnızca sürüklenen harf hareket eder
+once = await kutular();
+await surukle('[data-uid="harf-2"]', 0, 70);
+sonra = await kutular();
+assert.ok(Math.abs(sonra[0].y - once[0].y) < 1 && Math.abs(sonra[1].y - once[1].y) < 1, 'diğer harfler yerinde kalmalı');
+assert.ok(sonra[2].y > once[2].y + 50, 'harf aşağı taşınmalı');
+// Harfi başka bir harfin üstüne bırak → binmemeli
+let hk = await kutular();
+await surukle('[data-uid="harf-2"]', hk[0].x - hk[2].x, hk[0].y - hk[2].y);
+hk = await kutular();
+assert.ok(!ust(hk[2], hk[0]) && !ust(hk[2], hk[1]), 'harf diğerinin üstüne binmemeli');
+// Daire dışına bırak → tamamen içeride kalmalı
+await surukle('[data-uid="harf-0"]', -400, 0);
+hk = await kutular();
+
+let d = await daire();
+assert.ok(hk.every((x) => icinde(x, d)), 'her harf dairenin içinde kalmalı (yakın görünüm)');
+assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0);
+await sayfa.screenshot({ path: cikti + '04b-harfler-ayri.png' });
+
+// Tüm çanta görünümünde de aynı kurallar
+await sayfa.locator('[data-kp-gorunum]').tap();
+await sayfa.waitForTimeout(400);
+await surukle('[data-uid="harf-1"]', 0, -300);
+hk = await kutular();
+d = await daire();
+assert.ok(hk.every((x) => icinde(x, d)), 'her harf dairenin içinde kalmalı (tüm çanta)');
+await surukle('[data-uid="harf-1"]', hk[0].x - hk[1].x, hk[0].y - hk[1].y);
+hk = await kutular();
+assert.ok(!ust(hk[1], hk[0]) && !ust(hk[1], hk[2]), 'tüm çanta görünümünde de üst üste binme yok');
+await sayfa.screenshot({ path: cikti + '04c-tum-canta-ayri.png' });
+await sayfa.locator('[data-kp-gorunum]').tap();
+await sayfa.waitForTimeout(400);
+
+// Birleştir → tek satırda düzenli blok
+await sayfa.locator('[data-kp-harf-mod]').tap();
+hk = await kutular();
+assert.ok(Math.abs(hk[0].y - hk[2].y) < 1 && Math.abs((hk[1].x - hk[0].x) - (hk[2].x - hk[1].x)) < 1, 'harfler düzenli blok olmalı');
+assert.ok(hk[0].x < hk[1].x && hk[1].x < hk[2].x, 'harf sırası korunmalı');
+await sayfa.screenshot({ path: cikti + '04d-birlesti.png' });
 await sayfa.locator('[data-kp-ileri]').click();
 
 // Rakam 7

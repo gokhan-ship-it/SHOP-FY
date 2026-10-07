@@ -2,6 +2,9 @@
   Kişiselleştirme editörünün ihtiyaç duyduğu tüm veriyi JSON olarak basar.
   Kaynaklar: ürünün kisisellestirme.* metafield'ları ve kisisellestirme_katalog metaobject'i (handle: ana).
   Kullanım: {% render 'kisisel-veri', product: product, katalog: katalog, section_id: section.id %}
+
+  Editör görseli: kisisellestirme.onizleme_gorseli (kırpılmış, şeffaf PNG).
+  Yüklü değilse ürünün ana görseline düşer. Harita (kisisellestirme.harita) bu görsele göre çizilir.
 {%- endcomment -%}
 {%- liquid
   assign harita = product.metafields.kisisellestirme.harita.value
@@ -28,7 +31,8 @@
     "en": {{ onizleme.width | default: 1000 }},
     "boy": {{ onizleme.height | default: 1000 }},
     "kucuk": {{ onizleme | image_url: width: 750 | json }},
-    "buyuk": {{ onizleme | image_url: width: 1200 | json }}
+    "buyuk": {{ onizleme | image_url: width: 1200 | json }},
+    "dev": {{ onizleme | image_url: width: 1800 | json }}
   },
   "harita": {{ harita | json }},
   "ayarlar": {{ ayarlar | json }},

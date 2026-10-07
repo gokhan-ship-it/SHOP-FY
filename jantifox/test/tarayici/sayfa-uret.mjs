@@ -4,11 +4,16 @@ import { ornekVeri } from '../ornek-veri.mjs';
 
 const svg = (icerik, w = 300, h = 300) => 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${icerik}</svg>`);
 const harfGorsel = (h, renk = '#f2c14e') => svg(`<rect x="6" y="6" width="288" height="288" rx="40" fill="${renk}" stroke="#222" stroke-width="10"/><text x="150" y="215" font-size="200" font-family="Arial" font-weight="bold" text-anchor="middle" fill="#222">${h}</text>`);
-// Çanta: 40 cm genişlik görselin %70'i, daire merkez (50%, 51.875%), çap %43.75
-const canta = svg(`<rect width="1920" height="1920" fill="#fff"/><rect x="288" y="230" width="1344" height="1460" rx="30" fill="#1f2a44"/><circle cx="960" cy="996" r="420" fill="#111"/>`, 1920, 1920);
+// Kırpılmış, şeffaf zeminli çanta görseli (1344x1460): daire merkez (672, 766), yarıçap 420 px = 25 cm
+const canta = svg(`<rect x="0" y="0" width="1344" height="1460" rx="30" fill="#1f2a44"/><circle cx="672" cy="766" r="420" fill="#111"/>`, 1344, 1460);
 
 const v = ornekVeri();
-v.gorsel = { en: 1920, boy: 1920, kucuk: canta, buyuk: canta };
+v.gorsel = { en: 1344, boy: 1460, kucuk: canta, buyuk: canta, dev: canta };
+v.harita = {
+  surum: 2, kalibre: true, gorsel: { en: 1344, boy: 1460 },
+  zones: [{ id: 'on-daire', shape: 'circle', x: (252 / 1344) * 100, y: (346 / 1460) * 100, w: (840 / 1344) * 100, h: (840 / 1460) * 100, cap_cm: 25, allowed_types: ['letter', 'number', 'icon'] }],
+  forbidden: []
+};
 v.setler[0].varyantlar.forEach((x) => (x.gorsel = harfGorsel(x.karakter)));
 v.rakamlar[0].varyantlar.forEach((x) => (x.gorsel = harfGorsel(x.karakter, '#7fc8f8')));
 v.ikonlar.forEach((i, n) => (i.gorsel = svg(`<circle cx="150" cy="150" r="140" fill="${['#e63946', '#2a9d8f', '#e9c46a', '#8d6cab', '#f4a261'][n]}"/><text x="150" y="175" font-size="70" text-anchor="middle" fill="#fff" font-family="Arial">${i.baslik.slice(0, 5)}</text>`)));
