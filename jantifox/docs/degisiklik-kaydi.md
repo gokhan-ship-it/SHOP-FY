@@ -15,6 +15,9 @@ Bu proje kapsamında mağazada yapılan her yazma işlemi burada listelenir. Mev
 | 2026-10-07 | `themeFilesUpsert` (yalnızca kopya tema) | Değişen: `templates/product.product-canta.json` (+1 custom_liquid blok), `layout/theme.liquid` (+1 satır render) | Orijinaller baseline commit'inde (76131ef) |
 | 2026-10-07 | `metafieldsSet` | Kanvas Lacivert Tote Çanta: `kisisellestirme.harita` (sürüm 2) | `cap_cm: 25` (ölçek dairenin gerçek çapından) ve `gorsel: 1920x1920` eklendi; `kalibre: false`. Yeni PNG yüklenince `veri/daire-bul.py` ile yeniden üretilecek |
 | 2026-10-07 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js`, `assets/kisisel-editor.css`, `snippets/kisisel-veri.liquid` | Yakın görünüm, harfleri ayır, Türkçe fiyat biçimi |
+| 2026-10-07 | (kullanıcı, Admin) | Kanvas Lacivert Tote: `kisisellestirme.onizleme_gorseli` → yeni PNG (MediaImage/72562227314974, 1920×1920) | Kullanıcı yükledi |
+| 2026-10-07 | (kullanıcı, Admin) | Kanvas Lacivert Tote: `kisisellestirme.harita` | `araclar/alan-cizici.html` ile çizildi: daire, çap 25 cm, `kalibre: true`. Kenar sapması en fazla ~5 px (~1,5 mm) |
+| 2026-10-07 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js` | Hata düzeltmesi: ana "Sepete ekle" butonu kişiselleştirme modunda düz çantayı ekliyordu (`form.id` tuzağı); çekmece `is-empty` düzeltmesi |
 
 ## Metafield tanımları
 
