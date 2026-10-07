@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JantiFox Alan Çizici</title>
+<!--
+  JantiFox kişiselleştirme: takılabilir alan çizme aracı (tek dosya, internet gerekmez).
+  1. Editör görselini (ürünün kisisellestirme.onizleme_gorseli alanına yüklenen PNG'nin aynısı) yükle.
+  2. Daire / oval / dikdörtgen alan ve yasaklı bölgeleri çiz, tutamaçlardan ayarla.
+  3. Bir alanın gerçek ölçüsünü gir (ör. çap 25 cm). Ölçek buradan hesaplanır.
+  4. Üretilen JSON'u ürünün kisisellestirme.harita metafield'ına yapıştır.
+-->
+<style>
+  :root {
+    --zemin: #f4f4f2; --panel: #fff; --cizgi: #d9d9d9; --murekkep: #111; --ikincil: #5c5c5c;
+    --vurgu: #2563eb; --alan: #00c2ff; --yasak: #ff3b30; --hata: #c4251b; --tamam: #0a7d33;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--murekkep); background: var(--zemin); display: grid; grid-template-columns: 1fr 360px; }
+  main { position: relative; overflow: hidden; display: flex; flex-direction: column; }
+  .arac-cubugu { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 12px; background: var(--panel); border-bottom: 1px solid var(--cizgi); }
+  .arac-cubugu .ayirac { width: 1px; height: 24px; background: var(--cizgi); margin: 0 4px; }
+  button, .dosya-btn { font: inherit; border: 1px solid var(--cizgi); background: #fff; color: var(--murekkep); border-radius: 8px; padding: 6px 10px; cursor: pointer; min-height: 32px; }
+  button:hover, .dosya-btn:hover { border-color: #999; }
+  button[aria-pressed="true"] { background: var(--murekkep); color: #fff; border-color: var(--murekkep); }
+  button.tehlike { color: var(--hata); }
+  button.birincil { background: var(--vurgu); color: #fff; border-color: var(--vurgu); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .dosya-btn input { display: none; }
+  #sahne-kap { flex: 1; overflow: auto; position: relative; background:
+    repeating-conic-gradient(#e6e6e6 0% 25%, #fafafa 0% 50%) 50% / 20px 20px; }
+  #sahne-kap.surukle-hedef { outline: 3px dashed var(--vurgu); outline-offset: -8px; }
+  #bos { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--ikincil); padding: 24px; }
+  #bos strong { display: block; font-size: 18px; color: var(--murekkep); margin-bottom: 6px; }
+  svg#sahne { display: block; margin: 24px; user-select: none; touch-action: none; }
+  .sekil { fill: rgba(0, 194, 255, .14); stroke: var(--alan); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: move; }
+  .sekil.yasak { fill: rgba(255, 59, 48, .18); stroke: var(--yasak); stroke-dasharray: 6 4; }
+  .sekil.secili { stroke-width: 3; }
+  .tutamac { fill: #fff; stroke: var(--murekkep); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  .etiket { font-weight: 600; font-family: sans-serif; fill: #fff; paint-order: stroke; stroke: rgba(0,0,0,.65); stroke-width: 3px; pointer-events: none; }
+  .ornek { fill: rgba(255, 210, 0, .85); stroke: #111; stroke-width: 1.5; vector-effect: non-scaling-stroke; cursor: move; }
+  .ornek.disarda { fill: rgba(255, 59, 48, .85); }
+  .ornek-yazi { font-weight: 800; fill: #111; pointer-events: none; text-anchor: middle; dominant-baseline: central; }
+  .cizim { cursor: crosshair; }
+  aside { background: var(--panel); border-left: 1px solid var(--cizgi); overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+  h1 { font-size: 16px; margin: 0; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--ikincil); margin: 0 0 8px; }
+  section { border: 1px solid var(--cizgi); border-radius: 10px; padding: 12px; }
+  label { display: block; margin: 6px 0 2px; font-weight: 600; font-size: 13px; }
+  input[type=number], input[type=text], select, textarea { font: inherit; width: 100%; padding: 6px 8px; border: 1px solid #aaa; border-radius: 6px; background: #fff; }
+  .izgara { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+  .satir { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .onay { display: inline-flex; align-items: center; gap: 4px; font-weight: 400; margin: 0; }
+  .liste { list-style: none; margin: 0; padding: 0; }
+  .liste li { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+  .liste li[aria-selected="true"] { background: #eef3fb; }
+  .rozet { font-size: 11px; padding: 1px 6px; border-radius: 999px; background: #eee; }
+  .rozet.alan { background: #d8f5ff; } .rozet.yasak { background: #ffe1df; }
+  .not { font-size: 12px; color: var(--ikincil); margin: 6px 0 0; }
+  .uyari { padding: 8px 10px; border-radius: 8px; font-size: 13px; margin: 0; }
+  .uyari.hata { background: #fdeceb; color: #8a1710; }
+  .uyari.tamam { background: #e7f6ec; color: #0b5a27; }
+  .uyari.bilgi { background: #eef3fb; color: #1d3a66; }
+  textarea { font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 160px; resize: vertical; }
+  kbd { font: 11px ui-monospace, monospace; border: 1px solid #ccc; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: #fafafa; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="arac-cubugu" role="toolbar" aria-label="Çizim araçları">
+    <label class="dosya-btn">Görsel yükle<input type="file" id="dosya" accept="image/*"></label>
+    <span class="ayirac"></span>
+    <button type="button" data-arac="sec" aria-pressed="true" title="Seç ve taşı (V)">Seç</button>
+    <button type="button" data-arac="circle" aria-pressed="false" title="Daire alan (C)">Daire</button>
+    <button type="button" data-arac="ellipse" aria-pressed="false" title="Oval alan (O)">Oval</button>
+    <button type="button" data-arac="rect" aria-pressed="false" title="Dikdörtgen alan (R)">Dikdörtgen</button>
+    <span class="ayirac"></span>
+    <button type="button" data-arac="yasak-rect" aria-pressed="false" title="Yasaklı bölge, dikdörtgen">Yasaklı ▭</button>
+    <button type="button" data-arac="yasak-ellipse" aria-pressed="false" title="Yasaklı bölge, oval">Yasaklı ◯</button>
+    <span class="ayirac"></span>
+    <button type="button" id="uzaklas" title="Uzaklaş (-)">−</button>
+    <button type="button" id="sigdir" title="Ekrana sığdır (0)">Sığdır</button>
+    <button type="button" id="yakinlas" title="Yakınlaş (+)">+</button>
+    <span id="zoom-yazi" class="not" style="margin:0 4px"></span>
+  </div>
+  <div id="sahne-kap">
+    <div id="bos"><div><strong>Editör görselini yükle</strong>Ürünün <code>kisisellestirme.onizleme_gorseli</code> alanına yüklediğin PNG'nin aynısını seç ya da buraya sürükle.</div></div>
+    <svg id="sahne" hidden xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+</main>
+
+<aside>
+  <h1>JantiFox Alan Çizici</h1>
+
+  <section>
+    <h2>Görsel</h2>
+    <p class="not" id="gorsel-bilgi">Görsel yüklenmedi.</p>
+  </section>
+
+  <section>
+    <h2>Şekiller</h2>
+    <ul class="liste" id="liste" aria-label="Çizilen şekiller"></ul>
+    <p class="not" id="liste-bos">Araç çubuğundan bir şekil seçip görselin üzerinde sürükleyerek çiz.</p>
+  </section>
+
+  <section id="ozellik" hidden>
+    <h2>Seçili şekil</h2>
+    <div class="izgara">
+      <div><label for="o-ad">Ad</label><input type="text" id="o-ad"></div>
+      <div><label for="o-sekil">Şekil</label>
+        <select id="o-sekil"><option value="circle">Daire</option><option value="ellipse">Oval</option><option value="rect">Dikdörtgen</option></select></div>
+      <div><label for="o-x">Sol (px)</label><input type="number" id="o-x" step="1"></div>
+      <div><label for="o-y">Üst (px)</label><input type="number" id="o-y" step="1"></div>
+      <div><label for="o-w">Genişlik (px)</label><input type="number" id="o-w" step="1" min="1"></div>
+      <div><label for="o-h">Yükseklik (px)</label><input type="number" id="o-h" step="1" min="1"></div>
+    </div>
+    <div id="o-alan-ayar">
+      <label>İzin verilen patch tipleri</label>
+      <div class="satir">
+        <label class="onay"><input type="checkbox" data-tip="letter"> Harf</label>
+        <label class="onay"><input type="checkbox" data-tip="number"> Rakam</label>
+        <label class="onay"><input type="checkbox" data-tip="icon"> İkon</label>
+      </div>
+      <label for="o-olcu">Gerçek ölçü (ölçek bu alandan alınır)</label>
+      <div class="satir">
+        <span id="o-olcu-tur" style="min-width:80px"></span>
+        <input type="number" id="o-olcu" step="0.1" min="0" placeholder="cm" style="width:110px"> <span>cm</span>
+      </div>
+      <p class="not" id="o-olcu-not"></p>
+    </div>
+    <div class="satir" style="margin-top:10px">
+      <button type="button" class="tehlike" id="sil">Şekli sil</button>
+    </div>
+    <p class="not">İnce ayar: ok tuşları 1 px, <kbd>Shift</kbd>+ok 10 px. Silmek için <kbd>Delete</kbd>.</p>
+  </section>
+
+  <section>
+    <h2>Ölçek kontrolü</h2>
+    <div id="olcek-durum"></div>
+    <label class="onay" style="margin-top:8px"><input type="checkbox" id="ornek-goster" checked> Örnek harf patch'i göster</label>
+    <div class="izgara">
+      <div><label for="ornek-en">Harf genişliği (cm)</label><input type="number" id="ornek-en" value="5.5" step="0.1" min="0.5"></div>
+      <div><label for="ornek-boy">Harf yüksekliği (cm)</label><input type="number" id="ornek-boy" value="6" step="0.1" min="0.5"></div>
+    </div>
+    <p class="not">Sarı kare gerçek ölçüde bir harf patch'idir. Sürükleyerek alanın içinde gezdirebilirsin; alan dışına taşarsa kırmızıya döner.</p>
+  </section>
+
+  <section>
+    <h2>Metafield JSON'u</h2>
+    <div id="cikti-durum"></div>
+    <textarea id="cikti" readonly aria-label="kisisellestirme.harita JSON"></textarea>
+    <div class="satir" style="margin-top:8px">
+      <button type="button" class="birincil" id="kopyala">JSON'u kopyala</button>
+      <button type="button" id="ice-al-ac">JSON içe al</button>
+    </div>
+    <div id="ice-al-kutu" hidden>
+      <label for="ice-al">Mevcut haritayı yapıştır</label>
+      <textarea id="ice-al" placeholder='{"surum":2,"zones":[...]}'></textarea>
+      <div class="satir" style="margin-top:6px"><button type="button" id="ice-al-uygula">Uygula</button><span class="not" id="ice-al-not"></span></div>
+    </div>
+    <p class="not">Shopify Admin → Ürün → Meta alanları → <b>Kişiselleştirme: Alan haritası</b> alanına yapıştır.</p>
+  </section>
+</aside>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  var TIP_ADLARI = { letter: 'Harf', number: 'Rakam', icon: 'İkon' };
+  var SEKIL_ADLARI = { circle: 'Daire', ellipse: 'Oval', rect: 'Dikdörtgen' };
+
+  var durum = {
+    gorsel: null, // { url, en, boy, ad }
+    sekiller: [], // { id, tur: 'alan'|'yasak', shape, x, y, w, h, ad, tipler, olcuCm }
+    seciliId: null,
+    arac: 'sec',
+    zoom: 1,
+    ornek: { cx: null, cy: null }
+  };
+  var sayac = 0;
+
+  var $ = function (s) { return document.querySelector(s); };
+  var svg = $('#sahne');
+  var kap = $('#sahne-kap');
+
+  /* ---------------- Görsel yükleme ---------------- */
+
+  function gorselYukle(dosya) {
+    if (!dosya || !/^image\//.test(dosya.type)) return;
+    var url = URL.createObjectURL(dosya);
+    var img = new Image();
+    img.onload = function () {
+      if (durum.gorsel && durum.gorsel.url) URL.revokeObjectURL(durum.gorsel.url);
+      durum.gorsel = { url: url, en: img.naturalWidth, boy: img.naturalHeight, ad: dosya.name };
+      $('#bos').hidden = true;
+      svg.removeAttribute('hidden');
+      svg.setAttribute('viewBox', '0 0 ' + img.naturalWidth + ' ' + img.naturalHeight);
+      $('#gorsel-bilgi').textContent = dosya.name + ' · ' + img.naturalWidth + ' × ' + img.naturalHeight + ' px';
+      sigdir();
+      ciz();
+    };
+    img.src = url;
+  }
+  $('#dosya').addEventListener('change', function (e) { gorselYukle(e.target.files[0]); });
+  kap.addEventListener('dragover', function (e) { e.preventDefault(); kap.classList.add('surukle-hedef'); });
+  kap.addEventListener('dragleave', function () { kap.classList.remove('surukle-hedef'); });
+  kap.addEventListener('drop', function (e) {
+    e.preventDefault();
+    kap.classList.remove('surukle-hedef');
+    gorselYukle(e.dataTransfer.files[0]);
+  });
+
+  /* ---------------- Yakınlaştırma ---------------- */
+
+  function zoomUygula() {
+    if (!durum.gorsel) return;
+    svg.setAttribute('width', Math.round(durum.gorsel.en * durum.zoom));
+    svg.setAttribute('height', Math.round(durum.gorsel.boy * durum.zoom));
+    $('#zoom-yazi').textContent = '%' + Math.round(durum.zoom * 100);
+    ciz(); // etiket ve tutamaçlar ekranda sabit boyutta kalsın
+  }
+  function sigdir() {
+    if (!durum.gorsel) return;
+    var r = kap.getBoundingClientRect();
+    durum.zoom = Math.min((r.width - 48) / durum.gorsel.en, (r.height - 48) / durum.gorsel.boy);
+    zoomUygula();
+  }
+  function zoomDegistir(kat) {
+    durum.zoom = Math.max(0.05, Math.min(8, durum.zoom * kat));
+    zoomUygula();
+  }
+  $('#sigdir').onclick = sigdir;
+  $('#yakinlas').onclick = function () { zoomDegistir(1.25); };
+  $('#uzaklas').onclick = function () { zoomDegistir(0.8); };
+  window.addEventListener('resize', function () { zoomUygula(); });
+
+  /* ---------------- Araç seçimi ---------------- */
+
+  function aracSec(a) {
+    durum.arac = a;
+    document.querySelectorAll('[data-arac]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-arac') === a ? 'true' : 'false');
+    });
+    svg.classList.toggle('cizim', a !== 'sec');
+  }
+  document.querySelectorAll('[data-arac]').forEach(function (b) {
+    b.addEventListener('click', function () { aracSec(b.getAttribute('data-arac')); });
+  });
+
+  /* ---------------- Ölçek ---------------- */
+
+  // cm başına piksel: gerçek ölçüsü girilmiş ilk alandan
+  function olcek() {
+    var alan = durum.sekiller.filter(function (s) { return s.tur === 'alan' && s.olcuCm > 0; });
+    if (!alan.length) return null;
+    var olculer = alan.map(function (s) {
+      var px = s.shape === 'circle' ? Math.min(s.w, s.h) : s.w;
+      return { sekil: s, pxCm: px / s.olcuCm };
+    });
+    return { pxCm: olculer[0].pxCm, kaynak: olculer[0].sekil, tumu: olculer };
+  }
+
+  /* ---------------- Çizim ---------------- */
+
+  function el(ad, ozl) {
+    var e = document.createElementNS(NS, ad);
+    for (var k in ozl) e.setAttribute(k, ozl[k]);
+    return e;
+  }
+
+  function sekilEl(s) {
+    var sinif = 'sekil' + (s.tur === 'yasak' ? ' yasak' : '') + (s.id === durum.seciliId ? ' secili' : '');
+    var e = s.shape === 'rect'
+      ? el('rect', { x: s.x, y: s.y, width: s.w, height: s.h })
+      : el('ellipse', { cx: s.x + s.w / 2, cy: s.y + s.h / 2, rx: s.w / 2, ry: s.h / 2 });
+    e.setAttribute('class', sinif);
+    e.setAttribute('data-id', s.id);
+    return e;
+  }
+
+  function ciz() {
+    if (!durum.gorsel) return;
+    svg.innerHTML = '';
+    svg.appendChild(el('image', { href: durum.gorsel.url, x: 0, y: 0, width: durum.gorsel.en, height: durum.gorsel.boy }));
+    var yaziBoy = 13 / durum.zoom;
+    durum.sekiller.forEach(function (s) {
+      svg.appendChild(sekilEl(s));
+      var t = el('text', { x: s.x, y: s.y - 6 / durum.zoom, class: 'etiket', 'font-size': yaziBoy });
+      t.textContent = (s.tur === 'yasak' ? 'Yasaklı: ' : '') + s.ad;
+      svg.appendChild(t);
+    });
+    ornekCiz();
+    var secili = bul(durum.seciliId);
+    if (secili) tutamacCiz(secili);
+    panelGuncelle();
+  }
+
+  function tutamaclar(s) {
+    var x1 = s.x, y1 = s.y, x2 = s.x + s.w, y2 = s.y + s.h, mx = s.x + s.w / 2, my = s.y + s.h / 2;
+    var t = [['nw', x1, y1], ['ne', x2, y1], ['sw', x1, y2], ['se', x2, y2]];
+    if (s.shape !== 'circle') t.push(['n', mx, y1], ['s', mx, y2], ['w', x1, my], ['e', x2, my]);
+    return t;
+  }
+  function tutamacCiz(s) {
+    var r = 7 / durum.zoom;
+    tutamaclar(s).forEach(function (t) {
+      var h = el('rect', { x: t[1] - r, y: t[2] - r, width: r * 2, height: r * 2, class: 'tutamac', 'data-tutamac': t[0] });
+      h.style.cursor = { nw: 'nwse-resize', se: 'nwse-resize', ne: 'nesw-resize', sw: 'nesw-resize', n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize' }[t[0]];
+      svg.appendChild(h);
+    });
+  }
+
+  // Örnek harf: seçili (yoksa ilk) alanın merkezinde, gerçek ölçüde
+  function ornekAlan() {
+    var s = bul(durum.seciliId);
+    if (s && s.tur === 'alan') return s;
+    return durum.sekiller.filter(function (x) { return x.tur === 'alan'; })[0] || null;
+  }
+  function icinde(px, py, s) {
+    if (s.shape === 'rect') return px >= s.x - 0.5 && px <= s.x + s.w + 0.5 && py >= s.y - 0.5 && py <= s.y + s.h + 0.5;
+    var dx = (px - (s.x + s.w / 2)) / (s.w / 2), dy = (py - (s.y + s.h / 2)) / (s.h / 2);
+    return dx * dx + dy * dy <= 1.0001;
+  }
+  function ornekCiz() {
+    var o = olcek();
+    var alan = ornekAlan();
+    if (!o || !alan || !$('#ornek-goster').checked) return;
+    var w = (parseFloat($('#ornek-en').value) || 5.5) * o.pxCm;
+    var h = (parseFloat($('#ornek-boy').value) || 6) * o.pxCm;
+    if (durum.ornek.cx == null || durum.ornek.alanId !== alan.id) {
+      durum.ornek = { cx: alan.x + alan.w / 2, cy: alan.y + alan.h / 2, alanId: alan.id };
+    }
+    var x = durum.ornek.cx - w / 2, y = durum.ornek.cy - h / 2;
+    var koseler = [[x, y], [x + w, y], [x, y + h], [x + w, y + h]];
+    var disarda = !koseler.every(function (k) { return icinde(k[0], k[1], alan); });
+    var r = el('rect', { x: x, y: y, width: w, height: h, rx: w * 0.08, class: 'ornek' + (disarda ? ' disarda' : ''), 'data-ornek': '1' });
+    svg.appendChild(r);
+    var t = el('text', { x: durum.ornek.cx, y: durum.ornek.cy, class: 'ornek-yazi', 'font-size': h * 0.62 });
+    t.textContent = 'A';
+    svg.appendChild(t);
+  }
+
+  /* ---------------- Fare etkileşimi ---------------- */
+
+  function nokta(e) {
+    var p = svg.createSVGPoint();
+    p.x = e.clientX;
+    p.y = e.clientY;
+    var q = p.matrixTransform(svg.getScreenCTM().inverse());
+    return { x: q.x, y: q.y };
+  }
+  function bul(id) {
+    for (var i = 0; i < durum.sekiller.length; i++) if (durum.sekiller[i].id === id) return durum.sekiller[i];
+    return null;
+  }
+  function sinirla(s) {
+    var W = durum.gorsel.en, H = durum.gorsel.boy;
+    s.w = Math.max(4, Math.min(s.w, W));
+    s.h = Math.max(4, Math.min(s.h, H));
+    if (s.shape === 'circle') { var d = Math.min(s.w, s.h); s.w = d; s.h = d; }
+    s.x = Math.max(0, Math.min(s.x, W - s.w));
+    s.y = Math.max(0, Math.min(s.y, H - s.h));
+  }
+
+  var islem = null;
+
+  svg.addEventListener('pointerdown', function (e) {
+    if (!durum.gorsel || e.button !== 0) return;
+    var p = nokta(e);
+    var hedef = e.target;
+    svg.setPointerCapture(e.pointerId);
+
+    if (durum.arac !== 'sec') {
+      var yasak = durum.arac.indexOf('yasak-') === 0;
+      var shape = yasak ? durum.arac.slice(6) : durum.arac;
+      sayac++;
+      var alanSayisi = durum.sekiller.filter(function (s) { return s.tur === (yasak ? 'yasak' : 'alan'); }).length + 1;
+      var s = {
+        id: 's' + sayac,
+        tur: yasak ? 'yasak' : 'alan',
+        shape: shape,
+        x: p.x, y: p.y, w: 0, h: 0,
+        ad: yasak ? 'Bölge ' + alanSayisi : (alanSayisi === 1 ? 'Ön alan' : 'Alan ' + alanSayisi),
+        tipler: ['letter', 'number', 'icon'],
+        olcuCm: null
+      };
+      durum.sekiller.push(s);
+      durum.seciliId = s.id;
+      islem = { tur: 'ciz', s: s, bx: p.x, by: p.y };
+      return;
+    }
+    if (hedef.hasAttribute('data-tutamac')) {
+      var sec = bul(durum.seciliId);
+      islem = { tur: 'boyut', s: sec, kenar: hedef.getAttribute('data-tutamac'), bas: { x: sec.x, y: sec.y, w: sec.w, h: sec.h }, bx: p.x, by: p.y };
+      return;
+    }
+    if (hedef.hasAttribute('data-ornek')) {
+      islem = { tur: 'ornek', bx: p.x, by: p.y, ox: durum.ornek.cx, oy: durum.ornek.cy };
+      return;
+    }
+    var id = hedef.getAttribute('data-id');
+    if (id) {
+      durum.seciliId = id;
+      var t = bul(id);
+      islem = { tur: 'tasi', s: t, bas: { x: t.x, y: t.y }, bx: p.x, by: p.y };
+      ciz();
+      return;
+    }
+    durum.seciliId = null;
+    ciz();
+  });
+
+  svg.addEventListener('pointermove', function (e) {
+    if (!islem) return;
+    var p = nokta(e);
+    var dx = p.x - islem.bx, dy = p.y - islem.by;
+    var s = islem.s;
+    if (islem.tur === 'ciz') {
+      var w = Math.abs(dx), h = Math.abs(dy);
+      if (s.shape === 'circle') { var d = Math.max(w, h); w = d; h = d; }
+      s.w = w; s.h = h;
+      s.x = dx < 0 ? islem.bx - w : islem.bx;
+      s.y = dy < 0 ? islem.by - h : islem.by;
+    } else if (islem.tur === 'tasi') {
+      s.x = islem.bas.x + dx;
+      s.y = islem.bas.y + dy;
+      sinirla(s);
+    } else if (islem.tur === 'boyut') {
+      var b = islem.bas, k = islem.kenar;
+      var x1 = b.x, y1 = b.y, x2 = b.x + b.w, y2 = b.y + b.h;
+      if (k.indexOf('w') !== -1) x1 = Math.min(b.x + dx, x2 - 4);
+      if (k.indexOf('e') !== -1) x2 = Math.max(b.x + b.w + dx, x1 + 4);
+      if (k.indexOf('n') !== -1) y1 = Math.min(b.y + dy, y2 - 4);
+      if (k.indexOf('s') !== -1) y2 = Math.max(b.y + b.h + dy, y1 + 4);
+      if (s.shape === 'circle') {
+        // Daire: karşı köşe sabit, kare kalır
+        var d2 = Math.max(x2 - x1, y2 - y1);
+        if (k.indexOf('w') !== -1) x1 = x2 - d2; else x2 = x1 + d2;
+        if (k.indexOf('n') !== -1) y1 = y2 - d2; else y2 = y1 + d2;
+      }
+      s.x = x1; s.y = y1; s.w = x2 - x1; s.h = y2 - y1;
+    } else if (islem.tur === 'ornek') {
+      durum.ornek.cx = islem.ox + dx;
+      durum.ornek.cy = islem.oy + dy;
+    }
+    ciz();
+  });
+
+  function birak() {
+    if (!islem) return;
+    if (islem.tur === 'ciz') {
+      var s = islem.s;
+      if (s.w < 6 || s.h < 6) {
+        // Tıklama sayılır: çok küçük şekil oluşturma
+        durum.sekiller = durum.sekiller.filter(function (x) { return x !== s; });
+        durum.seciliId = null;
+      } else {
+        sinirla(s);
+        aracSec('sec');
+        if (s.tur === 'alan' && !olcek()) setTimeout(function () { $('#o-olcu').focus(); }, 0);
+      }
+    }
+    islem = null;
+    ciz();
+  }
+  svg.addEventListener('pointerup', birak);
+  svg.addEventListener('pointercancel', birak);
+  kap.addEventListener('wheel', function (e) {
+    if (!durum.gorsel || !(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    zoomDegistir(e.deltaY < 0 ? 1.1 : 0.9);
+  }, { passive: false });
+
+  document.addEventListener('keydown', function (e) {
+    if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    var s = bul(durum.seciliId);
+    var adim = e.shiftKey ? 10 : 1;
+    var hareket = { ArrowLeft: [-adim, 0], ArrowRight: [adim, 0], ArrowUp: [0, -adim], ArrowDown: [0, adim] }[e.key];
+    if (s && hareket) {
+      e.preventDefault();
+      s.x += hareket[0]; s.y += hareket[1]; sinirla(s); ciz();
+    } else if (s && (e.key === 'Delete' || e.key === 'Backspace')) {
+      e.preventDefault(); sil();
+    } else if (e.key === 'v' || e.key === 'V') aracSec('sec');
+    else if (e.key === 'c' || e.key === 'C') aracSec('circle');
+    else if (e.key === 'o' || e.key === 'O') aracSec('ellipse');
+    else if (e.key === 'r' || e.key === 'R') aracSec('rect');
+    else if (e.key === '+' || e.key === '=') zoomDegistir(1.25);
+    else if (e.key === '-') zoomDegistir(0.8);
+    else if (e.key === '0') sigdir();
+    else if (e.key === 'Escape') { durum.seciliId = null; aracSec('sec'); ciz(); }
+  });
+
+  function sil() {
+    durum.sekiller = durum.sekiller.filter(function (x) { return x.id !== durum.seciliId; });
+    durum.seciliId = null;
+    ciz();
+  }
+  $('#sil').onclick = sil;
+
+  /* ---------------- Panel ---------------- */
+
+  function yuvarla(n, b) { var k = Math.pow(10, b == null ? 1 : b); return Math.round(n * k) / k; }
+
+  function panelGuncelle() {
+    // Liste
+    var liste = $('#liste');
+    liste.innerHTML = '';
+    durum.sekiller.forEach(function (s) {
+      var li = document.createElement('li');
+      li.setAttribute('aria-selected', s.id === durum.seciliId ? 'true' : 'false');
+      li.innerHTML = '<span>' + s.ad.replace(/</g, '&lt;') + ' <span class="rozet ' + s.tur + '">' + (s.tur === 'yasak' ? 'yasaklı ' : '') + SEKIL_ADLARI[s.shape].toLowerCase() + '</span></span>' +
+        (s.olcuCm ? '<span class="rozet">' + s.olcuCm + ' cm</span>' : '');
+      li.onclick = function () { durum.seciliId = s.id; ciz(); };
+      liste.appendChild(li);
+    });
+    $('#liste-bos').hidden = durum.sekiller.length > 0;
+
+    // Seçili şekil
+    var s = bul(durum.seciliId);
+    $('#ozellik').hidden = !s;
+    if (s) {
+      var aktif = document.activeElement;
+      [['#o-ad', s.ad], ['#o-sekil', s.shape], ['#o-x', Math.round(s.x)], ['#o-y', Math.round(s.y)], ['#o-w', Math.round(s.w)], ['#o-h', Math.round(s.h)]].forEach(function (a) {
+        var g = $(a[0]);
+        if (g !== aktif) g.value = a[1];
+      });
+      $('#o-alan-ayar').hidden = s.tur !== 'alan';
+      document.querySelectorAll('[data-tip]').forEach(function (c) { c.checked = s.tipler.indexOf(c.getAttribute('data-tip')) !== -1; });
+      $('#o-olcu-tur').textContent = s.shape === 'circle' ? 'Çap' : 'Genişlik';
+      if ($('#o-olcu') !== aktif) $('#o-olcu').value = s.olcuCm || '';
+      var o = olcek();
+      $('#o-olcu-not').textContent = !o
+        ? 'Bu alanın gerçek ölçüsünü girince ölçek hesaplanır.'
+        : s.olcuCm
+          ? (o.kaynak === s ? 'Ölçek bu alandan alınıyor.' : 'Ölçek "' + o.kaynak.ad + '" alanından alınıyor; bu değer yalnızca kontrol için.')
+          : 'Hesaplanan ölçü: ' + yuvarla(s.w / o.pxCm) + ' × ' + yuvarla(s.h / o.pxCm) + ' cm';
+    }
+
+    // Ölçek durumu
+    var od = $('#olcek-durum');
+    var ol = olcek();
+    if (!durum.gorsel) od.innerHTML = '<p class="uyari bilgi">Önce görseli yükle.</p>';
+    else if (!ol) od.innerHTML = '<p class="uyari hata">Ölçek yok: bir alan çizip gerçek ölçüsünü (ör. çap 25 cm) gir.</p>';
+    else {
+      var satirlar = ['<p class="uyari tamam">1 cm = ' + yuvarla(ol.pxCm, 2) + ' px · Görsel ' + yuvarla(durum.gorsel.en / ol.pxCm) + ' × ' + yuvarla(durum.gorsel.boy / ol.pxCm) + ' cm</p>'];
+      // Birden çok ölçülü alan varsa tutarlılık kontrolü
+      ol.tumu.slice(1).forEach(function (x) {
+        var fark = Math.abs(x.pxCm - ol.pxCm) / ol.pxCm;
+        if (fark > 0.03) satirlar.push('<p class="uyari hata" style="margin-top:6px">"' + x.sekil.ad + '" alanının ölçüsü ölçekle %' + Math.round(fark * 100) + ' çelişiyor.</p>');
+      });
+      od.innerHTML = satirlar.join('');
+    }
+    ciktiUret();
+  }
+
+  function sayiAl(id) { var v = parseFloat($(id).value); return isFinite(v) ? v : null; }
+  ['#o-x', '#o-y', '#o-w', '#o-h'].forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      var s = bul(durum.seciliId); if (!s) return;
+      var v = sayiAl(id); if (v == null) return;
+      var k = { '#o-x': 'x', '#o-y': 'y', '#o-w': 'w', '#o-h': 'h' }[id];
+      s[k] = v;
+      if (s.shape === 'circle' && (k === 'w' || k === 'h')) { s.w = v; s.h = v; }
+      sinirla(s); ciz();
+    });
+  });
+  $('#o-ad').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { s.ad = this.value || 'Alan'; ciz(); } });
+  $('#o-sekil').addEventListener('change', function () { var s = bul(durum.seciliId); if (s) { s.shape = this.value; sinirla(s); ciz(); } });
+  $('#o-olcu').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-olcu'); s.olcuCm = v > 0 ? v : null; ciz(); } });
+  document.querySelectorAll('[data-tip]').forEach(function (c) {
+    c.addEventListener('change', function () {
+      var s = bul(durum.seciliId); if (!s) return;
+      s.tipler = Array.prototype.filter.call(document.querySelectorAll('[data-tip]'), function (x) { return x.checked; }).map(function (x) { return x.getAttribute('data-tip'); });
+      ciz();
+    });
+  });
+  ['#ornek-goster', '#ornek-en', '#ornek-boy'].forEach(function (id) { $(id).addEventListener('input', ciz); });
+
+  /* ---------------- JSON ---------------- */
+
+  function yuzde(v, toplam) { return yuvarla((v / toplam) * 100, 3); }
+
+  function ciktiUret() {
+    var cikti = $('#cikti');
+    var durumEl = $('#cikti-durum');
+    var kopyala = $('#kopyala');
+    var g = durum.gorsel;
+    var alanlar = durum.sekiller.filter(function (s) { return s.tur === 'alan'; });
+    var sorunlar = [];
+    if (!g) sorunlar.push('Görsel yüklenmedi.');
+    if (g && !alanlar.length) sorunlar.push('En az bir takılabilir alan çiz.');
+    if (g && alanlar.length && !olcek()) sorunlar.push('Bir alanın gerçek ölçüsünü gir.');
+    alanlar.forEach(function (s) { if (!s.tipler.length) sorunlar.push('"' + s.ad + '" için en az bir patch tipi seç.'); });
+    if (sorunlar.length) {
+      durumEl.innerHTML = '<p class="uyari hata">' + sorunlar.join('<br>') + '</p>';
+      cikti.value = '';
+      kopyala.disabled = true;
+      return;
+    }
+    var idler = {};
+    function kimlik(ad) {
+      var temel = ad.toLocaleLowerCase('tr-TR').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'alan';
+      var id = temel, n = 2;
+      while (idler[id]) id = temel + '-' + n++;
+      idler[id] = true;
+      return id;
+    }
+    var harita = {
+      surum: 2,
+      kalibre: true,
+      gorsel: { en: g.en, boy: g.boy },
+      zones: alanlar.map(function (s) {
+        var z = {
+          id: kimlik(s.ad),
+          ad: s.ad,
+          shape: s.shape,
+          x: yuzde(s.x, g.en), y: yuzde(s.y, g.boy), w: yuzde(s.w, g.en), h: yuzde(s.h, g.boy)
+        };
+        if (s.olcuCm) z[s.shape === 'circle' ? 'cap_cm' : 'genislik_cm'] = s.olcuCm;
+        z.allowed_types = s.tipler.slice();
+        return z;
+      }),
+      forbidden: durum.sekiller.filter(function (s) { return s.tur === 'yasak'; }).map(function (s) {
+        return { ad: s.ad, shape: s.shape, x: yuzde(s.x, g.en), y: yuzde(s.y, g.boy), w: yuzde(s.w, g.en), h: yuzde(s.h, g.boy) };
+      })
+    };
+    // Ölçek ilk ölçülü alandan alınır: o alanı listenin başına al
+    var kaynak = olcek().kaynak;
+    var i = alanlar.indexOf(kaynak);
+    if (i > 0) harita.zones.unshift(harita.zones.splice(i, 1)[0]);
+    cikti.value = JSON.stringify(harita, null, 2);
+    durumEl.innerHTML = '<p class="uyari tamam">Hazır: ' + alanlar.length + ' alan, ' + harita.forbidden.length + ' yasaklı bölge.</p>';
+    kopyala.disabled = false;
+  }
+
+  $('#kopyala').onclick = function () {
+    var t = $('#cikti');
+    var bitti = function () { var b = $('#kopyala'); b.textContent = 'Kopyalandı'; setTimeout(function () { b.textContent = "JSON'u kopyala"; }, 1500); };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t.value).then(bitti, function () { t.select(); document.execCommand('copy'); bitti(); });
+    else { t.select(); document.execCommand('copy'); bitti(); }
+  };
+
+  $('#ice-al-ac').onclick = function () { $('#ice-al-kutu').hidden = !$('#ice-al-kutu').hidden; };
+  $('#ice-al-uygula').onclick = function () {
+    var not = $('#ice-al-not');
+    if (!durum.gorsel) { not.textContent = 'Önce görseli yükle.'; return; }
+    try {
+      var h = JSON.parse($('#ice-al').value);
+      var g = durum.gorsel;
+      if (h.gorsel && (h.gorsel.en / h.gorsel.boy).toFixed(3) !== (g.en / g.boy).toFixed(3)) {
+        not.textContent = 'Uyarı: harita ' + h.gorsel.en + '×' + h.gorsel.boy + ' görsel için çizilmiş.';
+      } else not.textContent = 'Uygulandı.';
+      var px = function (v, t) { return (Number(v) || 0) / 100 * t; };
+      durum.sekiller = [];
+      (h.zones || []).forEach(function (z) {
+        sayac++;
+        durum.sekiller.push({ id: 's' + sayac, tur: 'alan', shape: z.shape || 'rect', x: px(z.x, g.en), y: px(z.y, g.boy), w: px(z.w, g.en), h: px(z.h, g.boy),
+          ad: z.ad || z.id || 'Alan', tipler: z.allowed_types || ['letter', 'number', 'icon'], olcuCm: Number(z.cap_cm || z.genislik_cm) || null });
+      });
+      (h.forbidden || []).forEach(function (z, i) {
+        sayac++;
+        durum.sekiller.push({ id: 's' + sayac, tur: 'yasak', shape: z.shape || 'rect', x: px(z.x, g.en), y: px(z.y, g.boy), w: px(z.w, g.en), h: px(z.h, g.boy), ad: z.ad || 'Bölge ' + (i + 1), tipler: [], olcuCm: null });
+      });
+      durum.sekiller.forEach(sinirla);
+      durum.seciliId = null;
+      ciz();
+    } catch (err) {
+      not.textContent = 'JSON okunamadı: ' + err.message;
+    }
+  };
+
+  panelGuncelle();
+  window.AlanCizici = { durum: durum, ciktiUret: ciktiUret };
+})();
+</script>
+</body>
+</html>
