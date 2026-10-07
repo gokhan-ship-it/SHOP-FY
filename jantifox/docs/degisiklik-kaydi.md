@@ -11,6 +11,8 @@ Bu proje kapsamında mağazada yapılan her yazma işlemi burada listelenir. Mev
 | 2026-10-07 | `metafieldsSet` ×36 | Cool Alfabe (26) ve Janti Rakam (10) varyantları: `kisisellestirme.karakter` | `veri/varyant-karakter.json` |
 | 2026-10-07 | `metafieldsSet` ×3 | Kanvas Lacivert Tote Çanta: `kisisellestirme.aktif=true`, `onizleme_gorseli=MediaImage/54903737811230` (galerinin 2. görseli), `harita` | Harita **kalibre edilmedi** (`"kalibre": false`); daire konumu yer tutucu |
 | 2026-10-07 | `metaobjectCreate` | `kisisellestirme_katalog` / handle `ana` | `gid://shopify/Metaobject/306704613662`; içerik `veri/katalog-ana.json` |
+| 2026-10-07 | `themeFilesUpsert` (yalnızca kopya tema 206773780766) | Yeni: `assets/kisisel-editor.js`, `assets/kisisel-editor.css`, `assets/kisisel-sepet.js`, `snippets/kisisel-kart.liquid`, `snippets/kisisel-veri.liquid`, `snippets/kisisel-veri-patch.liquid`, `snippets/kisisel-sepet.liquid` | İçerik bu depodaki `jantifox/` dosyalarıyla aynı (MD5 doğrulandı) |
+| 2026-10-07 | `themeFilesUpsert` (yalnızca kopya tema) | Değişen: `templates/product.product-canta.json` (+1 custom_liquid blok), `layout/theme.liquid` (+1 satır render) | Orijinaller baseline commit'inde (76131ef) |
 
 ## Metafield tanımları
 
