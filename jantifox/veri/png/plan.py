@@ -30,30 +30,32 @@ def yuvarla(x):
     return round(x, 2)
 
 
+def olcu_hesapla(tur, oran, b, kayit_sekil, k):
+    """Kurala göre (genişlik, yükseklik, şekil, hesap metni) döndürür."""
+    if tur in ('harf', 'rakam'):
+        g, y = yuvarla(6 * oran), 6.0
+        return g, y, None, f'yükseklik 6 cm; genişlik = 6 × oran {oran:.3f} = {g} cm'
+    uzun = max(b.values())
+    if oran >= 1:
+        g, y = yuvarla(uzun), yuvarla(uzun / oran)
+        hesap = f'kayıttaki en büyük ölçü {uzun:g} cm = uzun kenar (en); boy = {uzun:g} / oran {oran:.3f} = {y} cm'
+    else:
+        g, y = yuvarla(uzun * oran), yuvarla(uzun)
+        hesap = f'kayıttaki en büyük ölçü {uzun:g} cm = uzun kenar (boy); en = {uzun:g} × oran {oran:.3f} = {g} cm'
+    yuvarlak = kayit_sekil == 'circle' and abs(oran - 1) <= 0.06 and k not in DAIRE_YOK_SAY
+    if kayit_sekil == 'circle' and not yuvarlak:
+        hesap += '; daire kaydı yok sayıldı (PNG yuvarlak değil)'
+    return g, y, ('circle' if yuvarlak else 'rect'), hesap
+
+
 def main():
     sonuclar = json.load(open(sys.argv[1]))
     plan = []
     for r in sonuclar:
         s = r['sonuc']
-        oran = s['oran']
         b = r.get('bilinen') or {}
         k = r['anahtar']
-        if r['tur'] in ('harf', 'rakam'):
-            g, y = yuvarla(6 * oran), 6.0
-            hesap = f'yükseklik 6 cm; genişlik = 6 × oran {oran:.3f} = {g} cm'
-            sekil = None
-        else:
-            uzun = max(b.values())
-            if oran >= 1:
-                g, y = yuvarla(uzun), yuvarla(uzun / oran)
-                hesap = f'kayıttaki en büyük ölçü {uzun:g} cm = uzun kenar (en); boy = {uzun:g} / oran {oran:.3f} = {y} cm'
-            else:
-                g, y = yuvarla(uzun * oran), yuvarla(uzun)
-                hesap = f'kayıttaki en büyük ölçü {uzun:g} cm = uzun kenar (boy); en = {uzun:g} × oran {oran:.3f} = {g} cm'
-            yuvarlak = r.get('sekil') == 'circle' and abs(oran - 1) <= 0.06 and k not in DAIRE_YOK_SAY
-            sekil = 'circle' if yuvarlak else 'rect'
-            if r.get('sekil') == 'circle' and not yuvarlak:
-                hesap += '; daire kaydı yok sayıldı (PNG yuvarlak değil)'
+        g, y, sekil, hesap = olcu_hesapla(r['tur'], s['oran'], r.get('bilinen') or {}, r.get('sekil'), k)
         yukle = k not in BEKLEYEN
         olcu_yaz = yukle or k in KALPLER
         plan.append({

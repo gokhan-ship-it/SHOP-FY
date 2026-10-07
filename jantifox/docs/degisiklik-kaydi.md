@@ -22,6 +22,8 @@ Bu proje kapsamında mağazada yapılan her yazma işlemi burada listelenir. Mev
 | 2026-10-07 | `fileCreate` ×76 | Dosyalar bölümüne 76 şeffaf WebP (`kisisel-<anahtar>.webp`, 800 px) | Kaynak: commit a2ea42c, `veri/png/yukle/`. Ürün/varyant medyasına **bağlanmadı**. Kimlikler: `veri/png/dosya-idleri.json` ve aşağıdaki tablo |
 | 2026-10-07 | `metafieldsSet` ×279 | 28 harf/rakam varyantı: `onizleme_png`, `png_genislik_cm`, `png_yukseklik_cm`; 49 ikon ürünü: aynıları + `png_sekil` (Beyaz Kalp yalnızca ölçü ve şekil) | Ölçü hesapları aşağıdaki "Patch PNG ölçüleri" tablosunda. Ürün/varyant görsellerine ve eski ölçü alanlarına dokunulmadı |
 | 2026-10-07 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js`, `assets/kisisel-editor.css`, `snippets/kisisel-kart.liquid`, `snippets/kisisel-veri-patch.liquid` | Commit 9e70630, MD5 doğrulandı. PNG ölçü ve şekli (`png_*`) öncelikli, "İndirimler sepette uygulanır" notu |
+| 2026-10-07 | `fileCreate` ×4 | A, D, H, L (Photoroom, kullanıcı onaylı): `kisisel-harf-{A,D,H,L}.webp` | Commit 2501338, `veri/png/hazir-png.py` ile kırpıldı (arka plan temizleme yok; L'de kenara yapışık 2 beyaz nokta temizlendi). Ürün/varyant medyasına bağlanmadı |
+| 2026-10-07 | `metafieldsSet` ×12 | A, D, H, L varyantları: `onizleme_png`, `png_genislik_cm`, `png_yukseklik_cm` | Ölçüler aşağıdaki tabloda; önizleme linkinde kontrol edildi |
 
 ## Metafield tanımları
 
@@ -131,12 +133,17 @@ Kurallar (kullanıcı kararı): harf ve rakamda yükseklik 6 cm, genişlik = 6 �
 | Adventurer | Product/15870556733726 | MediaImage/72562800591134 | 5,05 × 6 | rect | kayıttaki en büyük ölçü 6 cm = uzun kenar (boy); en = 6 × oran 0.841 = 5.05 cm; daire kaydı yok sayıldı (PNG yuvarlak değil) | en 6, boy 6 (circle) |
 | Keep Swimming | Product/15870557847838 | MediaImage/72562800623902 | 5,94 × 6 | circle | kayıttaki en büyük ölçü 6 cm = uzun kenar (boy); en = 6 × oran 0.990 = 5.94 cm | en 6, boy 6 (circle) |
 
+### Photoroom ile gelenler
+
+| Patch | Sahip | Dosya | En × boy (cm) | Hesap | Not |
+|---|---|---|---|---|---|
+| Cool Alfabe A | Variant/49646792868126 | MediaImage/72562970460446 | 4,49 × 6 | yükseklik 6 cm; genişlik = 6 × oran 0.749 = 4.49 cm | — |
+| Cool Alfabe D | Variant/49646792966430 | MediaImage/72562970493214 | 4,49 × 6 | yükseklik 6 cm; genişlik = 6 × oran 0.749 = 4.49 cm | — |
+| Cool Alfabe H | Variant/49646793097502 | MediaImage/72562970525982 | 5,04 × 6 | yükseklik 6 cm; genişlik = 6 × oran 0.840 = 5.04 cm | — |
+| Cool Alfabe L | Variant/49646793228574 | MediaImage/72562970558750 | 4,42 × 6 | yükseklik 6 cm; genişlik = 6 × oran 0.736 = 4.42 cm | kenardaki beyaz kalıntı temizlendi |
+
 Bekleyenler (yüklenmedi, eski görselle kalıyor):
 
-- Cool Alfabe A: Photoroom bekleniyor
-- Cool Alfabe D: Photoroom bekleniyor
-- Cool Alfabe H: Photoroom bekleniyor
-- Cool Alfabe L: Photoroom bekleniyor
 - Janti Rakam 0: İç boşluk yeniden işlendi, onay bekliyor
 - Janti Rakam 4: İç boşluk yeniden işlendi, onay bekliyor
 - Janti Rakam 6: İç boşluk yeniden işlendi, onay bekliyor
