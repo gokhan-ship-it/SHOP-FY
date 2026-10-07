@@ -1826,7 +1826,8 @@
 
   KisiselKart.prototype.gonderYakala = function (e) {
     var form = e.target;
-    if (this.mod !== 'kisisel' || !form || form.id !== this.formId) return;
+    // Dikkat: form.id kullanılamaz; formda name="id" alanı olduğu için o alanı döndürür.
+    if (this.mod !== 'kisisel' || !form || !form.getAttribute || form.getAttribute('id') !== this.formId) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     if (bosMu(this.tasarim)) {

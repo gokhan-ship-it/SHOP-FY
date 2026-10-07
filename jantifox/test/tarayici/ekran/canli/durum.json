@@ -1,0 +1,48 @@
+{
+  "cookies": [
+    {
+      "name": "_shopify_essential",
+      "value": ":AaEWJACvAAEAb6EK86WtcA_2Z7h6iATfzlsx5nsUj_rXhJ7CnE_7_M7BiOUnj3S-8NVrGKE7ufMCudX5s3KHcYf27xI:",
+      "domain": "jantifox.com",
+      "path": "/",
+      "expires": 1822908820.472631,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "localization",
+      "value": "TR",
+      "domain": "jantifox.com",
+      "path": "/",
+      "expires": 1822908822.857665,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://jantifox.com",
+      "localStorage": [
+        {
+          "name": "_gbbExtBundlesAddedOnCart",
+          "value": "{}"
+        },
+        {
+          "name": "recently-viewed",
+          "value": "[10087205437726]"
+        }
+      ]
+    },
+    {
+      "origin": "https://cdn.shopify.com",
+      "localStorage": [
+        {
+          "name": "bugsnag-anonymous-id",
+          "value": "cmuy14kj300003t6ndvrhlr9g"
+        }
+      ]
+    }
+  ]
+}

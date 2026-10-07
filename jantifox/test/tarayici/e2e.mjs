@@ -201,8 +201,8 @@ assert.equal(await sayfa.locator('.shopify-payment-button').first().isVisible(),
 assert.ok(await sayfa.locator('.kp-galeri').isVisible(), 'galeride tasarım önizlemesi');
 await sayfa.screenshot({ path: cikti + '08-kart.png', fullPage: true });
 
-// Sepete ekle (sabit çubuktan)
-await sayfa.locator('#StickyProductSubmitButton-main').click();
+// Sepete ekle (ana butondan: formda name="id" alanı var, form.id tuzağı)
+await sayfa.locator('#ProductSubmitButton-main').click();
 await sayfa.waitForURL('**/cart');
 assert.equal(await sayfa.evaluate(() => window.__temaSubmit || 0), 0, 'tema submit dinleyicisi çalışmamalı');
 assert.ok(eklenen, 'sepete ekleme isteği gitmeli');
@@ -215,6 +215,16 @@ assert.ok(patchler.every((p) => p.properties._tasarim_id === id));
 const e = patchler.find((p) => p.properties['Harf sırası'] === '1, 3');
 assert.equal(e.quantity, 2);
 console.log(JSON.stringify(eklenen, null, 1).slice(0, 1500));
+
+// Sabit çubuktan da: sayfaya dön, tasarım oturumdan geri gelir
+eklenen = null;
+await sayfa.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
+await kart.waitFor({ state: 'visible' });
+assert.match(await sayfa.locator('#StickyProductSubmitButton-main span').textContent(), /Tasarımımla sepete ekle/);
+await sayfa.locator('#StickyProductSubmitButton-main').click();
+await sayfa.waitForURL('**/cart');
+assert.ok(eklenen && eklenen.items.length === 5, 'sabit çubuk da tasarımla eklemeli');
+assert.equal(await sayfa.evaluate(() => window.__temaSubmit || 0), 0);
 console.log('olaylar:', JSON.stringify(await sayfa.evaluate(() => 0)));
 console.log('hatalar:', hatalar);
 await tarayici.close();
