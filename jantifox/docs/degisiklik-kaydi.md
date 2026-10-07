@@ -1,0 +1,32 @@
+# Mağaza değişiklik kaydı (Kişiselleştirme projesi)
+
+Bu proje kapsamında mağazada yapılan her yazma işlemi burada listelenir. Mevcut ürün verisi (`custom.*` vb.) değiştirilmez; yalnızca `kisisellestirme` namespace'i ve çalışma kopyası tema kullanılır.
+
+| Tarih | İşlem | Hedef | Ayrıntı |
+|---|---|---|---|
+| 2026-10-07 | `themeDuplicate` | Canlı tema 205444088094 → yeni tema `gid://shopify/OnlineStoreTheme/206773780766` | "Kişiselleştirme DEV - 2026-10-07", UNPUBLISHED |
+| 2026-10-07 | `metafieldDefinitionCreate` ×12 | Ürün ve varyant metafield tanımları | Aşağıdaki tablo |
+| 2026-10-07 | `metaobjectDefinitionCreate` | `kisisellestirme_katalog` | `gid://shopify/MetaobjectDefinition/46976860446`; alanlar: baslik, harf_setleri, rakamlar, ikonlar, kategoriler, ayarlar |
+| 2026-10-07 | `metafieldsSet` ×225 | 60 patch ürünü: `kisisellestirme.tip/set/genislik_cm/yukseklik_cm/sekil` | Kaynak ve sonuç: `veri/olcu-kaynak.json`, `veri/olcu-metafields.json`, `veri/olcu-kontrol-listesi.md` |
+| 2026-10-07 | `metafieldsSet` ×36 | Cool Alfabe (26) ve Janti Rakam (10) varyantları: `kisisellestirme.karakter` | `veri/varyant-karakter.json` |
+| 2026-10-07 | `metafieldsSet` ×3 | Kanvas Lacivert Tote Çanta: `kisisellestirme.aktif=true`, `onizleme_gorseli=MediaImage/54903737811230` (galerinin 2. görseli), `harita` | Harita **kalibre edilmedi** (`"kalibre": false`); daire konumu yer tutucu |
+| 2026-10-07 | `metaobjectCreate` | `kisisellestirme_katalog` / handle `ana` | `gid://shopify/Metaobject/306704613662`; içerik `veri/katalog-ana.json` |
+
+## Metafield tanımları
+
+Hepsi `kisisellestirme` namespace'inde, Storefront erişimi `PUBLIC_READ`.
+
+| Sahip | Key | Tip | Doğrulama | Definition ID |
+|---|---|---|---|---|
+| Product | `harita` | json | | 1543637369118 |
+| Product | `onizleme_gorseli` | file_reference | Image | 1543637401886 |
+| Product | `aktif` | boolean | | 1543637434654 |
+| Product | `tip` | single_line_text_field | letter, number, icon | 1543637467422 |
+| Product | `set` | single_line_text_field | cool, piramit, rakam | 1543637500190 |
+| Product | `genislik_cm` | number_decimal | | 1543637532958 |
+| Product | `yukseklik_cm` | number_decimal | | 1543637565726 |
+| Product | `sekil` | single_line_text_field | rect, circle | 1543637598494 |
+| Product | `onizleme_png` | file_reference | Image | 1543637631262 |
+| Variant | `karakter` | single_line_text_field | | 1543637664030 |
+| Variant | `renk` | single_line_text_field | | 1543637696798 |
+| Variant | `onizleme_png` | file_reference | Image | 1543637729566 |
