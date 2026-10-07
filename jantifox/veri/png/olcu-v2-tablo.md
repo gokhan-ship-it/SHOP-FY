@@ -1,4 +1,4 @@
-🔶 değişen · ⚠️ sitedeki oran görselden %15+ farklı: görsel kutuya sığdırılır, "Not" sütununda görünen boyut
+🔶 değişen · ↻ eğik görsel düzlendi · ⚠️ sitedeki oran görselden %15+ farklı: görsel kutuya sığdırılır, "Not" sütununda görünen boyut
 
 | | Patch | Sitede | Önceki (en × boy) | Yeni (en × boy) | Şekil | Hesap | Not |
 |---|---|---|---|---|---|---|---|
@@ -69,7 +69,7 @@
 | 🔶 | Yıldız Patch | çap 6 cm | 5,75 × 6  | **6 × 6** | circle | sitede çap 6 cm; iki kenar 6 cm |  |
 | 🔶 | Dinozor Dino | en 6cm · boy 9cm | 6,35 × 9  | **6 × 9** | rect | sitede 6 × 9 cm; görsel dikey (oran 0.706) → en 6, boy 9 |  |
 | 🔶 | Uzay Gemisi | en 7.5cm · boy 10cm | 7,82 × 10  | **7,5 × 10** | rect | sitede 7,5 × 10 cm; görsel dikey (oran 0.782) → en 7,5, boy 10 |  |
-| 🔶 ⚠️ | Meteor | en 8,5cm · boy 3,5 | 7,5 × 8,5  | **3,5 × 8,5** | rect | sitede 8,5 × 3,5 cm; görsel dikey (oran 0.883) → en 3,5, boy 8,5 (yön düzeltildi) | görünen 3,5 × 3,96 cm |
+| 🔶 ↻ | Meteor | en 8,5cm · boy 3,5 | 7,5 × 8,5  | **3,5 × 8,5** | rect | sitede 8,5 × 3,5 cm; görsel dikey (oran 0.426) → en 3,5, boy 8,5 (yön düzeltildi) |  |
 | 🔶 | Cool Flower | en 7cm · boy 7cm | 7 × 6,94  | **7 × 7** | rect | sitede 7 × 7 cm; görsel yatay (oran 1.009) → en 7, boy 7 |  |
 | 🔶 | Kaykay | en 9cm · boy 3.5cm | 9 × 3,38  | **9 × 3,5** | rect | sitede 9 × 3,5 cm; görsel yatay (oran 2.665) → en 9, boy 3,5 |  |
 | 🔶 | Octopus | en 8cm · boy 7cm | 8 × 7,8  | **8 × 7** | rect | sitede 8 × 7 cm; görsel yatay (oran 1.026) → en 8, boy 7 |  |

@@ -81,6 +81,7 @@ def main():
     plan = oku('plan.json')
     adhl = oku('photoroom-sonuc.json')
     ekler = oku('photoroom-ekler.json')
+    duzlenen = oku('duzlenen.json')  # egim.py ile dikleştirilen eğik görseller
     kaynak = {x['id']: x for x in json.load(open(os.path.join(BURA, '..', 'olcu-kaynak.json')))}
     satirlar = []
     for p in plan:
@@ -97,6 +98,8 @@ def main():
         elif p['yukle']:
             oran, durum = p['oran'], 'yüklü'
             onceki = (p['genislik_cm'], p['yukseklik_cm'], p['sekil'])
+            if k in duzlenen:
+                oran, durum = duzlenen[k]['oran'], f"düzlendi ({duzlenen[k]['duzleme_acisi']:g}°), yeni görsel yüklenecek"
         else:
             continue
         g, y, sekil, hesap = hesapla(p['tur'], oran, kaynak.get(p['urun'], {}), k)
@@ -112,16 +115,19 @@ def main():
             'durum': durum, 'oran': round(oran, 4), 'site': {kk: ks.get(kk) for kk in ('g', 'y', 'c') if ks.get(kk)} if p['tur'] == 'ikon' else None,
             'onceki': {'genislik_cm': onceki[0], 'yukseklik_cm': onceki[1], 'sekil': onceki[2]},
             'genislik_cm': g, 'yukseklik_cm': y, 'sekil': sekil, 'hesap': hesap,
+            'duzlendi': k in duzlenen,
             'degisti': (round(onceki[0], 2), round(onceki[1], 2), onceki[2]) != (g, y, sekil),
             'oran_farki': round(fark, 3), 'gorunen': [yuvarla(cw), yuvarla(ch)],
         })
     json.dump(satirlar, open(os.path.join(BURA, 'olcu-v2.json'), 'w'), ensure_ascii=False, indent=1)
-    t = ['🔶 değişen · ⚠️ sitedeki oran görselden %15+ farklı: görsel kutuya sığdırılır, "Not" sütununda görünen boyut', '',
+    t = ['🔶 değişen · ↻ eğik görsel düzlendi · ⚠️ sitedeki oran görselden %15+ farklı: görsel kutuya sığdırılır, "Not" sütununda görünen boyut', '',
          '| | Patch | Sitede | Önceki (en × boy) | Yeni (en × boy) | Şekil | Hesap | Not |', '|---|---|---|---|---|---|---|---|']
     for s in satirlar:
         o = s['onceki']
         site = ' · '.join(f'{ {"g": "en", "y": "boy", "c": "çap"}[a]} {b}' for a, b in (s['site'] or {}).items()) or ('6 cm (set)' if s['tur'] == 'harf' else '6 × 7,5 cm (set)')
         isaret = '🔶' if s['degisti'] else ''
+        if s['duzlendi']:
+            isaret += ' ↻'
         if s['oran_farki'] > 0.15:
             isaret += ' ⚠️'
         sek_o = o['sekil'] or '—'
