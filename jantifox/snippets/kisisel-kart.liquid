@@ -1,0 +1,54 @@
+{%- comment -%}
+  Ürün sayfasındaki "Kişiselleştir" kartı.
+  Yalnızca patch-notice etiketli, kisisellestirme.aktif = true ve haritası olan ürünlerde görünür.
+  Kart "hidden" gelir; editör JS'i ve verisi sorunsuz yüklenirse görünür olur.
+  JS yüklenemezse sayfa bugünkü gibi çalışır (düz ürün satılır).
+
+  Kullanım (main-product içinde custom_liquid bloğu):
+  {% render 'kisisel-kart', product: product, section: section %}
+{%- endcomment -%}
+{%- liquid
+  assign kisisel_aktif = false
+  if product.tags contains 'patch-notice' and product.metafields.kisisellestirme.aktif.value == true and product.metafields.kisisellestirme.harita.value != blank
+    assign katalog = shop.metaobjects.kisisellestirme_katalog.ana
+    if katalog != blank
+      assign kisisel_aktif = true
+    endif
+  endif
+-%}
+{%- if kisisel_aktif -%}
+  {{ 'kisisel-editor.css' | asset_url | stylesheet_tag }}
+  {%- render 'kisisel-veri', product: product, katalog: katalog, section_id: section.id -%}
+
+  <kisisel-kart
+    class="kisisel-kart"
+    data-section-id="{{ section.id }}"
+    data-form-id="product-form-{{ section.id }}"
+    hidden
+  >
+    <fieldset class="kisisel-kart__secim">
+      <legend class="visually-hidden">Satın alma şekli</legend>
+      <label class="kisisel-kart__secenek">
+        <input type="radio" name="kisisel-mod-{{ section.id }}" value="sade" checked data-kisisel-mod>
+        <span>Sadece çanta</span>
+      </label>
+      <label class="kisisel-kart__secenek">
+        <input type="radio" name="kisisel-mod-{{ section.id }}" value="kisisel" data-kisisel-mod>
+        <span>Kişiselleştir</span>
+      </label>
+    </fieldset>
+
+    <div class="kisisel-kart__govde" data-kisisel-govde hidden>
+      <p class="kisisel-kart__aciklama" data-kisisel-bos>
+        Harf, rakam ve ikon patch'leriyle çantanı tasarla, sonucu çantanın üzerinde gör.
+      </p>
+      <ul class="kisisel-kart__ozet" data-kisisel-ozet hidden></ul>
+      <p class="kisisel-kart__toplam" data-kisisel-toplam hidden></p>
+      <button type="button" class="btn btn-outline button--full-width kisisel-kart__buton" data-kisisel-ac>
+        Tasarla
+      </button>
+    </div>
+  </kisisel-kart>
+
+  <script src="{{ 'kisisel-editor.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}

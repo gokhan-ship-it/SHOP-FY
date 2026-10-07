@@ -1,0 +1,15 @@
+{%- comment -%}
+  Sepette kişiselleştirilmiş tasarım kalemlerini gruplar (sepet çekmecesi ve sepet sayfası).
+  layout/theme.liquid içinden, </body> öncesinde render edilir:
+  {% render 'kisisel-sepet' %}
+{%- endcomment -%}
+<style>
+  .cart-item.kp-sepet-baz { position: relative; }
+  .cart-item.kp-sepet-patch { position: relative; margin-left: 1.6rem; padding-left: 1.2rem; border-left: 2px solid #d9d9d9; }
+  .cart-item.kp-sepet-patch .cart-item__media { max-width: 56px; }
+  .cart-item.kp-sepet-patch quantity-input { display: none !important; }
+  tr.cart-item.kp-sepet-patch > td:first-child { box-shadow: inset 2px 0 0 #d9d9d9; }
+  .kp-sepet-rozet { display: inline-block; margin-bottom: .4rem; padding: .2rem .8rem; border-radius: 999px; background: #111; color: #fff; font-size: 1.1rem; font-weight: 600; letter-spacing: .02em; }
+  html.kp-sepet-mesgul .cart-item[data-kp-tasarim] { opacity: .5; pointer-events: none; }
+</style>
+<script src="{{ 'kisisel-sepet.js' | asset_url }}" defer="defer"></script>

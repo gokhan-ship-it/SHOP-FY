@@ -1,0 +1,52 @@
+{%- comment -%}
+  Kişiselleştirme editörünün ihtiyaç duyduğu tüm veriyi JSON olarak basar.
+  Kaynaklar: ürünün kisisellestirme.* metafield'ları ve kisisellestirme_katalog metaobject'i (handle: ana).
+  Kullanım: {% render 'kisisel-veri', product: product, katalog: katalog, section_id: section.id %}
+{%- endcomment -%}
+{%- liquid
+  assign harita = product.metafields.kisisellestirme.harita.value
+  assign onizleme = product.metafields.kisisellestirme.onizleme_gorseli.value
+  if onizleme == blank
+    assign onizleme = product.featured_media
+  endif
+  assign onizleme = onizleme.preview_image | default: onizleme
+  assign ayarlar = katalog.ayarlar.value
+  assign baz = product.selected_or_first_available_variant
+-%}
+<script type="application/json" id="KisiselVeri-{{ section_id }}">
+{
+  "surum": 1,
+  "para": {{ shop.money_format | json }},
+  "urun": {
+    "id": {{ product.id }},
+    "baslik": {{ product.title | json }},
+    "varyant": {{ baz.id }},
+    "fiyat": {{ baz.price }},
+    "satilabilir": {{ baz.available | json }}
+  },
+  "gorsel": {
+    "en": {{ onizleme.width | default: 1000 }},
+    "boy": {{ onizleme.height | default: 1000 }},
+    "kucuk": {{ onizleme | image_url: width: 750 | json }},
+    "buyuk": {{ onizleme | image_url: width: 1200 | json }}
+  },
+  "harita": {{ harita | json }},
+  "ayarlar": {{ ayarlar | json }},
+  "kategoriler": {{ katalog.kategoriler.value | json }},
+  "setler": [
+    {%- for p in katalog.harf_setleri.value -%}
+      {%- render 'kisisel-veri-patch', p: p -%}{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ],
+  "rakamlar": [
+    {%- for p in katalog.rakamlar.value -%}
+      {%- render 'kisisel-veri-patch', p: p -%}{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ],
+  "ikonlar": [
+    {%- for p in katalog.ikonlar.value -%}
+      {%- render 'kisisel-veri-patch', p: p -%}{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ]
+}
+</script>

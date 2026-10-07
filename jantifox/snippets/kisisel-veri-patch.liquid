@@ -1,0 +1,53 @@
+{%- comment -%}
+  Bir patch ürününü (harf seti, rakam seti veya ikon) editör için JSON nesnesi olarak basar.
+  Kullanım: {% render 'kisisel-veri-patch', p: product %}
+{%- endcomment -%}
+{%- liquid
+  assign mf = p.metafields.kisisellestirme
+  assign urun_png = mf.onizleme_png.value
+  assign urun_png_var = false
+  if urun_png != blank
+    assign urun_png_var = true
+  endif
+-%}
+{
+  "id": {{ p.id }},
+  "baslik": {{ p.title | json }},
+  "tip": {{ mf.tip.value | json }},
+  "set": {{ mf.set.value | json }},
+  "en": {{ mf.genislik_cm.value | json }},
+  "boy": {{ mf.yukseklik_cm.value | json }},
+  "sekil": {{ mf.sekil.value | default: 'rect' | json }},
+  "etiketler": {{ p.tags | json }},
+  "gorsel": {%- if urun_png != blank -%}{{ urun_png | image_url: width: 300 | json }}{%- elsif p.featured_media -%}{{ p.featured_media | image_url: width: 300 | json }}{%- else -%}null{%- endif -%},
+  "png": {{ urun_png_var }},
+  "varyantlar": [
+    {%- for v in p.variants -%}
+      {%- liquid
+        assign v_png = v.metafields.kisisellestirme.onizleme_png.value
+        assign v_png_var = false
+        if v_png != blank
+          assign v_png_var = true
+        endif
+        assign stok = nil
+        if v.inventory_management == 'shopify' and v.inventory_policy != 'continue'
+          assign stok = v.inventory_quantity
+          if stok < 0
+            assign stok = 0
+          endif
+        endif
+      -%}
+      {
+        "id": {{ v.id }},
+        "baslik": {{ v.title | json }},
+        "karakter": {{ v.metafields.kisisellestirme.karakter.value | json }},
+        "renk": {{ v.metafields.kisisellestirme.renk.value | json }},
+        "fiyat": {{ v.price }},
+        "satilabilir": {{ v.available | json }},
+        "stok": {{ stok | json }},
+        "gorsel": {%- if v_png != blank -%}{{ v_png | image_url: width: 300 | json }}{%- elsif v.featured_media -%}{{ v.featured_media | image_url: width: 300 | json }}{%- else -%}null{%- endif -%},
+        "png": {{ v_png_var }}
+      }{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ]
+}
