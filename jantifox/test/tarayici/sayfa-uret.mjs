@@ -17,6 +17,10 @@ v.harita = {
 v.setler[0].varyantlar.forEach((x) => (x.gorsel = harfGorsel(x.karakter)));
 v.rakamlar[0].varyantlar.forEach((x) => (x.gorsel = harfGorsel(x.karakter, '#7fc8f8')));
 v.ikonlar.forEach((i, n) => (i.gorsel = svg(`<circle cx="150" cy="150" r="140" fill="${['#e63946', '#2a9d8f', '#e9c46a', '#8d6cab', '#f4a261'][n]}"/><text x="150" y="175" font-size="70" text-anchor="middle" fill="#fff" font-family="Arial">${i.baslik.slice(0, 5)}</text>`)));
+// Döndürme testleri için uzun bir ikon (3,5 × 8,5 cm, taş altta, kuyruk üstte)
+v.ikonlar.push({ id: 6, baslik: 'Meteor', tip: 'icon', en: '3.5', boy: '8.5', sekil: 'rect', etiketler: ['janti oyuncular'], png: true,
+  gorsel: svg(`<path d="M50 0 L90 300 L10 300 Z" fill="#2ec4b6"/><circle cx="50" cy="300" r="48" fill="#ff8fa3" stroke="#222" stroke-width="6"/>`, 100, 350),
+  varyantlar: [{ id: 3006, fiyat: 33000, satilabilir: true, stok: 50 }] });
 
 const kod = readFileSync(new URL('../../assets/kisisel-editor.js', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../../assets/kisisel-editor.css', import.meta.url), 'utf8');

@@ -223,3 +223,111 @@ test('PNG şekli eski şekil kaydından önceliklidir', () => {
   // png_sekil yoksa eski kayıt kullanılır
   assert.equal(kur().m.ikonHarita[2].sekil, 'circle');
 });
+
+// ---------------- Döndürme ----------------
+const g = ic.geometri;
+
+test('dönük dikdörtgen: 0/90° eksene hizalı kalır, diğer açılarda obb', () => {
+  assert.equal(g.donukDikdortgen(0, 0, 8, 3, 0).t, 'rect');
+  const d90 = g.donukDikdortgen(0, 0, 8, 3, 90);
+  assert.deepEqual(duz([d90.w, d90.h]), [3, 8]);
+  const o = g.donukDikdortgen(0, 0, 8, 3, 30);
+  assert.equal(o.t, 'obb');
+  const k = g.kutu(o);
+  // 8×3 dikdörtgen 30°: sınır kutusu 8cos30 + 3sin30 = 8,43
+  assert.ok(Math.abs(k.w - (8 * Math.cos(Math.PI / 6) + 3 * Math.sin(Math.PI / 6))) < 1e-9);
+});
+
+test('SAT: eksen kutuları çakışsa da dönük dikdörtgenler çakışmayabilir', () => {
+  const a = g.donukDikdortgen(0, 0, 8, 1, 45);
+  const b = g.donukDikdortgen(3.2, -3.2, 8, 1, 45); // aynı doğrultuda, yan yana paralel şeritler
+  assert.equal(g.cakisir({ t: 'rect', ...g.kutu(a) }, { t: 'rect', ...g.kutu(b) }, 0), true, 'kutular çakışıyor');
+  assert.equal(g.cakisir(a, b, 0), false, 'dönük şekiller çakışmıyor');
+  const c = g.donukDikdortgen(0, 0, 8, 1, -45); // çapraz: X şekli
+  assert.equal(g.cakisir(a, c, 0), true);
+  // Daire ile: dönük şeridin ucuna yakın ama dışında
+  assert.equal(g.cakisir(a, { t: 'circle', cx: 3, cy: -3, r: 0.5 }, 0), false);
+  assert.equal(g.cakisir(a, { t: 'circle', cx: 2, cy: 2, r: 0.5 }, 0), true);
+});
+
+test('dönük patch alana sığma: köşeler dairenin içinde olmalı', () => {
+  const { m, y } = kur();
+  const c = m.alanlar[0].sekil; // çap 25 cm
+  // 8×3,5 dikdörtgen kenara yakın: düzken sığar, 45°'de köşesi daireden taşar
+  const cx = c.cx + 8.2;
+  assert.equal(y.alanaUygun(g.donukDikdortgen(cx, c.cy, 3.5, 8, 0), 'icon'), true);
+  assert.equal(y.alanaUygun(g.donukDikdortgen(cx, c.cy, 3.5, 8, 45), 'icon'), false);
+});
+
+test('ikon açısı tasarımda saklanır; döndürülmüş şekil çakışmada kullanılır', () => {
+  const { m, y } = kur();
+  const c = m.alanlar[0].sekil;
+  const t = tasarim(m, '', [
+    { uid: 'i1', tip: 'icon', urunId: 4, varyantId: 3004, cx: c.cx - 3.1, cy: c.cy, aci: 0 },
+    { uid: 'i2', tip: 'icon', urunId: 4, varyantId: 3004, cx: c.cx + 3.1, cy: c.cy, aci: 0 }
+  ]);
+  // 6 cm genişliğinde iki not 6,2 cm arayla: düzken çakışmaz
+  let d = ic.duzenle(m, y, t);
+  assert.deepEqual(duz(Object.keys(d.hatalar)), []);
+  // i1 30° döndürülünce köşesi i2'ye değer; duzenle i2'yi kaydırır ama açıyı korur
+  t.parcalar[0].aci = 30;
+  d = ic.duzenle(m, y, t);
+  const p1 = d.parcalar.find((p) => p.uid === 'i1');
+  const p2 = d.parcalar.find((p) => p.uid === 'i2');
+  assert.equal(p1.aci, 30);
+  assert.equal(p1.sekil.t, 'obb');
+  assert.equal(g.cakisir(p1.sekil, p2.sekil, 0), false);
+  assert.notEqual(t.parcalar[1].cx, c.cx + 3.1, 'i2 kaydırıldı');
+});
+
+test('blok isim bütün olarak döner; kapasite açıyı hesaba katar', () => {
+  const { m, y } = kur();
+  const t = tasarim(m, 'ECE');
+  t.isimAci = 90;
+  const d = ic.duzenle(m, y, t);
+  const h = d.parcalar.filter((p) => p.tip === 'letter');
+  assert.ok(h.every((p) => p.aci === 90));
+  // 90°'de harfler dikey sütun olur: x'ler aynı, y'ler farklı
+  const xs = h.map((p) => +p.sekil.x.toFixed(3) + p.sekil.w / 2);
+  assert.ok(Math.max(...xs) - Math.min(...xs) < 1e-6, 'aynı sütunda');
+  // Grup döndürme: merkez etrafında
+  const pivot = [m.alanlar[0].sekil.cx, m.alanlar[0].sekil.cy];
+  const geri = ic.grupDondur(h, pivot, 90, 0);
+  assert.ok(geri.every((p) => p.aci === 0 && p.sekil.t === 'rect'));
+  // Dairede (simetrik) kapasite açıdan bağımsız
+  const set = m.setler[0];
+  assert.equal(y.kapasite(set, 0), y.kapasite(set, 90));
+});
+
+test('harfleri ayırınca blok açısı her harfe geçer; birleştirince temizlenir', () => {
+  const { m, y } = kur();
+  const t = tasarim(m, 'ECE');
+  t.isimAci = 30;
+  ic.harfleriAyir(y, t);
+  assert.deepEqual(duz(t.harfAcilari), [30, 30, 30]);
+  t.harfAcilari[1] = 120;
+  const d = ic.duzenle(m, y, t);
+  assert.equal(d.parcalar.find((p) => p.uid === 'harf-1').aci, 120);
+  ic.harfleriBirlestir(t);
+  assert.equal(t.harfAcilari, null);
+});
+
+test('açı yakalama: 45° katlarına ±5° içinde yapışır', () => {
+  assert.equal(ic.aciYakala(41), 45);
+  assert.equal(ic.aciYakala(-3), 0);
+  assert.equal(ic.aciYakala(184.6), 180);
+  assert.equal(ic.aciYakala(150.4), 150);
+  assert.equal(ic.aciYakala(357), 0);
+});
+
+test('sepet konumu her parçanın açısını içerir', () => {
+  const { m, y } = kur();
+  const c = m.alanlar[0].sekil;
+  const t = tasarim(m, 'EC', [{ uid: 'i1', tip: 'icon', urunId: 4, varyantId: 3004, cx: c.cx, cy: c.cy + 7, aci: 150 }]);
+  t.isimAci = 15;
+  const d = ic.duzenle(m, y, t);
+  const k = ic.tasarimKonumu(m, d.parcalar);
+  assert.equal(k.v, 2);
+  assert.deepEqual(duz(k.p.map((p) => p.a)), [15, 15, 150]);
+  assert.ok(k.p.every((p) => typeof p.x === 'number' && typeof p.y === 'number'));
+});

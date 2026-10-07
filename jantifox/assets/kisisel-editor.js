@@ -107,6 +107,69 @@
     return { t: 'rect', x: cx - w / 2, y: cy - h / 2, w: w, h: h };
   }
 
+  // Açılar derece, saat yönünde (ekran koordinatı, y aşağı); [0, 360) aralığına indirilir
+  function aciNormal(a) {
+    a = Math.round((Number(a) || 0) * 100) / 100;
+    a %= 360;
+    return a < 0 ? a + 360 : a;
+  }
+
+  function dondurNokta(nokta, pivot, aci) {
+    if (!aci) return [nokta[0], nokta[1]];
+    var r = (aci * Math.PI) / 180;
+    var dx = nokta[0] - pivot[0];
+    var dy = nokta[1] - pivot[1];
+    return [pivot[0] + dx * Math.cos(r) - dy * Math.sin(r), pivot[1] + dx * Math.sin(r) + dy * Math.cos(r)];
+  }
+
+  // Dönük dikdörtgen (obb). 0/180° ve 90/270° eksene hizalı dikdörtgen olarak kalır.
+  function donukDikdortgen(cx, cy, w, h, aci) {
+    var a = aciNormal(aci);
+    if (a % 180 === 0) return dikdortgen(cx, cy, w, h);
+    if (a % 180 === 90) return dikdortgen(cx, cy, h, w);
+    return { t: 'obb', cx: cx, cy: cy, w: w, h: h, a: a };
+  }
+
+  function koseler(s) {
+    if (s.t === 'rect') return [[s.x, s.y], [s.x + s.w, s.y], [s.x + s.w, s.y + s.h], [s.x, s.y + s.h]];
+    var hw = s.w / 2;
+    var hh = s.h / 2;
+    return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(function (k) {
+      return dondurNokta([s.cx + k[0], s.cy + k[1]], [s.cx, s.cy], s.a);
+    });
+  }
+
+  // Noktanın dönük dikdörtgenin kendi eksenlerindeki konumu (merkez = 0, 0)
+  function yerelNokta(s, px, py) {
+    var k = dondurNokta([px, py], [s.cx, s.cy], -s.a);
+    return [k[0] - s.cx, k[1] - s.cy];
+  }
+
+  // Ayırıcı eksen teoremi (SAT): iki dışbükey dörtgen çakışıyor mu?
+  function satCakisir(pa, pb, bosluk) {
+    var cokgenler = [pa, pb];
+    for (var c = 0; c < 2; c++) {
+      var p = cokgenler[c];
+      for (var i = 0; i < 2; i++) {
+        var ex = p[i + 1][0] - p[i][0];
+        var ey = p[i + 1][1] - p[i][1];
+        var u = Math.sqrt(ex * ex + ey * ey) || 1;
+        var nx = -ey / u;
+        var ny = ex / u;
+        var aMin = Infinity, aMax = -Infinity, bMin = Infinity, bMax = -Infinity;
+        pa.forEach(function (k) { var d = k[0] * nx + k[1] * ny; aMin = Math.min(aMin, d); aMax = Math.max(aMax, d); });
+        pb.forEach(function (k) { var d = k[0] * nx + k[1] * ny; bMin = Math.min(bMin, d); bMax = Math.max(bMax, d); });
+        if (aMin >= bMax + bosluk - EPS || bMin >= aMax + bosluk - EPS) return false;
+      }
+    }
+    return true;
+  }
+
+  function obbDaire(o, c, bosluk) {
+    var y = yerelNokta(o, c.cx, c.cy);
+    return dikdortgenDaire({ x: -o.w / 2, y: -o.h / 2, w: o.w, h: o.h }, { cx: y[0], cy: y[1], r: c.r }, bosluk);
+  }
+
   function merkez(s) {
     if (s.t === 'rect') return [s.x + s.w / 2, s.y + s.h / 2];
     return [s.cx, s.cy];
@@ -114,6 +177,14 @@
 
   function kutu(s) {
     if (s.t === 'rect') return { x: s.x, y: s.y, w: s.w, h: s.h };
+    if (s.t === 'obb') {
+      var k = koseler(s);
+      var xs = k.map(function (p) { return p[0]; });
+      var ys = k.map(function (p) { return p[1]; });
+      var x1 = Math.min.apply(null, xs);
+      var y1 = Math.min.apply(null, ys);
+      return { x: x1, y: y1, w: Math.max.apply(null, xs) - x1, h: Math.max.apply(null, ys) - y1 };
+    }
     if (s.t === 'circle') return { x: s.cx - s.r, y: s.cy - s.r, w: s.r * 2, h: s.r * 2 };
     return { x: s.cx - s.rx, y: s.cy - s.ry, w: s.rx * 2, h: s.ry * 2 };
   }
@@ -123,6 +194,10 @@
     m = m || 0;
     if (s.t === 'rect') {
       return px >= s.x + m - EPS && px <= s.x + s.w - m + EPS && py >= s.y + m - EPS && py <= s.y + s.h - m + EPS;
+    }
+    if (s.t === 'obb') {
+      var y = yerelNokta(s, px, py);
+      return Math.abs(y[0]) <= s.w / 2 - m + EPS && Math.abs(y[1]) <= s.h / 2 - m + EPS;
     }
     if (s.t === 'circle') {
       var r = s.r - m;
@@ -148,6 +223,13 @@
       p.push([s.x, s.y], [x2, s.y], [x2, y2], [s.x, y2]);
       p.push([s.x + s.w / 2, s.y], [x2, s.y + s.h / 2], [s.x + s.w / 2, y2], [s.x, s.y + s.h / 2]);
       return p;
+    }
+    if (s.t === 'obb') {
+      var k = koseler(s);
+      return k.concat(k.map(function (a, i) {
+        var b = k[(i + 1) % 4];
+        return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      }));
     }
     var rx = s.t === 'circle' ? s.r : s.rx;
     var ry = s.t === 'circle' ? s.r : s.ry;
@@ -192,6 +274,11 @@
     if (a.t === 'circle' && b.t === 'circle') {
       var d = Math.sqrt(Math.pow(a.cx - b.cx, 2) + Math.pow(a.cy - b.cy, 2));
       return d < a.r + b.r + bosluk - EPS;
+    }
+    if ((a.t === 'obb' || b.t === 'obb') && a.t !== 'ellipse' && b.t !== 'ellipse') {
+      if (a.t === 'circle') return obbDaire(b, a, bosluk);
+      if (b.t === 'circle') return obbDaire(a, b, bosluk);
+      return satCakisir(koseler(a), koseler(b), bosluk);
     }
     if (a.t === 'rect' && b.t === 'circle') return dikdortgenDaire(a, b, bosluk);
     if (a.t === 'circle' && b.t === 'rect') return dikdortgenDaire(b, a, bosluk);
@@ -470,9 +557,17 @@
     return true;
   };
 
+  // Blok isim harfleri: dizilim blok merkezi etrafında açı kadar döndürülür
+  function isimHarfleri(dizi, merkezNokta, aci) {
+    return dizi.map(function (p) {
+      var k = dondurNokta([p.cx, p.cy], merkezNokta, aci);
+      return { cx: k[0], cy: k[1], en: p.en, boy: p.boy, aci: aci, sekil: donukDikdortgen(k[0], k[1], p.en, p.boy, aci) };
+    });
+  }
+
   // İsim, alana tek başına (diğer patch'ler olmadan) kaç satırda sığıyor? 0 = sığmıyor
-  // olculer: harflerin gerçek ölçüleri [{en, boy}]
-  Yerlesim.prototype.isimSatiriOlcu = function (olculer) {
+  // olculer: harflerin gerçek ölçüleri [{en, boy}], aci: blok ismin açısı
+  Yerlesim.prototype.isimSatiriOlcu = function (olculer, aci) {
     var adet = olculer.length;
     var alan = this.m.alanBul('letter');
     if (!alan || adet === 0) return adet === 0 ? 1 : 0;
@@ -480,9 +575,9 @@
     var self = this;
     for (var satir = 1; satir <= Math.min(this.m.ayar.satir, 2); satir++) {
       if (satir === 2 && adet < 2) break;
-      var dizi = this.isimDiz(olculer, c[0], c[1], satir);
+      var dizi = isimHarfleri(this.isimDiz(olculer, c[0], c[1], satir), c, aciNormal(aci));
       var tamam = dizi.every(function (p) {
-        return self.alanaUygun(dikdortgen(p.cx, p.cy, p.en, p.boy), 'letter');
+        return self.alanaUygun(p.sekil, 'letter');
       });
       if (tamam) return satir;
     }
@@ -490,16 +585,16 @@
   };
 
   // Temsili (ortanca) harf ölçüsüyle: kapasite göstergesi için
-  Yerlesim.prototype.isimSatiri = function (adet, set) {
+  Yerlesim.prototype.isimSatiri = function (adet, set, aci) {
     var olculer = [];
     for (var i = 0; i < adet; i++) olculer.push({ en: set.en, boy: set.boy });
-    return this.isimSatiriOlcu(olculer);
+    return this.isimSatiriOlcu(olculer, aci);
   };
 
-  Yerlesim.prototype.kapasite = function (set) {
+  Yerlesim.prototype.kapasite = function (set, aci) {
     var enFazla = 0;
     for (var n = 1; n <= 40; n++) {
-      if (this.isimSatiri(n, set)) enFazla = n;
+      if (this.isimSatiri(n, set, aci)) enFazla = n;
       else if (n > enFazla + 2) break;
     }
     return enFazla;
@@ -515,13 +610,15 @@
       var alan = m.alanBul('letter');
       var c = t.isimMerkez || (alan ? merkez(alan.sekil) : [m.Wcm / 2, m.Hcm / 2]);
       var olculer = harfler.map(function (h) { return harfOlcu(set, h); });
-      var satir = this.isimSatiriOlcu(olculer) || Math.min(m.ayar.satir, harfler.length > 1 ? 2 : 1);
-      var dizi = this.isimDiz(olculer, c[0], c[1], satir);
       var ayri = !!t.harfAyri;
+      var isimAci = ayri ? 0 : aciNormal(t.isimAci);
+      var satir = this.isimSatiriOlcu(olculer, isimAci) || Math.min(m.ayar.satir, harfler.length > 1 ? 2 : 1);
+      var dizi = isimHarfleri(this.isimDiz(olculer, c[0], c[1], satir), c, isimAci);
       harfler.forEach(function (h, i) {
         var v = set.karakterler[h] || null;
-        // Ayrı modda her harf kendi konumunda ve kendi grubunda sürüklenir
+        // Ayrı modda her harf kendi konumunda, kendi açısında ve kendi grubunda sürüklenir
         var k = ayri && t.harfKonumlari && t.harfKonumlari[i] ? t.harfKonumlari[i] : [dizi[i].cx, dizi[i].cy];
+        var aci = ayri ? aciNormal(t.harfAcilari && t.harfAcilari[i]) : isimAci;
         liste.push({
           uid: (ayri ? 'harf-' : 'isim-') + i,
           grup: ayri ? 'harf-' + i : 'isim',
@@ -530,7 +627,10 @@
           tanim: set,
           varyant: v,
           etiket: h,
-          sekil: dikdortgen(k[0], k[1], dizi[i].en, dizi[i].boy)
+          en: dizi[i].en,
+          boy: dizi[i].boy,
+          aci: aci,
+          sekil: donukDikdortgen(k[0], k[1], dizi[i].en, dizi[i].boy, aci)
         });
       });
     }
@@ -541,6 +641,8 @@
       tanim.varyantlar.forEach(function (v) {
         if (String(v.id) === String(p.varyantId)) varyant = v;
       });
+      var olcu = parcaOlcu(tanim, varyant);
+      var aci = aciNormal(p.aci);
       liste.push({
         uid: p.uid,
         grup: p.uid,
@@ -548,18 +650,67 @@
         tanim: tanim,
         varyant: varyant,
         etiket: p.tip === 'number' ? (varyant && varyant.karakter) || '' : tanim.ad,
-        sekil: parcaSekli(tanim, varyant, p.cx, p.cy)
+        en: olcu.en,
+        boy: olcu.boy,
+        aci: aci,
+        sekil: parcaSekli(tanim, varyant, p.cx, p.cy, aci)
       });
     });
     return liste;
   };
 
-  // Rakam/ikon şekli: varyantın PNG ölçüsü varsa o, yoksa ürünün ölçüsü
-  function parcaSekli(tanim, varyant, cx, cy) {
-    var en = (varyant && varyant.en) || tanim.en;
-    var boy = (varyant && varyant.boy) || tanim.boy;
-    if (tanim.sekil === 'circle') return { t: 'circle', cx: cx, cy: cy, r: Math.max(en, boy) / 2 };
-    return dikdortgen(cx, cy, en, boy);
+  // Rakam/ikon ölçüsü: varyantın PNG ölçüsü varsa o, yoksa ürünün ölçüsü
+  function parcaOlcu(tanim, varyant) {
+    return { en: (varyant && varyant.en) || tanim.en, boy: (varyant && varyant.boy) || tanim.boy };
+  }
+
+  // Rakam/ikon şekli. Daire döndürülse de dairedir (yalnızca görsel döner).
+  function parcaSekli(tanim, varyant, cx, cy, aci) {
+    var o = parcaOlcu(tanim, varyant);
+    if (tanim.sekil === 'circle') return { t: 'circle', cx: cx, cy: cy, r: Math.max(o.en, o.boy) / 2 };
+    return donukDikdortgen(cx, cy, o.en, o.boy, aci);
+  }
+
+  function kopyaParca(p, ek) {
+    var k = {};
+    var a;
+    for (a in p) k[a] = p[a];
+    for (a in ek) k[a] = ek[a];
+    return k;
+  }
+
+  // Bir grubu pivot etrafında yeni açıya döndürür (parçaların merkezleri de döner)
+  function grupDondur(parcalar, pivot, eskiAci, yeniAci) {
+    var d = aciNormal(yeniAci - eskiAci);
+    return parcalar.map(function (p) {
+      var c = dondurNokta(merkez(p.sekil), pivot, d);
+      var aci = aciNormal((p.aci || 0) + d);
+      var sekil = p.sekil.t === 'circle' ? { t: 'circle', cx: c[0], cy: c[1], r: p.sekil.r } : donukDikdortgen(c[0], c[1], p.en, p.boy, aci);
+      return kopyaParca(p, { sekil: sekil, aci: aci });
+    });
+  }
+
+  // Seçim çerçevesi: grubun, kendi açısındaki eksenlere göre sınırları (pivot = 0, 0)
+  function grupCercevesi(parcalar, pivot, aci, pay) {
+    var x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+    parcalar.forEach(function (p) {
+      var noktalar;
+      if (p.sekil.t === 'circle') {
+        var c = dondurNokta(merkez(p.sekil), pivot, -aci);
+        var r = p.sekil.r;
+        noktalar = [[c[0] - r, c[1] - r], [c[0] + r, c[1] + r]];
+      } else {
+        noktalar = koseler(p.sekil).map(function (k) { return dondurNokta(k, pivot, -aci); });
+      }
+      noktalar.forEach(function (k) {
+        x1 = Math.min(x1, k[0] - pivot[0]);
+        y1 = Math.min(y1, k[1] - pivot[1]);
+        x2 = Math.max(x2, k[0] - pivot[0]);
+        y2 = Math.max(y2, k[1] - pivot[1]);
+      });
+    });
+    pay = pay || 0;
+    return { pivot: pivot, aci: aci, x1: x1 - pay, y1: y1 - pay, x2: x2 + pay, y2: y2 + pay };
   }
 
   // Bir grubun (isim ya da tek patch) tüm parçaları geçerli mi?
@@ -665,7 +816,8 @@
   function isimAnaliz(model, yer, t) {
     var set = model.set(t.setId);
     var harfler = Array.from(t.isim || '');
-    var sonuc = { harfler: harfler, eksikler: [], yoklar: [], stokSorunlari: [], sigiyor: true, kapasite: yer.kapasite(set) };
+    var isimAci = t.harfAyri ? 0 : t.isimAci;
+    var sonuc = { harfler: harfler, eksikler: [], yoklar: [], stokSorunlari: [], sigiyor: true, kapasite: yer.kapasite(set, isimAci) };
     var sayim = {};
     var gorulen = {};
     harfler.forEach(function (h) {
@@ -687,7 +839,7 @@
       if (mevcut < sayim[h]) sonuc.stokSorunlari.push({ harf: h, gereken: sayim[h], mevcut: mevcut });
     });
     if (harfler.length) {
-      sonuc.sigiyor = yer.isimSatiriOlcu(harfler.map(function (h) { return harfOlcu(set, h); })) > 0;
+      sonuc.sigiyor = yer.isimSatiriOlcu(harfler.map(function (h) { return harfOlcu(set, h); }), isimAci) > 0;
     }
     sonuc.engel = sonuc.eksikler.length > 0 || sonuc.yoklar.length > 0 || sonuc.stokSorunlari.length > 0 || !sonuc.sigiyor;
     return sonuc;
@@ -717,15 +869,19 @@
   function harfKonumlariniEsitle(yer, t) {
     if (!t.harfAyri) {
       t.harfKonumlari = null;
+      t.harfAcilari = null;
       return;
     }
     var adet = Array.from(t.isim || '').length;
     var mevcut = Array.isArray(t.harfKonumlari) ? t.harfKonumlari.slice(0, adet) : [];
-    if (mevcut.length < adet) {
-      var blok = yer.parcalar({ setId: t.setId, isim: t.isim, isimMerkez: t.isimMerkez, parcalar: [] });
+    var acilar = Array.isArray(t.harfAcilari) ? t.harfAcilari.slice(0, adet) : [];
+    if (mevcut.length < adet || acilar.length < adet) {
+      var blok = yer.parcalar({ setId: t.setId, isim: t.isim, isimMerkez: t.isimMerkez, isimAci: t.isimAci, parcalar: [] });
       for (var i = mevcut.length; i < adet; i++) mevcut.push(merkez(blok[i].sekil));
+      for (var j = acilar.length; j < adet; j++) acilar.push(blok[j].aci);
     }
     t.harfKonumlari = mevcut;
+    t.harfAcilari = acilar;
     if (!adet) t.harfAyri = false;
   }
 
@@ -772,6 +928,7 @@
     if (!t.isim || t.harfAyri) return;
     var blok = yer.parcalar(t).filter(function (p) { return p.grup === 'isim'; });
     t.harfKonumlari = blok.map(function (p) { return merkez(p.sekil); });
+    t.harfAcilari = blok.map(function (p) { return p.aci; });
     t.harfAyri = true;
   }
 
@@ -791,6 +948,7 @@
     }
     t.harfAyri = false;
     t.harfKonumlari = null;
+    t.harfAcilari = null;
   }
 
   function stokKontrol(model, t, yer, adet) {
@@ -849,6 +1007,26 @@
     return parcalar.join(' + ');
   }
 
+  // Sepetteki _tasarim_konum: x, y alan merkezine göre cm; a saat yönünde derece (0 = düz)
+  function tasarimKonumu(model, parcalar) {
+    var alan = model.alanBul('letter') || model.alanlar[0];
+    var ac = merkez(alan.sekil);
+    return {
+      v: 2,
+      alan: alan.id,
+      p: parcalar.map(function (p) {
+        var c = merkez(p.sekil);
+        return {
+          v: p.varyant ? p.varyant.id : null,
+          t: p.tip.charAt(0),
+          x: Math.round((c[0] - ac[0]) * 10) / 10,
+          y: Math.round((c[1] - ac[1]) * 10) / 10,
+          a: Math.round(p.aci || 0)
+        };
+      })
+    };
+  }
+
   function bosMu(t) {
     return !t || (!t.isim && (!t.parcalar || !t.parcalar.length));
   }
@@ -895,6 +1073,13 @@
         ? '<svg class="kp-sahne__alanlar" viewBox="0 0 ' + m.Wcm + ' ' + m.Hcm + '" preserveAspectRatio="none" aria-hidden="true">' + yasakSvg + alanSvg + '</svg>'
         : '') +
       '<div class="kp-sahne__parcalar"></div>' +
+      (this.etkilesimli
+        ? '<div class="kp-sahne__secim" aria-hidden="true"><div class="kp-cerceve" hidden>' +
+          '<span class="kp-cerceve__cizgi"></span>' +
+          '<span class="kp-cerceve__tutamac" data-kp-tutamac title="Döndürmek için sürükle">' +
+          '<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '</span></div></div>'
+        : '') +
       '</div>';
     // Editörde sahne bir görünüm penceresi içinde durur; yakınlaştırma sahnenin
     // genişliği ve konumuyla yapılır (transform yok), böylece tüm hesaplar aynı kalır.
@@ -904,6 +1089,7 @@
     this.gorunum = this.kok.querySelector('.kp-gorunum');
     this.sahne = this.kok.querySelector('.kp-sahne');
     this.katman = this.kok.querySelector('.kp-sahne__parcalar');
+    this.secimEl = this.kok.querySelector('.kp-cerceve');
   };
 
   // Yakın görünüm: takılabilir alan(lar) pencere genişliğinin ~%80'ini kaplar.
@@ -941,13 +1127,32 @@
     if (img && genislik) img.sizes = Math.ceil(genislik * olcek) + 'px';
   };
 
+  // Parça, döndürülmemiş ölçüsüyle merkezine yerleşir; açı CSS ile verilir
+  function parcaStili(m, p) {
+    var c = merkez(p.sekil);
+    var en = p.en;
+    var boy = p.boy;
+    if (p.sekil.t === 'circle') en = boy = p.sekil.r * 2;
+    if (!en || !boy) {
+      var k = kutu(p.sekil);
+      en = k.w;
+      boy = k.h;
+    }
+    return {
+      left: ((c[0] - en / 2) / m.Wcm) * 100 + '%',
+      top: ((c[1] - boy / 2) / m.Hcm) * 100 + '%',
+      width: (en / m.Wcm) * 100 + '%',
+      height: (boy / m.Hcm) * 100 + '%',
+      transform: p.aci ? 'rotate(' + p.aci + 'deg)' : ''
+    };
+  }
+
   Sahne.prototype.ciz = function (parcalar, hatalar, alanHatali) {
     var m = this.m;
     var html = parcalar
       .map(function (p) {
-        var k = kutu(p.sekil);
-        var stil =
-          'left:' + (k.x / m.Wcm) * 100 + '%;top:' + (k.y / m.Hcm) * 100 + '%;width:' + (k.w / m.Wcm) * 100 + '%;height:' + (k.h / m.Hcm) * 100 + '%';
+        var st = parcaStili(m, p);
+        var stil = 'left:' + st.left + ';top:' + st.top + ';width:' + st.width + ';height:' + st.height + (st.transform ? ';transform:' + st.transform : '');
         var gorsel = p.varyant && p.varyant.gorsel;
         var sinif = 'kp-parca kp-parca--' + p.tip + (p.sekil.t === 'circle' ? ' kp-parca--daire' : '') + (hatalar && hatalar[p.uid] ? ' kp-parca--hatali' : '') + (p.varyant && !p.varyant.png ? ' kp-parca--jpg' : '') + (!p.varyant ? ' kp-parca--eksik' : '');
         var ic = gorsel
@@ -967,11 +1172,33 @@
     parcalar.forEach(function (p) {
       var el = self.katman.querySelector('[data-uid="' + p.uid + '"]');
       if (!el) return;
-      var k = kutu(p.sekil);
-      el.style.left = (k.x / m.Wcm) * 100 + '%';
-      el.style.top = (k.y / m.Hcm) * 100 + '%';
+      var st = parcaStili(m, p);
+      el.style.left = st.left;
+      el.style.top = st.top;
+      el.style.transform = st.transform;
       el.classList.toggle('kp-parca--hatali', !!(hatalar && hatalar[p.uid]));
     });
+  };
+
+  // Seçim çerçevesi ve döndürme tutamacı (c: grupCercevesi sonucu, null: gizle)
+  Sahne.prototype.secimCiz = function (c, hatali) {
+    var el = this.secimEl;
+    if (!el) return;
+    if (!c) {
+      el.hidden = true;
+      return;
+    }
+    var m = this.m;
+    var w = c.x2 - c.x1;
+    var h = c.y2 - c.y1;
+    el.hidden = false;
+    el.style.left = ((c.pivot[0] + c.x1) / m.Wcm) * 100 + '%';
+    el.style.top = ((c.pivot[1] + c.y1) / m.Hcm) * 100 + '%';
+    el.style.width = (w / m.Wcm) * 100 + '%';
+    el.style.height = (h / m.Hcm) * 100 + '%';
+    el.style.transformOrigin = (-c.x1 / w) * 100 + '% ' + (-c.y1 / h) * 100 + '%';
+    el.style.transform = 'rotate(' + c.aci + 'deg)';
+    el.classList.toggle('kp-cerceve--hatali', !!hatali);
   };
 
   /* ------------------------------------------------------------------ */
@@ -1013,6 +1240,18 @@
       '<div class="kp-onizleme"><div class="kp-onizleme__ic" style="--kp-oran:' + (this.m.gorsel.en / this.m.gorsel.boy) + '">' +
       '<div data-kp-sahne></div>' +
       '<button type="button" class="kp-onizleme__dugme kp-onizleme__dugme--gorunum" data-kp-gorunum aria-pressed="false">Tüm çantayı gör</button>' +
+      '<span class="kp-aci" data-kp-aci aria-hidden="true" hidden></span>' +
+      '</div>' +
+      '<div class="kp-secim-cubuk" data-kp-secim-cubuk hidden>' +
+      '<div class="kp-secim-cubuk__ust"><p class="kp-secim-cubuk__ad">Seçili: <strong data-kp-secili-ad></strong></p>' +
+      '<button type="button" class="kp-secim-cubuk__kaldir" data-kp-secim-kaldir>Seçimi kaldır</button></div>' +
+      '<div class="kp-secim-cubuk__butonlar" role="toolbar" aria-label="Seçili patch">' +
+      '<button type="button" data-kp-dondur="-15" aria-label="15 derece sola döndür"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>15°</span></button>' +
+      '<button type="button" data-kp-dondur="15" aria-label="15 derece sağa döndür"><span>15°</span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+      '<button type="button" data-kp-duzle>Düzle</button>' +
+      '<button type="button" data-kp-sil>Sil</button>' +
+      '</div>' +
+      '<p class="kp-secim-cubuk__durum" data-kp-secim-durum aria-live="polite"></p>' +
       '</div>' +
       (this.m.kalibre ? '' : '<p class="kp-onizleme__not">Önizleme ölçüleri henüz kalibre edilmedi.</p>') +
       '</div>' +
@@ -1117,6 +1356,10 @@
         return self.ikonIzgarasiCiz();
       }
       if (hedef.hasAttribute('data-kp-kaldir')) return self.parcaKaldir(hedef.getAttribute('data-kp-kaldir'));
+      if (hedef.hasAttribute('data-kp-dondur')) return self.acisiDegistir(Number(hedef.getAttribute('data-kp-dondur')));
+      if (hedef.hasAttribute('data-kp-duzle')) return self.acisiDegistir(0, 0);
+      if (hedef.hasAttribute('data-kp-sil')) return self.seciliSil();
+      if (hedef.hasAttribute('data-kp-secim-kaldir')) return self.sec(null);
     });
     el.addEventListener('change', function (e) {
       if (e.target.matches('[data-kp-set]')) {
@@ -1125,8 +1368,17 @@
       }
     });
     el.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') self.kapat(false);
+      if (e.key === 'Escape') {
+        if (self.secili) self.sec(null);
+        else self.kapat(false);
+      }
       if (e.key === 'Tab') self.odakTuzagi(e);
+      // Seçili patch: ok tuşlarıyla 1°, Shift ile 15° döndürme (yazı alanlarında değil)
+      if (self.secili && /^Arrow(Left|Right|Up|Down)$/.test(e.key) && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) {
+        e.preventDefault();
+        var yon = e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -1 : 1;
+        self.acisiDegistir(yon * (e.shiftKey ? 15 : 1));
+      }
     });
     var girdi = el.querySelector('[data-kp-isim]');
     girdi.addEventListener('input', function () {
@@ -1456,6 +1708,7 @@
     ileri.setAttribute('aria-disabled', engel ? 'true' : 'false');
     ileri.classList.toggle('kp-alt__ileri--engelli', !!engel);
     if (this.adim === 'ozet') this.ozetCiz();
+    this.secimGuncelle();
   };
 
   Editor.prototype.dugmeleriGuncelle = function () {
@@ -1586,54 +1839,273 @@
       '<p class="kp-bilgi">Patch\'ler cırt cırtlı. Çanta eline geçince istediğin yere takar, istediğin zaman yerini değiştirirsin.</p>';
   };
 
+  /* ---------------- Seçim ve döndürme ---------------- */
+
+  // Serbest döndürmede 45°'nin katlarına ±5° yaklaşınca yakalar
+  function aciYakala(a) {
+    a = aciNormal(a);
+    for (var k = 0; k <= 8; k++) {
+      if (Math.abs(a - k * 45) <= 5) return (k * 45) % 360;
+    }
+    return Math.round(a) % 360;
+  }
+
+  Editor.prototype.isimMerkezi = function () {
+    if (this.t.isimMerkez) return this.t.isimMerkez;
+    var alan = this.m.alanBul('letter');
+    return alan ? merkez(alan.sekil) : [this.m.Wcm / 2, this.m.Hcm / 2];
+  };
+
+  // Seçili grubun parçaları, döndürme merkezi, açısı ve çakışma kontrolündeki diğer parçalar
+  Editor.prototype.grupBilgisi = function (grup) {
+    if (!grup || !this.durum) return null;
+    var d = this.durum;
+    var parcalar = d.parcalar.filter(function (p) { return p.grup === grup; });
+    if (!parcalar.length) return null;
+    return {
+      grup: grup,
+      parcalar: parcalar,
+      digerleri: d.parcalar.filter(function (p) { return p.grup !== grup && !d.hatalar[p.uid]; }),
+      pivot: grup === 'isim' ? this.isimMerkezi() : merkez(parcalar[0].sekil),
+      aci: aciNormal(parcalar[0].aci)
+    };
+  };
+
+  Editor.prototype.secimAdi = function (b) {
+    var p = b.parcalar[0];
+    if (b.grup === 'isim') return 'İsim (' + this.t.isim + ')';
+    if (p.tip === 'letter') return p.etiket + ' harfi';
+    if (p.tip === 'number') return p.etiket + ' rakamı';
+    return p.etiket;
+  };
+
+  Editor.prototype.sec = function (grup) {
+    if (grup !== this.secili) this.secimDurumu('');
+    this.secili = grup || null;
+    this.secimGuncelle();
+  };
+
+  Editor.prototype.secimDurumu = function (metin) {
+    var el = this.el && this.el.querySelector('[data-kp-secim-durum]');
+    if (el) el.textContent = metin;
+  };
+
+  Editor.prototype.secimGuncelle = function () {
+    var cubuk = this.el.querySelector('[data-kp-secim-cubuk]');
+    var b = this.grupBilgisi(this.secili);
+    if (!b) {
+      this.secili = null;
+      cubuk.hidden = true;
+      this.sahne.secimCiz(null);
+      return;
+    }
+    cubuk.hidden = false;
+    this.el.querySelector('[data-kp-secili-ad]').textContent = this.secimAdi(b) + (b.aci ? ' · ' + Math.round(b.aci) + '°' : '');
+    this.el.querySelector('[data-kp-duzle]').disabled = !b.aci;
+    this.sahne.secimCiz(grupCercevesi(b.parcalar, b.pivot, b.aci, 0.15), !!this.durum.hatalar[b.parcalar[0].uid]);
+  };
+
+  // Döndürme sırasında önizleme: geçerliyse true. Geçersizse parça kırmızı görünür.
+  Editor.prototype.aciOnizle = function (b, aci) {
+    var donmus = grupDondur(b.parcalar, b.pivot, b.aci, aci);
+    var gecerli = this.yer.grupGecerli(donmus, b.digerleri);
+    var hatalar = {};
+    if (!gecerli) donmus.forEach(function (p) { hatalar[p.uid] = true; });
+    this.sahne.konumla(donmus, hatalar);
+    this.sahne.secimCiz(grupCercevesi(donmus, b.pivot, aci, 0.15), !gecerli);
+    var gosterge = this.el.querySelector('[data-kp-aci]');
+    gosterge.hidden = false;
+    gosterge.textContent = Math.round(aci) + '°';
+    gosterge.classList.toggle('kp-aci--hatali', !gecerli);
+    return gecerli;
+  };
+
+  Editor.prototype.aciGostergesiGizle = function () {
+    var g = this.el.querySelector('[data-kp-aci]');
+    if (g) g.hidden = true;
+  };
+
+  // Açıyı tasarıma yazar
+  Editor.prototype.aciUygula = function (grup, aci) {
+    aci = aciNormal(aci);
+    var t = this.t;
+    if (grup === 'isim') {
+      t.isimAci = aci;
+    } else if (String(grup).indexOf('harf-') === 0) {
+      harfKonumlariniEsitle(this.yer, t);
+      t.harfAcilari[parseInt(String(grup).slice(5), 10)] = aci;
+    } else {
+      t.parcalar.forEach(function (x) {
+        if (x.uid === grup) x.aci = aci;
+      });
+    }
+    this.yenile();
+  };
+
+  // Serbest döndürme bitti: geçersiz açıda bırakıldıysa son geçerli açıya döner
+  Editor.prototype.donmeBitir = function (b, sonGecerli) {
+    this.aciGostergesiGizle();
+    this.sahne.sahne.classList.remove('kp-sahne--donuyor');
+    if (sonGecerli !== b.aci) this.aciUygula(b.grup, sonGecerli);
+    else this.yenile();
+  };
+
+  // Butonlar ve klavye: göreli (delta) ya da mutlak açı
+  Editor.prototype.acisiDegistir = function (delta, mutlak) {
+    var b = this.grupBilgisi(this.secili);
+    if (!b) return;
+    var hedef = aciNormal(mutlak != null ? mutlak : b.aci + delta);
+    if (hedef === b.aci) return;
+    var self = this;
+    if (!this.yer.grupGecerli(grupDondur(b.parcalar, b.pivot, b.aci, hedef), b.digerleri)) {
+      // Kısa bir an kırmızı göster, sonra eski açıya dön
+      this.aciOnizle(b, hedef);
+      this.secimDurumu(Math.round(hedef) + '° açıda alana sığmıyor ya da başka bir patch\'e değiyor.');
+      clearTimeout(this.donmeZamanlayici);
+      this.donmeZamanlayici = setTimeout(function () {
+        self.aciGostergesiGizle();
+        self.yenile();
+      }, 600);
+      return;
+    }
+    this.secimDurumu('');
+    this.aciUygula(b.grup, hedef);
+  };
+
+  Editor.prototype.seciliSil = function () {
+    var g = this.secili;
+    if (!g) return;
+    this.secili = null;
+    if (g === 'isim') return this.isimAyarla('');
+    if (g.indexOf('harf-') === 0) {
+      var i = parseInt(g.slice(5), 10);
+      var harfler = Array.from(this.t.isim);
+      harfler.splice(i, 1);
+      if (this.t.harfKonumlari) this.t.harfKonumlari.splice(i, 1);
+      if (this.t.harfAcilari) this.t.harfAcilari.splice(i, 1);
+      return this.isimAyarla(harfler.join(''));
+    }
+    this.parcaKaldir(g);
+  };
+
   /* ---------------- Sürükleme ---------------- */
 
   Editor.prototype.surukleBagla = function () {
     var self = this;
     var kok = this.el.querySelector('[data-kp-sahne]');
-    var aktif = null;
+    var aktif = null; // tek parmak: 'tasima' (sürükleme) ya da 'tutamac' (döndürme tutamacı)
+    var parmaklar = {}; // pointerId -> [x, y]
+    var iki = null; // iki parmakla döndürme
+    var bosDokunma = null; // boş alana dokunma: bırakınca (kısa dokunuşsa) seçimi kaldırır
 
     function cmCevir(dxPx, dyPx) {
       var r = self.sahne.sahne.getBoundingClientRect();
       return [(dxPx / r.width) * self.m.Wcm, (dyPx / r.height) * self.m.Hcm];
     }
 
+    function ekranNoktasi(cm) {
+      var r = self.sahne.sahne.getBoundingClientRect();
+      return [r.left + (cm[0] / self.m.Wcm) * r.width, r.top + (cm[1] / self.m.Hcm) * r.height];
+    }
+
+    function yonAcisi(x, y, merkezNokta) {
+      return (Math.atan2(y - merkezNokta[1], x - merkezNokta[0]) * 180) / Math.PI;
+    }
+
+    function donmeBasla() {
+      self.sahne.sahne.classList.add('kp-sahne--donuyor');
+    }
+
     kok.addEventListener('pointerdown', function (e) {
-      var el = e.target.closest('.kp-parca');
-      if (!el || (e.pointerType === 'mouse' && e.button !== 0)) return;
-      var grup = el.getAttribute('data-grup');
-      var grupParcalari = self.durum.parcalar.filter(function (p) { return p.grup === grup; });
-      if (!grupParcalari.length) return;
-      e.preventDefault();
-      aktif = {
-        id: e.pointerId,
-        grup: grup,
-        x: e.clientX,
-        y: e.clientY,
-        parcalar: grupParcalari,
-        digerleri: self.durum.parcalar.filter(function (p) { return p.grup !== grup && !self.durum.hatalar[p.uid]; }),
-        dx: 0,
-        dy: 0,
-        hareket: false
-      };
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      parmaklar[e.pointerId] = [e.clientX, e.clientY];
       try {
         kok.setPointerCapture(e.pointerId);
       } catch (err) {
         /* bazı uygulama içi tarayıcılar */
       }
-      self.sahne.sahne.classList.add('kp-sahne--surukleniyor');
+      var ids = Object.keys(parmaklar);
+      // İkinci parmak: sürüklenen ya da seçili patch iki parmakla döndürülür
+      if (ids.length === 2) {
+        var grup = (aktif && aktif.grup) || self.secili;
+        var b = grup && self.grupBilgisi(grup);
+        if (b) {
+          e.preventDefault();
+          if (aktif && aktif.mod === 'tasima') self.sahne.konumla(aktif.parcalar, {});
+          self.sahne.sahne.classList.remove('kp-sahne--surukleniyor');
+          aktif = null;
+          bosDokunma = null;
+          self.sec(grup);
+          var p1 = parmaklar[ids[0]];
+          var p2 = parmaklar[ids[1]];
+          iki = { ids: ids, bilgi: b, a0: yonAcisi(p2[0], p2[1], p1), sonGecerli: b.aci };
+          donmeBasla();
+        }
+        return;
+      }
+      if (ids.length > 2 || iki) return;
+      // Döndürme tutamacı
+      if (e.target.closest('[data-kp-tutamac]') && self.secili) {
+        var bt = self.grupBilgisi(self.secili);
+        if (!bt) return;
+        e.preventDefault();
+        var c = ekranNoktasi(bt.pivot);
+        aktif = { id: e.pointerId, mod: 'tutamac', grup: bt.grup, bilgi: bt, c: c, a0: yonAcisi(e.clientX, e.clientY, c), sonGecerli: bt.aci };
+        donmeBasla();
+        return;
+      }
+      var el = e.target.closest('.kp-parca');
+      if (!el) {
+        // Boş alana dokunma seçimi kaldırır; ama ikinci parmak gelirse iki parmakla döndürmedir
+        bosDokunma = { id: e.pointerId, x: e.clientX, y: e.clientY };
+        return;
+      }
+      var grupAdi = el.getAttribute('data-grup');
+      var grupParcalari = self.durum.parcalar.filter(function (p) { return p.grup === grupAdi; });
+      if (!grupParcalari.length) return;
+      e.preventDefault();
+      self.sec(grupAdi);
+      aktif = {
+        id: e.pointerId,
+        mod: 'tasima',
+        grup: grupAdi,
+        x: e.clientX,
+        y: e.clientY,
+        parcalar: grupParcalari,
+        digerleri: self.durum.parcalar.filter(function (p) { return p.grup !== grupAdi && !self.durum.hatalar[p.uid]; }),
+        dx: 0,
+        dy: 0,
+        hareket: false
+      };
     });
 
     kok.addEventListener('pointermove', function (e) {
+      if (parmaklar[e.pointerId]) parmaklar[e.pointerId] = [e.clientX, e.clientY];
+      if (iki) {
+        if (iki.ids.indexOf(String(e.pointerId)) === -1) return;
+        e.preventDefault();
+        var p1 = parmaklar[iki.ids[0]];
+        var p2 = parmaklar[iki.ids[1]];
+        if (!p1 || !p2) return;
+        var a = aciYakala(iki.bilgi.aci + yonAcisi(p2[0], p2[1], p1) - iki.a0);
+        if (self.aciOnizle(iki.bilgi, a)) iki.sonGecerli = a;
+        return;
+      }
       if (!aktif || e.pointerId !== aktif.id) return;
       e.preventDefault();
+      if (aktif.mod === 'tutamac') {
+        var a2 = aciYakala(aktif.bilgi.aci + yonAcisi(e.clientX, e.clientY, aktif.c) - aktif.a0);
+        if (self.aciOnizle(aktif.bilgi, a2)) aktif.sonGecerli = a2;
+        return;
+      }
       var d = cmCevir(e.clientX - aktif.x, e.clientY - aktif.y);
       if (!aktif.hareket && Math.abs(e.clientX - aktif.x) + Math.abs(e.clientY - aktif.y) < 3) return;
+      if (!aktif.hareket) self.sahne.sahne.classList.add('kp-sahne--surukleniyor');
       aktif.hareket = true;
       aktif.dx = d[0];
       aktif.dy = d[1];
       var tasinmis = aktif.parcalar.map(function (p) {
-        return { uid: p.uid, tip: p.tip, sekil: kaydir(p.sekil, aktif.dx, aktif.dy) };
+        return kopyaParca(p, { sekil: kaydir(p.sekil, aktif.dx, aktif.dy) });
       });
       var gecerli = self.yer.grupGecerli(tasinmis, aktif.digerleri);
       var hatalar = {};
@@ -1642,13 +2114,30 @@
     });
 
     function birak(e) {
+      delete parmaklar[e.pointerId];
+      if (bosDokunma && bosDokunma.id === e.pointerId) {
+        var kisa = Math.abs(e.clientX - bosDokunma.x) + Math.abs(e.clientY - bosDokunma.y) < 10;
+        bosDokunma = null;
+        if (kisa && !iki && e.type === 'pointerup' && self.secili) self.sec(null);
+      }
+      if (iki) {
+        if (iki.ids.indexOf(String(e.pointerId)) === -1) return;
+        var bitti = iki;
+        iki = null;
+        self.donmeBitir(bitti.bilgi, bitti.sonGecerli);
+        return;
+      }
       if (!aktif || e.pointerId !== aktif.id) return;
       var a = aktif;
       aktif = null;
+      if (a.mod === 'tutamac') {
+        self.donmeBitir(a.bilgi, a.sonGecerli);
+        return;
+      }
       self.sahne.sahne.classList.remove('kp-sahne--surukleniyor');
       if (!a.hareket) return;
       var tasinmis = a.parcalar.map(function (p) {
-        return { uid: p.uid, tip: p.tip, sekil: kaydir(p.sekil, a.dx, a.dy) };
+        return kopyaParca(p, { sekil: kaydir(p.sekil, a.dx, a.dy) });
       });
       var dx = a.dx;
       var dy = a.dy;
@@ -1664,11 +2153,7 @@
         }
       }
       if (a.grup === 'isim') {
-        var c = self.t.isimMerkez;
-        if (!c) {
-          var alan = self.m.alanBul('letter');
-          c = merkez(alan.sekil);
-        }
+        var c = self.isimMerkezi();
         self.t.isimMerkez = [c[0] + dx, c[1] + dy];
       } else {
         konumKaydir(self.t, a.parcalar[0], dx, dy);
@@ -1682,7 +2167,7 @@
     kok.addEventListener(
       'touchmove',
       function (e) {
-        if (e.target.closest('.kp-parca')) e.preventDefault();
+        if (e.target.closest('.kp-parca, [data-kp-tutamac]') || e.touches.length > 1) e.preventDefault();
       },
       { passive: false }
     );
@@ -1920,21 +2405,7 @@
     var d = duzenle(m, this.yer, t);
     var kimlik = tasarimKimligi();
     var ozet = tasarimOzeti(m, t);
-    var alan = m.alanBul('letter') || m.alanlar[0];
-    var ac = merkez(alan.sekil);
-    var konum = {
-      v: 1,
-      alan: alan.id,
-      p: d.parcalar.map(function (p) {
-        var c = merkez(p.sekil);
-        return {
-          v: p.varyant ? p.varyant.id : null,
-          t: p.tip.charAt(0),
-          x: Math.round((c[0] - ac[0]) * 10) / 10,
-          y: Math.round((c[1] - ac[1]) * 10) / 10
-        };
-      })
-    };
+    var konum = tasarimKonumu(m, d.parcalar);
     var bazOzellik = { 'Tasarım': ozet };
     if (t.isim) bazOzellik['İsim'] = t.isim;
     bazOzellik._tasarim_id = kimlik;
@@ -2082,6 +2553,9 @@
     tasarimOzeti: tasarimOzeti,
     paraBicimle: paraBicimle,
     buyukHarf: buyukHarf,
-    geometri: { icinde: icinde, cakisir: cakisir, noktaIcinde: noktaIcinde }
+    grupDondur: grupDondur,
+    tasarimKonumu: tasarimKonumu,
+    aciYakala: aciYakala,
+    geometri: { icinde: icinde, cakisir: cakisir, noktaIcinde: noktaIcinde, donukDikdortgen: donukDikdortgen, kutu: kutu }
   };
 })();
