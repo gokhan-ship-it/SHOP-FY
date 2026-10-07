@@ -2890,6 +2890,8 @@ html.kp-kilit body {
         }
         if (cizim && sonuc.veri.sections && sonuc.veri.sections['cart-drawer'] && typeof cizim.renderContents === 'function') {
           cizim.renderContents({ id: m.urun.varyant, sections: sonuc.veri.sections });
+          // Temanın product-form.js'i gibi: boş sepet işaretini kaldır (yoksa çekmecenin odak tutması hata verir)
+          cizim.classList.remove('is-empty');
         } else {
           window.location.href = rotalar.cart_url || '/cart';
         }

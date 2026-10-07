@@ -9,7 +9,7 @@ const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-119
 const c = await t.newContext({ ...devices['iPhone 13'], locale: 'tr-TR' });
 const s = await c.newPage();
 const bizim = [];
-s.on('pageerror', (e) => bizim.push('pageerror: ' + e.message));
+s.on('pageerror', (e) => bizim.push('pageerror: ' + e.message + ' @ ' + (e.stack || '').split('\n').slice(1, 4).join(' | ')));
 s.on('console', (m) => { const x = m.text(); if (/kisisel|kp-/i.test(x)) bizim.push(m.type() + ': ' + x); });
 const istekler = [];
 s.on('request', (r) => { if (/\/cart\/(add|update|change)/.test(r.url())) istekler.push(r.method() + ' ' + r.url().replace(/^https:\/\/[^/]+/, '') + ' ' + (r.postData() || '').slice(0, 120)); });
