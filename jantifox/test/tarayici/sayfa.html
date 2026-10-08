@@ -2279,7 +2279,14 @@ html.kp-kilit body {
   function noktaIcinde(px, py, s, m) {
     m = m || 0;
     if (s.t === 'rect') {
-      return px >= s.x + m - EPS && px <= s.x + s.w - m + EPS && py >= s.y + m - EPS && py <= s.y + s.h - m + EPS;
+      if (!(px >= s.x + m - EPS && px <= s.x + s.w - m + EPS && py >= s.y + m - EPS && py <= s.y + s.h - m + EPS)) return false;
+      if (s.r) {
+        // Köşeleri yuvarlatılmış alan (harita: kose_cm): köşe bölgesinde nokta köşe dairesinin içinde olmalı
+        var rax = Math.abs(px - (s.x + s.w / 2)) - (s.w / 2 - s.r);
+        var ray = Math.abs(py - (s.y + s.h / 2)) - (s.h / 2 - s.r);
+        if (rax > 0 && ray > 0) return rax * rax + ray * ray <= Math.pow(Math.max(0, s.r - m), 2) + EPS;
+      }
+      return true;
     }
     if (s.t === 'obb') {
       var y = yerelNokta(s, px, py);
@@ -2290,7 +2297,7 @@ html.kp-kilit body {
         // Yuvarlak köşe bölgesi: köşe dairesinin içinde olmalı
         var kx = s.w / 2 - s.r;
         var ky = s.h / 2 - s.r;
-        if (ax > kx && ay > ky) return Math.pow(ax - kx, 2) + Math.pow(ay - ky, 2) <= Math.pow(s.r - m, 2) + EPS;
+        if (ax > kx && ay > ky) return Math.pow(ax - kx, 2) + Math.pow(ay - ky, 2) <= Math.pow(Math.max(0, s.r - m), 2) + EPS;
       }
       return true;
     }
@@ -2478,7 +2485,11 @@ html.kp-kilit body {
       if (z.shape === 'ellipse') {
         return { t: 'ellipse', cx: (x + w / 2) / pxCm, cy: (y + h / 2) / pxCm, rx: w / 2 / pxCm, ry: h / 2 / pxCm };
       }
-      return { t: 'rect', x: x / pxCm, y: y / pxCm, w: w / pxCm, h: h / pxCm };
+      var alan = { t: 'rect', x: x / pxCm, y: y / pxCm, w: w / pxCm, h: h / pxCm };
+      // Köşeleri yuvarlatılmış dikdörtgen alan: r = köşe yarıçapı (cm), kısa kenarın yarısını geçemez
+      var kose = sayi(z.kose_cm);
+      if (kose) alan.r = Math.min(kose, alan.w / 2, alan.h / 2);
+      return alan;
     }
 
     this.alanlar = harita.zones.map(function (z, i) {
@@ -3581,7 +3592,7 @@ html.kp-kilit body {
       .map(function (a) {
         var s = a.sekil;
         if (s.t === 'rect') {
-          return '<rect class="kp-alan" data-alan="' + kacis(a.id) + '" x="' + s.x + '" y="' + s.y + '" width="' + s.w + '" height="' + s.h + '" rx="0.4" />';
+          return '<rect class="kp-alan" data-alan="' + kacis(a.id) + '" x="' + s.x + '" y="' + s.y + '" width="' + s.w + '" height="' + s.h + '" rx="' + (s.r || 0.4) + '" />';
         }
         var rx = s.t === 'circle' ? s.r : s.rx;
         var ry = s.t === 'circle' ? s.r : s.ry;
@@ -4369,7 +4380,7 @@ html.kp-kilit body {
     var alan = m.alanBul('icon');
     if (!alan) return false;
     var s = alan.sekil;
-    var alanAlani = s.t === 'circle' ? Math.PI * s.r * s.r : s.t === 'ellipse' ? Math.PI * s.rx * s.ry : s.w * s.h;
+    var alanAlani = s.t === 'circle' ? Math.PI * s.r * s.r : s.t === 'ellipse' ? Math.PI * s.rx * s.ry : s.w * s.h - (4 - Math.PI) * Math.pow(s.r || 0, 2);
     var d = aks.dis;
     var aksAlani = d.sekil === 'circle' ? Math.PI * Math.pow(d.en / 2, 2) : d.en * d.boy - (4 - Math.PI) * d.kose * d.kose;
     return aksAlani / alanAlani >= 0.5;

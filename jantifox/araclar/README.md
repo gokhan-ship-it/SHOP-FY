@@ -53,6 +53,7 @@ Yapıştırılabilir aksesuarlar (kalem kutusu, zarf kalemlik, mini yuvarlak ça
    - Panelde **sitedeki ölçüyü** gir: genişlik × yükseklik ya da çap (cm). Ölçek buradan hesaplanır.
    - Çizilen kutunun oranı sitedeki ölçüden %5'ten fazla saparsa araç uyarır. Bu genellikle görselin açılı çekildiği anlamına gelir.
 3. **Daire / Oval / Dikdörtgen**: aksesuarın **kendi Velcro yüzeyini** çiz; patch'ler buraya takılır. İzin verilen patch tiplerini seç.
+   - Yüzeyin köşeleri yuvarlaksa Dikdörtgen'i seçip sağ panelde **Köşe yarıçapı (cm)** gir; çizim yuvarlak köşeli olur, JSON'a `kose_cm` yazılır. Editör patch'lerin köşe yuvarlaklığının dışına taşmasına izin vermez. Köşeleri doldurmak için üst üste şekil çizme: bir patch tek bir alanın içinde kalmak zorundadır.
    - Aksesuarın önünde Velcro yüzey yoksa bu adım atlanır. Aksesuar tasarlanamaz, çantaya düz yerleştirilir.
 4. **JSON'u kopyala** → ürünün **Kişiselleştirme: Alan haritası** (`kisisellestirme.harita`) alanına yapıştır.
 
@@ -67,7 +68,7 @@ Yapıştırılabilir aksesuarlar (kalem kutusu, zarf kalemlik, mini yuvarlak ça
   "dis": { "shape": "rect", "x": 2.1, "y": 18.4, "w": 78.3, "h": 71.2, "en_cm": 22, "boy_cm": 12 },
   "zones": [
     { "id": "velcro-yuzeyi", "ad": "Velcro yüzeyi", "shape": "rect", "x": 10, "y": 25, "w": 60, "h": 55,
-      "allowed_types": ["letter", "number", "icon"], "genislik_cm": 16.9 }
+      "kose_cm": 2, "allowed_types": ["letter", "number", "icon"], "genislik_cm": 16.9 }
   ],
   "forbidden": []
 }

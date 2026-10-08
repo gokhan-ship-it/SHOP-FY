@@ -2,7 +2,7 @@
 // Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node alan-cizici-e2e.mjs <png>
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const png = process.argv[2];
@@ -74,6 +74,33 @@ const once = await s.inputValue('#cikti');
 await s.click('#ice-al-ac'); await s.fill('#ice-al', once); await s.click('#ice-al-uygula');
 assert.equal(await s.inputValue('#cikti'), once, 'içe al / dışa ver aynı');
 await s.screenshot({ path: cikti + 'alan-cizici-2.png' });
+
+// Aksesuar: yuvarlak köşeli Velcro alanı (kalem kutusu ön yüzü, 1200 × 655, dış ölçü 22 × 12 cm)
+await s.goto('file://' + new URL('../../araclar/alan-cizici.html', import.meta.url).pathname);
+await s.setInputFiles('#dosya', new URL('../../veri/aksesuar/duz/kalem-kutusu-kirmizi-on.png', import.meta.url).pathname);
+await s.waitForSelector('svg#sahne image');
+await s.click('#ice-al-ac');
+await s.fill('#ice-al', readFileSync(new URL('../../veri/aksesuar/baslangic-kalem-kutusu-kirmizi.json', import.meta.url), 'utf8'));
+await s.click('#ice-al-uygula');
+await s.click('[data-arac="rect"]');
+await surukle(await ekran(100, 80), await ekran(1100, 575));
+assert.equal(await s.isVisible('#o-alan-kose'), true, 'dikdörtgen alanda köşe yarıçapı kutusu');
+await s.fill('#o-alan-kose', '2.5');
+const j3 = JSON.parse(await s.inputValue('#cikti'));
+assert.equal(j3.zones.length, 1); assert.equal(j3.zones[0].shape, 'rect'); assert.equal(j3.zones[0].kose_cm, 2.5);
+assert.equal(j3.dis.kose_cm, 3.3);
+// 1 cm = 1200 / 22 px → 2.5 cm ≈ 136.4 px köşe
+const rx = await s.evaluate(() => +document.querySelector('.sekil.secili').getAttribute('rx'));
+assert.ok(Math.abs(rx - 2.5 * 1200 / 22) < 0.5, 'çizimde köşe yuvarlak: ' + rx);
+// Oval'e çevrilince köşe kutusu gizlenir, JSON'da kose_cm olmaz
+await s.selectOption('#o-sekil', 'ellipse');
+assert.equal(await s.isVisible('#o-alan-kose'), false);
+assert.equal(JSON.parse(await s.inputValue('#cikti')).zones[0].kose_cm, undefined);
+await s.selectOption('#o-sekil', 'rect');
+const once3 = await s.inputValue('#cikti');
+await s.fill('#ice-al', once3); await s.click('#ice-al-uygula');
+assert.equal(await s.inputValue('#cikti'), once3, 'köşe yarıçapı içe al / dışa ver');
+await s.screenshot({ path: cikti + 'alan-cizici-3-kose.png' });
 console.log('hatalar:', hatalar);
 assert.equal(hatalar.length, 0);
 await t.close();

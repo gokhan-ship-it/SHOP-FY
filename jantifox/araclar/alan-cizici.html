@@ -139,6 +139,11 @@
         <label class="onay"><input type="checkbox" data-tip="number"> Rakam</label>
         <label class="onay"><input type="checkbox" data-tip="icon"> İkon</label>
       </div>
+      <div id="o-alan-kose-kap">
+        <label for="o-alan-kose">Köşe yarıçapı (cm)</label>
+        <div class="satir"><input type="number" id="o-alan-kose" step="0.1" min="0" placeholder="0" style="width:110px"> <span>cm</span></div>
+        <p class="not" id="o-alan-kose-not"></p>
+      </div>
       <label for="o-olcu">Gerçek ölçü (ölçek bu alandan alınır)</label>
       <div class="satir">
         <span id="o-olcu-tur" style="min-width:80px"></span>
@@ -304,9 +309,16 @@
     return e;
   }
 
+  // Dikdörtgenin köşe yarıçapı (px): dış ölçüde kendi cm ölçüsünden, alanda ölçekten hesaplanır
+  function koseYaricapiPx(s) {
+    if (s.shape !== 'rect' || !(s.koseCm > 0) || s.tur === 'yasak') return 0;
+    var pxCm = s.tur === 'dis' ? (s.enCm > 0 ? s.w / s.enCm : 0) : (olcek() ? olcek().pxCm : 0);
+    return Math.min(s.koseCm * pxCm, s.w / 2, s.h / 2);
+  }
+
   function sekilEl(s) {
     var sinif = 'sekil' + (s.tur === 'yasak' ? ' yasak' : s.tur === 'dis' ? ' dis' : '') + (s.id === durum.seciliId ? ' secili' : '');
-    var o = s.tur === 'dis' && s.koseCm > 0 && s.enCm > 0 ? s.koseCm * s.w / s.enCm : 0;
+    var o = koseYaricapiPx(s);
     var e = s.shape === 'rect'
       ? el('rect', { x: s.x, y: s.y, width: s.w, height: s.h, rx: o, ry: o })
       : el('ellipse', { cx: s.x + s.w / 2, cy: s.y + s.h / 2, rx: s.w / 2, ry: s.h / 2 });
@@ -354,7 +366,16 @@
     return durum.sekiller.filter(function (x) { return x.tur === 'alan'; })[0] || null;
   }
   function icinde(px, py, s) {
-    if (s.shape === 'rect') return px >= s.x - 0.5 && px <= s.x + s.w + 0.5 && py >= s.y - 0.5 && py <= s.y + s.h + 0.5;
+    if (s.shape === 'rect') {
+      if (!(px >= s.x - 0.5 && px <= s.x + s.w + 0.5 && py >= s.y - 0.5 && py <= s.y + s.h + 0.5)) return false;
+      var r = koseYaricapiPx(s);
+      if (r > 0) {
+        // Yuvarlak köşe: köşe bölgesindeki nokta köşe dairesinin içinde olmalı
+        var ax = Math.abs(px - (s.x + s.w / 2)) - (s.w / 2 - r), ay = Math.abs(py - (s.y + s.h / 2)) - (s.h / 2 - r);
+        if (ax > 0 && ay > 0) return ax * ax + ay * ay <= (r + 0.5) * (r + 0.5);
+      }
+      return true;
+    }
     var dx = (px - (s.x + s.w / 2)) / (s.w / 2), dy = (py - (s.y + s.h / 2)) / (s.h / 2);
     return dx * dx + dy * dy <= 1.0001;
   }
@@ -574,6 +595,11 @@
         if (g !== aktif) g.value = a[1];
       });
       $('#o-alan-ayar').hidden = s.tur !== 'alan';
+      $('#o-alan-kose-kap').hidden = s.tur !== 'alan' || s.shape !== 'rect';
+      if ($('#o-alan-kose') !== aktif) $('#o-alan-kose').value = s.koseCm || '';
+      $('#o-alan-kose-not').textContent = s.koseCm > 0 && !olcek()
+        ? 'Köşeler ölçek belli olunca yuvarlanır (önce ' + (durum.mod === 'aksesuar' ? 'dış ölçüyü' : 'bir alanın gerçek ölçüsünü') + ' gir).'
+        : 'Yüzeyin köşeleri yuvarlaksa gir; patch\'ler köşe yuvarlaklığının dışına taşamaz.';
       $('#o-dis-ayar').hidden = s.tur !== 'dis';
       // Aksesuarda ölçek dış ölçüden: Velcro yüzeyinde cm kutusu yerine hesaplanan ölçü gösterilir
       $('#o-olcu').parentNode.hidden = durum.mod === 'aksesuar';
@@ -643,6 +669,7 @@
   $('#o-sekil').addEventListener('change', function () { var s = bul(durum.seciliId); if (s) { s.shape = this.value; sinirla(s); ciz(); } });
   $('#o-olcu').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-olcu'); s.olcuCm = v > 0 ? v : null; ciz(); } });
   $('#o-dis-en').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-dis-en'); s.enCm = v > 0 ? v : null; ciz(); } });
+  $('#o-alan-kose').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-alan-kose'); s.koseCm = v > 0 ? v : null; ciz(); } });
   $('#o-dis-kose').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-dis-kose'); s.koseCm = v > 0 ? v : null; ciz(); } });
   $('#o-dis-boy').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-dis-boy'); s.boyCm = v > 0 ? v : null; ciz(); } });
   function modSec(m) {
@@ -715,6 +742,7 @@
           x: yuzde(s.x, g.en), y: yuzde(s.y, g.boy), w: yuzde(s.w, g.en), h: yuzde(s.h, g.boy)
         };
         if (s.olcuCm) z[s.shape === 'circle' ? 'cap_cm' : 'genislik_cm'] = s.olcuCm;
+        if (s.shape === 'rect' && s.koseCm > 0) z.kose_cm = s.koseCm;
         z.allowed_types = s.tipler.slice();
         return z;
       }),
@@ -779,7 +807,8 @@
       (h.zones || []).forEach(function (z) {
         sayac++;
         durum.sekiller.push({ id: 's' + sayac, tur: 'alan', shape: z.shape || 'rect', x: px(z.x, g.en), y: px(z.y, g.boy), w: px(z.w, g.en), h: px(z.h, g.boy),
-          ad: z.ad || z.id || 'Alan', tipler: z.allowed_types || ['letter', 'number', 'icon'], olcuCm: h.dis ? null : Number(z.cap_cm || z.genislik_cm) || null });
+          ad: z.ad || z.id || 'Alan', tipler: z.allowed_types || ['letter', 'number', 'icon'], olcuCm: h.dis ? null : Number(z.cap_cm || z.genislik_cm) || null,
+          koseCm: Number(z.kose_cm) || null });
       });
       (h.forbidden || []).forEach(function (z, i) {
         sayac++;

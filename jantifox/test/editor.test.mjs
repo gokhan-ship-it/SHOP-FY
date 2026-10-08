@@ -669,3 +669,31 @@ test('aksesuar fiyatı, üzerindeki tasarım, özet ve sepet satırları; geri k
   assert.deepEqual(duz(ic.stokKontrol(m, t, y, 1)), []);
   assert.ok(am.yer.parcalar(ic0).every((p) => am.yer.alanaUygun(p.sekil, p.tip)), 'ADA aksesuarın Velcro yüzeyine sığar');
 });
+
+test('yuvarlak köşeli dikdörtgen alan (kose_cm): köşe yuvarlaklığı içinde kalma kontrolünde', () => {
+  const v = ornekVeri();
+  v.gorsel = { ...v.gorsel, en: 1200, boy: 655 };
+  v.harita = { surum: 2, tip: 'aksesuar', kalibre: true, gorsel: { en: 1200, boy: 655 },
+    dis: { shape: 'rect', x: 0, y: 0, w: 100, h: 100, en_cm: 22, boy_cm: 12, kose_cm: 3.3 },
+    zones: [{ id: 'velcro', shape: 'rect', x: 0, y: 0, w: 100, h: 100, kose_cm: 3, genislik_cm: 22, allowed_types: ['letter', 'number', 'icon'] }] };
+  const m = new ic.Model(v);
+  const s = m.alanlar[0].sekil;
+  assert.equal(s.t, 'rect'); assert.ok(Math.abs(s.w - 22) < 0.01); assert.equal(s.r, 3);
+  const g = ic.geometri;
+  assert.equal(g.noktaIcinde(0.3, 0.3, s, 0), false, 'köşe ucu yuvarlaklığın dışında');
+  assert.equal(g.noktaIcinde(3, 0.1, s, 0), true, 'yayın bittiği yerde üst kenar içeride');
+  assert.equal(g.noktaIcinde(11, 6, s, 0), true);
+  // 4 × 4 cm patch: köşeye dayalıyken sığmaz, köşe dairesine teğet konumda sığar
+  const kose = { t: 'rect', x: 0, y: 0, w: 4, h: 4 };
+  assert.equal(g.icinde(kose, s, 0), false);
+  const d = 3 - 3 / Math.SQRT2 + 0.01; // köşe noktası (d, d) yayın içinde
+  assert.equal(g.icinde({ t: 'rect', x: d, y: d, w: 4, h: 4 }, s, 0), true);
+  // Kenar payıyla: yay da payı kadar içeri çekilir
+  assert.equal(g.icinde({ t: 'rect', x: d, y: d, w: 4, h: 4 }, s, 0.3), false);
+  // Köşesiz dikdörtgende köşeye dayalı patch sığar (eski davranış)
+  assert.equal(g.icinde(kose, { t: 'rect', x: 0, y: 0, w: 22, h: 12 }, 0), true);
+  // Yarıçap kısa kenarın yarısını geçemez
+  v.harita.zones[0].kose_cm = 50;
+  const yeni = new ic.Model(v).alanlar[0].sekil;
+  assert.ok(Math.abs(yeni.r - yeni.h / 2) < 1e-9 && yeni.r < 6.01);
+});
