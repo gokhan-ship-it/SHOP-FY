@@ -503,3 +503,72 @@ test('sepetten geri kurma: Piramit renkleri korunur', () => {
   assert.deepEqual(duz(Array.from(k.isim).map((h, i) => ic.harfVaryanti(p, k, i, h).baslik)), duz(Array.from(t.isim).map((h, i) => ic.harfVaryanti(p, t, i, h).baslik)));
   assert.equal(geriKur(m, y, { setId: m.setler[0].id, isim: '', isimMerkez: null, parcalar: [] }), null, 'boş konum: kurulamaz');
 });
+
+// ---------- Yazı ve rakam birleşik, karakter başına stil ----------
+
+test('ECE7: rakam yazının parçası, rakam setinden gelir, fiyat ve sıra doğru', () => {
+  const { m, y } = kur();
+  const t = tasarim(m, 'ECE7');
+  const d = ic.duzenle(m, y, t);
+  const yazi = d.parcalar.filter((p) => p.grup === 'isim');
+  assert.deepEqual(duz(yazi.map((p) => [p.tip, p.etiket])), [['letter', 'E'], ['letter', 'C'], ['letter', 'E'], ['number', '7']]);
+  assert.equal(String(yazi[3].varyant.id), String(m.rakamSetleri[0].karakterler['7'].id));
+  assert.equal(ic.stilAdi(yazi[3].tanim), 'Rakam');
+  assert.equal(ic.stilAdi(yazi[0].tanim), 'Cool');
+  const f = ic.fiyatHesapla(m, y, t);
+  assert.equal(f.harfAdet, 3);
+  assert.equal(f.rakamAdet, 1);
+  assert.equal(ic.tasarimOzeti(m, t), 'ECE7');
+  assert.equal(ic.isimAnaliz(m, y, t).engel, false);
+  // Sepet konumu: yazı karakterleri işaretli
+  const konum = ic.tasarimKonumu(m, d.parcalar);
+  assert.deepEqual(duz(konum.p.map((x) => [x.t, x.s || 0])), [['l', 1], ['l', 1], ['l', 1], ['n', 1]]);
+});
+
+test('karışık stil: aynı yazıda Cool ve Piramit; Türkçe uyarı ve stok her karakterin kendi setine göre', () => {
+  const { m, y } = kurP();
+  const cool = m.setler[0];
+  const pir = m.setler[1];
+  const t = { setId: cool.id, isim: 'EC', isimMerkez: null, parcalar: [], karakterSetleri: [cool.id, pir.id] };
+  const d = ic.duzenle(m, y, t);
+  assert.equal(d.parcalar[0].tanim, cool);
+  assert.equal(d.parcalar[1].tanim, pir);
+  assert.ok(/ C$/.test(d.parcalar[1].varyant.baslik), 'Piramit C renkli varyant');
+  assert.equal(t.harfRenkleri[0], null, 'Cool harfin rengi yok');
+  assert.ok(t.harfRenkleri[1], 'Piramit harfe renk atandı');
+  assert.ok(/^EC \(E, \S+ C\)$/.test(ic.tasarimOzeti(m, t)), ic.tasarimOzeti(m, t));
+  // İ: Cool'da yok (I önerilir); Piramit setinde İ yoksa o karakter için ayrı uyarı
+  const t2 = { setId: cool.id, isim: 'İİ', isimMerkez: null, parcalar: [], karakterSetleri: [cool.id, pir.id] };
+  const a = ic.isimAnaliz(m, y, t2);
+  assert.equal(a.engel, true);
+  assert.equal(a.eksikler.length + a.yoklar.length, 2, 'her set için ayrı uyarı');
+});
+
+test('karakter hizalama: araya eklenen karakter son seçilen setle gelir, silinen karakterin bilgileri gider', () => {
+  const { m } = kurP();
+  const cool = m.setler[0];
+  const pir = m.setler[1];
+  const t = { setId: pir.id, isim: 'AB', isimMerkez: null, parcalar: [], karakterSetleri: [cool.id, pir.id], harfRenkleri: [null, 'x'] };
+  ic.karakterleriHizala(t, 'AXB');
+  assert.equal(t.isim, 'AXB');
+  assert.deepEqual(duz(t.karakterSetleri), [cool.id, pir.id, pir.id]);
+  assert.deepEqual(duz(t.harfRenkleri), [null, null, 'x']);
+  ic.karakterleriHizala(t, 'AXB7');
+  assert.equal(String(ic.karakterSeti(m, t, 3, '7').id), String(m.rakamSetleri[0].id), 'rakam her zaman rakam seti');
+  ic.karakterSil(t, 0);
+  assert.equal(t.isim, 'XB7');
+  assert.deepEqual(duz(t.karakterSetleri), [pir.id, pir.id, pir.id]);
+});
+
+test('sepetten geri kurma: harf + rakam karışık yazı ve ayrı ikon', () => {
+  const { m, y } = kurP();
+  const pir = m.setler[1];
+  const t = { setId: m.setler[0].id, isim: 'EC7', isimMerkez: null, karakterSetleri: [m.setler[0].id, pir.id, null], parcalar: [{ uid: 'i1', tip: 'icon', urunId: 2, varyantId: 3002, cx: 24, cy: 26 }] };
+  ic.duzenle(m, y, t);
+  const k = geriKur(m, y, t);
+  assert.equal(k.isim, 'EC7');
+  assert.deepEqual(duz(k.karakterSetleri.map(String)), [String(m.setler[0].id), String(pir.id), 'null']);
+  assert.equal(k.parcalar.length, 1);
+  assert.equal(k.parcalar[0].tip, 'icon');
+  yakin(konumlar(m, y, k), konumlar(m, y, t));
+});

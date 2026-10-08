@@ -5,6 +5,9 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 const require = createRequire(import.meta.url);
+// Akış: Yazı → İkon → (Aksesuar) → Özet
+const ADIM_SAYISI = 3;
+const ADIM_METNI = /1 Yazı 2 İkon 3 Özet/;
 const { chromium, devices } = require('playwright');
 
 const html = readFileSync(new URL('sayfa.html', import.meta.url), 'utf8');
@@ -36,6 +39,8 @@ const cdp = await baglam.newCDPSession(s);
 const merkezi = (q) => s.evaluate((q) => { const r = document.querySelector(q).getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }, q);
 const metin = (q) => s.locator(q).textContent();
 const gorunur = (q) => s.locator(q).isVisible();
+// Aksesuar adımı varsa İleri ile geçilir
+const gecIleriOzete = async () => { if (await gorunur('[data-kp-panel="aksesuar"]')) await s.locator('[data-kp-ileri]').click(); };
 
 await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await s.locator('kisisel-kart').waitFor({ state: 'visible' });
@@ -65,8 +70,8 @@ const sira = await s.evaluate(() => {
   return { ust: y('.kp-ust'), adim: y('.kp-adimlar'), onizleme: y('.kp-onizleme'), panel: y('.kp-kaydir') };
 });
 assert.ok(sira.ust < sira.adim && sira.adim < sira.onizleme && sira.onizleme < sira.panel, JSON.stringify(sira));
-assert.equal(await s.locator('.kp-adim__cizgi').count(), 4);
-assert.match((await s.locator('.kp-adimlar').innerText()).replace(/\s+/g, ' '), /1 Yazı 2 Rakam 3 İkon 4 Özet/);
+assert.equal(await s.locator('.kp-adim__cizgi').count(), ADIM_SAYISI);
+assert.match((await s.locator('.kp-adimlar').innerText()).replace(/\s+/g, ' '), ADIM_METNI);
 
 await s.locator('#kp-isim').fill('ece');
 await s.locator('#kp-isim').blur();
@@ -175,10 +180,15 @@ const disariSurukle = async (bekleBildirim) => {
 await disariSurukle(true);
 await disariSurukle(false);
 
-// 8) Rakam kartlarında rakam yazısı yok
-await s.locator('[data-kp-adim="rakam"]').click();
-assert.equal(await s.locator('[data-kp-panel="rakam"] .kp-secim__ad').count(), 0);
-assert.equal(await s.locator('[data-kp-rakam]').first().getAttribute('aria-label'), '0 rakamı');
+// 8) Rakam yazıya yazılır: karakter kartında stil adı "Rakam", rakamda stil paneli açılmaz
+await s.locator('[data-kp-adim="yazi"]').click();
+await s.locator('#kp-isim').fill('ece0');
+assert.equal(await s.locator('[data-kp-karakter="3"] .kp-karakter__stil').textContent(), 'Rakam');
+await s.locator('[data-kp-karakter="3"]').click();
+assert.equal(await gorunur('[data-kp-stil-panel]'), false, 'rakamda set seçimi yok');
+await s.locator('[data-kp-karakter="0"]').click();
+assert.equal(await metin('.kp-stil__baslik'), '1. karakter (E) için stil');
+await s.locator('#kp-isim').fill('ece');
 
 // 7) Özet: başlık, Sepete ekle · toplam, not ve iki bağlantı
 await s.locator('[data-kp-adim="ozet"]').click();
@@ -247,7 +257,7 @@ await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await s.locator('kisisel-kart').waitFor({ state: 'visible' });
 assert.equal(await gorunur('[data-kisisel-davet]'), true, 'eklendikten sonra kart davet halinde');
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
-for (let i = 0; i < 3; i++) await s.locator('[data-kp-ileri]').click();
+for (let i = 0; i < ADIM_SAYISI - 1; i++) await s.locator('[data-kp-ileri]').click();
 assert.equal(await metin('[data-kp-panel="ozet"] h3'), 'Henüz patch eklemedin');
 assert.equal(await gorunur('[data-kp-geri-don]'), true);
 assert.equal(await gorunur('[data-kp-sade-al]'), true);
@@ -284,16 +294,14 @@ await s.locator('#kp-isim').fill('ece');
 assert.equal(await gorunur('[data-kp-panel="yazi"] [data-kp-gec]'), false, 'isim yazılınca gizlenir');
 await s.locator('#kp-isim').fill('');
 await s.locator('[data-kp-panel="yazi"] [data-kp-gec]').click();
-assert.equal(await gorunur('[data-kp-panel="rakam"]'), true, 'geç → Rakam');
-assert.equal(await metin('[data-kp-panel="rakam"] [data-kp-gec]'), 'Bu adımı geç →');
-await s.locator('[data-kp-rakam]').first().click();
-assert.equal(await gorunur('[data-kp-panel="rakam"] [data-kp-gec]'), false, 'rakam eklenince gizlenir');
+assert.equal(await gorunur('[data-kp-panel="ikon"]'), true, 'geç → İkon');
+assert.equal(await metin('[data-kp-panel="ikon"] [data-kp-gec]'), 'Bu adımı geç →');
 assert.equal(await metin('[data-kp-ileri]'), 'İleri');
+await s.locator('[data-kp-ikon]:not([disabled])').first().click();
+assert.equal(await gorunur('[data-kp-panel="ikon"] [data-kp-gec]'), false, 'ikon eklenince gizlenir');
 await s.locator('[data-kp-ileri]').click();
-assert.equal(await gorunur('[data-kp-panel="ikon"]'), true, 'İleri her zaman çalışır');
-assert.equal(await gorunur('[data-kp-panel="ikon"] [data-kp-gec]'), true);
-await s.locator('[data-kp-ileri]').click();
-assert.equal(await gorunur('[data-kp-panel="ozet"]'), true);
+await gecIleriOzete();
+assert.equal(await gorunur('[data-kp-panel="ozet"]'), true, 'İleri her zaman çalışır');
 assert.match(await metin('.kp-bilgi'), /Velcro yüzeye takılır/);
 await s.locator('[data-kp-adim="yazi"]').click();
 await s.locator('#kp-isim').fill('');

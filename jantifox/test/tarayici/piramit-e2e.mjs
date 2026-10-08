@@ -1,4 +1,4 @@
-// Çok renkli harf seti (Piramit): set geçişi, otomatik renk, kısa yol satırı, karıştır, önizleme balonu,
+// Çok renkli harf seti (Piramit): karakter başına stil, otomatik renk, stil panelinde renk, karıştır,
 // harfleri ayır + döndürme, eksik harf uyarıları, sepete doğru renk varyantı ve özet.
 // Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node piramit-e2e.mjs  (önce: node sayfa-uret.mjs)
 import { createRequire } from 'node:module';
@@ -34,11 +34,13 @@ const dokun = async (nokta) => {
   await s.waitForTimeout(150);
 };
 const merkezi = (q) => s.evaluate((q) => { const r = document.querySelector(q).getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }, q);
-// Kısa yol satırındaki harflerin seçili renkleri
-const satirRenkleri = () => s.$$eval('.kp-renk-harf', (h) => h.map((x) => {
-  const sec = x.querySelector('.kp-nokta[aria-pressed="true"]') || x.querySelector('.kp-nokta--pasif');
-  return sec ? sec.getAttribute('title') : null;
-}));
+// Karakter kartlarındaki stil ve renk (aria-label: "1. karakter E, Piramit Turkuaz")
+const kartlar = () => s.$$eval('[data-kp-karakter]', (k) => k.map((x) => x.getAttribute('aria-label').split(', ')[1]));
+const satirRenkleri = async () => (await kartlar()).map((x) => x.split(' ').slice(1).join(' ') || null);
+const stilSec = async (i, setId) => {
+  if ((await s.locator(`[data-kp-karakter="${i}"]`).getAttribute('aria-pressed')) !== 'true') await s.locator(`[data-kp-karakter="${i}"]`).click();
+  await s.locator(`[data-kp-stil="${setId}"]`).click();
+};
 
 await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await s.locator('kisisel-kart').waitFor({ state: 'visible' });
@@ -46,32 +48,43 @@ await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 await s.locator('.kp-editor').waitFor({ state: 'visible' });
 await s.waitForTimeout(300);
 
-// 1) Set kartları: Cool + Piramit. Cool'da isim yaz, Piramit'e geç: isim korunur, renkler atanır
-assert.equal(await s.locator('[data-kp-set]').count(), 2);
+// 1) Yazı Cool ile başlar; karta dokununca stil paneli: Cool / Piramit. Her karakter ayrı stil alabilir.
 await s.locator('#kp-isim').fill('ece');
-assert.equal(await s.locator('[data-kp-renkler]').isVisible(), false, 'Cool\'da renk satırı yok');
-await s.locator(`label:has([data-kp-set][value="${PIRAMIT}"])`).click();
-await s.waitForTimeout(200);
-assert.equal(await s.locator('#kp-isim').inputValue(), 'ECE', 'isim korundu');
-assert.equal(await s.locator('[data-kp-renkler]').isVisible(), true);
+assert.deepEqual(await kartlar(), ['Cool', 'Cool', 'Cool']);
+assert.equal(await s.locator('[data-kp-stil-panel]').isVisible(), false);
+await s.locator('[data-kp-karakter="0"]').click();
+assert.equal(await s.locator('.kp-stil__baslik').textContent(), '1. karakter (E) için stil');
+assert.equal(await s.locator('[data-kp-stil]').count(), 2);
+assert.equal(await s.locator('.kp-stil__renkler').count(), 0, 'Cool\'da renk yok');
+await stilSec(0, PIRAMIT);
+assert.equal(await s.locator('#kp-isim').inputValue(), 'ECE', 'yazı korundu');
+let k = await kartlar();
+console.log('karışık stil:', k.join(' | '));
+assert.match(k[0], /^Piramit \S+/, '1. E Piramit ve renkli');
+assert.equal(k[1], 'Cool', 'C Cool kaldı (karışık kullanım)');
+// Renk noktaları stil panelinde (en az 36 px); E'nin 3 stoktaki rengi
+const noktalar = await s.$$eval('.kp-stil__renkler button.kp-nokta', (n) => n.map((x) => [Math.round(x.getBoundingClientRect().width), x.getAttribute('title')]));
+assert.equal(noktalar.length, 3);
+assert.ok(noktalar.every(([w]) => w >= 36), JSON.stringify(noktalar));
+// Son seçilen stil yeni harflerin varsayılanı: ECEL → L Piramit
+await s.locator('#kp-isim').fill('ecel');
+assert.match((await kartlar())[3], /^Piramit/, 'yeni harf son seçilen stille');
+await s.locator('#kp-isim').fill('ece');
+await stilSec(1, PIRAMIT);
+await stilSec(2, PIRAMIT);
 let renkler = await satirRenkleri();
 console.log('otomatik renkler:', renkler.join(', '));
-assert.equal(renkler.length, 3);
 assert.ok(renkler.every(Boolean));
-// Nokta boyutları ve tek renkli harf
-const noktaOlcu = await s.$$eval('.kp-renkler .kp-nokta', (n) => n.map((x) => Math.round(x.getBoundingClientRect().width)));
-assert.ok(noktaOlcu.every((w) => w >= 24), 'noktalar en az 24 px: ' + noktaOlcu);
-assert.equal(await s.locator('.kp-renk-harf').nth(1).locator('button.kp-nokta').count(), 0, 'C tek renk: seçim yok');
-assert.equal(await s.locator('.kp-renk-harf').nth(1).locator('.kp-nokta--pasif').count(), 1, 'C: tek pasif nokta');
-assert.equal(await s.locator('.kp-renk-harf').nth(0).locator('button.kp-nokta').count(), 3, 'E: 3 stoktaki renk');
-await s.screenshot({ path: cikti + '01-renk-satiri.png' });
+await s.screenshot({ path: cikti + '01-stil-paneli.png' });
 
-// 2) Kısa yoldan renk seç: 1. E Turkuaz (stokta 1), sonra 3. E Turkuaz → 1. E başka renge geçer, uyarı yok
+// 2) Renk seç: 1. E Turkuaz (stokta 1), sonra 3. E Turkuaz → 1. E başka renge geçer, uyarı yok
 const gorselOnce = await s.locator('.kp-parca--letter').first().locator('img').getAttribute('src');
-await s.locator('.kp-renk-harf').nth(0).locator('button[title="Turkuaz"]').click();
+await s.locator('[data-kp-karakter="0"]').click();
+await s.locator('.kp-stil__renkler button[title="Turkuaz"]').click();
 assert.equal((await satirRenkleri())[0], 'Turkuaz');
 assert.notEqual(await s.locator('.kp-parca--letter').first().locator('img').getAttribute('src'), gorselOnce, 'önizleme görseli değişti');
-await s.locator('.kp-renk-harf').nth(2).locator('button[title="Turkuaz"]').click();
+await s.locator('[data-kp-karakter="2"]').click();
+await s.locator('.kp-stil__renkler button[title="Turkuaz"]').click();
 renkler = await satirRenkleri();
 console.log('3. E Turkuaz seçilince:', renkler.join(', '));
 assert.equal(renkler[2], 'Turkuaz');
@@ -89,40 +102,19 @@ console.log('karıştır:', once, '→', sonra);
 assert.notEqual(sonra, once);
 assert.ok(sonra.split(',').filter((r) => r === 'Turkuaz').length <= 1);
 
-// 4) Önizleme balonu: blok modda C'ye dokun → balon (tek renk: pasif nokta + döndür), blok bozulmaz
+// 4) Önizlemede C'ye dokun → C'nin stil paneli açılır, blok bozulmaz; balon yok
 await dokun(await merkezi('[data-uid="isim-1"]'));
-assert.equal(await s.locator('[data-kp-balon]').isVisible(), true, 'balon açıldı');
-assert.match(await s.locator('[data-kp-secili-ad]').textContent(), /İsim \(ECE\)/, 'blok seçili (harf ayrılmadı)');
-assert.equal(await s.locator('[data-kp-balon] button.kp-nokta').count(), 0);
-assert.equal(await s.locator('[data-kp-balon] .kp-nokta--pasif').count(), 1);
+assert.match(await s.locator('[data-kp-secili-ad]').textContent(), /Yazı \(ECE\)/, 'blok seçili (harf ayrılmadı)');
+assert.equal(await s.locator('.kp-stil__baslik').textContent(), '2. karakter (C) için stil');
 assert.equal(await s.locator('.kp-parca[data-grup="isim"]').count(), 3, 'harfler hâlâ blokta');
-// E'ye dokun → 3 renk noktası (36 px), birini seç
-await dokun(await merkezi('[data-uid="isim-0"]'));
-const balonNokta = await s.$$eval('[data-kp-balon] button.kp-nokta', (n) => n.map((x) => [Math.round(x.getBoundingClientRect().width), x.getAttribute('title')]));
-console.log('balon noktaları:', JSON.stringify(balonNokta));
-assert.equal(balonNokta.length, 3);
-assert.ok(balonNokta.every(([w]) => w >= 36));
-// Balon harfin üstünde mi?
-const konum = await s.evaluate(() => {
-  const b = document.querySelector('[data-kp-balon]').getBoundingClientRect();
-  const h = document.querySelector('[data-uid="isim-0"]').getBoundingClientRect();
-  return { balonAlt: Math.round(b.bottom), harfUst: Math.round(h.top), balonX: Math.round(b.left + b.width / 2), harfX: Math.round(h.left + h.width / 2) };
-});
-console.log('balon konumu:', JSON.stringify(konum));
-assert.ok(konum.balonAlt <= konum.harfUst, 'balon harfin üstünde');
-const mevcutE = (await satirRenkleri())[0];
-const hedefRenk = balonNokta.map(([, r]) => r).find((r) => r !== mevcutE && r !== 'Turkuaz') || 'Yeşil';
-await s.locator(`[data-kp-balon] button[title="${hedefRenk}"]`).click();
-assert.equal((await satirRenkleri())[0], hedefRenk, 'balondan renk seçildi');
-assert.equal(await s.locator('[data-kp-balon]').isVisible(), true, 'balon açık kalır');
-await s.screenshot({ path: cikti + '02-balon.png' });
-// Balondaki döndür: blok 15° döner
-await s.locator('[data-kp-balon-dondur]').click();
+assert.equal(await s.locator('[data-kp-balon]').isVisible(), false);
+// Araç çubuğundan döndür: blok 15° döner
+await s.locator('[data-kp-dondur="15"]').click();
 const blokAci = await s.$$eval('.kp-parca--letter', (l) => l.map((e) => e.style.transform));
 assert.ok(blokAci.every((x) => x === 'rotate(15deg)'), blokAci.join());
 await s.locator('[data-kp-duzle]').click();
 
-// 5) Harfleri ayır: tek harf seçilir, balon onun için; döndürme yalnızca o harfi döndürür
+// 5) Harfleri ayır: tek harf seçilir; döndürme yalnızca o harfi döndürür
 await s.locator('[data-kp-harf-mod]').click();
 // Son E'yi komşusundan uzaklaştır (aşağı sürükle), sonra seç
 {
@@ -135,12 +127,10 @@ await s.locator('[data-kp-harf-mod]').click();
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await s.waitForTimeout(200);
 }
-console.log('harf merkezleri:', JSON.stringify(await s.$$eval('.kp-parca--letter', (l) => l.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }))));
 await dokun(await merkezi('[data-uid="harf-2"]'));
 assert.match(await s.locator('[data-kp-secili-ad]').textContent(), /E harfi/);
-assert.equal(await s.locator('[data-kp-balon]').isVisible(), true);
-await s.locator('[data-kp-balon-dondur]').click();
-console.log('döndürme mesajı:', await s.locator('[data-kp-bildirim]').textContent());
+assert.equal(await s.locator('.kp-stil__baslik').textContent(), '3. karakter (E) için stil');
+await s.locator('[data-kp-dondur="15"]').click();
 await s.waitForTimeout(700); // geçersiz açıda kırmızı önizleme 600 ms sürer; son durum
 assert.equal(await s.locator('.kp-parca--hatali').count(), 0);
 assert.equal(await s.locator('[data-kp-aci]').isVisible(), false, 'açı göstergesi kapandı');
@@ -156,8 +146,7 @@ await s.waitForTimeout(150);
 const uyarilar = (await s.locator('[data-kp-isim-uyari]').innerText()).replace(/\s+/g, ' ');
 console.log('uyarılar:', uyarilar);
 assert.match(uyarilar, /Ö harfi şu an yok, O olarak yazmak ister misin/);
-assert.match(uyarilar, /K harfi bu sette şu an yok/);
-assert.equal(await s.locator('[data-kp-balon]').isVisible(), false, 'seçim kalkınca balon da kapanır');
+assert.match(uyarilar, /K harfi bu stilde şu an yok/);
 await s.screenshot({ path: cikti + '04-eksik.png' });
 
 // 7) Sepet: her harf seçilen renk varyantıyla, özet renkli

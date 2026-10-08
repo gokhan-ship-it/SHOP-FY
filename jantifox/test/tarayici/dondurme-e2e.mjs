@@ -193,7 +193,7 @@ await sayfa.waitForTimeout(200);
   await dokun('touchStart', [h]);
   await dokun('touchEnd', []);
   await sayfa.waitForTimeout(100);
-  assert.match(await sayfa.locator('[data-kp-secili-ad]').textContent(), /İsim \(ECE\)/);
+  assert.match(await sayfa.locator('[data-kp-secili-ad]').textContent(), /Yazı \(ECE\)/);
   await sayfa.locator('[data-kp-dondur="-15"]').tap();
   const acilar = await sayfa.$$eval('.kp-parca--letter', (l) => l.map((e) => e.style.transform));
   console.log('blok isim harfleri:', acilar.join(' | '));

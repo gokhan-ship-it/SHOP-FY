@@ -1086,58 +1086,132 @@ html.kp-kilit body {
   color: var(--kp-ikincil);
 }
 
-/* Yazı */
-.kp-setler {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.8rem;
-  margin: 0 0 1.6rem;
-  padding: 0;
-  border: 0;
+/* Yazı ve rakam: karakter kartları ve stil paneli */
+.kp-yazi-ipucu {
+  margin: 0.6rem 0 0;
+  font-size: 1.3rem;
+  color: var(--kp-ikincil);
 }
-.kp-setler legend {
-  margin-bottom: 0.6rem;
-  font-weight: 600;
-}
-.kp-set {
-  position: relative;
+.kp-karakterler {
   display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  padding: 0.2rem 0.2rem 0.6rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.kp-karakterler[hidden] {
+  display: none;
+}
+.kp-karakter {
+  display: flex;
+  flex: none;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
-  min-height: var(--kp-dokunma);
-  padding: 1rem;
-  border: 1px solid var(--kp-cizgi);
-  border-radius: var(--kp-yaricap);
-  cursor: pointer;
-}
-.kp-set input {
-  position: absolute;
-  opacity: 0;
-  inset: 0;
-  margin: 0;
-  cursor: pointer;
-}
-.kp-set:has(input:checked),
-.kp-set.kp-secili {
-  border: 2px solid var(--kp-vurgu);
-}
-.kp-set:has(input:focus-visible) {
-  outline: 2px solid var(--kp-vurgu);
-  outline-offset: 2px;
-}
-.kp-set__ornek {
-  display: flex;
   gap: 0.3rem;
+  width: 56px;
+  padding: 0.5rem 0.2rem 0.4rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 8px;
+  background: var(--kp-zemin);
+  color: var(--kp-murekkep);
+  cursor: pointer;
 }
-.kp-set__ornek img,
-.kp-set__ornek span {
-  width: 34px;
-  height: 34px;
+.kp-karakter--secili {
+  border: 2px solid var(--kp-murekkep);
+  padding: calc(0.5rem - 1px) calc(0.2rem - 1px) calc(0.4rem - 1px);
+}
+.kp-karakter--yok {
+  border-color: var(--kp-hata);
+}
+.kp-karakter__gorsel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+}
+.kp-karakter__gorsel img {
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
 }
-.kp-set__ad {
+.kp-karakter__harf {
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.kp-karakter__stil {
+  font-size: 1.1rem;
+  line-height: 1.2;
+  color: var(--kp-ikincil);
+}
+.kp-stil {
+  margin-top: 0.4rem;
+  padding: 1rem 1.2rem 1.2rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: var(--kp-yaricap);
+  background: var(--kp-yumusak);
+}
+.kp-stil[hidden] {
+  display: none;
+}
+.kp-stil__baslik {
+  margin: 0 0 0.8rem;
+  font-size: 1.4rem;
   font-weight: 600;
+}
+.kp-stil__setler {
+  display: flex;
+  gap: 0.8rem;
+}
+.kp-stil__set {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: var(--kp-dokunma);
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 8px;
+  background: var(--kp-zemin);
+  color: var(--kp-murekkep);
+  font: inherit;
+  cursor: pointer;
+}
+.kp-stil__set[aria-pressed='true'] {
+  border: 2px solid var(--kp-murekkep);
+  padding: calc(0.6rem - 1px) calc(1rem - 1px);
+}
+.kp-stil__set:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.kp-stil__ornek {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+}
+.kp-stil__ornek img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.kp-stil__ad {
+  font-weight: 600;
+}
+.kp-stil__ad small {
+  font-weight: 400;
+  color: var(--kp-hata);
+}
+.kp-stil__renkler {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1rem;
 }
 .kp-etiket {
   display: block;
@@ -1536,42 +1610,6 @@ html.kp-kilit body {
   display: inline-block;
   opacity: 0.85;
   cursor: default;
-}
-.kp-renkler {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.8rem;
-  margin-top: 0.8rem;
-}
-.kp-renkler[hidden] {
-  display: none;
-}
-.kp-renkler__liste {
-  display: flex;
-  flex: 1 1 auto;
-  gap: 1.2rem;
-  min-width: 0;
-  padding: 0.4rem 0.2rem 0.6rem;
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-.kp-renk-harf {
-  display: flex;
-  flex: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-}
-.kp-renk-harf__harf {
-  font-size: 2rem;
-  font-weight: 800;
-  line-height: 1;
-  -webkit-text-stroke: 0.6px rgba(0, 0, 0, 0.35);
-}
-.kp-renk-harf__noktalar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
 }
 .kp-karistir {
   display: inline-flex;

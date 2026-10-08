@@ -74,7 +74,7 @@ await sayfa.screenshot({ path: cikti + '02-turkce-harf-uyarisi.png' });
 
 // Uzun isim → sığmıyor
 await girdi.fill('abdulkadir');
-await sayfa.getByText(/ABDULKADİR bu çantaya sığmıyor \(en fazla \d+ harf\)/).waitFor();
+await sayfa.getByText(/ABDULKADİR bu ürüne sığmıyor \(en fazla \d+ karakter\)/).waitFor();
 await sayfa.screenshot({ path: cikti + '03-sigmiyor.png' });
 
 // ECE
@@ -146,12 +146,9 @@ hk = await kutular();
 assert.ok(Math.abs(hk[0].y - hk[2].y) < 1 && Math.abs((hk[1].x - hk[0].x) - (hk[2].x - hk[1].x)) < 1, 'harfler düzenli blok olmalı');
 assert.ok(hk[0].x < hk[1].x && hk[1].x < hk[2].x, 'harf sırası korunmalı');
 await sayfa.screenshot({ path: cikti + '04d-birlesti.png' });
-await sayfa.locator('[data-kp-ileri]').click();
-
-// Rakam 7
-await sayfa.locator('[data-kp-panel="rakam"]').waitFor({ state: 'visible' });
-await sayfa.locator('[data-kp-rakam="2007"]').click();
-await sayfa.screenshot({ path: cikti + '05-rakam.png' });
+// Rakam yazıya eklenir: ECE7 (rakam rakam setinden gelir)
+await sayfa.locator('#kp-isim').fill('ece7');
+assert.deepEqual(await sayfa.$$eval('.kp-karakter__stil', (x) => x.map((e) => e.textContent)), ['Cool', 'Cool', 'Cool', 'Rakam']);
 await sayfa.locator('[data-kp-ileri]').click();
 
 // İkon: Spor kategorisinden Futbol Topu
@@ -214,8 +211,8 @@ await sayfa.waitForURL('**/cart');
 assert.ok(eklenen, 'özetten sepete ekleme isteği gitmeli');
 const [baz, ...patchler] = eklenen.items;
 assert.equal(baz.id, 51795696943390);
-assert.equal(baz.properties['Tasarım'], 'ECE + 7 + Futbol Topu');
-assert.equal(baz.properties['İsim'], 'ECE');
+assert.equal(baz.properties['Tasarım'], 'ECE7 + Futbol Topu');
+assert.equal(baz.properties['İsim'], 'ECE7');
 const id = baz.properties._tasarim_id;
 assert.ok(patchler.every((p) => p.properties._tasarim_id === id));
 const e = patchler.find((p) => p.properties['Harf sırası'] === '1, 3');
@@ -232,7 +229,7 @@ await kart.waitFor({ state: 'visible' });
 // (b) Senin tasarımın: içerik, patch sayısı, toplam; kartın altında kırmızı buton, temanın ana butonu gizli
 const kartMetni = (await kart.innerText()).replace(/\s+/g, ' ');
 assert.match(kartMetni, /Senin tasarımın Otomatik kaydedildi/);
-assert.match(kartMetni, /ECE · 7 · Futbol Topu/);
+assert.match(kartMetni, /ECE7 · Futbol Topu/);
 assert.match(kartMetni, /5 patch/);
 assert.match(kartMetni, /Toplam 4\.650 TL/);
 assert.equal(await sayfa.locator('[data-kisisel-davet]').isVisible(), false);
