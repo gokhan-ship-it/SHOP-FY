@@ -1,0 +1,809 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs_ka3wVn": {
+      "type": "breadcrumbs",
+      "settings": {
+        "section_width": "container-fluid",
+        "alignment": "start",
+        "text_size": "text-size-small",
+        "bg_color": "",
+        "text_color": "",
+        "padding_top": 24,
+        "padding_bottom": 12
+      }
+    },
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "vendor": {
+          "type": "text",
+          "disabled": true,
+          "settings": {
+            "text": "{{ product.vendor }}",
+            "text_style": "subheading"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_size": "h1"
+          }
+        },
+        "rating_UhVAtV": {
+          "type": "rating",
+          "settings": {
+            "target_to_section": true,
+            "section_id": "#judgeme_product_reviews"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {
+            "show_sale_badge": true,
+            "sale_badge_type": "fixed"
+          }
+        },
+        "variant_picker_xAGX7m": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button",
+            "hide_sold_out_variants": false,
+            "color_picker_type": "native_color_swatch",
+            "style": "outline",
+            "option_name": "Size",
+            "size_chart_page": ""
+          }
+        },
+        "separator_fTXQic": {
+          "type": "separator",
+          "disabled": true,
+          "settings": {
+            "show_border": true,
+            "divider_space": 2
+          }
+        },
+        "sku_yqmVAY": {
+          "type": "sku",
+          "disabled": true,
+          "settings": {
+            "text_style": "subheading"
+          }
+        },
+        "inventory_xyPUV8": {
+          "type": "inventory",
+          "disabled": true,
+          "settings": {
+            "inventory_threshold": 9,
+            "inventory_base_quantity": 100,
+            "show_inventory_ping": true,
+            "show_inventory_quantity": true,
+            "show_progress_bar": true
+          }
+        },
+        "siblings_j3h7Cg": {
+          "type": "siblings",
+          "settings": {}
+        },
+        "quantity_selector": {
+          "type": "quantity_selector",
+          "settings": {}
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_two_columns": true,
+            "show_dynamic_checkout": true,
+            "show_gift_card_recipient": true,
+            "show_pickup_availability": true,
+            "show_back_in_stock": false,
+            "text_back_in_stock": "Notify me"
+          }
+        },
+        "rich_text_gJV7TU": {
+          "type": "rich-text",
+          "disabled": true,
+          "settings": {
+            "align": "start",
+            "icon": "fire",
+            "width": 32,
+            "heading": "Promotion here",
+            "content": "<p>This is simple description</p>",
+            "background": "#fff0e9",
+            "color": "#ff5b00"
+          }
+        },
+        "icon_with_text_xFUXP9": {
+          "type": "icon-with-text",
+          "disabled": true,
+          "settings": {
+            "layout": "vertical",
+            "icon_size": 20,
+            "icon_1": "award",
+            "heading_1": "<strong>Yüksek Kaliteli İşçilik </strong>Nakışlı, baskılı ve özel dokulu tasarımlarımız uzun ömürlü kullanım için üretilmiştir.",
+            "icon_2": "check_circle",
+            "heading_2": "<strong>Kolay Kullanım </strong>Janti kıyafetlerinde yer alan özel alanlara anında tak, çıkar, değiştir!",
+            "icon_3": "apple",
+            "heading_3": "<strong>Sınırsız Kombin Seçeneği </strong>Tarzını her gün yeniden yarat, patchlerini koleksiyonuna ekleyerek kendi dünyanı oluştur.",
+            "icon_4": "none",
+            "heading_4": ""
+          }
+        },
+        "description": {
+          "type": "description",
+          "settings": {}
+        },
+        "separator_BcFrTM": {
+          "type": "separator",
+          "settings": {
+            "show_border": false,
+            "divider_space": 0.5
+          }
+        },
+        "collapsible_tab_6kicUP": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "⚠ Yıkama ve Bakım Talimatları",
+            "heading_size": "h6",
+            "icon": "none",
+            "content": "<ul><li>Patchlerinizi kendi özel JantiFox pvc zarflarında tek tek saklayınız. </li><li>Patchlerinizi makinede yıkamayınız ve kurutmayınız. </li><li>Sabun ve su ile nazikçe yıkayabilir ya da<br/>silebilirsiniz. </li><li>Patchleri üst<br/>üste getirmeyiniz ve birbirine kesinlikle yapıştırmayınız.</li><li>Patchleri, tüylü kıyafet, oyuncak ve<br/>aksesuarlardan uzak tutunuz. Patchlerin yapışkan yüzeyinin tüylenmemesi yapışkanlığının azalmaması için önemlidir.</li><li>Patchleri JantiFox ürünlerindeki cırt cırtlı alan<br/>dışında hiçbir materyale yapıştırmayınız.</li><li>Ütülemeyin veya yüksek sıcaklığa maruz bırakmayın.</li></ul>",
+            "content_liquid": "",
+            "page": "",
+            "open_by_default": false
+          }
+        },
+        "collapsible_tab_bVRE3V": {
+          "type": "collapsible_tab",
+          "disabled": true,
+          "settings": {
+            "heading": "💡 Malzeme Bazlı Bakım Talimatları:",
+            "heading_size": "h6",
+            "icon": "none",
+            "content": "<p><strong>Nakışlı Patchler:</strong> Ilık sabunlu su ile nazikçe silin, fazla suyu yumuşak bir bezle alın.</p><ul><li><strong>Baskılı (Flexi, Emprime, UV, Lentiküler) Patchler:</strong> Nemli bir bezle silerek temizleyin, fazla suya maruz bırakmayın.</li><li><strong>Silikon ve PVC Patchler:</strong> Nemli bir sünger veya mikrofiber bezle silin, sabunlu su kullanabilirsiniz.</li><li><strong>Keçe ve Sherpa Patchler:</strong> Kuru bir fırça veya nemli bezle tozunu ve lekesini alın, fazla ıslatmayın.</li></ul>",
+            "content_liquid": "",
+            "page": "",
+            "open_by_default": false
+          }
+        },
+        "collapsible_tab_4UNrkz": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "🚚 Kargo & İade",
+            "heading_size": "h6",
+            "icon": "none",
+            "content": "<p>Siparişlerinizi <strong>3 iş günü</strong> içerisinde kargoya teslim ediyoruz. İade politikamız uyarınca, 14 gün içinde cayma hakkınızı kullanabilirsiniz. Ek bilgi veya yardıma ihtiyaç duyarsanız, lütfen müşteri hizmetlerimize ulaşın.</p>",
+            "content_liquid": "",
+            "page": "",
+            "open_by_default": false
+          }
+        },
+        "separator_CgCj4T": {
+          "type": "separator",
+          "settings": {
+            "show_border": false,
+            "divider_space": 1
+          }
+        },
+        "complementary_7gy8hM": {
+          "type": "complementary",
+          "settings": {
+            "block_heading": "Pairs well with",
+            "column_width": 60,
+            "product_list_limit": 10,
+            "enable_quick_add": true
+          }
+        },
+        "icon_with_text_6bTTF3": {
+          "type": "icon-with-text",
+          "settings": {
+            "layout": "vertical",
+            "icon_size": 20,
+            "icon_1": "lock",
+            "heading_1": "Ürünlerimiz kanserojen madde içermez, <<çocuk sağlığına uygun üretilir.",
+            "icon_2": "truck",
+            "heading_2": "₺1500 üzerine <strong>ücretsiz kargo!</strong>",
+            "icon_3": "box",
+            "heading_3": "Siparişlerin <strong>3 iş günü</strong> içerisinde kargoya verilecektir.",
+            "icon_4": "shoe",
+            "heading_4": ""
+          }
+        },
+        "share": {
+          "type": "share",
+          "settings": {
+            "share_label": "Paylaş:"
+          }
+        }
+      },
+      "block_order": [
+        "vendor",
+        "title",
+        "rating_UhVAtV",
+        "price",
+        "variant_picker_xAGX7m",
+        "separator_fTXQic",
+        "sku_yqmVAY",
+        "inventory_xyPUV8",
+        "siblings_j3h7Cg",
+        "quantity_selector",
+        "buy_buttons",
+        "rich_text_gJV7TU",
+        "icon_with_text_xFUXP9",
+        "description",
+        "separator_BcFrTM",
+        "collapsible_tab_6kicUP",
+        "collapsible_tab_bVRE3V",
+        "collapsible_tab_4UNrkz",
+        "separator_CgCj4T",
+        "complementary_7gy8hM",
+        "icon_with_text_6bTTF3",
+        "share"
+      ],
+      "custom_css": [],
+      "settings": {
+        "section_width": "container",
+        "enable_sticky_info": true,
+        "enable_max_width_content": false,
+        "show_sticky_add_to_cart_bar": true,
+        "media_width": 55,
+        "media_aspect_ratio": "adapt",
+        "thumbnail_aspect_ratio": "square",
+        "gallery_layout": "thumbnail_left",
+        "media_position": "left",
+        "show_lightbox": true,
+        "enable_video_autoplay": true,
+        "enable_video_looping": true,
+        "mobile_thumbnails": "show",
+        "bg_color": "rgba(0,0,0,0)",
+        "text_color": "rgba(0,0,0,0)",
+        "border_color": "rgba(0,0,0,0)",
+        "padding_top": 24,
+        "padding_bottom": 12
+      }
+    },
+    "divider_xDMbF8": {
+      "type": "divider",
+      "settings": {
+        "section_width": "w-full",
+        "spacer_mobile": 50,
+        "spacer_desktop": 50,
+        "show_border": true,
+        "bg_color": "rgba(0,0,0,0)",
+        "color": "#e9d1b8",
+        "style": "solid",
+        "thickness": 1
+      }
+    },
+    "related-products": {
+      "type": "related-products",
+      "settings": {
+        "section_width": "container",
+        "subheading": "",
+        "heading": "Bunları da Beğenebilirsiniz",
+        "heading_size_section": "h2",
+        "description": "",
+        "layout": "vertical",
+        "enable_stack_products": false,
+        "show_progress_bar": true,
+        "enable_overflow_visible": false,
+        "products_to_show": 10,
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "bg_color": "",
+        "text_color": "",
+        "padding_top": 80,
+        "padding_bottom": 80
+      }
+    },
+    "information-products": {
+      "type": "information-tabs-products",
+      "blocks": {
+        "description_6CNYAh": {
+          "type": "description",
+          "settings": {
+            "tab_heading": "Description"
+          }
+        },
+        "custom_content_qnMhGh": {
+          "type": "custom-content",
+          "settings": {
+            "tab_heading": "Size guide",
+            "content": "",
+            "page": "size-guide"
+          }
+        },
+        "custom_content_73AKnk": {
+          "type": "custom-content",
+          "settings": {
+            "tab_heading": "Product care",
+            "content": "<p>Hand or machine wash on a cool, gentle cycle with similar colours. Avoid harsh chemicals or stain removers, which can affect the colour. </p>",
+            "page": ""
+          }
+        },
+        "custom_content_4bDa3X": {
+          "type": "custom-content",
+          "settings": {
+            "tab_heading": "Shipping & returns",
+            "content": "<p>We aim to dispatch Standard and Express orders on the next business day.</p><p>Free shipping on all orders above $99 and over within Australia. $10 flat rate for all orders under $99.</p>",
+            "page": ""
+          }
+        }
+      },
+      "block_order": [
+        "description_6CNYAh",
+        "custom_content_qnMhGh",
+        "custom_content_73AKnk",
+        "custom_content_4bDa3X"
+      ],
+      "disabled": true,
+      "settings": {
+        "section_width": "container",
+        "enable_uppercase": true,
+        "tabs_font_family": "headings_font",
+        "heading_size": "h6",
+        "align": "center",
+        "bg_color": "",
+        "text_color": "",
+        "padding_top": 60,
+        "padding_bottom": 0
+      }
+    },
+    "divider_xRJ3we": {
+      "type": "divider",
+      "settings": {
+        "section_width": "w-full",
+        "spacer_mobile": 50,
+        "spacer_desktop": 50,
+        "show_border": true,
+        "bg_color": "rgba(0,0,0,0)",
+        "color": "#e9d1b8",
+        "style": "solid",
+        "thickness": 1
+      }
+    },
+    "scrolling_text_pbzyU7": {
+      "type": "scrolling-text",
+      "blocks": {
+        "text_6Cmxxt": {
+          "type": "text",
+          "settings": {
+            "text": "Add campaign text here.",
+            "link": "",
+            "outline_text": false
+          }
+        },
+        "text_km8ynJ": {
+          "type": "text",
+          "settings": {
+            "text": "◦",
+            "link": "",
+            "outline_text": false
+          }
+        },
+        "text_Kw7XpF": {
+          "type": "text",
+          "settings": {
+            "text": "Add campaign text here.",
+            "link": "",
+            "outline_text": false
+          }
+        },
+        "text_PEhkyH": {
+          "type": "text",
+          "settings": {
+            "text": "◦",
+            "link": "",
+            "outline_text": false
+          }
+        },
+        "text_Rd3bm3": {
+          "type": "text",
+          "settings": {
+            "text": "Add campaign text here.",
+            "link": "",
+            "outline_text": false
+          }
+        },
+        "text_PH9P7t": {
+          "type": "text",
+          "settings": {
+            "text": "◦",
+            "link": "",
+            "outline_text": false
+          }
+        }
+      },
+      "block_order": [
+        "text_6Cmxxt",
+        "text_km8ynJ",
+        "text_Kw7XpF",
+        "text_PEhkyH",
+        "text_Rd3bm3",
+        "text_PH9P7t"
+      ],
+      "disabled": true,
+      "settings": {
+        "section_width": "w-full",
+        "text_size": "h5",
+        "pause_scroll_on_hover": false,
+        "spacing": 70,
+        "spacing_mobile": 30,
+        "image_width": 24,
+        "speed": 20,
+        "direction": "left",
+        "bg_color": "#f7f7f8",
+        "text_color": "",
+        "padding_top": 40,
+        "padding_bottom": 4
+      }
+    },
+    "image_with_text_overlay_rY7dR3": {
+      "type": "image-with-text-overlay",
+      "blocks": {
+        "icon_dg8Gdr": {
+          "type": "icon",
+          "settings": {
+            "icon": "star"
+          }
+        },
+        "heading_WNDzLj": {
+          "type": "heading",
+          "settings": {
+            "heading": "Jantifox'un Eğlenceli dünyasına hoşgeldin",
+            "heading_size": "h2"
+          }
+        },
+        "text_UmdkVn": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Burada her bir patch, kendi macerasını anlatır. Çantandan tişörtüne kadar dilediğin her yerde kullanabileceğin eğlenceli yamalarla, hayal gücünün sınırlarını zorlamaya hazır mısın?</p>",
+            "large_text": false
+          }
+        }
+      },
+      "block_order": [
+        "icon_dg8Gdr",
+        "heading_WNDzLj",
+        "text_UmdkVn"
+      ],
+      "settings": {
+        "section_width": "w-full",
+        "image": "shopify://shop_images/jf-pattern-color_1d48e6ad-12a5-4499-9c39-0e3fe0bd9796.svg",
+        "link": "",
+        "desktop_height": "desktop-height-450",
+        "mobile_height": "mobile-height-500",
+        "desktop_content_position": "middle-center",
+        "mobile_content_position": "middle-center",
+        "content_alignment": "center",
+        "mobile_content_alignment": "center",
+        "content_width": "max-w-5xl",
+        "enable_parallax": false,
+        "color_text": "#202223",
+        "overlay_color": "rgba(0,0,0,0)",
+        "overlay_opacity": 0,
+        "overlay_gradient": ""
+      }
+    },
+    "rich_text_gXAbKm": {
+      "type": "rich-text",
+      "blocks": {
+        "icon_aRPrHz": {
+          "type": "icon",
+          "settings": {
+            "icon": "trophy"
+          }
+        },
+        "separator_KMXFj3": {
+          "type": "separator",
+          "settings": {
+            "show_border": false,
+            "space": 6
+          }
+        },
+        "heading_NBNDCx": {
+          "type": "heading",
+          "settings": {
+            "heading": "Jantifox'un Eğlenceli dünyasına hoşgeldin",
+            "heading_size": "h2"
+          }
+        },
+        "text_a8t9k7": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Burada her bir patch, kendi macerasını anlatır. Çantandan tişörtüne kadar dilediğin her yerde kullanabileceğin eğlenceli yamalarla, hayal gücünün sınırlarını zorlamaya hazır mısın?</p>",
+            "large_text": false
+          }
+        },
+        "separator_KKnrRX": {
+          "type": "separator",
+          "settings": {
+            "show_border": false,
+            "space": 8
+          }
+        },
+        "button_iQ4ay8": {
+          "type": "button",
+          "settings": {
+            "button_label": "Hemen Keşfet!",
+            "button_link": "",
+            "button_type": "outline",
+            "show_icon": false
+          }
+        }
+      },
+      "block_order": [
+        "icon_aRPrHz",
+        "separator_KMXFj3",
+        "heading_NBNDCx",
+        "text_a8t9k7",
+        "separator_KKnrRX",
+        "button_iQ4ay8"
+      ],
+      "disabled": true,
+      "custom_css": [
+        ".rich-text__icon .icon {--size: 3.5rem;}"
+      ],
+      "settings": {
+        "section_width": "w-full",
+        "content_width": "max-w-7xl",
+        "content_alignment": "center",
+        "bg_color": "#f7f7f8",
+        "text_color": "#000000",
+        "padding_top": 80,
+        "padding_bottom": 80
+      }
+    },
+    "image_with_text_Y3wxrR": {
+      "type": "image-with-text",
+      "blocks": {
+        "heading_cK3yxN": {
+          "type": "heading",
+          "settings": {
+            "heading": "Stiline Enerji Kat!",
+            "heading_size": "h3"
+          }
+        },
+        "text_BRMBwd": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Bu patch'ler JantiFox t-shirt, sweatshirt ve şapkalarına kolayca eklenebilecek şekilde tasarlandı. Stilini istediğin gibi kişiselleştirip her güne farklı bir heyecan katabilirsin. </p><p><br/>Canlı renkleri ve kaliteli işlemeleri sayesinde uzun süre keyifle kullanacağın patch’lerimiz, koleksiyonumuza düzenli olarak eklenen yeni tasarımlarla seni daima şaşırtmaya devam edecek.</p>",
+            "large_text": false
+          }
+        }
+      },
+      "block_order": [
+        "heading_cK3yxN",
+        "text_BRMBwd"
+      ],
+      "settings": {
+        "section_width": "container",
+        "image": "shopify://shop_images/295d5c20-f425-474e-abb4-b6791e87bfb6.7cc9a7f5192d162d10b7be3d8e85eec4.webp",
+        "media_size": "landscape",
+        "show_image_2": false,
+        "position_image_2": "middle-right",
+        "media_size_2": "adapt",
+        "desktop_image_width": "50",
+        "use_video": false,
+        "video": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+        "video_autoplay": true,
+        "video_controls": true,
+        "layout": "left",
+        "column_gap": "16",
+        "vertical_alignment": "center",
+        "content_alignment": "start",
+        "bg_color": "",
+        "text_color": "",
+        "bg_column": "",
+        "padding_top": 80,
+        "padding_bottom": 36
+      }
+    },
+    "image_with_text_WgETz6": {
+      "type": "image-with-text",
+      "blocks": {
+        "heading_N3Dr6H": {
+          "type": "heading",
+          "settings": {
+            "heading": "Paylaş ve Eğlen!",
+            "heading_size": "h3"
+          }
+        },
+        "text_EmP7gC": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Eğlence, paylaştıkça çoğalır! Patch’lerini arkadaşlarınla değiş tokuş yaparak veya birlikte yeni tasarımlar deneyerek yaratıcılığını konuşturabilirsin</p>",
+            "large_text": false
+          }
+        }
+      },
+      "block_order": [
+        "heading_N3Dr6H",
+        "text_EmP7gC"
+      ],
+      "settings": {
+        "section_width": "container",
+        "image": "shopify://shop_images/istockphoto-671260158-612x612.jpg",
+        "media_size": "landscape",
+        "show_image_2": false,
+        "position_image_2": "middle-right",
+        "media_size_2": "adapt",
+        "desktop_image_width": "50",
+        "use_video": false,
+        "video": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+        "video_autoplay": true,
+        "video_controls": true,
+        "layout": "right",
+        "column_gap": "16",
+        "vertical_alignment": "center",
+        "content_alignment": "start",
+        "bg_color": "",
+        "text_color": "",
+        "bg_column": "",
+        "padding_top": 0,
+        "padding_bottom": 80
+      }
+    },
+    "divider_nV7Dxb": {
+      "type": "divider",
+      "settings": {
+        "section_width": "container",
+        "spacer_mobile": 50,
+        "spacer_desktop": 100,
+        "show_border": true,
+        "bg_color": "",
+        "color": "",
+        "style": "solid",
+        "thickness": 1
+      }
+    },
+    "collapsible_content_9qEMxN": {
+      "type": "collapsible-content",
+      "blocks": {
+        "collapsible_row_aQLktm": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Örnek Soru",
+            "icon": "none",
+            "row_content": "<p>Örnek cevap</p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_n7pWeE": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Örnek Başka Bir Soru",
+            "icon": "none",
+            "row_content": "<p>Örnek cevap</p>",
+            "page": ""
+          }
+        }
+      },
+      "block_order": [
+        "collapsible_row_aQLktm",
+        "collapsible_row_n7pWeE"
+      ],
+      "settings": {
+        "section_width": "container",
+        "subheading": "",
+        "heading": "Sıkça Sorulan Sorular",
+        "heading_size_section": "h2",
+        "description": "",
+        "layout": "vertical",
+        "heading_size": "h5",
+        "enable_vertical_middle": false,
+        "open_first_collapsible_row": false,
+        "enable_narrow_content": false,
+        "image_ratio": "adapt",
+        "desktop_layout": "image_second",
+        "bg_color": "",
+        "text_color": "",
+        "border_color": "",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "video_with_text_overlay_tqNjTQ": {
+      "type": "video-with-text-overlay",
+      "blocks": {
+        "subheading_UjfACV": {
+          "type": "subheading",
+          "settings": {
+            "subheading": "Kendi Masalını Yaz!"
+          }
+        },
+        "separator_BYVCeU": {
+          "type": "separator",
+          "settings": {
+            "show_border": false,
+            "space": 1
+          }
+        },
+        "heading_dFN3Yw": {
+          "type": "heading",
+          "settings": {
+            "heading": "Maceraya Hazır Mısın?",
+            "heading_size": "h1"
+          }
+        },
+        "separator_ajbBNp": {
+          "type": "separator",
+          "settings": {
+            "show_border": false,
+            "space": 1
+          }
+        },
+        "text_N7F6Pd": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Yamaları nasıl uygulayabileceğini adım adım öğrenebileceğin videolar seni bekliyor. Üstelik en sevdiğin JantiFox kıyafetleri nasıl renklendireceğine dair tüyolar ve yaratıcı fikirler de seni bekliyor. Hemen izle ve kendine özgü tarzını ortaya koymanın keyfini çıkar!</p>",
+            "large_text": false
+          }
+        }
+      },
+      "block_order": [
+        "subheading_UjfACV",
+        "separator_BYVCeU",
+        "heading_dFN3Yw",
+        "separator_ajbBNp",
+        "text_N7F6Pd"
+      ],
+      "settings": {
+        "section_width": "w-full",
+        "video_url": "https://www.youtube.com/watch?v=5VF_dwsOZxs",
+        "description_video": "Video with text overlay",
+        "desktop_height": "desktop-height-650",
+        "mobile_height": "mobile-height-500",
+        "desktop_content_position": "middle-center",
+        "mobile_content_position": "middle-center",
+        "content_width": "max-w-4xl",
+        "color_text": "#ffffff",
+        "overlay_color": "#000000",
+        "overlay_gradient": "",
+        "overlay_opacity": 20
+      }
+    },
+    "recently_viewed_products_FTLchU": {
+      "type": "recently-viewed-products",
+      "settings": {
+        "section_width": "container",
+        "subheading": "",
+        "heading": "Son Görüntülenen Ürünler",
+        "heading_size_section": "h2",
+        "description": "",
+        "layout": "vertical",
+        "products_limit": 4,
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "bg_color": "rgba(0,0,0,0)",
+        "text_color": "",
+        "padding_top": 0,
+        "padding_bottom": 72
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs_ka3wVn",
+    "main",
+    "divider_xDMbF8",
+    "related-products",
+    "information-products",
+    "divider_xRJ3we",
+    "scrolling_text_pbzyU7",
+    "image_with_text_overlay_rY7dR3",
+    "rich_text_gXAbKm",
+    "image_with_text_Y3wxrR",
+    "image_with_text_WgETz6",
+    "divider_nV7Dxb",
+    "collapsible_content_9qEMxN",
+    "video_with_text_overlay_tqNjTQ",
+    "recently_viewed_products_FTLchU"
+  ]
+}
