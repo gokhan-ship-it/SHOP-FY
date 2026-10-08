@@ -36,8 +36,9 @@ await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 await s.locator('[data-kp-adim="ikon"]').click();
 
 // 1) Panelin üstünde yol seçimi: "Hazır setler" ve "Kendim seçeceğim" (varsayılan); başlığın sağında "Tek patch"
-assert.equal(await metin('[data-kp-ikon-yol="set"]'), 'Hazır setler İndirimli hazır setler');
-assert.equal(await metin('[data-kp-ikon-yol="kendim"]'), 'Kendim seçeceğim İkonları tek tek seç');
+assert.equal(await metin('[data-kp-ikon-yol="set"]'), 'Hazır setler · indirimli');
+assert.equal(await metin('[data-kp-ikon-yol="kendim"]'), 'Kendim seçeceğim');
+assert.equal(await metin('#kp-p-ikon'), 'İkon ekle');
 assert.equal(await s.locator('[data-kp-ikon-yol="kendim"]').getAttribute('aria-pressed'), 'true', 'varsayılan kendim');
 assert.equal(await gorunur('[data-kp-kategoriler]'), true);
 assert.equal(await s.locator('[data-kp-hazir-set]').count(), 0);
@@ -47,7 +48,9 @@ assert.ok(ys[0] < yk[0] && Math.abs(ys[1] - yk[1]) < 1, 'yan yana, setler solda'
 assert.equal(await metin('[data-kp-ikon-fiyat]'), 'Tek patch 330 TL');
 await s.locator('[data-kp-ikon-yol="set"]').click();
 assert.equal(await s.locator('[data-kp-ikon-yol="set"]').getAttribute('aria-pressed'), 'true');
-assert.equal(await s.evaluate(() => getComputedStyle(document.querySelector('[data-kp-ikon-yol="set"]')).borderTopWidth), '2px', 'seçili kart koyu çerçeve');
+assert.equal(await s.evaluate(() => getComputedStyle(document.querySelector('[data-kp-ikon-yol="set"]')).backgroundColor), 'rgb(17, 17, 17)', 'seçili seçenek koyu');
+const yolH = (await s.locator('[data-kp-ikon-yol="set"]').boundingBox()).height;
+assert.ok(yolH <= 46, 'tek satır: ' + yolH);
 assert.equal(await gorunur('[data-kp-kategoriler]'), false, 'setlerde kategoriler gizli');
 assert.match(await metin('[data-kp-set-aciklama]'), /Seti ekleyince patch'leri tek tek de taşıyıp döndürebilirsin\./);
 assert.equal(await metin('[data-kp-ikon-fiyat]'), 'Tek patch 330 TL');

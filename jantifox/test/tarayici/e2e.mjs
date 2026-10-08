@@ -64,7 +64,11 @@ const oran = () => sayfa.evaluate(() => {
 });
 const yakinOran = await oran();
 console.log('yakın görünüm daire oranı:', yakinOran.toFixed(3));
-assert.ok(Math.abs(yakinOran - 0.8) < 0.03);
+// Alt kenardaki eklenenler satırı (38 px) hariç kalan yüksekliğin ~%80'i
+const gH = await sayfa.evaluate(() => document.querySelector('.kp-gorunum').getBoundingClientRect().height);
+assert.ok(yakinOran > 0.8 * (1 - 38 / gH) - 0.02 && yakinOran < 0.82, 'yakın oran ' + yakinOran);
+const daireAlt = await sayfa.evaluate(() => [document.querySelector('.kp-gorunum ellipse').getBoundingClientRect().bottom, document.querySelector('.kp-satir').getBoundingClientRect().top]);
+assert.ok(daireAlt[0] <= daireAlt[1] + 1, 'daire eklenenler satırının üstünde');
 await sayfa.locator('[data-kp-gorunum]').tap();
 await sayfa.waitForTimeout(400);
 const uzakOran = await oran();

@@ -70,8 +70,8 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   await s.locator('#kp-isim').fill('ec');
   // Anında: Shopify'ın cevabını beklemeden (ara durum yok)
   assert.equal(await metin(s, ana + ' [data-kp-toplam]'), '3.660 TL 3.600 TL', 'kampanyalı fiyat anında');
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '60 TL indirim kazandın');
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1 patch daha ekle, indirimin 190 TL olsun');
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '60 TL indirim kazandın.');
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1 patch daha ekle, indirimin 190 TL olsun.');
   // Duraklar: 2'li, 3'lü, 4'lü (öğrenilen) + Ekstra %10 (ayarlardan); ilki dolu; ipuçlarında anlaşılır adlar
   assert.deepEqual(await s.$$eval(ana + ' .kp-serit__nokta', (n) => n.map((x) => [x.title, x.classList.contains('kp-serit__nokta--ulasildi')])),
     [["2'li patch indirimi", true], ["3'lü patch indirimi", false], ["4'lü patch indirimi", false], ['Ekstra %10 indirim', false]]);
@@ -81,10 +81,13 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).backgroundColor, ana + ' [data-kp-kazanc]'), 'rgb(179, 20, 27)');
   assert.equal(await metin(s, ana + ' [data-kp-toplam] s'), '3.660 TL');
   assert.equal(await s.locator(ana + ' .kp-alt__fiyat .kp-indirim-notu').isVisible(), false);
-  // Şerit fiyat çubuğunun hemen üstünde: iki satır
-  const [serit, alt] = await s.evaluate((q) => [q + ' [data-kp-serit]', q + ' .kp-alt'].map((x) => document.querySelector(x).getBoundingClientRect()).map((r) => ({ y: r.y, h: r.height, b: r.bottom })), ana);
-  assert.ok(Math.abs(serit.b - alt.y) < 1, 'şerit fiyat çubuğuna bitişik');
-  assert.ok(serit.h >= 38 && serit.h <= 66, 'şerit yüksekliği ' + serit.h);
+  // Tek alt çubuk: en üstte 3 px ilerleme çizgisi, altında tek satır metin, altında fiyat ve buton
+  const [serit, alt, cizgi, satir, fiyat, buton] = await s.evaluate((q) => [' [data-kp-serit]', ' .kp-alt', ' [data-kp-serit-cubuk]', ' .kp-serit__ust', ' .kp-alt__fiyat', ' [data-kp-ileri]'].map((x) => document.querySelector(q + x).getBoundingClientRect()).map((r) => ({ y: r.y, h: r.height, b: r.bottom, x: r.x })), ana);
+  assert.ok(serit.y >= alt.y - 1 && serit.b <= alt.b, 'şerit alt çubuğun içinde');
+  assert.ok(Math.abs(cizgi.y - alt.y) < 2 && cizgi.h === 3, 'çizgi en üstte, 3 px: ' + JSON.stringify(cizgi));
+  assert.ok(satir.h < 24, 'kampanya metni tek satır: ' + satir.h);
+  assert.ok(fiyat.y >= satir.b - 1 && buton.y >= satir.b - 1 && fiyat.x < buton.x, 'altında solda fiyat, sağda buton');
+  assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).color, ana + ' [data-kp-serit-sol]'), 'rgb(179, 20, 27)');
   // Şeritte "kaldı", "→" ve Shopify adları yok
   const seritMetni = async () => metin(s, ana + ' [data-kp-serit]');
   const sade = async () => { const x = await seritMetni(); assert.ok(!/kaldı|→|patche|İndirim/.test(x), x); };
@@ -94,13 +97,16 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   assert.equal(await metin(s, ana + ' [data-kp-toplam]'), '3.990 TL 3.800 TL', 'anında');
   await bekle(s, ana + ' [data-kp-kazanc]', /3'lü/);
   assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), "🎉 3'lü patch indirimi · −190 TL");
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1 patch daha ekle, indirimin 370 TL olsun');
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1 patch daha ekle, indirimin 370 TL olsun.');
   await sade();
 
   // 4 patch: adet basamakları bitti, sıradaki hedef tutar eşiği
   await s.locator('#kp-isim').fill('ece7');
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), "680 TL'lik ürün daha ekle, tüm siparişe %10 indirim gelsin");
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '370 TL indirim kazandın');
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), "680 TL'lik ürün daha ekle, tüm siparişe %10 indirim gelsin.");
+  // Dar ekranda satır kaymaz: ikinci kısım kısalır
+  const tekSatir = await s.evaluate((q) => { const u = document.querySelector(q + ' .kp-serit__ust'); const g = document.querySelector(q + ' [data-kp-serit-sag]'); return [u.getBoundingClientRect().height, getComputedStyle(g).textOverflow, getComputedStyle(u).whiteSpace]; }, ana);
+  assert.ok(tekSatir[0] < 24 && tekSatir[1] === 'ellipsis' && tekSatir[2] === 'nowrap', 'tek satır, kısalır: ' + tekSatir);
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '370 TL indirim kazandın.');
   await sade();
   const dolu = await s.evaluate((q) => parseFloat(document.querySelector(q + ' [data-kp-serit-dolu]').style.width), ana);
   assert.ok(dolu > 90 && dolu < 100, 'çubuk Ekstra %10 durağına yaklaşıyor: ' + dolu);
@@ -111,7 +117,7 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   await bekle(s, ana + ' [data-kp-kazanc]', /Ekstra/);
   assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), '✨ Ekstra %10 indirim açıldı · Tüm siparişinde −827 TL');
   assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '1.197 TL indirim kazandın 🎉');
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), 'Bütün kampanyalar sepetinde');
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), 'Bütün kampanyalar sepetinde.');
   assert.equal(await s.locator(ana + ' .kp-serit__nokta--ulasildi').count(), 4);
 
   // Özet: şerit yok, kampanyalar satır satır, anlaşılır adlarla

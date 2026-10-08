@@ -33,13 +33,15 @@ const alt = '.kp-editor--alt';
 const toplam = () => metin(ana + ' [data-kp-toplam]');
 const cipler = () => s.$$eval(ana + ' .kp-cip__ad', (b) => b.map((x) => x.textContent));
 const cdp = await baglam.newCDPSession(s);
+// Liste kayınca önizleme küçülür (eklenenler gizlenir); etiketlere dokunmadan önce tam boyuta
+const buyut = async () => { if (await s.locator(ana + ' [data-kp-buyut]').isVisible()) { await s.locator(ana + ' [data-kp-buyut]').click(); await s.waitForTimeout(350); } };
 
 await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await s.locator('kisisel-kart').waitFor({ state: 'visible' });
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 
 // 1) Akış: Yazı → İkon → Aksesuar → Özet
-assert.match((await metin(ana + ' .kp-adimlar')), /1 Yazı 2 İkon 3 Aksesuar 4 Özet/);
+assert.equal(await metin(ana + ' .kp-adimlar'), 'Yazı İkon Aksesuar Özet');
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
 assert.match(await metin(ana + ' [data-kp-panel="aksesuar"] .kp-panel__aciklama'), /^Çantanın Velcro yüzeyine takılabilen aksesuarlar\. İstersen önce onu da patch'lerle tasarlarsın\.$/);
 assert.equal(await s.locator('[data-kp-aksesuar]').count(), 3, 'stokta olmayan yok');
@@ -120,6 +122,7 @@ assert.equal(await s.locator(ana + ' .kp-aks__parca').count(), 0);
 await s.locator(ana + ' [data-kp-geri-al]').click();
 assert.deepEqual(await cipler(), ['Mini Yuvarlak Çanta Mavi']);
 // Yeniden: yuvarlak çantayı kaldır, kalem kutusunu tasarımıyla yerleştir
+await buyut();
 await s.locator(ana + ' [data-kp-kaldir]').first().click();
 await s.locator('[data-kp-aksesuar="9101"]').click();
 await s.locator(alt).waitFor({ state: 'visible' });
@@ -144,7 +147,9 @@ assert.ok(Math.abs(kayma[0] - kayma[1]) < 0.5, 'iç patch aksesuarla aynı kayd�
 // 6) Kalemle yeniden düzenle: aksesuar ekranı tasarımla açılır; değişiklik yerinde güncellenir
 // Aksesuar seçiliyken araç çubuğunda "Tasarla"; seçim yokken eklenenlerdeki kalem
 assert.equal(await gorunur(ana + ' [data-kp-aks-tasarla]'), true);
+await buyut();
 await s.locator(ana + ' [data-kp-secim-kaldir]').click();
+await buyut();
 await s.locator(ana + ' [data-kp-aks-duzenle]').click();
 await s.locator(alt).waitFor({ state: 'visible' });
 assert.equal(await s.locator('#kpa-isim').inputValue(), 'ADA');
@@ -157,6 +162,7 @@ assert.equal(await gorunur(ana + ' [data-kp-onay]'), false, 'yeniden düzenlemed
 assert.equal(await toplam(), '5.690 TL');
 
 // 7) Küçük aksesuar (zarf): alanın en boş yerine; yalnızca üstüne gelen patch kenara alınır, hiçbir şey silinmez
+await buyut();
 await s.locator(ana + ' [data-kp-kaldir]').first().click();
 await s.locator(ana + ' [data-kp-adim="ikon"]').click();
 await s.locator(ana + ' [data-kp-kategori="Spor"]').click();
@@ -170,6 +176,7 @@ assert.equal((await cipler()).filter((c) => /Futbol Topu/.test(c)).length, 1, 'i
 assert.equal(await s.locator(ana + ' .kp-parca--hatali').count(), 0);
 
 // 8) Sepet: aksesuar çanta tasarım grubunun içinde alt grup (önce çantadaki her şey kaldırılır)
+await buyut();
 if (await gorunur(ana + ' [data-kp-secim-kaldir]')) await s.locator(ana + ' [data-kp-secim-kaldir]').click();
 while (await s.locator(ana + ' [data-kp-kaldir]').count()) await s.locator(ana + ' [data-kp-kaldir]').first().click();
 await s.locator('[data-kp-aksesuar="9101"]').click();

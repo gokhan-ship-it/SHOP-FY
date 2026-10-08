@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 const require = createRequire(import.meta.url);
 // Akış: Yazı → İkon → (Aksesuar) → Özet
 const ADIM_SAYISI = 4;
-const ADIM_METNI = /1 Yazı 2 İkon 3 Aksesuar 4 Özet/;
+const ADIM_METNI = /^Yazı İkon Aksesuar Özet$/;
 const { chromium, devices } = require('playwright');
 
 const html = readFileSync(new URL('sayfa.html', import.meta.url), 'utf8');
@@ -62,14 +62,23 @@ assert.doesNotMatch(kart, /cırt/i);
 const renk = await s.evaluate(() => { const c = getComputedStyle(document.querySelector('[data-kisisel-davet] [data-kisisel-ac]')); return [c.backgroundColor, c.color]; });
 assert.deepEqual(renk, ['rgb(179, 20, 27)', 'rgb(255, 255, 255)']);
 
-// 2) Editör: ilerleme çizgisi başlığın hemen altında, önizleme sabit
+// 2) Editör: başlık yok; adımlar en üst satırda kapatma butonunun solunda, önizleme sabit
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 await s.locator('.kp-editor').waitFor({ state: 'visible' });
 const sira = await s.evaluate(() => {
   const y = (q) => document.querySelector(q).getBoundingClientRect().top;
   return { ust: y('.kp-ust'), adim: y('.kp-adimlar'), onizleme: y('.kp-onizleme'), panel: y('.kp-kaydir') };
 });
-assert.ok(sira.ust < sira.adim && sira.adim < sira.onizleme && sira.onizleme < sira.panel, JSON.stringify(sira));
+assert.ok(Math.abs(sira.ust - sira.adim) < 2 && sira.adim < sira.onizleme && sira.onizleme < sira.panel, JSON.stringify(sira));
+assert.equal(await s.locator('.kp-ust .kp-adimlar').count(), 1, 'adımlar üst satırda');
+assert.ok((await s.locator('.kp-editor [data-kp-baslik]').boundingBox()).width <= 1, '"Tasarımını oluştur" görünmez (yalnızca ekran okuyucu)');
+const ustSatir = await s.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(); return { ust: r('.kp-ust').height, adim: r('.kp-adimlar').right, kapat: r('.kp-kapat').left }; });
+assert.ok(ustSatir.ust <= 52 && ustSatir.adim <= ustSatir.kapat + 1, 'tek satır, kapatın solunda: ' + JSON.stringify(ustSatir));
+// Aktif adım kalın, altında koyu çizgi; sonrakilerde açık çizgi
+const cizgiler = await s.$$eval('.kp-adim', (b) => b.map((x) => [getComputedStyle(x).fontWeight, getComputedStyle(x.querySelector('.kp-adim__cizgi')).backgroundColor, x.querySelector('.kp-adim__cizgi').getBoundingClientRect().top > x.querySelector('.kp-adim__ad').getBoundingClientRect().top]));
+assert.equal(cizgiler[0][0], '700');
+assert.notEqual(cizgiler[0][1], cizgiler[1][1], 'aktif koyu, diğerleri açık');
+assert.ok(cizgiler.every((c) => c[2]), 'çizgi adın altında');
 assert.equal(await s.locator('.kp-adim__cizgi').count(), ADIM_SAYISI);
 assert.match((await s.locator('.kp-adimlar').innerText()).replace(/\s+/g, ' '), ADIM_METNI);
 
@@ -138,13 +147,13 @@ assert.equal(await gorunur('[data-kp-secim-cubuk]'), true);
 assert.equal(await gorunur('[data-kp-etiketler]'), false, 'etiketler yerine araç çubuğu');
 const sonra = await olcum();
 assert.deepEqual(sonra, once, 'satır yüksekliği ve panel yeri aynı');
+// Eklenenler ve araç çubuğu önizlemenin alt kenarında (içinde)
 const aracYer = await s.evaluate(() => {
   const a = document.querySelector('[data-kp-secim-cubuk]').getBoundingClientRect();
   const o = document.querySelector('.kp-gorunum').getBoundingClientRect();
-  return a.top >= o.bottom;
+  return a.bottom <= o.bottom + 1 && a.top > o.top + o.height / 2;
 });
-assert.ok(aracYer, 'araç çubuğu önizlemenin altında, üzerinde değil');
-assert.equal(await s.locator('.kp-gorunum [data-kp-secim-cubuk], .kp-onizleme__ic [data-kp-secim-cubuk]').count(), 0);
+assert.ok(aracYer, 'araç çubuğu önizlemenin alt kenarında');
 assert.deepEqual(await s.$$eval('[data-kp-secim-cubuk] button', (b) => b.filter((x) => !x.hidden).map((x) => x.textContent.trim())), ['15°', '15°', 'Düzle', 'Sil', 'Tamam']);
 // Tamam seçimi kaldırır, satır yine etiketler
 await s.locator('[data-kp-secim-kaldir]').click();
@@ -296,7 +305,7 @@ assert.equal(await gorunur('[data-kp-panel="yazi"] [data-kp-gec]'), false, 'isim
 await s.locator('#kp-isim').fill('');
 await s.locator('[data-kp-panel="yazi"] [data-kp-gec]').click();
 assert.equal(await gorunur('[data-kp-panel="ikon"]'), true, 'geç → İkon');
-assert.equal(await metin('[data-kp-panel="ikon"] [data-kp-gec]'), 'Bu adımı geç →');
+assert.equal(await metin('[data-kp-panel="ikon"] [data-kp-gec]'), 'Geç →');
 assert.equal(await metin('[data-kp-ileri]'), 'İleri');
 await s.locator('[data-kp-kategori="Spor"]').click();
 await s.locator('[data-kp-ikon]:not([disabled])').first().click();
