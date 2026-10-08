@@ -247,6 +247,8 @@ assert.equal(await metin('[data-kp-panel="ozet"] h3'), 'Henüz patch eklemedin')
 assert.equal(await gorunur('[data-kp-geri-don]'), true);
 assert.equal(await gorunur('[data-kp-sade-al]'), true);
 assert.equal(await metin('[data-kp-ileri]'), 'Sepete ekle · 3.000 TL');
+assert.equal(await gorunur('[data-kp-urune-don]'), false, 'boş özette alt bağlantılar gizli');
+assert.equal(await gorunur('[data-kp-duzenle]'), false);
 await s.locator('[data-kp-geri-don]').click();
 assert.equal(await gorunur('[data-kp-panel="yazi"]'), true, 'geri dön Yazı adımına');
 // Adım çizgisinden doğrudan geçiş
