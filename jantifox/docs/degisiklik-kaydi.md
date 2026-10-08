@@ -25,6 +25,9 @@ Bu proje kapsamında mağazada yapılan her yazma işlemi burada listelenir. Mev
 | 2026-10-07 | `fileCreate` ×4 | A, D, H, L (Photoroom, kullanıcı onaylı): `kisisel-harf-{A,D,H,L}.webp` | Commit 2501338, `veri/png/hazir-png.py` ile kırpıldı (arka plan temizleme yok; L'de kenara yapışık 2 beyaz nokta temizlendi). Ürün/varyant medyasına bağlanmadı |
 | 2026-10-07 | `metafieldsSet` ×12 | A, D, H, L varyantları: `onizleme_png`, `png_genislik_cm`, `png_yukseklik_cm` | Ölçüler aşağıdaki tabloda; önizleme linkinde kontrol edildi |
 | 2026-10-07 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js`, `assets/kisisel-editor.css` | Commit fe06b14, MD5 doğrulandı. Patch döndürme: seçim çerçevesi ve tutamaç, iki parmak, araç çubuğu, klavye; dönük dikdörtgenle sığma/çakışma; `_tasarim_konum` v2 (her parçada açı `a`). Mağaza verisine yazılmadı |
+| 2026-10-08 | `fileCreate` ×9 | Photoroom: rakam 0, 4, 6, 9, Futbol Topu, Basketbol Topu, Beyaz Kalp, GOAT; düzlenmiş Meteor (`kisisel-ikon-9941460255006-duz.webp`) | Commit 32f8091. Ürün/varyant medyasına bağlanmadı. Meteor'un eski önizleme dosyası (MediaImage/72562799968542) Dosyalar'da duruyor, artık kullanılmıyor |
+| 2026-10-08 | `metafieldsSet` ×173 | 58 patch: `png_genislik_cm`, `png_yukseklik_cm`, ikonlarda `png_sekil`; 9 patch'te `onizleme_png` | Ölçü kuralı v2 (site esas), kullanıcı onaylı. Hesaplar: `veri/png/olcu-v2-tablo.md` ve `olcu-v2.json`. Eski ölçü alanlarına ve ürün görsellerine dokunulmadı |
+| 2026-10-08 | `themeFilesUpsert` (yalnızca kopya tema) | `snippets/kisisel-veri.liquid` | Commit 33be72f, MD5 doğrulandı. İkon listesi `paginate` ile: liste metafield'ı 50 öğede kesiliyordu (Adventurer, Keep Swimming editörde görünmüyordu) |
 
 ## Metafield tanımları
 
@@ -143,13 +146,16 @@ Kurallar (kullanıcı kararı): harf ve rakamda yükseklik 6 cm, genişlik = 6 �
 | Cool Alfabe H | Variant/49646793097502 | MediaImage/72562970525982 | 5,04 × 6 | yükseklik 6 cm; genişlik = 6 × oran 0.840 = 5.04 cm | — |
 | Cool Alfabe L | Variant/49646793228574 | MediaImage/72562970558750 | 4,42 × 6 | yükseklik 6 cm; genişlik = 6 × oran 0.736 = 4.42 cm | kenardaki beyaz kalıntı temizlendi |
 
-Bekleyenler (yüklenmedi, eski görselle kalıyor):
+Bekleyenler: yok. Rakam 0, 4, 6, 9, Futbol Topu, Basketbol Topu, Beyaz Kalp ve GOAT 2026-10-08'de Photoroom görselleriyle yüklendi (yukarıdaki kayıt).
 
-- Janti Rakam 0: İç boşluk yeniden işlendi, onay bekliyor
-- Janti Rakam 4: İç boşluk yeniden işlendi, onay bekliyor
-- Janti Rakam 6: İç boşluk yeniden işlendi, onay bekliyor
-- Janti Rakam 9: İç boşluk yeniden işlendi, onay bekliyor
-- Futbol Topu Patch: Karar bekleniyor (Futbol Topu)
-- Basketbol Topu Patch: Karar bekleniyor (Basketbol Topu)
-- Beyaz Kalp Patch: Karar bekleniyor (Beyaz Kalp) (ölçüsü yazıldı)
-- GOAT Patch: Karar bekleniyor (GOAT)
+## Ölçü kuralı v2 (2026-10-08, kullanıcı onaylı)
+
+Esas kaynak sitedeki ölçüdür; görsel oranı yalnızca eksik ölçüyü tamamlamak ve yönü belirlemek için kullanılır.
+- İkonda iki ölçü varsa (çap dahil) ikisi de olduğu gibi; büyük değer görselin uzun kenarına.
+- Tek ölçü varsa (kalpler) diğer kenar görsel oranından.
+- Setler: Cool Alfabe yüksekliği 6 cm, Janti Rakam yüksekliği 7,5 cm (0–9 hepsi); genişlik her karakterin görsel oranından.
+- Daire kaydı yalnızca görsel gerçekten yuvarlaksa korunur (Tenis, Jimnastik, Adventurer: sitedeki ölçü, şekil dikdörtgen).
+- Eğik çekilmiş görseller `veri/png/egim.py` ile düzlenir: yalnızca Meteor (37,6°).
+- Düzlemeye rağmen oranı sitedekiyle %15'ten fazla farklı 8 patch, fiziksel ölçüm bekliyor; şimdilik sitedeki ölçü yazıldı: Oyun Sembolleri, Cool, Retro Casette Player, Good Luck, Donut Planet, Roller Skate, School Rocks, Aksolotl.
+
+Tam liste (önceki ve yeni değerler, hesap): `veri/png/olcu-v2-tablo.md`.
