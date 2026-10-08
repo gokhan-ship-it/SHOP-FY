@@ -301,50 +301,7 @@ await s.evaluate(() => document.querySelector('kisisel-kart').editor.t.parcalar 
 s.once('dialog', (d) => d.accept());
 await s.locator('[data-kp-kapat]').click();
 
-// 1c) Bu ürüne ait tasarım sepette: yeşil sepet kartı + "Bir tane daha mı istersin?"
-const baz = sonEklenen.items[0];
-sepetYanit = JSON.stringify({ items: [
-  { key: 'b1', product_id: 10087205437726, quantity: 1, final_line_price: 270000, properties: baz.properties },
-  { key: 'p1', product_id: 1, quantity: 1, final_line_price: 29700, properties: { _tasarim_id: baz.properties._tasarim_id, _tasarim_rol: 'patch' } }
-] });
-await s.evaluate(() => localStorage.clear());
-await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
-await s.locator('kisisel-kart').waitFor({ state: 'visible' });
-await s.locator('[data-kisisel-sepet]').waitFor({ state: 'visible' });
-const sepetKart = (await metin('[data-kisisel-sepet]')).replace(/\s+/g, ' ');
-console.log('sepet kartı:', sepetKart);
-assert.match(sepetKart, /Sepetinde 1 kişiselleştirilmiş çanta var/);
-assert.match(sepetKart, /ECE/);
-assert.match(sepetKart, /2\.997 TL/);
-assert.match(sepetKart, /Sepete git/);
-assert.ok(await s.locator('[data-kisisel-sepet] .kp-parca').count() > 0, 'sepetteki tasarımın önizlemesi _tasarim_konum\'dan');
-assert.equal(await gorunur('[data-kisisel-davet]'), false);
-assert.equal(await gorunur('[data-kisisel-tekrar]'), true);
-assert.match(await metin('[data-kisisel-tekrar]'), /Bir tane daha mı istersin\?[\s\S]*Kardeşi ya da arkadaşı için yeni bir tasarım yap\.[\s\S]*Yeni tasarım yap/);
-await s.screenshot({ path: '/tmp/kart-sepette.png', fullPage: true });
-// Yeni tasarım: boş editör; kaydedilince (b) sepet kartının altında
-await s.locator('[data-kisisel-yeni]').click();
-assert.equal(await s.locator('#kp-isim').inputValue(), '', 'boş editör');
-await s.locator('#kp-isim').fill('ada');
-await s.locator('[data-kp-adim="ozet"]').click();
-await s.locator('[data-kp-urune-don]').click();
-await s.locator('.kp-editor').waitFor({ state: 'hidden' });
-assert.equal(await gorunur('[data-kisisel-sepet]'), true);
-assert.equal(await gorunur('[data-kisisel-govde]'), true);
-assert.equal(await gorunur('[data-kisisel-tekrar]'), false);
-assert.equal(await gorunur('[data-kisisel-sepete-ekle]'), true);
-const sirala = await s.evaluate(() => {
-  const y = (q) => document.querySelector(q).getBoundingClientRect().top;
-  return y('[data-kisisel-sepet]') < y('[data-kisisel-govde]');
-});
-assert.ok(sirala, '(b) sepet kartının altında');
-await s.screenshot({ path: '/tmp/kart-sepette-ve-kayitli.png', fullPage: true });
-// Sepet değişince kart güncellenir (tema cart-update / kisisel:sepet-degisti)
-sepetYanit = '{"items":[]}';
-await s.evaluate(() => document.dispatchEvent(new CustomEvent('kisisel:sepet-degisti')));
-await s.waitForTimeout(300);
-assert.equal(await gorunur('[data-kisisel-sepet]'), false, 'sepet boşalınca sepet kartı kalkar');
-assert.equal(await gorunur('[data-kisisel-govde]'), true);
+// Sepetteki tasarımın kartı, düzenlenmesi ve silinmesi: sepettekini-duzenle-e2e.mjs
 
 assert.deepEqual(hatalar, []);
 await t.close();

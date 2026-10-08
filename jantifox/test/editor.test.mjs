@@ -449,3 +449,57 @@ test('Cool\'dan Piramit\'e geçince isim korunur, renkler atanır', () => {
   assert.equal(d2.parcalar.find((x) => x.uid === 'harf-1').aci, 30);
   assert.equal(d2.parcalar.find((x) => x.uid === 'harf-1').varyant.karakter, 'L');
 });
+
+// Sepetteki tasarımı düzenleme: _tasarim_konum'dan kurulan tasarım aynı yerleşimi verir
+const konumlar = (m, y, t) => ic.duzenle(m, y, t).parcalar.map((p) => {
+  const c = ic.geometri.kutu(p.sekil);
+  return [p.tip, p.varyant && p.varyant.id, Math.round((c.x + c.w / 2) * 10) / 10, Math.round((c.y + c.h / 2) * 10) / 10, Math.round(p.aci || 0)];
+});
+// Sepetteki konum 0,1 cm'ye yuvarlanır: karşılaştırma ±0,15 cm
+const yakin = (a, b) => {
+  assert.equal(a.length, b.length);
+  a.forEach((x, i) => {
+    assert.deepEqual([x[0], x[1], x[4]], [b[i][0], b[i][1], b[i][4]]);
+    assert.ok(Math.abs(x[2] - b[i][2]) <= 0.15 && Math.abs(x[3] - b[i][3]) <= 0.15, JSON.stringify([x, b[i]]));
+  });
+};
+const geriKur = (m, y, t) => {
+  const d = ic.duzenle(m, y, t);
+  const konum = JSON.parse(JSON.stringify(ic.tasarimKonumu(m, d.parcalar)));
+  return ic.konumdanTasarim(m, y, konum);
+};
+
+test('sepetten geri kurma: blok isim + rakam + ikon (döndürülmüş) aynı yerleşim', () => {
+  const { m, y } = kur();
+  const t = tasarim(m, 'ECE', [
+    { uid: 'r1', tip: 'number', urunId: m.rakamSetleri[0].id, varyantId: m.rakamSetleri[0].karakterler['7'].id, cx: 15, cy: 26 },
+    { uid: 'i1', tip: 'icon', urunId: 1, varyantId: 3001, cx: 24, cy: 26, aci: 30 }
+  ]);
+  t.isimAci = 15;
+  const k = geriKur(m, y, t);
+  assert.equal(k.isim, 'ECE');
+  assert.ok(!k.harfAyri, 'blok olarak kuruldu');
+  assert.equal(k.isimAci, 15);
+  yakin(konumlar(m, y, k), konumlar(m, y, t));
+});
+
+test('sepetten geri kurma: ayrı ve farklı açılı harfler', () => {
+  const { m, y } = kur();
+  const t = tasarim(m, 'ECE');
+  ic.harfleriAyir(y, t);
+  t.harfKonumlari[2] = [t.harfKonumlari[2][0], t.harfKonumlari[2][1] + 7];
+  t.harfAcilari[2] = 45;
+  const k = geriKur(m, y, t);
+  assert.equal(k.harfAyri, true, 'blok tutmadı, harfler ayrı');
+  yakin(konumlar(m, y, k), konumlar(m, y, t));
+});
+
+test('sepetten geri kurma: Piramit renkleri korunur', () => {
+  const { m, y } = kurP();
+  const p = m.setler[1];
+  const t = { setId: p.id, isim: 'ECE', isimMerkez: null, parcalar: [], harfRenkleri: [p.karakterVaryantlari.E[0].id, null, p.karakterVaryantlari.E[2].id] };
+  const k = geriKur(m, y, t);
+  assert.equal(String(k.setId), String(p.id));
+  assert.deepEqual(duz(Array.from(k.isim).map((h, i) => ic.harfVaryanti(p, k, i, h).baslik)), duz(Array.from(t.isim).map((h, i) => ic.harfVaryanti(p, t, i, h).baslik)));
+  assert.equal(geriKur(m, y, { setId: m.setler[0].id, isim: '', isimMerkez: null, parcalar: [] }), null, 'boş konum: kurulamaz');
+});

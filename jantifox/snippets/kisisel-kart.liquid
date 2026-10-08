@@ -27,7 +27,16 @@
     hidden
   >
     {%- comment -%} (c) Bu ürüne ait tasarım sepette: içerik JS ile sepetten (/cart.js) doldurulur {%- endcomment -%}
-    <div class="kisisel-kart__kutu kisisel-kart__kutu--sepet" data-kisisel-sepet hidden></div>
+    <div class="kisisel-kart__sepettekiler" data-kisisel-sepet hidden></div>
+
+    {%- comment -%} Sepette tasarım varken ve yeni tasarım yokken: tek satırlık küçük kutu {%- endcomment -%}
+    <div class="kisisel-kart__tekrar" data-kisisel-tekrar hidden>
+      <div class="kisisel-kart__tekrar-metin">
+        <p class="kisisel-kart__tekrar-baslik">Bir tane daha mı istersin?</p>
+        <p class="kisisel-kart__tekrar-alt">Kardeşi ya da arkadaşı için</p>
+      </div>
+      <button type="button" class="btn kisisel-kart__buton--marka kisisel-kart__tekrar-buton" data-kisisel-yeni>Yeni tasarım</button>
+    </div>
 
     <div class="kisisel-kart__kutu" data-kisisel-ana>
       {%- comment -%} (a) Tasarım yok: davet {%- endcomment -%}
@@ -46,15 +55,6 @@
           <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>Her patch 330 TL</span>
           <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
         </div>
-      </div>
-
-      {%- comment -%} Sepette tasarım varken ve yeni tasarım yokken: bir tane daha {%- endcomment -%}
-      <div class="kisisel-kart__tekrar" data-kisisel-tekrar hidden>
-        <p class="kisisel-kart__baslik">Bir tane daha mı istersin?</p>
-        <p class="kisisel-kart__aciklama">Kardeşi ya da arkadaşı için yeni bir tasarım yap.</p>
-        <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-yeni>
-          Yeni tasarım yap
-        </button>
       </div>
 
       {%- comment -%} (b) Kayıtlı tasarım, henüz sepette değil {%- endcomment -%}
@@ -77,14 +77,15 @@
         </div>
       </div>
 
-      <p class="kisisel-kart__bildirim" data-kisisel-bildirim role="status" aria-live="polite" hidden></p>
-      <p class="kisisel-kart__uyari-not" data-kisisel-not role="status" hidden></p>
 
       <p class="kisisel-kart__cirt">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
         <span>Ön yüzdeki Velcro yüzeye patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.</span>
       </p>
     </div>
+
+    <p class="kisisel-kart__bildirim" data-kisisel-bildirim role="status" aria-live="polite" hidden></p>
+    <p class="kisisel-kart__uyari-not" data-kisisel-not role="status" hidden></p>
 
     {%- comment -%} (b) durumunda kartın altında: tasarımla sepete ekle {%- endcomment -%}
     <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka kisisel-kart__sepete" data-kisisel-sepete-ekle hidden>

@@ -43,10 +43,79 @@ html.kp-kilit .whatsapp-sticky {
 }
 .kisisel-kart__kutu[hidden],
 .kisisel-kart__tekrar[hidden] {
+  display: none !important;
+}
+.kisisel-kart__kutu + .kisisel-kart__kutu,
+.kisisel-kart__sepettekiler + .kisisel-kart__tekrar,
+.kisisel-kart__sepettekiler:not([hidden]) ~ .kisisel-kart__kutu {
+  margin-top: 1rem;
+}
+.kisisel-kart__sepettekiler[hidden] {
   display: none;
 }
-.kisisel-kart__kutu + .kisisel-kart__kutu {
-  margin-top: 1rem;
+.kisisel-kart__sepettekiler {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+/* "✓ Sepette" etiketi */
+.kisisel-kart__sepette {
+  flex: none;
+  padding: 0.2rem 0.8rem;
+  border-radius: 999px;
+  background: #2f8f4e;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.kisisel-kart__kutu--sepet .kisisel-kart__sepete-git {
+  margin-top: 1.2rem;
+}
+.kisisel-kart__kutu--sepet .kisisel-kart__butonlar {
+  margin-top: 0.8rem;
+}
+.kisisel-kart__gri-not {
+  margin: 0.8rem 0 0;
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+/* Birden fazla tasarım: kompakt kartlar */
+.kisisel-kart__kutu--kompakt {
+  padding: 1rem 1.2rem;
+}
+.kisisel-kart__kutu--kompakt .kisisel-kart__mini {
+  width: 72px;
+}
+.kisisel-kart__kutu--kompakt .kisisel-kart__sepete-git,
+.kisisel-kart__kutu--kompakt .kisisel-kart__buton {
+  min-height: 40px;
+}
+/* "Bir tane daha mı istersin?" tek satırlık küçük kutu */
+.kisisel-kart__tekrar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: var(--kp-yaricap);
+  background: var(--kp-zemin);
+}
+.kisisel-kart__tekrar-baslik {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+.kisisel-kart__tekrar-alt {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+.kisisel-kart .kisisel-kart__tekrar-buton {
+  flex: none;
+  min-height: 36px;
+  padding: 0 1.4rem;
+  font-size: 1.3rem;
 }
 /* (c) Sepetteki tasarım: yeşil çerçeve */
 .kisisel-kart__kutu--sepet {
@@ -59,15 +128,7 @@ html.kp-kilit .whatsapp-sticky {
   font-size: 1.5rem;
   font-weight: 700;
 }
-.kisisel-kart__kutu--sepet .kisisel-kart__tasarim + .kisisel-kart__tasarim {
-  margin-top: 0.8rem;
-}
-.kisisel-kart__kutu--sepet .kisisel-kart__buton {
-  margin-top: 1.2rem;
-}
-.kisisel-kart__tekrar .kisisel-kart__aciklama {
-  margin: 0.2rem 0 1.2rem;
-}
+
 /* (b) Senin tasarımın */
 .kisisel-kart__ust {
   display: flex;
