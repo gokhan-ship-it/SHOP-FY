@@ -18,6 +18,7 @@ sayfa.on('pageerror', (e) => hatalar.push(e.message));
 sayfa.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') hatalar.push(m.text()); });
 
 let eklenen = null;
+let simulasyon = null;
 let sepet = { items: [] };
 await sayfa.route('https://jantifox.test/**', async (r) => {
   const url = new URL(r.request().url());
@@ -25,6 +26,17 @@ await sayfa.route('https://jantifox.test/**', async (r) => {
     eklenen = JSON.parse(r.request().postData());
     sepet.items = eklenen.items.map((k, i) => ({ key: 'k' + i, id: k.id, variant_id: k.id, quantity: k.quantity, properties: k.properties, product_title: 'P' + k.id, variant_title: '' }));
     return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: sepet.items }) });
+  }
+  if (url.pathname === '/api/2025-07/graphql.json') {
+    // Kampanya simülasyonu: tasarımlı sepette 4'lü patch indirimi (adı Shopify'daki gibi boşluklu)
+    simulasyon = JSON.parse(r.request().postData());
+    const sepetYap = (satirlar) => {
+      const adet = satirlar.reduce((t, l) => t + l.quantity, 0);
+      return { cost: { totalAmount: { amount: '0' } }, discountAllocations: adet >= 5 ? [{ discountedAmount: { amount: '370.0' }, title: "  4'lü  patche indirim " }] : [], lines: { nodes: [] } };
+    };
+    const data = {};
+    for (const [ad, satirlar] of Object.entries(simulasyon.variables)) data[ad] = { cart: sepetYap(satirlar), userErrors: [] };
+    return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ data }) });
   }
   if (url.pathname === '/cart.js') return r.fulfill({ contentType: 'application/json', body: JSON.stringify(sepet) });
   if (url.pathname === '/cart') return r.fulfill({ contentType: 'text/html', body: '<p>sepet</p>' });
@@ -195,10 +207,15 @@ await sayfa.locator('[data-kp-ileri]').click();
 await sayfa.locator('[data-kp-panel="aksesuar"]').waitFor({ state: 'visible' });
 await sayfa.locator('[data-kp-ileri]').click();
 await sayfa.locator('[data-kp-panel="ozet"]').waitFor({ state: 'visible' });
+await sayfa.locator('.kp-ozet__kampanya').waitFor();
 const ozet = await sayfa.locator('.kp-ozet').innerText();
-assert.match(ozet, /Toplam\s+4\.650 TL/);
+assert.match(ozet, /✓ 4'lü patche indirim\s+−370 TL/);
+assert.match(ozet, /Toplam\s+4\.650 TL\s+4\.280 TL/);
+assert.equal(await sayfa.locator('.kp-ozet__eski').textContent(), '4.650 TL');
+assert.equal(await sayfa.locator('.kp-indirim-notu--ozet').count(), 0, 'simülasyon başarılıysa not yok');
+assert.ok(simulasyon && simulasyon.variables.a.length === 0 && simulasyon.variables.b.length > 1, 'boş sepet + tasarım simüle edilmeli');
 assert.match(await sayfa.locator('[data-kp-panel="ozet"] h3').textContent(), /Tasarımın hazır/);
-assert.equal(await sayfa.locator('[data-kp-ileri]').textContent(), 'Sepete ekle · 4.650 TL');
+assert.equal(await sayfa.locator('[data-kp-ileri]').textContent(), 'Tasarımımı sepete ekle · 4.280 TL');
 await sayfa.screenshot({ path: cikti + '07-ozet.png' });
 
 // Özetten doğrudan sepete ekle (editör kapanır; çekmece yoksa /cart'a gider). Eklenince kayıt temizlenir;

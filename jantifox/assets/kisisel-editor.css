@@ -1542,6 +1542,24 @@ html.kp-kilit body {
   font-weight: 700;
   border-bottom: 0;
 }
+.kp-ozet .kp-ozet__kampanya th,
+.kp-ozet .kp-ozet__kampanya td {
+  color: #b3141b;
+  font-weight: 600;
+}
+.kp-ozet .kp-ozet__kayip th,
+.kp-ozet .kp-ozet__kayip td {
+  color: var(--kp-ikincil);
+  font-size: 1.3rem;
+}
+.kp-ozet__eski {
+  color: var(--kp-ikincil);
+  font-weight: 400;
+  margin-right: 0.4rem;
+}
+.kp-ozet tfoot strong {
+  color: #b3141b;
+}
 .kp-bilgi {
   margin: 0;
   padding: 1rem 1.2rem;

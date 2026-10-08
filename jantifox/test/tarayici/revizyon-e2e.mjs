@@ -195,8 +195,9 @@ await s.locator('#kp-isim').fill('ece');
 // 7) Özet: başlık, Sepete ekle · toplam, not ve iki bağlantı
 await s.locator('[data-kp-adim="ozet"]').click();
 assert.equal(await metin('[data-kp-panel="ozet"] h3'), 'Tasarımın hazır');
-assert.match(await metin('[data-kp-ileri]'), /^Sepete ekle · [\d.]+ TL$/);
-assert.equal(await gorunur('.kp-alt__ozet .kp-indirim-notu'), true);
+assert.match(await metin('[data-kp-ileri]'), /^Tasarımımı sepete ekle · [\d.]+ TL$/);
+// Kampanya notu yalnızca simülasyon başarısız olursa görünür (Shopify'ın kendi notu kaldırıldı)
+assert.equal(await gorunur('.kp-alt__ozet .kp-indirim-notu'), false);
 assert.equal(await gorunur('[data-kp-duzenle]'), true);
 assert.equal(await gorunur('[data-kp-urune-don]'), true);
 // "Tasarımı düzenle" İkon adımına döner

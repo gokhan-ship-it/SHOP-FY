@@ -2182,11 +2182,16 @@
       return;
     }
     var f = fiyatHesapla(this.m, this.yer, this.t);
+    var k = this.kampanyaSonucu();
+    var adet = this.kart.adet ? this.kart.adet() : 1;
+    var tutar = (bosMu(this.t) ? f.urun : f.toplam) * adet - (k && k.indirim > 0 ? k.indirim : 0);
+    // "İndirimler sepette uygulanır" notu yalnızca simülasyon başarısızsa
+    this.el.querySelectorAll('.kp-alt__ozet .kp-indirim-notu').forEach(function (n) { n.hidden = !(k && k.hata); });
     if (this.duzenlenen) {
-      ileri.textContent = bosMu(this.t) ? 'Sepetten çıkar' : 'Sepeti güncelle · ' + paraBicimle(f.toplam);
+      ileri.textContent = bosMu(this.t) ? 'Sepetten çıkar' : 'Sepeti güncelle · ' + paraBicimle(tutar);
       return;
     }
-    ileri.textContent = 'Sepete ekle · ' + paraBicimle(bosMu(this.t) ? f.urun : f.toplam);
+    ileri.textContent = (bosMu(this.t) ? 'Sepete ekle · ' : 'Tasarımımı sepete ekle · ') + paraBicimle(tutar);
   };
 
   // Aksesuar ekranı: tasarımı (ya da tasarımsız) çantaya yerleştir
@@ -2783,7 +2788,10 @@
     }
     ileri.setAttribute('aria-disabled', engel ? 'true' : 'false');
     ileri.classList.toggle('kp-alt__ileri--engelli', !!engel);
-    if (this.adim === 'ozet') this.ozetCiz();
+    if (this.adim === 'ozet') {
+      this.kampanyaGuncelle();
+      this.ozetCiz();
+    }
     this.ileriYazisi();
     this.secimGuncelle();
     this.setCerceveCiz();
@@ -3105,18 +3113,16 @@
     return yer.grupGecerli(parcalar, digerleri) ? null : 'cakisma';
   };
 
+  // Özet: kalem kalem fiyatlar, uygulanan her kampanya ayrı satır (Shopify'daki adıyla), toplamda eski fiyat üstü çizili
   Editor.prototype.ozetCiz = function () {
     var m = this.m;
+    var self = this;
     var panel = this.el.querySelector('[data-kp-panel="ozet"]');
     var f = fiyatHesapla(m, this.yer, this.t);
     var p = function (k) { return paraBicimle(k); };
-    var satirlar = '<tr><th scope="row">' + kacis(m.urun.baslik) + '</th><td>' + p(f.urun) + '</td></tr>';
-    if (f.harfAdet + f.rakamAdet) satirlar += '<tr><th scope="row">Yazı ve rakam: ' + kacis(this.t.isim) + ' <span>(' + (f.harfAdet + f.rakamAdet) + ' patch)</span></th><td>' + p(f.harf + f.rakam) + '</td></tr>';
-    if (f.ikonAdet) {
-      var ikonlar = this.durum.parcalar.filter(function (x) { return x.tip === 'icon'; }).map(function (x) { return x.etiket; }).join(', ');
-      satirlar += '<tr><th scope="row">İkonlar: ' + kacis(ikonlar) + ' <span>(' + f.ikonAdet + ' ikon)</span></th><td>' + p(f.ikon) + '</td></tr>';
-    }
-    var self = this;
+    var satir = function (ad, alt, tutar, sinif) {
+      return '<tr' + (sinif ? ' class="' + sinif + '"' : '') + '><th scope="row">' + ad + (alt ? ' <span>' + alt + '</span>' : '') + '</th><td>' + tutar + '</td></tr>';
+    };
     var engelliAdim = this.adimlar.filter(function (a) { return a.id !== 'ozet' && self.adimEngeli(a.id); })[0];
     if (bosMu(this.t)) {
       // Hiç patch yok: geri dön ya da sadece çanta (alttaki "Sepete ekle" de düz çantayı ekler)
@@ -3130,12 +3136,76 @@
       if (panel.innerHTML !== bos) panel.innerHTML = bos;
       return;
     }
+    var satirlar = satir(kacis(m.urun.baslik), '', p(f.urun));
+    if (f.harfAdet + f.rakamAdet) satirlar += satir('Yazı ve rakam: ' + kacis(this.t.isim), '(' + (f.harfAdet + f.rakamAdet) + ' patch)', p(f.harf + f.rakam));
+    var saglam = saglamSetler(m, this.t);
+    var setIdleri = saglam.map(function (k) { return k.id; });
+    var ikonlar = this.durum.parcalar.filter(function (x) { return x.tip === 'icon' && !(x.setGrup && setIdleri.indexOf(x.setGrup) !== -1); });
+    if (ikonlar.length) satirlar += satir('İkonlar: ' + kacis(ikonlar.map(function (x) { return x.etiket; }).join(', ')), '(' + ikonlar.length + ' patch)', p(f.ikon));
+    f.setler.forEach(function (s) { satirlar += satir(kacis(s.tanim.ad) + ' seti', '(' + s.tanim.patchler.length + ' patch)', p(s.tanim.fiyat)); });
+    f.aksesuarlar.forEach(function (a) {
+      satirlar += satir(kacis(a.tanim.ad) + (a.ozet ? ' ve tasarımı: ' + kacis(a.ozet) : ''), a.patchAdet ? '(' + a.patchAdet + ' patch)' : '', p(a.toplam));
+    });
+    var k = this.kampanyaSonucu();
+    var adet = this.kart.adet ? this.kart.adet() : 1;
+    var liste = f.toplam * adet;
+    var kampanyaSatirlari = '';
+    if (k && k.kampanyalar) {
+      k.kampanyalar.forEach(function (x) {
+        kampanyaSatirlari += satir('✓ ' + kacis(x.ad), '', '−' + p(x.tutar), 'kp-ozet__kampanya');
+      });
+      (k.kayiplar || []).forEach(function (x) {
+        kampanyaSatirlari += satir('Sepetindeki ' + kacis(x.ad) + ' bunun yerine geçer', '', '+' + p(x.tutar), 'kp-ozet__kayip');
+      });
+    }
+    var toplam = k && k.indirim > 0
+      ? '<s class="kp-ozet__eski">' + p(liste) + '</s> <strong>' + p(liste - k.indirim) + '</strong>'
+      : p(liste);
     panel.innerHTML =
       '<h3 id="kp-p-ozet" class="kp-panel__baslik" tabindex="-1">Tasarımın hazır</h3>' +
       (engelliAdim ? '<p class="kp-uyari kp-uyari--hata">' + engelliAdim.ad + ' adımında çözülmesi gereken bir sorun var.</p>' : '') +
-      '<table class="kp-ozet"><tbody>' + satirlar + '</tbody>' +
-      '<tfoot><tr><th scope="row">Toplam</th><td>' + p(f.toplam) + '</td></tr></tfoot></table>' +
+      '<table class="kp-ozet"><tbody>' + satirlar + kampanyaSatirlari + '</tbody>' +
+      '<tfoot><tr><th scope="row">Toplam</th><td>' + toplam + '</td></tr></tfoot></table>' +
+      (k && k.hata ? '<p class="kp-indirim-notu kp-indirim-notu--ozet">İndirimler sepette uygulanır</p>' : '') +
       '<p class="kp-bilgi">Patch\'ler Velcro yüzeye takılır. Çanta eline geçince istediğin yere takar, istediğin zaman yerini değiştirirsin.</p>';
+  };
+
+  // Tasarımın sepet satırları (simülasyon için): varyant ve adet
+  Editor.prototype.simulasyonSatirlari = function () {
+    var adet = this.kart.adet ? this.kart.adet() : 1;
+    if (bosMu(this.t)) return [{ v: this.m.urun.varyant, q: adet }];
+    return this.kart.sepetKalemleri(adet, this.t).kalemler.map(function (k) { return { v: k.id, q: k.quantity }; });
+  };
+
+  // Kampanyalı fiyat: değişiklikler biriktirilir (350 ms), sonuç önbellekte. Hata: liste fiyatı + "İndirimler sepette uygulanır"
+  Editor.prototype.kampanyaGuncelle = function () {
+    if (this.alt || !this.kart.sepetKalemleri) return;
+    var self = this;
+    var satirlar = this.simulasyonSatirlari();
+    var haric = this.duzenlenen ? this.duzenlenen.id : null;
+    var anahtar = JSON.stringify([satirlar, haric]);
+    if (anahtar === this.kampanyaAnahtari) return;
+    this.kampanyaAnahtari = anahtar;
+    clearTimeout(this.kampanyaZamanlayici);
+    this.kampanyaZamanlayici = setTimeout(function () {
+      kampanyaHesapla(satirlar, haric).then(
+        function (s) { self.kampanyaBitti(anahtar, s); },
+        function () { self.kampanyaBitti(anahtar, { hata: true }); }
+      );
+    }, 350);
+  };
+
+  Editor.prototype.kampanyaBitti = function (anahtar, sonuc) {
+    if (anahtar !== this.kampanyaAnahtari) return;
+    this.kampanya = { anahtar: anahtar, sonuc: sonuc };
+    if (this.el.hidden) return;
+    if (this.adim === 'ozet') this.ozetCiz();
+    this.ileriYazisi();
+  };
+
+  // Güncel tasarıma ait kampanya sonucu (henüz hesaplanmadıysa null)
+  Editor.prototype.kampanyaSonucu = function () {
+    return this.kampanya && this.kampanya.anahtar === this.kampanyaAnahtari ? this.kampanya.sonuc : null;
   };
 
   /* ---------------- Seçim ve döndürme ---------------- */
@@ -3756,6 +3826,117 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /* Kampanyalı fiyat (Storefront API ile geçici sepet simülasyonu)       */
+  /* ------------------------------------------------------------------ */
+
+  // Kendi indirim hesabımız yok: müşterinin sepetine dokunmadan Storefront API'de geçici sepetler oluşturulur
+  // (mevcut sepet / mevcut sepet + tasarım), Shopify'ın uyguladığı kampanyalar adlarıyla okunur. Sonuçlar önbellekte.
+  var KAMPANYA_API = '/api/2025-07/graphql.json';
+  var kampanyaOnbellek = {};
+  var sepetOnbellek = null; // { zaman, satirlar: [{ v, q, tasarim }] }
+
+  function kampanyaSepetiniUnut() {
+    sepetOnbellek = null;
+  }
+
+  // Müşterinin şu anki sepet satırları (5 sn önbellek)
+  function musteriSepeti() {
+    if (sepetOnbellek && Date.now() - sepetOnbellek.zaman < 5000) return Promise.resolve(sepetOnbellek.satirlar);
+    var rotalar = window.routes || {};
+    return fetch((rotalar.cart_url || '/cart') + '.js', { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (sepet) {
+        var satirlar = (sepet.items || []).map(function (k) {
+          return { v: k.variant_id, q: k.quantity, tasarim: (k.properties || {})._tasarim_id || null };
+        });
+        sepetOnbellek = { zaman: Date.now(), satirlar: satirlar };
+        return satirlar;
+      });
+  }
+
+  function kurus(tutar) {
+    return Math.round(parseFloat((tutar && tutar.amount) || tutar || 0) * 100) || 0;
+  }
+
+  // Kampanya adı Shopify'daki gibi, yalnızca fazla boşluklar kırpılır
+  function kampanyaAdi(ad) {
+    return String(ad || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function sepetIndirimleri(sepet) {
+    var adlar = {};
+    var ekle = function (d) {
+      var ad = kampanyaAdi(d.title) || 'İndirim';
+      adlar[ad] = (adlar[ad] || 0) + kurus(d.discountedAmount);
+    };
+    (sepet.discountAllocations || []).forEach(ekle);
+    ((sepet.lines && sepet.lines.nodes) || []).forEach(function (l) { (l.discountAllocations || []).forEach(ekle); });
+    return adlar;
+  }
+
+  var SEPET_PARCASI =
+    'fragment C on Cart { cost { totalAmount { amount } } ' +
+    'discountAllocations { discountedAmount { amount } ... on CartAutomaticDiscountAllocation { title } } ' +
+    'lines(first: 100) { nodes { quantity discountAllocations { discountedAmount { amount } ... on CartAutomaticDiscountAllocation { title } } } } }';
+
+  function satirGirdisi(satirlar) {
+    var birlesik = {};
+    satirlar.forEach(function (s) { birlesik[s.v] = (birlesik[s.v] || 0) + s.q; });
+    return Object.keys(birlesik).map(function (v) { return { merchandiseId: 'gid://shopify/ProductVariant/' + v, quantity: birlesik[v] }; });
+  }
+
+  // tasarimSatirlari: [{ v, q }]; haric: düzenlenen sepet grubunun _tasarim_id'si (onun yerini yeni tasarım alır)
+  // ekSatirlar: "bir patch daha" gibi ek simülasyonlar için ([{ ad, satirlar }])
+  // Sonuç: { liste, indirim, indirimli, kampanyalar: [{ ad, tutar }], ekler: { ad: { indirim, kampanyalar } } }
+  function kampanyaHesapla(tasarimSatirlari, haric, ekSatirlar) {
+    return musteriSepeti().then(function (mevcut) {
+      var temel = mevcut.filter(function (s) { return !haric || s.tasarim !== haric; });
+      var anahtar = JSON.stringify([satirGirdisi(temel), satirGirdisi(tasarimSatirlari), (ekSatirlar || []).map(function (e) { return [e.ad, satirGirdisi(e.satirlar)]; })]);
+      if (kampanyaOnbellek[anahtar]) return kampanyaOnbellek[anahtar];
+      var degiskenler = { a: satirGirdisi(temel), b: satirGirdisi(temel.concat(tasarimSatirlari)) };
+      var tanim = '$a: [CartLineInput!]!, $b: [CartLineInput!]!';
+      var govde = 'a: cartCreate(input: { lines: $a }) { cart { ...C } userErrors { message } } b: cartCreate(input: { lines: $b }) { cart { ...C } userErrors { message } }';
+      (ekSatirlar || []).forEach(function (e, i) {
+        degiskenler['e' + i] = satirGirdisi(temel.concat(tasarimSatirlari, e.satirlar));
+        tanim += ', $e' + i + ': [CartLineInput!]!';
+        govde += ' e' + i + ': cartCreate(input: { lines: $e' + i + ' }) { cart { ...C } userErrors { message } }';
+      });
+      var sorgu = { query: 'mutation Simulasyon(' + tanim + ') { ' + govde + ' } ' + SEPET_PARCASI, variables: degiskenler };
+      var soz = fetch(KAMPANYA_API, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(sorgu) })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          var d = j && j.data;
+          if (!d || !d.a || !d.b || !d.a.cart || !d.b.cart) throw new Error('Simülasyon başarısız');
+          var once = sepetIndirimleri(d.a.cart);
+          var sonra = sepetIndirimleri(d.b.cart);
+          var fark = function (x, y) {
+            var liste = [];
+            Object.keys(y).forEach(function (ad) {
+              var t = y[ad] - (x[ad] || 0);
+              if (t > 0) liste.push({ ad: ad, tutar: t });
+            });
+            return liste;
+          };
+          var toplamIndirim = function (x) { return Object.keys(x).reduce(function (t, ad) { return t + x[ad]; }, 0); };
+          var kampanyalar = fark(once, sonra);
+          // Sepetteki bir kampanya tasarımla birlikte kalkabilir (ör. 2'li yerine 4'lü): net fark ayrıca gösterilir
+          var kayiplar = fark(sonra, once);
+          var sonuc = { kampanyalar: kampanyalar, kayiplar: kayiplar, indirim: toplamIndirim(sonra) - toplamIndirim(once), ekler: {}, sepetIndirim: toplamIndirim(sonra) };
+          (ekSatirlar || []).forEach(function (e, i) {
+            var c = d['e' + i] && d['e' + i].cart;
+            if (!c) return;
+            var ek = sepetIndirimleri(c);
+            sonuc.ekler[e.ad] = { kampanyalar: fark(once, ek), indirim: toplamIndirim(ek) - toplamIndirim(once) };
+          });
+          return sonuc;
+        });
+      kampanyaOnbellek[anahtar] = soz;
+      soz.catch(function () { delete kampanyaOnbellek[anahtar]; });
+      return soz;
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
   /* Ürün sayfası kartı                                                  */
   /* ------------------------------------------------------------------ */
 
@@ -3966,6 +4147,7 @@
   // Sepetteki bu ürüne ait kişiselleştirilmiş gruplar (_tasarim_id), kart (c) durumu için
   KisiselKart.prototype.sepetOku = function () {
     var self = this;
+    kampanyaSepetiniUnut();
     var m = this.model;
     var rotalar = window.routes || {};
     var sira = (this._sepetSira = (this._sepetSira || 0) + 1);
