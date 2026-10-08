@@ -10,6 +10,8 @@
   2. Daire / oval / dikdörtgen alan ve yasaklı bölgeleri çiz, tutamaçlardan ayarla.
   3. Bir alanın gerçek ölçüsünü gir (ör. çap 25 cm). Ölçek buradan hesaplanır.
   4. Üretilen JSON'u ürünün kisisellestirme.harita metafield'ına yapıştır.
+  Aksesuar modu: aksesuarın PNG'sini yükle, "Dış ölçü"yü çizip sitedeki ölçüyü (cm) gir, sonra aksesuarın kendi
+  Velcro yüzeyini çiz. Ölçek dış ölçüden alınır. Ayrıntı: README.md → "Yeni aksesuar ekleme".
 -->
 <style>
   :root {
@@ -38,6 +40,7 @@
   .sekil { fill: rgba(0, 194, 255, .14); stroke: var(--alan); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: move; }
   .sekil.yasak { fill: rgba(255, 59, 48, .18); stroke: var(--yasak); stroke-dasharray: 6 4; }
   .sekil.secili { stroke-width: 3; }
+  .sekil.dis { fill: rgba(232, 116, 43, .08); stroke: #e8742b; stroke-dasharray: 10 6; }
   .tutamac { fill: #fff; stroke: var(--murekkep); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
   .etiket { font-weight: 600; font-family: sans-serif; fill: #fff; paint-order: stroke; stroke: rgba(0,0,0,.65); stroke-width: 3px; pointer-events: none; }
   .ornek { fill: rgba(255, 210, 0, .85); stroke: #111; stroke-width: 1.5; vector-effect: non-scaling-stroke; cursor: move; }
@@ -80,6 +83,9 @@
     <span class="ayirac"></span>
     <button type="button" data-arac="yasak-rect" aria-pressed="false" title="Yasaklı bölge, dikdörtgen">Yasaklı ▭</button>
     <button type="button" data-arac="yasak-ellipse" aria-pressed="false" title="Yasaklı bölge, oval">Yasaklı ◯</button>
+    <span class="ayirac" data-aksesuar-goster hidden></span>
+    <button type="button" data-arac="dis-rect" data-aksesuar-goster hidden aria-pressed="false" title="Aksesuarın dış ölçüsü, dikdörtgen (D)">Dış ölçü ▭</button>
+    <button type="button" data-arac="dis-circle" data-aksesuar-goster hidden aria-pressed="false" title="Aksesuarın dış ölçüsü, daire">Dış ölçü ◯</button>
     <span class="ayirac"></span>
     <button type="button" id="uzaklas" title="Uzaklaş (-)">−</button>
     <button type="button" id="sigdir" title="Ekrana sığdır (0)">Sığdır</button>
@@ -94,6 +100,15 @@
 
 <aside>
   <h1>JantiFox Alan Çizici</h1>
+
+  <section>
+    <h2>Ne çiziyorsun?</h2>
+    <div class="satir">
+      <label class="onay"><input type="radio" name="mod" value="urun" checked> Çanta / ürün alanı</label>
+      <label class="onay"><input type="radio" name="mod" value="aksesuar"> Aksesuar</label>
+    </div>
+    <p class="not" id="mod-not">Çantanın takılabilir alanını çiz; bir alanın gerçek ölçüsünü gir.</p>
+  </section>
 
   <section>
     <h2>Görsel</h2>
@@ -130,6 +145,14 @@
         <input type="number" id="o-olcu" step="0.1" min="0" placeholder="cm" style="width:110px"> <span>cm</span>
       </div>
       <p class="not" id="o-olcu-not"></p>
+    </div>
+    <div id="o-dis-ayar" hidden>
+      <label>Sitedeki dış ölçü (ölçek buradan alınır)</label>
+      <div class="izgara">
+        <div><label for="o-dis-en" id="o-dis-en-ad">Genişlik (cm)</label><input type="number" id="o-dis-en" step="0.1" min="0" placeholder="cm"></div>
+        <div id="o-dis-boy-kap"><label for="o-dis-boy">Yükseklik (cm)</label><input type="number" id="o-dis-boy" step="0.1" min="0" placeholder="cm"></div>
+      </div>
+      <p class="not" id="o-dis-not"></p>
     </div>
     <div class="satir" style="margin-top:10px">
       <button type="button" class="tehlike" id="sil">Şekli sil</button>
@@ -177,6 +200,7 @@
     sekiller: [], // { id, tur: 'alan'|'yasak', shape, x, y, w, h, ad, tipler, olcuCm }
     seciliId: null,
     arac: 'sec',
+    mod: 'urun', // 'urun' | 'aksesuar'
     zoom: 1,
     ornek: { cx: null, cy: null }
   };
@@ -253,7 +277,15 @@
   /* ---------------- Ölçek ---------------- */
 
   // cm başına piksel: gerçek ölçüsü girilmiş ilk alandan
+  function disSekil() {
+    return durum.sekiller.filter(function (s) { return s.tur === 'dis'; })[0] || null;
+  }
   function olcek() {
+    if (durum.mod === 'aksesuar') {
+      var d = disSekil();
+      if (!d || !(d.enCm > 0)) return null;
+      return { pxCm: d.w / d.enCm, kaynak: d, tumu: [{ sekil: d, pxCm: d.w / d.enCm }] };
+    }
     var alan = durum.sekiller.filter(function (s) { return s.tur === 'alan' && s.olcuCm > 0; });
     if (!alan.length) return null;
     var olculer = alan.map(function (s) {
@@ -272,7 +304,7 @@
   }
 
   function sekilEl(s) {
-    var sinif = 'sekil' + (s.tur === 'yasak' ? ' yasak' : '') + (s.id === durum.seciliId ? ' secili' : '');
+    var sinif = 'sekil' + (s.tur === 'yasak' ? ' yasak' : s.tur === 'dis' ? ' dis' : '') + (s.id === durum.seciliId ? ' secili' : '');
     var e = s.shape === 'rect'
       ? el('rect', { x: s.x, y: s.y, width: s.w, height: s.h })
       : el('ellipse', { cx: s.x + s.w / 2, cy: s.y + s.h / 2, rx: s.w / 2, ry: s.h / 2 });
@@ -289,7 +321,7 @@
     durum.sekiller.forEach(function (s) {
       svg.appendChild(sekilEl(s));
       var t = el('text', { x: s.x, y: s.y - 6 / durum.zoom, class: 'etiket', 'font-size': yaziBoy });
-      t.textContent = (s.tur === 'yasak' ? 'Yasaklı: ' : '') + s.ad;
+      t.textContent = (s.tur === 'yasak' ? 'Yasaklı: ' : '') + s.ad + (s.tur === 'dis' && s.enCm ? ' · ' + s.enCm + (s.shape === 'circle' ? ' cm çap' : ' × ' + (s.boyCm || '?') + ' cm') : '');
       svg.appendChild(t);
     });
     ornekCiz();
@@ -375,17 +407,24 @@
 
     if (durum.arac !== 'sec') {
       var yasak = durum.arac.indexOf('yasak-') === 0;
-      var shape = yasak ? durum.arac.slice(6) : durum.arac;
+      var dis = durum.arac.indexOf('dis-') === 0;
+      var shape = yasak ? durum.arac.slice(6) : dis ? durum.arac.slice(4) : durum.arac;
       sayac++;
-      var alanSayisi = durum.sekiller.filter(function (s) { return s.tur === (yasak ? 'yasak' : 'alan'); }).length + 1;
+      var tur = yasak ? 'yasak' : dis ? 'dis' : 'alan';
+      var alanSayisi = durum.sekiller.filter(function (s) { return s.tur === tur; }).length + 1;
+      var eskiDis = dis && disSekil();
+      // Dış ölçü tektir: yenisi çizilince eskisi kalkar, girilen cm değerleri korunur
+      if (eskiDis) durum.sekiller = durum.sekiller.filter(function (x) { return x !== eskiDis; });
       var s = {
         id: 's' + sayac,
-        tur: yasak ? 'yasak' : 'alan',
+        tur: tur,
         shape: shape,
         x: p.x, y: p.y, w: 0, h: 0,
-        ad: yasak ? 'Bölge ' + alanSayisi : (alanSayisi === 1 ? 'Ön alan' : 'Alan ' + alanSayisi),
+        ad: dis ? 'Dış ölçü' : yasak ? 'Bölge ' + alanSayisi : durum.mod === 'aksesuar' ? (alanSayisi === 1 ? 'Velcro yüzeyi' : 'Velcro yüzeyi ' + alanSayisi) : (alanSayisi === 1 ? 'Ön alan' : 'Alan ' + alanSayisi),
         tipler: ['letter', 'number', 'icon'],
-        olcuCm: null
+        olcuCm: null,
+        enCm: eskiDis ? eskiDis.enCm : null,
+        boyCm: eskiDis ? eskiDis.boyCm : null
       };
       durum.sekiller.push(s);
       durum.seciliId = s.id;
@@ -460,7 +499,8 @@
       } else {
         sinirla(s);
         aracSec('sec');
-        if (s.tur === 'alan' && !olcek()) setTimeout(function () { $('#o-olcu').focus(); }, 0);
+        if (s.tur === 'dis' && !olcek()) setTimeout(function () { $('#o-dis-en').focus(); }, 0);
+        else if (s.tur === 'alan' && durum.mod !== 'aksesuar' && !olcek()) setTimeout(function () { $('#o-olcu').focus(); }, 0);
       }
     }
     islem = null;
@@ -488,6 +528,7 @@
     else if (e.key === 'c' || e.key === 'C') aracSec('circle');
     else if (e.key === 'o' || e.key === 'O') aracSec('ellipse');
     else if (e.key === 'r' || e.key === 'R') aracSec('rect');
+    else if ((e.key === 'd' || e.key === 'D') && durum.mod === 'aksesuar') aracSec('dis-rect');
     else if (e.key === '+' || e.key === '=') zoomDegistir(1.25);
     else if (e.key === '-') zoomDegistir(0.8);
     else if (e.key === '0') sigdir();
@@ -512,8 +553,9 @@
     durum.sekiller.forEach(function (s) {
       var li = document.createElement('li');
       li.setAttribute('aria-selected', s.id === durum.seciliId ? 'true' : 'false');
+      var cm = s.tur === 'dis' ? (s.enCm ? s.enCm + (s.shape === 'circle' ? '' : ' × ' + (s.boyCm || '?')) + ' cm' : '') : s.olcuCm ? s.olcuCm + ' cm' : '';
       li.innerHTML = '<span>' + s.ad.replace(/</g, '&lt;') + ' <span class="rozet ' + s.tur + '">' + (s.tur === 'yasak' ? 'yasaklı ' : '') + SEKIL_ADLARI[s.shape].toLowerCase() + '</span></span>' +
-        (s.olcuCm ? '<span class="rozet">' + s.olcuCm + ' cm</span>' : '');
+        (cm ? '<span class="rozet">' + cm + '</span>' : '');
       li.onclick = function () { durum.seciliId = s.id; ciz(); };
       liste.appendChild(li);
     });
@@ -529,11 +571,33 @@
         if (g !== aktif) g.value = a[1];
       });
       $('#o-alan-ayar').hidden = s.tur !== 'alan';
+      $('#o-dis-ayar').hidden = s.tur !== 'dis';
+      // Aksesuarda ölçek dış ölçüden: Velcro yüzeyinde cm kutusu yerine hesaplanan ölçü gösterilir
+      $('#o-olcu').parentNode.hidden = durum.mod === 'aksesuar';
+      document.querySelector('label[for="o-olcu"]').hidden = durum.mod === 'aksesuar';
+      if (s.tur === 'dis') {
+        var daire = s.shape === 'circle';
+        $('#o-dis-en-ad').textContent = daire ? 'Çap (cm)' : 'Genişlik (cm)';
+        $('#o-dis-boy-kap').hidden = daire;
+        if ($('#o-dis-en') !== aktif) $('#o-dis-en').value = s.enCm || '';
+        if ($('#o-dis-boy') !== aktif) $('#o-dis-boy').value = s.boyCm || '';
+        var dn = '';
+        if (s.enCm > 0 && !daire && s.boyCm > 0) {
+          var beklenen = s.w * s.boyCm / s.enCm;
+          var fark = Math.abs(s.h - beklenen) / beklenen;
+          dn = fark > 0.05
+            ? 'Çizilen kutunun oranı sitedeki ölçüden %' + Math.round(fark * 100) + ' farklı. Görsel açılı çekilmiş olabilir; kutuyu ön yüze göre ayarla.'
+            : 'Oran sitedeki ölçüyle uyumlu (fark %' + Math.round(fark * 100) + ').';
+        } else if (!(s.enCm > 0)) dn = 'Sitedeki ölçüyü gir; ölçek buradan hesaplanır.';
+        $('#o-dis-not').textContent = dn;
+      }
       document.querySelectorAll('[data-tip]').forEach(function (c) { c.checked = s.tipler.indexOf(c.getAttribute('data-tip')) !== -1; });
       $('#o-olcu-tur').textContent = s.shape === 'circle' ? 'Çap' : 'Genişlik';
       if ($('#o-olcu') !== aktif) $('#o-olcu').value = s.olcuCm || '';
       var o = olcek();
-      $('#o-olcu-not').textContent = !o
+      $('#o-olcu-not').textContent = durum.mod === 'aksesuar'
+        ? (o ? 'Velcro yüzeyi: ' + yuvarla(s.w / o.pxCm) + ' × ' + yuvarla(s.h / o.pxCm) + ' cm (ölçek dış ölçüden).' : 'Önce dış ölçüyü çizip cm değerini gir.')
+        : !o
         ? 'Bu alanın gerçek ölçüsünü girince ölçek hesaplanır.'
         : s.olcuCm
           ? (o.kaynak === s ? 'Ölçek bu alandan alınıyor.' : 'Ölçek "' + o.kaynak.ad + '" alanından alınıyor; bu değer yalnızca kontrol için.')
@@ -544,7 +608,9 @@
     var od = $('#olcek-durum');
     var ol = olcek();
     if (!durum.gorsel) od.innerHTML = '<p class="uyari bilgi">Önce görseli yükle.</p>';
-    else if (!ol) od.innerHTML = '<p class="uyari hata">Ölçek yok: bir alan çizip gerçek ölçüsünü (ör. çap 25 cm) gir.</p>';
+    else if (!ol) od.innerHTML = durum.mod === 'aksesuar'
+      ? '<p class="uyari hata">Ölçek yok: "Dış ölçü" çizip sitedeki ölçüyü (ör. 22 × 12 cm) gir.</p>'
+      : '<p class="uyari hata">Ölçek yok: bir alan çizip gerçek ölçüsünü (ör. çap 25 cm) gir.</p>';
     else {
       var satirlar = ['<p class="uyari tamam">1 cm = ' + yuvarla(ol.pxCm, 2) + ' px · Görsel ' + yuvarla(durum.gorsel.en / ol.pxCm) + ' × ' + yuvarla(durum.gorsel.boy / ol.pxCm) + ' cm</p>'];
       // Birden çok ölçülü alan varsa tutarlılık kontrolü
@@ -571,6 +637,21 @@
   $('#o-ad').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { s.ad = this.value || 'Alan'; ciz(); } });
   $('#o-sekil').addEventListener('change', function () { var s = bul(durum.seciliId); if (s) { s.shape = this.value; sinirla(s); ciz(); } });
   $('#o-olcu').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-olcu'); s.olcuCm = v > 0 ? v : null; ciz(); } });
+  $('#o-dis-en').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-dis-en'); s.enCm = v > 0 ? v : null; ciz(); } });
+  $('#o-dis-boy').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-dis-boy'); s.boyCm = v > 0 ? v : null; ciz(); } });
+  function modSec(m) {
+    durum.mod = m;
+    document.querySelectorAll('input[name="mod"]').forEach(function (r) { r.checked = r.value === m; });
+    document.querySelectorAll('[data-aksesuar-goster]').forEach(function (e) { e.hidden = m !== 'aksesuar'; });
+    $('#mod-not').textContent = m === 'aksesuar'
+      ? 'Aksesuarın PNG’si: önce "Dış ölçü"yü (çantada kapladığı alan) çizip sitedeki ölçüyü gir, sonra aksesuarın kendi Velcro yüzeyini Daire / Oval / Dikdörtgen ile çiz. Velcro yüzeyi yoksa çizme.'
+      : 'Çantanın takılabilir alanını çiz; bir alanın gerçek ölçüsünü gir.';
+    if (m !== 'aksesuar') durum.sekiller = durum.sekiller.filter(function (x) { return x.tur !== 'dis'; });
+    if (m === 'aksesuar') durum.sekiller.forEach(function (x) { if (x.tur === 'alan' && /^(Ön alan|Alan \d+)$/.test(x.ad)) x.ad = 'Velcro yüzeyi'; });
+    ciz();
+    panelGuncelle();
+  }
+  document.querySelectorAll('input[name="mod"]').forEach(function (r) { r.addEventListener('change', function () { modSec(r.value); }); });
   document.querySelectorAll('[data-tip]').forEach(function (c) {
     c.addEventListener('change', function () {
       var s = bul(durum.seciliId); if (!s) return;
@@ -592,8 +673,14 @@
     var alanlar = durum.sekiller.filter(function (s) { return s.tur === 'alan'; });
     var sorunlar = [];
     if (!g) sorunlar.push('Görsel yüklenmedi.');
-    if (g && !alanlar.length) sorunlar.push('En az bir takılabilir alan çiz.');
-    if (g && alanlar.length && !olcek()) sorunlar.push('Bir alanın gerçek ölçüsünü gir.');
+    var aks = durum.mod === 'aksesuar';
+    var dis = disSekil();
+    if (g && aks) {
+      if (!dis) sorunlar.push('Aksesuarın dış ölçüsünü çiz ("Dış ölçü").');
+      else if (!(dis.enCm > 0) || (dis.shape !== 'circle' && !(dis.boyCm > 0))) sorunlar.push('Dış ölçünün cm değerlerini gir.');
+    }
+    if (g && !aks && !alanlar.length) sorunlar.push('En az bir takılabilir alan çiz.');
+    if (g && !aks && alanlar.length && !olcek()) sorunlar.push('Bir alanın gerçek ölçüsünü gir.');
     alanlar.forEach(function (s) { if (!s.tipler.length) sorunlar.push('"' + s.ad + '" için en az bir patch tipi seç.'); });
     if (sorunlar.length) {
       durumEl.innerHTML = '<p class="uyari hata">' + sorunlar.join('<br>') + '</p>';
@@ -629,12 +716,31 @@
         return { ad: s.ad, shape: s.shape, x: yuzde(s.x, g.en), y: yuzde(s.y, g.boy), w: yuzde(s.w, g.en), h: yuzde(s.h, g.boy) };
       })
     };
-    // Ölçek ilk ölçülü alandan alınır: o alanı listenin başına al
-    var kaynak = olcek().kaynak;
-    var i = alanlar.indexOf(kaynak);
-    if (i > 0) harita.zones.unshift(harita.zones.splice(i, 1)[0]);
+    if (aks) {
+      // Aksesuar: dış ölçü (çantada kapladığı alan) + kendi Velcro yüzeyi. Editör ölçeği ilk alanın cm değerinden okur:
+      // dış ölçüden hesaplanan değer ilk alana yazılır.
+      var pxCm = olcek().pxCm;
+      harita = { surum: 2, tip: 'aksesuar', kalibre: true, gorsel: harita.gorsel,
+        dis: { shape: dis.shape, x: yuzde(dis.x, g.en), y: yuzde(dis.y, g.boy), w: yuzde(dis.w, g.en), h: yuzde(dis.h, g.boy),
+          en_cm: dis.enCm, boy_cm: dis.shape === 'circle' ? dis.enCm : dis.boyCm },
+        zones: harita.zones, forbidden: harita.forbidden };
+      harita.zones.forEach(function (z, k) {
+        var s = alanlar[k];
+        delete z.cap_cm; delete z.genislik_cm;
+        if (k === 0) z[s.shape === 'circle' ? 'cap_cm' : 'genislik_cm'] = yuvarla(s.w / pxCm, 2);
+      });
+    } else {
+      // Ölçek ilk ölçülü alandan alınır: o alanı listenin başına al
+      var kaynak = olcek().kaynak;
+      var i = alanlar.indexOf(kaynak);
+      if (i > 0) harita.zones.unshift(harita.zones.splice(i, 1)[0]);
+    }
     cikti.value = JSON.stringify(harita, null, 2);
-    durumEl.innerHTML = '<p class="uyari tamam">Hazır: ' + alanlar.length + ' alan, ' + harita.forbidden.length + ' yasaklı bölge.</p>';
+    durumEl.innerHTML = aks
+      ? (alanlar.length
+        ? '<p class="uyari tamam">Hazır: dış ölçü + ' + alanlar.length + ' Velcro yüzeyi.</p>'
+        : '<p class="uyari bilgi">Hazır: yalnızca dış ölçü. Velcro yüzeyi yok, aksesuar tasarlanamaz; çantaya düz yerleştirilir.</p>')
+      : '<p class="uyari tamam">Hazır: ' + alanlar.length + ' alan, ' + harita.forbidden.length + ' yasaklı bölge.</p>';
     kopyala.disabled = false;
   }
 
@@ -657,10 +763,16 @@
       } else not.textContent = 'Uygulandı.';
       var px = function (v, t) { return (Number(v) || 0) / 100 * t; };
       durum.sekiller = [];
+      modSec(h.tip === 'aksesuar' || h.dis ? 'aksesuar' : 'urun');
+      if (h.dis) {
+        sayac++;
+        durum.sekiller.push({ id: 's' + sayac, tur: 'dis', shape: h.dis.shape || 'rect', x: px(h.dis.x, g.en), y: px(h.dis.y, g.boy), w: px(h.dis.w, g.en), h: px(h.dis.h, g.boy),
+          ad: 'Dış ölçü', tipler: [], olcuCm: null, enCm: Number(h.dis.en_cm) || null, boyCm: Number(h.dis.boy_cm) || null });
+      }
       (h.zones || []).forEach(function (z) {
         sayac++;
         durum.sekiller.push({ id: 's' + sayac, tur: 'alan', shape: z.shape || 'rect', x: px(z.x, g.en), y: px(z.y, g.boy), w: px(z.w, g.en), h: px(z.h, g.boy),
-          ad: z.ad || z.id || 'Alan', tipler: z.allowed_types || ['letter', 'number', 'icon'], olcuCm: Number(z.cap_cm || z.genislik_cm) || null });
+          ad: z.ad || z.id || 'Alan', tipler: z.allowed_types || ['letter', 'number', 'icon'], olcuCm: h.dis ? null : Number(z.cap_cm || z.genislik_cm) || null });
       });
       (h.forbidden || []).forEach(function (z, i) {
         sayac++;
@@ -675,7 +787,7 @@
   };
 
   panelGuncelle();
-  window.AlanCizici = { durum: durum, ciktiUret: ciktiUret };
+  window.AlanCizici = { durum: durum, ciktiUret: ciktiUret, modSec: modSec };
 })();
 </script>
 </body>
