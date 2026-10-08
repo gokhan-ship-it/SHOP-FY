@@ -28,6 +28,11 @@ Bu proje kapsamında mağazada yapılan her yazma işlemi burada listelenir. Mev
 | 2026-10-08 | `fileCreate` ×9 | Photoroom: rakam 0, 4, 6, 9, Futbol Topu, Basketbol Topu, Beyaz Kalp, GOAT; düzlenmiş Meteor (`kisisel-ikon-9941460255006-duz.webp`) | Commit 32f8091. Ürün/varyant medyasına bağlanmadı. Meteor'un eski önizleme dosyası (MediaImage/72562799968542) Dosyalar'da duruyor, artık kullanılmıyor |
 | 2026-10-08 | `metafieldsSet` ×173 | 58 patch: `png_genislik_cm`, `png_yukseklik_cm`, ikonlarda `png_sekil`; 9 patch'te `onizleme_png` | Ölçü kuralı v2 (site esas), kullanıcı onaylı. Hesaplar: `veri/png/olcu-v2-tablo.md` ve `olcu-v2.json`. Eski ölçü alanlarına ve ürün görsellerine dokunulmadı |
 | 2026-10-08 | `themeFilesUpsert` (yalnızca kopya tema) | `snippets/kisisel-veri.liquid` | Commit 33be72f, MD5 doğrulandı. İkon listesi `paginate` ile: liste metafield'ı 50 öğede kesiliyordu (Adventurer, Keep Swimming editörde görünmüyordu) |
+| 2026-10-08 | `fileCreate` ×39 | Piramit Alfabe: `kisisel-piramit-<harf>-<renk>.webp` (39 varyant) | Commit 9a89f51, `veri/png/piramit/isle-pvc.py` (PVC gölgesi ve iç boşluk temizliği). Kullanıcı onaylı. Ürün/varyant medyasına bağlanmadı. Kimlikler: `veri/png/piramit/plan.json` (`dosya_id`). Mavi O görseli Rakam 0 varyantının fotoğrafından (aynı patch) |
+| 2026-10-08 | `metafieldDefinitionCreate` | Variant `kisisellestirme.renk_kodu` (color) | Editörde renk noktaları görseldeki ölçülen renkle çizilir; sepet/özet/sipariş varyant adını kullanır |
+| 2026-10-08 | `metafieldsSet` ×234 | 39 Piramit varyantı: `onizleme_png`, `png_genislik_cm`, `png_yukseklik_cm` (6,0), `karakter`, `renk`, `renk_kodu` | Ölçü: boy 6 cm, en = 6 × görsel oranı. Varyant adları değiştirilmedi (Mavi O gri görünse de adı "Mavi" kalır, kullanıcı müşteriye soruyor). Ad/renk uyuşmazlıkları: `veri/png/piramit/renk-uyumsuzluk.md` |
+| 2026-10-08 | `metaobjectUpdate` | Katalog `ana` (306704613662): `harf_setleri` | Önce: [Cool]. Sonra: [Cool, Piramit (Product/9722983907614)] |
+| 2026-10-08 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js`, `assets/kisisel-editor.css`, `assets/kisisel-sepet.js`, `snippets/kisisel-veri-patch.liquid` | Commit 932df87, MD5 doğrulandı. Çok renkli harf seti: otomatik renk, renk satırı, önizleme balonu, karıştır, renk bazında stok, sepette renk varyantı ve renkli özet. Önizleme linkinde iPhone emülasyonuyla test edildi (`test/tarayici/canli-piramit.mjs`), test sepeti boşaltıldı |
 
 ## Metafield tanımları
 
@@ -52,6 +57,7 @@ Hepsi `kisisellestirme` namespace'inde, Storefront erişimi `PUBLIC_READ`.
 | Product | `png_sekil` | single_line_text_field | | 1543708737822 |
 | Variant | `png_genislik_cm` | number_decimal | | 1543708770590 |
 | Variant | `png_yukseklik_cm` | number_decimal | | 1543708803358 |
+| Variant | `renk_kodu` | color | | 1544041857310 |
 
 ## Patch PNG ölçüleri (2026-10-07)
 
