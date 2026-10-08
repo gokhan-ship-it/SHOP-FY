@@ -1913,3 +1913,44 @@ html.kp-kilit body {
   color: inherit;
   cursor: pointer;
 }
+/* Aksesuar ekranı alt çubuğu: toplam ve aksesuarın payı; Vazgeç + Çantaya yerleştir */
+.kp-alt__pay {
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+.kp-alt__pay:empty {
+  display: none;
+}
+.kp-alt__dugmeler {
+  display: flex;
+  gap: 0.8rem;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+.kp-editor .kp-alt__vazgec {
+  min-height: 48px;
+  min-width: 0;
+  padding: 0 1.6rem;
+  background: var(--kp-zemin);
+  color: var(--kp-murekkep);
+  border: 1.5px solid var(--kp-murekkep);
+  box-shadow: none;
+}
+.kp-editor--alt .kp-alt__ileri {
+  min-width: 0;
+  padding: 0 1.6rem;
+}
+@media (max-width: 420px) {
+  .kp-editor--alt .kp-alt__fiyat {
+    flex: 1 1 100%;
+  }
+  .kp-editor--alt .kp-alt__dugmeler {
+    flex: 1 1 100%;
+  }
+  .kp-editor--alt .kp-alt__vazgec {
+    flex: 1 1 0;
+  }
+  .kp-editor--alt .kp-alt__ileri {
+    flex: 2 1 0;
+  }
+}

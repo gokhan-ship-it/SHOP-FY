@@ -1872,8 +1872,13 @@
       '</div>' +
       '</div>' +
       '<div class="kp-alt">' +
-      '<div class="kp-alt__fiyat"><span>Toplam</span><strong data-kp-toplam></strong><small class="kp-indirim-notu">İndirimler sepette uygulanır</small></div>' +
-      '<button type="button" class="btn btn-primary kp-alt__ileri' + (this.alt ? ' kp-alt__ileri--marka' : '') + '" data-kp-ileri>İleri</button>' +
+      '<div class="kp-alt__fiyat"><span>Toplam</span><strong data-kp-toplam></strong>' +
+      (this.alt ? '<small class="kp-alt__pay" data-kp-pay></small>' : '') +
+      '<small class="kp-indirim-notu">İndirimler sepette uygulanır</small></div>' +
+      (this.alt
+        ? '<div class="kp-alt__dugmeler"><button type="button" class="btn kp-alt__vazgec" data-kp-vazgec>Vazgeç</button>' +
+          '<button type="button" class="btn btn-primary kp-alt__ileri kp-alt__ileri--marka" data-kp-ileri>İleri</button></div>'
+        : '<button type="button" class="btn btn-primary kp-alt__ileri" data-kp-ileri>İleri</button>') +
       (this.alt
         ? '<div class="kp-alt__aks">' +
           (this.secenek.buyuk ? '<p class="kp-aks-not">Velcro alanın neredeyse tamamını kaplar.</p>' : '') +
@@ -1962,7 +1967,8 @@
     el.addEventListener('click', function (e) {
       var hedef = e.target.closest('button');
       if (!hedef || !el.contains(hedef)) return;
-      if (hedef.hasAttribute('data-kp-kapat')) return self.kapat(false);
+      if (hedef.hasAttribute('data-kp-kapat')) return self.alt ? self.altVazgec() : self.kapat(false);
+      if (hedef.hasAttribute('data-kp-vazgec')) return self.altVazgec();
       if (hedef.hasAttribute('data-kp-gorunum')) {
         self.sahne.gorunumAyarla(!self.sahne.yakin);
         return self.dugmeleriGuncelle();
@@ -2035,6 +2041,7 @@
       if (e.key === 'Escape') {
         if (self.onayAcik) self.onayKapat();
         else if (self.secili) self.sec(null);
+        else if (self.alt) self.altVazgec();
         else self.kapat(false);
       }
       if (e.key === 'Tab') self.odakTuzagi(e);
@@ -2233,6 +2240,55 @@
       return;
     }
     ileri.textContent = (bosMu(this.t) ? 'Sepete ekle · ' : 'Tasarımımı sepete ekle · ') + paraBicimle(tutar);
+  };
+
+  // Aksesuarın türü cümle başında: "Kalem kutusu", "Zarf kalemlik"
+  function aksesuarTuru(aks) {
+    var s = String(aks.model || aks.ad || 'Aksesuar').toLocaleLowerCase('tr-TR');
+    return s.charAt(0).toLocaleUpperCase('tr-TR') + s.slice(1);
+  }
+
+  // Aksesuar ekranından çıkış (Vazgeç, geri oku, Esc). Çantadaki tasarıma dokunulmaz:
+  // - Henüz yerleştirilmemiş aksesuar eklenmez; üzerine patch eklendiyse önce sorulur.
+  // - Yerleştirilmiş aksesuar düzenleniyorsa son yerleştirilen haline dönülür (aksesuar çantada kalır).
+  Editor.prototype.altVazgec = function () {
+    var self = this;
+    var tur = aksesuarTuru(this.secenek.aksesuar);
+    var cik = function () {
+      self.ilk = JSON.stringify(self.t);
+      self.kapat(false);
+      if (self.secenek.vazgec) self.secenek.vazgec(!!self.duzenlenenAks);
+    };
+    if (this.onayAcik) this.onayKapat();
+    if (!this.duzenlenenAks) {
+      if (bosMu(this.t)) return cik();
+      return this.onayGoster(tur + ' tasarımın silinsin mi?', [
+        { yazi: 'Sil', birincil: true, eylem: cik },
+        { yazi: 'Devam et', eylem: function () {} }
+      ], tur + ' çantaya eklenmez, çantadaki tasarımın değişmez.');
+    }
+    if (JSON.stringify(this.t) === this.ilk) return cik();
+    this.onayGoster('Değişiklikler geri alınsın mı?', [
+      { yazi: 'Geri al', birincil: true, eylem: cik },
+      { yazi: 'Devam et', eylem: function () {} }
+    ], tur + ' çantada son yerleştirdiğin haliyle kalır.');
+  };
+
+  // Aksesuar ekranının toplamı: tüm tasarım (çanta + patch'ler + bu aksesuar ve üzerindekiler); altında aksesuarın payı
+  Editor.prototype.altToplamCiz = function (f) {
+    var ana = this.secenek.ana;
+    var pay = f.toplam;
+    var toplam = pay;
+    if (ana && ana.t) {
+      var fa = fiyatHesapla(ana.m, ana.yer, ana.t);
+      var uid = this.duzenlenenAks;
+      var eski = 0;
+      fa.aksesuarlar.forEach(function (k) { if (uid && k.uid === uid) eski = k.toplam; });
+      toplam = fa.toplam - eski + pay;
+    }
+    this.el.querySelector('[data-kp-toplam]').textContent = paraBicimle(toplam);
+    this.el.querySelector('[data-kp-pay]').textContent =
+      aksesuarTuru(this.secenek.aksesuar) + (bosMu(this.t) ? '' : ' ve tasarımı') + ': ' + paraBicimle(pay);
   };
 
   // Aksesuar ekranı: tasarımı (ya da tasarımsız) çantaya yerleştir
@@ -2436,7 +2492,10 @@
         alt: true,
         aksesuar: aks,
         buyuk: aksesuarBuyukMu(this.m, aks),
-        yerlestir: function (t) { self.aksesuarYerlestir(aks, t, ed.duzenlenenAks); }
+        ana: self,
+        yerlestir: function (t) { self.aksesuarYerlestir(aks, t, ed.duzenlenenAks); },
+        // Vazgeç: yeni aksesuarda çanta tasarımının Aksesuar adımına dönülür; düzenlemede bulunduğu adımda kalınır
+        vazgec: function (duzenleme) { if (!duzenleme && self.adim !== 'aksesuar') self.adimaGit('aksesuar', true); self.yenile(); }
       });
     }
     ed.duzenlenenAks = uid || null;
@@ -2820,7 +2879,8 @@
     this.gecButonlariGuncelle();
     this.ikonDurumGuncelle();
     var f = fiyatHesapla(this.m, this.yer, this.t);
-    this.el.querySelector('[data-kp-toplam]').textContent = paraBicimle(f.toplam);
+    if (this.alt) this.altToplamCiz(f);
+    else this.el.querySelector('[data-kp-toplam]').textContent = paraBicimle(f.toplam);
     var ileri = this.el.querySelector('[data-kp-ileri]');
     var engel = this.adimEngeli(this.adim);
     if (this.adim === 'ozet') {

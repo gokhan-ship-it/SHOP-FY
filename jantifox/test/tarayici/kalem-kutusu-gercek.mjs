@@ -44,7 +44,7 @@ for (const renk of ['kirmizi', 'turuncu']) {
   // Velcro alanı yuvarlak köşeli (2 cm), logo yasaklı
   const rx = await s.evaluate((q) => +document.querySelector(q + ' .kp-alan').getAttribute('rx'), alt);
   assert.equal(rx, 2);
-  assert.equal(await s.locator(alt + ' .kp-yasak').count(), 1);
+  assert.equal(await s.locator(alt + ' .kp-yasak').count(), renk === 'turuncu' ? 2 : 1, 'logo (+ turuncuda D halkası)');
   await s.locator('#kpa-isim').fill('ada');
   await s.waitForTimeout(100);
   assert.equal(await s.locator(alt + ' .kp-parca--letter').count(), 3);

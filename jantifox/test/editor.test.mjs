@@ -719,6 +719,13 @@ test('kalem kutusu gerçek haritaları (Kırmızı, Turuncu): Velcro yüzeyi, yu
     const ikon = (cx, cy) => ({ t: 'rect', x: cx - 2, y: cy - 2, w: 4, h: 4 });
     assert.equal(am.yer.alanaUygun(ikon(6, 6), 'icon'), true, 'ortada sığar');
     assert.equal(am.yer.alanaUygun(ikon(logo[0] / pxCm, logo[1] / pxCm), 'icon'), false, anahtar + ': logonun üstüne konmaz');
+    // Turuncu: sağ kenardaki D halkası şeridi yasaklı (3 × 3 cm ikon şeridin üstünde)
+    if (anahtar === 'kalem-kutusu-turuncu') {
+      assert.equal(am.m.yasaklar.length, 2);
+      // 1 × 1 cm: x 1095–1150 px; y 455'te şeride değer, y 330'da değmez
+      assert.equal(am.yer.alanaUygun({ t: 'rect', x: 1095 / pxCm, y: 455 / pxCm, w: 1, h: 1 }, 'icon'), false, 'D halkasının üstüne konmaz');
+      assert.equal(am.yer.alanaUygun({ t: 'rect', x: 1095 / pxCm, y: 330 / pxCm, w: 1, h: 1 }, 'icon'), true, 'şeridin üstünde serbest');
+    }
     // Köşeye dayalı 4 × 4 cm ikon yuvarlak köşeden taşar; köşe dairesine teğet konumda sığar
     const sol = alan.x + am.m.ayar.kenar, ust = alan.y + am.m.ayar.kenar;
     assert.equal(am.yer.alanaUygun({ t: 'rect', x: sol, y: ust, w: 4, h: 4 }, 'icon'), false, anahtar + ': köşede taşar');
