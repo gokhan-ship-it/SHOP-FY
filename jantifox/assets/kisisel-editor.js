@@ -1870,7 +1870,7 @@
 
   /* ---------------- Ekleme / kaldırma ---------------- */
 
-  Editor.prototype.parcaEkle = function (tip, urunId, varyant, tanim, sigmazNotu) {
+  Editor.prototype.parcaEkle = function (tip, urunId, varyant, tanim) {
     var ad = tip === 'number' ? varyant.karakter + ' rakamı' : tanim.ad;
     var mevcut = !varyant.satilabilir ? 0 : varyant.stok == null ? Infinity : varyant.stok;
     var kullanilan = this.t.parcalar.filter(function (p) { return String(p.varyantId) === String(varyant.id); }).length;
@@ -1894,9 +1894,8 @@
     var baslangic = kaydir(ornek, c[0], hedefY);
     var tasima = this.yer.enYakin([{ tip: tip, sekil: baslangic }], parcalar.filter(function (p) { return !this.durum.hatalar[p.uid]; }, this), 0, 0);
     if (!tasima) {
-      this.bildir(sigmazNotu
-        ? ad + ' şu an alana sığmıyor. Bir patch\'i kaldırır ya da yerini değiştirirsen eklenebilir.'
-        : ad + ' için alanda yer kalmadı. Bir patch\'i kaldırmayı' + (tip === 'icon' ? ' ya da daha küçük bir ikon seçmeyi' : '') + ' deneyebilirsin.');
+      // Soluk ("Sığmaz") ikona dokunulduğunda da aynı açıklama
+      this.bildir(ad + ' için alanda yer kalmadı. Bir patch\'i kaldırmayı' + (tip === 'icon' ? ' ya da daha küçük bir ikon seçmeyi' : '') + ' deneyebilirsin.');
       return false;
     }
     this.bildirimKapat();
@@ -1916,9 +1915,7 @@
   Editor.prototype.ikonEkle = function (urunId) {
     var ikon = this.m.ikonHarita[urunId];
     if (!ikon) return;
-    var kart = this.el.querySelector('[data-kp-ikon="' + urunId + '"]');
-    var sigmaz = !!(kart && kart.classList.contains('kp-secim--sigmaz'));
-    if (this.parcaEkle('icon', ikon.id, ikon.varyant, ikon, sigmaz)) {
+    if (this.parcaEkle('icon', ikon.id, ikon.varyant, ikon)) {
       this.sonIkon = ikon;
       olayYayinla('ikon_eklendi', { urun_id: this.m.urun.id, ikon_id: ikon.id, ikon_adi: ikon.ad });
     }

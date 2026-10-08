@@ -99,7 +99,7 @@ const adet = await s.locator('.kp-cip').count();
 await s.locator('[data-kp-ikon="2"]').click();
 assert.equal(await s.locator('.kp-cip').count(), adet, 'sığmayan ikon eklenmez');
 assert.equal(await gorunur('[data-kp-bildirim]'), true);
-assert.equal(await metin('[data-kp-bildirim]'), "Futbol Topu şu an alana sığmıyor. Bir patch'i kaldırır ya da yerini değiştirirsen eklenebilir.");
+assert.equal(await metin('[data-kp-bildirim]'), "Futbol Topu için alanda yer kalmadı. Bir patch'i kaldırmayı ya da daha küçük bir ikon seçmeyi deneyebilirsin.");
 await s.screenshot({ path: '/tmp/rev-sigmaz.png' });
 // Uyarı birkaç saniye sonra kaybolur
 await s.waitForTimeout(3800);
