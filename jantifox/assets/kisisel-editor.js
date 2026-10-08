@@ -1692,8 +1692,10 @@
     this.secimEl = this.kok.querySelector('.kp-cerceve');
   };
 
-  // Yakın görünüm ölçeği ve kaydırması (pencerenin yüzdesi olarak): takılabilir alan(lar) ~%80
-  function yakinGorunum(m) {
+  // Yakın görünüm ölçeği ve kaydırması (pencerenin yüzdesi olarak): takılabilir alan(lar) ~%80.
+  // alt: pencerenin altında örtülü kısım (0–1, kenar şeridi); alan kalan bölgeye ortalanır.
+  function yakinGorunum(m, alt) {
+    alt = alt || 0;
     var olcek = 1;
     var sol = 0;
     var ust = 0;
@@ -1708,12 +1710,12 @@
       });
       var oranX = (x2 - x1) / m.Wcm;
       var oranY = (y2 - y1) / m.Hcm;
-      olcek = Math.max(1, Math.min(0.8 / oranX, 0.8 / oranY));
+      olcek = Math.max(1, Math.min(0.8 / oranX, (0.8 * (1 - alt)) / oranY));
       var cx = (x1 + x2) / 2 / m.Wcm;
       var cy = (y1 + y2) / 2 / m.Hcm;
-      // Alan merkezi pencerenin ortasına; görselin dışına taşmayacak şekilde sınırla
+      // Alan merkezi pencerenin (örtülü alt kısım hariç) ortasına; görselin dışına taşmayacak şekilde sınırla
       sol = Math.min(0, Math.max(100 - olcek * 100, 50 - cx * olcek * 100));
-      ust = Math.min(0, Math.max(100 - olcek * 100, 50 - cy * olcek * 100));
+      ust = Math.min(0, Math.max(100 - olcek * 100, 50 * (1 - alt) - cy * olcek * 100));
     }
     return { olcek: olcek, sol: sol, ust: ust };
   }
@@ -1721,7 +1723,9 @@
   // Yakın görünüm: takılabilir alan(lar) pencere genişliğinin ~%80'ini kaplar.
   Sahne.prototype.gorunumAyarla = function (yakin) {
     if (!this.gorunum) return;
-    var y = yakin ? yakinGorunum(this.m) : { olcek: 1, sol: 0, ust: 0 };
+    var yukseklik = this.gorunum.getBoundingClientRect().height;
+    var alt = this.altBosluk && yukseklik ? Math.min(0.4, this.altBosluk / yukseklik) : 0;
+    var y = yakin ? yakinGorunum(this.m, alt) : { olcek: 1, sol: 0, ust: 0 };
     var olcek = y.olcek;
     var sol = y.sol;
     var ust = y.ust;
@@ -1847,8 +1851,6 @@
     { id: 'ikon', ad: 'İkon' }
   ];
 
-  var SET_KATEGORI = 'Hazır setler';
-
   // secenek.alt: aksesuar tasarım ekranı (çanta editörünün üstünde açılır; sonunda "Çantaya yerleştir")
   function Editor(kart, secenek) {
     this.kart = kart;
@@ -1859,8 +1861,9 @@
     var m = this.m;
     this.adimlar = this.alt ? ALT_ADIMLAR : ADIMLAR.filter(function (a) { return a.id !== 'aksesuar' || (m.aksesuarlar && m.aksesuarlar.length); });
     this.adim = 'yazi';
-    // Hazır setler varsa ikon kategorilerinin en başında
-    this.kategori = this.m.hazirSetler.length ? SET_KATEGORI : this.m.kategoriler.length ? this.m.kategoriler[0].ad : null;
+    // İkon adımında yol: 'kendim' (kategoriler ve ikonlar) ya da 'set' (hazır setler); varsayılan kendim
+    this.ikonYolu = 'kendim';
+    this.kategori = this.m.kategoriler.length ? this.m.kategoriler[0].ad : null;
     this.isimOlayGonderildi = false;
   }
 
@@ -1879,17 +1882,21 @@
         ? '<button type="button" class="kp-geri" data-kp-kapat aria-label="Çanta tasarımına dön"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
         : '') +
       '<div class="kp-ust__metin"><h2 id="kp-editor-baslik" class="kp-ust__baslik">' + (this.alt ? kacis(aks.ad) + ' tasarla' : 'Tasarımını oluştur') + '</h2>' +
-      (this.alt ? '<p class="kp-yol">Çanta tasarımın <span aria-hidden="true">›</span> ' + kacis(aks.ad) + '</p>' : '') + '</div>' +
+      (this.alt && this.secenek.buyuk ? '<p class="kp-yol">Velcro alanın neredeyse tamamını kaplar</p>' : '') + '</div>' +
       (this.alt ? '' : '<button type="button" class="kp-kapat" data-kp-kapat aria-label="Kapat">' +
       '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
       '</button>') +
       '</div>' +
-      // İlerleme: başlığın hemen altında dört parçalı ince çizgi
-      '<nav class="kp-adimlar" aria-label="Tasarım adımları"><ol>' +
-      this.adimlar.map(function (a, i) {
-        return '<li><button type="button" class="kp-adim" data-kp-adim="' + a.id + '"><span class="kp-adim__cizgi" aria-hidden="true"></span><span class="kp-adim__ad"><span class="kp-adim__no">' + (i + 1) + '</span> ' + a.ad + '</span></button></li>';
-      }).join('') +
-      '</ol></nav>' +
+      // İlerleme: başlığın hemen altında dört parçalı ince çizgi. Aksesuar ekranında yalnızca Yazı / İkon düğmeleri.
+      (this.alt
+        ? '<nav class="kp-adimlar kp-adimlar--alt" aria-label="Tasarım"><div class="kp-sekmeler">' +
+          this.adimlar.map(function (a) { return '<button type="button" class="kp-sekme" data-kp-adim="' + a.id + '">' + a.ad + '</button>'; }).join('') +
+          '</div></nav>'
+        : '<nav class="kp-adimlar" aria-label="Tasarım adımları"><ol>' +
+          this.adimlar.map(function (a, i) {
+            return '<li><button type="button" class="kp-adim" data-kp-adim="' + a.id + '"><span class="kp-adim__cizgi" aria-hidden="true"></span><span class="kp-adim__ad"><span class="kp-adim__no">' + (i + 1) + '</span> ' + a.ad + '</span></button></li>';
+          }).join('') +
+          '</ol></nav>') +
       '<div class="kp-govde">' +
       // Önizleme sabit kalır; yalnızca alttaki panel kayar
       '<div class="kp-onizleme"><div class="kp-onizleme__ic" style="--kp-oran:' + (this.m.gorsel.en / this.m.gorsel.boy) + '">' +
@@ -1907,11 +1914,15 @@
       '<div class="kp-onay" data-kp-onay role="alertdialog" aria-live="assertive" hidden></div>' +
       '</div>' +
       '<div class="kp-set-cerceve" data-kp-set-cerceve aria-hidden="true" hidden><span class="kp-set-cerceve__etiket"></span></div>' +
-      '</div>' +
-      // Kenar: çantaya takılmamış patch'ler (sepete dahil). Patch'ler çanta ile kenar arasında sürüklenir.
-      '<div class="kp-kenar" data-kp-kenar style="--kp-oran:' + (this.m.gorsel.en / this.m.gorsel.boy) + '">' +
-      '<span class="kp-kenar__baslik">Kenar · çantaya takılmamış</span>' +
-      '<div class="kp-kenar__liste" data-kp-kenar-liste></div>' +
+      // Kenar: çantaya takılmamış patch'ler (sepete dahil), önizlemenin alt kenarında ince beyaz şerit.
+      // Boşken görünmez; bir patch sürüklenirken kırmızı kesikli "Kenara bırak" bölgesi olur. Aksesuar ekranında yok.
+      (this.alt ? '' :
+        '<div class="kp-kenar" data-kp-kenar hidden>' +
+        '<div class="kp-kenar__bas"><span class="kp-kenar__baslik"><span aria-hidden="true">↧</span> Kenar</span><span class="kp-kenar__sayi" data-kp-kenar-sayi></span></div>' +
+        '<span class="kp-kenar__ayrac" aria-hidden="true"></span>' +
+        '<div class="kp-kenar__liste" data-kp-kenar-liste></div>' +
+        '<span class="kp-kenar__birak" aria-hidden="true">Kenara bırak</span>' +
+        '</div>') +
       '</div>' +
 
       // Önizlemenin altındaki satır: eklenenler etiketleri; bir patch seçilince aynı yükseklikte araç çubuğu
@@ -1933,6 +1944,7 @@
       '<div class="kp-kaydir">' +
       // Önizlemenin altında, panelin en üstünde: geçersiz konum uyarısı ve kenar notu
       '<div class="kp-yer-uyari" data-kp-yer-uyari role="status" aria-live="polite" hidden></div>' +
+      (this.alt ? '<p class="kp-alt-ipucu" data-kp-alt-ipucu hidden>Bir şey eklemezsen ' + kacis(aksesuarTuru(aks).toLocaleLowerCase('tr-TR')) + ' düz eklenir. Yazı ya da ikon eklersen buton “Tasarımımla ekle” olur.</p>' : '') +
       '<div class="kp-kenar-not" data-kp-kenar-not hidden></div>' +
       '<div class="kp-paneller">' +
       this.adimlar.map(function (a, i) {
@@ -1946,19 +1958,14 @@
       '<div class="kp-serit__ust"><span class="kp-serit__sol" data-kp-serit-sol></span><span class="kp-serit__sag" data-kp-serit-sag></span></div>' +
       '<div class="kp-serit__cubuk" data-kp-serit-cubuk><span class="kp-serit__dolu" data-kp-serit-dolu></span></div>' +
       '</div></div>' +
-      '<div class="kp-alt">' +
+      // Aksesuar ekranında tek satır: solda Vazgeç, ortada toplam, sağda ana buton
+      '<div class="kp-alt' + (this.alt ? ' kp-alt--aks' : '') + '">' +
+      (this.alt ? '<button type="button" class="btn kp-alt__vazgec" data-kp-vazgec>Vazgeç</button>' : '') +
       '<div class="kp-alt__fiyat"><span>Toplam</span><strong data-kp-toplam></strong>' +
-      (this.alt ? '<small class="kp-alt__pay" data-kp-pay></small>' : '') +
       '<small class="kp-indirim-notu">İndirimler sepette uygulanır</small></div>' +
       (this.alt
-        ? '<div class="kp-alt__dugmeler"><button type="button" class="btn kp-alt__vazgec" data-kp-vazgec>Vazgeç</button>' +
-          '<button type="button" class="btn btn-primary kp-alt__ileri kp-alt__ileri--marka" data-kp-ileri>İleri</button></div>'
+        ? '<button type="button" class="btn btn-primary kp-alt__ileri kp-alt__ileri--marka" data-kp-ileri>Düz ekle</button>'
         : '<button type="button" class="btn btn-primary kp-alt__ileri" data-kp-ileri>İleri</button>') +
-      (this.alt
-        ? '<div class="kp-alt__aks">' +
-          (this.secenek.buyuk ? '<p class="kp-aks-not">Velcro alanın neredeyse tamamını kaplar.</p>' : '') +
-          '<button type="button" class="kp-baglanti" data-kp-tasarimsiz>' + kacis(belirtme(aks.ad)) + ' tasarlamadan yerleştir</button></div>'
-        : '') +
       // Özet adımında: butonun altında not ve iki küçük bağlantı
       '<div class="kp-alt__ozet" data-kp-alt-ozet hidden>' +
       '<p class="kp-indirim-notu">İndirimler sepette uygulanır</p>' +
@@ -2082,8 +2089,12 @@
       if (hedef.hasAttribute('data-kp-ikon')) return self.ikonEkle(hedef.getAttribute('data-kp-ikon'));
       if (hedef.hasAttribute('data-kp-hazir-set')) return self.setEkle(hedef.getAttribute('data-kp-hazir-set'));
       if (hedef.hasAttribute('data-kp-aksesuar')) return self.aksesuarSec(hedef.getAttribute('data-kp-aksesuar'));
+      if (hedef.hasAttribute('data-kp-aks-duz')) return self.aksesuarSec(hedef.getAttribute('data-kp-aks-duz'), true);
+      if (hedef.hasAttribute('data-kp-ikon-yol')) {
+        self.ikonYolu = hedef.getAttribute('data-kp-ikon-yol');
+        return self.ikonIzgarasiCiz();
+      }
       if (hedef.hasAttribute('data-kp-aks-duzenle')) return self.aksesuarDuzenle(hedef.getAttribute('data-kp-aks-duzenle'));
-      if (hedef.hasAttribute('data-kp-tasarimsiz')) return self.altYerlestir(true);
       if (hedef.hasAttribute('data-kp-aks-tasarla')) return self.aksesuarDuzenle(self.secili);
       if (hedef.hasAttribute('data-kp-set-kaldir')) return self.setKaldir(hedef.getAttribute('data-kp-set-kaldir'));
       if (hedef.hasAttribute('data-kp-onay-eylem')) return self.onayEylemi(parseInt(hedef.getAttribute('data-kp-onay-eylem'), 10));
@@ -2320,7 +2331,11 @@
   Editor.prototype.ileriYazisi = function () {
     var ileri = this.el.querySelector('[data-kp-ileri]');
     if (this.alt) {
-      ileri.textContent = 'Çantaya yerleştir';
+      // Düzenlemede "Kaydet"; yeni aksesuarda üzerine bir şey eklenmemişse "Düz ekle", eklenmişse "Tasarımımla ekle"
+      var bos = bosMu(this.t);
+      ileri.textContent = this.duzenlenenAks ? 'Kaydet' : bos ? 'Düz ekle' : 'Tasarımımla ekle';
+      var ipucu = this.el.querySelector('[data-kp-alt-ipucu]');
+      if (ipucu) ipucu.hidden = !!this.duzenlenenAks || !bos;
       return;
     }
     this.el.querySelector('.kp-alt__baglantilar').hidden = this.adim === 'ozet' && bosMu(this.t);
@@ -2387,7 +2402,7 @@
     this.el.querySelectorAll('.kp-alt__fiyat .kp-indirim-notu').forEach(function (n) { n.hidden = !(k && k.hata); });
   };
 
-  // Aksesuar ekranının toplamı: tüm tasarım (çanta + patch'ler + bu aksesuar ve üzerindekiler); altında aksesuarın payı
+  // Aksesuar ekranının toplamı: tüm tasarım (çanta + patch'ler + bu aksesuar ve üzerindekiler)
   Editor.prototype.altToplamCiz = function (f) {
     var ana = this.secenek.ana;
     var pay = f.toplam;
@@ -2400,8 +2415,6 @@
       toplam = fa.toplam - eski + pay;
     }
     this.toplamCiz(toplam);
-    this.el.querySelector('[data-kp-pay]').textContent =
-      aksesuarTuru(this.secenek.aksesuar) + (bosMu(this.t) ? '' : ' ve tasarımı') + ': ' + paraBicimle(pay);
   };
 
   // Aksesuar ekranı: tasarımı (ya da tasarımsız) çantaya yerleştir
@@ -2474,15 +2487,20 @@
       '<div class="kp-panel__ust"><h3 id="kp-p-yazi" class="kp-panel__baslik" tabindex="-1">Yazı ve rakam</h3>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Bu adımı geç <span aria-hidden="true">→</span></button>' + '</div>' +
       '<div class="kp-alan-girdi">' +
       '<label for="kp-isim" class="kp-gizli">Yazı ve rakam</label>' +
+      // Karakter sayacı yazı alanının içinde, sağda
+      '<div class="kp-girdi-kap">' +
       '<input id="kp-isim" class="kp-girdi" type="text" data-kp-isim autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" maxlength="24" enterkeyhint="done" placeholder="ör. ECE7" aria-describedby="kp-yazi-ipucu kp-kapasite kp-isim-uyari">' +
+      '<span id="kp-kapasite" class="kp-kapasite" data-kp-kapasite></span>' +
+      '</div>' +
+      // Hemen altında: Harfleri ayır / birleştir ve kısa açıklama
+      '<div class="kp-isim-alt" data-kp-harf-mod-satir hidden>' +
+      '<button type="button" class="kp-harf-mod" data-kp-harf-mod aria-pressed="false">Harfleri ayır</button>' +
+      '<span class="kp-harf-mod__not" data-kp-harf-mod-not>Ayırınca her harfi tek tek taşırsın</span>' +
+      '</div>' +
       '<div class="kp-stil-secim" data-kp-stil-secim role="group" aria-label="Harflerin stili" hidden></div>' +
       '<p id="kp-yazi-ipucu" class="kp-yazi-ipucu">Harflere dokunarak her birinin stilini ayrı seçebilirsin.</p>' +
       '<div class="kp-karakterler" data-kp-karakterler role="group" aria-label="Karakterler"></div>' +
       '<div class="kp-stil" data-kp-stil-panel hidden></div>' +
-      '<div class="kp-isim-alt">' +
-      '<button type="button" class="kp-harf-mod" data-kp-harf-mod aria-pressed="false" hidden>Harfleri ayır</button>' +
-      '<p id="kp-kapasite" class="kp-kapasite" data-kp-kapasite></p>' +
-      '</div>' +
       '</div>' +
       '<div id="kp-isim-uyari" class="kp-uyarilar" data-kp-isim-uyari aria-live="polite"></div>';
     var girdi = panel.querySelector('[data-kp-isim]');
@@ -2500,21 +2518,28 @@
     this.m.ikonlar.forEach(function (i) { if (i.varyant && i.varyant.fiyat != null) fiyatlar[i.varyant.fiyat] = true; });
     var liste = Object.keys(fiyatlar).map(Number).sort(function (a, b) { return a - b; });
     if (!liste.length) return '';
-    return liste.length === 1 ? 'Her patch ' + paraBicimle(liste[0]) : 'Patch başına ' + paraBicimle(liste[0]) + '\'den';
+    return liste.length === 1 ? 'Tek patch ' + paraBicimle(liste[0]) : 'Patch başına ' + paraBicimle(liste[0]) + '\'den';
   };
 
+  // İkon adımı: önce yol seçimi (Hazır setler / Kendim seçeceğim), altında set kartları ya da kategoriler ve ikonlar
   Editor.prototype.panelIkonKur = function () {
     var panel = this.el.querySelector('[data-kp-panel="ikon"]');
-    var adlar = (this.m.hazirSetler.length ? [SET_KATEGORI] : []).concat(this.m.kategoriler.map(function (k) { return k.ad; }));
-    var kategoriler = adlar
-      .map(function (ad) {
-        return '<button type="button" class="kp-kategori' + (ad === SET_KATEGORI ? ' kp-kategori--set' : '') + '" data-kp-kategori="' + kacis(ad) + '">' + kacis(ad) + '</button>';
+    var kategoriler = this.m.kategoriler
+      .map(function (k) {
+        return '<button type="button" class="kp-kategori" data-kp-kategori="' + kacis(k.ad) + '">' + kacis(k.ad) + '</button>';
       })
       .join('');
+    var yol = this.m.hazirSetler.length
+      ? '<div class="kp-yol-secim" role="group" aria-label="İkonları nasıl seçmek istersin?">' +
+        '<button type="button" class="kp-yol-kart" data-kp-ikon-yol="set" aria-pressed="false"><strong>Hazır setler</strong><span>İndirimli hazır setler</span></button>' +
+        '<button type="button" class="kp-yol-kart" data-kp-ikon-yol="kendim" aria-pressed="true"><strong>Kendim seçeceğim</strong><span>İkonları tek tek seç</span></button>' +
+        '</div>'
+      : '';
     panel.innerHTML =
       '<div class="kp-panel__ust"><h3 id="kp-p-ikon" class="kp-panel__baslik" tabindex="-1">İkon</h3>' +
       '<span class="kp-panel__sag"><span class="kp-panel__fiyat" data-kp-ikon-fiyat>' + kacis(this.ikonFiyatYazisi()) + '</span>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Bu adımı geç <span aria-hidden="true">→</span></button>' + '</span></div>' +
-      '<div class="kp-kategoriler" role="group" aria-label="İkon kategorileri">' + kategoriler + '</div>' +
+      yol +
+      '<div class="kp-kategoriler" data-kp-kategoriler role="group" aria-label="İkon kategorileri">' + kategoriler + '</div>' +
       '<p class="kp-panel__aciklama" data-kp-set-aciklama hidden>Birlikte uyumlu 3\'lü ve 4\'lü setler. Seti ekleyince patch\'leri tek tek de taşıyıp döndürebilirsin.</p>' +
       '<div class="kp-izgara kp-izgara--ikon" data-kp-ikon-izgara></div>';
     this.ikonIzgarasiCiz();
@@ -2523,16 +2548,20 @@
   Editor.prototype.ikonIzgarasiCiz = function () {
     var m = this.m;
     var self = this;
-    var setler = this.kategori === SET_KATEGORI && m.hazirSetler.length;
-    var kat = setler ? { ad: SET_KATEGORI } : m.kategoriler.filter(function (k) { return k.ad === self.kategori; })[0] || m.kategoriler[0];
-    if (!kat) return;
+    var setler = this.ikonYolu === 'set' && m.hazirSetler.length;
+    var kat = setler ? null : m.kategoriler.filter(function (k) { return k.ad === self.kategori; })[0] || m.kategoriler[0];
+    if (!setler && !kat) return;
+    var yol = setler ? 'set' : 'kendim';
+    this.el.querySelectorAll('[data-kp-ikon-yol]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-kp-ikon-yol') === yol ? 'true' : 'false');
+    });
+    this.el.querySelector('[data-kp-kategoriler]').hidden = !!setler;
     this.el.querySelectorAll('[data-kp-kategori]').forEach(function (b) {
-      b.setAttribute('aria-pressed', b.getAttribute('data-kp-kategori') === kat.ad ? 'true' : 'false');
+      b.setAttribute('aria-pressed', kat && b.getAttribute('data-kp-kategori') === kat.ad ? 'true' : 'false');
     });
     var izgara = this.el.querySelector('[data-kp-ikon-izgara]');
     this.el.querySelector('[data-kp-set-aciklama]').hidden = !setler;
     izgara.classList.toggle('kp-izgara--set', !!setler);
-    this.el.querySelector('[data-kp-ikon-fiyat]').textContent = setler ? this.ikonFiyatYazisi().replace(/^Her patch/, 'Tek patch') : this.ikonFiyatYazisi();
     if (setler) {
       izgara.innerHTML = m.hazirSetler.map(function (s, sira) { return setKarti(s, sira); }).join('');
       this.ikonDurumGuncelle();
@@ -2570,16 +2599,25 @@
   Editor.prototype.panelAksesuarKur = function () {
     var m = this.m;
     var panel = this.el.querySelector('[data-kp-panel="aksesuar"]');
+    // Üzerine patch takılabilen (kendi Velcro yüzeyi olan) aksesuarda "Düz ekle" ve "Tasarla"; diğerlerinde "Ekle"
     var kartlar = m.aksesuarlar
       .map(function (a) {
+        var ad = kacis(a.model + (a.renk ? ' ' + a.renk : ''));
         return (
-          '<button type="button" class="kp-secim kp-secim--aksesuar" data-kp-aksesuar="' + a.id + '">' +
+          '<div class="kp-secim kp-secim--aksesuar">' +
           '<img src="' + kacis(a.gorsel.kucuk) + '" alt="" loading="lazy">' +
           '<span class="kp-secim__ad">' + kacis(a.model) + '</span>' +
           (a.renk ? '<span class="kp-aks-kart__renk">' + kacis(a.renk) + '</span>' : '') +
           '<span class="kp-aks-kart__fiyat">' + paraBicimle(a.fiyat) + '</span>' +
-          (aksesuarBuyukMu(m, a) ? '<span class="kp-aks-kart__not">Velcro alanın neredeyse tamamını kaplar</span>' : '') +
-          '</button>'
+          (a.tasarlanabilir
+            ? '<span class="kp-aks-kart__not kp-aks-kart__not--takilir">Üzerine patch takılabilir</span>' +
+              '<span class="kp-aks-kart__dugmeler">' +
+              '<button type="button" class="kp-aks-kart__dugme" data-kp-aks-duz="' + a.id + '" aria-label="' + ad + ', düz ekle">Düz ekle</button>' +
+              '<button type="button" class="kp-aks-kart__dugme kp-aks-kart__dugme--ana" data-kp-aksesuar="' + a.id + '" aria-label="' + ad + ', tasarla">Tasarla</button>' +
+              '</span>'
+            : '<span class="kp-aks-kart__not">Üzerine patch takılmaz</span>' +
+              '<span class="kp-aks-kart__dugmeler"><button type="button" class="kp-aks-kart__dugme kp-aks-kart__dugme--ana" data-kp-aksesuar="' + a.id + '" aria-label="' + ad + ', ekle">Ekle</button></span>') +
+          '</div>'
         );
       })
       .join('');
@@ -2589,11 +2627,11 @@
       '<div class="kp-izgara kp-izgara--aksesuar">' + kartlar + '</div>';
   };
 
-  // Aksesuar kartı: tasarlanabiliyorsa tasarım ekranı, değilse doğrudan çantaya yerleştir
-  Editor.prototype.aksesuarSec = function (id) {
+  // Aksesuar kartı: "Tasarla" tasarım ekranını açar; "Düz ekle" ve "Ekle" doğrudan çantaya yerleştirir
+  Editor.prototype.aksesuarSec = function (id, duz) {
     var aks = this.m.aksesuarHarita[id];
     if (!aks) return;
-    if (aks.tasarlanabilir) return this.altEditorAc(aks, null, null);
+    if (aks.tasarlanabilir && !duz) return this.altEditorAc(aks, null, null);
     this.aksesuarYerlestir(aks, null);
   };
 
@@ -2691,20 +2729,57 @@
       else aksesuarAdlari.push(p.etiket);
     });
     var kenaraGiden = [patchSayisi ? patchSayisi + ' patch' : ''].concat(aksesuarAdlari).filter(Boolean);
+    // Kenara alma ve aksesuarın eklenmesi tek yenilemede: geçmişte tek adım (Geri al / Yinele bütünüyle)
     gruplar.forEach(function (g) { kenaraAl(t, g); });
     this.aksesuarEkle(aks, icTasarim, en.x, en.y);
     var sonra = JSON.stringify(this.t);
     var eklenen = this.t.aksesuarlar[this.t.aksesuarlar.length - 1].uid;
+    var onceT = JSON.parse(once);
     this.bildir(
       aks.ad + (icTasarim && !bosMu(icTasarim) ? ' tasarımınla' : '') + ' yerleştirildi.' +
       (kenaraGiden.length ? ' Çantadaki ' + kenaraGiden.join(' ve ') + ' kenara alındı, istediklerini geri sürükleyebilirsin.' : ''),
       { eylem: { yazi: 'Geri al', fn: function () {
-        // Yerleştirmeden sonra başka değişiklik yoksa tam önceki hal; varsa yalnızca aksesuar çıkar (patch'ler kenarda kalır)
-        if (JSON.stringify(this.t) === sonra) this.gecmisUygulaYeni(once);
-        else this.parcaKaldir(eklenen);
+        // Sonradan başka değişiklik yapıldıysa: aksesuar (tasarımıyla) çıkar, hâlâ kenarda duran patch'ler eski yerlerine döner
+        this.islemiGeriAl(sonra, function () {
+          var t2 = this.t;
+          t2.parcalar = t2.parcalar.filter(function (p) { return p.uid !== eklenen; });
+          if (t2.aksesuarlar) t2.aksesuarlar = t2.aksesuarlar.filter(function (a) { return a.uid !== eklenen; });
+          gruplar.forEach(function (g) { kenardanGeriDondur(t2, onceT, g); });
+          this.secili = null;
+          this.yenile();
+        });
       } } }
     );
   };
+
+  // Kenara alınmış grubu (hâlâ kenardaysa) önceki tasarımdaki yerine döndürür
+  function kenardanGeriDondur(t, onceT, grup) {
+    if (grup === 'isim') {
+      if (!t.isimKenar) return;
+      t.isimKenar = !!onceT.isimKenar;
+      t.isimMerkez = onceT.isimMerkez || null;
+      return;
+    }
+    if (String(grup).indexOf('harf-') === 0) {
+      var i = parseInt(String(grup).slice(5), 10);
+      if (!t.harfKenar || !t.harfKenar[i]) return;
+      t.harfKenar[i] = !!(onceT.harfKenar && onceT.harfKenar[i]);
+      if (onceT.harfKonumlari && onceT.harfKonumlari[i]) {
+        if (!Array.isArray(t.harfKonumlari)) t.harfKonumlari = [];
+        t.harfKonumlari[i] = onceT.harfKonumlari[i];
+      }
+      return;
+    }
+    var eski = (onceT.aksesuarlar || []).concat(onceT.parcalar || []).filter(function (x) { return x.uid === grup; })[0];
+    if (!eski) return;
+    (t.aksesuarlar || []).concat(t.parcalar).forEach(function (x) {
+      if (x.uid !== grup || !x.kenar) return;
+      x.kenar = !!eski.kenar;
+      x.cx = eski.cx;
+      x.cy = eski.cy;
+      x.aci = eski.aci;
+    });
+  }
 
   Editor.prototype.aksesuarEkle = function (aks, icTasarim, cx, cy) {
     if (!this.t.aksesuarlar) this.t.aksesuarlar = [];
@@ -2775,6 +2850,11 @@
     }
     var baslangic = kaydir(ornek, c[0], hedefY);
     var tasima = this.yer.enYakin([{ tip: tip, sekil: baslangic }], parcalar.filter(function (p) { return !p.kenar; }), 0, 0);
+    // Aksesuar ekranında kenar yok: yer yoksa eklenmez
+    if (!tasima && this.alt) {
+      this.bildir(ad + ' için ' + aksesuarTuru(this.secenek.aksesuar).toLocaleLowerCase('tr-TR') + ' üzerinde yer yok.', { sure: 4000 });
+      return false;
+    }
     var yeni = { uid: yeniId(tip === 'number' ? 'r' : 'i'), tip: tip, urunId: urunId, varyantId: varyant.id, cx: c[0] + (tasima ? tasima[0] : 0), cy: hedefY + (tasima ? tasima[1] : 0) };
     // Yer yoksa yine eklenir, kenara alınır (sepete dahil)
     if (!tasima) yeni.kenar = true;
@@ -2827,6 +2907,11 @@
     var self = this;
     var dolu = this.durum.parcalar.filter(function (p) { return !p.kenar; });
     var konumlar = this.setYerlestir(st, dolu);
+    // Aksesuar ekranında kenar yok: setin hepsi sığmıyorsa eklenmez
+    if (this.alt && konumlar.some(function (k) { return !k; })) {
+      this.bildir(st.ad + ' seti ' + aksesuarTuru(this.secenek.aksesuar).toLocaleLowerCase('tr-TR') + ' üzerine sığmıyor.', { sure: 4000 });
+      return;
+    }
     var id = yeniId('S');
     var alan = this.m.alanBul('icon');
     var c = alan ? merkez(alan.sekil) : [0, 0];
@@ -2839,12 +2924,6 @@
     });
     var cantada = konumlar.filter(Boolean).length;
     var kenarda = konumlar.length - cantada;
-    this.bildir(
-      st.ad + ' seti eklendi.' + (!kenarda ? '' : !cantada
-        ? ' Alanda yer olmadığı için ' + kenarda + ' patch\'in hepsi kenarda.'
-        : ' ' + cantada + '\'' + sayiEki(cantada) + ' çantada, ' + kenarda + '\'' + sayiEki(kenarda) + ' alanda yer olmadığı için kenarda.'),
-      { eylem: { yazi: 'Geri al', fn: function () { this.setKaldir(id); } } }
-    );
     if (!this.t.hazirSetler) this.t.hazirSetler = [];
     this.t.hazirSetler.push({ id: id, urunId: st.id });
     // Kısa süre sarı kesikli çerçeve ve "[Set] seti" etiketi
@@ -2855,9 +2934,15 @@
       self.setCerceveCiz();
     }, 3000);
     olayYayinla('set_eklendi', { urun_id: this.m.urun.id, set_id: st.id, set_adi: st.ad });
-    var bildirim = this.el.querySelector('[data-kp-bildirim]').innerHTML;
+    // Set ekleme tek geçmiş adımı; bildirimdeki "Geri al" o adımı geri alır (Yinele geri getirir)
     this.yenile();
-    if (this.el.querySelector('[data-kp-bildirim]').innerHTML !== bildirim) this.el.querySelector('[data-kp-bildirim]').innerHTML = bildirim;
+    var sonra = JSON.stringify(this.t);
+    this.bildir(
+      st.ad + ' seti eklendi.' + (!kenarda ? '' : !cantada
+        ? ' Alanda yer olmadığı için ' + kenarda + ' patch\'in hepsi kenarda.'
+        : ' ' + cantada + '\'' + sayiEki(cantada) + ' çantada, ' + kenarda + '\'' + sayiEki(kenarda) + ' alanda yer olmadığı için kenarda.'),
+      { eylem: { yazi: 'Geri al', fn: function () { this.islemiGeriAl(sonra, function () { this.setKaldir(id); }); } } }
+    );
   };
 
   // Sayıdan sonra iyelik/belirtme eki için: 1'i, 2'si, 3'ü, 4'ü, 5'i, 6'sı
@@ -2933,6 +3018,115 @@
     var eylem = this.onayEylemleri && this.onayEylemleri[i];
     this.onayKapat();
     if (typeof eylem === 'function') eylem.call(this);
+  };
+
+  /* ---------------- Patch'i aksesuarın tasarımına aktarma ---------------- */
+
+  // Çantadaki noktanın aksesuarın kendi tasarımındaki karşılığı (aksesuarDunyaParcalari'nin tersi)
+  function aksesuarYerelNokta(am, p, wx, wy) {
+    var d = p.tanim.dis;
+    var pc = merkez(p.sekil);
+    var r = dondurNokta([wx, wy], pc, -(p.aci || 0));
+    var dcx = ((d.x + d.w / 2) / 100) * am.m.Wcm;
+    var dcy = ((d.y + d.h / 2) / 100) * am.m.Hcm;
+    var k = d.en / ((am.m.Wcm * d.w) / 100);
+    return [dcx + (r[0] - pc[0]) / k, dcy + (r[1] - pc[1]) / k];
+  }
+
+  // Sürüklenen patch (tasarımdaki tek bir ikon ya da rakam) çantadaki bir aksesuarın Velcro yüzeyinin üstünde mi?
+  // Sonuç: aksesuar parçası (durum.parcalar'dan) ya da null
+  Editor.prototype.aksesuarHedefi = function (grup, tasinmis) {
+    if (this.alt || !tasinmis || !tasinmis.length) return null;
+    if (!this.t.parcalar.some(function (x) { return x.uid === grup; })) return null;
+    var m = this.m;
+    var c = merkez(tasinmis[0].sekil);
+    var bulunan = null;
+    this.durum.parcalar.forEach(function (p) {
+      if (bulunan || p.tip !== 'aksesuar' || p.kenar || !p.tanim.tasarlanabilir) return;
+      var am = m.aksesuarModeli(p.tanim.id);
+      var alan = am && am.m.alanBul('icon');
+      if (!alan) return;
+      var y = aksesuarYerelNokta(am, p, c[0], c[1]);
+      if (noktaIcinde(y[0], y[1], alan.sekil)) bulunan = p;
+    });
+    return bulunan;
+  };
+
+  // Sürüklerken hedef aksesuar vurgulanır
+  Editor.prototype.aksesuarHedefiCiz = function (uid) {
+    if (!this.sahne || !this.sahne.katman) return;
+    this.sahne.katman.querySelectorAll('.kp-parca--hedef').forEach(function (x) {
+      if (x.getAttribute('data-uid') !== uid) x.classList.remove('kp-parca--hedef');
+    });
+    if (uid) {
+      var el = this.sahne.katman.querySelector('[data-uid="' + uid + '"]');
+      if (el) el.classList.add('kp-parca--hedef');
+    }
+  };
+
+  // Patch'i (wx, wy noktasında bırakıldı) altındaki aksesuarın tasarımına taşır. Aksesuarda o noktada yer yoksa
+  // en yakın boş yere; hiç yer yoksa taşımaz (false). Tek geçmiş adımı; bildirimde "Geri al".
+  Editor.prototype.aksesuaraAktar = function (grup, wx, wy, aci) {
+    var t = this.t;
+    var parca = t.parcalar.filter(function (x) { return x.uid === grup; })[0];
+    if (!parca) return false;
+    var c0 = this.durum.parcalar.filter(function (x) { return x.uid === grup; })[0];
+    if (!c0) return false;
+    var hedef = this.aksesuarHedefi(grup, [kopyaParca(c0, { sekil: kaydir(c0.sekil, wx - merkez(c0.sekil)[0], wy - merkez(c0.sekil)[1]) })]);
+    if (!hedef) return false;
+    var aks = (t.aksesuarlar || []).filter(function (a) { return a.uid === hedef.uid; })[0];
+    var am = this.m.aksesuarModeli(hedef.tanim.id);
+    if (!aks || !am) return false;
+    var y = aksesuarYerelNokta(am, hedef, wx, wy);
+    var ic = kopyala(aks.tasarim || bosTasarim(am.m));
+    if (!ic.parcalar) ic.parcalar = [];
+    var yeni = { uid: parca.uid, tip: parca.tip, urunId: parca.urunId, varyantId: parca.varyantId, cx: y[0], cy: y[1], aci: aciNormal((aci != null ? aci : parca.aci || 0) - (hedef.aci || 0)) };
+    ic.parcalar.push(yeni);
+    var ad = this.grupAdi(grup);
+    var tur = aksesuarTuru(hedef.tanim).toLocaleLowerCase('tr-TR');
+    var d = duzenle(am.m, am.yer, ic);
+    if (d.hatalar[yeni.uid]) {
+      var pp = d.parcalar.filter(function (x) { return x.uid === yeni.uid; });
+      var diger = d.parcalar.filter(function (x) { return x.uid !== yeni.uid && !x.kenar && !d.hatalar[x.uid]; });
+      var t0 = pp.length && am.yer.enYakin(pp, diger, 0, 0);
+      if (!t0) {
+        this.bildir(ad + ' için ' + tur + ' üzerinde yer yok.', { sure: 3500 });
+        return false;
+      }
+      yeni.cx += t0[0];
+      yeni.cy += t0[1];
+    }
+    sonaAl(ic, yeni.uid);
+    t.parcalar = t.parcalar.filter(function (x) { return x.uid !== grup; });
+    aks.tasarim = ic;
+    sonaAl(t, aks.uid);
+    var setBozuldu = parca.setGrup && (t.hazirSetler || []).some(function (k) { return k.id === parca.setGrup; });
+    if (this.setCercevesi && parca.setGrup === this.setCercevesi) this.setCercevesi = null;
+    this.secili = null;
+    this.yenile();
+    var sonra = JSON.stringify(this.t);
+    var eski = JSON.parse(JSON.stringify(parca));
+    var aksUid = aks.uid;
+    this.bildir(ad + ', ' + tur + ' tasarımına eklendi.' + (setBozuldu ? ' Set bozuldu, patch\'ler tek tek fiyatlanır.' : ''), {
+      eylem: { yazi: 'Geri al', fn: function () {
+        this.islemiGeriAl(sonra, function () {
+          // Sonradan başka değişiklik yapıldıysa yalnızca bu patch çantadaki eski yerine döner
+          (this.t.aksesuarlar || []).forEach(function (a) {
+            if (a.uid === aksUid && a.tasarim) a.tasarim.parcalar = (a.tasarim.parcalar || []).filter(function (x) { return x.uid !== eski.uid; });
+          });
+          if (!this.t.parcalar.some(function (x) { return x.uid === eski.uid; })) this.t.parcalar.push(eski);
+          this.yenile();
+        });
+      } }
+    });
+    return true;
+  };
+
+  // Bildirimdeki "Geri al": işlemden sonra başka değişiklik yapılmadıysa geçmişteki o adım geri alınır (Yinele geri getirir).
+  // Yapıldıysa yedek çalışır (yalnızca o işlemin etkisini geri alır); yedek yoksa yine son adım geri alınır.
+  Editor.prototype.islemiGeriAl = function (sonra, yedek) {
+    if ((JSON.stringify(this.t) === sonra || !yedek) && this.geriYigin && this.geriYigin.length) return this.geriAl();
+    if (yedek) yedek.call(this);
   };
 
   /* ---------------- Yenileme ---------------- */
@@ -3114,10 +3308,10 @@
     var diger = d.parcalar.filter(function (p) { return p.grup !== grup && !p.kenar; });
     var t0 = parcalar[0].kenar ? null : this.yer.enYakin(parcalar, diger, 0, 0);
     if (t0) this.grubuKaydir(grup, parcalar[0], t0[0], t0[1]);
-    else kenaraAl(this.t, grup);
+    else if (!this.alt) kenaraAl(this.t, grup);
     if (yenileme !== false) {
       this.yenile();
-      if (!t0) this.bildir(this.grupAdi(grup) + ' için çantada yer yok, kenara alındı.', { sure: 3500 });
+      if (!t0) this.bildir(this.alt ? this.grupAdi(grup) + ' için yer yok. Başka bir patch\'i taşı ya da kaldır.' : this.grupAdi(grup) + ' için çantada yer yok, kenara alındı.', { sure: 3500 });
     }
     return !!t0;
   };
@@ -3132,10 +3326,14 @@
       if (!gruplar.length) break;
       var aksesuarMi = function (g) { return d.parcalar.some(function (p) { return p.grup === g && p.tip === 'aksesuar'; }); };
       var sira = gruplar.filter(function (g) { return !aksesuarMi(g); }).concat(gruplar.filter(aksesuarMi));
-      if (!this.alanaYerlestir(sira[0], false)) kenaraGiden++;
+      if (!this.alanaYerlestir(sira[0], false)) {
+        kenaraGiden++;
+        // Aksesuar ekranında kenar yok: yer bulunamayan patch yerinde kalır
+        if (this.alt) break;
+      }
     }
     this.yenile();
-    this.bildir(kenaraGiden ? 'Patch\'ler düzeltildi. ' + kenaraGiden + ' tanesine çantada yer olmadığı için kenara alındı.' : 'Patch\'ler düzeltildi.', { sure: 3500 });
+    this.bildir(this.alt && kenaraGiden ? 'Bazı patch\'ler için yer yok. Birini kaldırıp tekrar dene.' : kenaraGiden ? 'Patch\'ler düzeltildi. ' + kenaraGiden + ' tanesine çantada yer olmadığı için kenara alındı.' : 'Patch\'ler düzeltildi.', { sure: 3500 });
   };
 
   // Kenardaki grubu çantada boş bir yere yerleştirmeyi dener (yerleşmiş patch'ler oynamaz)
@@ -3185,10 +3383,11 @@
     return liste;
   };
 
-  // Kenar şeridi ve altındaki not
+  // Kenar şeridi (önizlemenin alt kenarında; boşken gizli) ve paneldeki not
   Editor.prototype.kenarCiz = function () {
     var listeEl = this.el.querySelector('[data-kp-kenar-liste]');
     if (!listeEl) return;
+    var kenarEl = this.el.querySelector('[data-kp-kenar]');
     var secili = this.secili;
     var gruplar = this.kenarGruplari();
     var self = this;
@@ -3202,13 +3401,25 @@
       }).join('');
       return '<button type="button" class="kp-kenar__oge' + (secili === k.grup ? ' kp-kenar__oge--secili' : '') + '" data-kp-kenar-grup="' + kacis(k.grup) + '" aria-label="' + kacis(ad) + ', kenarda. Çantaya sürükleyebilirsin.">' + ic + '</button>';
     }).join('');
-    if (!html) html = '<span class="kp-kenar__bos">Çantaya takmak istemediklerini buraya sürükle</span>';
     if (listeEl.innerHTML !== html) listeEl.innerHTML = html;
     var not = this.el.querySelector('[data-kp-kenar-not]');
     var patch = 0;
     var aks = 0;
     gruplar.forEach(function (k) { k.parcalar.forEach(function (p) { if (p.tip === 'aksesuar') aks++; else patch++; }); });
-    if (!patch && !aks) {
+    var sayi = [patch ? patch + ' patch' : '', aks ? aks + ' aksesuar' : ''].filter(Boolean).join(' · ');
+    var sayiEl = this.el.querySelector('[data-kp-kenar-sayi]');
+    if (sayiEl.textContent !== sayi) sayiEl.textContent = sayi;
+    var dolu = !!(patch || aks);
+    if (kenarEl.hidden === dolu) {
+      kenarEl.hidden = !dolu;
+      this.el.querySelector('.kp-onizleme__ic').classList.toggle('kp-onizleme__ic--kenar', dolu);
+      // Yakın görünümde takılabilir alan şeridin üstünde kalan bölgeye ortalanır
+      this.sahne.altBosluk = dolu ? kenarEl.offsetHeight || 48 : 0;
+      this.sahne.gorunumAyarla(this.sahne.yakin);
+      this.secimGuncelle();
+      this.setCerceveCiz();
+    }
+    if (!dolu) {
       not.hidden = true;
       not.innerHTML = '';
       return;
@@ -3228,7 +3439,8 @@
     var aktif = null;
     function sahneUstunde(x, y) {
       var r = self.sahne.gorunum.getBoundingClientRect();
-      return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+      var kr = self.el.querySelector('[data-kp-kenar]').getBoundingClientRect();
+      return x >= r.left && x <= r.right && y >= r.top && y <= Math.min(r.bottom, kr.top);
     }
     function bitir() {
       if (aktif && aktif.hayalet) aktif.hayalet.remove();
@@ -3272,6 +3484,7 @@
       var r = self.sahne.sahne.getBoundingClientRect();
       var cx = ((e.clientX + a.dx - r.left) / r.width) * self.m.Wcm;
       var cy = ((e.clientY + a.dy - r.top) / r.height) * self.m.Hcm;
+      if (self.aksesuaraAktar(a.grup, cx, cy)) return;
       kenardanAl(self.t, a.grup, cx, cy);
       sonaAl(self.t, a.grup);
       self.secili = a.grup;
@@ -3283,11 +3496,14 @@
   Editor.prototype.dugmeleriGuncelle = function () {
     var ayri = !!this.t.harfAyri;
     var harfSayisi = Array.from(this.t.isim || '').length;
+    var satir = this.el.querySelector('[data-kp-harf-mod-satir]');
+    if (satir) satir.hidden = harfSayisi < 2;
     this.el.querySelectorAll('[data-kp-harf-mod]').forEach(function (b) {
-      b.hidden = harfSayisi < 2;
       b.textContent = ayri ? 'Harfleri birleştir' : 'Harfleri ayır';
       b.setAttribute('aria-pressed', ayri ? 'true' : 'false');
     });
+    var not = this.el.querySelector('[data-kp-harf-mod-not]');
+    if (not) not.textContent = ayri ? 'Birleştirince yazı tek parça taşınır' : 'Ayırınca her harfi tek tek taşırsın';
     var gorunum = this.el.querySelector('[data-kp-gorunum]');
     gorunum.hidden = !this.sahne.yakinlasabilir;
     gorunum.textContent = this.sahne.yakin ? 'Tüm çantayı gör' : 'Alana yakınlaş';
@@ -3564,7 +3780,8 @@
         }
         html.push(c0);
       });
-    var yeni = html.length ? html.join('') : '<span class="kp-etiketler__bos">Eklediğin isim, rakam ve ikonlar burada görünür.</span>';
+    // Hiçbir şey eklenmemişken satır boş kalır
+    var yeni = html.join('');
     if (kutu.innerHTML !== yeni) kutu.innerHTML = yeni;
   };
 
@@ -4101,6 +4318,7 @@
           e.preventDefault();
           if (aktif && aktif.mod === 'tasima') self.sahne.konumla(aktif.parcalar, {});
           self.sahne.sahne.classList.remove('kp-sahne--surukleniyor');
+          surukleBitti();
           self.sinirTasma(false);
           self.bildirimKapat('surukle');
           aktif = null;
@@ -4178,6 +4396,8 @@
       if (!aktif.hareket) {
         self.sahne.sahne.classList.add('kp-sahne--surukleniyor');
         self.balonGizle();
+        // Kenar bölgesi kırmızı kesikli "Kenara bırak" olarak belirir (aksesuar ekranında kenar yok)
+        if (self.el.querySelector('[data-kp-kenar]')) self.el.querySelector('.kp-onizleme__ic').classList.add('kp-onizleme__ic--surukle');
       }
       aktif.hareket = true;
       aktif.dx = d[0];
@@ -4190,12 +4410,23 @@
       var kr = kenarEl && kenarEl.getBoundingClientRect();
       aktif.kenaraBirak = !!kr && e.clientX >= kr.left && e.clientX <= kr.right && e.clientY >= kr.top && e.clientY <= kr.bottom;
       if (kenarEl) kenarEl.classList.toggle('kp-kenar--hedef', aktif.kenaraBirak);
-      var sorun = aktif.kenaraBirak ? null : self.grupSorunu(tasinmis, aktif.digerleri);
+      // Aksesuarın Velcro yüzeyinin üstündeyse bırakınca aksesuarın tasarımına geçer
+      var hedefAks = aktif.kenaraBirak ? null : self.aksesuarHedefi(aktif.grup, tasinmis);
+      self.aksesuarHedefiCiz(hedefAks && hedefAks.uid);
+      var sorun = aktif.kenaraBirak || hedefAks ? null : self.grupSorunu(tasinmis, aktif.digerleri);
       var hatalar = {};
       if (sorun) tasinmis.forEach(function (p) { hatalar[p.uid] = true; });
       self.sinirTasma(sorun === 'tasma');
       self.sahne.konumla(tasinmis, hatalar);
     });
+
+    function surukleBitti() {
+      var ic = self.el.querySelector('.kp-onizleme__ic');
+      if (ic) ic.classList.remove('kp-onizleme__ic--surukle');
+      var kenarEl = self.el.querySelector('[data-kp-kenar]');
+      if (kenarEl) kenarEl.classList.remove('kp-kenar--hedef');
+      self.aksesuarHedefiCiz(null);
+    }
 
     function birak(e) {
       delete parmaklar[e.pointerId];
@@ -4219,6 +4450,7 @@
         return;
       }
       self.sahne.sahne.classList.remove('kp-sahne--surukleniyor');
+      surukleBitti();
       if (!a.hareket) return;
       var tasinmis = a.parcalar.map(function (p) {
         return kopyaParca(p, { sekil: kaydir(p.sekil, a.dx, a.dy) });
@@ -4226,8 +4458,11 @@
       var dx = a.dx;
       var dy = a.dy;
       self.sinirTasma(false);
-      var kenarEl = self.el.querySelector('[data-kp-kenar]');
-      if (kenarEl) kenarEl.classList.remove('kp-kenar--hedef');
+      var hedefAks = !a.kenaraBirak && self.aksesuarHedefi(a.grup, tasinmis);
+      if (hedefAks) {
+        var mc = merkez(tasinmis[0].sekil);
+        if (self.aksesuaraAktar(a.grup, mc[0], mc[1], tasinmis[0].aci)) return;
+      }
       // Bırakıldığı yerde kalır (geçersizse kırmızı işaretlenir); kenarın üstüne bırakıldıysa kenara alınır
       if (a.kenaraBirak) {
         kenaraAl(self.t, a.grup);

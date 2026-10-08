@@ -40,9 +40,8 @@ await s.locator('[data-kp-aksesuar="9101"]').click();
 await s.locator(alt).waitFor({ state: 'visible' });
 assert.equal(await metin(alt + ' [data-kp-vazgec]'), 'Vazgeç');
 assert.equal(await gorunur(alt + ' [data-kp-vazgec]'), true);
-// Toplam: çanta 3.000 + Futbol Topu 330 + kalem kutusu 1.700; altında aksesuarın payı
+// Toplam: çanta 3.000 + Futbol Topu 330 + kalem kutusu 1.700
 assert.equal(await metin(alt + ' [data-kp-toplam]'), '5.030 TL');
-assert.equal(await metin(alt + ' [data-kp-pay]'), 'Kalem kutusu: 1.700 TL');
 await s.locator(alt + ' [data-kp-vazgec]').click();
 assert.equal(await gorunur(alt), false);
 assert.equal(await s.locator(ana + ' .kp-parca--aksesuar').count(), 0, 'aksesuar eklenmedi');
@@ -54,7 +53,6 @@ await s.locator('[data-kp-aksesuar="9101"]').click();
 await s.locator(alt).waitFor({ state: 'visible' });
 await s.locator('#kpa-isim').fill('ada');
 assert.equal(await metin(alt + ' [data-kp-toplam]'), '6.020 TL');
-assert.equal(await metin(alt + ' [data-kp-pay]'), 'Kalem kutusu ve tasarımı: 2.690 TL');
 await s.locator('#kpa-isim').blur();
 await s.locator(alt + ' [data-kp-vazgec]').click();
 assert.equal(await metin(alt + ' .kp-onay__metin'), 'Kalem kutusu tasarımın silinsin mi?');

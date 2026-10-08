@@ -87,7 +87,7 @@ await s.evaluate(() => { document.querySelector('.kp-kaydir').scrollTop = 0; });
 // 3) İkon ızgarası: 4 sütun, fiyat başlıkta bir kez, kartlarda fiyat yok (ilk kategori Hazır setler; ikon kategorisine geç)
 assert.equal(await metin('.kp-panel__fiyat'), 'Tek patch 330 TL');
 await s.locator('[data-kp-kategori="Spor"]').click();
-assert.equal(await metin('.kp-panel__fiyat'), 'Her patch 330 TL');
+assert.equal(await metin('.kp-panel__fiyat'), 'Tek patch 330 TL');
 assert.equal(await s.locator('[data-kp-panel="ikon"] .kp-secim__fiyat').count(), 0);
 const sutun = await s.evaluate(() => getComputedStyle(document.querySelector('.kp-izgara--ikon')).gridTemplateColumns.split(' ').length);
 assert.equal(sutun, 4);

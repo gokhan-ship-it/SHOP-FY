@@ -43,8 +43,14 @@ assert.match((await metin(ana + ' .kp-adimlar')), /1 Yazı 2 İkon 3 Aksesuar 4 
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
 assert.match(await metin(ana + ' [data-kp-panel="aksesuar"] .kp-panel__aciklama'), /^Çantanın Velcro yüzeyine takılabilen aksesuarlar\. İstersen önce onu da patch'lerle tasarlarsın\.$/);
 assert.equal(await s.locator('[data-kp-aksesuar]').count(), 3, 'stokta olmayan yok');
-assert.equal(await metin('[data-kp-aksesuar="9101"]'), 'Kalem Kutusu Kırmızı 1.700 TL Velcro alanın neredeyse tamamını kaplar');
-assert.equal(await metin('[data-kp-aksesuar="9102"]'), 'Zarf Kalemlik Kırmızı/Pembe 1.500 TL');
+// Üzerine patch takılabilen: "Düz ekle" + kırmızı "Tasarla", yeşil not; takılamayan: tek "Ekle", gri not
+const kart = (id) => '.kp-secim--aksesuar:has([data-kp-aksesuar="' + id + '"])';
+assert.equal(await metin(kart(9101)), 'Kalem Kutusu Kırmızı 1.700 TL Üzerine patch takılabilir Düz ekle Tasarla');
+assert.equal(await metin(kart(9102)), 'Zarf Kalemlik Kırmızı/Pembe 1.500 TL Üzerine patch takılmaz Ekle');
+assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).backgroundColor, '[data-kp-aksesuar="9101"]'), 'rgb(179, 20, 27)');
+assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).color, kart(9101) + ' .kp-aks-kart__not'), 'rgb(46, 125, 50)');
+const [b1, b2] = await s.evaluate(() => ['[data-kp-aks-duz="9101"]', '[data-kp-aksesuar="9101"]'].map((q) => document.querySelector(q).getBoundingClientRect()).map((r) => [r.left, r.top]));
+assert.ok(b1[0] < b2[0] && Math.abs(b1[1] - b2[1]) < 1, 'Düz ekle solda, Tasarla sağda');
 assert.equal(await gorunur(ana + ' [data-kp-panel="aksesuar"] [data-kp-gec]'), true);
 
 // 2) Tasarlanamayan (Velcro yüzeyi yok) yuvarlak: doğrudan yerleşir; etiket kalemsiz
@@ -55,22 +61,34 @@ assert.equal(await s.locator(ana + ' [data-kp-aks-duzenle]').count(), 0);
 assert.equal(await toplam(), '3.900 TL');
 assert.equal(await gorunur(ana + ' [data-kp-panel="aksesuar"] [data-kp-gec]'), false);
 
-// 3) Kalem kutusu: kendi tasarım ekranı
+// 3) Kalem kutusu: kendi tasarım ekranı (sade)
 await s.locator('[data-kp-aksesuar="9101"]').click();
 await s.locator(alt).waitFor({ state: 'visible' });
 assert.equal(await metin(alt + ' .kp-ust__baslik'), 'Kalem Kutusu Kırmızı tasarla');
-assert.equal(await metin(alt + ' .kp-yol'), 'Çanta tasarımın › Kalem Kutusu Kırmızı');
+assert.equal(await metin(alt + ' .kp-yol'), 'Velcro alanın neredeyse tamamını kaplar');
 assert.equal(await gorunur(alt + ' .kp-geri'), true);
-assert.match(await metin(alt + ' .kp-adimlar'), /^1 Yazı 2 İkon$/);
-assert.equal(await metin(alt + ' [data-kp-ileri]'), 'Çantaya yerleştir');
+assert.equal(await metin(alt + ' .kp-adimlar'), 'Yazı İkon');
+assert.equal(await s.locator(alt + ' .kp-sekme').count(), 2);
+assert.equal(await s.locator(alt + ' [data-kp-kenar]').count(), 0, 'aksesuar ekranında kenar yok');
+assert.equal(await s.locator(alt + ' [data-kp-tasarimsiz], ' + alt + ' .kp-aks-not').count(), 0, 'eski link ve notlar yok');
+// Boşken ana buton "Düz ekle" ve sarı ipucu
+assert.equal(await metin(alt + ' [data-kp-ileri]'), 'Düz ekle');
+assert.equal(await metin(alt + ' [data-kp-alt-ipucu]'), 'Bir şey eklemezsen kalem kutusu düz eklenir. Yazı ya da ikon eklersen buton “Tasarımımla ekle” olur.');
 assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q + ' [data-kp-ileri]')).backgroundColor, alt), 'rgb(179, 20, 27)');
-assert.equal(await metin(alt + ' [data-kp-tasarimsiz]'), "Kalem Kutusu Kırmızı'yı tasarlamadan yerleştir");
-assert.equal(await metin(alt + ' .kp-aks-not'), 'Velcro alanın neredeyse tamamını kaplar.');
+// Alt çubuk tek satır: solda Vazgeç, ortada Toplam, sağda ana buton
+const satir = await s.evaluate((q) => ['[data-kp-vazgec]', '.kp-alt__fiyat', '[data-kp-ileri]'].map((x) => document.querySelector(q + ' ' + x).getBoundingClientRect()).map((r) => [Math.round(r.left), Math.round(r.top + r.height / 2)]), alt);
+assert.ok(satir[0][0] < satir[1][0] && satir[1][0] < satir[2][0], 'sıra: Vazgeç, Toplam, buton');
+assert.ok(Math.abs(satir[0][1] - satir[2][1]) < 3 && Math.abs(satir[1][1] - satir[2][1]) < 6, 'tek satır: ' + JSON.stringify(satir));
+// Önizleme kısa (yatay kalem kutusu): çanta önizlemesinden belirgin kısa
+const hAlt = (await s.locator(alt + ' .kp-onizleme__ic').boundingBox()).height;
+assert.ok(hAlt < 210, 'aksesuar önizlemesi kısa: ' + hAlt);
 await s.locator('#kpa-isim').fill('ada');
+assert.equal(await metin(alt + ' [data-kp-ileri]'), 'Tasarımımla ekle');
+assert.equal(await gorunur(alt + ' [data-kp-alt-ipucu]'), false);
 assert.equal(await s.locator(alt + ' .kp-parca--letter').count(), 3, 'aksesuarın önizlemesinde yazı');
 assert.equal(await s.locator(alt + ' .kp-parca--hatali').count(), 0, 'ADA aksesuarın Velcro yüzeyine sığar');
 await s.locator(alt + ' [data-kp-adim="ikon"]').click();
-assert.equal(await metin(alt + ' .kp-kategori'), 'Hazır setler', 'aksesuarda da setler');
+assert.equal(await s.locator(alt + ' [data-kp-ikon-yol="set"]').count(), 1, 'aksesuarda da setler');
 await s.locator(alt + ' [data-kp-ileri]').click();
 
 // 4) Soru sormadan: kalem kutusu Velcro alanın büyük kısmını kapladığı için çantadaki her şey (yuvarlak çanta da) kenara alınır
@@ -83,10 +101,24 @@ assert.equal(await s.locator(ana + ' [data-kp-kenar-grup]').count(), 1, 'yuvarla
 assert.equal(await s.locator(ana + ' .kp-parca--hatali').count(), 0);
 assert.deepEqual((await cipler()).sort(), ['Kalem Kutusu Kırmızı', '↧Mini Yuvarlak Çanta Mavi'].sort());
 assert.equal(await toplam(), '6.590 TL', 'kenardaki de fiyatlanır');
-// Geri al: kalem kutusu kalkar, yuvarlak çanta yerine döner
+// Geri al: kalem kutusu tasarımıyla kalkar, yuvarlak çanta yerine döner (tek adım); Yinele hepsini geri getirir
 await s.locator(ana + ' [data-kp-bildirim-eylem]').click();
 assert.deepEqual(await cipler(), ['Mini Yuvarlak Çanta Mavi']);
 assert.equal(await s.locator(ana + ' [data-kp-kenar-grup]').count(), 0);
+assert.equal(await s.locator(ana + ' .kp-aks__parca').count(), 0);
+await s.locator(ana + ' [data-kp-yinele]').click();
+assert.deepEqual((await cipler()).sort(), ['Kalem Kutusu Kırmızı', '↧Mini Yuvarlak Çanta Mavi'].sort(), 'Yinele: tek adımda geri');
+assert.equal(await s.locator(ana + ' .kp-aks__parca').count(), 3, 'tasarımıyla');
+await s.locator(ana + ' [data-kp-geri-al]').click();
+assert.deepEqual(await cipler(), ['Mini Yuvarlak Çanta Mavi'], 'Geri al düğmesi de tek adım');
+assert.equal(await s.locator(ana + ' .kp-aks__parca').count(), 0);
+// Düz ekle: tasarım ekranı açılmadan yerleşir
+await s.locator('[data-kp-aks-duz="9101"]').click();
+assert.equal(await gorunur(alt), false, 'Düz ekle tasarım ekranını açmaz');
+assert.deepEqual((await cipler()).sort(), ['Kalem Kutusu Kırmızı', '↧Mini Yuvarlak Çanta Mavi'].sort());
+assert.equal(await s.locator(ana + ' .kp-aks__parca').count(), 0);
+await s.locator(ana + ' [data-kp-geri-al]').click();
+assert.deepEqual(await cipler(), ['Mini Yuvarlak Çanta Mavi']);
 // Yeniden: yuvarlak çantayı kaldır, kalem kutusunu tasarımıyla yerleştir
 await s.locator(ana + ' [data-kp-kaldir]').first().click();
 await s.locator('[data-kp-aksesuar="9101"]').click();
@@ -116,6 +148,8 @@ await s.locator(ana + ' [data-kp-secim-kaldir]').click();
 await s.locator(ana + ' [data-kp-aks-duzenle]').click();
 await s.locator(alt).waitFor({ state: 'visible' });
 assert.equal(await s.locator('#kpa-isim').inputValue(), 'ADA');
+assert.equal(await metin(alt + ' [data-kp-ileri]'), 'Kaydet', 'düzenlemede Kaydet');
+assert.equal(await gorunur(alt + ' [data-kp-alt-ipucu]'), false);
 await s.locator('#kpa-isim').fill('eda');
 await s.locator('#kpa-isim').press('Enter'); // klavye kapanır, alt çubuk görünür
 await s.locator(alt + ' [data-kp-ileri]').click();

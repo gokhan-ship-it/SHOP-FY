@@ -48,8 +48,9 @@ assert.equal(await s.locator('[data-kp-yinele]').isDisabled(), true);
 const [gr, gv] = await s.evaluate(() => ['[data-kp-geri-al]', '[data-kp-gorunum]'].map((q) => document.querySelector(q).getBoundingClientRect()).map((r) => [r.left, r.top]));
 const sahneSol = await s.evaluate(() => document.querySelector('.kp-gorunum').getBoundingClientRect().left);
 assert.ok(gr[0] - sahneSol < 20 && gv[0] > gr[0], 'geri al sol üstte, Tüm çantayı gör sağda');
-assert.match(await metin('[data-kp-kenar]'), /^Kenar · çantaya takılmamış/);
+assert.equal(await gorunur('[data-kp-kenar]'), false, 'kenar boşken görünmez');
 assert.equal(await kenarSayisi(), 0);
+assert.equal((await metin('[data-kp-etiketler]').catch(() => '')), '', 'boşken eklenenler yazısı yok');
 
 // 2) Bir ikon ekle; çantadan kenara sürükle: kenarda, eklenenlerde ↧, fiyat aynı, kenar notu
 await s.locator('[data-kp-adim="ikon"]').click();
@@ -58,13 +59,31 @@ await s.locator('[data-kp-ikon="2"]').click();
 if (await gorunur('[data-kp-secim-kaldir]')) await s.locator('[data-kp-secim-kaldir]').click();
 const toplam0 = await metin('[data-kp-toplam]');
 const ikon = await merkez('.kp-onizleme .kp-parca--icon');
-const kenar = await merkez('[data-kp-kenar]');
-await surukle(ikon[0], ikon[1], kenar[0], kenar[1]);
+const ic = await s.locator('.kp-onizleme__ic').boundingBox();
+const kenar = [ic.x + ic.width / 2, ic.y + ic.height - 22];
+// Sürüklerken kenar bölgesi kırmızı kesikli "Kenara bırak" olarak belirir, bitince kaybolur
+await dokun('touchStart', ikon[0], ikon[1]);
+for (let i = 1; i <= 10; i++) await dokun('touchMove', ikon[0] + ((kenar[0] - ikon[0]) * i) / 10, ikon[1] + ((kenar[1] - ikon[1]) * i) / 10);
+assert.equal(await gorunur('[data-kp-kenar]'), true, 'sürüklerken kenar bölgesi görünür');
+assert.equal(await metin('[data-kp-kenar]'), 'Kenara bırak');
+assert.equal(await s.evaluate(() => getComputedStyle(document.querySelector('[data-kp-kenar]')).borderTopStyle), 'dashed');
+assert.equal(await s.locator('.kp-kenar--hedef').count(), 1, 'üstündeyken hedef');
+await dokun('touchEnd');
+await s.waitForTimeout(120);
 assert.equal(await kenarSayisi(), 1, 'kenara alındı');
+assert.equal(await s.locator('.kp-onizleme__ic--surukle').count(), 0);
+assert.equal(await gorunur('[data-kp-kenar]'), true, 'kenarda patch varken şerit görünür');
+assert.equal(await metin('[data-kp-kenar] .kp-kenar__bas'), '↧ Kenar 1 patch');
+const kb = await s.locator('[data-kp-kenar]').boundingBox();
+assert.ok(Math.abs(kb.y + kb.height - (ic.y + ic.height)) < 2 && kb.height < 56, 'şerit önizlemenin alt kenarında, ince');
 assert.equal(await s.locator('.kp-onizleme .kp-parca--icon').count(), 0, 'önizlemede çizilmez');
 assert.deepEqual(await cipler(), ['↧Futbol Topu']);
 assert.equal(await metin('[data-kp-toplam]'), toplam0, 'kenardaki de fiyatlanır');
 assert.match(await metin('[data-kp-kenar-not]'), /^Kenarda 1 patch var\./);
+// Yakın görünümde alan şeridin üstünde kalan bölgeye ortalanır: daire şeridin altına girmez
+await s.waitForTimeout(400); // geçiş animasyonu
+const dAlt = await s.evaluate(() => document.querySelector('.kp-gorunum ellipse').getBoundingClientRect().bottom);
+assert.ok(dAlt <= (await s.locator('[data-kp-kenar]').boundingBox()).y + 1, 'daire şeridin üstünde: ' + dAlt);
 assert.equal(await s.locator('[data-kp-geri-al]').isDisabled(), false);
 
 // 3) Geri al → çantaya döner; Yinele → tekrar kenarda; Ctrl+Z / Shift+Ctrl+Z
@@ -115,18 +134,26 @@ await s.locator('[data-kp-kategori="Spor"]').click();
 for (let i = 0; i < 8; i++) await s.locator('[data-kp-ikon="2"]').click();
 const kenarOnce = await kenarSayisi();
 const cipOnce = (await cipler()).length;
-await s.locator('[data-kp-kategori="Hazır setler"]').click();
+await s.locator('[data-kp-ikon-yol="set"]').click();
 assert.equal(await s.locator('[data-kp-hazir-set] .kp-secim__rozet').count(), 0, 'Yer aç etiketi yok');
 await s.locator('[data-kp-hazir-set="8001"]').click();
 const setBildirim = await metin('[data-kp-bildirim]');
 console.log('set bildirimi:', setBildirim);
 assert.match(setBildirim, /^School Vibes seti eklendi\. (\d'(i|si|ü|ı|u) çantada, \d'(i|si|ü|ı|u) alanda yer olmadığı için kenarda|Alanda yer olmadığı için \d patch'in hepsi kenarda)\. Geri al$/);
 assert.ok((await kenarSayisi()) > kenarOnce, 'sığmayanlar kenarda');
+const cipSet = (await cipler()).length;
+const kenarSet = await kenarSayisi();
 await s.locator('[data-kp-bildirim-eylem]').click();
 assert.equal((await cipler()).length, cipOnce, 'Geri al setin tamamını kaldırır');
 assert.equal(await kenarSayisi(), kenarOnce);
+await s.locator('[data-kp-yinele]').click();
+assert.equal((await cipler()).length, cipSet, 'Yinele seti tek adımda geri getirir');
+assert.equal(await kenarSayisi(), kenarSet);
+await s.locator('[data-kp-geri-al]').click();
+assert.equal((await cipler()).length, cipOnce, 'Geri al (düğme) setin tamamını kaldırır');
 
 // 8) Sepet: kenardaki "Durum: Takılmamış"; konumda e:1; galeride yalnızca takılmış
+await s.locator('[data-kp-ikon-yol="kendim"]').click();
 await s.locator('[data-kp-kategori="Spor"]').click();
 for (let i = 0; i < 12 && !(await kenarSayisi()); i++) await s.locator('[data-kp-ikon="2"]').click();
 assert.ok(await kenarSayisi(), 'yer kalmayınca ikon da kenara');

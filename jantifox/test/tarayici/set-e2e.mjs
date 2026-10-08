@@ -35,20 +35,33 @@ await s.locator('kisisel-kart').waitFor({ state: 'visible' });
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 await s.locator('[data-kp-adim="ikon"]').click();
 
-// 1) İlk kategori Hazır setler, açıklama, başlığın sağında "Tek patch"
-assert.equal(await metin('.kp-kategori'), 'Hazır setler');
-assert.equal(await s.locator('.kp-kategori').first().getAttribute('aria-pressed'), 'true');
+// 1) Panelin üstünde yol seçimi: "Hazır setler" ve "Kendim seçeceğim" (varsayılan); başlığın sağında "Tek patch"
+assert.equal(await metin('[data-kp-ikon-yol="set"]'), 'Hazır setler İndirimli hazır setler');
+assert.equal(await metin('[data-kp-ikon-yol="kendim"]'), 'Kendim seçeceğim İkonları tek tek seç');
+assert.equal(await s.locator('[data-kp-ikon-yol="kendim"]').getAttribute('aria-pressed'), 'true', 'varsayılan kendim');
+assert.equal(await gorunur('[data-kp-kategoriler]'), true);
+assert.equal(await s.locator('[data-kp-hazir-set]').count(), 0);
+assert.equal(await s.locator('[data-kp-kategori="Hazır setler"]').count(), 0, 'setler kategori değil');
+const [ys, yk] = await s.evaluate(() => ['set', 'kendim'].map((y) => document.querySelector('[data-kp-ikon-yol="' + y + '"]').getBoundingClientRect()).map((r) => [r.left, r.top]));
+assert.ok(ys[0] < yk[0] && Math.abs(ys[1] - yk[1]) < 1, 'yan yana, setler solda');
+assert.equal(await metin('[data-kp-ikon-fiyat]'), 'Tek patch 330 TL');
+await s.locator('[data-kp-ikon-yol="set"]').click();
+assert.equal(await s.locator('[data-kp-ikon-yol="set"]').getAttribute('aria-pressed'), 'true');
+assert.equal(await s.evaluate(() => getComputedStyle(document.querySelector('[data-kp-ikon-yol="set"]')).borderTopWidth), '2px', 'seçili kart koyu çerçeve');
+assert.equal(await gorunur('[data-kp-kategoriler]'), false, 'setlerde kategoriler gizli');
 assert.match(await metin('[data-kp-set-aciklama]'), /Seti ekleyince patch'leri tek tek de taşıyıp döndürebilirsin\./);
 assert.equal(await metin('[data-kp-ikon-fiyat]'), 'Tek patch 330 TL');
 assert.equal(await s.locator('[data-kp-hazir-set]').count(), 1, 'satışta olmayan ve eksik patch\'li set yok');
 assert.equal(await metin('[data-kp-hazir-set="8001"]'), 'School Vibes 3 patch · 800 TL 990 TL');
 assert.equal(await s.locator('[data-kp-hazir-set="8001"] .kp-set-kart__onizleme img').count(), 3);
 assert.equal(await s.locator('[data-kp-hazir-set="8001"] s').textContent(), '990 TL');
-// Başka kategoride "Her patch"
+// Kendim seçeceğim: kategoriler ve ikonlar
+await s.locator('[data-kp-ikon-yol="kendim"]').click();
 await s.locator('[data-kp-kategori="Spor"]').click();
-assert.equal(await metin('[data-kp-ikon-fiyat]'), 'Her patch 330 TL');
+assert.equal(await metin('[data-kp-ikon-fiyat]'), 'Tek patch 330 TL');
 assert.equal(await gorunur('[data-kp-set-aciklama]'), false);
-await s.locator('[data-kp-kategori="Hazır setler"]').click();
+assert.ok(await s.locator('[data-kp-ikon]').count() > 0);
+await s.locator('[data-kp-ikon-yol="set"]').click();
 
 // 2) Sete dokun: 3 patch ayrı parçalar olarak, çakışmadan; çerçeve ve etiket; eklenenlerde tek etiket; fiyat set fiyatı
 await s.locator('[data-kp-hazir-set="8001"]').click();

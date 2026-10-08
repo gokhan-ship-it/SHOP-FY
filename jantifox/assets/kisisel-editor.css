@@ -896,11 +896,10 @@ html.kp-kilit body {
   width: min(100%, calc(38vh * var(--kp-oran, 1)), 560px);
   width: min(100%, calc(38dvh * var(--kp-oran, 1)), 560px);
 }
-/* Kenar şeridi önizlemenin altında: görsel şerit kadar küçülür, toplam yükseklik aynı kalır */
-.kp-onizleme__ic,
-.kp-kenar {
-  width: min(100%, calc((38vh - 50px) * var(--kp-oran, 1)), 560px);
-  width: min(100%, calc((38dvh - 50px) * var(--kp-oran, 1)), 560px);
+/* Aksesuar ekranı: önizleme aksesuarın şekline göre daha kısa (kalem kutusu yatay), kalan yer panele */
+.kp-editor--alt .kp-onizleme__ic {
+  width: min(100%, calc(28vh * var(--kp-oran, 1)), 560px);
+  width: min(100%, calc(28dvh * var(--kp-oran, 1)), 560px);
 }
 /* Klavye açıkken önizleme küçülür, yazı alanı görünür kalır */
 .kp-editor--klavye .kp-onizleme__ic {
@@ -976,12 +975,32 @@ html.kp-kilit body {
 .kp-isim-alt {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
-  margin-top: 0.6rem;
+  margin-top: 0.8rem;
 }
-.kp-isim-alt .kp-kapasite {
-  margin-left: auto;
+.kp-isim-alt[hidden] {
+  display: none;
+}
+.kp-harf-mod__not {
+  font-size: 1.25rem;
+  line-height: 1.3;
+  color: var(--kp-ikincil);
+}
+/* Karakter sayacı yazı alanının içinde, sağda */
+.kp-girdi-kap {
+  position: relative;
+}
+.kp-girdi-kap .kp-girdi {
+  padding-right: 6.4rem;
+}
+.kp-girdi-kap .kp-kapasite {
+  position: absolute;
+  top: 50%;
+  right: 1.2rem;
+  margin: 0;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
 }
 .kp-baglanti[hidden] {
   display: none;
@@ -1847,18 +1866,6 @@ html.kp-kilit body {
   border-color: #b3141b;
   color: #fff;
 }
-.kp-alt__aks {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.2rem;
-  width: 100%;
-}
-.kp-aks-not {
-  margin: 0;
-  font-size: 1.2rem;
-  color: var(--kp-ikincil);
-}
 /* Aksesuar kartları */
 .kp-izgara--aksesuar {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1946,20 +1953,6 @@ html.kp-kilit body {
 .kp-editor--alt .kp-alt__ileri {
   min-width: 0;
   padding: 0 1.6rem;
-}
-@media (max-width: 420px) {
-  .kp-editor--alt .kp-alt__fiyat {
-    flex: 1 1 100%;
-  }
-  .kp-editor--alt .kp-alt__dugmeler {
-    flex: 1 1 100%;
-  }
-  .kp-editor--alt .kp-alt__vazgec {
-    flex: 1 1 0;
-  }
-  .kp-editor--alt .kp-alt__ileri {
-    flex: 2 1 0;
-  }
 }
 /* Kampanyalı toplam: eski toplam üstü çizili */
 .kp-alt__eski,
@@ -2161,76 +2154,123 @@ html.kp-kilit body {
   opacity: 0.4;
   cursor: default;
 }
-/* ---------- Kenar: çantaya takılmamış patch'ler ---------- */
+/* ---------- Kenar: çantaya takılmamış patch'ler ----------
+   Önizlemenin içinde, alt kenarında ince beyaz şerit. Boşken görünmez.
+   Bir patch sürüklenirken kırmızı kesikli "Kenara bırak" bölgesi olarak belirir. */
 .kp-kenar {
-  position: relative;
-  margin-top: 0.8rem;
-  border: 1.5px dashed #b9b2aa;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.6);
-  transition: border-color 0.15s, background 0.15s;
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  height: 50px;
+  padding: 0 0.6rem 0 1rem;
+  border-top: 1px solid var(--kp-cizgi);
+  border-radius: 0 0 8px 8px;
+  background: #fff;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
 }
-.kp-editor--klavye .kp-kenar {
+.kp-kenar[hidden] {
   display: none;
 }
-.kp-kenar--hedef {
-  border-color: var(--kp-murekkep);
-  background: #fff;
+.kp-kenar__bas {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  line-height: 1.25;
 }
 .kp-kenar__baslik {
-  position: absolute;
-  top: -0.8rem;
-  left: 0.8rem;
-  padding: 0 0.4rem;
-  background: var(--kp-yumusak);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--kp-murekkep);
+  white-space: nowrap;
+}
+.kp-kenar__sayi {
   font-size: 1.1rem;
   color: var(--kp-ikincil);
-  line-height: 1.4rem;
+  white-space: nowrap;
+}
+.kp-kenar__ayrac {
+  flex: none;
+  align-self: stretch;
+  width: 1px;
+  margin: 0.8rem 0;
+  background: var(--kp-cizgi);
 }
 .kp-kenar__liste {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
-  gap: 0.6rem;
-  min-height: 40px;
-  padding: 0.5rem 0.6rem 0.3rem;
+  gap: 0.4rem;
+  min-width: 0;
+  height: 100%;
   overflow-x: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   touch-action: pan-x;
 }
-.kp-kenar__bos {
-  overflow: hidden;
-  font-size: 1.1rem;
-  color: var(--kp-ikincil);
-  padding-left: 0.2rem;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.kp-kenar__liste::-webkit-scrollbar {
+  display: none;
+}
+.kp-kenar__birak {
+  display: none;
+}
+/* Sürüklerken: kırmızı kesikli bölge, "Kenara bırak" (boş kenarda da görünür) */
+.kp-onizleme__ic--surukle .kp-kenar,
+.kp-onizleme__ic--surukle .kp-kenar[hidden] {
+  display: flex;
+  justify-content: center;
+  border: 2px dashed var(--kp-hata);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: none;
+}
+.kp-onizleme__ic--surukle .kp-kenar > :not(.kp-kenar__birak) {
+  display: none;
+}
+.kp-onizleme__ic--surukle .kp-kenar__birak {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--kp-hata);
+}
+.kp-onizleme__ic--surukle .kp-kenar--hedef {
+  background: var(--kp-hata-zemin);
+  border-style: solid;
+}
+/* Kenar şeridi görünürken bildirim şeridin üstünde */
+.kp-onizleme__ic--kenar .kp-yuzen {
+  bottom: calc(50px + 0.8rem);
+}
+.kp-editor--klavye .kp-kenar {
+  display: none;
 }
 .kp-kenar__oge {
   display: inline-flex;
   flex: none;
   align-items: center;
   gap: 2px;
-  height: 44px;
+  height: 42px;
   padding: 2px 4px;
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
-  opacity: 0.85;
   cursor: grab;
   touch-action: pan-x;
 }
 .kp-kenar__oge--secili {
   border-color: var(--kp-murekkep);
   background: #fff;
-  opacity: 1;
 }
 .kp-kenar__parca {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 38px;
-  width: calc(38px * var(--oran, 1));
-  max-width: 76px;
+  height: 36px;
+  width: calc(36px * var(--oran, 1));
+  max-width: 72px;
 }
 .kp-kenar__parca img {
   max-width: 100%;
@@ -2239,7 +2279,7 @@ html.kp-kilit body {
   pointer-events: none;
 }
 .kp-kenar__parca--aksesuar {
-  max-width: 90px;
+  max-width: 86px;
 }
 .kp-kenar__hayalet {
   position: fixed;
@@ -2254,6 +2294,12 @@ html.kp-kilit body {
 }
 .kp-gorunum--hedef {
   box-shadow: 0 0 0 3px var(--kp-murekkep);
+}
+/* Patch aksesuarın Velcro yüzeyinin üstüne sürüklenince aksesuar vurgulanır */
+.kp-parca--hedef {
+  outline: 3px solid #2e7d32;
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 /* ---------- Önizlemenin altı: yer uyarısı ve kenar notu (açık zemin) ---------- */
 .kp-yer-uyari,
@@ -2435,4 +2481,149 @@ html.kp-kilit body {
 .kp-gecmis__dugme svg {
   width: 18px;
   height: 18px;
+}
+
+/* ---------- İkon adımı: önce yol seçimi ---------- */
+.kp-yol-secim {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+.kp-yol-kart {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-height: 56px;
+  padding: 0.8rem 1rem;
+  border: 1.5px solid var(--kp-cizgi);
+  border-radius: var(--kp-yaricap);
+  background: #fff;
+  color: var(--kp-murekkep);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.kp-yol-kart strong {
+  font-size: 1.4rem;
+}
+.kp-yol-kart span {
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+.kp-yol-kart[aria-pressed='true'] {
+  border: 2px solid var(--kp-murekkep);
+  padding: calc(0.8rem - 0.5px) calc(1rem - 0.5px);
+}
+.kp-kategoriler[hidden] {
+  display: none;
+}
+/* ---------- Aksesuar kartları: Düz ekle / Tasarla ---------- */
+.kp-secim--aksesuar {
+  cursor: default;
+}
+.kp-aks-kart__not--takilir {
+  color: #2e7d32;
+  font-weight: 600;
+}
+.kp-aks-kart__dugmeler {
+  display: flex;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: 0.4rem;
+}
+.kp-aks-kart__dugme {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0.4rem 0.2rem;
+  border: 1.5px solid var(--kp-murekkep);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.kp-aks-kart__dugme--ana {
+  border-color: #b3141b;
+  background: #b3141b;
+  color: #fff;
+}
+/* ---------- Aksesuar tasarım ekranı ---------- */
+/* Yazı / İkon: başlığın altında iki küçük düğme */
+.kp-adimlar--alt {
+  padding: 0.2rem 1.6rem 0.6rem;
+}
+.kp-sekmeler {
+  display: inline-flex;
+  gap: 0.6rem;
+}
+.kp-sekme {
+  min-height: 34px;
+  padding: 0.3rem 1.4rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.kp-sekme[aria-current='step'] {
+  border-color: var(--kp-murekkep);
+  background: var(--kp-murekkep);
+  color: #fff;
+  font-weight: 600;
+}
+/* Sarı ipucu: "Bir şey eklemezsen … düz eklenir" */
+.kp-alt-ipucu {
+  margin: 1rem 1.6rem 0;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ecd27a;
+  border-radius: 10px;
+  background: #fff8db;
+  color: #4a3b00;
+  font-size: 1.3rem;
+  line-height: 1.4;
+}
+.kp-alt-ipucu[hidden] {
+  display: none;
+}
+/* Alt çubuk tek satır: Vazgeç · Toplam · ana buton */
+.kp-editor .kp-alt--aks {
+  flex-wrap: nowrap;
+  gap: 0.8rem;
+}
+.kp-alt--aks .kp-alt__fiyat {
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  text-align: center;
+}
+.kp-alt--aks .kp-alt__fiyat strong {
+  font-size: 1.7rem;
+  white-space: nowrap;
+}
+.kp-alt--aks .kp-alt__eski {
+  display: block;
+  font-size: 1.2rem;
+}
+.kp-editor .kp-alt--aks .kp-alt__vazgec {
+  flex: none;
+  padding: 0 1.2rem;
+}
+.kp-editor .kp-alt--aks .kp-alt__ileri {
+  flex: none;
+  min-width: 0;
+  padding: 0 1.4rem;
+  white-space: nowrap;
+}
+@media (min-width: 990px) {
+  .kp-alt--aks .kp-alt__fiyat {
+    text-align: center;
+  }
 }
