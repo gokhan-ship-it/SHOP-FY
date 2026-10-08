@@ -73,19 +73,27 @@ await s.locator(alt + ' [data-kp-adim="ikon"]').click();
 assert.equal(await metin(alt + ' .kp-kategori'), 'Hazır setler', 'aksesuarda da setler');
 await s.locator(alt + ' [data-kp-ileri]').click();
 
-// 4) Yer yok: çakışma kutusu; Yer aç olmazsa "yer açılamadı"; yuvarlağı çıkar → kalem kutusu tasarımıyla yerleşir
+// 4) Soru sormadan: kalem kutusu Velcro alanın büyük kısmını kapladığı için çantadaki her şey (yuvarlak çanta da) kenara alınır
 assert.equal(await gorunur(alt), false, 'aksesuar ekranı kapandı');
-assert.equal(await gorunur(ana + ' [data-kp-onay]'), true);
-assert.equal(await metin(ana + ' .kp-onay__metin'), 'Kalem Kutusu Kırmızı için alanda yer yok. Mini Yuvarlak Çanta Mavi ile çakışıyor.');
-assert.deepEqual(await s.$$eval(ana + ' .kp-onay__buton', (b) => b.map((x) => x.textContent)), ['Yer aç', "Mini Yuvarlak Çanta Mavi'yi çıkar", 'Vazgeç']);
-assert.equal(await metin(ana + ' .kp-onay__not'), '‘Yer aç’ patch\'leri kaydırarak sığdırmayı dener, hiçbir şeyi silmez.');
-await s.locator(ana + ' .kp-onay__buton', { hasText: 'Yer aç' }).click();
-assert.match(await metin(ana + ' .kp-onay__metin'), /^Patch'leri kaydırarak yer açılamadı\./);
-assert.equal(await s.locator(ana + ' .kp-parca--aksesuar').count(), 1, 'hiçbir şey silinmedi');
-await s.locator(ana + ' .kp-onay__buton', { hasText: "Mini Yuvarlak Çanta Mavi'yi çıkar" }).click();
-assert.equal(await s.locator(ana + ' .kp-parca--aksesuar').count(), 1);
+assert.equal(await gorunur(ana + ' [data-kp-onay]'), false, 'kutu yok');
+assert.equal(await metin(ana + ' [data-kp-bildirim]'), 'Kalem Kutusu Kırmızı tasarımınla yerleştirildi. Çantadaki Mini Yuvarlak Çanta Mavi kenara alındı, istediklerini geri sürükleyebilirsin. Geri al');
+assert.equal(await s.locator(ana + ' .kp-parca--aksesuar').count(), 1, 'çantada yalnızca kalem kutusu');
 assert.equal(await s.locator(ana + ' .kp-aks__parca').count(), 3, 'kalem kutusunun üzerinde ADA');
+assert.equal(await s.locator(ana + ' [data-kp-kenar-grup]').count(), 1, 'yuvarlak çanta kenarda');
 assert.equal(await s.locator(ana + ' .kp-parca--hatali').count(), 0);
+assert.deepEqual((await cipler()).sort(), ['Kalem Kutusu Kırmızı', '↧Mini Yuvarlak Çanta Mavi'].sort());
+assert.equal(await toplam(), '6.590 TL', 'kenardaki de fiyatlanır');
+// Geri al: kalem kutusu kalkar, yuvarlak çanta yerine döner
+await s.locator(ana + ' [data-kp-bildirim-eylem]').click();
+assert.deepEqual(await cipler(), ['Mini Yuvarlak Çanta Mavi']);
+assert.equal(await s.locator(ana + ' [data-kp-kenar-grup]').count(), 0);
+// Yeniden: yuvarlak çantayı kaldır, kalem kutusunu tasarımıyla yerleştir
+await s.locator(ana + ' [data-kp-kaldir]').first().click();
+await s.locator('[data-kp-aksesuar="9101"]').click();
+await s.locator(alt).waitFor({ state: 'visible' });
+await s.locator('#kpa-isim').fill('ada');
+await s.locator('#kpa-isim').press('Enter');
+await s.locator(alt + ' [data-kp-ileri]').click();
 assert.deepEqual(await cipler(), ['Kalem Kutusu Kırmızı']);
 assert.equal(await s.locator(ana + ' [data-kp-aks-duzenle]').count(), 1, 'kalemle yeniden düzenlenebilir');
 assert.equal(await toplam(), '5.690 TL');
@@ -114,29 +122,26 @@ await s.locator(alt + ' [data-kp-ileri]').click();
 assert.equal(await gorunur(ana + ' [data-kp-onay]'), false, 'yeniden düzenlemede çakışma sorulmaz');
 assert.equal(await toplam(), '5.690 TL');
 
-// 7) Yer aç başarılı: kalem kutusu yerine zarf; ortadaki ikon kaydırılarak yer açılır
+// 7) Küçük aksesuar (zarf): alanın en boş yerine; yalnızca üstüne gelen patch kenara alınır, hiçbir şey silinmez
 await s.locator(ana + ' [data-kp-kaldir]').first().click();
 await s.locator(ana + ' [data-kp-adim="ikon"]').click();
 await s.locator(ana + ' [data-kp-kategori="Spor"]').click();
 await s.locator(ana + ' [data-kp-ikon="2"]').click();
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
 await s.locator('[data-kp-aksesuar="9102"]').click();
-if (await gorunur(ana + ' [data-kp-onay]')) {
-  assert.match(await metin(ana + ' .kp-onay__metin'), /Zarf Kalemlik Kırmızı\/Pembe için alanda yer yok\. Futbol Topu ile çakışıyor\./);
-  await s.locator(ana + ' .kp-onay__buton', { hasText: 'Yer aç' }).click();
-}
+assert.equal(await gorunur(ana + ' [data-kp-onay]'), false);
+assert.match(await metin(ana + ' [data-kp-bildirim]'), /^Zarf Kalemlik Kırmızı\/Pembe yerleştirildi\./);
 assert.equal(await s.locator(ana + ' .kp-parca--aksesuar').count(), 1, 'zarf yerleşti');
-assert.equal(await s.locator(ana + ' .kp-parca--icon').count(), 1, 'ikon silinmedi');
+assert.equal((await cipler()).filter((c) => /Futbol Topu/.test(c)).length, 1, 'ikon silinmedi');
 assert.equal(await s.locator(ana + ' .kp-parca--hatali').count(), 0);
 
-// 8) Sepet: aksesuar çanta tasarım grubunun içinde alt grup (yeni yerleşen aksesuar seçili gelir; önce seçimi kaldır)
-await s.locator(ana + ' [data-kp-secim-kaldir]').click();
-await s.locator(ana + ' [data-kp-kaldir]').last().click();
+// 8) Sepet: aksesuar çanta tasarım grubunun içinde alt grup (önce çantadaki her şey kaldırılır)
+if (await gorunur(ana + ' [data-kp-secim-kaldir]')) await s.locator(ana + ' [data-kp-secim-kaldir]').click();
+while (await s.locator(ana + ' [data-kp-kaldir]').count()) await s.locator(ana + ' [data-kp-kaldir]').first().click();
 await s.locator('[data-kp-aksesuar="9101"]').click();
 await s.locator('#kpa-isim').fill('eda');
 await s.locator('#kpa-isim').press('Enter'); // klavye kapanır, alt çubuk görünür
 await s.locator(alt + ' [data-kp-ileri]').click();
-if (await gorunur(ana + ' [data-kp-onay]')) await s.locator(ana + ' .kp-onay__buton', { hasText: 'çıkar' }).click();
 await s.locator(ana + ' [data-kp-adim="ozet"]').click();
 await s.locator(ana + ' [data-kp-ileri]').click();
 await s.waitForURL('**/cart');

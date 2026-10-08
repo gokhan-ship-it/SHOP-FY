@@ -53,13 +53,23 @@ await s.locator('#kp-isim').fill('ece');
 assert.deepEqual(await kartlar(), ['Cool', 'Cool', 'Cool']);
 assert.equal(await s.locator('[data-kp-stil-panel]').isVisible(), false);
 await s.locator('[data-kp-karakter="0"]').click();
-assert.equal(await s.locator('.kp-stil__baslik').textContent(), '1. karakter (E) için stil');
+assert.equal(await s.locator('.kp-stil__baslik').textContent(), '1. harf E · Stil');
+// Üstte üç seçenek: Hepsi Cool (seçili) / Hepsi Piramit / Karışık; harf kartlarında kalem
+const stilSecim = () => s.$$eval('[data-kp-stil-secim] button', (b) => b.map((x) => [x.textContent, x.getAttribute('aria-pressed')]));
+assert.deepEqual(await stilSecim(), [['Hepsi Cool', 'true'], ['Hepsi Piramit', 'false'], ['Karışık', 'false']]);
+assert.equal(await s.locator('.kp-karakter__kalem').count(), 3);
 assert.equal(await s.locator('[data-kp-stil]').count(), 2);
 assert.equal(await s.locator('.kp-stil__renkler').count(), 0, 'Cool\'da renk yok');
 await stilSec(0, PIRAMIT);
 assert.equal(await s.locator('#kp-isim').inputValue(), 'ECE', 'yazı korundu');
 let k = await kartlar();
 console.log('karışık stil:', k.join(' | '));
+// Tek harfin stili değişince düğme kendiliğinden "Karışık"; Piramit kartında renk noktası + "Piramit"
+assert.deepEqual((await stilSecim()).map((x) => x[1]), ['false', 'false', 'true']);
+assert.equal(await s.locator('[data-kp-karakter="0"] .kp-karakter__stil').innerText(), 'Piramit');
+assert.equal(await s.locator('[data-kp-karakter="0"] .kp-karakter__nokta').count(), 1);
+// Seçili Piramit harfinin rengi tek satırda
+assert.equal(await s.locator('.kp-stil__renk-baslik').textContent(), '1. harf E · Piramit rengi');
 assert.match(k[0], /^Piramit \S+/, '1. E Piramit ve renkli');
 assert.equal(k[1], 'Cool', 'C Cool kaldı (karışık kullanım)');
 // Renk noktaları stil panelinde (en az 36 px); E'nin 3 stoktaki rengi
@@ -105,7 +115,7 @@ assert.ok(sonra.split(',').filter((r) => r === 'Turkuaz').length <= 1);
 // 4) Önizlemede C'ye dokun → C'nin stil paneli açılır, blok bozulmaz; balon yok
 await dokun(await merkezi('[data-uid="isim-1"]'));
 assert.match(await s.locator('[data-kp-secili-ad]').textContent(), /Yazı \(ECE\)/, 'blok seçili (harf ayrılmadı)');
-assert.equal(await s.locator('.kp-stil__baslik').textContent(), '2. karakter (C) için stil');
+assert.equal(await s.locator('.kp-stil__baslik').textContent(), '2. harf C · Stil');
 assert.equal(await s.locator('.kp-parca[data-grup="isim"]').count(), 3, 'harfler hâlâ blokta');
 assert.equal(await s.locator('[data-kp-balon]').isVisible(), false);
 // Araç çubuğundan döndür: blok 15° döner
@@ -129,7 +139,7 @@ await s.locator('[data-kp-harf-mod]').click();
 }
 await dokun(await merkezi('[data-uid="harf-2"]'));
 assert.match(await s.locator('[data-kp-secili-ad]').textContent(), /E harfi/);
-assert.equal(await s.locator('.kp-stil__baslik').textContent(), '3. karakter (E) için stil');
+assert.equal(await s.locator('.kp-stil__baslik').textContent(), '3. harf E · Stil');
 await s.locator('[data-kp-dondur="15"]').click();
 await s.waitForTimeout(700); // geçersiz açıda kırmızı önizleme 600 ms sürer; son durum
 assert.equal(await s.locator('.kp-parca--hatali').count(), 0);

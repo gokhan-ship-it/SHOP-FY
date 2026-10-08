@@ -338,13 +338,14 @@
   }
 
   // Konumdan bir varyantın (adet kadar) kaydını çıkarır
-  function konumdanCikar(konumMetni, varyantId, adet) {
+  // kenar: silinen satır "Takılmamış" (kenardaki) patch'lerse yalnızca kenardakiler (e:1) çıkar, değilse takılı olanlar
+  function konumdanCikar(konumMetni, varyantId, adet, kenar) {
     try {
       var konum = JSON.parse(konumMetni || '{}');
       if (!konum.p) return konumMetni;
       var silinecek = adet;
       konum.p = konum.p.filter(function (x) {
-        if (String(x.v) === String(varyantId) && silinecek > 0) {
+        if (String(x.v) === String(varyantId) && !!x.e === !!kenar && silinecek > 0) {
           silinecek--;
           return false;
         }
@@ -398,7 +399,7 @@
       var icOzet = ozetUret(kalan, id).ozet;
       if (icOzet) aksOz['Aksesuar tasarımı'] = icOzet;
       else delete aksOz['Aksesuar tasarımı'];
-      aksOz._aksesuar_konum = konumdanCikar(aksOz._aksesuar_konum, patch.variant_id, parseInt(patch.properties._adet_birim, 10) || 1);
+      aksOz._aksesuar_konum = konumdanCikar(aksOz._aksesuar_konum, patch.variant_id, parseInt(patch.properties._adet_birim, 10) || 1, patch.properties.Durum === 'Takılmamış');
       if (!icOzet) delete aksOz._aksesuar_konum;
       aks.properties = aksOz;
       var bazOz = grup.baz ? ozellikKopya(grup.baz) : null;
@@ -449,8 +450,9 @@
             ozellik._tasarim_konum = JSON.stringify(konum);
           } else if (konum.p) {
             var silinecek = parseInt(patch.properties._adet_birim, 10) || 1;
+            var kenarSatiri = patch.properties.Durum === 'Takılmamış';
             konum.p = konum.p.filter(function (x) {
-              if (String(x.v) === String(patch.variant_id) && silinecek > 0) {
+              if (String(x.v) === String(patch.variant_id) && !!x.e === kenarSatiri && silinecek > 0) {
                 silinecek--;
                 return false;
               }

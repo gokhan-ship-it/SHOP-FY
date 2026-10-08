@@ -559,6 +559,7 @@ body.kisisel-aktif .bag-notice {
 .kp-sahne__secim {
   position: absolute;
   inset: 0;
+  z-index: 4; /* çerçeve ve döndürme tutamacı köşedeki butonların da üstünde */
   pointer-events: none;
 }
 .kp-cerceve {
@@ -894,6 +895,12 @@ html.kp-kilit body {
   position: relative;
   width: min(100%, calc(38vh * var(--kp-oran, 1)), 560px);
   width: min(100%, calc(38dvh * var(--kp-oran, 1)), 560px);
+}
+/* Kenar şeridi önizlemenin altında: görsel şerit kadar küçülür, toplam yükseklik aynı kalır */
+.kp-onizleme__ic,
+.kp-kenar {
+  width: min(100%, calc((38vh - 50px) * var(--kp-oran, 1)), 560px);
+  width: min(100%, calc((38dvh - 50px) * var(--kp-oran, 1)), 560px);
 }
 /* Klavye açıkken önizleme küçülür, yazı alanı görünür kalır */
 .kp-editor--klavye .kp-onizleme__ic {
@@ -1982,10 +1989,9 @@ html.kp-kilit body {
 }
 .kp-serit__ust {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.6rem;
-  font-size: 1.15rem;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 1.25rem;
   line-height: 1.3;
   white-space: nowrap;
 }
@@ -2002,9 +2008,8 @@ html.kp-kilit body {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--kp-murekkep);
-  text-align: right;
-  margin-left: auto;
+  color: var(--kp-ikincil);
+  font-size: 1.2rem;
 }
 .kp-serit__sol:empty,
 .kp-serit__sag:empty {
@@ -2104,4 +2109,330 @@ html.kp-kilit body {
   .kp-serit__dolu {
     transition: none;
   }
+}
+/* ---------- Geçersiz konum: kırmızı çerçeve ve "!" ---------- */
+.kp-parca--hatali::after {
+  content: '!';
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d32f2f;
+  color: #fff;
+  font: 700 12px/18px system-ui, sans-serif;
+  text-align: center;
+  box-shadow: 0 0 0 2px #fff;
+}
+/* ---------- Geri al / Yinele: önizlemenin sol üstü ---------- */
+.kp-gecmis {
+  position: absolute;
+  z-index: 3;
+  top: 0.6rem;
+  left: 0.6rem;
+  display: flex;
+  gap: 0.4rem;
+}
+.kp-gecmis__dugme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--kp-murekkep);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+.kp-gecmis__dugme::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+.kp-gecmis__dugme {
+  position: relative;
+}
+.kp-gecmis__dugme:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* ---------- Kenar: çantaya takılmamış patch'ler ---------- */
+.kp-kenar {
+  position: relative;
+  margin-top: 0.8rem;
+  border: 1.5px dashed #b9b2aa;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  transition: border-color 0.15s, background 0.15s;
+}
+.kp-editor--klavye .kp-kenar {
+  display: none;
+}
+.kp-kenar--hedef {
+  border-color: var(--kp-murekkep);
+  background: #fff;
+}
+.kp-kenar__baslik {
+  position: absolute;
+  top: -0.8rem;
+  left: 0.8rem;
+  padding: 0 0.4rem;
+  background: var(--kp-yumusak);
+  font-size: 1.1rem;
+  color: var(--kp-ikincil);
+  line-height: 1.4rem;
+}
+.kp-kenar__liste {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 40px;
+  padding: 0.5rem 0.6rem 0.3rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  touch-action: pan-x;
+}
+.kp-kenar__bos {
+  overflow: hidden;
+  font-size: 1.1rem;
+  color: var(--kp-ikincil);
+  padding-left: 0.2rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.kp-kenar__oge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  height: 44px;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  opacity: 0.85;
+  cursor: grab;
+  touch-action: pan-x;
+}
+.kp-kenar__oge--secili {
+  border-color: var(--kp-murekkep);
+  background: #fff;
+  opacity: 1;
+}
+.kp-kenar__parca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  width: calc(38px * var(--oran, 1));
+  max-width: 76px;
+}
+.kp-kenar__parca img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.kp-kenar__parca--aksesuar {
+  max-width: 90px;
+}
+.kp-kenar__hayalet {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  opacity: 0.9;
+  background: #fff;
+  border-color: var(--kp-murekkep);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+.kp-gorunum--hedef {
+  box-shadow: 0 0 0 3px var(--kp-murekkep);
+}
+/* ---------- Önizlemenin altı: yer uyarısı ve kenar notu (açık zemin) ---------- */
+.kp-yer-uyari,
+.kp-kenar-not {
+  margin: 1rem 1.6rem 0;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  font-size: 1.3rem;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+.kp-yer-uyari {
+  border: 1px solid #f1b7b3;
+  background: #fff5f4;
+  color: #5f1410;
+}
+.kp-yer-uyari[hidden],
+.kp-kenar-not[hidden] {
+  display: none;
+}
+.kp-yer-uyari__metin {
+  margin: 0;
+}
+.kp-yer-uyari__ikon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 0.6rem;
+  border-radius: 50%;
+  background: #d32f2f;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.2rem;
+  vertical-align: -3px;
+}
+.kp-yer-uyari__ek {
+  color: var(--kp-ikincil);
+}
+.kp-yer-uyari__liste {
+  margin: 0.4rem 0 0;
+  padding-left: 2.6rem;
+}
+.kp-yer-uyari__not {
+  margin: 0.6rem 0 0;
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+.kp-yer-uyari__butonlar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+.kp-yer-uyari--ozet {
+  max-width: none;
+  margin: 0 0 1.2rem;
+}
+.kp-kenar-not {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--kp-cizgi);
+  background: #fff;
+  color: var(--kp-murekkep);
+}
+.kp-kenar-not p {
+  margin: 0;
+}
+.kp-kenar-not .kp-oneri {
+  flex: none;
+}
+/* ---------- Eklenenler: geçersiz ⚠, kenardaki ↧ (soluk) ---------- */
+.kp-cip__isaret {
+  margin-right: 0.3rem;
+}
+.kp-cip--hatali .kp-cip__isaret {
+  color: #d32f2f;
+}
+.kp-cip--kenar {
+  background: var(--kp-yumusak);
+  border-style: dashed;
+  color: var(--kp-ikincil);
+}
+/* Bildirimde eylem ("Geri al") */
+.kp-bildirim__eylem {
+  margin-left: 0.6rem;
+  padding: 0.2rem 0.4rem;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.kp-bildirim:has(.kp-bildirim__eylem) {
+  pointer-events: auto;
+}
+/* ---------- Yazı: Hepsi Cool / Hepsi Piramit / Karışık ---------- */
+.kp-stil-secim {
+  display: flex;
+  margin-top: 0.8rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--kp-zemin);
+}
+.kp-stil-secim[hidden] {
+  display: none;
+}
+.kp-stil-secim__dugme {
+  flex: 1 1 0;
+  min-height: var(--kp-dokunma);
+  padding: 0.4rem 0.6rem;
+  border: 0;
+  border-left: 1px solid var(--kp-cizgi);
+  background: transparent;
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.kp-stil-secim__dugme:first-child {
+  border-left: 0;
+}
+.kp-stil-secim__dugme[aria-pressed='true'] {
+  background: var(--kp-murekkep);
+  color: #fff;
+  font-weight: 600;
+}
+.kp-karakter {
+  position: relative;
+}
+.kp-karakter__kalem {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: inline-flex;
+  color: var(--kp-ikincil);
+}
+.kp-karakter__stil {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.kp-karakter__nokta {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--renk, #ccc);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+.kp-stil__renk-satir {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin-top: 1rem;
+}
+.kp-stil__renk-baslik {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.kp-stil__renk-satir .kp-stil__renkler {
+  margin-top: 0;
+  gap: 0.6rem;
+}
+
+/* Dar önizlemede sağ üstteki "Tüm çantayı gör" geri al/yinele ile çakışmasın */
+.kp-onizleme__dugme--gorunum {
+  min-height: 32px;
+  padding: 0.2rem 0.8rem;
+  font-size: 1.1rem;
+  white-space: nowrap;
+}
+.kp-gecmis__dugme svg {
+  width: 18px;
+  height: 18px;
 }

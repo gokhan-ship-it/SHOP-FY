@@ -562,6 +562,7 @@ body.kisisel-aktif .bag-notice {
 .kp-sahne__secim {
   position: absolute;
   inset: 0;
+  z-index: 4; /* çerçeve ve döndürme tutamacı köşedeki butonların da üstünde */
   pointer-events: none;
 }
 .kp-cerceve {
@@ -897,6 +898,12 @@ html.kp-kilit body {
   position: relative;
   width: min(100%, calc(38vh * var(--kp-oran, 1)), 560px);
   width: min(100%, calc(38dvh * var(--kp-oran, 1)), 560px);
+}
+/* Kenar şeridi önizlemenin altında: görsel şerit kadar küçülür, toplam yükseklik aynı kalır */
+.kp-onizleme__ic,
+.kp-kenar {
+  width: min(100%, calc((38vh - 50px) * var(--kp-oran, 1)), 560px);
+  width: min(100%, calc((38dvh - 50px) * var(--kp-oran, 1)), 560px);
 }
 /* Klavye açıkken önizleme küçülür, yazı alanı görünür kalır */
 .kp-editor--klavye .kp-onizleme__ic {
@@ -1985,10 +1992,9 @@ html.kp-kilit body {
 }
 .kp-serit__ust {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.6rem;
-  font-size: 1.15rem;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 1.25rem;
   line-height: 1.3;
   white-space: nowrap;
 }
@@ -2005,9 +2011,8 @@ html.kp-kilit body {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--kp-murekkep);
-  text-align: right;
-  margin-left: auto;
+  color: var(--kp-ikincil);
+  font-size: 1.2rem;
 }
 .kp-serit__sol:empty,
 .kp-serit__sag:empty {
@@ -2107,6 +2112,332 @@ html.kp-kilit body {
   .kp-serit__dolu {
     transition: none;
   }
+}
+/* ---------- Geçersiz konum: kırmızı çerçeve ve "!" ---------- */
+.kp-parca--hatali::after {
+  content: '!';
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d32f2f;
+  color: #fff;
+  font: 700 12px/18px system-ui, sans-serif;
+  text-align: center;
+  box-shadow: 0 0 0 2px #fff;
+}
+/* ---------- Geri al / Yinele: önizlemenin sol üstü ---------- */
+.kp-gecmis {
+  position: absolute;
+  z-index: 3;
+  top: 0.6rem;
+  left: 0.6rem;
+  display: flex;
+  gap: 0.4rem;
+}
+.kp-gecmis__dugme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--kp-murekkep);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+.kp-gecmis__dugme::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+.kp-gecmis__dugme {
+  position: relative;
+}
+.kp-gecmis__dugme:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* ---------- Kenar: çantaya takılmamış patch'ler ---------- */
+.kp-kenar {
+  position: relative;
+  margin-top: 0.8rem;
+  border: 1.5px dashed #b9b2aa;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  transition: border-color 0.15s, background 0.15s;
+}
+.kp-editor--klavye .kp-kenar {
+  display: none;
+}
+.kp-kenar--hedef {
+  border-color: var(--kp-murekkep);
+  background: #fff;
+}
+.kp-kenar__baslik {
+  position: absolute;
+  top: -0.8rem;
+  left: 0.8rem;
+  padding: 0 0.4rem;
+  background: var(--kp-yumusak);
+  font-size: 1.1rem;
+  color: var(--kp-ikincil);
+  line-height: 1.4rem;
+}
+.kp-kenar__liste {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 40px;
+  padding: 0.5rem 0.6rem 0.3rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  touch-action: pan-x;
+}
+.kp-kenar__bos {
+  overflow: hidden;
+  font-size: 1.1rem;
+  color: var(--kp-ikincil);
+  padding-left: 0.2rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.kp-kenar__oge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  height: 44px;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  opacity: 0.85;
+  cursor: grab;
+  touch-action: pan-x;
+}
+.kp-kenar__oge--secili {
+  border-color: var(--kp-murekkep);
+  background: #fff;
+  opacity: 1;
+}
+.kp-kenar__parca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  width: calc(38px * var(--oran, 1));
+  max-width: 76px;
+}
+.kp-kenar__parca img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.kp-kenar__parca--aksesuar {
+  max-width: 90px;
+}
+.kp-kenar__hayalet {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  opacity: 0.9;
+  background: #fff;
+  border-color: var(--kp-murekkep);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+.kp-gorunum--hedef {
+  box-shadow: 0 0 0 3px var(--kp-murekkep);
+}
+/* ---------- Önizlemenin altı: yer uyarısı ve kenar notu (açık zemin) ---------- */
+.kp-yer-uyari,
+.kp-kenar-not {
+  margin: 1rem 1.6rem 0;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  font-size: 1.3rem;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+.kp-yer-uyari {
+  border: 1px solid #f1b7b3;
+  background: #fff5f4;
+  color: #5f1410;
+}
+.kp-yer-uyari[hidden],
+.kp-kenar-not[hidden] {
+  display: none;
+}
+.kp-yer-uyari__metin {
+  margin: 0;
+}
+.kp-yer-uyari__ikon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 0.6rem;
+  border-radius: 50%;
+  background: #d32f2f;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.2rem;
+  vertical-align: -3px;
+}
+.kp-yer-uyari__ek {
+  color: var(--kp-ikincil);
+}
+.kp-yer-uyari__liste {
+  margin: 0.4rem 0 0;
+  padding-left: 2.6rem;
+}
+.kp-yer-uyari__not {
+  margin: 0.6rem 0 0;
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+.kp-yer-uyari__butonlar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+.kp-yer-uyari--ozet {
+  max-width: none;
+  margin: 0 0 1.2rem;
+}
+.kp-kenar-not {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--kp-cizgi);
+  background: #fff;
+  color: var(--kp-murekkep);
+}
+.kp-kenar-not p {
+  margin: 0;
+}
+.kp-kenar-not .kp-oneri {
+  flex: none;
+}
+/* ---------- Eklenenler: geçersiz ⚠, kenardaki ↧ (soluk) ---------- */
+.kp-cip__isaret {
+  margin-right: 0.3rem;
+}
+.kp-cip--hatali .kp-cip__isaret {
+  color: #d32f2f;
+}
+.kp-cip--kenar {
+  background: var(--kp-yumusak);
+  border-style: dashed;
+  color: var(--kp-ikincil);
+}
+/* Bildirimde eylem ("Geri al") */
+.kp-bildirim__eylem {
+  margin-left: 0.6rem;
+  padding: 0.2rem 0.4rem;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.kp-bildirim:has(.kp-bildirim__eylem) {
+  pointer-events: auto;
+}
+/* ---------- Yazı: Hepsi Cool / Hepsi Piramit / Karışık ---------- */
+.kp-stil-secim {
+  display: flex;
+  margin-top: 0.8rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--kp-zemin);
+}
+.kp-stil-secim[hidden] {
+  display: none;
+}
+.kp-stil-secim__dugme {
+  flex: 1 1 0;
+  min-height: var(--kp-dokunma);
+  padding: 0.4rem 0.6rem;
+  border: 0;
+  border-left: 1px solid var(--kp-cizgi);
+  background: transparent;
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.kp-stil-secim__dugme:first-child {
+  border-left: 0;
+}
+.kp-stil-secim__dugme[aria-pressed='true'] {
+  background: var(--kp-murekkep);
+  color: #fff;
+  font-weight: 600;
+}
+.kp-karakter {
+  position: relative;
+}
+.kp-karakter__kalem {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: inline-flex;
+  color: var(--kp-ikincil);
+}
+.kp-karakter__stil {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.kp-karakter__nokta {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--renk, #ccc);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+.kp-stil__renk-satir {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin-top: 1rem;
+}
+.kp-stil__renk-baslik {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.kp-stil__renk-satir .kp-stil__renkler {
+  margin-top: 0;
+  gap: 0.6rem;
+}
+
+/* Dar önizlemede sağ üstteki "Tüm çantayı gör" geri al/yinele ile çakışmasın */
+.kp-onizleme__dugme--gorunum {
+  min-height: 32px;
+  padding: 0.2rem 0.8rem;
+  font-size: 1.1rem;
+  white-space: nowrap;
+}
+.kp-gecmis__dugme svg {
+  width: 18px;
+  height: 18px;
 }
 </style>
 <script>
@@ -2307,20 +2638,6 @@ html.kp-kilit body {
     var metin = String(lira).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     if (kalan) metin += ',' + (kalan < 10 ? '0' : '') + kalan;
     return (negatif ? '-' : '') + metin + ' TL';
-  }
-
-  // Oturumda ilk kez mi? (sessionStorage; erişilemezse sayfa ömrü boyunca bellekte)
-  var ilkKezBellek = {};
-  function ilkKezMi(anahtar) {
-    try {
-      if (window.sessionStorage.getItem(anahtar)) return false;
-      window.sessionStorage.setItem(anahtar, '1');
-      return true;
-    } catch (e) {
-      if (ilkKezBellek[anahtar]) return false;
-      ilkKezBellek[anahtar] = true;
-      return true;
-    }
   }
 
   function olayYayinla(ad, veri) {
@@ -3079,6 +3396,11 @@ html.kp-kilit body {
   }
 
   Yerlesim.prototype.alanaUygun = function (sekil, tip) {
+    return !this.konumSorunu(sekil, tip);
+  };
+
+  // Parçanın tek başına konum sorunu: 'tasma' (Velcro alanın dışına taşıyor), 'yasak' (yasaklı bölgeye değiyor) ya da null
+  Yerlesim.prototype.konumSorunu = function (sekil, tip) {
     var m = this.m;
     tip = alanTipi(tip);
     var uygunAlan = false;
@@ -3089,9 +3411,9 @@ html.kp-kilit body {
         break;
       }
     }
-    if (!uygunAlan) return false;
-    for (var j = 0; j < m.yasaklar.length; j++) if (cakisir(sekil, m.yasaklar[j], 0)) return false;
-    return true;
+    if (!uygunAlan) return 'tasma';
+    for (var j = 0; j < m.yasaklar.length; j++) if (cakisir(sekil, m.yasaklar[j], 0)) return 'yasak';
+    return null;
   };
 
   // Blok isim harfleri: dizilim blok merkezi etrafında açı kadar döndürülür
@@ -3189,6 +3511,7 @@ html.kp-kilit body {
         liste.push({
           uid: (ayri ? 'harf-' : 'isim-') + i,
           grup: ayri ? 'harf-' + i : 'isim',
+          kenar: ayri ? !!(t.harfKenar && t.harfKenar[i]) : !!t.isimKenar,
           sira: i,
           tip: RAKAM_DESENI.test(h) ? 'number' : 'letter',
           tanim: set,
@@ -3209,6 +3532,7 @@ html.kp-kilit body {
       liste.push({
         uid: a.uid,
         grup: a.uid,
+        kenar: !!a.kenar,
         tip: 'aksesuar',
         tanim: aks,
         varyant: { id: aks.varyant, fiyat: aks.fiyat, satilabilir: true, stok: aks.stok, gorsel: aks.gorsel.kucuk, png: true, karakter: null },
@@ -3232,6 +3556,7 @@ html.kp-kilit body {
       liste.push({
         uid: p.uid,
         grup: p.uid,
+        kenar: !!p.kenar,
         tip: p.tip,
         tanim: tanim,
         varyant: varyant,
@@ -3486,6 +3811,7 @@ html.kp-kilit body {
       // Yeni karakterlerin konumu ve açısı harfKonumlariniEsitle'de blok dizilimden atanır
       t.harfKonumlari = hizala(t.harfKonumlari, null);
       t.harfAcilari = hizala(t.harfAcilari, null);
+      t.harfKenar = hizala(t.harfKenar, false);
     }
     t.isim = ye.join('');
   }
@@ -3515,6 +3841,7 @@ html.kp-kilit body {
     if (!t.harfAyri) {
       t.harfKonumlari = null;
       t.harfAcilari = null;
+      t.harfKenar = null;
       return;
     }
     var adet = Array.from(t.isim || '').length;
@@ -3532,43 +3859,87 @@ html.kp-kilit body {
     if (!adet) t.harfAyri = false;
   }
 
-  // Tasarımın tüm parçalarını doğrular, çakışan parçaları en yakın geçerli yere taşır
+  // Tasarımın tüm parçalarını doğrular. Hiçbir parçayı taşımaz: geçersiz yerdeki parça bırakıldığı yerde kalır,
+  // hatalar'da işaretlenir. Sorun türü: 'tasma', 'yasak' ya da 'cakisma' (ile: değdiği grup). Kenardaki parçalar geçerlidir.
   function duzenle(model, yer, t) {
     renkleriAta(model, t);
     harfKonumlariniEsitle(yer, t);
     var parcalar = yer.parcalar(t);
-    var isimP = parcalar.filter(function (p) { return p.grup === 'isim'; });
-    var digerleri = parcalar.filter(function (p) { return p.grup !== 'isim'; });
     var hatalar = {};
-
-    // Blok isim: kullanıcı taşıdıysa ve hâlâ geçerliyse koru, değilse merkeze al
-    if (isimP.length && t.isimMerkez && !yer.grupGecerli(isimP, [])) {
-      t.isimMerkez = null;
-      parcalar = yer.parcalar(t);
-      isimP = parcalar.filter(function (p) { return p.grup === 'isim'; });
-      digerleri = parcalar.filter(function (p) { return p.grup !== 'isim'; });
-    }
-    var isimGecerli = isimP.length === 0 || yer.grupGecerli(isimP, []);
-    if (!isimGecerli) isimP.forEach(function (p) { hatalar[p.uid] = true; });
-
-    // Ayrı harfler listenin başında olduğu için rakam ve ikonlardan önce yerleşir
-    var yerlesmis = isimGecerli ? isimP.slice() : [];
-    digerleri.forEach(function (p) {
-      if (yer.grupGecerli([p], yerlesmis)) {
-        yerlesmis.push(p);
-        return;
-      }
-      var tasima = yer.enYakin([p], yerlesmis, 0, 0);
-      if (tasima) {
-        konumKaydir(t, p, tasima[0], tasima[1]);
-        p.sekil = kaydir(p.sekil, tasima[0], tasima[1]);
-        yerlesmis.push(p);
-      } else {
+    var sorunlar = {};
+    var aktif = parcalar.filter(function (p) { return !p.kenar; });
+    aktif.forEach(function (p) {
+      var s0 = yer.konumSorunu(p.sekil, p.tip);
+      if (s0) {
         hatalar[p.uid] = true;
+        sorunlar[p.uid] = { tur: s0 };
       }
     });
-    var harfHatali = parcalar.some(function (p) { return yazidaMi(p) && hatalar[p.uid]; });
-    return { parcalar: yer.parcalar(t), hatalar: hatalar, isimGecerli: isimGecerli && !harfHatali };
+    for (var i = 0; i < aktif.length; i++) {
+      for (var j = i + 1; j < aktif.length; j++) {
+        var a = aktif[i];
+        var b = aktif[j];
+        if (a.grup === b.grup || !cakisir(a.sekil, b.sekil, 0)) continue;
+        // Üst üste gelen iki gruptan yalnızca en son taşınan/eklenen işaretlenir (bilinmiyorsa ikisi de)
+        var son = t.son || [];
+        var ra = son.indexOf(a.grup);
+        var rb = son.indexOf(b.grup);
+        var ciftler = ra === rb ? [[a, b], [b, a]] : ra > rb ? [[a, b]] : [[b, a]];
+        ciftler.forEach(function (c) {
+          hatalar[c[0].uid] = true;
+          if (!sorunlar[c[0].uid]) sorunlar[c[0].uid] = { tur: 'cakisma', ile: c[1].grup };
+        });
+      }
+    }
+    var isimGecerli = !parcalar.some(function (p) { return yazidaMi(p) && hatalar[p.uid]; });
+    return { parcalar: parcalar, hatalar: hatalar, sorunlar: sorunlar, isimGecerli: isimGecerli };
+  }
+
+  // Son taşınan/eklenen grupların sırası (çakışmada yalnızca en son dokunulan işaretlenir)
+  function sonaAl(t, grup) {
+    if (!grup) return;
+    t.son = (t.son || []).filter(function (g) { return g !== grup; }).concat([grup]).slice(-30);
+  }
+
+  // Kenar: çantaya takılmamış patch'ler. Tasarımdan silinmiş sayılmaz (sepete girer, fiyatlanır, stoktan düşer).
+  // grup: 'isim' (blok yazı), 'harf-i' (ayrı harf) ya da parça/aksesuar uid'i
+  function kenaraAl(t, grup) {
+    if (grup === 'isim') {
+      t.isimKenar = true;
+      return;
+    }
+    if (String(grup).indexOf('harf-') === 0) {
+      var i = parseInt(String(grup).slice(5), 10);
+      var adet = Array.from(t.isim || '').length;
+      if (!Array.isArray(t.harfKenar)) t.harfKenar = [];
+      while (t.harfKenar.length < adet) t.harfKenar.push(false);
+      t.harfKenar[i] = true;
+      return;
+    }
+    (t.aksesuarlar || []).concat(t.parcalar).forEach(function (x) { if (x.uid === grup) x.kenar = true; });
+  }
+
+  // Kenardaki grubu çantaya, verilen merkeze koyar
+  function kenardanAl(t, grup, cx, cy) {
+    if (grup === 'isim') {
+      t.isimKenar = false;
+      t.isimMerkez = [cx, cy];
+      return;
+    }
+    if (String(grup).indexOf('harf-') === 0) {
+      var i = parseInt(String(grup).slice(5), 10);
+      if (Array.isArray(t.harfKenar)) t.harfKenar[i] = false;
+      if (!Array.isArray(t.harfKonumlari)) t.harfKonumlari = [];
+      t.harfKonumlari[i] = [cx, cy];
+      return;
+    }
+    (t.aksesuarlar || []).concat(t.parcalar).forEach(function (x) {
+      if (x.uid === grup) {
+        x.kenar = false;
+        x.cx = cx;
+        x.cy = cy;
+      }
+    });
   }
 
   // Parça yazının (blok ya da ayrı harf) bir karakteri mi?
@@ -3580,7 +3951,7 @@ html.kp-kilit body {
   function karakterSil(t, i) {
     var harfler = Array.from(t.isim || '');
     harfler.splice(i, 1);
-    ['karakterSetleri', 'harfRenkleri', 'harfKonumlari', 'harfAcilari'].forEach(function (k) {
+    ['karakterSetleri', 'harfRenkleri', 'harfKonumlari', 'harfAcilari', 'harfKenar'].forEach(function (k) {
       if (Array.isArray(t[k])) t[k].splice(i, 1);
     });
     t.isim = harfler.join('');
@@ -3592,6 +3963,8 @@ html.kp-kilit body {
     var blok = yer.parcalar(t).filter(function (p) { return p.grup === 'isim'; });
     t.harfKonumlari = blok.map(function (p) { return merkez(p.sekil); });
     t.harfAcilari = blok.map(function (p) { return p.aci; });
+    t.harfKenar = blok.map(function () { return !!t.isimKenar; });
+    t.isimKenar = false;
     t.harfAyri = true;
   }
 
@@ -3609,9 +3982,14 @@ html.kp-kilit body {
       });
       t.isimMerkez = [sx / k.length, sy / k.length];
     }
+    // Harflerin hepsi kenardaysa blok da kenarda kalır; değilse blok çantaya gelir
+    var kenar = Array.isArray(t.harfKenar) ? t.harfKenar : [];
+    var adet = Array.from(t.isim || '').length;
+    t.isimKenar = adet > 0 && kenar.length >= adet && kenar.slice(0, adet).every(Boolean);
     t.harfAyri = false;
     t.harfKonumlari = null;
     t.harfAcilari = null;
+    t.harfKenar = null;
   }
 
   function stokKontrol(model, t, yer, adet) {
@@ -3762,6 +4140,8 @@ html.kp-kilit body {
         if (p.setGrup && setKodlari && setKodlari[p.setGrup]) k.k = setKodlari[p.setGrup];
         // Aksesuar: sepet satırındaki iç tasarımla eşleşmesi için kimliği
         if (p.tip === 'aksesuar') k.u = p.uid;
+        // Kenarda (çantaya takılmamış)
+        if (p.kenar) k.e = 1;
         return k;
       })
     };
@@ -3934,7 +4314,7 @@ html.kp-kilit body {
     var icler = '';
     var am = p.icTasarim && m.aksesuarModeli && m.aksesuarModeli(aks.id);
     if (am) {
-      icler = am.yer.parcalar(p.icTasarim).map(function (ip) {
+      icler = am.yer.parcalar(p.icTasarim).filter(function (ip) { return !ip.kenar; }).map(function (ip) {
         var st = parcaStili(am.m, ip);
         var g = ip.varyant && ip.varyant.gorsel;
         return '<div class="kp-aks__parca' + (ip.sekil.t === 'circle' ? ' kp-parca--daire' : '') + '" style="left:' + st.left + ';top:' + st.top + ';width:' + st.width + ';height:' + st.height + (st.transform ? ';transform:' + st.transform : '') + '">' +
@@ -3947,6 +4327,7 @@ html.kp-kilit body {
   Sahne.prototype.ciz = function (parcalar, hatalar, alanHatali) {
     var m = this.m;
     var html = parcalar
+      .filter(function (p) { return !p.kenar; })
       .map(function (p) {
         var st = parcaStili(m, p);
         var stil = 'left:' + st.left + ';top:' + st.top + ';width:' + st.width + ';height:' + st.height + (st.transform ? ';transform:' + st.transform : '');
@@ -4063,6 +4444,10 @@ html.kp-kilit body {
       // Önizleme sabit kalır; yalnızca alttaki panel kayar
       '<div class="kp-onizleme"><div class="kp-onizleme__ic" style="--kp-oran:' + (this.m.gorsel.en / this.m.gorsel.boy) + '">' +
       '<div data-kp-sahne></div>' +
+      '<div class="kp-gecmis" role="group" aria-label="Geçmiş">' +
+      '<button type="button" class="kp-gecmis__dugme" data-kp-geri-al aria-label="Geri al" title="Geri al" disabled><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 7L4 12l5 5M4 12h10a6 6 0 0 1 0 12h-2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -3)"/></svg></button>' +
+      '<button type="button" class="kp-gecmis__dugme" data-kp-yinele aria-label="Yinele" title="Yinele" disabled><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 7l5 5-5 5M20 12H10a6 6 0 0 0 0 12h2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -3)"/></svg></button>' +
+      '</div>' +
       '<button type="button" class="kp-onizleme__dugme kp-onizleme__dugme--gorunum" data-kp-gorunum aria-pressed="false">Tüm çantayı gör</button>' +
       '<span class="kp-aci" data-kp-aci aria-hidden="true" hidden></span>' +
       '<div class="kp-balon" data-kp-balon role="group" hidden></div>' +
@@ -4073,6 +4458,12 @@ html.kp-kilit body {
       '</div>' +
       '<div class="kp-set-cerceve" data-kp-set-cerceve aria-hidden="true" hidden><span class="kp-set-cerceve__etiket"></span></div>' +
       '</div>' +
+      // Kenar: çantaya takılmamış patch'ler (sepete dahil). Patch'ler çanta ile kenar arasında sürüklenir.
+      '<div class="kp-kenar" data-kp-kenar style="--kp-oran:' + (this.m.gorsel.en / this.m.gorsel.boy) + '">' +
+      '<span class="kp-kenar__baslik">Kenar · çantaya takılmamış</span>' +
+      '<div class="kp-kenar__liste" data-kp-kenar-liste></div>' +
+      '</div>' +
+
       // Önizlemenin altındaki satır: eklenenler etiketleri; bir patch seçilince aynı yükseklikte araç çubuğu
       '<div class="kp-satir">' +
       '<div class="kp-etiketler" data-kp-etiketler aria-label="Eklenenler"></div>' +
@@ -4090,6 +4481,9 @@ html.kp-kilit body {
       '</div>' +
       '<div class="kp-sag">' +
       '<div class="kp-kaydir">' +
+      // Önizlemenin altında, panelin en üstünde: geçersiz konum uyarısı ve kenar notu
+      '<div class="kp-yer-uyari" data-kp-yer-uyari role="status" aria-live="polite" hidden></div>' +
+      '<div class="kp-kenar-not" data-kp-kenar-not hidden></div>' +
       '<div class="kp-paneller">' +
       this.adimlar.map(function (a, i) {
         return '<section class="kp-panel" data-kp-panel="' + a.id + '" aria-labelledby="kp-p-' + a.id + '"' + (i ? ' hidden' : '') + '></section>';
@@ -4155,6 +4549,9 @@ html.kp-kilit body {
     if (girdi) girdi.value = this.t.isim || '';
     this.seciliKarakter = null;
     this.yaziIpucu = '';
+    this.geriYigin = [];
+    this.ileriYigin = [];
+    this.gecmisSimdi = null;
     this.ilk = JSON.stringify(this.t);
     this.donusOdagi = document.activeElement;
     if (!this.alt) {
@@ -4222,6 +4619,8 @@ html.kp-kilit body {
       }
       if (hedef.hasAttribute('data-kp-karakter')) return self.karakterSec(parseInt(hedef.getAttribute('data-kp-karakter'), 10));
       if (hedef.hasAttribute('data-kp-stil')) return self.karakterStiliSec(hedef.getAttribute('data-kp-stil'));
+      if (hedef.hasAttribute('data-kp-hepsi')) return self.tumHarflerStil(hedef.getAttribute('data-kp-hepsi'));
+      if (hedef.hasAttribute('data-kp-karisik')) return self.karisikSec();
       if (hedef.hasAttribute('data-kp-takma-ad')) {
         self.isimAyarla('');
         var girdi = self.el.querySelector('[data-kp-isim]');
@@ -4255,6 +4654,12 @@ html.kp-kilit body {
       if (hedef.hasAttribute('data-kp-dondur')) return self.acisiDegistir(Number(hedef.getAttribute('data-kp-dondur')));
       if (hedef.hasAttribute('data-kp-duzle')) return self.acisiDegistir(0, 0);
       if (hedef.hasAttribute('data-kp-sil')) return self.seciliSil();
+      if (hedef.hasAttribute('data-kp-geri-al')) return self.geriAl();
+      if (hedef.hasAttribute('data-kp-yinele')) return self.yinele();
+      if (hedef.hasAttribute('data-kp-alana-yerlestir')) return self.alanaYerlestir(hedef.getAttribute('data-kp-alana-yerlestir'));
+      if (hedef.hasAttribute('data-kp-hepsini-duzelt')) return self.hepsiniDuzelt();
+      if (hedef.hasAttribute('data-kp-sigdir')) return self.sigdirmayiDene();
+      if (hedef.hasAttribute('data-kp-bildirim-eylem')) return self.bildirimEylemi();
       if (hedef.hasAttribute('data-kp-secim-kaldir')) return self.sec(null);
       if (hedef.hasAttribute('data-kp-renk')) {
         var rv = hedef.getAttribute('data-kp-renk').split(':');
@@ -4276,6 +4681,12 @@ html.kp-kilit body {
         else self.kapat(false);
       }
       if (e.key === 'Tab') self.odakTuzagi(e);
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && /^(z|y)$/i.test(e.key) && !/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) {
+        e.preventDefault();
+        if (e.key.toLowerCase() === 'y' || e.shiftKey) self.yinele();
+        else self.geriAl();
+        return;
+      }
       // Seçili patch: ok tuşlarıyla 1°, Shift ile 15° döndürme (yazı alanlarında değil)
       if (self.secili && /^Arrow(Left|Right|Up|Down)$/.test(e.key) && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) {
         e.preventDefault();
@@ -4299,14 +4710,21 @@ html.kp-kilit body {
       self.gecersizKarakter = temiz !== ham.replace(/\s/g, '') || /\s/.test(ham);
       if (girdi.value !== temiz) girdi.value = temiz;
       karakterleriHizala(self.t, temiz);
+      sonaAl(self.t, self.t.harfAyri ? null : 'isim');
+      if (self.t.isimMerkez && !self.t.harfAyri && !self.t.isimKenar) {
+        var blok = self.yer.parcalar(yaziKopyasi(self.t)).filter(function (p) { return p.grup === 'isim'; });
+        if (blok.some(function (p) { return self.yer.konumSorunu(p.sekil, p.tip); })) self.t.isimMerkez = null;
+      }
       if (self.seciliKarakter != null && self.seciliKarakter >= Array.from(temiz).length) self.seciliKarakter = null;
       self.yaziIpucu = '';
+      self.yaziZamani = Date.now();
       self.yenile();
     });
     window.addEventListener('resize', function () {
       if (!self.el.hidden) self.sahne.gorunumAyarla(self.sahne.yakin);
     });
     this.surukleBagla();
+    this.kenarBagla();
   };
 
   Editor.prototype.odakTuzagi = function (e) {
@@ -4556,6 +4974,14 @@ html.kp-kilit body {
       var s0 = this.adimlar.map(function (a) { return a.id; }).indexOf(this.adim);
       return this.adimaGit(this.adimlar[s0 + 1].id, false, true);
     }
+    // Yer kontrolü yalnızca Özet'te: geçersiz patch varsa sepete eklenmez, liste ve "Hepsini düzelt" gösterilir
+    if (this.hataliGruplar().length) {
+      this.yenile();
+      var liste = this.el.querySelector('[data-kp-ozet-yer]');
+      if (liste) liste.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      this.bildir('Yeri uygun olmayan patch\'ler var. Düzeltince sepete ekleyebilirsin.', { sure: 4000 });
+      return;
+    }
     if (this.adimEngeli(this.adim)) {
       this.yenile();
       if (this.adim === 'yazi') {
@@ -4599,6 +5025,7 @@ html.kp-kilit body {
       '<div class="kp-alan-girdi">' +
       '<label for="kp-isim" class="kp-gizli">Yazı ve rakam</label>' +
       '<input id="kp-isim" class="kp-girdi" type="text" data-kp-isim autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" maxlength="24" enterkeyhint="done" placeholder="ör. ECE7" aria-describedby="kp-yazi-ipucu kp-kapasite kp-isim-uyari">' +
+      '<div class="kp-stil-secim" data-kp-stil-secim role="group" aria-label="Harflerin stili" hidden></div>' +
       '<p id="kp-yazi-ipucu" class="kp-yazi-ipucu">Harflere dokunarak her birinin stilini ayrı seçebilirsin.</p>' +
       '<div class="kp-karakterler" data-kp-karakterler role="group" aria-label="Karakterler"></div>' +
       '<div class="kp-stil" data-kp-stil-panel hidden></div>' +
@@ -4669,7 +5096,7 @@ html.kp-kilit body {
           '<button type="button" class="kp-secim kp-secim--ikon" data-kp-ikon="' + i.id + '" data-sira="' + sira + '" title="' + kacis(i.ad) + '"' + (tukendi ? ' disabled' : '') + '>' +
           (v.gorsel ? '<img src="' + kacis(v.gorsel) + '" alt="" loading="lazy">' : '') +
           '<span class="kp-secim__ad">' + kacis(i.ad) + '</span>' +
-          (tukendi ? '<span class="kp-secim__rozet kp-secim__rozet--tukendi">Tükendi</span>' : '<span class="kp-secim__rozet" aria-hidden="true">Yer aç</span>') +
+          (tukendi ? '<span class="kp-secim__rozet kp-secim__rozet--tukendi">Tükendi</span>' : '') +
           '</button>'
         );
       })
@@ -4768,128 +5195,76 @@ html.kp-kilit body {
 
   // Aksesuarı çantanın Velcro alanına yerleştirir. Yer yoksa ya da bir patch'le çakışıyorsa koyu kutu:
   // "Yer aç" (kaydırarak dener, silmez) ve "[Patch]'i çıkar" (yalnızca o patch).
+  // Aksesuarı çantaya yerleştirir, hiçbir şey sormaz ve hiçbir patch'i silmez:
+  // - Velcro alanın büyük kısmını kaplayan aksesuar (kalem kutusu): çantadaki tüm patch'ler kenara alınır.
+  // - Küçük aksesuar (zarf, mini yuvarlak): alanın en boş yerine yerleşir, yalnızca üstüne gelenler kenara alınır.
+  // Aksesuarın kendi üzerindeki tasarım aynen korunur. Bildirimde "Geri al".
   Editor.prototype.aksesuarYerlestir = function (aks, icTasarim, uid) {
     var t = this.t;
     if (uid) {
       (t.aksesuarlar || []).forEach(function (a) { if (a.uid === uid) a.tasarim = icTasarim; });
       return this.yenile();
     }
-    var self = this;
     var yer = this.yer;
     var alan = this.m.alanBul('icon');
     if (!alan) return;
+    var once = JSON.stringify(t);
     var c = merkez(alan.sekil);
-    var ornek = aksesuarSekli(aks, c[0], c[1], 0);
-    var dolu = this.durum.parcalar.filter(function (p) { return !self.durum.hatalar[p.uid]; });
-    var tasima = yer.enYakin([{ tip: 'aksesuar', sekil: ornek }], dolu, 0, 0);
-    if (tasima) return this.aksesuarEkle(aks, icTasarim, c[0] + tasima[0], c[1] + tasima[1]);
-    // Boş alana sığıyor mu? Sığıyorsa çakışan patch'i bul
-    var bos = yer.enYakin([{ tip: 'aksesuar', sekil: ornek }], [], 0, 0);
-    if (!bos) {
+    var d = duzenle(this.m, yer, t);
+    var cantada = d.parcalar.filter(function (p) { return !p.kenar; });
+    var buyuk = aksesuarBuyukMu(this.m, aks);
+    // Aday konumlar: alanda (yasaklı bölge dışında) aksesuarın sığdığı yerler; maliyet = üstüne gelen patch sayısı
+    var ornek = aksesuarSekli(aks, 0, 0, 0);
+    var k = kutu(alan.sekil);
+    var ok = kutu(ornek);
+    var en = null;
+    for (var y = k.y + ok.h / 2; y <= k.y + k.h - ok.h / 2 + EPS; y += 0.5) {
+      for (var x = k.x + ok.w / 2; x <= k.x + k.w - ok.w / 2 + EPS; x += 0.5) {
+        var sk = kaydir(ornek, x, y);
+        if (!yer.alanaUygun(sk, 'aksesuar')) continue;
+        var ustte = buyuk ? cantada : cantada.filter(function (p) { return cakisir(sk, p.sekil, 0); });
+        var maliyet = ustte.reduce(function (t0, p) { return t0 + (p.tip === 'aksesuar' ? 100 : 1); }, 0);
+        var uzaklik = Math.pow(x - c[0], 2) + Math.pow(y - c[1], 2);
+        if (!en || maliyet < en.maliyet || (maliyet === en.maliyet && uzaklik < en.uzaklik)) en = { x: x, y: y, ustte: ustte, maliyet: maliyet, uzaklik: uzaklik };
+      }
+    }
+    if (!en) {
       this.bildir(aks.ad + ' bu alana sığmıyor.', { sure: 5000 });
       return;
     }
-    var konumda = kaydir(ornek, bos[0], bos[1]);
-    var cakisan = dolu.filter(function (p) { return cakisir(konumda, p.sekil, 0); })[0];
-    this.cakismaKutusu(aks, icTasarim, cakisan, false);
-  };
-
-  // Koyu kutu: "[Aksesuar] için alanda yer yok. [Patch] ile çakışıyor." + Yer aç / [Patch]'i çıkar.
-  // Yer aç başarısız olursa kutu "yer açılamadı" diyerek kalır; aksesuar tasarımı kaybolmaz.
-  Editor.prototype.cakismaKutusu = function (aks, icTasarim, cakisan, yerAcilamadi) {
-    var grup = cakisan && cakisan.grup;
-    var ad = cakisan ? (yazidaMi(cakisan) ? this.t.isim : cakisan.etiket) : '';
-    var metin = yerAcilamadi
-      ? 'Patch\'leri kaydırarak yer açılamadı.' + (ad ? ' ' + ad + ' hâlâ ' + aks.ad + ' ile çakışıyor.' : '')
-      : aks.ad + ' için alanda yer yok.' + (ad ? ' ' + ad + ' ile çakışıyor.' : '');
-    this.onayGoster(metin, [
-      yerAcilamadi ? null : { yazi: 'Yer aç', birincil: true, eylem: function () {
-        if (!this.yerAc(aks, icTasarim)) this.cakismaKutusu(aks, icTasarim, cakisan, true);
-      } },
-      grup ? { yazi: belirtme(ad) + ' çıkar', birincil: yerAcilamadi, eylem: function () {
-        this.grubuCikar(grup);
-        this.aksesuarYerlestir(aks, icTasarim);
-      } } : null,
-      { yazi: 'Vazgeç', eylem: function () {} }
-    ].filter(Boolean), yerAcilamadi ? null : '\u2018Yer aç\u2019 patch\'leri kaydırarak sığdırmayı dener, hiçbir şeyi silmez.');
+    var gruplar = [];
+    var patchSayisi = 0;
+    var aksesuarAdlari = [];
+    en.ustte.forEach(function (p) {
+      if (gruplar.indexOf(p.grup) === -1) gruplar.push(p.grup);
+      if (p.tip !== 'aksesuar') patchSayisi++;
+      else aksesuarAdlari.push(p.etiket);
+    });
+    var kenaraGiden = [patchSayisi ? patchSayisi + ' patch' : ''].concat(aksesuarAdlari).filter(Boolean);
+    gruplar.forEach(function (g) { kenaraAl(t, g); });
+    this.aksesuarEkle(aks, icTasarim, en.x, en.y);
+    var sonra = JSON.stringify(this.t);
+    var eklenen = this.t.aksesuarlar[this.t.aksesuarlar.length - 1].uid;
+    this.bildir(
+      aks.ad + (icTasarim && !bosMu(icTasarim) ? ' tasarımınla' : '') + ' yerleştirildi.' +
+      (kenaraGiden.length ? ' Çantadaki ' + kenaraGiden.join(' ve ') + ' kenara alındı, istediklerini geri sürükleyebilirsin.' : ''),
+      { eylem: { yazi: 'Geri al', fn: function () {
+        // Yerleştirmeden sonra başka değişiklik yoksa tam önceki hal; varsa yalnızca aksesuar çıkar (patch'ler kenarda kalır)
+        if (JSON.stringify(this.t) === sonra) this.gecmisUygulaYeni(once);
+        else this.parcaKaldir(eklenen);
+      } } }
+    );
   };
 
   Editor.prototype.aksesuarEkle = function (aks, icTasarim, cx, cy) {
     if (!this.t.aksesuarlar) this.t.aksesuarlar = [];
     var uid = yeniId('a');
     this.t.aksesuarlar.push({ uid: uid, urunId: aks.id, cx: cx, cy: cy, aci: 0, tasarim: icTasarim || null });
+    sonaAl(this.t, uid);
     olayYayinla('aksesuar_eklendi', { urun_id: this.m.urun.id, aksesuar_id: aks.id, aksesuar_adi: aks.ad, tasarimli: !!icTasarim });
     this.bildirimKapat();
     this.yenile();
     this.sec(uid);
-  };
-
-  // Çakışan grubu (yazı, harf, ikon ya da aksesuar) çıkarır — yalnızca kullanıcı onayıyla çağrılır
-  Editor.prototype.grubuCikar = function (grup) {
-    var t = this.t;
-    if (grup === 'isim') return this.isimAyarla('');
-    if (String(grup).indexOf('harf-') === 0) {
-      karakterSil(t, parseInt(String(grup).slice(5), 10));
-      return this.isimAyarla(t.isim);
-    }
-    var parca = t.parcalar.filter(function (p) { return p.uid === grup; })[0];
-    if (parca && parca.setGrup) setiBoz(t, parca.setGrup);
-    this.parcaKaldir(grup);
-  };
-
-  // "Yer aç": aksesuarı alanda olası yerlere koymayı dener; çakışan patch'leri (grup grup) en yakın boş yere kaydırır.
-  // Hiçbir şey silinmez. Başarılıysa yerleştirir ve true döner.
-  Editor.prototype.yerAc = function (aks, icTasarim) {
-    var self = this;
-    var yer = this.yer;
-    var alan = this.m.alanBul('icon');
-    var c = merkez(alan.sekil);
-    var ornek = aksesuarSekli(aks, 0, 0, 0);
-    var k = kutu(alan.sekil);
-    var ok = kutu(ornek);
-    var adaylar = [];
-    for (var y = k.y + ok.h / 2; y <= k.y + k.h - ok.h / 2 + EPS; y += 0.5) {
-      for (var x = k.x + ok.w / 2; x <= k.x + k.w - ok.w / 2 + EPS; x += 0.5) {
-        var s = kaydir(ornek, x, y);
-        if (yer.alanaUygun(s, 'aksesuar')) adaylar.push({ s: s, d: Math.pow(x - c[0], 2) + Math.pow(y - c[1], 2) });
-      }
-    }
-    adaylar.sort(function (a, b) { return a.d - b.d; });
-    var d = this.durum;
-    var dolu = d.parcalar.filter(function (p) { return !d.hatalar[p.uid]; });
-    for (var i = 0; i < Math.min(adaylar.length, 40); i++) {
-      var aksP = { tip: 'aksesuar', sekil: adaylar[i].s, grup: '_yeni' };
-      var cakisan = {};
-      dolu.forEach(function (p) { if (cakisir(aksP.sekil, p.sekil, 0)) cakisan[p.grup] = true; });
-      var gruplar = Object.keys(cakisan);
-      var sabit = dolu.filter(function (p) { return !cakisan[p.grup]; }).concat([aksP]);
-      var tasimalar = [];
-      var olmadi = false;
-      for (var g = 0; g < gruplar.length && !olmadi; g++) {
-        var gp = dolu.filter(function (p) { return p.grup === gruplar[g]; });
-        var t0 = yer.enYakin(gp, sabit, 0, 0, 0.5);
-        if (!t0) {
-          olmadi = true;
-          break;
-        }
-        var tasinmis = gp.map(function (p) { return kopyaParca(p, { sekil: kaydir(p.sekil, t0[0], t0[1]) }); });
-        sabit = sabit.concat(tasinmis);
-        tasimalar.push({ grup: gruplar[g], parca: gp[0], dx: t0[0], dy: t0[1] });
-      }
-      if (olmadi) continue;
-      tasimalar.forEach(function (tm) {
-        if (tm.grup === 'isim') {
-          var ic = self.isimMerkezi();
-          self.t.isimMerkez = [ic[0] + tm.dx, ic[1] + tm.dy];
-        } else {
-          konumKaydir(self.t, tm.parca, tm.dx, tm.dy);
-        }
-      });
-      var m0 = merkez(adaylar[i].s);
-      this.aksesuarEkle(aks, icTasarim, m0[0], m0[1]);
-      return true;
-    }
-    return false;
   };
 
   // Hazır set kartı: patch önizlemeleri, set adı, "N patch · fiyat" ve üstü çizili parça toplamı
@@ -4902,7 +5277,6 @@ html.kp-kilit body {
       '<span class="kp-secim__ad">' + kacis(s.ad) + '</span>' +
       '<span class="kp-set-kart__fiyat">' + s.patchler.length + ' patch · ' + paraBicimle(s.fiyat) +
       (s.parcaToplam > s.fiyat ? ' <s>' + paraBicimle(s.parcaToplam) + '</s>' : '') + '</span>' +
-      '<span class="kp-secim__rozet" aria-hidden="true">Yer aç</span>' +
       '</button>'
     );
   }
@@ -4950,26 +5324,22 @@ html.kp-kilit body {
       hedefY = altSinir + this.m.ayar.bosluk + ornekKutu.h / 2;
     }
     var baslangic = kaydir(ornek, c[0], hedefY);
-    var tasima = this.yer.enYakin([{ tip: tip, sekil: baslangic }], parcalar.filter(function (p) { return !this.durum.hatalar[p.uid]; }, this), 0, 0);
-    if (!tasima) {
-      this.bildir(yerYok
-        ? ad + ' için şu an yer yok. Patch\'leri kaydırarak yer açabilir, bir patch\'i kaldırabilir ya da daha küçük bir ikon seçebilirsin.'
-        : ad + ' için alanda yer kalmadı. Bir patch\'i kaldırmayı' + (tip === 'icon' ? ' ya da daha küçük bir ikon seçmeyi' : '') + ' deneyebilirsin.', { sure: 5000 });
-      return false;
-    }
-    this.bildirimKapat();
-    this.t.parcalar.push({ uid: yeniId(tip === 'number' ? 'r' : 'i'), tip: tip, urunId: urunId, varyantId: varyant.id, cx: c[0] + tasima[0], cy: hedefY + tasima[1] });
+    var tasima = this.yer.enYakin([{ tip: tip, sekil: baslangic }], parcalar.filter(function (p) { return !p.kenar; }), 0, 0);
+    var yeni = { uid: yeniId(tip === 'number' ? 'r' : 'i'), tip: tip, urunId: urunId, varyantId: varyant.id, cx: c[0] + (tasima ? tasima[0] : 0), cy: hedefY + (tasima ? tasima[1] : 0) };
+    // Yer yoksa yine eklenir, kenara alınır (sepete dahil)
+    if (!tasima) yeni.kenar = true;
+    this.t.parcalar.push(yeni);
+    sonaAl(this.t, yeni.uid);
     this.yenile();
+    if (!tasima) this.bildir(ad + ' için çantada yer yok, kenara alındı. İstersen yer açıp çantaya sürükleyebilirsin.', { sure: 4500 });
+    else this.bildirimKapat();
     return true;
   };
 
   Editor.prototype.ikonEkle = function (urunId) {
     var ikon = this.m.ikonHarita[urunId];
     if (!ikon) return;
-    // Soluk ("Yer aç") ikon: yine de denenir (ince aramada yer bulunabilir); olmazsa yer açma açıklaması
-    var kart = this.el.querySelector('[data-kp-ikon="' + urunId + '"]');
-    var yerYok = !!(kart && kart.classList.contains('kp-secim--sigmaz'));
-    if (this.parcaEkle('icon', ikon.id, ikon.varyant, ikon, yerYok)) {
+    if (this.parcaEkle('icon', ikon.id, ikon.varyant, ikon)) {
       this.sonIkon = ikon;
       olayYayinla('ikon_eklendi', { urun_id: this.m.urun.id, ikon_id: ikon.id, ikon_adi: ikon.ad });
     }
@@ -4984,28 +5354,20 @@ html.kp-kilit body {
 
   // Setin patch'lerini sırayla uygun boş yerlere yerleştirir. dolu: mevcut geçerli parçalar.
   // hizli: ızgaradaki "Yer aç" denetimi (kaba arama). Sonuç: [[cx, cy], ...] ya da null.
-  Editor.prototype.setYerlestir = function (st, dolu, hizli) {
+  // Sonuç: her patch için [cx, cy] ya da null (yer yok → kenar)
+  Editor.prototype.setYerlestir = function (st, dolu) {
     var yer = this.yer;
     var alan = this.m.alanBul('icon');
-    if (!alan) return null;
-    var c = merkez(alan.sekil);
+    var c = alan ? merkez(alan.sekil) : [0, 0];
     var yerlesmis = dolu.slice();
-    var sonuc = [];
-    for (var i = 0; i < st.patchler.length; i++) {
-      var p = st.patchler[i];
+    return st.patchler.map(function (p) {
       var ornek = parcaSekli(p, p.varyant, 0, 0);
-      var sekil;
-      if (hizli) {
-        sekil = yer.ilkUygun(ornek, 'icon', yerlesmis);
-      } else {
-        var tasima = yer.enYakin([{ tip: 'icon', sekil: kaydir(ornek, c[0], c[1]) }], yerlesmis, 0, 0);
-        sekil = tasima ? kaydir(ornek, c[0] + tasima[0], c[1] + tasima[1]) : null;
-      }
-      if (!sekil) return null;
+      var tasima = alan && yer.enYakin([{ tip: 'icon', sekil: kaydir(ornek, c[0], c[1]) }], yerlesmis, 0, 0);
+      if (!tasima) return null;
+      var sekil = kaydir(ornek, c[0] + tasima[0], c[1] + tasima[1]);
       yerlesmis.push({ tip: 'icon', sekil: sekil });
-      sonuc.push(merkez(sekil));
-    }
-    return sonuc;
+      return merkez(sekil);
+    });
   };
 
   // Hazır seti ekler: patch'ler birlikte, uygun boş yerlere; her biri ayrı sürüklenip döndürülebilir
@@ -5013,17 +5375,26 @@ html.kp-kilit body {
     var st = this.m.hazirSetHarita[urunId];
     if (!st) return;
     var self = this;
-    var dolu = this.durum.parcalar.filter(function (p) { return !self.durum.hatalar[p.uid]; });
-    var konumlar = this.setYerlestir(st, dolu, false);
-    if (!konumlar) {
-      this.bildir(st.ad + ' seti için alanda yer yok. Patch\'leri kaydırabilir ya da bir patch\'i kaldırabilirsin.', { sure: 5000 });
-      return;
-    }
-    this.bildirimKapat();
+    var dolu = this.durum.parcalar.filter(function (p) { return !p.kenar; });
+    var konumlar = this.setYerlestir(st, dolu);
     var id = yeniId('S');
+    var alan = this.m.alanBul('icon');
+    var c = alan ? merkez(alan.sekil) : [0, 0];
     st.patchler.forEach(function (p, i) {
-      self.t.parcalar.push({ uid: yeniId('i'), tip: 'icon', urunId: p.id, varyantId: p.varyant.id, cx: konumlar[i][0], cy: konumlar[i][1], setGrup: id });
+      var k = konumlar[i];
+      var parca = { uid: yeniId('i'), tip: 'icon', urunId: p.id, varyantId: p.varyant.id, cx: k ? k[0] : c[0], cy: k ? k[1] : c[1], setGrup: id };
+      if (!k) parca.kenar = true;
+      self.t.parcalar.push(parca);
+      sonaAl(self.t, parca.uid);
     });
+    var cantada = konumlar.filter(Boolean).length;
+    var kenarda = konumlar.length - cantada;
+    this.bildir(
+      st.ad + ' seti eklendi.' + (!kenarda ? '' : !cantada
+        ? ' Alanda yer olmadığı için ' + kenarda + ' patch\'in hepsi kenarda.'
+        : ' ' + cantada + '\'' + sayiEki(cantada) + ' çantada, ' + kenarda + '\'' + sayiEki(kenarda) + ' alanda yer olmadığı için kenarda.'),
+      { eylem: { yazi: 'Geri al', fn: function () { this.setKaldir(id); } } }
+    );
     if (!this.t.hazirSetler) this.t.hazirSetler = [];
     this.t.hazirSetler.push({ id: id, urunId: st.id });
     // Kısa süre sarı kesikli çerçeve ve "[Set] seti" etiketi
@@ -5034,8 +5405,17 @@ html.kp-kilit body {
       self.setCerceveCiz();
     }, 3000);
     olayYayinla('set_eklendi', { urun_id: this.m.urun.id, set_id: st.id, set_adi: st.ad });
+    var bildirim = this.el.querySelector('[data-kp-bildirim]').innerHTML;
     this.yenile();
+    if (this.el.querySelector('[data-kp-bildirim]').innerHTML !== bildirim) this.el.querySelector('[data-kp-bildirim]').innerHTML = bildirim;
   };
+
+  // Sayıdan sonra iyelik/belirtme eki için: 1'i, 2'si, 3'ü, 4'ü, 5'i, 6'sı
+  function sayiEki(n) {
+    var ek = { 0: 'ı', 1: 'i', 2: 'si', 3: 'ü', 4: 'ü', 5: 'i', 6: 'sı', 7: 'si', 8: 'i', 9: 'u' };
+    if (n % 10) return ek[n % 10];
+    return { 1: 'u', 2: 'si', 3: 'u', 4: 'ı', 5: 'si', 6: 'ı', 7: 'i', 8: 'i', 9: 'ı' }[(n % 100) / 10] || 'ü';
+  }
 
   Editor.prototype.setKaldir = function (setGrup) {
     this.t.parcalar = this.t.parcalar.filter(function (p) { return p.setGrup !== setGrup; });
@@ -5123,6 +5503,7 @@ html.kp-kilit body {
     this.etiketleriCiz();
     this.gecButonlariGuncelle();
     this.ikonDurumGuncelle();
+    this.kampanyaGuncelle();
     var f = fiyatHesapla(this.m, this.yer, this.t);
     if (this.alt) this.altToplamCiz(f);
     else this.toplamCiz(f.toplam);
@@ -5134,12 +5515,319 @@ html.kp-kilit body {
     }
     ileri.setAttribute('aria-disabled', engel ? 'true' : 'false');
     ileri.classList.toggle('kp-alt__ileri--engelli', !!engel);
-    this.kampanyaGuncelle();
     if (this.adim === 'ozet') this.ozetCiz();
     this.seritCiz();
+    this.kazancKontrol(this.kampanyaSonucu());
     this.ileriYazisi();
     this.secimGuncelle();
     this.setCerceveCiz();
+    this.kenarCiz();
+    this.yerUyariCiz();
+    this.gecmisKaydet();
+  };
+
+  /* ---------------- Geri al / Yinele ---------------- */
+
+  var GECMIS_SINIRI = 60;
+
+  // Her yenilemede tasarım değiştiyse önceki hali geçmişe girer. Yazı yazarken art arda tuşlar tek adım sayılır.
+  Editor.prototype.gecmisKaydet = function () {
+    if (!this.geriYigin) this.geriYigin = [];
+    if (!this.ileriYigin) this.ileriYigin = [];
+    var simdi = JSON.stringify(this.t);
+    if (this.gecmisSimdi == null) {
+      this.gecmisSimdi = simdi;
+    } else if (simdi !== this.gecmisSimdi) {
+      var yazi = this.yaziZamani && Date.now() - this.yaziZamani < 100;
+      var birlestir = yazi && this.sonDegisimYazi && Date.now() - this.sonDegisimZamani < 1500;
+      if (!birlestir) {
+        this.geriYigin.push(this.gecmisSimdi);
+        if (this.geriYigin.length > GECMIS_SINIRI) this.geriYigin.shift();
+      }
+      this.ileriYigin = [];
+      this.gecmisSimdi = simdi;
+      this.sonDegisimYazi = !!yazi;
+      this.sonDegisimZamani = Date.now();
+    }
+    this.gecmisDugmeleri();
+  };
+
+  Editor.prototype.gecmisDugmeleri = function () {
+    var g = this.el.querySelector('[data-kp-geri-al]');
+    var y = this.el.querySelector('[data-kp-yinele]');
+    if (g) g.disabled = !this.geriYigin.length;
+    if (y) y.disabled = !this.ileriYigin.length;
+  };
+
+  Editor.prototype.gecmisUygula = function (durum) {
+    this.t = JSON.parse(durum);
+    this.gecmisSimdi = durum;
+    this.secili = null;
+    this.seciliKarakter = null;
+    this.sonDegisimYazi = false;
+    this.onayKapat();
+    this.bildirimKapat();
+    var girdi = this.el.querySelector('[data-kp-isim]');
+    if (girdi && girdi.value !== (this.t.isim || '')) girdi.value = this.t.isim || '';
+    this.yenile();
+  };
+
+  Editor.prototype.gecmisUygulaYeni = function (durum) {
+    this.t = JSON.parse(durum);
+    var girdi = this.el.querySelector('[data-kp-isim]');
+    if (girdi && girdi.value !== (this.t.isim || '')) girdi.value = this.t.isim || '';
+    this.secili = null;
+    this.yenile();
+  };
+
+  Editor.prototype.geriAl = function () {
+    if (!this.geriYigin || !this.geriYigin.length) return;
+    this.ileriYigin.push(this.gecmisSimdi);
+    this.gecmisUygula(this.geriYigin.pop());
+  };
+
+  Editor.prototype.yinele = function () {
+    if (!this.ileriYigin || !this.ileriYigin.length) return;
+    this.geriYigin.push(this.gecmisSimdi);
+    this.gecmisUygula(this.ileriYigin.pop());
+  };
+
+  /* ---------------- Geçersiz konum ve kenar ---------------- */
+
+  // Geçersiz yerdeki gruplar (seçili grup önce)
+  Editor.prototype.hataliGruplar = function () {
+    var d = this.durum;
+    var gruplar = [];
+    d.parcalar.forEach(function (p) { if (d.hatalar[p.uid] && gruplar.indexOf(p.grup) === -1) gruplar.push(p.grup); });
+    var secili = this.secili;
+    if (secili && gruplar.indexOf(secili) > 0) gruplar = [secili].concat(gruplar.filter(function (g) { return g !== secili; }));
+    return gruplar;
+  };
+
+  Editor.prototype.grupAdi = function (grup) {
+    var b = this.grupBilgisi(grup);
+    return b ? this.patchAdi(b) : '';
+  };
+
+  // Geçersiz bir grubun sorununu anlatan cümle
+  Editor.prototype.sorunMetni = function (grup) {
+    var d = this.durum;
+    var p = d.parcalar.filter(function (x) { return x.grup === grup && d.sorunlar && d.sorunlar[x.uid]; })[0];
+    var s0 = p ? d.sorunlar[p.uid] : { tur: 'tasma' };
+    var ad = this.grupAdi(grup);
+    if (s0.tur === 'yasak') return ad + ' takılamayan bir bölgeye geliyor.';
+    if (s0.tur === 'cakisma') {
+      var diger = this.grupAdi(s0.ile);
+      return diger && diger !== ad ? ad + ', ' + diger + ' ile üst üste geliyor.' : ad + ' başka bir patch\'in üstüne geliyor.';
+    }
+    return ad + ' Velcro alanın dışına taşıyor.';
+  };
+
+  // Önizlemenin altındaki açık zeminli uyarı: ilk geçersiz patch + "Alana yerleştir"
+  Editor.prototype.yerUyariCiz = function () {
+    var kutu = this.el.querySelector('[data-kp-yer-uyari]');
+    if (!kutu) return;
+    var gruplar = this.hataliGruplar();
+    if (!gruplar.length) {
+      kutu.hidden = true;
+      kutu.innerHTML = '';
+      return;
+    }
+    var g = gruplar[0];
+    var html =
+      '<p class="kp-yer-uyari__metin"><span class="kp-yer-uyari__ikon" aria-hidden="true">!</span>' +
+      kacis(this.sorunMetni(g)) + ' İstediğin gibi düzenlemeye devam edebilirsin, sepete eklemeden önce düzeltmen yeterli.' +
+      (gruplar.length > 1 ? ' <span class="kp-yer-uyari__ek">(+' + (gruplar.length - 1) + ' patch daha)</span>' : '') + '</p>' +
+      '<div class="kp-yer-uyari__butonlar">' +
+      '<button type="button" class="kp-oneri" data-kp-alana-yerlestir="' + kacis(g) + '">Alana yerleştir</button>' +
+      (gruplar.length > 1 ? '<button type="button" class="kp-oneri kp-oneri--ikincil" data-kp-hepsini-duzelt>Hepsini düzelt</button>' : '') +
+      '</div>';
+    kutu.hidden = false;
+    if (kutu.innerHTML !== html) kutu.innerHTML = html;
+  };
+
+  // Grubu (yazı, harf, ikon ya da aksesuar) dx, dy kadar kaydırır
+  Editor.prototype.grubuKaydir = function (grup, ornek, dx, dy) {
+    if (grup === 'isim') {
+      var c = this.isimMerkezi();
+      this.t.isimMerkez = [c[0] + dx, c[1] + dy];
+    } else {
+      konumKaydir(this.t, ornek, dx, dy);
+    }
+  };
+
+  // Geçersiz grubu en yakın geçerli yere taşır; yer yoksa kenara alır. yenile: false ise yalnızca tasarımı değiştirir.
+  Editor.prototype.alanaYerlestir = function (grup, yenileme) {
+    var d = this.durum;
+    var parcalar = d.parcalar.filter(function (p) { return p.grup === grup; });
+    if (!parcalar.length) return false;
+    var diger = d.parcalar.filter(function (p) { return p.grup !== grup && !p.kenar; });
+    var t0 = parcalar[0].kenar ? null : this.yer.enYakin(parcalar, diger, 0, 0);
+    if (t0) this.grubuKaydir(grup, parcalar[0], t0[0], t0[1]);
+    else kenaraAl(this.t, grup);
+    if (yenileme !== false) {
+      this.yenile();
+      if (!t0) this.bildir(this.grupAdi(grup) + ' için çantada yer yok, kenara alındı.', { sure: 3500 });
+    }
+    return !!t0;
+  };
+
+  // Tüm geçersiz patch'ler: önce patch'ler, sonra aksesuarlar; her biri en yakın geçerli yere ya da kenara
+  Editor.prototype.hepsiniDuzelt = function () {
+    var kenaraGiden = 0;
+    for (var i = 0; i < 60; i++) {
+      this.durum = duzenle(this.m, this.yer, this.t);
+      var d = this.durum;
+      var gruplar = this.hataliGruplar();
+      if (!gruplar.length) break;
+      var aksesuarMi = function (g) { return d.parcalar.some(function (p) { return p.grup === g && p.tip === 'aksesuar'; }); };
+      var sira = gruplar.filter(function (g) { return !aksesuarMi(g); }).concat(gruplar.filter(aksesuarMi));
+      if (!this.alanaYerlestir(sira[0], false)) kenaraGiden++;
+    }
+    this.yenile();
+    this.bildir(kenaraGiden ? 'Patch\'ler düzeltildi. ' + kenaraGiden + ' tanesine çantada yer olmadığı için kenara alındı.' : 'Patch\'ler düzeltildi.', { sure: 3500 });
+  };
+
+  // Kenardaki grubu çantada boş bir yere yerleştirmeyi dener (yerleşmiş patch'ler oynamaz)
+  Editor.prototype.kenardanYerlestir = function (grup) {
+    var d = this.durum;
+    var t = kopyala(this.t);
+    var alan = this.m.alanBul('icon') || this.m.alanBul('letter');
+    if (!alan) return false;
+    var c = grup === 'isim' ? this.yer.isimYeri(isimOlculeri(this.m, t), t.isimAci).merkez : merkez(alan.sekil);
+    kenardanAl(t, grup, c[0], c[1]);
+    var parcalar = this.yer.parcalar(t).filter(function (p) { return p.grup === grup; });
+    var diger = d.parcalar.filter(function (p) { return p.grup !== grup && !p.kenar; });
+    if (!parcalar.length) return false;
+    var t0 = this.yer.enYakin(parcalar, diger, 0, 0);
+    if (!t0) return false;
+    kenardanAl(this.t, grup, c[0] + t0[0], c[1] + t0[1]);
+    return true;
+  };
+
+  // "Sığdırmayı dene": kenardakileri sırayla boş yerlere koyar
+  Editor.prototype.sigdirmayiDene = function () {
+    var yerlesen = 0;
+    var kalan = 0;
+    var gruplar = this.kenarGruplari().map(function (k) { return k.grup; });
+    var self = this;
+    gruplar.forEach(function (g) {
+      self.durum = duzenle(self.m, self.yer, self.t);
+      if (self.kenardanYerlestir(g)) yerlesen++;
+      else kalan++;
+    });
+    this.yenile();
+    this.bildir(!yerlesen ? 'Çantada boş yer yok, patch\'ler kenarda kaldı.' : kalan ? yerlesen + ' tanesi çantaya yerleşti, ' + kalan + ' tanesi kenarda kaldı.' : 'Hepsi çantaya yerleşti.', { sure: 3500 });
+  };
+
+  // Kenardaki gruplar, tasarımdaki sırayla: [{ grup, parcalar }]
+  Editor.prototype.kenarGruplari = function () {
+    var liste = [];
+    var bul = {};
+    (this.durum ? this.durum.parcalar : []).forEach(function (p) {
+      if (!p.kenar) return;
+      if (!bul[p.grup]) {
+        bul[p.grup] = { grup: p.grup, parcalar: [] };
+        liste.push(bul[p.grup]);
+      }
+      bul[p.grup].parcalar.push(p);
+    });
+    return liste;
+  };
+
+  // Kenar şeridi ve altındaki not
+  Editor.prototype.kenarCiz = function () {
+    var listeEl = this.el.querySelector('[data-kp-kenar-liste]');
+    if (!listeEl) return;
+    var secili = this.secili;
+    var gruplar = this.kenarGruplari();
+    var self = this;
+    var html = gruplar.map(function (k) {
+      var ad = self.grupAdi(k.grup);
+      var ic = k.parcalar.map(function (p) {
+        var g = p.tip === 'aksesuar' ? p.tanim.gorsel.kucuk : p.varyant && p.varyant.gorsel;
+        var oran = p.sekil.t === 'circle' ? 1 : (p.en || 1) / (p.boy || 1);
+        return '<span class="kp-kenar__parca' + (p.sekil.t === 'circle' ? ' kp-parca--daire' : '') + (p.tip === 'aksesuar' ? ' kp-kenar__parca--aksesuar' : '') + '" style="--oran:' + oran.toFixed(3) + '">' +
+          (g ? '<img src="' + kacis(g) + '" alt="" draggable="false">' : '<span>' + kacis(p.etiket) + '</span>') + '</span>';
+      }).join('');
+      return '<button type="button" class="kp-kenar__oge' + (secili === k.grup ? ' kp-kenar__oge--secili' : '') + '" data-kp-kenar-grup="' + kacis(k.grup) + '" aria-label="' + kacis(ad) + ', kenarda. Çantaya sürükleyebilirsin.">' + ic + '</button>';
+    }).join('');
+    if (!html) html = '<span class="kp-kenar__bos">Çantaya takmak istemediklerini buraya sürükle</span>';
+    if (listeEl.innerHTML !== html) listeEl.innerHTML = html;
+    var not = this.el.querySelector('[data-kp-kenar-not]');
+    var patch = 0;
+    var aks = 0;
+    gruplar.forEach(function (k) { k.parcalar.forEach(function (p) { if (p.tip === 'aksesuar') aks++; else patch++; }); });
+    if (!patch && !aks) {
+      not.hidden = true;
+      not.innerHTML = '';
+      return;
+    }
+    var parca = [patch ? patch + ' patch' : '', aks ? aks + ' aksesuar' : ''].filter(Boolean).join(' ve ');
+    var notHtml = '<p>Kenarda ' + parca + ' var. Bunlar da sepete eklenir, çantaya sen takarsın.</p>' +
+      '<button type="button" class="kp-oneri kp-oneri--ikincil" data-kp-sigdir>Sığdırmayı dene</button>';
+    not.hidden = false;
+    if (not.innerHTML !== notHtml) not.innerHTML = notHtml;
+  };
+
+  // Kenardaki bir öğeyi çantaya sürükleme (dokununca seçilir)
+  Editor.prototype.kenarBagla = function () {
+    var self = this;
+    var liste = this.el.querySelector('[data-kp-kenar-liste]');
+    if (!liste) return;
+    var aktif = null;
+    function sahneUstunde(x, y) {
+      var r = self.sahne.gorunum.getBoundingClientRect();
+      return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+    }
+    function bitir() {
+      if (aktif && aktif.hayalet) aktif.hayalet.remove();
+      self.sahne.gorunum.classList.remove('kp-gorunum--hedef');
+      aktif = null;
+    }
+    liste.addEventListener('pointerdown', function (e) {
+      var oge = e.target.closest('[data-kp-kenar-grup]');
+      if (!oge || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      aktif = { id: e.pointerId, grup: oge.getAttribute('data-kp-kenar-grup'), oge: oge, x: e.clientX, y: e.clientY, hareket: false };
+    });
+    liste.addEventListener('pointermove', function (e) {
+      if (!aktif || e.pointerId !== aktif.id) return;
+      if (!aktif.hareket) {
+        // Yatay kaydırma şeridin kendisine bırakılır; yukarı (çantaya doğru) sürükleme başlatır
+        if (Math.abs(e.clientY - aktif.y) < 8) return;
+        aktif.hareket = true;
+        try { liste.setPointerCapture(e.pointerId); } catch (err) { /* yok say */ }
+        var r = aktif.oge.getBoundingClientRect();
+        var h = aktif.oge.cloneNode(true);
+        h.className += ' kp-kenar__hayalet';
+        h.style.width = r.width + 'px';
+        h.style.height = r.height + 'px';
+        document.body.appendChild(h);
+        aktif.hayalet = h;
+        aktif.dx = r.left + r.width / 2 - aktif.x;
+        aktif.dy = r.top + r.height / 2 - aktif.y;
+      }
+      e.preventDefault();
+      var hx = e.clientX + aktif.dx;
+      var hy = e.clientY + aktif.dy;
+      aktif.hayalet.style.transform = 'translate(' + (hx - aktif.hayalet.offsetWidth / 2) + 'px,' + (hy - aktif.hayalet.offsetHeight / 2) + 'px)';
+      self.sahne.gorunum.classList.toggle('kp-gorunum--hedef', sahneUstunde(e.clientX, e.clientY));
+    });
+    liste.addEventListener('pointerup', function (e) {
+      if (!aktif || e.pointerId !== aktif.id) return;
+      var a = aktif;
+      bitir();
+      if (!a.hareket) return self.etiketSec(a.grup);
+      if (!sahneUstunde(e.clientX, e.clientY)) return;
+      var r = self.sahne.sahne.getBoundingClientRect();
+      var cx = ((e.clientX + a.dx - r.left) / r.width) * self.m.Wcm;
+      var cy = ((e.clientY + a.dy - r.top) / r.height) * self.m.Hcm;
+      kenardanAl(self.t, a.grup, cx, cy);
+      sonaAl(self.t, a.grup);
+      self.secili = a.grup;
+      self.yenile();
+    });
+    liste.addEventListener('pointercancel', bitir);
   };
 
   Editor.prototype.dugmeleriGuncelle = function () {
@@ -5173,29 +5861,60 @@ html.kp-kilit body {
       .join('');
   }
 
-  // Yazının altındaki karakter kartları: karakter kendi stilinde, altında stil adı.
-  // Bir karta dokununca altında stil paneli açılır: Cool / Piramit ve Piramit'te stoktaki renkler.
+  // Harflerin (rakamlar hariç) şu anki stili: hepsi aynı setteyse o set, değilse 'karisik'
+  function harfStilDurumu(m, t) {
+    var harfler = Array.from(t.isim || '');
+    var setler = {};
+    harfler.forEach(function (h, i) {
+      if (RAKAM_DESENI.test(h)) return;
+      var set = karakterSeti(m, t, i, h);
+      if (set) setler[set.id] = true;
+    });
+    var idler = Object.keys(setler);
+    return idler.length === 0 ? null : idler.length === 1 ? idler[0] : 'karisik';
+  }
+
+  // Yazının altındaki karakter kartları: her karakter gerçek patch görünümüyle, altında stil adı
+  // ("Cool", Piramit'te renk noktası + "Piramit", rakamlarda "Rakam"); stili değişebilen kartın köşesinde kalem.
+  // Üstte "Hepsi Cool / Hepsi Piramit / Karışık". Bir harf seçiliyken stil seçimi ve Piramit rengi tek satırda.
   Editor.prototype.karakterleriCiz = function () {
     var m = this.m;
     var t = this.t;
     var harfler = Array.from(t.isim || '');
     var kutu = this.el.querySelector('[data-kp-karakterler]');
     var secili = this.seciliKarakter;
+    var cokSet = m.setler.length > 1;
     var html = harfler
       .map(function (h, i) {
         var set = karakterSeti(m, t, i, h);
         var v = set ? harfVaryanti(set, t, i, h) : null;
         var on = secili === i;
+        var rakam = RAKAM_DESENI.test(h);
+        var stil = rakam ? 'Rakam' : stilAdi(set);
+        var nokta = set && set.cokRenkli && v ? '<span class="kp-karakter__nokta" style="--renk:' + kacis(v.renkKodu || '#ccc') + '" aria-hidden="true"></span>' : '';
         return (
-          '<button type="button" class="kp-karakter' + (on ? ' kp-karakter--secili' : '') + (!v ? ' kp-karakter--yok' : '') + '" data-kp-karakter="' + i + '" aria-pressed="' + on + '" aria-label="' + (i + 1) + '. karakter ' + kacis(h) + ', ' + kacis(stilAdi(set)) + (v && v.renk && set.cokRenkli ? ' ' + kacis(v.renk) : '') + '">' +
+          '<button type="button" class="kp-karakter' + (on ? ' kp-karakter--secili' : '') + (!v ? ' kp-karakter--yok' : '') + '" data-kp-karakter="' + i + '" aria-pressed="' + on + '" aria-label="' + (i + 1) + '. karakter ' + kacis(h) + ', ' + kacis(stil) + (v && v.renk && set.cokRenkli ? ' ' + kacis(v.renk) : '') + (!rakam && cokSet ? ', stilini değiştir' : '') + '">' +
+          (!rakam && cokSet ? '<span class="kp-karakter__kalem" aria-hidden="true"><svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span>' : '') +
           '<span class="kp-karakter__gorsel">' + (v && v.gorsel ? '<img src="' + kacis(v.gorsel) + '" alt="" draggable="false">' : '<span class="kp-karakter__harf">' + kacis(h) + '</span>') + '</span>' +
-          '<span class="kp-karakter__stil">' + kacis(stilAdi(set)) + '</span>' +
+          '<span class="kp-karakter__stil">' + nokta + kacis(stil) + '</span>' +
           '</button>'
         );
       })
       .join('');
     kutu.hidden = !harfler.length;
     if (kutu.innerHTML !== html) kutu.innerHTML = html;
+
+    // Hepsi Cool / Hepsi Piramit / Karışık
+    var secim = this.el.querySelector('[data-kp-stil-secim]');
+    var durum = harfStilDurumu(m, t);
+    if (secim) {
+      var secimHtml = !durum || !cokSet ? '' : m.setler.map(function (st) {
+        return '<button type="button" class="kp-stil-secim__dugme" data-kp-hepsi="' + kacis(st.id) + '" aria-pressed="' + (durum === String(st.id)) + '">Hepsi ' + kacis(stilAdi(st)) + '</button>';
+      }).join('') + '<button type="button" class="kp-stil-secim__dugme" data-kp-karisik aria-pressed="' + (durum === 'karisik') + '">Karışık</button>';
+      secim.hidden = !secimHtml;
+      if (secim.innerHTML !== secimHtml) secim.innerHTML = secimHtml;
+    }
+
     var panel = this.el.querySelector('[data-kp-stil-panel]');
     var h = secili != null ? harfler[secili] : null;
     // Rakamlarda set seçimi yok
@@ -5218,15 +5937,47 @@ html.kp-kilit body {
         );
       })
       .join('');
+    var etiket = (secili + 1) + '. harf ' + kacis(h);
     var renkler = set.cokRenkli
-      ? '<div class="kp-stil__renkler" role="group" aria-label="' + kacis(h) + ' harfinin rengi">' + renkNoktalari(set, t, secili, h, 'kp-nokta--buyuk') +
-        '<button type="button" class="kp-karistir" data-kp-karistir aria-label="Tüm renkleri karıştır" title="Tüm renkleri karıştır"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 7h3.5c2.2 0 3.6 1 4.8 3l2.4 4c1.2 2 2.6 3 4.8 3H21M3 17h3.5c1.4 0 2.5-.4 3.4-1.2M14.1 8.2C15 7.4 16.1 7 17.5 7H21M18 4l3 3-3 3M18 14l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>'
+      ? '<div class="kp-stil__renk-satir">' +
+        '<span class="kp-stil__renk-baslik">' + etiket + ' · ' + kacis(stilAdi(set)) + ' rengi</span>' +
+        '<div class="kp-stil__renkler" role="group" aria-label="' + kacis(h) + ' harfinin rengi">' + renkNoktalari(set, t, secili, h, 'kp-nokta--buyuk') +
+        '<button type="button" class="kp-karistir" data-kp-karistir aria-label="Tüm renkleri karıştır" title="Tüm renkleri karıştır"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 7h3.5c2.2 0 3.6 1 4.8 3l2.4 4c1.2 2 2.6 3 4.8 3H21M3 17h3.5c1.4 0 2.5-.4 3.4-1.2M14.1 8.2C15 7.4 16.1 7 17.5 7H21M18 4l3 3-3 3M18 14l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>'
       : '';
     var yeni =
-      '<p class="kp-stil__baslik">' + (secili + 1) + '. karakter (' + kacis(h) + ') için stil</p>' +
-      '<div class="kp-stil__setler" role="group" aria-label="Stil">' + setler + '</div>' + renkler;
-    panel.hidden = false;
+      (cokSet ? '<p class="kp-stil__baslik">' + etiket + ' · Stil</p><div class="kp-stil__setler" role="group" aria-label="Stil">' + setler + '</div>' : '') + renkler;
+    panel.hidden = !yeni;
     if (panel.innerHTML !== yeni) panel.innerHTML = yeni;
+  };
+
+  // "Hepsi Cool / Hepsi Piramit": tüm harfler (rakamlar hariç) tek seferde o sete; Piramit'te renkler otomatik
+  Editor.prototype.tumHarflerStil = function (setId) {
+    var t = this.t;
+    var harfler = Array.from(t.isim || '');
+    var set = this.m.set(setId);
+    if (!set) return;
+    if (!Array.isArray(t.karakterSetleri)) t.karakterSetleri = [];
+    harfler.forEach(function (h, i) {
+      if (RAKAM_DESENI.test(h)) return;
+      t.karakterSetleri[i] = set.id;
+      if (Array.isArray(t.harfRenkleri)) t.harfRenkleri[i] = null;
+    });
+    t.setId = set.id;
+    this.yenile();
+  };
+
+  // "Karışık": harfleri tek tek değiştirmek için ilk harfin stil seçimi açılır
+  Editor.prototype.karisikSec = function () {
+    var harfler = Array.from(this.t.isim || '');
+    for (var i = 0; i < harfler.length; i++) {
+      if (!RAKAM_DESENI.test(harfler[i])) {
+        this.seciliKarakter = i;
+        break;
+      }
+    }
+    this.yenile();
+    var panel = this.el.querySelector('[data-kp-stil-panel]');
+    if (panel && !panel.hidden && panel.scrollIntoView) panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   };
 
   // Karakter kartı: aynı karta tekrar dokununca panel kapanır
@@ -5325,10 +6076,12 @@ html.kp-kilit body {
     var t = this.t;
     var secili = this.secili;
     var html = [];
-    function cip(grup, ad, kaldir, hatali, seciliMi) {
+    function cip(grup, ad, kaldir, hatali, seciliMi, kenarda) {
+      var isaret = hatali ? '<span class="kp-cip__isaret" aria-hidden="true">⚠</span>' : kenarda ? '<span class="kp-cip__isaret" aria-hidden="true">↧</span>' : '';
+      var durum = hatali ? ', yeri uygun değil' : kenarda ? ', kenarda' : '';
       return (
-        '<span class="kp-cip' + (hatali ? ' kp-cip--hatali' : '') + (seciliMi ? ' kp-cip--secili' : '') + '">' +
-        '<button type="button" class="kp-cip__ad" data-kp-etiket-sec="' + kacis(grup) + '" aria-pressed="' + !!seciliMi + '">' + kacis(ad) + '</button>' +
+        '<span class="kp-cip' + (hatali ? ' kp-cip--hatali' : '') + (kenarda && !hatali ? ' kp-cip--kenar' : '') + (seciliMi ? ' kp-cip--secili' : '') + '">' +
+        '<button type="button" class="kp-cip__ad" data-kp-etiket-sec="' + kacis(grup) + '" aria-pressed="' + !!seciliMi + '" aria-label="' + kacis(ad + durum) + '">' + isaret + kacis(ad) + '</button>' +
         '<button type="button" class="kp-cip__kaldir" ' + kaldir + ' aria-label="' + kacis(ad) + ' kaldır">' +
         '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>' +
         '</span>'
@@ -5337,7 +6090,8 @@ html.kp-kilit body {
     if (t.isim) {
       var isimHatali = !this.durum.isimGecerli || (this.analiz && this.analiz.engel);
       var isimSecili = secili === 'isim' || (secili && String(secili).indexOf('harf-') === 0);
-      html.push(cip(t.harfAyri ? 'harf-0' : 'isim', t.isim, 'data-kp-isim-kaldir', isimHatali, isimSecili));
+      var isimKenar = this.durum.parcalar.some(function (p) { return yazidaMi(p) && p.kenar; });
+      html.push(cip(t.harfAyri ? 'harf-0' : 'isim', t.isim, 'data-kp-isim-kaldir', isimHatali, isimSecili, isimKenar));
     }
     var saglam = saglamSetler(this.m, t);
     var setIdleri = saglam.map(function (k) { return k.id; });
@@ -5346,13 +6100,14 @@ html.kp-kilit body {
       var parcalar = self.durum.parcalar.filter(function (p) { return p.setGrup === k.id; });
       var hatali = parcalar.some(function (p) { return self.durum.hatalar[p.uid]; });
       var seciliMi = parcalar.some(function (p) { return p.grup === secili; });
-      html.push(cip(parcalar[0] ? parcalar[0].grup : k.id, st.ad + ' seti · ' + parcalar.length, 'data-kp-set-kaldir="' + kacis(k.id) + '"', hatali, seciliMi));
+      var kenarda = parcalar.some(function (p) { return p.kenar; });
+      html.push(cip(parcalar[0] ? parcalar[0].grup : k.id, st.ad + ' seti · ' + parcalar.length, 'data-kp-set-kaldir="' + kacis(k.id) + '"', hatali, seciliMi, kenarda));
     });
     this.durum.parcalar
       .filter(function (p) { return !yazidaMi(p) && !(p.setGrup && setIdleri.indexOf(p.setGrup) !== -1); })
       .forEach(function (p) {
         var stok = self.stokSorunlari.some(function (s) { return s.parca.varyant === p.varyant; });
-        var c0 = cip(p.grup, p.etiket, 'data-kp-kaldir="' + kacis(p.uid) + '"', !!self.durum.hatalar[p.uid] || stok, secili === p.grup);
+        var c0 = cip(p.grup, p.etiket, 'data-kp-kaldir="' + kacis(p.uid) + '"', !!self.durum.hatalar[p.uid] || stok, secili === p.grup, p.kenar);
         if (p.tip === 'aksesuar' && p.tanim.tasarlanabilir) {
           // Kalem: aksesuarın tasarım ekranına yeniden gir
           c0 = c0.replace('<button type="button" class="kp-cip__kaldir"', '<button type="button" class="kp-cip__duzenle" data-kp-aks-duzenle="' + kacis(p.uid) + '" aria-label="' + kacis(p.etiket) + ' tasarımını düzenle"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button><button type="button" class="kp-cip__kaldir"');
@@ -5370,53 +6125,8 @@ html.kp-kilit body {
     this.etiketleriCiz();
   };
 
-  // İkon ızgarası: o an alana sığmayacak ikonlar soluk ve "Yer aç" etiketli, listenin sonunda.
-  // Sığanlar başta; kendi aralarında kategorideki sıra korunur. Aynı ölçüdeki ikonlar bir kez denenir;
-  // sonuç tasarım (patch konumları) değişene kadar saklanır, patch kaydırılınca hemen yenilenir.
-  Editor.prototype.ikonDurumGuncelle = function () {
-    var izgara = this.el && this.el.querySelector('[data-kp-ikon-izgara]');
-    if (!izgara || !this.durum || this.adim !== 'ikon') return;
-    var self = this;
-    var dolu = this.durum.parcalar.filter(function (p) { return !self.durum.hatalar[p.uid]; });
-    var anahtar = JSON.stringify(dolu.map(function (p) { return [p.uid, kutu(p.sekil)]; }));
-    if (this.sigmaOnbellek && this.sigmaOnbellek.anahtar !== anahtar) this.sigmaOnbellek = null;
-    if (!this.sigmaOnbellek) this.sigmaOnbellek = { anahtar: anahtar, olcu: {} };
-    var onbellek = this.sigmaOnbellek.olcu;
-    var kartlar = Array.prototype.slice.call(izgara.querySelectorAll('[data-kp-ikon], [data-kp-hazir-set]'));
-    kartlar.forEach(function (b) {
-      var setId = b.getAttribute('data-kp-hazir-set');
-      if (setId) {
-        var st = self.m.hazirSetHarita[setId];
-        if (!st) return;
-        var anahtarSet = 'set:' + st.patchler.map(function (p) { var o2 = parcaSekli(p, p.varyant, 0, 0); return o2.t + ':' + o2.r + ':' + JSON.stringify(kutu(o2)); }).join('|');
-        if (!(anahtarSet in onbellek)) onbellek[anahtarSet] = !!self.setYerlestir(st, dolu, true);
-        var sigarSet = onbellek[anahtarSet];
-        b.classList.toggle('kp-secim--sigmaz', !sigarSet);
-        b.setAttribute('aria-label', st.ad + ' seti, ' + st.patchler.length + ' patch' + (sigarSet ? '' : ', şu an yer yok'));
-        b._kpSigar = sigarSet;
-        return;
-      }
-      var ikon = self.m.ikonHarita[b.getAttribute('data-kp-ikon')];
-      if (!ikon) return;
-      var sigar = false;
-      if (!b.disabled) {
-        var ornek = parcaSekli(ikon, ikon.varyant, 0, 0);
-        var o = ornek.t + ':' + ornek.r + ':' + JSON.stringify(kutu(ornek));
-        if (!(o in onbellek)) onbellek[o] = !!self.yer.ilkUygun(ornek, 'icon', dolu);
-        sigar = onbellek[o];
-        b.classList.toggle('kp-secim--sigmaz', !sigar);
-        b.setAttribute('aria-label', ikon.ad + (sigar ? '' : ', şu an yer yok'));
-      }
-      b._kpSigar = sigar;
-    });
-    // Sıra: sığanlar (kategori sırasıyla), sonra sığmayanlar ve tükenenler (kategori sırasıyla)
-    var sirali = kartlar
-      .map(function (b) { return { b: b, s: Number(b.getAttribute('data-sira')) }; })
-      .sort(function (x, y) { return (y.b._kpSigar - x.b._kpSigar) || (x.s - y.s); })
-      .map(function (x) { return x.b; });
-    var degisti = sirali.some(function (b, i) { return b !== kartlar[i]; });
-    if (degisti) sirali.forEach(function (b) { izgara.appendChild(b); });
-  };
+  // İkon ızgarası: her ikon ve set her zaman eklenebilir (yer yoksa kenara alınır); sıra kategorideki sıradır
+  Editor.prototype.ikonDurumGuncelle = function () {};
 
   /* ---------------- Uyarı kutusu ---------------- */
 
@@ -5425,13 +6135,22 @@ html.kp-kilit body {
   Editor.prototype.bildir = function (metin, secenek) {
     var kutu = this.el && this.el.querySelector('[data-kp-bildirim]');
     if (!kutu) return;
-    var sure = secenek && secenek.sure != null ? secenek.sure : 3500;
+    var eylem = secenek && secenek.eylem;
+    var sure = secenek && secenek.sure != null ? secenek.sure : eylem ? 6000 : 3500;
     clearTimeout(this.bildirimZamanlayici);
-    if (kutu.textContent !== metin) kutu.textContent = metin;
+    this.bildirimEylemFn = eylem ? eylem.fn : null;
+    var html = '<span>' + kacis(metin) + '</span>' + (eylem ? ' <button type="button" class="kp-bildirim__eylem" data-kp-bildirim-eylem>' + kacis(eylem.yazi) + '</button>' : '');
+    if (kutu.innerHTML !== html) kutu.innerHTML = html;
     kutu.hidden = false;
     this.bildirimAnahtar = (secenek && secenek.anahtar) || null;
     var self = this;
     if (sure) this.bildirimZamanlayici = setTimeout(function () { self.bildirimKapat(); }, sure);
+  };
+
+  Editor.prototype.bildirimEylemi = function () {
+    var fn = this.bildirimEylemFn;
+    this.bildirimKapat();
+    if (typeof fn === 'function') fn.call(this);
   };
 
   // anahtar verilirse yalnızca o sorunun uyarısı kapanır
@@ -5468,7 +6187,14 @@ html.kp-kilit body {
     var satir = function (ad, alt, tutar, sinif) {
       return '<tr' + (sinif ? ' class="' + sinif + '"' : '') + '><th scope="row">' + ad + (alt ? ' <span>' + alt + '</span>' : '') + '</th><td>' + tutar + '</td></tr>';
     };
-    var engelliAdim = this.adimlar.filter(function (a) { return a.id !== 'ozet' && self.adimEngeli(a.id); })[0];
+    var engelliAdim = this.adimlar.filter(function (a) { return a.id !== 'ozet' && a.id !== 'ikon' && a.id !== 'aksesuar' && self.adimEngeli(a.id); })[0];
+    var hataliGruplar = this.hataliGruplar();
+    var yerListesi = hataliGruplar.length
+      ? '<div class="kp-yer-uyari kp-yer-uyari--ozet" data-kp-ozet-yer><p class="kp-yer-uyari__metin"><span class="kp-yer-uyari__ikon" aria-hidden="true">!</span>Sepete eklemeden önce şu patch\'lerin yerini düzeltmen gerekiyor:</p>' +
+        '<ul class="kp-yer-uyari__liste">' + hataliGruplar.map(function (g) { return '<li>' + kacis(self.sorunMetni(g)) + '</li>'; }).join('') + '</ul>' +
+        '<div class="kp-yer-uyari__butonlar"><button type="button" class="kp-oneri" data-kp-hepsini-duzelt>Hepsini düzelt</button></div>' +
+        '<p class="kp-yer-uyari__not">Hepsini düzelt, her patch\'i en yakın uygun yere taşır; yer yoksa kenara alır.</p></div>'
+      : '';
     if (bosMu(this.t)) {
       // Hiç patch yok: geri dön ya da sadece çanta (alttaki "Sepete ekle" de düz çantayı ekler)
       var bos =
@@ -5497,10 +6223,10 @@ html.kp-kilit body {
     var kampanyaSatirlari = '';
     if (k && k.kampanyalar) {
       k.kampanyalar.forEach(function (x) {
-        kampanyaSatirlari += satir('✓ ' + kacis(x.ad), '', '−' + p(x.tutar), 'kp-ozet__kampanya');
+        kampanyaSatirlari += satir('✓ ' + kacis(kampanyaGosterimAdi(x.ad)), '', '−' + p(x.tutar), 'kp-ozet__kampanya');
       });
       (k.kayiplar || []).forEach(function (x) {
-        kampanyaSatirlari += satir('Sepetindeki ' + kacis(x.ad) + ' bunun yerine geçer', '', '+' + p(x.tutar), 'kp-ozet__kayip');
+        kampanyaSatirlari += satir('Sepetindeki ' + kacis(kampanyaGosterimAdi(x.ad)) + ' bunun yerine geçer', '', '+' + p(x.tutar), 'kp-ozet__kayip');
       });
     }
     var toplam = k && k.indirim > 0
@@ -5509,6 +6235,7 @@ html.kp-kilit body {
     panel.innerHTML =
       '<h3 id="kp-p-ozet" class="kp-panel__baslik" tabindex="-1">Tasarımın hazır</h3>' +
       (engelliAdim ? '<p class="kp-uyari kp-uyari--hata">' + engelliAdim.ad + ' adımında çözülmesi gereken bir sorun var.</p>' : '') +
+      yerListesi +
       '<table class="kp-ozet"><tbody>' + satirlar + kampanyaSatirlari + '</tbody>' +
       '<tfoot><tr><th scope="row">Toplam</th><td>' + toplam + '</td></tr></tfoot></table>' +
       (k && k.hata ? '<p class="kp-indirim-notu kp-indirim-notu--ozet">İndirimler sepette uygulanır</p>' : '') +
@@ -5548,25 +6275,40 @@ html.kp-kilit body {
     // "Bir patch daha" ve "iki patch daha": bir sonraki kampanyayı bulmak için örnek patch'le iki ek simülasyon
     var ornek = ornekPatch(kok.m);
     var ekler = ornek ? [{ ad: '+1', satirlar: [{ v: ornek, q: 1 }] }, { ad: '+2', satirlar: [{ v: ornek, q: 2 }] }] : [];
-    if (ornek && !this.merdiven && !this.merdivenIstendi) {
-      this.merdivenIstendi = true;
-      kampanyaMerdiveni(ornek).then(function (m) { self.merdiven = m; self.seritCiz(); }, function () { self.merdivenIstendi = false; });
+    // Kurallar (adet basamakları, dahil ürünler) henüz öğrenilmediyse arka planda öğrenilir
+    if (!kurallariOku() || Date.now() - kurallariOku().zaman > 30 * 60 * 1000) {
+      kurallariOgren(kok.m).then(function () {
+        if (self.el && !self.el.hidden) {
+          self.kampanyaAnahtari = null;
+          self.yenile();
+        }
+      }, function () {});
     }
     var anahtar = JSON.stringify([satirlar, haric, kampanyaSurumu]);
     if (anahtar === this.kampanyaAnahtari) return;
     this.kampanyaAnahtari = anahtar;
+    // Anında: önbellekteki kesin sonuç ya da öğrenilen kurallarla yerel hesap ("hesaplanıyor" ara durumu yok)
+    var anlik = kampanyaAnlik(kok.m, satirlar, haric, ekler);
+    if (anlik) this.kampanya = { anahtar: anahtar, sonuc: anlik };
+    if (anlik && !anlik.yerel) return;
+    // Arka planda Shopify doğrular
     clearTimeout(this.kampanyaZamanlayici);
     this.kampanyaZamanlayici = setTimeout(function () {
-      kampanyaHesapla(satirlar, haric, ekler).then(
+      kampanyaHesapla(satirlar, haric, ekler, kok.m).then(
         function (s) { self.kampanyaBitti(anahtar, s); },
         function () { self.kampanyaBitti(anahtar, { hata: true }); }
       );
     }, 350);
   };
 
+  // Shopify'ın sonucu: yerel hesapla aynıysa bir şey değişmez; farklıysa fiyat sessizce düzeltilir
   Editor.prototype.kampanyaBitti = function (anahtar, sonuc) {
     if (anahtar !== this.kampanyaAnahtari) return;
+    var onceki = this.kampanya && this.kampanya.anahtar === anahtar ? this.kampanya.sonuc : null;
+    // Simülasyon başarısız: yerel hesap varsa o kalır, yoksa liste fiyatı ve "İndirimler sepette uygulanır"
+    if (sonuc.hata && onceki && !onceki.hata) return;
     this.kampanya = { anahtar: anahtar, sonuc: sonuc };
+    if (ayniKampanya(onceki, sonuc)) return;
     if (this.el.hidden) return;
     if (this.adim === 'ozet') this.ozetCiz();
     var f = fiyatHesapla(this.m, this.yer, this.t);
@@ -5582,8 +6324,10 @@ html.kp-kilit body {
     var serit = this.el && this.el.querySelector('[data-kp-serit]');
     if (!serit) return;
     var k = this.kampanyaSonucu();
-    var esikler = this.kok() ? this.kok().m.ayar.kampanyaEsikleri : [];
-    var d = k && !k.hata ? seritDurumu(k, this.merdiven, esikler) : null;
+    var kok = this.kok();
+    var esikler = kok ? kok.m.ayar.kampanyaEsikleri : [];
+    var kural = kurallariOku();
+    var d = k && !k.hata ? seritDurumu(k, kural ? kural.merdiven : [], esikler, kok ? ornekPatchFiyati(kok.m) : null) : null;
     var goster = !!d && this.adim !== 'ozet' && !!(d.sol || d.sag || d.duraklar.length);
     serit.hidden = !goster;
     if (!goster) return;
@@ -5604,7 +6348,7 @@ html.kp-kilit body {
         n.className = 'kp-serit__nokta' + (x.ulasildi ? ' kp-serit__nokta--ulasildi' : '');
         n.style.left = (x.konum * 100).toFixed(1) + '%';
         n.setAttribute('data-kp-durak', x.ad);
-        n.title = x.ad;
+        n.title = kampanyaGosterimAdi(x.ad);
         cubuk.appendChild(n);
       });
     }
@@ -5746,7 +6490,11 @@ html.kp-kilit body {
     this.el.querySelector('[data-kp-duzle]').disabled = !b.aci;
     var p0 = b.parcalar[0];
     this.el.querySelector('[data-kp-aks-tasarla]').hidden = !(p0.tip === 'aksesuar' && p0.tanim.tasarlanabilir);
-    this.sahne.secimCiz(grupCercevesi(b.parcalar, b.pivot, b.aci, 0.15), !!this.durum.hatalar[b.parcalar[0].uid]);
+    var kenarda = !!p0.kenar;
+    this.el.querySelectorAll('[data-kp-dondur], [data-kp-duzle]').forEach(function (x) { x.hidden = kenarda; });
+    this.el.querySelectorAll('[data-kp-kenar-grup]').forEach(function (x) { x.classList.toggle('kp-kenar__oge--secili', x.getAttribute('data-kp-kenar-grup') === b.grup); });
+    if (kenarda) this.sahne.secimCiz(null);
+    else this.sahne.secimCiz(grupCercevesi(b.parcalar, b.pivot, b.aci, 0.15), !!this.durum.hatalar[b.parcalar[0].uid]);
     this.balonCiz(b);
   };
 
@@ -5782,13 +6530,7 @@ html.kp-kilit body {
     gosterge.hidden = false;
     gosterge.textContent = Math.round(aci) + '°';
     gosterge.classList.toggle('kp-aci--hatali', !gecerli);
-    if (gecerli) {
-      this.secimDurumu('');
-      this.sinirTasma(false);
-    } else {
-      this.secimDurumu('Bu açıda alana sığmıyor.', 0);
-      this.sinirTasma(this.grupSorunu(donmus, b.digerleri) === 'tasma');
-    }
+    this.sinirTasma(!gecerli && this.grupSorunu(donmus, b.digerleri) === 'tasma');
     return gecerli;
   };
 
@@ -5801,6 +6543,7 @@ html.kp-kilit body {
   Editor.prototype.aciUygula = function (grup, aci) {
     aci = aciNormal(aci);
     var t = this.t;
+    sonaAl(t, grup);
     if (grup === 'isim') {
       t.isimAci = aci;
     } else if (String(grup).indexOf('harf-') === 0) {
@@ -5830,19 +6573,7 @@ html.kp-kilit body {
     if (!b) return;
     var hedef = aciNormal(mutlak != null ? mutlak : b.aci + delta);
     if (hedef === b.aci) return;
-    var self = this;
-    if (!this.yer.grupGecerli(grupDondur(b.parcalar, b.pivot, b.aci, hedef), b.digerleri)) {
-      // Kısa bir an kırmızı göster, sonra eski açıya dön
-      this.aciOnizle(b, hedef);
-      this.secimDurumu('Bu açıda alana sığmıyor.');
-      clearTimeout(this.donmeZamanlayici);
-      this.donmeZamanlayici = setTimeout(function () {
-        self.aciGostergesiGizle();
-        self.sinirTasma(false);
-        self.yenile();
-      }, 600);
-      return;
-    }
+    // Geçersiz açıda da uygulanır: patch kırmızı işaretlenir, sepete eklemeden önce düzeltilir
     this.secimDurumu('');
     this.aciUygula(b.grup, hedef);
   };
@@ -5980,14 +6711,16 @@ html.kp-kilit body {
         var p2 = parmaklar[iki.ids[1]];
         if (!p1 || !p2) return;
         var a = aciYakala(iki.bilgi.aci + yonAcisi(p2[0], p2[1], p1) - iki.a0);
-        if (self.aciOnizle(iki.bilgi, a)) iki.sonGecerli = a;
+        self.aciOnizle(iki.bilgi, a);
+        iki.sonGecerli = a;
         return;
       }
       if (!aktif || e.pointerId !== aktif.id) return;
       e.preventDefault();
       if (aktif.mod === 'tutamac') {
         var a2 = aciYakala(aktif.bilgi.aci + yonAcisi(e.clientX, e.clientY, aktif.c) - aktif.a0);
-        if (self.aciOnizle(aktif.bilgi, a2)) aktif.sonGecerli = a2;
+        self.aciOnizle(aktif.bilgi, a2);
+        aktif.sonGecerli = a2;
         return;
       }
       var d = cmCevir(e.clientX - aktif.x, e.clientY - aktif.y);
@@ -6002,28 +6735,14 @@ html.kp-kilit body {
       var tasinmis = aktif.parcalar.map(function (p) {
         return kopyaParca(p, { sekil: kaydir(p.sekil, aktif.dx, aktif.dy) });
       });
-      var sorun = self.grupSorunu(tasinmis, aktif.digerleri);
+      // Kenarın üstündeyse bırakınca kenara alınır
+      var kenarEl = self.el.querySelector('[data-kp-kenar]');
+      var kr = kenarEl && kenarEl.getBoundingClientRect();
+      aktif.kenaraBirak = !!kr && e.clientX >= kr.left && e.clientX <= kr.right && e.clientY >= kr.top && e.clientY <= kr.bottom;
+      if (kenarEl) kenarEl.classList.toggle('kp-kenar--hedef', aktif.kenaraBirak);
+      var sorun = aktif.kenaraBirak ? null : self.grupSorunu(tasinmis, aktif.digerleri);
       var hatalar = {};
-      if (sorun) {
-        tasinmis.forEach(function (p) { hatalar[p.uid] = true; });
-        // Metin oturum başına her sorun türü için yalnızca ilk sefer; sonra yalnızca kırmızı sınır/patch
-        if (aktif.sorun !== sorun) {
-          aktif.sorun = sorun;
-          if (ilkKezMi('kp-uyari-' + sorun)) {
-            var ad = self.patchAdi(self.grupBilgisi(aktif.grup));
-            self.bildir(
-              ad + (sorun === 'tasma' ? ' alanın dışına taşıyor.' : ' başka bir patch\'in üstüne geliyor.') + ' Bırakırsan son yerine döner.',
-              { sure: 0, anahtar: 'surukle' }
-            );
-          } else {
-            self.bildirimKapat('surukle');
-          }
-        }
-      } else {
-        aktif.sorun = null;
-        aktif.sonGecerli = [aktif.dx, aktif.dy];
-        self.bildirimKapat('surukle');
-      }
+      if (sorun) tasinmis.forEach(function (p) { hatalar[p.uid] = true; });
       self.sinirTasma(sorun === 'tasma');
       self.sahne.konumla(tasinmis, hatalar);
     });
@@ -6057,11 +6776,14 @@ html.kp-kilit body {
       var dx = a.dx;
       var dy = a.dy;
       self.sinirTasma(false);
-      if (!self.yer.grupGecerli(tasinmis, a.digerleri)) {
-        // Geçersiz yerde bırakıldı: sürüklemedeki son geçerli konuma döner
-        dx = a.sonGecerli[0];
-        dy = a.sonGecerli[1];
-        self.bildirimSonra('surukle', 1200);
+      var kenarEl = self.el.querySelector('[data-kp-kenar]');
+      if (kenarEl) kenarEl.classList.remove('kp-kenar--hedef');
+      // Bırakıldığı yerde kalır (geçersizse kırmızı işaretlenir); kenarın üstüne bırakıldıysa kenara alınır
+      if (a.kenaraBirak) {
+        kenaraAl(self.t, a.grup);
+        if (self.setCercevesi && a.parcalar[0].setGrup === self.setCercevesi) self.setCercevesi = null;
+        self.secili = null;
+        return self.yenile();
       }
       if (a.grup === 'isim') {
         var c = self.isimMerkezi();
@@ -6069,6 +6791,7 @@ html.kp-kilit body {
       } else {
         konumKaydir(self.t, a.parcalar[0], dx, dy);
       }
+      sonaAl(self.t, a.grup);
       // Setin bir patch'i taşınınca set çerçevesi kalkar (set bozulmaz)
       if (self.setCercevesi && a.parcalar[0].setGrup === self.setCercevesi) self.setCercevesi = null;
       self.yenile();
@@ -6123,7 +6846,7 @@ html.kp-kilit body {
         ? { t: 'circle', cx: cx, cy: cy, r: Math.max(o.en, o.boy) / 2 }
         : donukDikdortgen(cx, cy, o.en, o.boy, aci);
       // isimde: yazıya ait karakter (yeni kayıtlarda s:1; eskilerde yalnızca harfler)
-      liste.push({ uid: 'k' + i, grup: 'k' + i, tip: b.tip, tanim: b.tanim, varyant: b.v, sekil: sekil, en: o.en, boy: o.boy, aci: aci, etiket: b.v.karakter || b.tanim.ad, isimde: x.s ? true : b.tip === 'letter', setKodu: x.k || null });
+      liste.push({ uid: 'k' + i, grup: 'k' + i, tip: b.tip, tanim: b.tanim, varyant: b.v, sekil: sekil, en: o.en, boy: o.boy, aci: aci, etiket: b.v.karakter || b.tanim.ad, isimde: x.s ? true : b.tip === 'letter', setKodu: x.k || null, kenar: !!x.e });
     });
     return liste;
   }
@@ -6151,6 +6874,7 @@ html.kp-kilit body {
         var urunId = p.tip === 'number' ? rs && rs.id : m.ikonlar.filter(function (ik) { return ik.varyantlar.some(function (v) { return v.id === p.varyant.id; }); })[0].id;
         var parca = { uid: yeniId(p.tip === 'number' ? 'r' : 'i'), tip: p.tip, urunId: urunId, varyantId: p.varyant.id, cx: c[0], cy: c[1], aci: p.aci || 0 };
         if (p.setKodu) parca.setGrup = 'S' + p.setKodu.replace(/\W/g, '');
+        if (p.kenar) parca.kenar = true;
         return parca;
       });
     // Aksesuarlar: konumdaki 'a' kayıtları (iç tasarım sepet satırından ayrıca eklenir)
@@ -6159,7 +6883,7 @@ html.kp-kilit body {
       .filter(function (x) { return x.t === 'a'; })
       .map(function (x) {
         var aks = m.aksesuarlar.filter(function (a) { return String(a.varyant) === String(x.v); })[0];
-        return aks ? { uid: x.u || yeniId('a'), urunId: aks.id, cx: ac0[0] + (Number(x.x) || 0), cy: ac0[1] + (Number(x.y) || 0), aci: Number(x.a) || 0, tasarim: null } : null;
+        return aks ? { uid: x.u || yeniId('a'), urunId: aks.id, cx: ac0[0] + (Number(x.x) || 0), cy: ac0[1] + (Number(x.y) || 0), aci: Number(x.a) || 0, tasarim: null, kenar: !!x.e } : null;
       })
       .filter(Boolean);
     // Sepette set ürünü olarak duran patch'ler yeniden set olarak kurulur
@@ -6187,12 +6911,19 @@ html.kp-kilit body {
           blokOldu = blok.every(function (p, i) { var c = merkez(p.sekil); return Math.abs(c[0] - merkezler[i][0]) < 0.25 && Math.abs(c[1] - merkezler[i][1]) < 0.25; });
         }
       }
+      // Kenardaki harfler: hepsi kenardaysa blok kenarda; bir kısmı kenardaysa harfler ayrı
+      var kenarlar = harfler.map(function (p) { return !!p.kenar; });
+      var hepsiKenar = kenarlar.every(Boolean);
+      if (blokOldu && kenarlar.some(Boolean) && !hepsiKenar) blokOldu = false;
       if (!blokOldu) {
         t.isimMerkez = null;
         t.isimAci = 0;
         t.harfAyri = true;
         t.harfKonumlari = merkezler;
         t.harfAcilari = acilar;
+        if (kenarlar.some(Boolean)) t.harfKenar = kenarlar;
+      } else if (hepsiKenar) {
+        t.isimKenar = true;
       }
     }
     return t;
@@ -6232,6 +6963,7 @@ html.kp-kilit body {
     var dcy = ((d.y + d.h / 2) / 100) * am.m.Hcm;
     var k = d.en / ((am.m.Wcm * d.w) / 100);
     am.yer.parcalar(p.icTasarim).forEach(function (ip) {
+      if (ip.kenar) return;
       var c = merkez(ip.sekil);
       var dc = dondurNokta([pc[0] + (c[0] - dcx) * k, pc[1] + (c[1] - dcy) * k], pc, aci);
       var en = (ip.sekil.t === 'circle' ? ip.sekil.r * 2 : ip.en) * k;
@@ -6253,7 +6985,7 @@ html.kp-kilit body {
         g: m.gorsel.kucuk,
         o: m.gorsel.en / m.gorsel.boy,
         y: yakinGorunum(m),
-        p: parcalar.reduce(function (l, p) { return l.concat(p.tip === 'aksesuar' ? aksesuarDunyaParcalari(m, p) : [p]); }, []).map(function (p) {
+        p: parcalar.filter(function (p) { return !p.kenar; }).reduce(function (l, p) { return l.concat(p.tip === 'aksesuar' ? aksesuarDunyaParcalari(m, p) : [p]); }, []).map(function (p) {
           var st = parcaStili(m, p);
           return { u: p.varyant && p.varyant.gorsel, l: st.left, t: st.top, w: st.width, h: st.height, r: st.transform, d: p.sekil.t === 'circle', j: !!(p.varyant && !p.varyant.png) };
         })
@@ -6271,17 +7003,40 @@ html.kp-kilit body {
   /* Kampanyalı fiyat (Storefront API ile geçici sepet simülasyonu)       */
   /* ------------------------------------------------------------------ */
 
-  // Kendi indirim hesabımız yok: müşterinin sepetine dokunmadan Storefront API'de geçici sepetler oluşturulur
-  // (mevcut sepet / mevcut sepet + tasarım), Shopify'ın uyguladığı kampanyalar adlarıyla okunur. Sonuçlar önbellekte.
+  // Fiyatı Shopify belirler: müşterinin sepetine dokunmadan Storefront API'de geçici sepetler oluşturulur
+  // (mevcut sepet / mevcut sepet + tasarım), uygulanan kampanyalar adlarıyla okunur.
+  // Bekletmemek için: kampanya kuralları (adet basamakları, tutarlar, %'lik eşik, hangi ürünlerin dahil olduğu)
+  // simülasyonlardan öğrenilip saklanır; fiyat bu kurallarla anında yerel hesaplanır, Shopify arka planda doğrular,
+  // fark çıkarsa fiyat sessizce düzeltilir ve kurallar güncellenir. Aynı sepetin sonucu önbellekten gelir.
   var KAMPANYA_API = '/api/2025-07/graphql.json';
-  var kampanyaOnbellek = {};
-  var sepetOnbellek = null; // { zaman, satirlar: [{ v, q, tasarim }] }
+  var kampanyaOnbellek = {}; // anahtar -> söz
+  var kampanyaSonuclari = {}; // anahtar -> sonuç (anında kullanım)
+  var SONUC_ANAHTARI = 'kp-kampanya-sonuclari';
+  var sepetOnbellek = null; // { zaman, satirlar: [{ v, q, p, f, tasarim }] }
+
+  try {
+    kampanyaSonuclari = JSON.parse(sessionStorage.getItem(SONUC_ANAHTARI) || '{}') || {};
+  } catch (e) {
+    kampanyaSonuclari = {};
+  }
+  function sonucSakla(anahtar, sonuc) {
+    kampanyaSonuclari[anahtar] = sonuc;
+    var anahtarlar = Object.keys(kampanyaSonuclari);
+    if (anahtarlar.length > 40) anahtarlar.slice(0, anahtarlar.length - 40).forEach(function (a) { delete kampanyaSonuclari[a]; });
+    try { sessionStorage.setItem(SONUC_ANAHTARI, JSON.stringify(kampanyaSonuclari)); } catch (e) { /* yok say */ }
+  }
 
   // Müşterinin sepeti değişti: sepet yeniden okunur, kampanya anahtarları da değişir (sonuçlar yeniden hesaplanır)
   var kampanyaSurumu = 0;
   function kampanyaSepetiniUnut() {
     sepetOnbellek = null;
     kampanyaSurumu++;
+  }
+
+  function sepetSatirlari(sepet) {
+    return (sepet.items || []).map(function (k) {
+      return { v: k.variant_id, q: k.quantity, p: k.product_id, f: Number(k.original_price != null ? k.original_price : k.price) || 0, tasarim: (k.properties || {})._tasarim_id || null };
+    });
   }
 
   // Müşterinin şu anki sepet satırları (5 sn önbellek)
@@ -6291,9 +7046,7 @@ html.kp-kilit body {
     return fetch((rotalar.cart_url || '/cart') + '.js', { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (sepet) {
-        var satirlar = (sepet.items || []).map(function (k) {
-          return { v: k.variant_id, q: k.quantity, tasarim: (k.properties || {})._tasarim_id || null };
-        });
+        var satirlar = sepetSatirlari(sepet);
         sepetOnbellek = { zaman: Date.now(), satirlar: satirlar };
         return satirlar;
       });
@@ -6303,9 +7056,23 @@ html.kp-kilit body {
     return Math.round(parseFloat((tutar && tutar.amount) || tutar || 0) * 100) || 0;
   }
 
-  // Kampanya adı Shopify'daki gibi, yalnızca fazla boşluklar kırpılır
+  // Kampanya adı Shopify'daki gibi, yalnızca fazla boşluklar kırpılır (eşleştirme anahtarı)
   function kampanyaAdi(ad) {
     return String(ad || '').replace(/\s+/g, ' ').trim();
+  }
+
+  // Müşteriye gösterilen ad: "2li patche indirim" → "2'li patch indirimi", "Ekstra %10 İndirim" → "Ekstra %10 indirim"
+  function sayiLiEki(n) {
+    n = parseInt(n, 10);
+    var birler = { 1: 'li', 2: 'li', 3: 'lü', 4: 'lü', 5: 'li', 6: 'lı', 7: 'li', 8: 'li', 9: 'lu' };
+    var onlar = { 1: 'lu', 2: 'li', 3: 'lu', 4: 'lı', 5: 'li', 6: 'lı', 7: 'li', 8: 'li', 9: 'lı' };
+    return n % 10 ? birler[n % 10] : onlar[(n % 100) / 10] || 'lü';
+  }
+  function kampanyaGosterimAdi(ad) {
+    var a = kampanyaAdi(ad);
+    var m = a.match(/^(\d+)\s*['’]?\s*(?:li|lı|lu|lü)?\s*patch(?:e|i|lere|e)?\s+indirim(?:i)?$/i);
+    if (m) return m[1] + "'" + sayiLiEki(m[1]) + ' patch indirimi';
+    return a.replace(/\s[İI]ndirim$/, ' indirim').replace(/\s[İI]ndirimi$/, ' indirimi');
   }
 
   function sepetIndirimleri(sepet) {
@@ -6322,7 +7089,7 @@ html.kp-kilit body {
   var SEPET_PARCASI =
     'fragment C on Cart { cost { subtotalAmount { amount } totalAmount { amount } } ' +
     'discountAllocations { discountedAmount { amount } ... on CartAutomaticDiscountAllocation { title } } ' +
-    'lines(first: 100) { nodes { quantity discountAllocations { discountedAmount { amount } ... on CartAutomaticDiscountAllocation { title } } } } }';
+    'lines(first: 100) { nodes { quantity merchandise { ... on ProductVariant { id } } discountAllocations { discountedAmount { amount } ... on CartAutomaticDiscountAllocation { title } } } } }';
 
   function satirGirdisi(satirlar) {
     var birlesik = {};
@@ -6330,13 +7097,237 @@ html.kp-kilit body {
     return Object.keys(birlesik).map(function (v) { return { merchandiseId: 'gid://shopify/ProductVariant/' + v, quantity: birlesik[v] }; });
   }
 
+  var toplamIndirim = function (x) { return Object.keys(x || {}).reduce(function (t, ad) { return t + x[ad]; }, 0); };
+  var kampanyaFarki = function (x, y) {
+    var liste = [];
+    Object.keys(y).forEach(function (ad) {
+      var t = y[ad] - (x[ad] || 0);
+      if (t > 0) liste.push({ ad: ad, tutar: t });
+    });
+    return liste;
+  };
+
+  // Ortak sonuç biçimi: once/sonra = kampanya adı → tutar (kuruş)
+  function kampanyaSonucu(once, sonra, altToplam, uygunAdet, ekler) {
+    return {
+      kampanyalar: kampanyaFarki(once, sonra),
+      // Sepetteki bir kampanya tasarımla birlikte kalkabilir (ör. 2'li yerine 4'lü): net fark ayrıca gösterilir
+      kayiplar: kampanyaFarki(sonra, once),
+      indirim: toplamIndirim(sonra) - toplamIndirim(once),
+      sepetIndirim: toplamIndirim(sonra),
+      aktif: sonra,
+      onceAktif: once,
+      altToplam: altToplam,
+      uygunAdet: uygunAdet,
+      ekler: ekler || {}
+    };
+  }
+
+  /* ---------- Öğrenilen kurallar ---------- */
+
+  var KURAL_ANAHTARI = 'kp-kampanya-kurallari';
+  var kurallar = null; // { zaman, ornek, merdiven: [{ k, ad, tutar }], uygun: { ürünId: bool }, yuzde: { ad: oran } }
+  function kurallariOku() {
+    if (kurallar) return kurallar;
+    try {
+      var k = JSON.parse(localStorage.getItem(KURAL_ANAHTARI) || 'null');
+      if (k && Date.now() - k.zaman < 24 * 3600 * 1000 && Array.isArray(k.merdiven)) kurallar = k;
+    } catch (e) { /* depolama kapalı */ }
+    return kurallar;
+  }
+  function kurallariYaz() {
+    try { localStorage.setItem(KURAL_ANAHTARI, JSON.stringify(kurallar)); } catch (e) { /* yok say */ }
+  }
+
+  // Varyant → ürün ve fiyat (çanta, harf/rakam setleri, ikonlar, hazır setler, aksesuarlar)
+  function varyantHaritasi(m) {
+    if (m._varyantHaritasi) return m._varyantHaritasi;
+    var h = {};
+    var ekle = function (v, p, f) { if (v != null) h[String(v)] = { p: String(p), f: Number(f) || 0 }; };
+    ekle(m.urun.varyant, m.urun.id, m.urun.fiyat);
+    m.setler.concat(m.rakamSetleri).forEach(function (s) { s.varyantlar.forEach(function (v) { ekle(v.id, s.id, v.fiyat); }); });
+    m.ikonlar.forEach(function (i) { i.varyantlar.forEach(function (v) { ekle(v.id, i.id, v.fiyat); }); });
+    (m.hazirSetler || []).forEach(function (s) { ekle(s.varyant, s.id, s.fiyat); });
+    (m.aksesuarlar || []).forEach(function (a) { ekle(a.varyant, a.id, a.fiyat); });
+    m._varyantHaritasi = h;
+    return h;
+  }
+  function satirlariZenginlestir(m, satirlar) {
+    var h = varyantHaritasi(m);
+    return satirlar.map(function (s) {
+      var b = h[String(s.v)] || {};
+      return { v: s.v, q: s.q, p: s.p != null ? String(s.p) : b.p, f: s.f != null ? s.f : b.f || 0, tasarim: s.tasarim };
+    });
+  }
+
+  function yuzdeOrani(ad) {
+    var k = kurallariOku();
+    if (k && k.yuzde && k.yuzde[ad]) return k.yuzde[ad];
+    var m = String(ad).match(/%\s*(\d+)/);
+    return m ? Number(m[1]) / 100 : 0;
+  }
+
+  // Kurallarla yerel hesap: satirlar [{ v, q, p, f }]
+  function yerelIndirimler(k, satirlar, esikler) {
+    var ara = 0;
+    var n = 0;
+    satirlar.forEach(function (s) {
+      ara += (s.f || 0) * s.q;
+      if (k.uygun[String(s.p)] === true) n += s.q;
+    });
+    var aktif = {};
+    var adet = null;
+    k.merdiven.forEach(function (x) { if (n >= x.k) adet = x; });
+    var adetIndirim = adet ? adet.tutar : 0;
+    if (adet) aktif[kampanyaAdi(adet.ad)] = adet.tutar;
+    (esikler || []).forEach(function (e) {
+      var ad = kampanyaAdi(e.baslik);
+      if (ara >= e.tutar) aktif[ad] = Math.round(yuzdeOrani(ad) * (ara - adetIndirim));
+    });
+    return { aktif: aktif, ara: ara, n: n };
+  }
+
+  function yerelKampanya(m, temel, tasarim, ekler) {
+    var k = kurallariOku();
+    if (!k) return null;
+    var esikler = m.ayar.kampanyaEsikleri;
+    var a = yerelIndirimler(k, temel, esikler);
+    var b = yerelIndirimler(k, temel.concat(tasarim), esikler);
+    var ekSonuc = {};
+    (ekler || []).forEach(function (e) {
+      var x = yerelIndirimler(k, temel.concat(tasarim, e.satirlar), esikler);
+      ekSonuc[e.ad] = { aktif: x.aktif, sepetIndirim: toplamIndirim(x.aktif), indirim: toplamIndirim(x.aktif) - toplamIndirim(a.aktif) };
+    });
+    var s = kampanyaSonucu(a.aktif, b.aktif, b.ara, b.n, ekSonuc);
+    s.yerel = true;
+    return s;
+  }
+
+  function sonucAnahtari(temel, tasarim, ekler) {
+    return JSON.stringify([satirGirdisi(temel), satirGirdisi(tasarim), (ekler || []).map(function (e) { return [e.ad, satirGirdisi(e.satirlar)]; })]);
+  }
+
+  // Anında sonuç: aynı sepet daha önce Shopify'a sorulduysa o (kesin), değilse öğrenilen kurallarla yerel hesap
+  function kampanyaAnlik(m, tasarimSatirlari, haric, ekler) {
+    var mevcut = sepetOnbellek ? sepetOnbellek.satirlar : [];
+    var temel = mevcut.filter(function (s) { return !haric || s.tasarim !== haric; });
+    var kayit = kampanyaSonuclari[sonucAnahtari(temel, tasarimSatirlari, ekler)];
+    if (kayit) return kayit;
+    return yerelKampanya(m, satirlariZenginlestir(m, temel), satirlariZenginlestir(m, tasarimSatirlari), (ekler || []).map(function (e) { return { ad: e.ad, satirlar: satirlariZenginlestir(m, e.satirlar) }; }));
+  }
+
+  // Shopify sepetinden kural öğrenme: adet kampanyası aktifse, payı olan satırların ürünleri dahildir, olmayanlar değil.
+  // Tutar eşikli kampanyanın oranı: indirim / (ara toplam − adet indirimi)
+  function kurallariSepettenOgren(cart, urunler, esikler) {
+    var k = kurallariOku();
+    if (!k || !cart) return;
+    var merdivenAdlari = k.merdiven.map(function (x) { return kampanyaAdi(x.ad); });
+    var adetAktif = false;
+    var degisti = false;
+    var satirlar = (cart.lines && cart.lines.nodes) || [];
+    satirlar.forEach(function (l) {
+      (l.discountAllocations || []).forEach(function (d) { if (merdivenAdlari.indexOf(kampanyaAdi(d.title)) !== -1) adetAktif = true; });
+    });
+    if (adetAktif) {
+      satirlar.forEach(function (l) {
+        var v = l.merchandise && l.merchandise.id && String(l.merchandise.id).split('/').pop();
+        var p = v && urunler[v];
+        if (!p) return;
+        var var_ = (l.discountAllocations || []).some(function (d) { return merdivenAdlari.indexOf(kampanyaAdi(d.title)) !== -1; });
+        if (k.uygun[p] !== var_) {
+          k.uygun[p] = var_;
+          degisti = true;
+        }
+      });
+    }
+    var indirimler = sepetIndirimleri(cart);
+    var adetIndirim = 0;
+    merdivenAdlari.forEach(function (ad) { adetIndirim += indirimler[ad] || 0; });
+    var ara = kurus(cart.cost && cart.cost.subtotalAmount);
+    (esikler || []).forEach(function (e) {
+      var ad = kampanyaAdi(e.baslik);
+      if (indirimler[ad] && ara - adetIndirim > 0) {
+        var oran = Math.round((indirimler[ad] / (ara - adetIndirim)) * 10000) / 10000;
+        if (!k.yuzde) k.yuzde = {};
+        if (k.yuzde[ad] !== oran) {
+          k.yuzde[ad] = oran;
+          degisti = true;
+        }
+      }
+    });
+    if (degisti) kurallariYaz();
+  }
+
+  // Kuralları öğren: katalogdaki her patch ürününden birer adetlik geçici sepet (hangi ürünler dahil) ve
+  // örnek patch'in 1–6 adetlik sepetleri (adet basamakları ve tutarları). Saklanan kurallar 30 dk'dan eskiyse arka planda yenilenir.
+  var kuralSozu = null;
+  function kurallariOgren(m) {
+    var mevcut = kurallariOku();
+    if (mevcut && Date.now() - mevcut.zaman < 30 * 60 * 1000) return Promise.resolve(mevcut);
+    if (kuralSozu) return kuralSozu;
+    var ornek = ornekPatch(m);
+    if (!ornek) return Promise.resolve(mevcut);
+    var urunler = {};
+    var tarama = [];
+    var ekle = function (v, p, uygunMu) {
+      if (!v || !uygunMu) return;
+      urunler[String(v.id || v)] = String(p);
+      tarama.push({ v: v.id || v, q: 1 });
+    };
+    m.setler.concat(m.rakamSetleri).forEach(function (s) {
+      var v = s.varyantlar.filter(function (x) { return x.satilabilir && x.stok !== 0; })[0];
+      ekle(v, s.id, !!v);
+    });
+    m.ikonlar.forEach(function (i) { ekle(i.varyant, i.id, i.varyant && i.varyant.satilabilir && i.varyant.stok !== 0); });
+    (m.hazirSetler || []).forEach(function (s) { ekle(s.varyant, s.id, s.satilabilir); });
+    var EN_FAZLA = 6;
+    var tanim = ['$k: [CartLineInput!]!'];
+    var govde = ['k: cartCreate(input: { lines: $k }) { cart { ...C } }'];
+    var degiskenler = { k: satirGirdisi(tarama) };
+    for (var n = 1; n <= EN_FAZLA; n++) {
+      tanim.push('$m' + n + ': [CartLineInput!]!');
+      govde.push('m' + n + ': cartCreate(input: { lines: $m' + n + ' }) { cart { ...C } }');
+      degiskenler['m' + n] = satirGirdisi([{ v: ornek, q: n }]);
+    }
+    kuralSozu = fetch(KAMPANYA_API, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ query: 'mutation Kurallar(' + tanim.join(', ') + ') { ' + govde.join(' ') + ' } ' + SEPET_PARCASI, variables: degiskenler }) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var d = j && j.data;
+        if (!d) throw new Error('Kurallar alınamadı');
+        var merdiven = [];
+        var onceki = {};
+        for (var n = 1; n <= EN_FAZLA; n++) {
+          var c = d['m' + n] && d['m' + n].cart;
+          if (!c) continue;
+          var simdi = sepetIndirimleri(c);
+          Object.keys(simdi).forEach(function (ad) {
+            if (!onceki[ad] && !merdiven.some(function (x) { return x.ad === ad; })) merdiven.push({ k: n, ad: ad, tutar: simdi[ad] });
+          });
+          onceki = simdi;
+        }
+        // Tutar eşikli kampanyalar merdivenden çıkarılır (örnek sepetlerde eşiği geçmezler ama yine de)
+        var esikAdlari = m.ayar.kampanyaEsikleri.map(function (e) { return kampanyaAdi(e.baslik); });
+        merdiven = merdiven.filter(function (x) { return esikAdlari.indexOf(x.ad) === -1; });
+        kurallar = { zaman: Date.now(), ornek: ornek, merdiven: merdiven, uygun: (mevcut && mevcut.uygun) || {}, yuzde: (mevcut && mevcut.yuzde) || {} };
+        // Örnek patch'in ürünü kesin dahil (basamaklar ondan çıktı)
+        var h = varyantHaritasi(m);
+        if (merdiven.length && h[String(ornek)]) kurallar.uygun[h[String(ornek)].p] = true;
+        kurallariSepettenOgren(d.k && d.k.cart, urunler, m.ayar.kampanyaEsikleri);
+        kurallariYaz();
+        kuralSozu = null;
+        return kurallar;
+      });
+    kuralSozu.catch(function () { kuralSozu = null; });
+    return kuralSozu;
+  }
+
   // tasarimSatirlari: [{ v, q }]; haric: düzenlenen sepet grubunun _tasarim_id'si (onun yerini yeni tasarım alır)
   // ekSatirlar: "bir patch daha" gibi ek simülasyonlar için ([{ ad, satirlar }])
-  // Sonuç: { liste, indirim, indirimli, kampanyalar: [{ ad, tutar }], ekler: { ad: { indirim, kampanyalar } } }
-  function kampanyaHesapla(tasarimSatirlari, haric, ekSatirlar) {
+  function kampanyaHesapla(tasarimSatirlari, haric, ekSatirlar, m) {
     return musteriSepeti().then(function (mevcut) {
       var temel = mevcut.filter(function (s) { return !haric || s.tasarim !== haric; });
-      var anahtar = JSON.stringify([satirGirdisi(temel), satirGirdisi(tasarimSatirlari), (ekSatirlar || []).map(function (e) { return [e.ad, satirGirdisi(e.satirlar)]; })]);
+      var anahtar = sonucAnahtari(temel, tasarimSatirlari, ekSatirlar);
       if (kampanyaOnbellek[anahtar]) return kampanyaOnbellek[anahtar];
       var degiskenler = { a: satirGirdisi(temel), b: satirGirdisi(temel.concat(tasarimSatirlari)) };
       var tanim = '$a: [CartLineInput!]!, $b: [CartLineInput!]!';
@@ -6354,26 +7345,25 @@ html.kp-kilit body {
           if (!d || !d.a || !d.b || !d.a.cart || !d.b.cart) throw new Error('Simülasyon başarısız');
           var once = sepetIndirimleri(d.a.cart);
           var sonra = sepetIndirimleri(d.b.cart);
-          var fark = function (x, y) {
-            var liste = [];
-            Object.keys(y).forEach(function (ad) {
-              var t = y[ad] - (x[ad] || 0);
-              if (t > 0) liste.push({ ad: ad, tutar: t });
-            });
-            return liste;
-          };
-          var toplamIndirim = function (x) { return Object.keys(x).reduce(function (t, ad) { return t + x[ad]; }, 0); };
-          var kampanyalar = fark(once, sonra);
-          // Sepetteki bir kampanya tasarımla birlikte kalkabilir (ör. 2'li yerine 4'lü): net fark ayrıca gösterilir
-          var kayiplar = fark(sonra, once);
-          var sonuc = { kampanyalar: kampanyalar, kayiplar: kayiplar, indirim: toplamIndirim(sonra) - toplamIndirim(once), ekler: {}, sepetIndirim: toplamIndirim(sonra),
-            aktif: sonra, onceAktif: once, altToplam: kurus(d.b.cart.cost && d.b.cart.cost.subtotalAmount) };
+          var ekler = {};
           (ekSatirlar || []).forEach(function (e, i) {
             var c = d['e' + i] && d['e' + i].cart;
             if (!c) return;
             var ek = sepetIndirimleri(c);
-            sonuc.ekler[e.ad] = { kampanyalar: fark(once, ek), indirim: toplamIndirim(ek) - toplamIndirim(once), aktif: ek, sepetIndirim: toplamIndirim(ek) };
+            ekler[e.ad] = { kampanyalar: kampanyaFarki(once, ek), indirim: toplamIndirim(ek) - toplamIndirim(once), aktif: ek, sepetIndirim: toplamIndirim(ek) };
           });
+          var uygunAdet = null;
+          if (m) {
+            // Kural öğrenme ve uygun patch sayısı (şerit için)
+            var urunler = {};
+            var hepsi = satirlariZenginlestir(m, temel.concat(tasarimSatirlari));
+            hepsi.forEach(function (s) { if (s.p) urunler[String(s.v)] = s.p; });
+            kurallariSepettenOgren(d.b.cart, urunler, m.ayar.kampanyaEsikleri);
+            var k = kurallariOku();
+            if (k) uygunAdet = hepsi.reduce(function (t, s) { return t + (k.uygun[String(s.p)] === true ? s.q : 0); }, 0);
+          }
+          var sonuc = kampanyaSonucu(once, sonra, kurus(d.b.cart.cost && d.b.cart.cost.subtotalAmount), uygunAdet, ekler);
+          sonucSakla(anahtar, sonuc);
           return sonuc;
         });
       kampanyaOnbellek[anahtar] = soz;
@@ -6382,55 +7372,13 @@ html.kp-kilit body {
     });
   }
 
-  // Adet kampanyalarının basamakları (2'li, 3'lü, 4'lü…): yalnızca örnek patch'ten oluşan 1–6 adetlik geçici sepetlerle
-  // Shopify'a sorulur; her basamakta yeni çıkan kampanya bir durak olur. Kampanyalar değişirse 30 dk içinde yenilenir.
-  var MERDIVEN_ANAHTARI = 'kp-kampanya-merdiveni';
-  var merdivenSozu = null;
-  function kampanyaMerdiveni(varyant) {
-    if (!varyant) return Promise.resolve([]);
-    if (merdivenSozu && merdivenSozu.varyant === varyant) return merdivenSozu.soz;
-    try {
-      var kayit = JSON.parse(sessionStorage.getItem(MERDIVEN_ANAHTARI) || 'null');
-      if (kayit && kayit.varyant === varyant && Date.now() - kayit.zaman < 30 * 60 * 1000) {
-        merdivenSozu = { varyant: varyant, soz: Promise.resolve(kayit.merdiven) };
-        return merdivenSozu.soz;
-      }
-    } catch (e) { /* depolama kapalı */ }
-    var EN_FAZLA = 6;
-    var tanim = [];
-    var govde = [];
-    var degiskenler = {};
-    for (var k = 1; k <= EN_FAZLA; k++) {
-      tanim.push('$m' + k + ': [CartLineInput!]!');
-      govde.push('m' + k + ': cartCreate(input: { lines: $m' + k + ' }) { cart { ...C } }');
-      degiskenler['m' + k] = satirGirdisi([{ v: varyant, q: k }]);
-    }
-    var soz = fetch(KAMPANYA_API, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ query: 'mutation Merdiven(' + tanim.join(', ') + ') { ' + govde.join(' ') + ' } ' + SEPET_PARCASI, variables: degiskenler }) })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        var d = j && j.data;
-        if (!d) throw new Error('Merdiven alınamadı');
-        var merdiven = [];
-        var onceki = {};
-        for (var k = 1; k <= EN_FAZLA; k++) {
-          var c = d['m' + k] && d['m' + k].cart;
-          if (!c) continue;
-          var simdi = sepetIndirimleri(c);
-          Object.keys(simdi).forEach(function (ad) {
-            if (!onceki[ad] && !merdiven.some(function (x) { return x.ad === ad; })) merdiven.push({ k: k, ad: ad, tutar: simdi[ad] });
-          });
-          onceki = simdi;
-        }
-        try { sessionStorage.setItem(MERDIVEN_ANAHTARI, JSON.stringify({ varyant: varyant, zaman: Date.now(), merdiven: merdiven })); } catch (e) { /* yok say */ }
-        return merdiven;
-      });
-    merdivenSozu = { varyant: varyant, soz: soz };
-    soz.catch(function () { merdivenSozu = null; });
-    return soz;
+  // İki sonuç aynı fiyatı mı veriyor? (sessiz düzeltme gerekmez)
+  function ayniKampanya(a, b) {
+    if (!a || !b || a.hata || b.hata) return false;
+    return a.indirim === b.indirim && JSON.stringify(a.aktif) === JSON.stringify(b.aktif);
   }
 
-  // Basamaklar ve "bir patch daha" simülasyonu için örnek patch: harf setlerindeki satılabilir en ucuz varyant
+  // Basamaklar ve "bir patch daha" için örnek patch: harf setlerindeki satılabilir en ucuz varyant
   // (adet kampanyaları harf setlerini kapsıyor); eşitlikte stoğu bol olan
   function ornekPatch(m) {
     var en = null;
@@ -6442,6 +7390,100 @@ html.kp-kilit body {
       });
     });
     return en ? en.id : null;
+  }
+  function ornekPatchFiyati(m) {
+    var id = ornekPatch(m);
+    var b = id && varyantHaritasi(m)[String(id)];
+    return b ? b.f : null;
+  }
+
+  // "Ekstra %10 İndirim" → "%10"
+  function yuzdeYazisi(ad) {
+    var m = String(ad).match(/%\s*\d+/);
+    return m ? m[0].replace(/\s/g, '') : '';
+  }
+
+  // Kampanya şeridi (saf hesap), iki satır: 1) kazanılan toplam, 2) tek somut eylem ve sonucu.
+  // Duraklar: adet basamakları (öğrenilen) + tutar eşikleri (ayarlar). Sıradaki hedeflerden daha az harcama gerektireni.
+  function seritDurumu(k, merdiven, esikler, ornekFiyat) {
+    var aktif = k.aktif || {};
+    var adlar = Object.keys(aktif);
+    var var_ = function (ad) { return adlar.indexOf(kampanyaAdi(ad)) !== -1; };
+    var duraklar = (merdiven || []).map(function (x) { return { ad: kampanyaAdi(x.ad), tur: 'adet', k: x.k, tutar: x.tutar }; })
+      .concat((esikler || []).map(function (e) { return { ad: kampanyaAdi(e.baslik), tur: 'tutar', tutar: e.tutar }; }));
+    var enUstAdet = -1;
+    duraklar.forEach(function (d, i) { if (d.tur === 'adet' && var_(d.ad)) enUstAdet = i; });
+    duraklar.forEach(function (d, i) {
+      d.ulasildi = d.tur === 'adet' ? i <= enUstAdet : var_(d.ad) || (k.altToplam || 0) >= d.tutar;
+    });
+    var indirim = k.sepetIndirim || 0;
+    var simdikiAdet = enUstAdet >= 0 ? aktif[duraklar[enUstAdet].ad] || 0 : 0;
+    var secenekler = [];
+    // Patch: sıradaki adet basamağı
+    var sonrakiAdet = duraklar.filter(function (d) { return d.tur === 'adet' && !d.ulasildi; })[0];
+    if (sonrakiAdet) {
+      var n = null;
+      var yeni = null;
+      for (var i = 1; i <= 6; i++) {
+        var e = k.ekler && k.ekler['+' + i];
+        if (e && e.aktif && e.aktif[sonrakiAdet.ad]) {
+          n = i;
+          yeni = e.sepetIndirim;
+          break;
+        }
+      }
+      if (n == null && k.uygunAdet != null && sonrakiAdet.k > k.uygunAdet) {
+        n = sonrakiAdet.k - k.uygunAdet;
+        yeni = indirim - simdikiAdet + sonrakiAdet.tutar;
+      }
+      if (n != null && yeni > indirim) {
+        secenekler.push({
+          maliyet: ornekFiyat ? n * ornekFiyat : 0,
+          metin: n + ' patch daha ekle, ' + (indirim > 0 ? 'indirimin ' + paraBicimle(yeni) + ' olsun' : paraBicimle(yeni) + ' indirim kazan'),
+          hedef: sonrakiAdet,
+          patch: n
+        });
+      }
+    }
+    // Tutar: sıradaki eşik
+    var esik = duraklar.filter(function (d) { return d.tur === 'tutar' && !d.ulasildi; })[0];
+    if (esik) {
+      var kalan = esik.tutar - (k.altToplam || 0);
+      var yuzde = yuzdeYazisi(esik.ad);
+      secenekler.push({
+        maliyet: kalan,
+        metin: paraBicimle(kalan) + '\'lik ürün daha ekle, tüm siparişe ' + (yuzde ? yuzde + ' indirim gelsin' : 'indirim gelsin'),
+        hedef: esik
+      });
+    }
+    secenekler.sort(function (a, b) { return a.maliyet - b.maliyet; });
+    var hepsi = duraklar.length > 0 && duraklar.every(function (d) { return d.ulasildi; });
+    var ilkAdet = duraklar.filter(function (d) { return d.tur === 'adet'; })[0];
+    var sol = indirim > 0
+      ? paraBicimle(indirim) + ' indirim kazandın' + (hepsi ? ' 🎉' : '')
+      : 'Patch indirimleri ' + (ilkAdet ? ilkAdet.k : 2) + ' patch\'ten başlıyor';
+    var sag = hepsi ? 'Bütün kampanyalar sepetinde' : secenekler.length ? secenekler[0].metin : '';
+    // Çubuk: duraklar eşit aralıklı; son ulaşılan durağa kadar dolu, sonrakine yaklaştıkça biraz daha
+    var say = duraklar.length;
+    var son = -1;
+    duraklar.forEach(function (d, i) { if (d.ulasildi) son = i; });
+    var dolu = say ? (son + 1) / say : 0;
+    var hedef = duraklar[son + 1];
+    if (hedef && say) {
+      var kismi = 0;
+      var adetSecenek = secenekler.filter(function (s) { return s.patch; })[0];
+      if (hedef.tur === 'adet' && adetSecenek) kismi = 1 / (adetSecenek.patch + 1);
+      if (hedef.tur === 'tutar') kismi = Math.max(0, Math.min(1, (k.altToplam || 0) / hedef.tutar));
+      dolu += kismi / say;
+    }
+    return {
+      indirim: indirim,
+      sol: sol,
+      sag: sag,
+      hepsi: hepsi,
+      duraklar: duraklar.map(function (d, i) { return { ad: d.ad, ulasildi: d.ulasildi, konum: (i + 1) / say }; }),
+      dolu: Math.min(1, dolu)
+    };
   }
 
   // "Ekstra %10 İndirim" → "Ekstra %10"
@@ -6465,77 +7507,15 @@ html.kp-kilit body {
     return "'" + (/[aeıioöuü]$/.test(son) ? 'y' : '') + (/[aıou]/.test(unlu) ? 'a' : 'e');
   }
 
-  // Kampanya şeridinin durumu (saf hesap): k = kampanyaHesapla sonucu, merdiven = adet basamakları,
-  // esikler = tutar eşikli kampanyalar. Duraklar: önce adet basamakları, sonra tutar eşikleri.
-  function seritDurumu(k, merdiven, esikler) {
-    var aktif = k.aktif || {};
-    var adlar = Object.keys(aktif);
-    var var_ = function (ad) { return adlar.indexOf(kampanyaAdi(ad)) !== -1; };
-    var duraklar = (merdiven || []).map(function (x) { return { ad: kampanyaAdi(x.ad), tur: 'adet', k: x.k }; })
-      .concat((esikler || []).map(function (e) { return { ad: kampanyaAdi(e.baslik), tur: 'tutar', tutar: e.tutar }; }));
-    // Adet basamaklarından en yükseğine ulaşıldıysa alttakiler de geçilmiştir
-    var enUstAdet = -1;
-    duraklar.forEach(function (d, i) { if (d.tur === 'adet' && var_(d.ad)) enUstAdet = i; });
-    duraklar.forEach(function (d, i) {
-      d.ulasildi = d.tur === 'adet' ? i <= enUstAdet : var_(d.ad) || (k.altToplam || 0) >= d.tutar;
-    });
-    var yeniKampanya = function (e) {
-      return e && Object.keys(e.aktif || {}).some(function (ad) { return adlar.indexOf(ad) === -1; });
-    };
-    var p1 = k.ekler && k.ekler['+1'];
-    var p2 = k.ekler && k.ekler['+2'];
-    var indirim = k.sepetIndirim || 0;
-    var sag = '';
-    var sonraki = null;
-    var patchHedef = function (n, e) {
-      sonraki = { tur: 'adet', patch: n };
-      return n + ' patch daha: ' + (indirim > 0 ? 'indirim ' + paraBicimle(indirim) + ' → ' + paraBicimle(e.sepetIndirim) : paraBicimle(e.sepetIndirim) + ' indirim');
-    };
-    if (yeniKampanya(p1)) sag = patchHedef(1, p1);
-    else if (yeniKampanya(p2)) sag = patchHedef(2, p2);
-    else {
-      var esik = duraklar.filter(function (d) { return d.tur === 'tutar' && !d.ulasildi; })[0];
-      if (esik) {
-        var kisa = kampanyaKisaAd(esik.ad);
-        sag = kisa + yonelme(kisa) + ' ' + paraBicimle(esik.tutar - (k.altToplam || 0)) + ' kaldı';
-        sonraki = { tur: 'tutar', esik: esik };
-      }
-    }
-    var hepsi = duraklar.length > 0 && duraklar.every(function (d) { return d.ulasildi; }) && !sag;
-    var sol = indirim > 0 ? '✓ ' + paraBicimle(indirim) + ' kampanya indirimi' : '';
-    if (hepsi) sol = (sol ? sol + ' · ' : '') + 'Tüm kampanyalar yakalandı 🎉';
-    // Çubuk: duraklar eşit aralıklı; son ulaşılan durağa kadar dolu, sonrakine yaklaştıkça biraz daha
-    var n = duraklar.length;
-    var son = -1;
-    duraklar.forEach(function (d, i) { if (d.ulasildi) son = i; });
-    var dolu = n ? (son + 1) / n : 0;
-    var hedef = duraklar[son + 1];
-    if (hedef && n) {
-      var kismi = 0;
-      if (hedef.tur === 'adet' && sonraki && sonraki.tur === 'adet') kismi = 1 / (sonraki.patch + 1);
-      if (hedef.tur === 'tutar') kismi = Math.max(0, Math.min(1, (k.altToplam || 0) / hedef.tutar));
-      dolu += kismi / n;
-    }
-    return {
-      indirim: indirim,
-      sol: sol,
-      sag: sag,
-      hepsi: hepsi,
-      duraklar: duraklar.map(function (d, i) { return { ad: d.ad, ulasildi: d.ulasildi, konum: (i + 1) / n }; }),
-      dolu: Math.min(1, dolu)
-    };
-  }
-
   // Kampanya kazanma bildirimi metni
   function kazancMetni(ad, tutar, esikler) {
-    var hediye = /hediye/i.test(ad);
-    if (hediye) {
+    if (/hediye/i.test(ad)) {
       var m = ad.match(/(\d+)\s*patch\s*hediye/i);
       return '🎁 ' + (m ? m[1] + ' patch hediye eklendi' : ad);
     }
     var esik = (esikler || []).some(function (e) { return kampanyaAdi(e.baslik) === ad; });
     if (esik) return '✨ ' + kampanyaKisaAd(ad) + ' indirim açıldı · Tüm siparişinde −' + paraBicimle(tutar);
-    return '🎉 ' + ad + ' · −' + paraBicimle(tutar);
+    return '🎉 ' + kampanyaGosterimAdi(ad) + ' · −' + paraBicimle(tutar);
   }
 
   // Oturumda bildirimi gösterilmiş (ya da müşterinin sepetinde zaten olan) kampanyalar
@@ -6578,6 +7558,13 @@ html.kp-kilit body {
     this.editor = new Editor(this);
 
     var self = this;
+    // Kampanya kuralları sayfa açılırken arka planda öğrenilir (saklanır); editörde fiyat anında hesaplanır
+    kurallariOgren(this.model).then(function () {
+      if (!bosMu(self.tasarim)) {
+        self.kartKampanyaAnahtari = null;
+        self.guncelle();
+      }
+    }, function () {});
     this.querySelectorAll('[data-kisisel-ac]').forEach(function (b) {
       b.addEventListener('click', function () {
         self.notGoster('');
@@ -6767,6 +7754,7 @@ html.kp-kilit body {
       .then(function (r) { return r.json(); })
       .then(function (sepet) {
         if (sira !== self._sepetSira) return;
+        sepetOnbellek = { zaman: Date.now(), satirlar: sepetSatirlari(sepet) };
         var gruplar = {};
         var liste = [];
         (sepet.items || []).forEach(function (k) {
@@ -7136,17 +8124,26 @@ html.kp-kilit body {
     var anahtar = JSON.stringify([satirlar, kampanyaSurumu]);
     if (anahtar === this.kartKampanyaAnahtari) return;
     this.kartKampanyaAnahtari = anahtar;
+    var anlik = kampanyaAnlik(this.model, satirlar, null, []);
+    if (anlik) {
+      this.kartKampanya = { anahtar: anahtar, sonuc: anlik };
+      var f0 = fiyatHesapla(this.model, this.yer, this.tasarim);
+      this.kartToplamCiz(f0);
+      this.butonlariGuncelle(f0);
+      if (!anlik.yerel) return;
+    }
     clearTimeout(this.kartKampanyaZamanlayici);
     this.kartKampanyaZamanlayici = setTimeout(function () {
       var bitti = function (sonuc) {
         if (anahtar !== self.kartKampanyaAnahtari) return;
+        if (sonuc.hata && self.kartKampanya && self.kartKampanya.anahtar === anahtar && !self.kartKampanya.sonuc.hata) return;
         self.kartKampanya = { anahtar: anahtar, sonuc: sonuc };
         if (bosMu(self.tasarim)) return;
         var f = fiyatHesapla(self.model, self.yer, self.tasarim);
         self.kartToplamCiz(f);
         self.butonlariGuncelle(f);
       };
-      kampanyaHesapla(satirlar, null).then(bitti, function () { bitti({ hata: true }); });
+      kampanyaHesapla(satirlar, null, [], self.model).then(bitti, function () { bitti({ hata: true }); });
     }, 300);
   };
 
@@ -7282,9 +8279,10 @@ html.kp-kilit body {
     var setIdleri = saglam.map(function (k) { return k.id; });
     d.parcalar.forEach(function (p) {
       if (!p.varyant || p.tip === 'aksesuar' || (p.setGrup && setIdleri.indexOf(p.setGrup) !== -1)) return;
-      var anahtar = String(p.varyant.id);
+      // Kenardaki (çantaya takılmamış) patch'ler ayrı satırda, "Durum: Takılmamış"
+      var anahtar = String(p.varyant.id) + (p.kenar ? ':kenar' : '');
       if (!gruplar[anahtar]) {
-        gruplar[anahtar] = { varyant: p.varyant, tip: p.tip, adet: 0, siralar: [] };
+        gruplar[anahtar] = { varyant: p.varyant, tip: p.tip, adet: 0, siralar: [], kenar: !!p.kenar };
         sira.push(anahtar);
       }
       gruplar[anahtar].adet++;
@@ -7303,13 +8301,17 @@ html.kp-kilit body {
       var g = gruplar[a];
       var ek = {};
       if (g.siralar.length) ek['Harf sırası'] = g.siralar.join(', ');
+      if (g.kenar) ek['Durum'] = 'Takılmamış';
       ek._tasarim_rol = 'patch';
       ek._adet_birim = String(g.adet);
       kalemler.push({ id: g.varyant.id, quantity: g.adet * adet, properties: ozellikler(ek) });
     });
     saglam.forEach(function (k) {
       var tanim = m.hazirSetHarita[k.urunId];
-      kalemler.push({ id: tanim.varyant, quantity: adet, properties: ozellikler({ _tasarim_rol: 'patch', _adet_birim: '1', _patch_sayisi: String(tanim.patchler.length) }) });
+      var setOzellik = { _tasarim_rol: 'patch', _adet_birim: '1', _patch_sayisi: String(tanim.patchler.length) };
+      var kenarda = d.parcalar.filter(function (p) { return p.setGrup === k.id && p.kenar; }).length;
+      if (kenarda) setOzellik['Durum'] = kenarda === tanim.patchler.length ? 'Takılmamış' : kenarda + ' patch takılmamış';
+      kalemler.push({ id: tanim.varyant, quantity: adet, properties: ozellikler(setOzellik) });
     });
     return kalemler;
   }
@@ -7334,6 +8336,7 @@ html.kp-kilit body {
       var aks = m.aksesuarHarita[a.urunId];
       if (!aks) return;
       var ozellik = { 'Tasarım': ozet, _tasarim_id: kimlik, _tasarim_rol: 'aksesuar', _aksesuar_id: a.uid, _adet_birim: '1' };
+      if (a.kenar) ozellik['Durum'] = 'Takılmamış';
       var am = a.tasarim && !bosMu(a.tasarim) && m.aksesuarModeli(aks.id);
       if (am) {
         var icT = a.tasarim;
@@ -7482,7 +8485,8 @@ html.kp-kilit body {
     grupDondur: grupDondur,
     tasarimKonumu: tasarimKonumu,
     aciYakala: aciYakala,
-    kampanya: { seritDurumu: seritDurumu, yonelme: yonelme, kazancMetni: kazancMetni, kampanyaKisaAd: kampanyaKisaAd },
+    kampanya: { seritDurumu: seritDurumu, yonelme: yonelme, kazancMetni: kazancMetni, kampanyaKisaAd: kampanyaKisaAd, kampanyaGosterimAdi: kampanyaGosterimAdi, yerelIndirimler: yerelIndirimler },
+    kenar: { kenaraAl: kenaraAl, kenardanAl: kenardanAl },
     geometri: { icinde: icinde, cakisir: cakisir, noktaIcinde: noktaIcinde, donukDikdortgen: donukDikdortgen, kutu: kutu, merkez: merkez, yuvarlakKoseli: yuvarlakKoseli }
   };
 })();
@@ -7827,13 +8831,14 @@ html.kp-kilit body {
   }
 
   // Konumdan bir varyantın (adet kadar) kaydını çıkarır
-  function konumdanCikar(konumMetni, varyantId, adet) {
+  // kenar: silinen satır "Takılmamış" (kenardaki) patch'lerse yalnızca kenardakiler (e:1) çıkar, değilse takılı olanlar
+  function konumdanCikar(konumMetni, varyantId, adet, kenar) {
     try {
       var konum = JSON.parse(konumMetni || '{}');
       if (!konum.p) return konumMetni;
       var silinecek = adet;
       konum.p = konum.p.filter(function (x) {
-        if (String(x.v) === String(varyantId) && silinecek > 0) {
+        if (String(x.v) === String(varyantId) && !!x.e === !!kenar && silinecek > 0) {
           silinecek--;
           return false;
         }
@@ -7887,7 +8892,7 @@ html.kp-kilit body {
       var icOzet = ozetUret(kalan, id).ozet;
       if (icOzet) aksOz['Aksesuar tasarımı'] = icOzet;
       else delete aksOz['Aksesuar tasarımı'];
-      aksOz._aksesuar_konum = konumdanCikar(aksOz._aksesuar_konum, patch.variant_id, parseInt(patch.properties._adet_birim, 10) || 1);
+      aksOz._aksesuar_konum = konumdanCikar(aksOz._aksesuar_konum, patch.variant_id, parseInt(patch.properties._adet_birim, 10) || 1, patch.properties.Durum === 'Takılmamış');
       if (!icOzet) delete aksOz._aksesuar_konum;
       aks.properties = aksOz;
       var bazOz = grup.baz ? ozellikKopya(grup.baz) : null;
@@ -7938,8 +8943,9 @@ html.kp-kilit body {
             ozellik._tasarim_konum = JSON.stringify(konum);
           } else if (konum.p) {
             var silinecek = parseInt(patch.properties._adet_birim, 10) || 1;
+            var kenarSatiri = patch.properties.Durum === 'Takılmamış';
             konum.p = konum.p.filter(function (x) {
-              if (String(x.v) === String(patch.variant_id) && silinecek > 0) {
+              if (String(x.v) === String(patch.variant_id) && !!x.e === kenarSatiri && silinecek > 0) {
                 silinecek--;
                 return false;
               }

@@ -85,7 +85,7 @@ test('kalpler yüksekliği olmadığı için katalogdan düşer; kategori öncel
   assert.equal(m.ikonHarita[4].kategori, 'Diğer');
 });
 
-test('ECE + 7 + kalp: fiyat 4.650 TL (5 patch) ve parçalar çakışmaz', () => {
+test('ECE + 7 + kalp: fiyat 4.650 TL (5 patch); çakışan parçalar taşınmaz, işaretlenir', () => {
   const { m, y } = kur();
   const c = m.alanlar[0].sekil;
   const t = tasarim(m, 'ECE', [
@@ -93,9 +93,12 @@ test('ECE + 7 + kalp: fiyat 4.650 TL (5 patch) ve parçalar çakışmaz', () => 
     { uid: 'i1', tip: 'icon', urunId: 5, varyantId: 3005, cx: c.cx, cy: c.cy }
   ]);
   const d = ic.duzenle(m, y, t);
-  assert.deepEqual(duz(d.hatalar), {}, 'çakışan parçalar geçerli yere taşınmalı');
-  const p = d.parcalar;
-  for (let i = 0; i < p.length; i++) for (let j = i + 1; j < p.length; j++) assert.equal(ic.geometri.cakisir(p[i].sekil, p[j].sekil, 0), false);
+  // Hepsi alanın ortasında üst üste: bırakıldıkları yerde kalır, kırmızı işaretlenir
+  assert.equal(d.hatalar.r1, true);
+  assert.equal(d.hatalar.i1, true);
+  assert.equal(d.sorunlar.i1.tur, 'cakisma');
+  assert.equal(t.parcalar[0].cx, c.cx, 'taşınmadı');
+  assert.equal(d.isimGecerli, false);
   const f = ic.fiyatHesapla(m, y, t);
   assert.equal(f.toplam, 300000 + 5 * 33000);
   assert.equal(ic.paraBicimle(f.toplam, m.para), '4.650 TL');
@@ -166,12 +169,11 @@ test('harfleri ayır: her harf ayrı grup, birleştir: düzenli blok', () => {
   let d = ic.duzenle(m, y, t);
   const harfler = d.parcalar.filter((p) => p.tip === 'letter');
   assert.deepEqual(duz(harfler.map((p) => p.grup)), ['harf-0', 'harf-1', 'harf-2']);
-  // Bir harfi diğerinin üstüne koy: düzenle en yakın boş yere taşımalı
+  // Bir harfi diğerinin üstüne koy: taşınmaz, iki harf de işaretlenir
   t.harfKonumlari[2] = t.harfKonumlari[0].slice();
   d = ic.duzenle(m, y, t);
-  const h = d.parcalar.filter((p) => p.tip === 'letter');
-  assert.deepEqual(duz(d.hatalar), {});
-  assert.equal(ic.geometri.cakisir(h[0].sekil, h[2].sekil, 0), false);
+  assert.deepEqual(duz(Object.keys(d.hatalar).sort()), ['harf-0', 'harf-2']);
+  assert.deepEqual(duz(t.harfKonumlari[2]), duz(t.harfKonumlari[0]));
   // Birleştir: tek blok, hepsi aynı satırda eşit aralıklı
   ic.harfleriBirlestir(t);
   d = ic.duzenle(m, y, t);
@@ -181,14 +183,14 @@ test('harfleri ayır: her harf ayrı grup, birleştir: düzenli blok', () => {
   assert.ok(Math.abs((b[1].sekil.x - b[0].sekil.x) - (b[2].sekil.x - b[1].sekil.x)) < 1e-9);
 });
 
-test('ayrı modda isme harf eklenince yeni harf geçerli bir yere yerleşir', () => {
+test('ayrı modda isme harf eklenince yeni harf blok dizilimdeki yerinden başlar', () => {
   const { m, y } = kur();
   const t = tasarim(m, 'EC');
   ic.harfleriAyir(y, t);
   t.isim = 'ECE';
-  const d = ic.duzenle(m, y, t);
+  ic.duzenle(m, y, t);
   assert.equal(t.harfKonumlari.length, 3);
-  assert.deepEqual(duz(d.hatalar), {});
+  assert.ok(t.harfKonumlari.every((k) => Array.isArray(k) && k.length === 2));
 });
 
 test('PNG ölçüleri: harf başına genişlik, rakam/ikon varyant ölçüsü öncelikli', () => {
@@ -269,15 +271,14 @@ test('ikon açısı tasarımda saklanır; döndürülmüş şekil çakışmada k
   // 6 cm genişliğinde iki not 6,2 cm arayla: düzken çakışmaz
   let d = ic.duzenle(m, y, t);
   assert.deepEqual(duz(Object.keys(d.hatalar)), []);
-  // i1 30° döndürülünce köşesi i2'ye değer; duzenle i2'yi kaydırır ama açıyı korur
+  // i1 30° döndürülünce köşesi i2'ye değer: hiçbir şey kaymaz, ikisi de işaretlenir, açı korunur
   t.parcalar[0].aci = 30;
   d = ic.duzenle(m, y, t);
   const p1 = d.parcalar.find((p) => p.uid === 'i1');
-  const p2 = d.parcalar.find((p) => p.uid === 'i2');
   assert.equal(p1.aci, 30);
   assert.equal(p1.sekil.t, 'obb');
-  assert.equal(g.cakisir(p1.sekil, p2.sekil, 0), false);
-  assert.notEqual(t.parcalar[1].cx, c.cx + 3.1, 'i2 kaydırıldı');
+  assert.deepEqual(duz(Object.keys(d.hatalar).sort()), ['i1', 'i2']);
+  assert.equal(t.parcalar[1].cx, c.cx + 3.1, 'i2 yerinde');
 });
 
 test('blok isim bütün olarak döner; kapasite açıyı hesaba katar', () => {
@@ -734,34 +735,45 @@ test('kalem kutusu gerçek haritaları (Kırmızı, Turuncu): Velcro yüzeyi, yu
   }
 });
 
-test('kampanya şeridi: duraklar, sıradaki hedef, tümü; yönelme eki; bildirim metni', () => {
+test('kampanya şeridi: sade iki satır, daha ucuz hedef, tümü; anlaşılır adlar; yerel hesap', () => {
   const k = ic.kampanya;
   assert.equal(k.yonelme('Ekstra %10'), "'a");
   assert.equal(k.yonelme('Ekstra %20'), "'ye");
-  assert.equal(k.yonelme('Ekstra %15'), "'e");
-  assert.equal(k.yonelme('Ekstra %6'), "'ya");
-  assert.equal(k.kampanyaKisaAd('Ekstra %10 İndirim'), 'Ekstra %10');
+  assert.equal(k.kampanyaGosterimAdi('2li patche indirim '), "2'li patch indirimi");
+  assert.equal(k.kampanyaGosterimAdi(" 3'lü  patche indirim "), "3'lü patch indirimi");
+  assert.equal(k.kampanyaGosterimAdi("  4'lü  patche indirim "), "4'lü patch indirimi");
+  assert.equal(k.kampanyaGosterimAdi('Ekstra %10 İndirim'), 'Ekstra %10 indirim');
+  assert.equal(k.kampanyaGosterimAdi('Çanta Alana 1 Patch Hediye'), 'Çanta Alana 1 Patch Hediye');
   const merdiven = [{ k: 2, ad: '2li patche indirim ', tutar: 6000 }, { k: 3, ad: " 3'lü  patche indirim ", tutar: 19000 }, { k: 4, ad: "  4'lü  patche indirim ", tutar: 37000 }];
   const esikler = [{ baslik: 'Ekstra %10 İndirim', tutar: 500000 }];
-  // 3'lü aktif; bir patch daha 4'lü
-  let d = k.seritDurumu({ aktif: { "3'lü patche indirim": 19000 }, sepetIndirim: 19000, altToplam: 399000,
-    ekler: { '+1': { aktif: { "4'lü patche indirim": 37000 }, sepetIndirim: 37000 } } }, merdiven, esikler);
-  assert.equal(d.sol, '✓ 190 TL kampanya indirimi');
-  assert.equal(d.sag, '1 patch daha: indirim 190 TL → 370 TL');
+  const sade = (d) => { for (const x of [d.sol, d.sag]) { assert.ok(!/kaldı|→/.test(x), x); assert.ok(!/patche/.test(x), x); } };
+  // Hiç indirim yok, 1 patch var
+  let d = k.seritDurumu({ aktif: {}, sepetIndirim: 0, altToplam: 333000, uygunAdet: 1, ekler: { '+1': { aktif: { '2li patche indirim': 6000 }, sepetIndirim: 6000 } } }, merdiven, esikler, 33000);
+  assert.equal(d.sol, "Patch indirimleri 2 patch'ten başlıyor");
+  assert.equal(d.sag, '1 patch daha ekle, 60 TL indirim kazan');
+  sade(d);
+  // 3'lü aktif; bir patch daha 4'lü (330 TL) < Ekstra'ya 1.010 TL
+  d = k.seritDurumu({ aktif: { "3'lü patche indirim": 19000 }, sepetIndirim: 19000, altToplam: 399000, uygunAdet: 3,
+    ekler: { '+1': { aktif: { "4'lü patche indirim": 37000 }, sepetIndirim: 37000 } } }, merdiven, esikler, 33000);
+  assert.equal(d.sol, '190 TL indirim kazandın');
+  assert.equal(d.sag, '1 patch daha ekle, indirimin 370 TL olsun');
   assert.deepEqual(duz(d.duraklar.map((x) => x.ulasildi)), [true, true, false, false]);
-  assert.ok(Math.abs(d.dolu - (2 / 4 + 0.5 / 4)) < 1e-9);
-  // Ekstra %10 aktifken bir patch daha indirimi büyütür ama yeni kampanya değildir: hedef sayılmaz
-  d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 60000 }, sepetIndirim: 97000, altToplam: 600000,
-    ekler: { '+1': { aktif: { "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 63300 }, sepetIndirim: 100300 } } }, merdiven, esikler);
-  assert.equal(d.sag, '');
-  assert.equal(d.hepsi, true);
-  assert.equal(d.sol, '✓ 970 TL kampanya indirimi · Tüm kampanyalar yakalandı 🎉');
+  sade(d);
+  // 4'lü aktif, ara toplam 4.280: sıradaki tek hedef Ekstra %10 → 720 TL'lik ürün
+  d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000 }, sepetIndirim: 37000, altToplam: 428000, uygunAdet: 4, ekler: {} }, merdiven, esikler, 33000);
+  assert.equal(d.sag, "720 TL'lik ürün daha ekle, tüm siparişe %10 indirim gelsin");
+  sade(d);
+  // 2'li aktif, ara toplam 4.900: 1 patch (330 TL) yerine Ekstra'ya 100 TL daha ucuz
+  d = k.seritDurumu({ aktif: { '2li patche indirim': 6000 }, sepetIndirim: 6000, altToplam: 490000, uygunAdet: 2,
+    ekler: { '+1': { aktif: { "3'lü patche indirim": 19000 }, sepetIndirim: 19000 } } }, merdiven, esikler, 33000);
+  assert.equal(d.sag, "100 TL'lik ürün daha ekle, tüm siparişe %10 indirim gelsin");
+  // Hepsi
+  d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 63100 }, sepetIndirim: 100100, altToplam: 668000, uygunAdet: 5, ekler: {} }, merdiven, esikler, 33000);
+  assert.equal(d.sol, '1.001 TL indirim kazandın 🎉');
+  assert.equal(d.sag, 'Bütün kampanyalar sepetinde');
   assert.equal(d.dolu, 1);
-  // Hiç kampanya yok: iki patch daha
-  d = k.seritDurumu({ aktif: {}, sepetIndirim: 0, altToplam: 300000, ekler: { '+1': { aktif: {}, sepetIndirim: 0 }, '+2': { aktif: { '2li patche indirim': 6000 }, sepetIndirim: 6000 } } }, merdiven, esikler);
-  assert.equal(d.sol, '');
-  assert.equal(d.sag, '2 patch daha: 60 TL indirim');
   assert.equal(k.kazancMetni('Ekstra %10 İndirim', 66400, esikler), '✨ Ekstra %10 indirim açıldı · Tüm siparişinde −664 TL');
-  assert.equal(k.kazancMetni("4'lü patche indirim", 37000, esikler), "🎉 4'lü patche indirim · −370 TL");
+  assert.equal(k.kazancMetni("4'lü patche indirim", 37000, esikler), "🎉 4'lü patch indirimi · −370 TL");
   assert.equal(k.kazancMetni('Çanta Alana 1 Patch Hediye', 33000, esikler), '🎁 1 patch hediye eklendi');
 });
+

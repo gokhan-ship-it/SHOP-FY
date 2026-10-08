@@ -73,8 +73,13 @@ for (let i = 1; i <= 5; i++) await cdp.send('Input.dispatchTouchEvent', { type: 
 await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 await s.waitForTimeout(200);
 assert.equal(await gorunur('[data-kp-set-cerceve]'), false, 'taşıyınca çerçeve kalkar');
-assert.deepEqual(await s.$$eval('.kp-cip__ad', (b) => b.map((x) => x.textContent)), ['School Vibes seti · 3'], 'set bozulmadı');
+const ciplerSonra = await s.$$eval('.kp-cip__ad', (b) => b.map((x) => x.textContent));
+assert.equal(ciplerSonra.length, 1);
+assert.match(ciplerSonra[0], /School Vibes seti · 3$/, 'set bozulmadı');
 assert.equal(await toplam(), '3.800 TL');
+// Başka bir patch'e değdiyse yerinde kalır ve işaretlenir; Alana yerleştir düzeltir
+if (await gorunur('[data-kp-yer-uyari]')) await s.locator('[data-kp-alana-yerlestir]').click();
+assert.equal(await s.locator('.kp-parca--hatali').count(), 0);
 
 // 4) Seçili patch'i sil: onay kutusu; Vazgeç → set aynen; Patch'i sil → set bozulur, kalanlar tek tek fiyatlanır
 await s.locator('.kp-onizleme .kp-parca--icon').first().click();
@@ -103,6 +108,13 @@ await s.locator('[data-kp-hazir-set="8001"]').click();
 await s.locator('[data-kp-adim="yazi"]').click();
 await s.locator('#kp-isim').fill('ece');
 await s.locator('[data-kp-adim="ozet"]').click();
+// Yazı setin üstüne geldiyse: Özet'te liste ve "Hepsini düzelt"; düzeltmeden sepete eklenmez
+if (await gorunur('[data-kp-ozet-yer]')) {
+  await s.locator('[data-kp-ileri]').click();
+  assert.equal(await s.evaluate(() => location.pathname), '/products/kanvas-lacivert-tote-canta', 'sepete eklenmedi');
+  await s.locator('[data-kp-ozet-yer] [data-kp-hepsini-duzelt]').click();
+  assert.equal(await gorunur('[data-kp-ozet-yer]'), false);
+}
 await s.locator('[data-kp-ileri]').click();
 await s.waitForURL('**/cart');
 const [baz, ...digerleri] = eklenen.items;

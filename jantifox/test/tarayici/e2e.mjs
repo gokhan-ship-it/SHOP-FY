@@ -112,9 +112,10 @@ const ust = (a, b) => a.x < b.x + b.w - 1 && b.x < a.x + a.w - 1 && a.y < b.y + 
 
 // Blok modda bir harfi sürüklemek tüm ismi taşır
 let once = await kutular();
-await surukle('[data-uid="isim-1"]', 0, -40);
+await surukle('[data-uid="isim-1"]', 0, -20);
 let sonra = await kutular();
-assert.ok(sonra.every((k, i) => Math.abs(k.y - (once[i].y - 40)) < 4), 'blok birlikte taşınmalı');
+assert.ok(sonra.every((k, i) => Math.abs(k.y - (once[i].y - 20)) < 4), 'blok birlikte taşınmalı');
+assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0);
 
 await sayfa.locator('[data-kp-harf-mod]').tap();
 assert.equal(await sayfa.locator('[data-kp-harf-mod]').textContent(), 'Harfleri birleştir');
@@ -124,30 +125,48 @@ await surukle('[data-uid="harf-2"]', 0, 70);
 sonra = await kutular();
 assert.ok(Math.abs(sonra[0].y - once[0].y) < 1 && Math.abs(sonra[1].y - once[1].y) < 1, 'diğer harfler yerinde kalmalı');
 assert.ok(sonra[2].y > once[2].y + 50, 'harf aşağı taşınmalı');
-// Harfi başka bir harfin üstüne bırak → binmemeli
+// Harfi başka bir harfin üstüne bırak → bırakıldığı yerde kalır, kırmızı; altta uyarı ve "Alana yerleştir"
 let hk = await kutular();
 await surukle('[data-uid="harf-2"]', hk[0].x - hk[2].x, hk[0].y - hk[2].y);
 hk = await kutular();
-assert.ok(!ust(hk[2], hk[0]) && !ust(hk[2], hk[1]), 'harf diğerinin üstüne binmemeli');
-// Daire dışına bırak → tamamen içeride kalmalı
+assert.ok(ust(hk[2], hk[0]), 'geri fırlamadı');
+assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 1, 'yalnızca bırakılan harf işaretlenir');
+const yerUyari = () => sayfa.locator('[data-kp-yer-uyari]').innerText().then((x) => x.replace(/\s+/g, ' ').trim());
+assert.match(await yerUyari(), /^!\s?E harfi başka bir patch'in üstüne geliyor\. İstediğin gibi düzenlemeye devam edebilirsin, sepete eklemeden önce düzeltmen yeterli\. Alana yerleştir$/);
+await sayfa.locator('[data-kp-alana-yerlestir]').tap();
+hk = await kutular();
+assert.ok(!ust(hk[2], hk[0]) && !ust(hk[2], hk[1]), 'Alana yerleştir en yakın boş yere taşır');
+assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0);
+assert.equal(await sayfa.locator('[data-kp-yer-uyari]').isVisible(), false);
+// Daire dışına bırak → dışarıda kalır (kırmızı), Alana yerleştir ile içeri
+if (await sayfa.locator('[data-kp-secim-kaldir]').isVisible()) await sayfa.locator('[data-kp-secim-kaldir]').tap();
 await surukle('[data-uid="harf-0"]', -400, 0);
+assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 1);
+assert.match(await yerUyari(), /E harfi Velcro alanın dışına taşıyor\./);
+await sayfa.locator('[data-kp-alana-yerlestir]').tap();
 hk = await kutular();
 
 let d = await daire();
-assert.ok(hk.every((x) => icinde(x, d)), 'her harf dairenin içinde kalmalı (yakın görünüm)');
+assert.ok(hk.every((x) => icinde(x, d)), 'her harf dairenin içinde (yakın görünüm)');
 assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0);
 await sayfa.screenshot({ path: cikti + '04b-harfler-ayri.png' });
 
 // Tüm çanta görünümünde de aynı kurallar
 await sayfa.locator('[data-kp-gorunum]').tap();
 await sayfa.waitForTimeout(400);
+if (await sayfa.locator('[data-kp-secim-kaldir]').isVisible()) await sayfa.locator('[data-kp-secim-kaldir]').tap();
 await surukle('[data-uid="harf-1"]', 0, -300);
+assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 1, 'tüm çanta görünümünde de dışarıda kalır');
+await sayfa.locator('[data-kp-alana-yerlestir]').tap();
 hk = await kutular();
 d = await daire();
-assert.ok(hk.every((x) => icinde(x, d)), 'her harf dairenin içinde kalmalı (tüm çanta)');
-await surukle('[data-uid="harf-1"]', hk[0].x - hk[1].x, hk[0].y - hk[1].y);
+assert.ok(hk.every((x) => icinde(x, d)), 'her harf dairenin içinde (tüm çanta)');
+// Geri al: Alana yerleştir'den önceki hale (dışarıda), Yinele: tekrar içeride
+await sayfa.locator('[data-kp-geri-al]').tap();
+assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 1, 'geri al');
+await sayfa.locator('[data-kp-yinele]').tap();
+assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0, 'yinele');
 hk = await kutular();
-assert.ok(!ust(hk[1], hk[0]) && !ust(hk[1], hk[2]), 'tüm çanta görünümünde de üst üste binme yok');
 await sayfa.screenshot({ path: cikti + '04c-tum-canta-ayri.png' });
 await sayfa.locator('[data-kp-gorunum]').tap();
 await sayfa.waitForTimeout(400);
@@ -160,6 +179,7 @@ assert.ok(hk[0].x < hk[1].x && hk[1].x < hk[2].x, 'harf sırası korunmalı');
 await sayfa.screenshot({ path: cikti + '04d-birlesti.png' });
 // Rakam yazıya eklenir: ECE7 (rakam rakam setinden gelir)
 await sayfa.locator('#kp-isim').fill('ece7');
+await sayfa.screenshot({ path: '/tmp/claude-0/-home-user-SHOP-FY/008f51ac-81e5-55fc-a930-e42df008c01d/scratchpad/dbg-ece7.png' });
 assert.deepEqual(await sayfa.$$eval('.kp-karakter__stil', (x) => x.map((e) => e.textContent)), ['Cool', 'Cool', 'Cool', 'Rakam']);
 await sayfa.locator('[data-kp-ileri]').click();
 
@@ -169,21 +189,26 @@ await sayfa.locator('[data-kp-kategori="Spor"]').click();
 await sayfa.locator('[data-kp-ikon="2"]').click();
 await sayfa.locator('.kp-cip__ad', { hasText: 'Futbol Topu' }).waitFor();
 
-// Dokunarak sürükle: ikonu daire dışına sürükle → geçerli konuma geri dönmeli
+// Dokunarak sürükle: ikonu daire dışına sürükle → bırakıldığı yerde kalır, kırmızı "!"; Alana yerleştir ile içeri
 const ikon = sayfa.locator('.kp-parca--icon').first();
 const k = await ikon.boundingBox();
 const sahne = await sayfa.locator('.kp-onizleme .kp-sahne').boundingBox();
 const cdp = await baglam.newCDPSession(sayfa);
 const dokun = async (tip, x, y) => cdp.send('Input.dispatchTouchEvent', { type: tip, touchPoints: tip === 'touchEnd' ? [] : [{ x, y }] });
-// Uyarı metni oturumda her tür için bir kez çıkar; önceki harf sürüklemeleri kullandı, bu sürükleme için sıfırla
-await sayfa.evaluate(() => { sessionStorage.removeItem('kp-uyari-tasma'); sessionStorage.removeItem('kp-uyari-cakisma'); });
 await dokun('touchStart', k.x + k.width / 2, k.y + k.height / 2);
 for (let i = 1; i <= 10; i++) await dokun('touchMove', k.x + k.width / 2, k.y + k.height / 2 - (i * (k.y - sahne.y + 30)) / 10);
-// Sürüklerken: kırmızı, alan sınırı kalın kırmızı, uyarı kutusunda metin
+// Sürüklerken: kırmızı, alan sınırı kalın kırmızı
 assert.equal(await sayfa.locator('.kp-sahne--tasma').count(), 1, 'alan sınırı kırmızı');
-assert.equal(await sayfa.locator('[data-kp-bildirim]').textContent(), 'Futbol Topu alanın dışına taşıyor. Bırakırsan son yerine döner.');
 await dokun('touchEnd');
 await sayfa.waitForTimeout(100);
+const kDisari = await ikon.boundingBox();
+assert.ok(kDisari.y < k.y - 30, 'geri fırlamadı');
+assert.equal(await sayfa.locator('.kp-parca--icon.kp-parca--hatali').count(), 1);
+assert.equal(await sayfa.evaluate(() => getComputedStyle(document.querySelector('.kp-parca--hatali'), '::after').content), '"!"');
+assert.match(await yerUyari(), /^!\s?Futbol Topu Velcro alanın dışına taşıyor\. İstediğin gibi düzenlemeye devam edebilirsin, sepete eklemeden önce düzeltmen yeterli\. Alana yerleştir$/);
+// Eklenenler satırında kırmızı ve ⚠
+assert.equal(await sayfa.locator('.kp-cip--hatali .kp-cip__ad', { hasText: 'Futbol Topu' }).innerText(), '⚠Futbol Topu');
+await sayfa.locator('[data-kp-alana-yerlestir]').tap();
 const k2 = await ikon.boundingBox();
 const sinirlar = await sayfa.evaluate(() => {
   const el = document.querySelector('.kp-onizleme .kp-sahne ellipse').getBoundingClientRect();
@@ -193,8 +218,6 @@ const cx = sinirlar.x + sinirlar.w / 2, cy = sinirlar.y + sinirlar.h / 2, r = si
 const kose = [[k2.x, k2.y], [k2.x + k2.width, k2.y], [k2.x, k2.y + k2.height], [k2.x + k2.width, k2.y + k2.height]];
 const merkezUzaklik = Math.hypot(k2.x + k2.width / 2 - cx, k2.y + k2.height / 2 - cy) + k2.width / 2;
 assert.ok(merkezUzaklik <= r + 1, 'yuvarlak ikon dairenin içinde kalmalı');
-// Yol ismin üstünden geçtiği için son geçerli konum başlangıç noktası: ikon yerine döner
-assert.ok(Math.abs(k2.y - k.y) < 1 && Math.abs(k2.x - k.x) < 1, 'ikon son geçerli yerine dönmeli');
 assert.equal(await sayfa.locator('.kp-sahne--tasma').count(), 0, 'bırakınca sınır kaybolur');
 assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0);
 await sayfa.screenshot({ path: cikti + '06-ikon-surukleme.png' });
@@ -209,7 +232,7 @@ await sayfa.locator('[data-kp-ileri]').click();
 await sayfa.locator('[data-kp-panel="ozet"]').waitFor({ state: 'visible' });
 await sayfa.locator('.kp-ozet__kampanya').waitFor();
 const ozet = await sayfa.locator('.kp-ozet').innerText();
-assert.match(ozet, /✓ 4'lü patche indirim\s+−370 TL/);
+assert.match(ozet, /✓ 4'lü patch indirimi\s+−370 TL/);
 assert.match(ozet, /Toplam\s+4\.650 TL\s+4\.280 TL/);
 assert.equal(await sayfa.locator('.kp-ozet__eski').textContent(), '4.650 TL');
 assert.equal(await sayfa.locator('.kp-indirim-notu--ozet').count(), 0, 'simülasyon başarılıysa not yok');

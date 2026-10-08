@@ -14,14 +14,22 @@ function sepet(satirlar) {
   const lines = satirlar.map((l) => ({ v: Number(String(l.merchandiseId).split('/').pop()), q: l.quantity }));
   const ara = lines.reduce((t, l) => t + fiyat(l.v) * l.q, 0);
   const n = lines.filter((l) => uygun(l.v)).reduce((t, l) => t + l.q, 0);
-  const d = [];
-  if (n >= 4) d.push(['  4\'lü  patche indirim ', 37000]);
-  else if (n === 3) d.push([' 3\'lü  patche indirim ', 19000]);
-  else if (n === 2) d.push(['2li patche indirim ', 6000]);
-  if (ara >= 500000) d.push(['Ekstra %10 İndirim', Math.round(ara * 0.1)]);
-  const tl = (k) => (k / 100).toFixed(1);
-  return { cost: { subtotalAmount: { amount: tl(ara) }, totalAmount: { amount: tl(ara - d.reduce((t, x) => t + x[1], 0)) } },
-    discountAllocations: d.map(([title, k]) => ({ title, discountedAmount: { amount: tl(k) } })), lines: { nodes: [] } };
+  let adet = null;
+  if (n >= 4) adet = ['  4\'lü  patche indirim ', 37000];
+  else if (n === 3) adet = [' 3\'lü  patche indirim ', 19000];
+  else if (n === 2) adet = ['2li patche indirim ', 6000];
+  const tl = (k) => (k / 100).toFixed(2);
+  // Adet indirimi (ürün indirimi) Shopify'daki gibi dahil satırlara dağıtılır; Ekstra %10 sepet düzeyinde
+  const uygunTutar = lines.filter((l) => uygun(l.v)).reduce((t, l) => t + fiyat(l.v) * l.q, 0);
+  const nodes = lines.map((l) => ({
+    quantity: l.q,
+    merchandise: { id: 'gid://shopify/ProductVariant/' + l.v },
+    discountAllocations: adet && uygun(l.v) ? [{ title: adet[0], discountedAmount: { amount: tl(Math.round((adet[1] * fiyat(l.v) * l.q) / uygunTutar)) } }] : []
+  }));
+  const adetToplam = adet ? nodes.reduce((t, x) => t + (x.discountAllocations[0] ? Math.round(parseFloat(x.discountAllocations[0].discountedAmount.amount) * 100) : 0), 0) : 0;
+  const sepetDuzeyi = ara >= 500000 ? [{ title: 'Ekstra %10 İndirim', discountedAmount: { amount: tl(Math.round((ara - adetToplam) * 0.1)) } }] : [];
+  const indirim = adetToplam + (sepetDuzeyi[0] ? Math.round(parseFloat(sepetDuzeyi[0].discountedAmount.amount) * 100) : 0);
+  return { cost: { subtotalAmount: { amount: tl(ara) }, totalAmount: { amount: tl(ara - indirim) } }, discountAllocations: sepetDuzeyi, lines: { nodes } };
 }
 
 const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
@@ -54,39 +62,46 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
 // ---------- 1) Şerit, duraklar, bildirim ----------
 {
   const { s, hatalar, baglam } = await sayfaAc();
+  // Kurallar sayfa açılırken öğrenilir (kampanya basamakları ve dahil ürünler); sonra fiyat anında hesaplanır
+  await s.waitForFunction(() => !!localStorage.getItem('kp-kampanya-kurallari'));
+  const kural = await s.evaluate(() => JSON.parse(localStorage.getItem('kp-kampanya-kurallari')));
+  assert.deepEqual(kural.merdiven.map((x) => [x.k, x.tutar]), [[2, 6000], [3, 19000], [4, 37000]]);
   await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
   await s.locator('#kp-isim').fill('ec');
-  await bekle(s, ana + ' [data-kp-serit-sol]', /60 TL/);
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '✓ 60 TL kampanya indirimi');
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1 patch daha: indirim 60 TL → 190 TL');
-  // Duraklar: 2'li, 3'lü, 4'lü (örnek patch simülasyonundan) + Ekstra %10 (ayarlardan); ilki dolu
-  await s.waitForFunction(() => document.querySelectorAll('.kp-editor:not(.kp-editor--alt) .kp-serit__nokta').length === 4);
+  // Anında: Shopify'ın cevabını beklemeden (ara durum yok)
+  assert.equal(await metin(s, ana + ' [data-kp-toplam]'), '3.660 TL 3.600 TL', 'kampanyalı fiyat anında');
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '60 TL indirim kazandın');
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1 patch daha ekle, indirimin 190 TL olsun');
+  // Duraklar: 2'li, 3'lü, 4'lü (öğrenilen) + Ekstra %10 (ayarlardan); ilki dolu; ipuçlarında anlaşılır adlar
   assert.deepEqual(await s.$$eval(ana + ' .kp-serit__nokta', (n) => n.map((x) => [x.title, x.classList.contains('kp-serit__nokta--ulasildi')])),
-    [["2li patche indirim", true], ["3'lü patche indirim", false], ["4'lü patche indirim", false], ['Ekstra %10 İndirim', false]]);
-  // Bildirim: kırmızı zemin, beyaz yazı
+    [["2'li patch indirimi", true], ["3'lü patch indirimi", false], ["4'lü patch indirimi", false], ['Ekstra %10 indirim', false]]);
+  // Bildirim: kırmızı zemin, beyaz yazı, anlaşılır ad
   await s.locator(ana + ' [data-kp-kazanc]:not([hidden])').waitFor();
-  assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), '🎉 2li patche indirim · −60 TL');
+  assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), "🎉 2'li patch indirimi · −60 TL");
   assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).backgroundColor, ana + ' [data-kp-kazanc]'), 'rgb(179, 20, 27)');
-  // Fiyat çubuğu: eski toplam üstü çizili, kampanyalı toplam; not yok
-  assert.equal(await metin(s, ana + ' [data-kp-toplam]'), '3.660 TL 3.600 TL');
   assert.equal(await metin(s, ana + ' [data-kp-toplam] s'), '3.660 TL');
   assert.equal(await s.locator(ana + ' .kp-alt__fiyat .kp-indirim-notu').isVisible(), false);
-  // Şerit fiyat çubuğunun hemen üstünde, ~40 px
+  // Şerit fiyat çubuğunun hemen üstünde: iki satır
   const [serit, alt] = await s.evaluate((q) => [q + ' [data-kp-serit]', q + ' .kp-alt'].map((x) => document.querySelector(x).getBoundingClientRect()).map((r) => ({ y: r.y, h: r.height, b: r.bottom })), ana);
   assert.ok(Math.abs(serit.b - alt.y) < 1, 'şerit fiyat çubuğuna bitişik');
-  assert.ok(serit.h >= 38 && serit.h <= 56, 'şerit yüksekliği ' + serit.h);
+  assert.ok(serit.h >= 38 && serit.h <= 66, 'şerit yüksekliği ' + serit.h);
+  // Şeritte "kaldı", "→" ve Shopify adları yok
+  const seritMetni = async () => metin(s, ana + ' [data-kp-serit]');
+  const sade = async () => { const x = await seritMetni(); assert.ok(!/kaldı|→|patche|İndirim/.test(x), x); };
+  await sade();
 
   await s.locator('#kp-isim').fill('ece');
+  assert.equal(await metin(s, ana + ' [data-kp-toplam]'), '3.990 TL 3.800 TL', 'anında');
   await bekle(s, ana + ' [data-kp-kazanc]', /3'lü/);
-  assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), "🎉 3'lü patche indirim · −190 TL");
-  await bekle(s, ana + ' [data-kp-serit-sag]', /370/);
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1 patch daha: indirim 190 TL → 370 TL');
+  assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), "🎉 3'lü patch indirimi · −190 TL");
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1 patch daha ekle, indirimin 370 TL olsun');
+  await sade();
 
   // 4 patch: adet basamakları bitti, sıradaki hedef tutar eşiği
   await s.locator('#kp-isim').fill('ece7');
-  await bekle(s, ana + ' [data-kp-serit-sag]', /kaldı/);
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), "Ekstra %10'a 680 TL kaldı");
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '✓ 370 TL kampanya indirimi');
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), "680 TL'lik ürün daha ekle, tüm siparişe %10 indirim gelsin");
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '370 TL indirim kazandın');
+  await sade();
   const dolu = await s.evaluate((q) => parseFloat(document.querySelector(q + ' [data-kp-serit-dolu]').style.width), ana);
   assert.ok(dolu > 90 && dolu < 100, 'çubuk Ekstra %10 durağına yaklaşıyor: ' + dolu);
 
@@ -94,16 +109,16 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   await s.evaluate(() => { document.querySelector('#Quantity-main').value = '2'; });
   await s.locator(ana + ' [data-kp-adim="ikon"]').click();
   await bekle(s, ana + ' [data-kp-kazanc]', /Ekstra/);
-  assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), '✨ Ekstra %10 indirim açıldı · Tüm siparişinde −864 TL');
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '✓ 1.234 TL kampanya indirimi · Tüm kampanyalar yakalandı 🎉');
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '');
+  assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), '✨ Ekstra %10 indirim açıldı · Tüm siparişinde −827 TL');
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '1.197 TL indirim kazandın 🎉');
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), 'Bütün kampanyalar sepetinde');
   assert.equal(await s.locator(ana + ' .kp-serit__nokta--ulasildi').count(), 4);
 
-  // Özet: şerit yok, kampanyalar satır satır
+  // Özet: şerit yok, kampanyalar satır satır, anlaşılır adlarla
   await s.locator(ana + ' [data-kp-adim="ozet"]').click();
   assert.equal(await s.locator(ana + ' [data-kp-serit]').isVisible(), false);
   await bekle(s, ana + ' .kp-ozet', /Ekstra/);
-  assert.deepEqual(await s.$$eval(ana + ' .kp-ozet__kampanya th', (x) => x.map((e) => e.textContent)), ["✓ 4'lü patche indirim", '✓ Ekstra %10 İndirim']);
+  assert.deepEqual(await s.$$eval(ana + ' .kp-ozet__kampanya th', (x) => x.map((e) => e.textContent)), ["✓ 4'lü patch indirimi", '✓ Ekstra %10 indirim']);
 
   // Aynı oturumda bildirim tekrar çıkmaz
   const gorulen = await s.evaluate(() => JSON.parse(sessionStorage.getItem('kp-kampanya-gorulen')));
@@ -121,10 +136,10 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
   await s.locator('[data-kp-aksesuar="9101"]').click();
   await s.locator('.kp-editor--alt').waitFor({ state: 'visible' });
-  await bekle(s, '.kp-editor--alt [data-kp-serit-sol]', /kampanya indirimi/);
-  // çanta 3.000 + ECE7 1.320 + kalem kutusu 1.700 = 6.020; 4'lü −370, Ekstra %10 −602
-  assert.equal(await metin(s, '.kp-editor--alt [data-kp-toplam]'), '6.020 TL 5.048 TL');
-  assert.equal(await metin(s, '.kp-editor--alt [data-kp-serit-sol]'), '✓ 972 TL kampanya indirimi · Tüm kampanyalar yakalandı 🎉');
+  await bekle(s, '.kp-editor--alt [data-kp-serit-sol]', /indirim kazandın/);
+  // çanta 3.000 + ECE7 1.320 + kalem kutusu 1.700 = 6.020; 4'lü −370, Ekstra %10 −565
+  assert.equal(await metin(s, '.kp-editor--alt [data-kp-toplam]'), '6.020 TL 5.085 TL');
+  assert.equal(await metin(s, '.kp-editor--alt [data-kp-serit-sol]'), '935 TL indirim kazandın 🎉');
   await s.locator('.kp-editor--alt [data-kp-vazgec]').click();
 
   // Ürün kartında kampanyalı toplam ve buton

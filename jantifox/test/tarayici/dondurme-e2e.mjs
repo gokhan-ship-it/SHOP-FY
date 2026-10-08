@@ -16,7 +16,7 @@ async function sayfaAc(cihaz) {
   const baglam = await tarayici.newContext(cihaz);
   const sayfa = await baglam.newPage();
   const hatalar = [];
-  sayfa.on('pageerror', (e) => hatalar.push(e.message));
+  sayfa.on('pageerror', (e) => { hatalar.push(e.message); console.log('PAGEERR', e.message); });
   const durum = { eklenen: null };
   await sayfa.route('https://jantifox.test/**', async (r) => {
     const url = new URL(r.request().url());
@@ -103,7 +103,7 @@ const gozlem = await tutamacCevir(178, 20, () => sayfa.evaluate(() => {
   const g = document.querySelector('[data-kp-aci]');
   return g.hidden ? null : g.textContent;
 }));
-console.log('açı göstergesi (son 4):', gozlem.slice(-4).join(' '));
+console.log('açı göstergesi:', JSON.stringify(gozlem));
 assert.ok(gozlem.every(Boolean), 'gösterge dönüş boyunca görünür');
 assert.equal(gozlem[gozlem.length - 1], '180°', '178° → 180° yakalandı');
 assert.equal((await parcaDurumu(sayfa, meteorSecici)).aci, 180);
@@ -161,18 +161,28 @@ await sayfa.locator('[data-kp-duzle]').tap();
   console.log('kenarda döndürme: kırmızı adım', kirmizi.length, '/', gozlemKenar.length, '· son geçerli', gecerliler[gecerliler.length - 1]);
   assert.ok(kirmizi.length > 0, 'taşınca kırmızı yandı');
   assert.ok(kirmizi.every((g) => g.cerceve), 'çerçeve de kırmızı');
+  // Geri fırlatma yok: bırakıldığı açıda kalır; geçersizse kırmızı ve altta "Alana yerleştir"
   const son = await parcaDurumu(sayfa, meteorSecici);
-  assert.equal(son.hatali, false, 'bırakınca geçerli');
+  const sonGozlem = gozlemKenar[gozlemKenar.length - 1];
+  assert.equal(son.aci, sonGozlem.aci, 'bırakıldığı açıda kaldı');
   assert.ok(gecerliler.length > 0, 'başta geçerli açılar da var');
-  assert.equal(son.aci, gecerliler[gecerliler.length - 1], 'son geçerli açıya döndü');
+  if (son.hatali) {
+    assert.equal(await sayfa.locator('[data-kp-yer-uyari]').isVisible(), true);
+    await sayfa.locator('[data-kp-alana-yerlestir]').tap();
+    const duz = await parcaDurumu(sayfa, meteorSecici);
+    assert.equal(duz.hatali, false, 'Alana yerleştir açıyı koruyarak içeri alır');
+    assert.equal(duz.aci, son.aci);
+  }
   await sayfa.screenshot({ path: cikti + '03-kenar.png' });
-  // Araç çubuğu: geçersiz açıya izin vermez, mesaj gösterir
-  const aciOnce = son.aci;
+  // Araç çubuğu: açı her zaman uygulanır; geçersizse işaretlenir, Alana yerleştir düzeltir
+  const aciOnce = (await parcaDurumu(sayfa, meteorSecici)).aci;
   for (let i = 0; i < 6; i++) await sayfa.locator('[data-kp-dondur="15"]').tap();
-  await sayfa.waitForTimeout(700);
+  await sayfa.waitForTimeout(300);
   const sonra = await parcaDurumu(sayfa, meteorSecici);
-  console.log('araç çubuğu kenarda:', aciOnce, '→', sonra.aci, '·', await sayfa.locator('[data-kp-bildirim]').textContent());
-  assert.equal(sonra.hatali, false);
+  console.log('araç çubuğu kenarda:', aciOnce, '→', sonra.aci, '· hatalı', sonra.hatali);
+  assert.equal(sonra.aci, (aciOnce + 90) % 360);
+  if (sonra.hatali) await sayfa.locator('[data-kp-alana-yerlestir]').tap();
+  assert.equal((await parcaDurumu(sayfa, meteorSecici)).hatali, false);
 }
 
 // 6) Boş alana dokunma seçimi kaldırır
@@ -206,6 +216,8 @@ assert.equal(await sayfa.locator('#kp-isim').inputValue(), '');
 await sayfa.locator('#kp-isim').fill('ece');
 // Özet ve sepete ekle
 await sayfa.locator('[data-kp-adim="ozet"]').click();
+// Yazı Meteor'un üstüne geldiyse Özet'te "Hepsini düzelt"
+if (await sayfa.locator('[data-kp-ozet-yer]').isVisible()) await sayfa.locator('[data-kp-ozet-yer] [data-kp-hepsini-duzelt]').click();
 await sayfa.locator('[data-kp-ileri]').click();
 // Özetteki "Sepete ekle" doğrudan ekler
 await sayfa.locator('.kp-editor').waitFor({ state: 'hidden' });
