@@ -2114,8 +2114,10 @@
     var b = this.grupBilgisi(this.secili);
     if (!b) {
       this.secili = null;
+      this.seciliHarf = null;
       cubuk.hidden = true;
       this.sahne.secimCiz(null);
+      this.balonGizle();
       return;
     }
     cubuk.hidden = false;

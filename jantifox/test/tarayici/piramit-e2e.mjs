@@ -157,6 +157,7 @@ const uyarilar = (await s.locator('[data-kp-isim-uyari]').innerText()).replace(/
 console.log('uyarılar:', uyarilar);
 assert.match(uyarilar, /Ö harfi şu an yok, O olarak yazmak ister misin/);
 assert.match(uyarilar, /K harfi bu sette şu an yok/);
+assert.equal(await s.locator('[data-kp-balon]').isVisible(), false, 'seçim kalkınca balon da kapanır');
 await s.screenshot({ path: cikti + '04-eksik.png' });
 
 // 7) Sepet: her harf seçilen renk varyantıyla, özet renkli
