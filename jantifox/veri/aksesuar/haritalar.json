@@ -17,8 +17,34 @@
    "boy_cm": 12,
    "kose_cm": 3.3
   },
-  "zones": [],
-  "forbidden": []
+  "zones": [
+   {
+    "id": "velcro-yuzeyi",
+    "ad": "Velcro yüzeyi",
+    "shape": "rect",
+    "x": 2.556,
+    "y": 3.999,
+    "w": 94.851,
+    "h": 92.907,
+    "kose_cm": 2,
+    "allowed_types": [
+     "letter",
+     "number",
+     "icon"
+    ],
+    "genislik_cm": 20.87
+   }
+  ],
+  "forbidden": [
+   {
+    "ad": "Bölge 1",
+    "shape": "ellipse",
+    "x": 72.626,
+    "y": 53.946,
+    "w": 14.377,
+    "h": 27.443
+   }
+  ]
  },
  "kalem-kutusu-sari": {
   "surum": 2,
@@ -59,8 +85,34 @@
    "boy_cm": 12,
    "kose_cm": 3.3
   },
-  "zones": [],
-  "forbidden": []
+  "zones": [
+   {
+    "id": "velcro-yuzeyi",
+    "ad": "Velcro yüzeyi",
+    "shape": "rect",
+    "x": 2.556,
+    "y": 3.999,
+    "w": 94.851,
+    "h": 92.907,
+    "kose_cm": 2,
+    "allowed_types": [
+     "letter",
+     "number",
+     "icon"
+    ],
+    "genislik_cm": 20.87
+   }
+  ],
+  "forbidden": [
+   {
+    "ad": "Bölge 1",
+    "shape": "ellipse",
+    "x": 74.501,
+    "y": 53.87,
+    "w": 14.377,
+    "h": 27.443
+   }
+  ]
  },
  "zarf-sari-kirmizi": {
   "surum": 2,

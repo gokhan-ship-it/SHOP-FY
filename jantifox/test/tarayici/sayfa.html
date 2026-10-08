@@ -2907,20 +2907,50 @@ html.kp-kilit body {
   // İsim, alana tek başına (diğer patch'ler olmadan) kaç satırda sığıyor? 0 = sığmıyor
   // olculer: harflerin gerçek ölçüleri [{en, boy}], aci: blok ismin açısı
   Yerlesim.prototype.isimSatiriOlcu = function (olculer, aci) {
+    return this.isimYeri(olculer, aci).satir;
+  };
+
+  // İsmin varsayılan yeri: önce alanın ortası. Ortada sığmıyorsa ve alanda yasaklı bölge varsa
+  // (ör. kalem kutusunun logosu) ortaya en yakın, ismin tamamının sığdığı merkez aranır (0,5 cm adım).
+  // Tek satır iki satıra tercih edilir. Sonuç: { satir (0 = sığmıyor), merkez }
+  Yerlesim.prototype.isimYeri = function (olculer, aci) {
     var adet = olculer.length;
     var alan = this.m.alanBul('letter');
-    if (!alan || adet === 0) return adet === 0 ? 1 : 0;
-    var c = merkez(alan.sekil);
+    var c0 = alan ? merkez(alan.sekil) : [this.m.Wcm / 2, this.m.Hcm / 2];
+    if (!alan || adet === 0) return { satir: adet === 0 ? 1 : 0, merkez: c0 };
+    aci = aciNormal(aci);
+    var anahtar = JSON.stringify([olculer, aci]);
+    this._isimYeri = this._isimYeri || {};
+    if (this._isimYeri[anahtar]) return this._isimYeri[anahtar];
     var self = this;
-    for (var satir = 1; satir <= Math.min(this.m.ayar.satir, 2); satir++) {
-      if (satir === 2 && adet < 2) break;
-      var dizi = isimHarfleri(this.isimDiz(olculer, c[0], c[1], satir), c, aciNormal(aci));
-      var tamam = dizi.every(function (p) {
+    var sigar = function (c, satir) {
+      return isimHarfleri(self.isimDiz(olculer, c[0], c[1], satir), c, aci).every(function (p) {
         return self.alanaUygun(p.sekil, 'letter');
       });
-      if (tamam) return satir;
+    };
+    var satirlar = [];
+    for (var satir = 1; satir <= Math.min(this.m.ayar.satir, 2); satir++) if (satir === 1 || adet >= 2) satirlar.push(satir);
+    var sonuc = null;
+    satirlar.some(function (n) { if (sigar(c0, n)) sonuc = { satir: n, merkez: c0 }; return !!sonuc; });
+    if (!sonuc && this.m.yasaklar.length) {
+      var k = kutu(alan.sekil);
+      var adaylar = [];
+      for (var x = k.x; x <= k.x + k.w + EPS; x += 0.5) {
+        for (var y = k.y; y <= k.y + k.h + EPS; y += 0.5) adaylar.push([x, y]);
+      }
+      adaylar.sort(function (a, b) {
+        return Math.pow(a[0] - c0[0], 2) + Math.pow(a[1] - c0[1], 2) - (Math.pow(b[0] - c0[0], 2) + Math.pow(b[1] - c0[1], 2));
+      });
+      satirlar.some(function (n) {
+        for (var i = 0; i < adaylar.length; i++) {
+          if (sigar(adaylar[i], n)) { sonuc = { satir: n, merkez: adaylar[i] }; return true; }
+        }
+        return false;
+      });
     }
-    return 0;
+    sonuc = sonuc || { satir: 0, merkez: c0 };
+    this._isimYeri[anahtar] = sonuc;
+    return sonuc;
   };
 
   // Temsili (ortanca) harf ölçüsüyle: kapasite göstergesi için
@@ -2945,12 +2975,12 @@ html.kp-kilit body {
     var liste = [];
     if (t.isim) {
       var harfler = Array.from(t.isim);
-      var alan = m.alanBul('letter');
-      var c = t.isimMerkez || (alan ? merkez(alan.sekil) : [m.Wcm / 2, m.Hcm / 2]);
       var olculer = isimOlculeri(m, t);
       var ayri = !!t.harfAyri;
       var isimAci = ayri ? 0 : aciNormal(t.isimAci);
-      var satir = this.isimSatiriOlcu(olculer, isimAci) || Math.min(m.ayar.satir, harfler.length > 1 ? 2 : 1);
+      var yer = this.isimYeri(olculer, isimAci);
+      var c = t.isimMerkez || yer.merkez;
+      var satir = yer.satir || Math.min(m.ayar.satir, harfler.length > 1 ? 2 : 1);
       var dizi = isimHarfleri(this.isimDiz(olculer, c[0], c[1], satir), c, isimAci);
       harfler.forEach(function (h, i) {
         var set = karakterSeti(m, t, i, h);
@@ -5259,8 +5289,7 @@ html.kp-kilit body {
 
   Editor.prototype.isimMerkezi = function () {
     if (this.t.isimMerkez) return this.t.isimMerkez;
-    var alan = this.m.alanBul('letter');
-    return alan ? merkez(alan.sekil) : [this.m.Wcm / 2, this.m.Hcm / 2];
+    return this.yer.isimYeri(isimOlculeri(this.m, this.t), this.t.harfAyri ? 0 : this.t.isimAci).merkez;
   };
 
   // Seçili grubun parçaları, döndürme merkezi, açısı ve çakışma kontrolündeki diğer parçalar

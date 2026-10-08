@@ -697,3 +697,32 @@ test('yuvarlak köşeli dikdörtgen alan (kose_cm): köşe yuvarlaklığı için
   const yeni = new ic.Model(v).alanlar[0].sekil;
   assert.ok(Math.abs(yeni.r - yeni.h / 2) < 1e-9 && yeni.r < 6.01);
 });
+
+test('kalem kutusu gerçek haritaları (Kırmızı, Turuncu): Velcro yüzeyi, yuvarlak köşe, logo yasaklı', () => {
+  const haritalar = JSON.parse(readFileSync(new URL('../veri/aksesuar/haritalar.json', import.meta.url), 'utf8'));
+  for (const [anahtar, logo] of [['kalem-kutusu-kirmizi', [958, 443]], ['kalem-kutusu-turuncu', [980.5, 442.5]]]) {
+    const v = ornekVeri();
+    v.aksesuarlar[0] = { ...v.aksesuarlar[0], gorsel: { en: 1200, boy: 655, kucuk: 'k.png', buyuk: 'k.png' }, harita: haritalar[anahtar] };
+    const m = new ic.Model(v);
+    assert.equal(m.aksesuarlar[0].tasarlanabilir, true, anahtar + ' tasarlanabilir');
+    const am = m.aksesuarModeli(9101);
+    assert.ok(Math.abs(am.m.Wcm - 22) < 0.05, 'ölçek: görsel 22 cm, ' + am.m.Wcm);
+    const alan = am.m.alanlar[0].sekil;
+    assert.equal(alan.r, 2);
+    // İsim ortada logoya çarpıyorsa ortaya en yakın sığdığı yere kayar: gerçek Cool harfiyle (4,49 × 6 cm) 3 harf tek satır
+    assert.equal(am.yer.kapasite({ en: 4.49, boy: 6 }, 0), 3, anahtar + ': kapasite');
+    const ic0 = { setId: m.setler[0].id, isim: 'AL', isimMerkez: null, parcalar: [] };
+    const pr = am.yer.parcalar(ic0);
+    assert.ok(pr.every((p) => am.yer.alanaUygun(p.sekil, p.tip)), anahtar + ': AL sığar');
+    assert.ok(Math.abs(pr[0].sekil.y - pr[1].sekil.y) < 1e-9, 'tek satır');
+    const pxCm = 1200 / 22;
+    const ikon = (cx, cy) => ({ t: 'rect', x: cx - 2, y: cy - 2, w: 4, h: 4 });
+    assert.equal(am.yer.alanaUygun(ikon(6, 6), 'icon'), true, 'ortada sığar');
+    assert.equal(am.yer.alanaUygun(ikon(logo[0] / pxCm, logo[1] / pxCm), 'icon'), false, anahtar + ': logonun üstüne konmaz');
+    // Köşeye dayalı 4 × 4 cm ikon yuvarlak köşeden taşar; köşe dairesine teğet konumda sığar
+    const sol = alan.x + am.m.ayar.kenar, ust = alan.y + am.m.ayar.kenar;
+    assert.equal(am.yer.alanaUygun({ t: 'rect', x: sol, y: ust, w: 4, h: 4 }, 'icon'), false, anahtar + ': köşede taşar');
+    const d = (2 - am.m.ayar.kenar) * (1 - 1 / Math.SQRT2) + 0.02;
+    assert.equal(am.yer.alanaUygun({ t: 'rect', x: sol + d, y: ust + d, w: 4, h: 4 }, 'icon'), true, anahtar + ': köşe yayının içinde sığar');
+  }
+});
