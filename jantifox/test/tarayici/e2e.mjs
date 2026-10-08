@@ -38,7 +38,7 @@ await sayfa.screenshot({ path: cikti + '01-urun-sayfasi.png' });
 
 // Davet kartı → "Kişiselleştirmeye başla" editörü açar
 assert.match(await kart.innerText(), /Ürünü kişiselleştir/);
-assert.match(await kart.innerText(), /Patch başına 330 TL/);
+assert.match(await kart.innerText(), /Her patch 330 TL/);
 await sayfa.getByRole('button', { name: 'Kişiselleştirmeye başla' }).tap();
 const editor = sayfa.locator('.kp-editor');
 await editor.waitFor({ state: 'visible' });
@@ -166,6 +166,8 @@ const k = await ikon.boundingBox();
 const sahne = await sayfa.locator('.kp-onizleme .kp-sahne').boundingBox();
 const cdp = await baglam.newCDPSession(sayfa);
 const dokun = async (tip, x, y) => cdp.send('Input.dispatchTouchEvent', { type: tip, touchPoints: tip === 'touchEnd' ? [] : [{ x, y }] });
+// Uyarı metni oturumda her tür için bir kez çıkar; önceki harf sürüklemeleri kullandı, bu sürükleme için sıfırla
+await sayfa.evaluate(() => { sessionStorage.removeItem('kp-uyari-tasma'); sessionStorage.removeItem('kp-uyari-cakisma'); });
 await dokun('touchStart', k.x + k.width / 2, k.y + k.height / 2);
 for (let i = 1; i <= 10; i++) await dokun('touchMove', k.x + k.width / 2, k.y + k.height / 2 - (i * (k.y - sahne.y + 30)) / 10);
 // Sürüklerken: kırmızı, alan sınırı kalın kırmızı, uyarı kutusunda metin
@@ -199,7 +201,14 @@ assert.match(await sayfa.locator('[data-kp-panel="ozet"] h3').textContent(), /Ta
 assert.equal(await sayfa.locator('[data-kp-ileri]').textContent(), 'Sepete ekle · 4.650 TL');
 await sayfa.screenshot({ path: cikti + '07-ozet.png' });
 
-// Özetten doğrudan sepete ekle (editör kapanır; çekmece yoksa /cart'a gider)
+// Özetten doğrudan sepete ekle (editör kapanır; çekmece yoksa /cart'a gider). Eklenince kayıt temizlenir;
+// aşağıdaki kart kontrolleri için kaydı sakla
+const ANAHTAR = 'kisisel-tasarim-10087205437726';
+const kayitAl = () => sayfa.evaluate((k) => {
+  const e = document.querySelector('kisisel-kart').editor;
+  return JSON.stringify({ v: 1, mod: 'kisisel', t: e.t });
+}, ANAHTAR);
+const kayit = await kayitAl();
 await sayfa.locator('[data-kp-ileri]').click();
 await sayfa.waitForURL('**/cart');
 assert.ok(eklenen, 'özetten sepete ekleme isteği gitmeli');
@@ -213,8 +222,11 @@ const e = patchler.find((p) => p.properties['Harf sırası'] === '1, 3');
 assert.equal(e.quantity, 2);
 console.log(JSON.stringify(eklenen, null, 1).slice(0, 1500));
 
-// Ürün sayfasına dön: tasarım oturumdan geri gelir, kart tasarımlı halde
+assert.equal(await sayfa.evaluate((k) => localStorage.getItem(k), ANAHTAR), null, 'eklenince kayıt temizlendi');
+
+// Kayıt varken ürün sayfası: kart tasarımlı halde
 eklenen = null;
+await sayfa.evaluate(([k, v]) => localStorage.setItem(k, v), [ANAHTAR, kayit]);
 await sayfa.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await kart.waitFor({ state: 'visible' });
 assert.match(await kart.innerText(), /ECE · 3 harf/);
@@ -232,8 +244,9 @@ await sayfa.waitForURL('**/cart');
 assert.equal(await sayfa.evaluate(() => window.__temaSubmit || 0), 0, 'tema submit dinleyicisi çalışmamalı');
 assert.ok(eklenen && eklenen.items.length === 5, 'ana buton tasarımla eklemeli');
 
-// Sabit çubuktan da: sayfaya dön, tasarım oturumdan geri gelir
+// Sabit çubuktan da: kaydı geri koy, sayfaya dön
 eklenen = null;
+await sayfa.evaluate(([k, v]) => localStorage.setItem(k, v), [ANAHTAR, kayit]);
 await sayfa.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await kart.waitFor({ state: 'visible' });
 assert.match(await sayfa.locator('#StickyProductSubmitButton-main span').textContent(), /Tasarımımla sepete ekle/);

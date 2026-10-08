@@ -87,6 +87,20 @@
     return (negatif ? '-' : '') + metin + ' TL';
   }
 
+  // Oturumda ilk kez mi? (sessionStorage; erişilemezse sayfa ömrü boyunca bellekte)
+  var ilkKezBellek = {};
+  function ilkKezMi(anahtar) {
+    try {
+      if (window.sessionStorage.getItem(anahtar)) return false;
+      window.sessionStorage.setItem(anahtar, '1');
+      return true;
+    } catch (e) {
+      if (ilkKezBellek[anahtar]) return false;
+      ilkKezBellek[anahtar] = true;
+      return true;
+    }
+  }
+
   function olayYayinla(ad, veri) {
     try {
       if (window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') {
@@ -99,7 +113,7 @@
 
   function depoOku(anahtar) {
     try {
-      var v = window.sessionStorage.getItem(anahtar);
+      var v = window.localStorage.getItem(anahtar);
       return v ? JSON.parse(v) : null;
     } catch (e) {
       return null;
@@ -108,8 +122,8 @@
 
   function depoYaz(anahtar, deger) {
     try {
-      if (deger == null) window.sessionStorage.removeItem(anahtar);
-      else window.sessionStorage.setItem(anahtar, JSON.stringify(deger));
+      if (deger == null) window.localStorage.removeItem(anahtar);
+      else window.localStorage.setItem(anahtar, JSON.stringify(deger));
     } catch (e) {
       /* gizli mod vb. */
     }
@@ -1269,14 +1283,12 @@
     this.secimEl = this.kok.querySelector('.kp-cerceve');
   };
 
-  // Yakın görünüm: takılabilir alan(lar) pencere genişliğinin ~%80'ini kaplar.
-  Sahne.prototype.gorunumAyarla = function (yakin) {
-    if (!this.gorunum) return;
-    var m = this.m;
+  // Yakın görünüm ölçeği ve kaydırması (pencerenin yüzdesi olarak): takılabilir alan(lar) ~%80
+  function yakinGorunum(m) {
     var olcek = 1;
     var sol = 0;
     var ust = 0;
-    if (yakin && m.alanlar.length) {
+    if (m.alanlar.length) {
       var x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
       m.alanlar.forEach(function (a) {
         var k = kutu(a.sekil);
@@ -1294,6 +1306,16 @@
       sol = Math.min(0, Math.max(100 - olcek * 100, 50 - cx * olcek * 100));
       ust = Math.min(0, Math.max(100 - olcek * 100, 50 - cy * olcek * 100));
     }
+    return { olcek: olcek, sol: sol, ust: ust };
+  }
+
+  // Yakın görünüm: takılabilir alan(lar) pencere genişliğinin ~%80'ini kaplar.
+  Sahne.prototype.gorunumAyarla = function (yakin) {
+    if (!this.gorunum) return;
+    var y = yakin ? yakinGorunum(this.m) : { olcek: 1, sol: 0, ust: 0 };
+    var olcek = y.olcek;
+    var sol = y.sol;
+    var ust = y.ust;
     this.yakin = !!yakin && olcek > 1;
     if (yakin) this.yakinlasabilir = olcek > 1.01;
     this.sahne.style.width = olcek * 100 + '%';
@@ -1426,9 +1448,14 @@
       '<button type="button" class="kp-onizleme__dugme kp-onizleme__dugme--gorunum" data-kp-gorunum aria-pressed="false">Tüm çantayı gör</button>' +
       '<span class="kp-aci" data-kp-aci aria-hidden="true" hidden></span>' +
       '<div class="kp-balon" data-kp-balon role="group" hidden></div>' +
-      // Önizlemenin alt kısmında havada: uyarı kutusu (üstte) ve seçim araç çubuğu (altta)
+      // Önizlemenin alt kısmında havada: uyarı kutusu
       '<div class="kp-yuzen">' +
       '<div class="kp-bildirim" data-kp-bildirim role="status" aria-live="polite" hidden></div>' +
+      '</div>' +
+      '</div>' +
+      // Önizlemenin altındaki satır: eklenenler etiketleri; bir patch seçilince aynı yükseklikte araç çubuğu
+      '<div class="kp-satir">' +
+      '<div class="kp-etiketler" data-kp-etiketler aria-label="Eklenenler"></div>' +
       '<div class="kp-arac" data-kp-secim-cubuk role="toolbar" aria-label="Seçili patch" hidden>' +
       '<span class="kp-gizli">Seçili: <span data-kp-secili-ad></span></span>' +
       '<button type="button" data-kp-dondur="-15" aria-label="15 derece sola döndür"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>15°</span></button>' +
@@ -1438,17 +1465,15 @@
       '<button type="button" class="kp-arac__tamam" data-kp-secim-kaldir>Tamam</button>' +
       '</div>' +
       '</div>' +
-      '</div>' +
-      '<div class="kp-etiketler" data-kp-etiketler aria-label="Eklenenler" hidden></div>' +
       (this.m.kalibre ? '' : '<p class="kp-onizleme__not">Önizleme ölçüleri henüz kalibre edilmedi.</p>') +
       '</div>' +
+      '<div class="kp-sag">' +
       '<div class="kp-kaydir">' +
       '<div class="kp-paneller">' +
       '<section class="kp-panel" data-kp-panel="yazi" aria-labelledby="kp-p-yazi"></section>' +
       '<section class="kp-panel" data-kp-panel="rakam" aria-labelledby="kp-p-rakam" hidden></section>' +
       '<section class="kp-panel" data-kp-panel="ikon" aria-labelledby="kp-p-ikon" hidden></section>' +
       '<section class="kp-panel" data-kp-panel="ozet" aria-labelledby="kp-p-ozet" hidden></section>' +
-      '</div>' +
       '</div>' +
       '</div>' +
       '<div class="kp-alt">' +
@@ -1461,6 +1486,8 @@
       '<button type="button" class="kp-baglanti" data-kp-duzenle>Tasarımı düzenle</button>' +
       '<button type="button" class="kp-baglanti" data-kp-urune-don>Ürün sayfasına dön</button>' +
       '</div></div>' +
+      '</div>' +
+      '</div>' +
       '</div>';
     document.body.appendChild(el);
     this.el = el;
@@ -1519,7 +1546,7 @@
         else harfleriAyir(self.yer, self.t);
         return self.yenile();
       }
-      if (hedef.hasAttribute('data-kp-adim')) return self.adimaGit(hedef.getAttribute('data-kp-adim'));
+      if (hedef.hasAttribute('data-kp-adim')) return self.adimaGit(hedef.getAttribute('data-kp-adim'), false, true);
       if (hedef.hasAttribute('data-kp-ileri')) return self.ileri();
       if (hedef.hasAttribute('data-kp-oneri-kabul')) return self.harfDegistir(hedef.getAttribute('data-harf'), hedef.getAttribute('data-oneri'));
       if (hedef.hasAttribute('data-kp-harf-sil')) return self.harfDegistir(hedef.getAttribute('data-harf'), '');
@@ -1551,6 +1578,11 @@
       if (hedef.hasAttribute('data-kp-etiket-sec')) return self.etiketSec(hedef.getAttribute('data-kp-etiket-sec'));
       if (hedef.hasAttribute('data-kp-duzenle')) return self.adimaGit('ikon', true);
       if (hedef.hasAttribute('data-kp-urune-don')) return self.kapat(true);
+      if (hedef.hasAttribute('data-kp-geri-don')) return self.adimaGit('yazi', true);
+      if (hedef.hasAttribute('data-kp-sade-al')) {
+        self.kapat(true);
+        return self.kart.sadeSepet();
+      }
       if (hedef.hasAttribute('data-kp-dondur')) return self.acisiDegistir(Number(hedef.getAttribute('data-kp-dondur')));
       if (hedef.hasAttribute('data-kp-duzle')) return self.acisiDegistir(0, 0);
       if (hedef.hasAttribute('data-kp-sil')) return self.seciliSil();
@@ -1561,6 +1593,11 @@
       }
       if (hedef.hasAttribute('data-kp-karistir')) return self.renkleriKaristir();
       if (hedef.hasAttribute('data-kp-balon-dondur')) return self.acisiDegistir(15);
+    });
+    // Klavye açıkken alttaki butonlara ya da adım çizgisine ilk dokunuş klavyeyi kapatıp kaybolmasın:
+    // bu butonlar odağı almaz (tıklama normal çalışır)
+    el.addEventListener('mousedown', function (e) {
+      if (e.target.closest('.kp-alt button, .kp-adimlar button, .kp-arac button')) e.preventDefault();
     });
     el.addEventListener('change', function (e) {
       if (e.target.matches('[data-kp-set]')) {
@@ -1647,10 +1684,13 @@
     return false;
   };
 
-  Editor.prototype.adimaGit = function (adim, zorla) {
+  // serbest: adım çizgisinden geçiş (sorunlu adım olsa da istenen adıma gider; sorunlar sepete eklerken engellenir)
+  Editor.prototype.adimaGit = function (adim, zorla, serbest) {
     var hedefSira = ADIMLAR.map(function (a) { return a.id; }).indexOf(adim);
     var simdiSira = ADIMLAR.map(function (a) { return a.id; }).indexOf(this.adim);
-    if (!zorla && hedefSira > simdiSira) {
+    var girdi = this.el.querySelector('[data-kp-isim]');
+    if (girdi && document.activeElement === girdi && adim !== 'yazi') girdi.blur();
+    if (!zorla && !serbest && hedefSira > simdiSira) {
       for (var i = 0; i < hedefSira; i++) {
         if (this.adimEngeli(ADIMLAR[i].id)) {
           this.adim = ADIMLAR[i].id;
@@ -1706,12 +1746,13 @@
   // Özet adımında ana buton doğrudan sepete ekler: "Sepete ekle · toplam"
   Editor.prototype.ileriYazisi = function () {
     var ileri = this.el.querySelector('[data-kp-ileri]');
+    this.el.querySelector('.kp-alt__baglantilar').hidden = this.adim === 'ozet' && bosMu(this.t);
     if (this.adim !== 'ozet') {
       ileri.textContent = 'İleri';
       return;
     }
     var f = fiyatHesapla(this.m, this.yer, this.t);
-    ileri.textContent = bosMu(this.t) ? 'Sadece çantayı sepete ekle · ' + paraBicimle(f.urun) : 'Sepete ekle · ' + paraBicimle(f.toplam);
+    ileri.textContent = 'Sepete ekle · ' + paraBicimle(bosMu(this.t) ? f.urun : f.toplam);
   };
 
   Editor.prototype.ileri = function () {
@@ -2117,8 +2158,7 @@
         var stok = self.stokSorunlari.some(function (s) { return s.parca.varyant === p.varyant; });
         html.push(cip(p.grup, p.etiket, 'data-kp-kaldir="' + kacis(p.uid) + '"', !!self.durum.hatalar[p.uid] || stok, secili === p.grup));
       });
-    var yeni = html.join('');
-    kutu.hidden = !html.length;
+    var yeni = html.length ? html.join('') : '<span class="kp-etiketler__bos">Eklediğin isim, rakam ve ikonlar burada görünür.</span>';
     if (kutu.innerHTML !== yeni) kutu.innerHTML = yeni;
   };
 
@@ -2222,9 +2262,20 @@
     }
     var self = this;
     var engelliAdim = ADIMLAR.filter(function (a) { return a.id !== 'ozet' && self.adimEngeli(a.id); })[0];
+    if (bosMu(this.t)) {
+      // Hiç patch yok: geri dön ya da sadece çanta (alttaki "Sepete ekle" de düz çantayı ekler)
+      var bos =
+        '<h3 id="kp-p-ozet" class="kp-panel__baslik" tabindex="-1">Henüz patch eklemedin</h3>' +
+        '<p class="kp-panel__aciklama">Çantanı isim, rakam ya da ikonla kişiselleştirebilir ya da sadece çantayı alabilirsin.</p>' +
+        '<div class="kp-ozet-bos">' +
+        '<button type="button" class="kp-oneri" data-kp-geri-don>Patch eklemek için geri dön</button>' +
+        '<button type="button" class="kp-oneri kp-oneri--ikincil" data-kp-sade-al>Sadece çantayı al</button>' +
+        '</div>';
+      if (panel.innerHTML !== bos) panel.innerHTML = bos;
+      return;
+    }
     panel.innerHTML =
-      '<h3 id="kp-p-ozet" class="kp-panel__baslik" tabindex="-1">' + (bosMu(this.t) ? 'Henüz patch eklemedin' : 'Tasarımın hazır') + '</h3>' +
-      (bosMu(this.t) ? '<p class="kp-uyari kp-uyari--bilgi">Şimdi sepete eklersen çanta tasarımsız eklenir.</p>' : '') +
+      '<h3 id="kp-p-ozet" class="kp-panel__baslik" tabindex="-1">Tasarımın hazır</h3>' +
       (engelliAdim ? '<p class="kp-uyari kp-uyari--hata">' + engelliAdim.ad + ' adımında çözülmesi gereken bir sorun var.</p>' : '') +
       '<table class="kp-ozet"><tbody>' + satirlar + '</tbody>' +
       '<tfoot><tr><th scope="row">Toplam</th><td>' + p(f.toplam) + '</td></tr></tfoot></table>' +
@@ -2304,12 +2355,14 @@
       this.secili = null;
       this.seciliHarf = null;
       cubuk.hidden = true;
+      this.el.querySelector('[data-kp-etiketler]').hidden = false;
       this.sahne.secimCiz(null);
       this.balonGizle();
       this.etiketSecimiGuncelle();
       return;
     }
     cubuk.hidden = false;
+    this.el.querySelector('[data-kp-etiketler]').hidden = true;
     this.etiketSecimiGuncelle();
     this.el.querySelector('[data-kp-secili-ad]').textContent = this.secimAdi(b) + (b.aci ? ' · ' + Math.round(b.aci) + '°' : '');
     this.el.querySelector('[data-kp-duzle]').disabled = !b.aci;
@@ -2593,12 +2646,21 @@
       var hatalar = {};
       if (sorun) {
         tasinmis.forEach(function (p) { hatalar[p.uid] = true; });
-        var ad = self.patchAdi(self.grupBilgisi(aktif.grup));
-        self.bildir(
-          ad + (sorun === 'tasma' ? ' alanın dışına taşıyor.' : ' başka bir patch\'in üstüne geliyor.') + ' Bırakırsan son yerine döner.',
-          { sure: 0, anahtar: 'surukle' }
-        );
+        // Metin oturum başına her sorun türü için yalnızca ilk sefer; sonra yalnızca kırmızı sınır/patch
+        if (aktif.sorun !== sorun) {
+          aktif.sorun = sorun;
+          if (ilkKezMi('kp-uyari-' + sorun)) {
+            var ad = self.patchAdi(self.grupBilgisi(aktif.grup));
+            self.bildir(
+              ad + (sorun === 'tasma' ? ' alanın dışına taşıyor.' : ' başka bir patch\'in üstüne geliyor.') + ' Bırakırsan son yerine döner.',
+              { sure: 0, anahtar: 'surukle' }
+            );
+          } else {
+            self.bildirimKapat('surukle');
+          }
+        }
       } else {
+        aktif.sorun = null;
         aktif.sonGecerli = [aktif.dx, aktif.dy];
         self.bildirimKapat('surukle');
       }
@@ -2691,17 +2753,20 @@
     this.depoAnahtari = 'kisisel-tasarim-' + this.model.urun.id;
     this.editor = new Editor(this);
 
-    var kayitli = depoOku(this.depoAnahtari);
-    this.tasarim = kayitli && kayitli.t && kayitli.v === 1 ? this.tasarimTemizle(kayitli.t) : null;
-    // Kişiselleştirme modu: kayıtlı bir tasarım varsa
-    this.mod = kayitli && kayitli.mod === 'kisisel' && !bosMu(this.tasarim) ? 'kisisel' : 'sade';
-
     var self = this;
     this.querySelectorAll('[data-kisisel-ac]').forEach(function (b) {
       b.addEventListener('click', function () {
+        self.notGoster('');
         self.editor.ac(bosMu(self.tasarim) ? 'yazi' : 'ikon');
       });
     });
+    this.querySelector('[data-kisisel-sil]').addEventListener('click', function () { self.tasarimSil(); });
+    this.addEventListener('click', function (e) {
+      if (e.target.closest('[data-kisisel-geri-al]')) self.geriAl();
+    });
+    // Sayfa her göründüğünde (geri tuşu ve bfcache dahil) kayıt yeniden okunur; başka sekmedeki değişiklik de
+    window.addEventListener('pageshow', function () { self.kayitOku(); });
+    window.addEventListener('storage', function (e) { if (e.key === self.depoAnahtari) self.kayitOku(); });
     this.querySelectorAll('[data-kisisel-sade]').forEach(function (b) {
       b.addEventListener('click', function () { self.sadeSepet(); });
     });
@@ -2714,15 +2779,62 @@
     // Kart çalışıyorsa temanın kırmızı "Değiştirilebilir patchler…" kutusu gizlenir (yerine kartın yeşil notu);
     // JS yüklenemezse kart gizli kalır, temanın kutusu görünmeye devam eder
     document.body.classList.add('kisisel-aktif');
-    this.modDegistir(this.mod);
+    this.kayitOku();
   };
 
-  // Kayıtlı tasarımdaki artık var olmayan parçaları ayıklar
+  // Kayıtlı tasarımı okur, stoğu biten ya da artık olmayan patch'leri ayıklar, kartı günceller
+  KisiselKart.prototype.kayitOku = function () {
+    if (this.editor.el && !this.editor.el.hidden) return; // editör açıkken dokunma
+    var kayitli = depoOku(this.depoAnahtari);
+    var sonuc = kayitli && kayitli.t && kayitli.v === 1 ? this.tasarimTemizle(kayitli.t) : null;
+    this.tasarim = sonuc && !bosMu(sonuc.t) ? sonuc.t : null;
+    this.modDegistir(this.tasarim ? 'kisisel' : 'sade');
+    if (sonuc && sonuc.cikanlar.length) {
+      this.notGoster(
+        'Tasarımındaki ' + sonuc.cikanlar.join(', ') + ' artık stokta olmadığı için çıkarıldı' +
+        (sonuc.renkler.length ? '; ' + sonuc.renkler.join(', ') + ' için başka renk seçildi.' : '.')
+      );
+    } else if (sonuc && sonuc.renkler.length) {
+      this.notGoster(sonuc.renkler.join(', ') + ' harfinin rengi stokta kalmadığı için başka renkle değiştirildi.');
+    }
+  };
+
+  // Kayıtlı tasarımdaki artık var olmayan ya da stoğu biten parçaları ayıklar.
+  // Dönüş: { t, cikanlar: [çıkarılan patch adları], renkler: [rengi değişen harfler] } ya da null
   KisiselKart.prototype.tasarimTemizle = function (t) {
     var m = this.model;
     if (!t || !Array.isArray(t.parcalar)) return null;
+    var cikanlar = [];
+    var renkler = [];
+    var stokta = function (v) { return !!v && v.satilabilir !== false && v.stok !== 0; };
     t.setId = m.set(t.setId).id;
+    var set = m.set(t.setId);
     t.isim = typeof t.isim === 'string' ? t.isim : '';
+    // Harfler: stoğu biten harf isimden çıkar (yerleşim kayar: ayrı harf konumları sıfırlanır)
+    var harfler = Array.from(t.isim);
+    var kalanlar = [];
+    var kalanRenk = [];
+    harfler.forEach(function (h, i) {
+      var var_ = set.cokRenkli ? (set.karakterVaryantlari[h] || []).length > 0 : stokta(set.karakterler[h]);
+      if (!var_) {
+        cikanlar.push(h + ' harfi');
+        return;
+      }
+      var renk = t.harfRenkleri && t.harfRenkleri[i];
+      if (set.cokRenkli && renk != null && !(set.karakterVaryantlari[h] || []).some(function (v) { return String(v.id) === String(renk); })) {
+        renkler.push(h);
+        renk = null;
+      }
+      kalanlar.push(h);
+      kalanRenk.push(renk == null ? null : renk);
+    });
+    if (kalanlar.length !== harfler.length) {
+      t.isim = kalanlar.join('');
+      t.harfAyri = false;
+      t.harfKonumlari = null;
+      t.harfAcilari = null;
+    }
+    if (t.harfRenkleri) t.harfRenkleri = kalanRenk;
     t.harfAyri = !!t.harfAyri && Array.isArray(t.harfKonumlari);
     if (t.harfAyri) {
       t.harfKonumlari = t.harfKonumlari.filter(function (k) {
@@ -2731,11 +2843,21 @@
     } else {
       t.harfKonumlari = null;
     }
+    // Rakam ve ikonlar: ürün/varyant hâlâ var mı, stokta mı?
     t.parcalar = t.parcalar.filter(function (p) {
-      if (p.tip === 'number') return !!m.rakamSeti();
-      return p.tip === 'icon' && !!m.ikonHarita[p.urunId];
+      if (p.tip === 'number') {
+        var rs = m.rakamSeti();
+        var rv = rs && rs.varyantlar.filter(function (v) { return String(v.id) === String(p.varyantId); })[0];
+        if (stokta(rv)) return true;
+        cikanlar.push(rv ? rv.karakter + ' rakamı' : 'bir rakam');
+        return false;
+      }
+      var ikon = p.tip === 'icon' && m.ikonHarita[p.urunId];
+      if (ikon && String(ikon.varyant.id) === String(p.varyantId) && stokta(ikon.varyant)) return true;
+      cikanlar.push(ikon ? ikon.ad : 'bir ikon');
+      return false;
     });
-    return t;
+    return { t: t, cikanlar: cikanlar, renkler: renkler };
   };
 
   KisiselKart.prototype.modDegistir = function (mod) {
@@ -2763,7 +2885,7 @@
     }
     var fiyatEl = this.querySelector('[data-kisisel-patch-fiyat]');
     var v0 = set && Object.keys(set.karakterler).map(function (k) { return set.karakterler[k]; })[0];
-    if (fiyatEl && v0 && v0.fiyat != null) fiyatEl.textContent = 'Patch başına ' + paraBicimle(v0.fiyat);
+    if (fiyatEl && v0 && v0.fiyat != null) fiyatEl.textContent = 'Her patch ' + paraBicimle(v0.fiyat);
   };
 
   // "Sadece çantayı al": düz ürün akışı (temanın kendi sepete ekleme formu)
@@ -2782,7 +2904,58 @@
   };
 
   KisiselKart.prototype.kaydet = function () {
-    depoYaz(this.depoAnahtari, { v: 1, mod: this.mod, t: this.tasarim });
+    depoYaz(this.depoAnahtari, bosMu(this.tasarim) ? null : { v: 1, mod: this.mod, t: this.tasarim });
+  };
+
+  // Kartın üst kısmındaki kısa not (stoktan çıkan patch'ler vb.); boş metin gizler
+  KisiselKart.prototype.notGoster = function (metin) {
+    var el = this.querySelector('[data-kisisel-not]');
+    if (!el) return;
+    el.textContent = metin || '';
+    el.hidden = !metin;
+  };
+
+  // Kart içi bildirim ("Tasarım silindi · Geri al", "Tasarımın sepete eklendi"); sure sonra kapanır
+  KisiselKart.prototype.bildirimGoster = function (html, sure) {
+    var el = this.querySelector('[data-kisisel-bildirim]');
+    var self = this;
+    clearTimeout(this.bildirimZamanlayici);
+    el.innerHTML = html;
+    el.hidden = false;
+    this.bildirimZamanlayici = setTimeout(function () {
+      el.hidden = true;
+      el.innerHTML = '';
+      self.yedek = null;
+    }, sure || 6000);
+  };
+
+  KisiselKart.prototype.tasarimSil = function () {
+    if (bosMu(this.tasarim)) return;
+    this.yedek = kopyala(this.tasarim);
+    this.tasarim = null;
+    this.notGoster('');
+    this.modDegistir('sade');
+    this.bildirimGoster('<span>Tasarım silindi</span> · <button type="button" class="kisisel-kart__geri-al" data-kisisel-geri-al>Geri al</button>', 6000);
+    olayYayinla('tasarim_silindi', { urun_id: this.model.urun.id });
+  };
+
+  KisiselKart.prototype.geriAl = function () {
+    if (!this.yedek) return;
+    this.tasarim = this.yedek;
+    this.yedek = null;
+    clearTimeout(this.bildirimZamanlayici);
+    var el = this.querySelector('[data-kisisel-bildirim]');
+    el.hidden = true;
+    el.innerHTML = '';
+    this.modDegistir('kisisel');
+  };
+
+  // Sepete eklendikten sonra: kayıt temizlenir, kart kısa süre "Tasarımın sepete eklendi" der, sonra davet haline döner
+  KisiselKart.prototype.sepeteEklendi = function () {
+    this.tasarim = null;
+    this.yedek = null;
+    this.modDegistir('sade');
+    this.bildirimGoster('<span>Tasarımın sepete eklendi</span>', 4000);
   };
 
   KisiselKart.prototype.tasarimKaydet = function (t) {
@@ -2815,6 +2988,26 @@
     }
     this.butonlariGuncelle(f);
     this.galeriGuncelle();
+    this.miniGuncelle();
+  };
+
+  // Tasarımlı kartta küçük önizleme: takılabilir alana yakın görünüm
+  KisiselKart.prototype.miniGuncelle = function () {
+    var kutuEl = this.querySelector('[data-kisisel-mini]');
+    if (!kutuEl || bosMu(this.tasarim)) return;
+    var m = this.model;
+    if (!this.miniSahne) {
+      kutuEl.style.aspectRatio = m.gorsel.en + ' / ' + m.gorsel.boy;
+      this.miniSahne = new Sahne(m, this.yer, kutuEl, { etkilesimli: false });
+      var y = yakinGorunum(m);
+      var sahne = this.miniSahne.sahne;
+      sahne.style.position = 'absolute';
+      sahne.style.width = y.olcek * 100 + '%';
+      sahne.style.left = y.sol + '%';
+      sahne.style.top = y.ust + '%';
+    }
+    var d = duzenle(m, this.yer, kopyala(this.tasarim));
+    this.miniSahne.ciz(d.parcalar, {}, false);
   };
 
   KisiselKart.prototype.gonderButonlari = function () {
@@ -3021,6 +3214,7 @@
         } catch (e) {
           /* yoksay */
         }
+        self.sepeteEklendi();
         if (cizim && sonuc.veri.sections && sonuc.veri.sections['cart-drawer'] && typeof cizim.renderContents === 'function') {
           cizim.renderContents({ id: m.urun.varyant, sections: sonuc.veri.sections });
           // Temanın product-form.js'i gibi: boş sepet işaretini kaldır (yoksa çekmecenin odak tutması hata verir)

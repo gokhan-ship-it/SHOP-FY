@@ -42,7 +42,7 @@ const kart = (await s.locator('kisisel-kart').innerText()).replace(/\s+/g, ' ');
 assert.match(kart, /Ürünü kişiselleştir/);
 assert.match(kart, /İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör\./);
 assert.match(kart, /Kişiselleştirmeye başla/);
-assert.match(kart, /Patch başına 330 TL/);
+assert.match(kart, /Her patch 330 TL/);
 assert.match(kart, /Sadece çantayı al/);
 assert.equal(await s.locator('kisisel-kart input[type="radio"]').count(), 0, 'eski düğme yok');
 assert.equal(await s.locator('[data-kisisel-ornek] img, [data-kisisel-ornek] span').count(), 3, 'örnek görselde 3 harf');
@@ -123,52 +123,53 @@ console.log('sıra (yer açıldı):', JSON.stringify(siraBos));
 const ilkSoluk = siraBos.findIndex((x) => x[1]);
 assert.ok(ilkSoluk === -1 || siraBos.findIndex((x) => x[0] === '2') < ilkSoluk, 'Futbol Topu sığanlar arasına döndü');
 
-// Etikete dokun → patch seçilir, araç çubuğu önizlemenin üzerinde açılır, sayfa kaymaz
+// Etikete dokun → patch seçilir; araç çubuğu önizlemenin altındaki satırda etiketlerin yerine geçer, sayfa zıplamaz
 const cip = s.locator('.kp-cip').nth(1);
-const panelOnce = await s.evaluate(() => document.querySelector('.kp-kaydir').getBoundingClientRect().top);
+const olcum = () => s.evaluate(() => ({
+  satir: document.querySelector('.kp-satir').getBoundingClientRect().height,
+  panel: document.querySelector('.kp-kaydir').getBoundingClientRect().top
+}));
+const once = await olcum();
 await cip.locator('.kp-cip__ad').click();
 assert.equal(await gorunur('[data-kp-secim-cubuk]'), true);
-assert.equal(await cip.getAttribute('class'), 'kp-cip kp-cip--secili');
-const arac = await s.evaluate(() => {
+assert.equal(await gorunur('[data-kp-etiketler]'), false, 'etiketler yerine araç çubuğu');
+const sonra = await olcum();
+assert.deepEqual(sonra, once, 'satır yüksekliği ve panel yeri aynı');
+const aracYer = await s.evaluate(() => {
   const a = document.querySelector('[data-kp-secim-cubuk]').getBoundingClientRect();
   const o = document.querySelector('.kp-gorunum').getBoundingClientRect();
-  const p = document.querySelector('.kp-kaydir').getBoundingClientRect();
-  return { icinde: a.top >= o.top && a.bottom <= o.bottom, panelUst: p.top };
+  return a.top >= o.bottom;
 });
-assert.ok(arac.icinde, 'araç çubuğu önizlemenin üzerinde');
-assert.equal(arac.panelUst, panelOnce, 'seçim paneli kaydırmadı');
+assert.ok(aracYer, 'araç çubuğu önizlemenin altında, üzerinde değil');
+assert.equal(await s.locator('.kp-gorunum [data-kp-secim-cubuk], .kp-onizleme__ic [data-kp-secim-cubuk]').count(), 0);
 assert.deepEqual(await s.$$eval('[data-kp-secim-cubuk] button', (b) => b.map((x) => x.textContent.trim())), ['15°', '15°', 'Düzle', 'Sil', 'Tamam']);
-
-// Uyarı ve araç çubuğu aynı anda: uyarı araç çubuğunun üstünde, binmeden
-await s.evaluate(() => { const e = document.querySelector('kisisel-kart').editor; e.bildir('deneme', { sure: 0 }); });
-const ust = await s.evaluate(() => {
-  const b = document.querySelector('[data-kp-bildirim]').getBoundingClientRect();
-  const a = document.querySelector('[data-kp-secim-cubuk]').getBoundingClientRect();
-  return b.bottom <= a.top;
-});
-assert.ok(ust, 'uyarı araç çubuğunun üstünde');
-await s.evaluate(() => document.querySelector('kisisel-kart').editor.bildirimKapat());
-// Tamam seçimi kaldırır
+// Tamam seçimi kaldırır, satır yine etiketler
 await s.locator('[data-kp-secim-kaldir]').click();
 assert.equal(await gorunur('[data-kp-secim-cubuk]'), false);
+assert.equal(await gorunur('[data-kp-etiketler]'), true);
 
 // 5) Alan sınırı: normalde görünmez; sürüklerken soluk; taşınca kırmızı
 const alanOpak = () => s.evaluate(() => getComputedStyle(document.querySelector('.kp-alan')).opacity);
 assert.equal(await alanOpak(), '0', 'sınır normalde görünmez');
-const p0 = await merkezi('.kp-parca--icon');
-await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: p0[0], y: p0[1], id: 0 }] });
-await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: p0[0] + 4, y: p0[1] + 4, id: 0 }] });
-await s.waitForTimeout(300);
-const soluk = Number(await alanOpak());
-assert.ok(soluk > 0 && soluk < 0.5, 'sürüklerken soluk: ' + soluk);
-for (let i = 1; i <= 8; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: p0[0] + i * 40, y: p0[1] + 4, id: 0 }] });
-assert.equal(await s.locator('.kp-sahne--tasma').count(), 1);
-assert.equal(await s.evaluate(() => getComputedStyle(document.querySelector('.kp-alan')).animationName), 'kp-nabiz');
-assert.match(await metin('[data-kp-bildirim]'), /alanın dışına taşıyor\. Bırakırsan son yerine döner\.$/);
-await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-await s.waitForTimeout(400);
-assert.equal(await s.locator('.kp-sahne--tasma').count(), 0);
-assert.equal(await alanOpak(), '0', 'sürükleme bitince sınır kaybolur');
+const disariSurukle = async (bekleBildirim) => {
+  const p0 = await merkezi('.kp-parca--icon');
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: p0[0], y: p0[1], id: 0 }] });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: p0[0] + 4, y: p0[1] + 4, id: 0 }] });
+  await s.waitForTimeout(300);
+  const soluk = Number(await alanOpak());
+  assert.ok(soluk > 0 && soluk < 0.5, 'sürüklerken soluk: ' + soluk);
+  for (let i = 1; i <= 8; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: p0[0] + i * 40, y: p0[1] + 4, id: 0 }] });
+  assert.equal(await s.locator('.kp-sahne--tasma').count(), 1);
+  assert.equal(await s.evaluate(() => getComputedStyle(document.querySelector('.kp-alan')).animationName), 'kp-nabiz');
+  if (bekleBildirim) assert.match(await metin('[data-kp-bildirim]'), /alanın dışına taşıyor\. Bırakırsan son yerine döner\.$/);
+  else assert.equal(await gorunur('[data-kp-bildirim]'), false, 'ikinci seferde metin yok, yalnızca kırmızı');
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await s.waitForTimeout(1500);
+  assert.equal(await s.locator('.kp-sahne--tasma').count(), 0);
+  assert.equal(await alanOpak(), '0', 'sürükleme bitince sınır kaybolur');
+};
+await disariSurukle(true);
+await disariSurukle(false);
 
 // 8) Rakam kartlarında rakam yazısı yok
 await s.locator('[data-kp-adim="rakam"]').click();
@@ -186,22 +187,76 @@ assert.equal(await gorunur('[data-kp-urune-don]'), true);
 await s.locator('[data-kp-duzenle]').click();
 assert.equal(await gorunur('[data-kp-panel="ikon"]'), true);
 await s.locator('[data-kp-adim="ozet"]').click();
-// "Ürün sayfasına dön": tasarım kaydedilir, kart tasarımlı halde
+// "Ürün sayfasına dön": tasarım kaydedilir, kart tasarımlı halde (küçük önizleme, Düzenle / Sil)
 await s.locator('[data-kp-urune-don]').click();
 await s.locator('.kp-editor').waitFor({ state: 'hidden' });
 assert.equal(await gorunur('[data-kisisel-davet]'), false);
 assert.equal(await gorunur('[data-kisisel-govde]'), true);
 assert.match(await s.locator('[data-kisisel-govde]').innerText(), /ECE · 3 harf/);
-// Tekrar aç → özetten doğrudan sepete ekle
-await s.locator('[data-kisisel-govde] [data-kisisel-ac]').click();
+assert.ok(await s.locator('[data-kisisel-mini] .kp-parca').count() > 0, 'kartta tasarım önizlemesi');
+assert.deepEqual(await s.$$eval('.kisisel-kart__butonlar button', (b) => b.map((x) => x.textContent.trim())), ['Düzenle', 'Sil']);
+const ANAHTAR = 'kisisel-tasarim-10087205437726';
+assert.ok(await s.evaluate((k) => !!localStorage.getItem(k), ANAHTAR), 'localStorage\'da kayıt');
+// Sil → davet + "Tasarım silindi · Geri al" → Geri al
+await s.locator('[data-kisisel-sil]').click();
+assert.equal(await gorunur('[data-kisisel-davet]'), true);
+assert.match(await metin('[data-kisisel-bildirim]'), /Tasarım silindi · Geri al/);
+assert.equal(await s.evaluate((k) => localStorage.getItem(k), ANAHTAR), null);
+await s.screenshot({ path: '/tmp/rev-sil.png' });
+await s.locator('[data-kisisel-geri-al]').click();
+assert.equal(await gorunur('[data-kisisel-govde]'), true, 'geri alındı');
+assert.equal(await gorunur('[data-kisisel-bildirim]'), false);
+// Sayfa yeniden açılınca kayıt okunur
+await s.reload();
+await s.locator('kisisel-kart').waitFor({ state: 'visible' });
+assert.equal(await gorunur('[data-kisisel-govde]'), true, 'yeniden yüklemede tasarım kartta');
+// Stoğu biten patch kayıttan çıkar, kartta not
+await s.evaluate((k) => {
+  const k0 = JSON.parse(localStorage.getItem(k));
+  const ilk = k0.t.parcalar[0];
+  k0.t.parcalar.push(Object.assign({}, ilk, { uid: 'i-kopek', urunId: 3, varyantId: 3003 })); // Sevimli Köpek: stok 0
+  localStorage.setItem(k, JSON.stringify(k0));
+}, ANAHTAR);
+await s.reload();
+await s.locator('kisisel-kart').waitFor({ state: 'visible' });
+assert.match(await metin('[data-kisisel-not]'), /Tasarımındaki Sevimli Köpek artık stokta olmadığı için çıkarıldı\./);
+assert.ok(await s.evaluate((k) => !JSON.parse(localStorage.getItem(k)).t.parcalar.some((p) => p.urunId === 3), ANAHTAR), 'kayıttan da çıktı');
+// pageshow (bfcache dönüşü): başka yerde değişen kayıt yeniden okunur
+await s.evaluate((k) => { localStorage.removeItem(k); window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })); }, ANAHTAR);
+assert.equal(await gorunur('[data-kisisel-davet]'), true, 'pageshow ile güncellendi');
+await s.evaluate(() => history.back());
+await s.waitForTimeout(500);
+// Kaydı geri koy, tekrar aç → özetten doğrudan sepete ekle; sonrasında kayıt temizlenir
+await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
+await s.locator('kisisel-kart').waitFor({ state: 'visible' });
+await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
+await s.locator('#kp-isim').fill('ece');
 await s.locator('[data-kp-adim="ozet"]').click();
 await s.locator('[data-kp-ileri]').click();
 await s.waitForURL('**/cart');
 assert.ok(eklenen && eklenen.items[0].properties['Tasarım'].startsWith('ECE'), 'özetten tasarımla sepete eklendi');
+assert.equal(await s.evaluate((k) => localStorage.getItem(k), ANAHTAR), null, 'sepete eklenince kayıt temizlendi');
+
+// Boş özet: hiçbir şey eklenmeden İleri ile Özet'e; seçenekler ve düz çanta
+await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
+await s.locator('kisisel-kart').waitFor({ state: 'visible' });
+assert.equal(await gorunur('[data-kisisel-davet]'), true, 'eklendikten sonra kart davet halinde');
+await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
+for (let i = 0; i < 3; i++) await s.locator('[data-kp-ileri]').click();
+assert.equal(await metin('[data-kp-panel="ozet"] h3'), 'Henüz patch eklemedin');
+assert.equal(await gorunur('[data-kp-geri-don]'), true);
+assert.equal(await gorunur('[data-kp-sade-al]'), true);
+assert.equal(await metin('[data-kp-ileri]'), 'Sepete ekle · 3.000 TL');
+await s.locator('[data-kp-geri-don]').click();
+assert.equal(await gorunur('[data-kp-panel="yazi"]'), true, 'geri dön Yazı adımına');
+// Adım çizgisinden doğrudan geçiş
+await s.locator('[data-kp-adim="ikon"]').click();
+assert.equal(await gorunur('[data-kp-panel="ikon"]'), true);
+await s.locator('[data-kp-kapat]').click();
 
 // 1) "Sadece çantayı al": düz ürün akışı (temanın formu, tasarım kalemleri yok)
 eklenen = null;
-await s.evaluate(() => sessionStorage.clear());
+await s.evaluate(() => localStorage.clear());
 await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await s.locator('kisisel-kart').waitFor({ state: 'visible' });
 await s.evaluate(() => document.querySelector('#product-form-main').addEventListener('submit', () => (window.__duz = 1)));
