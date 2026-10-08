@@ -191,6 +191,9 @@ await sayfa.screenshot({ path: cikti + '06-ikon-surukleme.png' });
 assert.equal(await sayfa.evaluate(() => window.scrollY), 0);
 
 await sayfa.locator('[data-kp-ileri]').click();
+// İkon → Aksesuar → Özet
+await sayfa.locator('[data-kp-panel="aksesuar"]').waitFor({ state: 'visible' });
+await sayfa.locator('[data-kp-ileri]').click();
 await sayfa.locator('[data-kp-panel="ozet"]').waitFor({ state: 'visible' });
 const ozet = await sayfa.locator('.kp-ozet').innerText();
 assert.match(ozet, /Toplam\s+4\.650 TL/);

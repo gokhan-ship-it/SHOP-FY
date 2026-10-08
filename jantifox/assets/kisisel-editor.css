@@ -773,6 +773,9 @@ body.kisisel-aktif .bag-notice {
   white-space: nowrap;
   cursor: pointer;
 }
+.kp-arac button[hidden] {
+  display: none;
+}
 .kp-arac button:active {
   background: var(--kp-yumusak);
 }
@@ -1785,4 +1788,110 @@ html.kp-kilit body {
   content: '';
   position: absolute;
   inset: -4px;
+}
+
+/* ---------- Aksesuar ---------- */
+/* Aksesuarın kendi tasarım ekranı çanta editörünün üstünde açılır */
+.kp-editor--alt {
+  z-index: 2147483001;
+}
+.kp-ust__metin {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.kp-geri {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--kp-dokunma);
+  height: var(--kp-dokunma);
+  margin-right: 0.4rem;
+  border: 0;
+  background: transparent;
+  color: var(--kp-murekkep);
+  cursor: pointer;
+}
+.kp-yol {
+  margin: 0.2rem 0 0;
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+.kp-editor .kp-alt__ileri--marka {
+  background: #b3141b;
+  border-color: #b3141b;
+  color: #fff;
+}
+.kp-alt__aks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  width: 100%;
+}
+.kp-aks-not {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+/* Aksesuar kartları */
+.kp-izgara--aksesuar {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.kp-secim--aksesuar {
+  padding: 0.8rem 0.6rem;
+}
+.kp-secim--aksesuar img {
+  max-width: 120px;
+  aspect-ratio: 4 / 3;
+}
+.kp-aks-kart__renk {
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+.kp-aks-kart__fiyat {
+  font-weight: 600;
+}
+.kp-aks-kart__not {
+  margin-top: 0.2rem;
+  font-size: 1.1rem;
+  color: var(--kp-ikincil);
+  text-align: center;
+}
+/* Çantadaki aksesuar: görsel dış ölçü kutusuna oturur, kanca ve fermuar ipi taşabilir */
+.kp-parca--aksesuar {
+  overflow: visible;
+  border-radius: 0;
+}
+.kp-aks__gorsel {
+  position: absolute;
+  pointer-events: none;
+}
+.kp-aks__gorsel > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+.kp-aks__parca {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.kp-aks__parca img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.kp-cip__duzenle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
 }

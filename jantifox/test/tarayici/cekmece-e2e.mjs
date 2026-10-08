@@ -16,6 +16,9 @@ const sepet = { items: [
   { key: 'k-e', variant_id: 1004, quantity: 2, final_line_price: 56750, variant_title: 'E', product_title: 'Cool Alfabe Patch', properties: ozel('patch', { 'Harf sırası': '1, 3', _adet_birim: '2' }) },
   { key: 'k-c', variant_id: 1002, quantity: 1, final_line_price: 28375, variant_title: 'C', product_title: 'Cool Alfabe Patch', properties: ozel('patch', { 'Harf sırası': '2', _adet_birim: '1' }) },
   { key: 'k-7', variant_id: 2007, quantity: 1, final_line_price: 28375, variant_title: '7', product_title: 'Janti Rakam Patch', properties: ozel('patch', { _adet_birim: '1' }) },
+  // Aksesuar alt grubu: aksesuar satırı + üzerindeki patch (A ×2)
+  { key: 'k-aks', product_id: 9101, variant_id: 9201, quantity: 1, final_line_price: 170000, variant_title: 'Default Title', product_title: 'Yapıştırılabilir Kalem Kutusu Kırmızı- LE KOKO COLLECTIF-', properties: ozel('aksesuar', { 'Aksesuar tasarımı': 'ADA', _aksesuar_id: 'a1', _adet_birim: '1' }) },
+  { key: 'k-aks-a', variant_id: 1000, quantity: 2, final_line_price: 56750, variant_title: 'A', product_title: 'Cool Alfabe Patch', properties: ozel('patch', { 'Harf sırası': '1, 3', _adet_birim: '2', _aksesuar_id: 'a1', Aksesuar: 'Kalem Kutusu Kırmızı' }) },
   { key: 'k-diger', variant_id: 9, quantity: 1, final_line_price: 50000, variant_title: 'Default Title', product_title: 'Şapka', properties: {} }
 ] };
 const svg = (renk) => 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="${renk}"/></svg>`);
@@ -58,12 +61,17 @@ assert.equal(await s.locator(baz + ' img.model').isVisible(), false, 'model foto
 // Etiket, ad, içerik özeti ve grup toplamı (çanta + patch'lerin indirimli satır fiyatları)
 assert.equal(await s.locator(baz + ' .kp-sepet-rozet').textContent(), 'Kişiselleştirilmiş');
 assert.equal(await s.locator(baz + ' .kp-sepet-icerik').textContent(), 'ECE · 7');
-assert.equal(await s.locator(baz + ' .kp-sepet-toplam').textContent(), (2700 + 567.5 + 283.75 + 283.75).toLocaleString('en-US', { minimumFractionDigits: 2 }) + 'TL');
+assert.equal(await s.locator(baz + ' .kp-sepet-toplam').textContent(), (2700 + 567.5 + 283.75 + 283.75 + 1700 + 567.5).toLocaleString('en-US', { minimumFractionDigits: 2 }) + 'TL');
 assert.equal(await s.locator(baz + ' dl').isVisible(), false, 'özellik listesi yerine özet');
 // Patch satırları varsayılan gizli; buton 4 patch (E ×2, C, 7)
 const patchler = ['#CartDrawer-Item-2', '#CartDrawer-Item-3', '#CartDrawer-Item-4'];
 for (const p of patchler) assert.equal(await s.locator(p).isVisible(), false, p + ' gizli');
-assert.equal(await s.locator('[data-kp-patch-ac]').textContent(), "4 patch'i göster");
+assert.equal(await s.locator('[data-kp-patch-ac]').textContent(), "6 patch'i göster", 'aksesuar satırı patch sayılmaz, üzerindekiler sayılır');
+// Aksesuar satırı görünür: "+ Kalem Kutusu Kırmızı ve tasarımı"; üzerindeki patch satırı patch'lerle birlikte gizli
+assert.equal(await s.locator('#CartDrawer-Item-5').isVisible(), true);
+assert.equal(await s.locator('#CartDrawer-Item-5 .kp-sepet-aks').textContent(), '+ Kalem Kutusu Kırmızı ve tasarımı');
+assert.equal(await s.locator('#CartDrawer-Item-5 .cart-item__name').isVisible(), false);
+assert.equal(await s.locator('#CartDrawer-Item-6').isVisible(), false);
 await s.locator('[data-kp-patch-ac]').click();
 for (const p of patchler) assert.equal(await s.locator(p).isVisible(), true, p + ' açıldı');
 assert.equal(await s.locator('[data-kp-patch-ac]').textContent(), "Patch'leri gizle");
@@ -75,8 +83,8 @@ assert.match(patchMetni, /Cool Alfabe Patch (Seçenek: )?E /);
 await s.locator('[data-kp-patch-ac]').click();
 assert.equal(await s.locator('#CartDrawer-Item-2').isVisible(), false, 'tekrar kapandı');
 // Tasarım dışı ürün olduğu gibi
-assert.equal(await s.locator('#CartDrawer-Item-5 img.model').isVisible(), true);
-assert.equal(await s.locator('#CartDrawer-Item-5 .kp-sepet-icerik').count(), 0);
+assert.equal(await s.locator('#CartDrawer-Item-7 img.model').isVisible(), true);
+assert.equal(await s.locator('#CartDrawer-Item-7 .kp-sepet-icerik').count(), 0);
 await s.screenshot({ path: '/tmp/cekmece.png' });
 assert.deepEqual(hatalar, []);
 await t.close();

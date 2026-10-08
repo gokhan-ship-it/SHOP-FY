@@ -28,6 +28,23 @@ export function ornekVeri(degisiklik = {}) {
       { id: 8002, baslik: 'Kalpler Patch Seti', varyant: 7002, fiyat: 95000, satilabilir: true, patchler: [1, 5, 4, 2] },
       { id: 8003, baslik: 'Eski Seti', varyant: 7003, fiyat: 80000, satilabilir: false, patchler: [2, 4, 5] }
     ],
+    // Yapıştırılabilir aksesuarlar: kalem kutusu (kendi Velcro yüzeyi var, köşeleri yuvarlak), zarf ve yuvarlak (yüzey yok)
+    aksesuarlar: [
+      { id: 9101, baslik: 'Yapıştırılabilir Kalem Kutusu Kırmızı- LE KOKO COLLECTIF-', varyant: 9201, fiyat: 170000, satilabilir: true, stok: 10,
+        gorsel: { en: 1000, boy: 545, kucuk: 'kk.png', buyuk: 'kk.png' },
+        harita: { surum: 2, tip: 'aksesuar', kalibre: true, gorsel: { en: 1000, boy: 545 },
+          dis: { shape: 'rect', x: 0, y: 0, w: 100, h: 100, en_cm: 22, boy_cm: 12, kose_cm: 2 },
+          zones: [{ id: 'velcro-yuzeyi', ad: 'Velcro yüzeyi', shape: 'rect', x: 9.09, y: 16.67, w: 81.82, h: 66.67, allowed_types: ['letter', 'number', 'icon'], genislik_cm: 18 }], forbidden: [] } },
+      { id: 9102, baslik: 'Yapıştırılabilir Zarf Kalemlik Kırmızı/Pembe -LE KOKO COLLECTIF-', varyant: 9202, fiyat: 150000, satilabilir: true, stok: 50,
+        gorsel: { en: 1000, boy: 450, kucuk: 'zf.png', buyuk: 'zf.png' },
+        harita: { surum: 2, tip: 'aksesuar', kalibre: true, gorsel: { en: 1000, boy: 450 }, dis: { shape: 'rect', x: 0, y: 0, w: 100, h: 100, en_cm: 20, boy_cm: 9 }, zones: [], forbidden: [] } },
+      { id: 9103, baslik: 'Yapıştırılabilir Mini Yuvarlak Çanta Mavi-LE KOKO COLLECTIF-', varyant: 9203, fiyat: 90000, satilabilir: true, stok: 68,
+        gorsel: { en: 1000, boy: 1000, kucuk: 'yv.png', buyuk: 'yv.png' },
+        harita: { surum: 2, tip: 'aksesuar', kalibre: true, gorsel: { en: 1000, boy: 1000 }, dis: { shape: 'circle', x: 20, y: 20, w: 75, h: 75, en_cm: 10, boy_cm: 10 }, zones: [], forbidden: [] } },
+      { id: 9104, baslik: 'Yapıştırılabilir Tükenen Aksesuar', varyant: 9204, fiyat: 90000, satilabilir: true, stok: 0,
+        gorsel: { en: 1000, boy: 1000, kucuk: 'x.png', buyuk: 'x.png' },
+        harita: { surum: 2, dis: { shape: 'circle', x: 0, y: 0, w: 100, h: 100, en_cm: 10 }, zones: [] } }
+    ],
     ...degisiklik
   };
 }

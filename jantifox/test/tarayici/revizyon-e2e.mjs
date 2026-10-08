@@ -6,8 +6,8 @@ import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 const require = createRequire(import.meta.url);
 // Akış: Yazı → İkon → (Aksesuar) → Özet
-const ADIM_SAYISI = 3;
-const ADIM_METNI = /1 Yazı 2 İkon 3 Özet/;
+const ADIM_SAYISI = 4;
+const ADIM_METNI = /1 Yazı 2 İkon 3 Aksesuar 4 Özet/;
 const { chromium, devices } = require('playwright');
 
 const html = readFileSync(new URL('sayfa.html', import.meta.url), 'utf8');
@@ -153,7 +153,7 @@ const aracYer = await s.evaluate(() => {
 });
 assert.ok(aracYer, 'araç çubuğu önizlemenin altında, üzerinde değil');
 assert.equal(await s.locator('.kp-gorunum [data-kp-secim-cubuk], .kp-onizleme__ic [data-kp-secim-cubuk]').count(), 0);
-assert.deepEqual(await s.$$eval('[data-kp-secim-cubuk] button', (b) => b.map((x) => x.textContent.trim())), ['15°', '15°', 'Düzle', 'Sil', 'Tamam']);
+assert.deepEqual(await s.$$eval('[data-kp-secim-cubuk] button', (b) => b.filter((x) => !x.hidden).map((x) => x.textContent.trim())), ['15°', '15°', 'Düzle', 'Sil', 'Tamam']);
 // Tamam seçimi kaldırır, satır yine etiketler
 await s.locator('[data-kp-secim-kaldir]').click();
 assert.equal(await gorunur('[data-kp-secim-cubuk]'), false);

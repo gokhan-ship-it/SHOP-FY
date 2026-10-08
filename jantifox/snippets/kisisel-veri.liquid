@@ -63,6 +63,41 @@
       }{%- unless forloop.last -%},{%- endunless -%}
     {%- endfor -%}
   ],
+  "aksesuarlar": [
+    {%- comment -%}
+      Yapıştırılabilir aksesuarlar (katalog: aksesuarlar). Görsel: kisisellestirme.onizleme_gorseli (şeffaf, kırpılmış);
+      harita: dış ölçü (dis) + aksesuarın kendi Velcro yüzeyi (zones). Yalnızca satışta olanlar.
+    {%- endcomment -%}
+    {%- assign ilk_aks = true -%}
+    {%- for p in katalog.aksesuarlar.value -%}
+      {%- assign a_gorsel = p.metafields.kisisellestirme.onizleme_gorseli.value -%}
+      {%- assign a_harita = p.metafields.kisisellestirme.harita.value -%}
+      {%- if p.available and a_gorsel != blank and a_harita != blank -%}
+        {%- assign a_gorsel = a_gorsel.preview_image | default: a_gorsel -%}
+        {%- assign av = p.selected_or_first_available_variant -%}
+        {%- assign a_stok = nil -%}
+        {%- if av.inventory_management == 'shopify' and av.inventory_policy != 'continue' -%}
+          {%- assign a_stok = av.inventory_quantity | at_least: 0 -%}
+        {%- endif -%}
+        {%- unless ilk_aks -%},{%- endunless -%}{%- assign ilk_aks = false -%}
+        {
+          "id": {{ p.id }},
+          "baslik": {{ p.title | json }},
+          "varyant": {{ av.id | json }},
+          "fiyat": {{ av.price | json }},
+          "satilabilir": {{ av.available | json }},
+          "stok": {{ a_stok | json }},
+          "gorsel": {
+            "en": {{ a_gorsel.width | default: 1000 }},
+            "boy": {{ a_gorsel.height | default: 1000 }},
+            "kucuk": {{ a_gorsel | image_url: width: 600 | json }},
+            "buyuk": {{ a_gorsel | image_url: width: 1000 | json }}
+          },
+          "harita": {{ a_harita | json }}
+        }
+      {%- endif -%}
+    {%- endfor -%}
+  ],
   "ikonlar": [
     {%- comment -%} Liste metafield'ları sayfalamadan en fazla 50 öğe döndürür; katalogda 50'den fazla ikon var {%- endcomment -%}
     {%- paginate katalog.ikonlar.value by 250 -%}

@@ -622,3 +622,50 @@ test('sepetten geri kurma: set patch\'leri yeniden set olur, konum patch bazınd
   assert.equal(ic.fiyatHesapla(m, y, k).toplam, 300000 + 2 * 33000 + 80000);
   yakin(konumlar(m, y, k), konumlar(m, y, t));
 });
+
+// ---------- Aksesuarlar ----------
+
+test('aksesuarlar: ad, model, renk, dış ölçü; stokta olmayan yok; tasarlanabilirlik Velcro yüzeyinden', () => {
+  const { m } = kur();
+  assert.deepEqual(duz(m.aksesuarlar.map((a) => [a.id, a.ad, a.model, a.renk, a.tasarlanabilir])), [
+    [9101, 'Kalem Kutusu Kırmızı', 'Kalem Kutusu', 'Kırmızı', true],
+    [9102, 'Zarf Kalemlik Kırmızı/Pembe', 'Zarf Kalemlik', 'Kırmızı/Pembe', false],
+    [9103, 'Mini Yuvarlak Çanta Mavi', 'Mini Yuvarlak Çanta', 'Mavi', false]
+  ]);
+  const am = m.aksesuarModeli(9101);
+  assert.ok(Math.abs(am.m.Wcm - 22) < 0.01, 'aksesuarın kendi ölçeği: görsel 22 cm');
+  assert.equal(m.aksesuarModeli(9102), null);
+});
+
+test('kalem kutusu 25 cm daireye yalnızca yuvarlak köşeleriyle sığar; her açıda', () => {
+  const { m, y } = kur();
+  const alan = m.alanBul('icon');
+  const c = ic.geometri.merkez(alan.sekil);
+  const yk = (aci, r) => ({ t: 'obb', cx: c[0], cy: c[1], w: 22, h: 12, a: aci, r });
+  assert.equal(y.alanaUygun(yk(0, 0), 'aksesuar'), false, 'düz dikdörtgen sığmaz (köşegen 25,06 cm)');
+  for (const a of [0, 30, 45, 90, 135]) assert.equal(y.alanaUygun(yk(a, 2), 'aksesuar'), true, a + '°');
+});
+
+test('aksesuar fiyatı, üzerindeki tasarım, özet ve sepet satırları; geri kurma', () => {
+  const { m, y } = kur();
+  const am = m.aksesuarModeli(9101);
+  const ic0 = { setId: m.setler[0].id, isim: 'ADA', isimMerkez: null, parcalar: [] };
+  const alan = m.alanBul('icon');
+  const c = ic.geometri.merkez(alan.sekil);
+  const t = { setId: m.setler[0].id, isim: '', isimMerkez: null, parcalar: [], aksesuarlar: [{ uid: 'a1', urunId: 9101, cx: c[0], cy: c[1], aci: 0, tasarim: ic0 }] };
+  const d = ic.duzenle(m, y, t);
+  assert.equal(Object.keys(d.hatalar).length, 0, 'aksesuar alanda geçerli');
+  const f = ic.fiyatHesapla(m, y, t);
+  assert.equal(f.toplam, 300000 + 170000 + 3 * 33000);
+  assert.equal(f.patchAdet, 3);
+  assert.equal(ic.tasarimOzeti(m, t), 'Kalem Kutusu Kırmızı (ADA)');
+  const konum = duz(ic.tasarimKonumu(m, d.parcalar, t));
+  assert.deepEqual(konum.p.map((x) => [x.t, x.u || null]), [['a', 'a1']]);
+  const k = ic.konumdanTasarim(m, y, konum);
+  assert.equal(k.aksesuarlar.length, 1);
+  assert.equal(k.aksesuarlar[0].uid, 'a1');
+  assert.ok(Math.abs(k.aksesuarlar[0].cx - c[0]) < 0.11);
+  // Stok: aksesuarın üzerindeki A ile çantadaki A aynı stoktan
+  assert.deepEqual(duz(ic.stokKontrol(m, t, y, 1)), []);
+  assert.ok(am.yer.parcalar(ic0).every((p) => am.yer.alanaUygun(p.sekil, p.tip)), 'ADA aksesuarın Velcro yüzeyine sığar');
+});

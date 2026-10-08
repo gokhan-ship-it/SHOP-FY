@@ -28,6 +28,14 @@ v.ikonlar.push({ id: 6, baslik: 'Meteor', tip: 'icon', en: '3.5', boy: '8.5', se
   gorsel: svg(`<path d="M50 0 L90 300 L10 300 Z" fill="#2ec4b6"/><circle cx="50" cy="300" r="48" fill="#ff8fa3" stroke="#222" stroke-width="6"/>`, 100, 350),
   varyantlar: [{ id: 3006, fiyat: 33000, satilabilir: true, stok: 50 }] });
 
+// Aksesuarlar: kalem kutusu (kırmızı gövde, açık kırmızı Velcro yüzey), zarf, yuvarlak (kancalı)
+const aksGorsel = {
+  9101: svg(`<rect x="10" y="10" width="980" height="525" rx="90" fill="#c4251b"/><rect x="91" y="91" width="818" height="363" rx="20" fill="#e85c55"/>`, 1000, 545),
+  9102: svg(`<rect x="0" y="0" width="1000" height="450" fill="#d22"/><circle cx="500" cy="225" r="18" fill="#fff"/>`, 1000, 450),
+  9103: svg(`<rect x="560" y="0" width="60" height="200" rx="20" fill="#14a"/><circle cx="575" cy="575" r="375" fill="#2459c9"/>`, 1000, 1000)
+};
+v.aksesuarlar.forEach((a) => { if (aksGorsel[a.id]) a.gorsel = { ...a.gorsel, kucuk: aksGorsel[a.id], buyuk: aksGorsel[a.id] }; });
+
 const kod = readFileSync(new URL('../../assets/kisisel-editor.js', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../../assets/kisisel-editor.css', import.meta.url), 'utf8');
 const sepetKod = readFileSync(new URL('../../assets/kisisel-sepet.js', import.meta.url), 'utf8');
