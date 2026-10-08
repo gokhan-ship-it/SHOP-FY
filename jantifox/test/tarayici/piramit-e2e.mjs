@@ -167,7 +167,6 @@ const secilenler = await satirRenkleri();
 await s.locator('[data-kp-adim="ozet"]').click();
 await s.locator('[data-kp-ileri]').click();
 await s.locator('.kp-editor').waitFor({ state: 'hidden' });
-await s.locator('#ProductSubmitButton-main').click();
 await s.waitForTimeout(800);
 const baz = eklenen.items[0].properties;
 console.log('Tasarım özeti:', baz['Tasarım']);

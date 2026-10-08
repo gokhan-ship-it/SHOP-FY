@@ -50,7 +50,14 @@ writeFileSync(new URL('sayfa.html', import.meta.url), `<!doctype html>
 </script>
 </head><body>
 <section id="MainProduct-main">
-  <div class="product__media-wrapper"><div class="main-carousel"><div class="splide__list"><div class="splide__slide is-active"><img alt="" src="${canta}" style="width:100%"></div></div></div></div>
+  <div class="product__media-wrapper"><gallery-carousel>
+    <div class="main-carousel"><div class="splide__list"><div class="splide__slide is-active"><img alt="" src="${canta}" style="width:100%"></div><div class="splide__slide"><img alt="" src="${canta}" style="width:100%"></div></div></div>
+    <div class="thumbnail-carousel"><div class="splide__list" style="display:flex;gap:8px"><div class="splide__slide" style="width:70px;aspect-ratio:1" onclick="window.__kucukTik=(window.__kucukTik||0)+1"><span class="thumbnail" style="display:block;width:70px;height:70px"><img alt="" src="${canta}" width="70" height="70"></span></div><div class="splide__slide" style="width:70px;aspect-ratio:1"><span class="thumbnail" style="display:block;width:70px;height:70px"><img alt="" src="${canta}" width="70" height="70"></span></div></div></div>
+  </gallery-carousel></div>
+  <script>
+    // Tema: gallery-carousel Splide örneğini "main" olarak tutar; sayfa ikinci görselde açılmış gibi
+    document.querySelector('gallery-carousel').main = { index: 1, go: function (i) { this.index = i; window.__galeriGit = i; } };
+  </script>
   <product-info id="ProductInfo-main">
     <h1>Kanvas Lacivert Tote Çanta</h1>
     <div class="product__price">3.000 TL</div>

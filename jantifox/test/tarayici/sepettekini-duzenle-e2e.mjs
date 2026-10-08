@@ -85,7 +85,16 @@ assert.match(kart, /^Senin tasarımın ✓ Sepette ECE · 7 · Futbol Topu 5 pat
 assert.equal(await s.evaluate(() => getComputedStyle(document.querySelector('.kisisel-kart__sepette')).backgroundColor), 'rgb(47, 143, 78)');
 assert.ok(await s.locator('[data-kisisel-sepet] .kp-parca').count() >= 5, 'önizleme _tasarim_konum\'dan');
 assert.equal(await gorunur('[data-kisisel-ana]'), false, 'davet kutusu yok');
-assert.equal(await metin('[data-kisisel-tekrar]'), 'Bir tane daha mı istersin? Kardeşi ya da arkadaşı için Yeni tasarım');
+assert.equal(await metin('[data-kisisel-tekrar]'), "Bir tane daha yapmak ister misin? Farklı bir isim ve patch'lerle ikinci çantanı tasarla. Yeni tasarım");
+// Sepette tasarım: galeride tasarım görseli, Hemen satın al gizli, temanın butonu "Sadece çantayı sepete ekle"
+assert.equal(await gorunur('.kp-galeri'), true);
+assert.equal(await s.locator('.kp-galeri .kp-parca').count(), 5);
+assert.equal(await metin('.kp-galeri-kucuk__serit'), 'Tasarımın');
+assert.equal(await gorunur('.shopify-payment-button'), false);
+assert.equal(await metin('#ProductSubmitButton-main'), 'Sadece çantayı sepete ekle');
+const galeriIsim = () => s.evaluate(() => [...document.querySelectorAll('.kp-galeri .kp-parca')].length);
+const galeriHtml = () => s.evaluate(() => document.querySelector('.kp-galeri').innerHTML);
+const galeriOnce = await galeriHtml();
 
 // 2a) Düzenle → editör sepetteki tasarımla dolu; yarıda kapatınca sepet değişmez
 await s.locator('[data-kisisel-sepet-duzenle="0"]').click();
@@ -125,6 +134,8 @@ assert.deepEqual(log, [['add', 'ADA + 7 + Futbol Topu'], ['update', ilkAnahtarla
 assert.equal(sepet.length, 5);
 assert.ok(sepet.every((k) => k.properties._tasarim_id === sepet[0].properties._tasarim_id), 'sepette tek grup');
 assert.match(await metin('[data-kisisel-sepet]'), /ADA · 7 · Futbol Topu/);
+assert.equal(await galeriIsim(), 5);
+assert.notEqual(await galeriHtml(), galeriOnce, 'galeri düzenlenen tasarımla güncellendi (ECE → ADA)');
 
 // 3) Sepetten sil → davet + "Tasarım sepetten çıkarıldı · Geri al" → Geri al aynı tasarımı ekler
 const tasarimId = sepet[0].properties._tasarim_id;
@@ -133,6 +144,8 @@ await s.waitForTimeout(400);
 assert.equal(sepet.length, 0, 'grubun tüm satırları kaldırıldı');
 assert.equal(await gorunur('[data-kisisel-davet]'), true, 'kart davet haline döndü');
 assert.match(await metin('[data-kisisel-bildirim]'), /Tasarım sepetten çıkarıldı · Geri al/);
+assert.equal(await s.locator('.kp-galeri, .kp-galeri-kucuk').count(), 0, 'silinince galeri temanın görseline döndü');
+assert.equal(await gorunur('.shopify-payment-button'), true, 'Hemen satın al geri geldi');
 await s.locator('[data-kisisel-geri-al]').click();
 await s.waitForTimeout(400);
 assert.equal(sepet.length, 5, 'geri alındı');
@@ -149,6 +162,7 @@ await s.waitForURL('**/cart');
 await urun();
 await s.locator('[data-kisisel-sepet]').waitFor({ state: 'visible' });
 assert.equal(await s.locator('.kisisel-kart__kutu--sepet.kisisel-kart__kutu--kompakt').count(), 2, 'iki kompakt kart');
+assert.equal(await galeriIsim(), 3, 'galeride en son eklenen tasarım (ECE)');
 
 assert.deepEqual(hatalar, []);
 await t.close();

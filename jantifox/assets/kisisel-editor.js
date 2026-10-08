@@ -3001,9 +3001,6 @@
     window.addEventListener('resize', function () { self.butonlariGuncelle(); });
     this.davetHazirla();
 
-    this.gonderYakala = this.gonderYakala.bind(this);
-    document.addEventListener('submit', this.gonderYakala, true);
-
     this.hidden = false;
     // Kart çalışıyorsa temanın kırmızı "Değiştirilebilir patchler…" kutusu gizlenir (yerine kartın yeşil notu);
     // JS yüklenemezse kart gizli kalır, temanın kutusu görünmeye devam eder
@@ -3110,7 +3107,8 @@
     this.querySelector('[data-kisisel-govde]').hidden = !tasarimVar;
     this.querySelector('[data-kisisel-sepet]').hidden = !sepetVar;
     this.querySelector('[data-kisisel-sepete-ekle]').hidden = !tasarimVar;
-    document.body.classList.toggle('kisisel-modu', this.mod === 'kisisel' && tasarimVar);
+    // Kayıtlı ya da sepette tasarım varken "Hemen satın al" gizlenir (CSS)
+    document.body.classList.toggle('kisisel-tasarimli', tasarimVar || sepetVar);
   };
 
   // Sepetteki bu ürüne ait kişiselleştirilmiş gruplar (_tasarim_id), kart (c) durumu için
@@ -3141,6 +3139,7 @@
         self.sepettekiler = liste.filter(function (g) { return g.baz && String(g.baz.product_id) === String(m.urun.id); });
         self.sepetCiz();
         self.durumCiz();
+        self.galeriGuncelle();
       })
       .catch(function () {});
   };
@@ -3463,73 +3462,87 @@
     ].filter(Boolean);
   };
 
-  // Butonlar: kişiselleştirme modunda "Tasarımımla sepete ekle · toplam"; masaüstünde ya da sığmazsa "Sepete ekle · toplam"
+  // Butonlar: temanın "Sepete ekle"si (ana ve sabit çubuk) "Sadece çantayı sepete ekle" olur, davranışı aynı kalır
+  // (kod yüklenmezse temanın kendi yazısı durur). Kırmızı buton "Tasarımımı sepete ekle · toplam"; sığmazsa tutarsız.
   KisiselKart.prototype.butonlariGuncelle = function (f) {
-    var kisisel = this.mod === 'kisisel' && !bosMu(this.tasarim);
-    if (kisisel && !f) f = fiyatHesapla(this.model, this.yer, this.tasarim);
-    var masaustu = window.matchMedia && window.matchMedia('(min-width: 990px)').matches;
-    function yaz(yazi, buton) {
-      var tutar = paraBicimle(f.toplam);
-      yazi.textContent = (masaustu ? 'Sepete ekle' : 'Tasarımımla sepete ekle') + ' · ' + tutar;
-      if (!masaustu && buton.offsetWidth && (yazi.scrollWidth > buton.clientWidth || buton.scrollWidth > buton.clientWidth + 1)) {
-        yazi.textContent = 'Sepete ekle · ' + tutar;
+    if (!bosMu(this.tasarim)) {
+      if (!f) f = fiyatHesapla(this.model, this.yer, this.tasarim);
+      var kirmizi = this.querySelector('[data-kisisel-sepete-ekle]');
+      var yazi = kirmizi.querySelector('[data-kisisel-sepete-yazi]');
+      yazi.textContent = 'Tasarımımı sepete ekle · ' + paraBicimle(f.toplam);
+      if (kirmizi.offsetWidth && (yazi.scrollWidth > kirmizi.clientWidth || kirmizi.scrollWidth > kirmizi.clientWidth + 1)) {
+        yazi.textContent = 'Tasarımımı sepete ekle';
       }
     }
-    var kirmizi = this.querySelector('[data-kisisel-sepete-ekle]');
-    if (kisisel) yaz(kirmizi.querySelector('[data-kisisel-sepete-yazi]'), kirmizi);
     this.gonderButonlari().forEach(function (b) {
       var yazi = b.querySelector('span');
-      if (!yazi) return;
-      if (b._kpOrijinal == null) {
-        b._kpOrijinal = yazi.textContent;
-        b._kpOutline = b.classList.contains('btn-outline');
-      }
-      // "Hemen satın al" gizlendiğinde ana buton birincil görünsün
-      if (b._kpOutline) {
-        b.classList.toggle('btn-outline', !kisisel);
-        b.classList.toggle('btn-primary', kisisel);
-      }
-      if (!kisisel) yazi.textContent = b._kpOrijinal;
-      else yaz(yazi, b);
+      // Tükendi gibi tema durumlarında temanın yazısına dokunulmaz
+      if (!yazi || b.disabled) return;
+      if (yazi.textContent.trim() !== 'Sadece çantayı sepete ekle') yazi.textContent = 'Sadece çantayı sepete ekle';
     });
   };
 
+  // Galerideki tasarım: kayıtlı tasarım; yoksa sepetteki en son eklenen ya da düzenlenen tasarım
+  // (Shopify yeni satırları sepetin başına ekler; düzenleme de yeni grup ekleyip eskisini kaldırır)
+  KisiselKart.prototype.galeriParcalari = function () {
+    if (!bosMu(this.tasarim)) return duzenle(this.model, this.yer, kopyala(this.tasarim)).parcalar;
+    var g = (this.sepettekiler || [])[0];
+    if (!g) return null;
+    try {
+      var p = konumParcalari(this.model, JSON.parse((g.baz.properties || {})._tasarim_konum || '{}'));
+      return p.length ? p : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  // Galeri: temanın galerisine slayt eklenmez; ilk slaytın ve ilk küçük resmin üstüne katman konur.
+  // Tasarım yoksa katmanlar kaldırılır, galeri temanın kendi görselleriyle kalır.
   KisiselKart.prototype.galeriGuncelle = function () {
-    var ilk = document.querySelector('#MainProduct-' + this.bolum + ' .main-carousel .splide__slide') ||
-      document.querySelector('.main-carousel .splide__slide');
-    if (!ilk) return;
-    var katman = ilk.querySelector('.kp-galeri');
-    var goster = !bosMu(this.tasarim);
-    if (!goster) {
-      if (katman) katman.remove();
-      return;
+    try {
+      this.galeriCiz();
+    } catch (e) {
+      if (window.console) console.warn('[kisisel] galeri:', e);
     }
-    if (!katman) {
-      katman = document.createElement('div');
-      katman.className = 'kp-galeri';
-      katman.innerHTML = '<div class="kp-galeri__sahne"></div><span class="kp-galeri__rozet">Senin tasarımın</span>';
-      ilk.appendChild(katman);
-      this.galeriSahne = new Sahne(this.model, this.yer, katman.querySelector('.kp-galeri__sahne'), { etkilesimli: false });
+  };
+
+  KisiselKart.prototype.galeriCiz = function () {
+    var self = this;
+    var kok = document.getElementById('MainProduct-' + this.bolum) || document;
+    var ilk = kok.querySelector('.main-carousel .splide__slide');
+    var kucuk = kok.querySelector('.thumbnail-carousel .splide__slide');
+    var parcalar = this.galeriParcalari();
+    [
+      [ilk, 'kp-galeri', '<span class="kp-galeri__rozet">Senin tasarımın</span>'],
+      [kucuk && (kucuk.querySelector('.thumbnail') || kucuk), 'kp-galeri-kucuk', '<span class="kp-galeri-kucuk__serit">Tasarımın</span>']
+    ].forEach(function (x) {
+      var yer = x[0];
+      if (!yer) return;
+      var katman = null;
+      for (var i = 0; i < yer.children.length; i++) if (yer.children[i].classList.contains(x[1])) katman = yer.children[i];
+      if (!parcalar) {
+        if (katman) katman.remove();
+        return;
+      }
+      if (!katman) {
+        katman = document.createElement('div');
+        katman.className = x[1];
+        katman.setAttribute('aria-hidden', 'true');
+        katman.innerHTML = '<div class="kp-galeri__sahne"></div>' + x[2];
+        yer.appendChild(katman);
+        katman._kpSahne = new Sahne(self.model, self.yer, katman.querySelector('.kp-galeri__sahne'), { etkilesimli: false });
+      }
+      katman._kpSahne.ciz(parcalar, {}, false);
+    });
+    // Sayfa tasarım görseliyle açılsın (bir kez; müşteri sonra galeride gezinebilir)
+    if (parcalar && ilk && !this._galeriAcildi) {
+      this._galeriAcildi = true;
+      var galeri = kok.querySelector('gallery-carousel') || document.querySelector('gallery-carousel');
+      if (galeri && galeri.main && typeof galeri.main.go === 'function' && galeri.main.index !== 0) galeri.main.go(0);
     }
-    var t = kopyala(this.tasarim);
-    var d = duzenle(this.model, this.yer, t);
-    this.galeriSahne.ciz(d.parcalar, {}, false);
   };
 
   /* ---------------- Sepete ekleme ---------------- */
-
-  KisiselKart.prototype.gonderYakala = function (e) {
-    var form = e.target;
-    // Dikkat: form.id kullanılamaz; formda name="id" alanı olduğu için o alanı döndürür.
-    if (this.mod !== 'kisisel' || !form || !form.getAttribute || form.getAttribute('id') !== this.formId) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    if (bosMu(this.tasarim)) {
-      this.editor.ac();
-      return;
-    }
-    this.sepeteEkle(form);
-  };
 
   KisiselKart.prototype.adet = function () {
     var girdi = document.querySelector('input[name="quantity"][form="' + this.formId + '"]') ||
@@ -3552,12 +3565,9 @@
   };
 
   KisiselKart.prototype.yukleniyor = function (acik) {
-    this.gonderButonlari().forEach(function (b) {
-      b.classList.toggle('loading', acik);
-      b.setAttribute('aria-disabled', acik ? 'true' : 'false');
-      var d = b.querySelector('.loading__spinner');
-      if (d) d.classList.toggle('hidden', !acik);
-    });
+    var b = this.querySelector('[data-kisisel-sepete-ekle]');
+    b.classList.toggle('kisisel-kart__sepete--yukleniyor', acik);
+    b.setAttribute('aria-disabled', acik ? 'true' : 'false');
     this._yukleniyor = acik;
   };
 

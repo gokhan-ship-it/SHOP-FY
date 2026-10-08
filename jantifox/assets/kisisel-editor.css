@@ -1,5 +1,5 @@
 /* JantiFox kişiselleştirme: ürün sayfası kartı ve tam ekran editör.
-   Tüm seçiciler .kisisel-kart, .kp- veya .kisisel-modu ile başlar; tema stillerini etkilemez. */
+   Tüm seçiciler .kisisel-kart, .kp- veya .kisisel-tasarimli ile başlar; tema stillerini etkilemez. */
 
 :root {
   --kp-murekkep: #111;
@@ -15,13 +15,10 @@
   --kp-dokunma: 44px;
 }
 
-/* ---------- Kişiselleştirme modunda gizlenenler ---------- */
-body.kisisel-modu [id^='ProductInfo-'] .shopify-payment-button,
-body.kisisel-modu product-add-to-cart-sticky .shopify-payment-button {
-  display: none !important;
-}
-/* Kayıtlı tasarım varken ana "Sepete ekle" yerine kartın altındaki kırmızı buton kullanılır (sabit çubuk kalır) */
-body.kisisel-modu [id^='ProductSubmitButton-'] {
+/* ---------- Kayıtlı ya da sepette tasarım varken gizlenenler ---------- */
+/* "Hemen satın al" (ana ve sabit çubuk) gizlenir; temanın "Sepete ekle"si görünür kalır ("Sadece çantayı sepete ekle") */
+body.kisisel-tasarimli [id^='ProductInfo-'] .shopify-payment-button,
+body.kisisel-tasarimli product-add-to-cart-sticky .shopify-payment-button {
   display: none !important;
 }
 html.kp-kilit product-add-to-cart-sticky,
@@ -155,6 +152,10 @@ html.kp-kilit .whatsapp-sticky {
   margin: 0 0 0.2rem;
   font-size: 1.3rem;
   color: var(--kp-ikincil);
+}
+.kisisel-kart__sepete--yukleniyor {
+  opacity: 0.6;
+  pointer-events: none;
 }
 .kisisel-kart__sepete {
   margin-top: 1rem;
@@ -382,11 +383,16 @@ body.kisisel-aktif .bag-notice {
   min-height: var(--kp-dokunma);
 }
 
-/* ---------- Galeride "Senin tasarımın" ---------- */
-.splide__slide:has(> .kp-galeri) {
+/* ---------- Galeride "Senin tasarımın" ----------
+   Temanın galerisine slayt eklenmez: ilk slaytın ve ilk küçük resmin üstüne katman konur.
+   Küçük resim katmanı tıklamayı geçirir (temanın küçük resim gezinmesi aynen çalışır). */
+.splide__slide:has(> .kp-galeri),
+.thumbnail:has(> .kp-galeri-kucuk),
+.splide__slide:has(> .kp-galeri-kucuk) {
   position: relative;
 }
-.kp-galeri {
+.kp-galeri,
+.kp-galeri-kucuk {
   position: absolute;
   inset: 0;
   z-index: 2;
@@ -394,6 +400,11 @@ body.kisisel-aktif .bag-notice {
   align-items: center;
   justify-content: center;
   background: #fff;
+  overflow: hidden;
+}
+.kp-galeri-kucuk {
+  pointer-events: none;
+  border-radius: inherit;
 }
 .kp-galeri__sahne {
   width: 100%;
@@ -416,6 +427,19 @@ body.kisisel-aktif .bag-notice {
   color: #fff;
   font-size: 1.3rem;
   font-weight: 600;
+}
+.kp-galeri-kucuk__serit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.2rem 0;
+  background: var(--kp-murekkep);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
 }
 
 /* ---------- Önizleme sahnesi ---------- */

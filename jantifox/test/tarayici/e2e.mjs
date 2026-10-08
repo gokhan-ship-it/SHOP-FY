@@ -236,10 +236,26 @@ assert.match(kartMetni, /ECE · 7 · Futbol Topu/);
 assert.match(kartMetni, /5 patch/);
 assert.match(kartMetni, /Toplam 4\.650 TL/);
 assert.equal(await sayfa.locator('[data-kisisel-davet]').isVisible(), false);
-assert.match(await sayfa.locator('[data-kisisel-sepete-ekle]').textContent(), /sepete ekle · 4\.650 TL/);
-assert.equal(await sayfa.locator('#ProductSubmitButton-main').isVisible(), false, 'temanın ana butonu gizli');
+assert.equal((await sayfa.locator('[data-kisisel-sepete-ekle]').textContent()).trim(), 'Tasarımımı sepete ekle · 4.650 TL');
+// Temanın butonu görünür, "Sadece çantayı sepete ekle"; Hemen satın al gizli
+assert.equal(await sayfa.locator('#ProductSubmitButton-main').isVisible(), true, 'temanın ana butonu görünür');
+assert.equal(await sayfa.locator('#ProductSubmitButton-main span').textContent(), 'Sadece çantayı sepete ekle');
+assert.equal(await sayfa.locator('#StickyProductSubmitButton-main span').textContent(), 'Sadece çantayı sepete ekle');
 assert.equal(await sayfa.locator('.shopify-payment-button').first().isVisible(), false);
-assert.ok(await sayfa.locator('.kp-galeri').isVisible(), 'galeride tasarım önizlemesi');
+// Galeri: ilk slaytın üstünde tüm çanta + "Senin tasarımın"; ilk küçük resimde "Tasarımın" şeridi; sayfa bu görselle açılır
+assert.ok(await sayfa.locator('.main-carousel .splide__slide').first().locator('.kp-galeri').isVisible(), 'galeride tasarım görseli');
+assert.equal(await sayfa.locator('.kp-galeri__rozet').textContent(), 'Senin tasarımın');
+assert.equal(await sayfa.locator('.kp-galeri .kp-parca').count(), 5);
+assert.equal(await sayfa.locator('.thumbnail-carousel .splide__slide').first().locator('.kp-galeri-kucuk-serit, .kp-galeri-kucuk__serit').textContent(), 'Tasarımın');
+assert.equal(await sayfa.locator('.kp-galeri-kucuk .kp-parca').count(), 5);
+assert.equal(await sayfa.evaluate(() => window.__galeriGit), 0, 'galeri ilk (tasarım) görseline gitti');
+assert.equal(await sayfa.locator('.main-carousel .kp-galeri').count(), 1, 'tek katman');
+// Küçük resim tıklaması temaya geçer
+await sayfa.locator('.thumbnail-carousel .splide__slide').first().click();
+assert.equal(await sayfa.evaluate(() => window.__kucukTik), 1);
+// Kart önizlemesi yakın görünüm (alan), galeri tüm çanta
+const olcek = await sayfa.evaluate(() => [document.querySelector('[data-kisisel-mini] .kp-sahne').style.width, document.querySelector('.kp-galeri .kp-sahne').style.width]);
+assert.ok(parseFloat(olcek[0]) > 100 && !(parseFloat(olcek[1]) > 100), 'kart yakın, galeri tüm çanta: ' + olcek);
 await sayfa.screenshot({ path: cikti + '08-kart.png', fullPage: true });
 
 // Kartın altındaki kırmızı butondan
@@ -248,16 +264,22 @@ await sayfa.waitForURL('**/cart');
 assert.equal(await sayfa.evaluate(() => window.__temaSubmit || 0), 0, 'tema submit dinleyicisi çalışmamalı');
 assert.ok(eklenen && eklenen.items.length === 5, 'kırmızı buton tasarımla eklemeli');
 
-// Sabit çubuktan da: kaydı geri koy, sayfaya dön
+// Temanın butonları (ana ve sabit çubuk) tasarım varken de yalnızca çantayı ekler (temanın kendi akışı)
 eklenen = null;
 await sayfa.evaluate(([k, v]) => localStorage.setItem(k, v), [ANAHTAR, kayit]);
 await sayfa.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await kart.waitFor({ state: 'visible' });
-assert.match(await sayfa.locator('#StickyProductSubmitButton-main span').textContent(), /sepete ekle · 4\.650 TL/);
+await sayfa.locator('#ProductSubmitButton-main').click();
 await sayfa.locator('#StickyProductSubmitButton-main').click();
-await sayfa.waitForURL('**/cart');
-assert.ok(eklenen && eklenen.items.length === 5, 'sabit çubuk da tasarımla eklemeli');
-assert.equal(await sayfa.evaluate(() => window.__temaSubmit || 0), 0);
+await sayfa.waitForTimeout(300);
+assert.equal(await sayfa.evaluate(() => window.__temaSubmit || 0), 2, 'tema formu çalıştı');
+assert.equal(eklenen, null, 'tasarım eklenmedi');
+assert.ok(await sayfa.locator('.kp-galeri').isVisible(), 'kayıt duruyor');
+// Tasarım silinince galeri ve küçük resim temanın görseline döner, Hemen satın al geri gelir
+await sayfa.locator('[data-kisisel-sil]').click();
+assert.equal(await sayfa.locator('.kp-galeri, .kp-galeri-kucuk').count(), 0, 'katmanlar kalktı');
+assert.equal(await sayfa.locator('.shopify-payment-button').first().isVisible(), true);
+assert.equal(await sayfa.locator('#ProductSubmitButton-main span').textContent(), 'Sadece çantayı sepete ekle');
 console.log('olaylar:', JSON.stringify(await sayfa.evaluate(() => 0)));
 console.log('hatalar:', hatalar);
 await tarayici.close();
