@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
-import { ornekVeri } from './ornek-veri.mjs';
+import { ornekVeri, ornekVeriPiramitli } from './ornek-veri.mjs';
 
 const kod = readFileSync(new URL('../assets/kisisel-editor.js', import.meta.url), 'utf8');
 const ortam = { console, Date, Math, JSON, setTimeout };
@@ -330,4 +330,94 @@ test('sepet konumu her parçanın açısını içerir', () => {
   assert.equal(k.v, 2);
   assert.deepEqual(duz(k.p.map((p) => p.a)), [15, 15, 150]);
   assert.ok(k.p.every((p) => typeof p.x === 'number' && typeof p.y === 'number'));
+});
+
+// ---------------- Çok renkli harf seti (Piramit) ----------------
+const kurP = () => {
+  const m = new ic.Model(ornekVeriPiramitli());
+  return { m, y: new ic.Yerlesim(m), p: m.setler[1] };
+};
+const piramitTasarim = (m, isim) => ({ setId: m.setler[1].id, isim, isimMerkez: null, parcalar: [] });
+const renkleri = (p, t) => Array.from(t.isim).map((h, i) => ic.harfVaryanti(p, t, i, h).renk);
+
+test('çok renkli set: harf ve renk varyant adından okunur, tükenen renk görünmez', () => {
+  const { m, p } = kurP();
+  assert.equal(m.setler[0].cokRenkli, false, 'Cool tek renkli');
+  assert.equal(p.cokRenkli, true);
+  assert.deepEqual(duz(p.karakterVaryantlari.A.map((v) => v.renk)), ['Mavi', 'Pembe', 'Turuncu']);
+  assert.equal(p.karakterVaryantlari.K.length, 0, 'K\'nın tek rengi tükenmiş');
+  assert.equal(p.karakterler.K, undefined);
+  assert.equal(p.karakterVaryantlari.C[0].renkKodu, '#f6f7f8', 'renk kodu yoksa addan yedek renk');
+});
+
+test('otomatik renk: yan yana harfler farklı renkte, stok renk bazında sayılır', () => {
+  const { m, p } = kurP();
+  const t = piramitTasarim(m, 'AAA');
+  ic.renkleriAta(m, t);
+  const r = renkleri(p, t);
+  assert.notEqual(r[0], r[1]);
+  assert.notEqual(r[1], r[2]);
+  // E: Turkuaz'dan stokta 1 → 4 E'de Turkuaz en fazla bir kez
+  const t2 = piramitTasarim(m, 'EEEE');
+  ic.renkleriAta(m, t2);
+  const r2 = renkleri(p, t2);
+  assert.ok(r2.filter((x) => x === 'Turkuaz').length <= 1, r2.join());
+  for (let i = 1; i < r2.length; i++) assert.notEqual(r2[i], r2[i - 1], 'komşular farklı: ' + r2.join());
+  // Geçerli seçim korunur
+  const pembe = p.karakterVaryantlari.A[1].id;
+  t.harfRenkleri[0] = pembe;
+  ic.renkleriAta(m, t);
+  assert.equal(String(t.harfRenkleri[0]), String(pembe));
+});
+
+test('aynı rengi stoktan fazla seçmek uyarı verir; tükenmiş harf "yok" sayılır', () => {
+  const { m, y, p } = kurP();
+  const turkuaz = p.karakterVaryantlari.E[1].id;
+  const t = piramitTasarim(m, 'ECE');
+  t.harfRenkleri = [turkuaz, null, turkuaz];
+  // Atama yapılmadan (ör. kayıtlı tasarım) aynı renk iki kez: uyarı
+  const a = ic.isimAnaliz(m, y, t);
+  assert.equal(a.stokSorunlari.length, 1);
+  assert.deepEqual(duz(a.stokSorunlari[0]), { harf: 'E', renk: 'Turkuaz', gereken: 2, mevcut: 1 });
+  assert.equal(a.engel, true);
+  // Kullanıcı 3. harfe Turkuaz seçti: öncelik onda, 1. harf başka renge geçer
+  ic.renkleriAta(m, t, false, 2);
+  assert.equal(String(t.harfRenkleri[2]), String(turkuaz));
+  assert.notEqual(String(t.harfRenkleri[0]), String(turkuaz));
+  assert.deepEqual(duz(ic.isimAnaliz(m, y, t).stokSorunlari), []);
+  const k = ic.isimAnaliz(m, y, piramitTasarim(m, 'KAR'));
+  assert.deepEqual(duz(k.yoklar), ['K']);
+  const tr = ic.isimAnaliz(m, y, piramitTasarim(m, 'ÖDA'));
+  assert.deepEqual(duz(tr.eksikler), [{ harf: 'Ö', oneri: 'O' }]);
+});
+
+test('parçalar seçilen renk varyantını kullanır; özet renkleri yazar', () => {
+  const { m, y, p } = kurP();
+  const t = piramitTasarim(m, 'ECE');
+  t.harfRenkleri = [p.karakterVaryantlari.E[0].id, null, p.karakterVaryantlari.E[1].id];
+  const d = ic.duzenle(m, y, t);
+  const harfler = d.parcalar.filter((x) => x.tip === 'letter');
+  assert.deepEqual(duz(harfler.map((x) => x.varyant.baslik)), ['Yeşil E', 'Beyaz C', 'Turkuaz E']);
+  assert.equal(ic.tasarimOzeti(m, t), 'ECE (Yeşil E, Beyaz C, Turkuaz E)');
+  // Stok kontrolü varyant bazında
+  assert.deepEqual(duz(ic.stokKontrol(m, t, y, 1)), []);
+  assert.equal(ic.stokKontrol(m, t, y, 2).length, 1, '2 çantada Turkuaz E yetmez');
+});
+
+test('Cool\'dan Piramit\'e geçince isim korunur, renkler atanır', () => {
+  const { m, y, p } = kurP();
+  const t = tasarim(m, 'ELA');
+  ic.duzenle(m, y, t);
+  assert.equal(t.harfRenkleri, null);
+  t.setId = p.id;
+  const d = ic.duzenle(m, y, t);
+  assert.equal(t.isim, 'ELA');
+  assert.equal(t.harfRenkleri.length, 3);
+  assert.ok(d.parcalar.every((x) => x.varyant && /\S+ [ELA]$/.test(x.varyant.baslik)));
+  // Ayrı modda ve döndürmede de çalışır
+  ic.harfleriAyir(y, t);
+  t.harfAcilari[1] = 30;
+  const d2 = ic.duzenle(m, y, t);
+  assert.equal(d2.parcalar.find((x) => x.uid === 'harf-1').aci, 30);
+  assert.equal(d2.parcalar.find((x) => x.uid === 'harf-1').varyant.karakter, 'L');
 });

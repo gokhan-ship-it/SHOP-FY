@@ -46,6 +46,7 @@
         "baslik": {{ v.title | json }},
         "karakter": {{ v.metafields.kisisellestirme.karakter.value | json }},
         "renk": {{ v.metafields.kisisellestirme.renk.value | json }},
+        "renk_kodu": {%- assign rk = v.metafields.kisisellestirme.renk_kodu.value -%}{%- if rk != blank -%}{{ rk | append: '' | json }}{%- else -%}null{%- endif -%},
         "png_en": {{ v.metafields.kisisellestirme.png_genislik_cm.value | json }},
         "png_boy": {{ v.metafields.kisisellestirme.png_yukseklik_cm.value | json }},
         "fiyat": {{ v.price }},

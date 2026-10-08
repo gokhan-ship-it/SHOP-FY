@@ -55,8 +55,11 @@
       var o = k.properties || {};
       if (o._tasarim_rol !== 'patch') return;
       if (o['Harf sırası']) {
+        // Çok renkli setlerde varyant adı "Yeşil E" biçiminde: harf son kelime, renk öncesi
+        var vt = String(k.variant_title || '').trim();
+        var ad = /^(.*\S)\s+(\S)$/.exec(vt);
         String(o['Harf sırası']).split(',').forEach(function (s) {
-          harfler.push({ sira: parseInt(s, 10), harf: k.variant_title || '' });
+          harfler.push({ sira: parseInt(s, 10), harf: ad ? ad[2] : vt, renk: ad ? ad[1] : null });
         });
       } else {
         var birim = parseInt(o._adet_birim, 10) || 1;
@@ -66,7 +69,9 @@
     });
     harfler.sort(function (a, b) { return a.sira - b.sira; });
     var isim = harfler.map(function (h) { return h.harf; }).join('');
-    return { isim: isim, ozet: [isim].concat(digerleri).filter(Boolean).join(' + ') };
+    var renkli = harfler.some(function (h) { return h.renk; });
+    var isimOzet = isim && renkli ? isim + ' (' + harfler.map(function (h) { return h.renk ? h.renk + ' ' + h.harf : h.harf; }).join(', ') + ')' : isim;
+    return { isim: isim, ozet: [isimOzet].concat(digerleri).filter(Boolean).join(' + ') };
   }
 
   function gruplar(sepet) {

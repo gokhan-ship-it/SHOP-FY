@@ -1009,3 +1009,141 @@ html.kp-kilit body {
   margin: -0.4rem 0 1.2rem;
   text-align: right;
 }
+
+/* ---------- Çok renkli harf seti: renk noktaları, kısa yol satırı, balon ---------- */
+.kp-nokta {
+  --renk: #ccc;
+  flex: none;
+  box-sizing: border-box;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--renk);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  padding: 0;
+  cursor: pointer;
+}
+.kp-nokta--kucuk {
+  width: 26px;
+  height: 26px;
+}
+.kp-nokta--buyuk {
+  width: 36px;
+  height: 36px;
+}
+.kp-nokta[aria-pressed='true'] {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--kp-murekkep);
+}
+.kp-nokta--pasif {
+  display: inline-block;
+  opacity: 0.85;
+  cursor: default;
+}
+.kp-renkler {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+.kp-renkler[hidden] {
+  display: none;
+}
+.kp-renkler__liste {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 1.2rem;
+  min-width: 0;
+  padding: 0.4rem 0.2rem 0.6rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.kp-renk-harf {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+.kp-renk-harf__harf {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  -webkit-text-stroke: 0.6px rgba(0, 0, 0, 0.35);
+}
+.kp-renk-harf__noktalar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.kp-karistir {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--kp-dokunma);
+  height: var(--kp-dokunma);
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 50%;
+  background: var(--kp-zemin);
+  color: var(--kp-murekkep);
+  cursor: pointer;
+}
+.kp-balon {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+.kp-balon[hidden] {
+  display: none;
+}
+/* Ok: balonun altında (harfe doğru); balon harfin altındaysa üstte */
+.kp-balon::after {
+  content: '';
+  position: absolute;
+  left: var(--ok-x, 50%);
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  background: #fff;
+  transform: rotate(45deg);
+}
+.kp-balon--alt::after {
+  top: -6px;
+  bottom: auto;
+}
+.kp-balon__noktalar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.6rem;
+}
+.kp-balon__dondur {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--kp-murekkep);
+  cursor: pointer;
+}
+/* Dokunma alanı 44px */
+.kp-balon__dondur::before,
+.kp-balon .kp-nokta--buyuk {
+  position: relative;
+}
+.kp-balon__dondur::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}

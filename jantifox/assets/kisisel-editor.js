@@ -17,6 +17,11 @@
   var EPS = 1e-6;
   var TR_ESLEME = { 'Ç': 'C', 'Ğ': 'G', 'İ': 'I', 'Ö': 'O', 'Ş': 'S', 'Ü': 'U' };
   var HARF_DESENI = /[A-ZÇĞİÖŞÜ]/;
+  // Renk kodu metafield'ı yoksa kullanılan yedek renkler (varyant adındaki renk adına göre)
+  var RENK_KODLARI = {
+    antrasit: '#63778a', beyaz: '#f6f7f8', haki: '#64894d', 'kırmızı': '#fd4a44', mavi: '#8cc8e8', pembe: '#fc5f86',
+    saks: '#00438a', 'sarı': '#fcc13a', turkuaz: '#8fddc2', turuncu: '#e06800', 'yeşil': '#278282', siyah: '#222222'
+  };
 
   function sayi(v) {
     var n = parseFloat(v);
@@ -394,6 +399,7 @@
           baslik: v.baslik,
           karakter: v.karakter ? buyukHarf(String(v.karakter)) : null,
           renk: v.renk,
+          renkKodu: v.renk_kodu || null,
           fiyat: Number(v.fiyat) || 0,
           satilabilir: !!v.satilabilir,
           stok: v.stok == null ? null : Math.max(0, Number(v.stok) || 0),
@@ -430,10 +436,7 @@
       .map(function (p) {
         var s = patchHazirla(p, self.ayar.harfEn);
         if (!s) return null;
-        s.karakterler = {};
-        s.varyantlar.forEach(function (v) {
-          if (v.karakter) s.karakterler[v.karakter] = v;
-        });
+        renkliSetHazirla(s);
         return s;
       })
       .filter(Boolean);
@@ -482,6 +485,43 @@
     if (!this.setler.length) throw new Error('Harf seti verisi eksik');
   }
 
+  function stoktaMi(v) {
+    return !!v && v.satilabilir && (v.stok == null || v.stok > 0);
+  }
+
+  // Harf setinin karakter haritaları. Bir harfin birden fazla renk varyantı varsa set "çok renkli"dir
+  // (ör. Piramit: "Mavi A", "Pembe A"). Karakter/renk metafield'ı yoksa varyant adından okunur.
+  function renkliSetHazirla(s) {
+    s.varyantlar.forEach(function (v) {
+      if (!v.karakter) {
+        var ad = /^(.*\S)\s+(\S)$/.exec(String(v.baslik || '').trim());
+        if (ad && HARF_DESENI.test(buyukHarf(ad[2]))) {
+          v.karakter = buyukHarf(ad[2]);
+          if (!v.renk) v.renk = ad[1];
+        } else if (/^\S$/.test(String(v.baslik || '').trim())) {
+          v.karakter = buyukHarf(String(v.baslik).trim());
+        }
+      }
+      if (!v.renkKodu && v.renk) v.renkKodu = RENK_KODLARI[String(v.renk).toLocaleLowerCase('tr-TR')] || null;
+    });
+    var hepsi = {};
+    s.varyantlar.forEach(function (v) {
+      if (!v.karakter) return;
+      (hepsi[v.karakter] = hepsi[v.karakter] || []).push(v);
+    });
+    s.cokRenkli = Object.keys(hepsi).some(function (h) { return hepsi[h].length > 1; });
+    // karakterVaryantlari: yalnızca stokta olan renkler (stokta olmayan renk hiç gösterilmez)
+    s.karakterVaryantlari = {};
+    s.karakterler = {};
+    Object.keys(hepsi).forEach(function (h) {
+      var stokta = hepsi[h].filter(stoktaMi);
+      s.karakterVaryantlari[h] = stokta;
+      // Tek renkli setlerde tükenmiş varyant da kalır (stok uyarısı için); çok renklide ilk stoktaki renk
+      s.karakterler[h] = s.cokRenkli ? stokta[0] || null : hepsi[h][0];
+      if (!s.karakterler[h]) delete s.karakterler[h];
+    });
+  }
+
   Model.prototype.alanBul = function (tip) {
     for (var i = 0; i < this.alanlar.length; i++) {
       if (this.alanlar[i].tipler.indexOf(tip) !== -1) return this.alanlar[i];
@@ -508,9 +548,83 @@
 
   // İsim harflerini verilen merkeze, verilen satır sayısıyla dizer
   // Harfin gerçek ölçüsü: varyantın PNG ölçüsü, yoksa setin temsili ölçüsü
-  function harfOlcu(set, h) {
-    var v = set.karakterler[h];
+  function varyantOlcu(set, v) {
     return { en: (v && v.en) || set.en, boy: (v && v.boy) || set.boy };
+  }
+
+  // İsimdeki i. harfin varyantı. Çok renkli sette seçilen renk (t.harfRenkleri), yoksa ilk stoktaki renk.
+  function harfVaryanti(set, t, i, h) {
+    if (!set.cokRenkli) return set.karakterler[h] || null;
+    var liste = set.karakterVaryantlari[h] || [];
+    var id = t.harfRenkleri && t.harfRenkleri[i];
+    for (var k = 0; k < liste.length; k++) if (String(liste[k].id) === String(id)) return liste[k];
+    return liste[0] || null;
+  }
+
+  function isimOlculeri(set, t) {
+    return Array.from(t.isim || '').map(function (h, i) { return varyantOlcu(set, harfVaryanti(set, t, i, h)); });
+  }
+
+  // Çok renkli sette her harfe renk atar. Geçerli seçimler korunur; boş ya da geçersiz olanlara
+  // stokta kalan renkler arasından, yan yana gelen harflerden farklı bir renk verilir.
+  // rastgele: "Renkleri karıştır" (tüm seçimler yeniden dağıtılır)
+  // oncelik: kullanıcının az önce renk seçtiği harf; stok yetmezse diğer harf yeni renk alır
+  function renkleriAta(model, t, rastgele, oncelik) {
+    var set = model.set(t.setId);
+    var harfler = Array.from(t.isim || '');
+    if (!set.cokRenkli || !harfler.length) {
+      t.harfRenkleri = set.cokRenkli ? [] : null;
+      return;
+    }
+    var eski = rastgele ? [] : t.harfRenkleri || [];
+    var kalan = {};
+    function stokKaldi(v) {
+      var k = kalan[v.id];
+      return k == null ? (v.stok == null ? Infinity : v.stok) > 0 : k > 0;
+    }
+    function dus(v) {
+      if (kalan[v.id] == null) kalan[v.id] = v.stok == null ? Infinity : v.stok;
+      kalan[v.id]--;
+    }
+    var sonuc = harfler.map(function () { return null; });
+    var renkler = harfler.map(function () { return null; });
+    // 1) Geçerli eski seçimler (aynı harf, stokta); önce kullanıcının son seçtiği harf
+    var sira = harfler.map(function (h, i) { return i; });
+    if (oncelik != null && oncelik < harfler.length) sira = [oncelik].concat(sira.filter(function (i) { return i !== oncelik; }));
+    sira.forEach(function (i) {
+      var h = harfler[i];
+      var liste = set.karakterVaryantlari[h] || [];
+      var v = liste.filter(function (x) { return String(x.id) === String(eski[i]); })[0];
+      if (v && stokKaldi(v)) {
+        sonuc[i] = v.id;
+        renkler[i] = v.renk;
+        dus(v);
+      }
+    });
+    // 2) Boşları doldur
+    var kullanim = {};
+    renkler.forEach(function (r) { if (r) kullanim[r] = (kullanim[r] || 0) + 1; });
+    harfler.forEach(function (h, i) {
+      if (sonuc[i]) return;
+      var adaylar = (set.karakterVaryantlari[h] || []).filter(stokKaldi);
+      if (!adaylar.length) return;
+      var puanli = adaylar.map(function (v, j) {
+        var ceza = 0;
+        if (i > 0 && renkler[i - 1] === v.renk) ceza += 10;
+        if (i + 1 < harfler.length && renkler[i + 1] === v.renk) ceza += 6;
+        ceza += (kullanim[v.renk] || 0) * 2;
+        // Eşitlikte: karıştırmada rastgele, değilse harfin sırasına göre dönen bir tercih
+        var sira = rastgele ? Math.random() : ((j - i) % adaylar.length + adaylar.length) % adaylar.length / adaylar.length;
+        return { v: v, puan: ceza + sira };
+      });
+      puanli.sort(function (a, b) { return a.puan - b.puan; });
+      var secilen = puanli[0].v;
+      sonuc[i] = secilen.id;
+      renkler[i] = secilen.renk;
+      kullanim[secilen.renk] = (kullanim[secilen.renk] || 0) + 1;
+      dus(secilen);
+    });
+    t.harfRenkleri = sonuc;
   }
 
   // İsim harflerini verilen merkeze, verilen satır sayısıyla dizer. olculer: [{en, boy}] (harf sırasıyla)
@@ -609,13 +723,13 @@
       var harfler = Array.from(t.isim);
       var alan = m.alanBul('letter');
       var c = t.isimMerkez || (alan ? merkez(alan.sekil) : [m.Wcm / 2, m.Hcm / 2]);
-      var olculer = harfler.map(function (h) { return harfOlcu(set, h); });
+      var olculer = isimOlculeri(set, t);
       var ayri = !!t.harfAyri;
       var isimAci = ayri ? 0 : aciNormal(t.isimAci);
       var satir = this.isimSatiriOlcu(olculer, isimAci) || Math.min(m.ayar.satir, harfler.length > 1 ? 2 : 1);
       var dizi = isimHarfleri(this.isimDiz(olculer, c[0], c[1], satir), c, isimAci);
       harfler.forEach(function (h, i) {
-        var v = set.karakterler[h] || null;
+        var v = harfVaryanti(set, t, i, h);
         // Ayrı modda her harf kendi konumunda, kendi açısında ve kendi grubunda sürüklenir
         var k = ayri && t.harfKonumlari && t.harfKonumlari[i] ? t.harfKonumlari[i] : [dizi[i].cx, dizi[i].cy];
         var aci = ayri ? aciNormal(t.harfAcilari && t.harfAcilari[i]) : isimAci;
@@ -820,7 +934,8 @@
     var sonuc = { harfler: harfler, eksikler: [], yoklar: [], stokSorunlari: [], sigiyor: true, kapasite: yer.kapasite(set, isimAci) };
     var sayim = {};
     var gorulen = {};
-    harfler.forEach(function (h) {
+    var renkSayim = {};
+    harfler.forEach(function (h, i) {
       var v = set.karakterler[h];
       if (!v) {
         if (gorulen[h]) return;
@@ -832,14 +947,32 @@
         return;
       }
       sayim[h] = (sayim[h] || 0) + 1;
+      if (set.cokRenkli) {
+        var rv = harfVaryanti(set, t, i, h);
+        if (rv) (renkSayim[rv.id] = renkSayim[rv.id] || { v: rv, harf: h, adet: 0 }).adet++;
+      }
     });
-    Object.keys(sayim).forEach(function (h) {
-      var v = set.karakterler[h];
-      var mevcut = !v.satilabilir ? 0 : v.stok == null ? Infinity : v.stok;
-      if (mevcut < sayim[h]) sonuc.stokSorunlari.push({ harf: h, gereken: sayim[h], mevcut: mevcut });
-    });
+    if (set.cokRenkli) {
+      // Stok renk varyantı bazında: aynı renk birden fazla seçildiyse adet sayılır
+      Object.keys(sayim).forEach(function (h) {
+        var toplam = (set.karakterVaryantlari[h] || []).reduce(function (t2, v) { return t2 + (v.stok == null ? Infinity : v.stok); }, 0);
+        if (toplam < sayim[h]) sonuc.stokSorunlari.push({ harf: h, gereken: sayim[h], mevcut: toplam });
+      });
+      Object.keys(renkSayim).forEach(function (id) {
+        var r = renkSayim[id];
+        var mevcut = r.v.stok == null ? Infinity : r.v.stok;
+        var harfSorunu = sonuc.stokSorunlari.some(function (x) { return x.harf === r.harf; });
+        if (!harfSorunu && mevcut < r.adet) sonuc.stokSorunlari.push({ harf: r.harf, renk: r.v.renk, gereken: r.adet, mevcut: mevcut });
+      });
+    } else {
+      Object.keys(sayim).forEach(function (h) {
+        var v = set.karakterler[h];
+        var mevcut = !v.satilabilir ? 0 : v.stok == null ? Infinity : v.stok;
+        if (mevcut < sayim[h]) sonuc.stokSorunlari.push({ harf: h, gereken: sayim[h], mevcut: mevcut });
+      });
+    }
     if (harfler.length) {
-      sonuc.sigiyor = yer.isimSatiriOlcu(harfler.map(function (h) { return harfOlcu(set, h); }), isimAci) > 0;
+      sonuc.sigiyor = yer.isimSatiriOlcu(isimOlculeri(set, t), isimAci) > 0;
     }
     sonuc.engel = sonuc.eksikler.length > 0 || sonuc.yoklar.length > 0 || sonuc.stokSorunlari.length > 0 || !sonuc.sigiyor;
     return sonuc;
@@ -887,6 +1020,7 @@
 
   // Tasarımın tüm parçalarını doğrular, çakışan parçaları en yakın geçerli yere taşır
   function duzenle(model, yer, t) {
+    renkleriAta(model, t);
     harfKonumlariniEsitle(yer, t);
     var parcalar = yer.parcalar(t);
     var isimP = parcalar.filter(function (p) { return p.grup === 'isim'; });
@@ -990,9 +1124,20 @@
     return satirlar;
   }
 
+  // İsmin özeti; çok renkli sette renklerle: "ECE (Yeşil E, Beyaz C, Turkuaz E)"
+  function isimOzeti(model, t) {
+    var set = model.set(t.setId);
+    if (!t.isim || !set.cokRenkli) return t.isim || '';
+    var renkli = Array.from(t.isim).map(function (h, i) {
+      var v = harfVaryanti(set, t, i, h);
+      return v && v.renk ? v.renk + ' ' + h : h;
+    });
+    return t.isim + ' (' + renkli.join(', ') + ')';
+  }
+
   function tasarimOzeti(model, t) {
     var parcalar = [];
-    if (t.isim) parcalar.push(t.isim);
+    if (t.isim) parcalar.push(isimOzeti(model, t));
     var rakamlar = t.parcalar.filter(function (p) { return p.tip === 'number'; });
     var ikonlar = t.parcalar.filter(function (p) { return p.tip === 'icon'; });
     var rs = model.rakamSeti();
@@ -1241,6 +1386,7 @@
       '<div data-kp-sahne></div>' +
       '<button type="button" class="kp-onizleme__dugme kp-onizleme__dugme--gorunum" data-kp-gorunum aria-pressed="false">Tüm çantayı gör</button>' +
       '<span class="kp-aci" data-kp-aci aria-hidden="true" hidden></span>' +
+      '<div class="kp-balon" data-kp-balon role="group" hidden></div>' +
       '</div>' +
       '<div class="kp-secim-cubuk" data-kp-secim-cubuk hidden>' +
       '<div class="kp-secim-cubuk__ust"><p class="kp-secim-cubuk__ad">Seçili: <strong data-kp-secili-ad></strong></p>' +
@@ -1360,6 +1506,12 @@
       if (hedef.hasAttribute('data-kp-duzle')) return self.acisiDegistir(0, 0);
       if (hedef.hasAttribute('data-kp-sil')) return self.seciliSil();
       if (hedef.hasAttribute('data-kp-secim-kaldir')) return self.sec(null);
+      if (hedef.hasAttribute('data-kp-renk')) {
+        var rv = hedef.getAttribute('data-kp-renk').split(':');
+        return self.renkSec(parseInt(rv[0], 10), rv[1]);
+      }
+      if (hedef.hasAttribute('data-kp-karistir')) return self.renkleriKaristir();
+      if (hedef.hasAttribute('data-kp-balon-dondur')) return self.acisiDegistir(15);
     });
     el.addEventListener('change', function (e) {
       if (e.target.matches('[data-kp-set]')) {
@@ -1546,6 +1698,7 @@
       '<button type="button" class="kp-harf-mod" data-kp-harf-mod aria-pressed="false" hidden>Harfleri ayır</button>' +
       '<p id="kp-kapasite" class="kp-kapasite" data-kp-kapasite></p>' +
       '</div>' +
+      '<div class="kp-renkler" data-kp-renkler hidden></div>' +
       '</div>' +
       '<div id="kp-isim-uyari" class="kp-uyarilar" data-kp-isim-uyari aria-live="polite"></div>' +
       '<button type="button" class="kp-baglanti" data-kp-isimsiz>İsim istemiyorum, sadece ikonla devam et</button>';
@@ -1685,6 +1838,9 @@
 
   Editor.prototype.yenile = function () {
     if (!this.el || this.el.hidden) return;
+    // Bekleyen "geçersiz açı" önizlemesi varsa kapat; dönüş sürmüyorsa açı göstergesi gizlenir
+    clearTimeout(this.donmeZamanlayici);
+    if (!this.sahne.sahne.classList.contains('kp-sahne--donuyor')) this.aciGostergesiGizle();
     this.analiz = isimAnaliz(this.m, this.yer, this.t);
     this.durum = duzenle(this.m, this.yer, this.t);
     this.stokSorunlari = stokKontrol(this.m, this.t, this.yer, 1);
@@ -1725,7 +1881,67 @@
     gorunum.setAttribute('aria-pressed', this.sahne.yakin ? 'false' : 'true');
   };
 
+  // Renk noktaları: çok renkli sette bir harfin stoktaki renkleri (en az boyut CSS'te)
+  function renkNoktalari(set, t, i, h, sinif) {
+    var liste = set.karakterVaryantlari[h] || [];
+    var secili = harfVaryanti(set, t, i, h);
+    if (liste.length <= 1) {
+      return liste.length
+        ? '<span class="kp-nokta kp-nokta--pasif ' + sinif + '" style="--renk:' + kacis(liste[0].renkKodu || '#ccc') + '" title="' + kacis(liste[0].renk || '') + '"></span>'
+        : '';
+    }
+    return liste
+      .map(function (v) {
+        var on = secili && String(secili.id) === String(v.id);
+        return '<button type="button" class="kp-nokta ' + sinif + '" style="--renk:' + kacis(v.renkKodu || '#ccc') + '" data-kp-renk="' + i + ':' + kacis(v.id) + '" aria-pressed="' + on + '" aria-label="' + kacis((v.renk || '') + ' ' + h) + '" title="' + kacis(v.renk || '') + '"></button>';
+      })
+      .join('');
+  }
+
+  Editor.prototype.renkSatiriCiz = function () {
+    var kutu = this.el.querySelector('[data-kp-renkler]');
+    var set = this.m.set(this.t.setId);
+    var t = this.t;
+    var harfler = Array.from(t.isim || '');
+    if (!set.cokRenkli || !harfler.length) {
+      kutu.hidden = true;
+      kutu.innerHTML = '';
+      return;
+    }
+    var hucreler = harfler
+      .map(function (h, i) {
+        var v = harfVaryanti(set, t, i, h);
+        var renk = v ? v.renkKodu || '#999' : '#999';
+        return (
+          '<div class="kp-renk-harf" role="group" aria-label="' + (i + 1) + '. harf ' + kacis(h) + (v && v.renk ? ', ' + kacis(v.renk) : '') + '">' +
+          '<span class="kp-renk-harf__harf" style="color:' + kacis(renk) + '">' + kacis(h) + '</span>' +
+          '<span class="kp-renk-harf__noktalar">' + renkNoktalari(set, t, i, h, 'kp-nokta--kucuk') + '</span>' +
+          '</div>'
+        );
+      })
+      .join('');
+    var html =
+      '<div class="kp-renkler__liste">' + hucreler + '</div>' +
+      '<button type="button" class="kp-karistir" data-kp-karistir aria-label="Renkleri karıştır" title="Renkleri karıştır"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 7h3.5c2.2 0 3.6 1 4.8 3l2.4 4c1.2 2 2.6 3 4.8 3H21M3 17h3.5c1.4 0 2.5-.4 3.4-1.2M14.1 8.2C15 7.4 16.1 7 17.5 7H21M18 4l3 3-3 3M18 14l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+    kutu.hidden = false;
+    if (kutu.innerHTML !== html) kutu.innerHTML = html;
+  };
+
+  Editor.prototype.renkSec = function (i, id) {
+    if (!this.t.harfRenkleri) this.t.harfRenkleri = [];
+    this.t.harfRenkleri[i] = id;
+    renkleriAta(this.m, this.t, false, i);
+    this.seciliHarf = i;
+    this.yenile();
+  };
+
+  Editor.prototype.renkleriKaristir = function () {
+    renkleriAta(this.m, this.t, true);
+    this.yenile();
+  };
+
   Editor.prototype.yaziDurumGuncelle = function () {
+    this.renkSatiriCiz();
     var a = this.analiz;
     var set = this.m.set(this.t.setId);
     var harfSayisi = a.harfler.length;
@@ -1758,9 +1974,11 @@
     a.stokSorunlari.forEach(function (s) {
       uyarilar.push(
         '<p class="kp-uyari kp-uyari--hata">' +
-        (s.mevcut === 0
-          ? s.harf + ' harfi şu an stokta yok.'
-          : s.harf + ' harfinden stokta ' + s.mevcut + ' adet var, isimde ' + s.gereken + ' kez geçiyor.') +
+        (s.renk
+          ? kacis(s.renk + ' ' + s.harf) + ' rengi için stokta ' + s.mevcut + ' adet var, isimde ' + s.gereken + ' kez seçili. Başka bir renk seçebilirsin.'
+          : s.mevcut === 0
+            ? s.harf + ' harfi şu an stokta yok.'
+            : s.harf + ' harfinden stokta ' + s.mevcut + ' adet var, isimde ' + s.gereken + ' kez geçiyor.') +
         '</p>'
       );
     });
@@ -1874,14 +2092,15 @@
   Editor.prototype.secimAdi = function (b) {
     var p = b.parcalar[0];
     if (b.grup === 'isim') return 'İsim (' + this.t.isim + ')';
-    if (p.tip === 'letter') return p.etiket + ' harfi';
+    if (p.tip === 'letter') return (p.varyant && p.varyant.renk && this.m.set(this.t.setId).cokRenkli ? p.varyant.renk + ' ' : '') + p.etiket + ' harfi';
     if (p.tip === 'number') return p.etiket + ' rakamı';
     return p.etiket;
   };
 
-  Editor.prototype.sec = function (grup) {
+  Editor.prototype.sec = function (grup, harfSira) {
     if (grup !== this.secili) this.secimDurumu('');
     this.secili = grup || null;
+    this.seciliHarf = harfSira != null ? harfSira : null;
     this.secimGuncelle();
   };
 
@@ -1903,6 +2122,48 @@
     this.el.querySelector('[data-kp-secili-ad]').textContent = this.secimAdi(b) + (b.aci ? ' · ' + Math.round(b.aci) + '°' : '');
     this.el.querySelector('[data-kp-duzle]').disabled = !b.aci;
     this.sahne.secimCiz(grupCercevesi(b.parcalar, b.pivot, b.aci, 0.15), !!this.durum.hatalar[b.parcalar[0].uid]);
+    this.balonCiz(b);
+  };
+
+  // Renk balonu: çok renkli sette seçili harfin hemen üstünde, renk noktaları + döndürme butonu.
+  // Blok isimde dokunulan harf (seciliHarf), ayrı modda seçili harf grubu.
+  Editor.prototype.balonCiz = function (b) {
+    var balon = this.el.querySelector('[data-kp-balon]');
+    var set = this.m.set(this.t.setId);
+    var sira = null;
+    if (b && set.cokRenkli) {
+      if (String(b.grup).indexOf('harf-') === 0) sira = b.parcalar[0].sira;
+      else if (b.grup === 'isim' && this.seciliHarf != null) sira = this.seciliHarf;
+    }
+    var harf = sira != null && Array.from(this.t.isim || '')[sira];
+    var el = harf && this.sahne.katman.querySelector('[data-uid="' + (this.t.harfAyri ? 'harf-' : 'isim-') + sira + '"]');
+    if (!el) {
+      balon.hidden = true;
+      return;
+    }
+    balon.setAttribute('aria-label', harf + ' harfinin rengi');
+    balon.innerHTML =
+      '<span class="kp-balon__noktalar">' + renkNoktalari(set, this.t, sira, harf, 'kp-nokta--buyuk') + '</span>' +
+      '<button type="button" class="kp-balon__dondur" data-kp-balon-dondur aria-label="15 derece döndür" title="Döndür"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+    balon.hidden = false;
+    // Konum: harfin ekrandaki kutusunun üst ortası; yer yoksa altına
+    var ic = balon.parentNode.getBoundingClientRect();
+    var r = el.getBoundingClientRect();
+    var bw = balon.offsetWidth;
+    var bh = balon.offsetHeight;
+    var x = Math.max(4, Math.min(ic.width - bw - 4, r.left - ic.left + r.width / 2 - bw / 2));
+    var y = r.top - ic.top - bh - 10;
+    var alta = y < 4;
+    if (alta) y = r.bottom - ic.top + 10;
+    balon.style.left = x + 'px';
+    balon.style.top = y + 'px';
+    balon.classList.toggle('kp-balon--alt', alta);
+    balon.style.setProperty('--ok-x', Math.max(14, Math.min(bw - 14, r.left - ic.left + r.width / 2 - x)) + 'px');
+  };
+
+  Editor.prototype.balonGizle = function () {
+    var balon = this.el && this.el.querySelector('[data-kp-balon]');
+    if (balon) balon.hidden = true;
   };
 
   // Döndürme sırasında önizleme: geçerliyse true. Geçersizse parça kırmızı görünür.
@@ -2014,6 +2275,7 @@
 
     function donmeBasla() {
       self.sahne.sahne.classList.add('kp-sahne--donuyor');
+      self.balonGizle();
     }
 
     kok.addEventListener('pointerdown', function (e) {
@@ -2064,7 +2326,9 @@
       var grupParcalari = self.durum.parcalar.filter(function (p) { return p.grup === grupAdi; });
       if (!grupParcalari.length) return;
       e.preventDefault();
-      self.sec(grupAdi);
+      var dokunulanUid = el.getAttribute('data-uid') || '';
+      var harfSira = /^(isim|harf)-(\d+)$/.test(dokunulanUid) ? parseInt(dokunulanUid.split('-')[1], 10) : null;
+      self.sec(grupAdi, harfSira);
       aktif = {
         id: e.pointerId,
         mod: 'tasima',
@@ -2100,7 +2364,10 @@
       }
       var d = cmCevir(e.clientX - aktif.x, e.clientY - aktif.y);
       if (!aktif.hareket && Math.abs(e.clientX - aktif.x) + Math.abs(e.clientY - aktif.y) < 3) return;
-      if (!aktif.hareket) self.sahne.sahne.classList.add('kp-sahne--surukleniyor');
+      if (!aktif.hareket) {
+        self.sahne.sahne.classList.add('kp-sahne--surukleniyor');
+        self.balonGizle();
+      }
       aktif.hareket = true;
       aktif.dx = d[0];
       aktif.dy = d[1];
@@ -2553,6 +2820,9 @@
     tasarimOzeti: tasarimOzeti,
     paraBicimle: paraBicimle,
     buyukHarf: buyukHarf,
+    renkleriAta: renkleriAta,
+    harfVaryanti: harfVaryanti,
+    stokKontrol: stokKontrol,
     grupDondur: grupDondur,
     tasarimKonumu: tasarimKonumu,
     aciYakala: aciYakala,

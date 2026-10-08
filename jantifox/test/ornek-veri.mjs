@@ -25,3 +25,27 @@ export function ornekVeri(degisiklik = {}) {
     ...degisiklik
   };
 }
+
+const piramitRenkler = {
+  A: [['Mavi', '#abcdd1', 97], ['Pembe', '#fd5f76', 50], ['Turuncu', '#e26900', 44]],
+  B: [['Antrasit', '#657889', 39]], C: [['Beyaz', null, 126]], D: [['Mavi', '#7bc4f0', 83]],
+  E: [['Yeşil', '#268180', 102], ['Turkuaz', '#8eddc1', 1], ['Turuncu', '#df6800', 50]],
+  K: [['Beyaz', '#f6f6f8', 0]], L: [['Pembe', '#fd5e98', 126], ['Haki', '#64894d', 46]],
+  O: [['Antrasit', '#5f7286', 135]], R: [['Kırmızı', '#fe4943', 113], ['Saks', '#004089', 50]], S: [['Mavi', '#7ac5f2', 129]]
+};
+export function piramitSeti() {
+  let id = 5000;
+  const varyantlar = [];
+  for (const [h, renkler] of Object.entries(piramitRenkler)) {
+    for (const [renk, kod, stok] of renkler) {
+      varyantlar.push({ id: id++, baslik: renk + ' ' + h, karakter: null, renk: null, renk_kodu: kod, png_en: h === 'O' ? 5.4 : 4.2, png_boy: 6, fiyat: 33000, satilabilir: stok > 0, stok, gorsel: renk + h + '.png', png: true });
+    }
+  }
+  return { id: 9722983907614, baslik: 'Piramit Alfabe Patch', tip: 'letter', set: 'piramit', en: null, boy: '6.0', sekil: 'rect', etiketler: [], gorsel: 'p.jpg', png: true, varyantlar };
+}
+
+export function ornekVeriPiramitli(degisiklik = {}) {
+  const v = ornekVeri(degisiklik);
+  v.setler = v.setler.concat([piramitSeti()]);
+  return v;
+}
