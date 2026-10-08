@@ -23,6 +23,37 @@
     saks: '#00438a', 'sarı': '#fcc13a', turkuaz: '#8fddc2', turuncu: '#e06800', 'yeşil': '#278282', siyah: '#222222'
   };
 
+  // İki renk bu Lab uzaklığından (CIE76 ΔE) yakınsa yan yana "aynı renk" sayılır.
+  // Piramit'te farklı adlı ama aynı görünen çiftler ΔE ≤ 4 (Mavi O–Antrasit, Haki L–Yeşil V);
+  // gerçekten farklı en yakın çift ~18 (Beyaz–buz mavisi).
+  var BENZER_RENK_ESIGI = 10;
+  var labOnbellek = {};
+
+  function renkLab(kod) {
+    var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(kod || '').trim());
+    if (!m) return null;
+    var anahtar = m.slice(1).join('').toLowerCase();
+    if (labOnbellek[anahtar]) return labOnbellek[anahtar];
+    var c = [1, 2, 3].map(function (i) {
+      var x = parseInt(m[i], 16) / 255;
+      return x > 0.04045 ? Math.pow((x + 0.055) / 1.055, 2.4) : x / 12.92;
+    });
+    var X = (c[0] * 0.4124 + c[1] * 0.3576 + c[2] * 0.1805) / 0.95047;
+    var Y = c[0] * 0.2126 + c[1] * 0.7152 + c[2] * 0.0722;
+    var Z = (c[0] * 0.0193 + c[1] * 0.1192 + c[2] * 0.9505) / 1.08883;
+    var f = function (t) { return t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116; };
+    return (labOnbellek[anahtar] = [116 * f(Y) - 16, 500 * (f(X) - f(Y)), 200 * (f(Y) - f(Z))]);
+  }
+
+  // İki varyant göze aynı renkte mi? Renk kodu varsa gerçek renge, yoksa renk adına bakılır.
+  function benzerRenk(a, b) {
+    if (!a || !b) return false;
+    var la = renkLab(a.renkKodu);
+    var lb = renkLab(b.renkKodu);
+    if (la && lb) return Math.sqrt(Math.pow(la[0] - lb[0], 2) + Math.pow(la[1] - lb[1], 2) + Math.pow(la[2] - lb[2], 2)) < BENZER_RENK_ESIGI;
+    return a.renk === b.renk;
+  }
+
   function sayi(v) {
     var n = parseFloat(v);
     return isFinite(n) && n > 0 ? n : null;
@@ -566,7 +597,8 @@
   }
 
   // Çok renkli sette her harfe renk atar. Geçerli seçimler korunur; boş ya da geçersiz olanlara
-  // stokta kalan renkler arasından, yan yana gelen harflerden farklı bir renk verilir.
+  // stokta kalan renkler arasından, yan yana gelen harflerden göze farklı görünen bir renk verilir
+  // (karşılaştırma renk koduyla: benzerRenk).
   // rastgele: "Renkleri karıştır" (tüm seçimler yeniden dağıtılır)
   // oncelik: kullanıcının az önce renk seçtiği harf; stok yetmezse diğer harf yeni renk alır
   function renkleriAta(model, t, rastgele, oncelik) {
@@ -597,22 +629,23 @@
       var v = liste.filter(function (x) { return String(x.id) === String(eski[i]); })[0];
       if (v && stokKaldi(v)) {
         sonuc[i] = v.id;
-        renkler[i] = v.renk;
+        renkler[i] = v;
         dus(v);
       }
     });
     // 2) Boşları doldur
-    var kullanim = {};
-    renkler.forEach(function (r) { if (r) kullanim[r] = (kullanim[r] || 0) + 1; });
+    function kullanim(v) {
+      return renkler.filter(function (r) { return benzerRenk(r, v); }).length;
+    }
     harfler.forEach(function (h, i) {
       if (sonuc[i]) return;
       var adaylar = (set.karakterVaryantlari[h] || []).filter(stokKaldi);
       if (!adaylar.length) return;
       var puanli = adaylar.map(function (v, j) {
         var ceza = 0;
-        if (i > 0 && renkler[i - 1] === v.renk) ceza += 10;
-        if (i + 1 < harfler.length && renkler[i + 1] === v.renk) ceza += 6;
-        ceza += (kullanim[v.renk] || 0) * 2;
+        if (i > 0 && benzerRenk(renkler[i - 1], v)) ceza += 10;
+        if (i + 1 < harfler.length && benzerRenk(renkler[i + 1], v)) ceza += 6;
+        ceza += kullanim(v) * 2;
         // Eşitlikte: karıştırmada rastgele, değilse harfin sırasına göre dönen bir tercih
         var sira = rastgele ? Math.random() : ((j - i) % adaylar.length + adaylar.length) % adaylar.length / adaylar.length;
         return { v: v, puan: ceza + sira };
@@ -620,8 +653,7 @@
       puanli.sort(function (a, b) { return a.puan - b.puan; });
       var secilen = puanli[0].v;
       sonuc[i] = secilen.id;
-      renkler[i] = secilen.renk;
-      kullanim[secilen.renk] = (kullanim[secilen.renk] || 0) + 1;
+      renkler[i] = secilen;
       dus(secilen);
     });
     t.harfRenkleri = sonuc;
@@ -2823,6 +2855,7 @@
     paraBicimle: paraBicimle,
     buyukHarf: buyukHarf,
     renkleriAta: renkleriAta,
+    benzerRenk: benzerRenk,
     harfVaryanti: harfVaryanti,
     stokKontrol: stokKontrol,
     grupDondur: grupDondur,

@@ -370,6 +370,34 @@ test('otomatik renk: yan yana harfler farklı renkte, stok renk bazında sayıl�
   assert.equal(String(t.harfRenkleri[0]), String(pembe));
 });
 
+test('yan yana kontrolü renk koduna göre: aynı görünen farklı adlar aynı renk, aynı adlı farklı tonlar farklı', () => {
+  const { m, p } = kurP();
+  const v = (h, renk) => p.karakterVaryantlari[h].find((x) => x.renk === renk);
+  assert.equal(ic.benzerRenk(v('L', 'Haki'), v('V', 'Yeşil')), true, 'Haki L ≈ Yeşil V');
+  assert.equal(ic.benzerRenk(v('O', 'Mavi'), v('B', 'Antrasit')), true, 'Mavi O ≈ Antrasit');
+  assert.equal(ic.benzerRenk(v('A', 'Mavi'), v('D', 'Mavi')), false, 'buz mavisi ≠ gök mavisi');
+  assert.equal(ic.benzerRenk(v('C', 'Beyaz'), v('A', 'Mavi')), false, 'beyaz ≠ buz mavisi');
+  // LV: Haki L yanına Yeşil V gelmez (otomatik ve her karıştırmada)
+  const t = piramitTasarim(m, 'LV');
+  ic.renkleriAta(m, t);
+  const benzerKomsu = (t) => Array.from(t.isim).some((h, i) => i > 0 && ic.benzerRenk(ic.harfVaryanti(p, t, i - 1, t.isim[i - 1]), ic.harfVaryanti(p, t, i, h)));
+  assert.equal(benzerKomsu(t), false, renkleri(p, t).join());
+  for (let k = 0; k < 40; k++) {
+    ic.renkleriAta(m, t, true);
+    assert.equal(benzerKomsu(t), false, 'karıştır LV: ' + renkleri(p, t).join());
+  }
+  // OT: Mavi O (gri) yanına Antrasit T değil, Kırmızı T
+  const t2 = piramitTasarim(m, 'OT');
+  for (let k = 0; k < 40; k++) {
+    ic.renkleriAta(m, t2, k > 0);
+    assert.deepEqual(renkleri(p, t2), ['Mavi', 'Kırmızı'], 'karıştır OT');
+  }
+  // AD: buz mavisi A ile gök mavisi D yan yana olabilir (ikisi de "Mavi" adlı); renkler hâlâ dağıtılır
+  const t3 = piramitTasarim(m, 'ADA');
+  ic.renkleriAta(m, t3);
+  assert.equal(benzerKomsu(t3), false, renkleri(p, t3).join());
+});
+
 test('aynı rengi stoktan fazla seçmek uyarı verir; tükenmiş harf "yok" sayılır', () => {
   const { m, y, p } = kurP();
   const turkuaz = p.karakterVaryantlari.E[1].id;

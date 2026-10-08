@@ -31,7 +31,9 @@ const piramitRenkler = {
   B: [['Antrasit', '#657889', 39]], C: [['Beyaz', null, 126]], D: [['Mavi', '#7bc4f0', 83]],
   E: [['Yeşil', '#268180', 102], ['Turkuaz', '#8eddc1', 1], ['Turuncu', '#df6800', 50]],
   K: [['Beyaz', '#f6f6f8', 0]], L: [['Pembe', '#fd5e98', 126], ['Haki', '#64894d', 46]],
-  O: [['Antrasit', '#5f7286', 135]], R: [['Kırmızı', '#fe4943', 113], ['Saks', '#004089', 50]], S: [['Mavi', '#7ac5f2', 129]]
+  // O: adı Mavi ama görseli gri (Antrasit ile aynı); V Yeşil: Haki L ile aynı renk (gerçek mağaza verisi gibi)
+  O: [['Mavi', '#5f7286', 135]], R: [['Kırmızı', '#fe4943', 113], ['Saks', '#004089', 50]], S: [['Mavi', '#7ac5f2', 129]],
+  T: [['Antrasit', '#687b8e', 40], ['Kırmızı', '#f94341', 30]], V: [['Yeşil', '#628a4e', 30], ['Pembe', '#ff62a6', 20]]
 };
 export function piramitSeti() {
   let id = 5000;
