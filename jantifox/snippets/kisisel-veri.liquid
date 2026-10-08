@@ -47,6 +47,22 @@
       {%- render 'kisisel-veri-patch', p: p -%}{%- unless forloop.last -%},{%- endunless -%}
     {%- endfor -%}
   ],
+  "hazir_setler": [
+    {%- comment -%} Hazır patch setleri: içindeki patch'ler (kisisellestirme.set_icerik) tek tek satılan ikon ürünleridir {%- endcomment -%}
+    {%- for p in katalog.hazir_setler.value -%}
+      {%- assign sv = p.selected_or_first_available_variant -%}
+      {
+        "id": {{ p.id }},
+        "baslik": {{ p.title | json }},
+        "varyant": {{ sv.id | json }},
+        "fiyat": {{ sv.price | json }},
+        "satilabilir": {{ p.available | json }},
+        "patchler": [
+          {%- for x in p.metafields.kisisellestirme.set_icerik.value -%}{{ x.id }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}
+        ]
+      }{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ],
   "ikonlar": [
     {%- comment -%} Liste metafield'ları sayfalamadan en fazla 50 öğe döndürür; katalogda 50'den fazla ikon var {%- endcomment -%}
     {%- paginate katalog.ikonlar.value by 250 -%}

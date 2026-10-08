@@ -65,7 +65,9 @@
         });
       } else {
         var birim = parseInt(o._adet_birim, 10) || 1;
-        var ad = k.variant_title && k.variant_title !== 'Default Title' ? k.variant_title : sadeAd(k.product_title);
+        var ad = o._patch_sayisi
+          ? String(k.product_title || '').replace(/\s+/g, ' ').replace(/\s*(Patch\s+)?Seti\s*$/i, '').trim() + ' seti'
+          : k.variant_title && k.variant_title !== 'Default Title' ? k.variant_title : sadeAd(k.product_title);
         for (var i = 0; i < birim; i++) digerleri.push(ad);
       }
     });
@@ -157,7 +159,8 @@
     var ad = baz.querySelector('.cart-item__name');
     var ozellik = g.baz.properties || {};
     var birimAdet = Math.max(1, g.baz.quantity || 1);
-    var patchSayisi = g.patchler.reduce(function (t, p) { return t + Math.round((p.quantity || 0) / birimAdet); }, 0);
+    // Hazır set satırı içindeki patch sayısı kadar sayılır (_patch_sayisi)
+    var patchSayisi = g.patchler.reduce(function (t, p) { return t + Math.round((p.quantity || 0) / birimAdet) * (parseInt((p.properties || {})._patch_sayisi, 10) || 1); }, 0);
     if (ad && !baz.querySelector('.kp-sepet-icerik')) {
       var ic = document.createElement('p');
       ic.className = 'kp-sepet-icerik';
@@ -325,7 +328,12 @@
         else delete ozellik['İsim'];
         try {
           var konum = JSON.parse(ozellik._tasarim_konum || '{}');
-          if (konum.p) {
+          if (konum.p && patch.properties._patch_sayisi) {
+            // Hazır set satırı: setin tüm patch'lerinin konumu (aynı set örneği "ürün#sıra") çıkar
+            var ilk = konum.p.filter(function (x) { return x.k && String(x.k).split('#')[0] === String(patch.product_id); })[0];
+            if (ilk) konum.p = konum.p.filter(function (x) { return x.k !== ilk.k; });
+            ozellik._tasarim_konum = JSON.stringify(konum);
+          } else if (konum.p) {
             var silinecek = parseInt(patch.properties._adet_birim, 10) || 1;
             konum.p = konum.p.filter(function (x) {
               if (String(x.v) === String(patch.variant_id) && silinecek > 0) {

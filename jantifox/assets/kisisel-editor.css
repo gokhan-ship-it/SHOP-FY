@@ -664,6 +664,76 @@ body.kisisel-aktif .bag-notice {
 .kp-bildirim[hidden] {
   display: none;
 }
+/* Onay kutusu (set bozma, aksesuar çakışması): koyu, butonlu; dokunulabilir */
+.kp-onay {
+  width: min(100%, 420px);
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(17, 17, 17, 0.95);
+  color: #fff;
+  font-size: 1.35rem;
+  line-height: 1.4;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+  animation: kp-belir 0.18s ease-out;
+}
+.kp-onay[hidden] {
+  display: none;
+}
+.kp-onay__metin {
+  margin: 0 0 0.8rem;
+}
+.kp-onay__butonlar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.kp-onay__buton {
+  flex: 1 1 auto;
+  min-height: 40px;
+  padding: 0 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.kp-onay__buton--birincil {
+  border-color: #fff;
+  background: #fff;
+  color: var(--kp-murekkep);
+}
+.kp-onay__not {
+  margin: 0.8rem 0 0;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+/* Hazır set eklenince kısa süre: sarı kesikli çerçeve ve set adı */
+.kp-set-cerceve {
+  position: absolute;
+  z-index: 3;
+  border: 2px dashed #f2c200;
+  border-radius: 8px;
+  pointer-events: none;
+}
+.kp-set-cerceve[hidden] {
+  display: none;
+}
+.kp-set-cerceve__etiket {
+  position: absolute;
+  left: -2px;
+  bottom: 100%;
+  margin-bottom: 4px;
+  padding: 0.2rem 0.8rem;
+  border-radius: 999px;
+  background: #f2c200;
+  color: var(--kp-murekkep);
+  font-size: 1.2rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
 @keyframes kp-belir {
   from {
     opacity: 0;
@@ -1385,6 +1455,35 @@ html.kp-kilit body {
   color: var(--kp-ikincil);
   font-size: 1.2rem;
 }
+/* Hazır set kartları: 2 sütun */
+.kp-izgara--ikon.kp-izgara--set {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.kp-secim--set {
+  padding: 0.8rem 0.6rem;
+}
+.kp-set-kart__onizleme {
+  display: flex;
+  justify-content: center;
+  gap: 0.2rem;
+  width: 100%;
+}
+.kp-secim--set .kp-set-kart__onizleme img {
+  width: 25%;
+  max-width: 44px;
+}
+.kp-set-kart__fiyat {
+  font-size: 1.2rem;
+  color: var(--kp-murekkep);
+}
+.kp-set-kart__fiyat s {
+  color: var(--kp-ikincil);
+}
+.kp-secim--sigmaz > .kp-set-kart__onizleme,
+.kp-secim--sigmaz > .kp-set-kart__fiyat {
+  opacity: 0.35;
+}
 .kp-kategoriler {
   display: flex;
   gap: 0.6rem;
@@ -1556,6 +1655,9 @@ html.kp-kilit body {
   }
   .kp-izgara--ikon {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .kp-izgara--ikon.kp-izgara--set {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

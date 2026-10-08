@@ -84,7 +84,9 @@ await s.waitForTimeout(100);
 assert.equal(await s.evaluate(() => document.querySelector('.kp-onizleme').getBoundingClientRect().top), onizlemeOnce, 'önizleme kaymaz');
 await s.evaluate(() => { document.querySelector('.kp-kaydir').scrollTop = 0; });
 
-// 3) İkon ızgarası: 4 sütun, fiyat başlıkta bir kez, kartlarda fiyat yok
+// 3) İkon ızgarası: 4 sütun, fiyat başlıkta bir kez, kartlarda fiyat yok (ilk kategori Hazır setler; ikon kategorisine geç)
+assert.equal(await metin('.kp-panel__fiyat'), 'Tek patch 330 TL');
+await s.locator('[data-kp-kategori="Spor"]').click();
 assert.equal(await metin('.kp-panel__fiyat'), 'Her patch 330 TL');
 assert.equal(await s.locator('[data-kp-panel="ikon"] .kp-secim__fiyat').count(), 0);
 const sutun = await s.evaluate(() => getComputedStyle(document.querySelector('.kp-izgara--ikon')).gridTemplateColumns.split(' ').length);
@@ -297,6 +299,7 @@ await s.locator('[data-kp-panel="yazi"] [data-kp-gec]').click();
 assert.equal(await gorunur('[data-kp-panel="ikon"]'), true, 'geç → İkon');
 assert.equal(await metin('[data-kp-panel="ikon"] [data-kp-gec]'), 'Bu adımı geç →');
 assert.equal(await metin('[data-kp-ileri]'), 'İleri');
+await s.locator('[data-kp-kategori="Spor"]').click();
 await s.locator('[data-kp-ikon]:not([disabled])').first().click();
 assert.equal(await gorunur('[data-kp-panel="ikon"] [data-kp-gec]'), false, 'ikon eklenince gizlenir');
 await s.locator('[data-kp-ileri]').click();

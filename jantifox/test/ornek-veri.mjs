@@ -22,6 +22,12 @@ export function ornekVeri(degisiklik = {}) {
       { id: 4, baslik: 'Musical Note', tip: 'icon', en: '6', boy: '5', sekil: 'rect', etiketler: ['aksesuar', 'gift'], gorsel: 'm.jpg', varyantlar: [{ id: 3004, fiyat: 33000, satilabilir: true, stok: 69 }] },
       { id: 5, baslik: 'Sarı Kalp Patch', tip: 'icon', en: '5', boy: '5', sekil: 'rect', etiketler: ['janti kalpler', 'janti sporlar'], gorsel: 'k.jpg', varyantlar: [{ id: 3005, fiyat: 33000, satilabilir: true, stok: 1 }] }
     ],
+    // Hazır setler: 8002'de katalogda olmayan ikon (1: yükseklik yok) var → editörde görünmez; 8003 satışta değil
+    hazir_setler: [
+      { id: 8001, baslik: 'School Vibes  Patch Seti', varyant: 7001, fiyat: 80000, satilabilir: true, patchler: [2, 4, 5] },
+      { id: 8002, baslik: 'Kalpler Patch Seti', varyant: 7002, fiyat: 95000, satilabilir: true, patchler: [1, 5, 4, 2] },
+      { id: 8003, baslik: 'Eski Seti', varyant: 7003, fiyat: 80000, satilabilir: false, patchler: [2, 4, 5] }
+    ],
     ...degisiklik
   };
 }

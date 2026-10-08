@@ -572,3 +572,53 @@ test('sepetten geri kurma: harf + rakam karışık yazı ve ayrı ikon', () => {
   assert.equal(k.parcalar[0].tip, 'icon');
   yakin(konumlar(m, y, k), konumlar(m, y, t));
 });
+
+// ---------- Hazır setler ----------
+
+const setTasarimi = (m) => ({
+  setId: m.setler[0].id, isim: '', isimMerkez: null,
+  parcalar: [
+    { uid: 'a', tip: 'icon', urunId: 2, varyantId: 3002, cx: 14, cy: 22, setGrup: 'S1' },
+    { uid: 'b', tip: 'icon', urunId: 4, varyantId: 3004, cx: 21, cy: 22, setGrup: 'S1' },
+    { uid: 'c', tip: 'icon', urunId: 5, varyantId: 3005, cx: 17, cy: 29, setGrup: 'S1' }
+  ],
+  hazirSetler: [{ id: 'S1', urunId: 8001 }]
+});
+
+test('hazır setler: yalnızca satışta ve tüm patch\'leri katalogda olanlar; ad sade', () => {
+  const { m } = kur();
+  assert.deepEqual(duz(m.hazirSetler.map((s) => [s.id, s.ad, s.patchler.length, s.parcaToplam])), [[8001, 'School Vibes', 3, 99000]]);
+});
+
+test('bozulmamış set: set fiyatı, set ürünü özeti, tek patch stoğu düşmez; bozulunca tek tek', () => {
+  const { m, y } = kur();
+  const t = setTasarimi(m);
+  let f = ic.fiyatHesapla(m, y, t);
+  assert.equal(f.toplam, 300000 + 80000);
+  assert.equal(f.patchAdet, 3);
+  assert.equal(ic.tasarimOzeti(m, t), 'School Vibes seti');
+  // Sarı Kalp'in tek stoğu 1: set ürünü olarak satılınca iki çantada da sorun yok
+  assert.deepEqual(duz(ic.stokKontrol(m, t, y, 2)), []);
+  // Setten bir patch çıkınca set bozulur, kalanlar tek tek
+  t.parcalar.pop();
+  ic.setleriTemizle(m, t);
+  assert.equal(t.hazirSetler.length, 0);
+  assert.ok(t.parcalar.every((p) => !p.setGrup));
+  f = ic.fiyatHesapla(m, y, t);
+  assert.equal(f.toplam, 300000 + 2 * 33000);
+  assert.equal(ic.tasarimOzeti(m, t), 'Futbol Topu + Musical Note');
+});
+
+test('sepetten geri kurma: set patch\'leri yeniden set olur, konum patch bazında', () => {
+  const { m, y } = kur();
+  const t = setTasarimi(m);
+  t.isim = 'EC';
+  const d = ic.duzenle(m, y, t);
+  const konum = duz(ic.tasarimKonumu(m, d.parcalar, t));
+  assert.deepEqual(konum.p.filter((x) => x.t === 'i').map((x) => x.k), ['8001#1', '8001#1', '8001#1']);
+  const k = ic.konumdanTasarim(m, y, konum);
+  assert.equal(k.hazirSetler.length, 1);
+  assert.equal(String(k.hazirSetler[0].urunId), '8001');
+  assert.equal(ic.fiyatHesapla(m, y, k).toplam, 300000 + 2 * 33000 + 80000);
+  yakin(konumlar(m, y, k), konumlar(m, y, t));
+});
