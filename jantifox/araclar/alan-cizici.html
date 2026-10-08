@@ -151,6 +151,7 @@
       <div class="izgara">
         <div><label for="o-dis-en" id="o-dis-en-ad">Genişlik (cm)</label><input type="number" id="o-dis-en" step="0.1" min="0" placeholder="cm"></div>
         <div id="o-dis-boy-kap"><label for="o-dis-boy">Yükseklik (cm)</label><input type="number" id="o-dis-boy" step="0.1" min="0" placeholder="cm"></div>
+        <div id="o-dis-kose-kap"><label for="o-dis-kose">Köşe yarıçapı (cm)</label><input type="number" id="o-dis-kose" step="0.1" min="0" placeholder="0"></div>
       </div>
       <p class="not" id="o-dis-not"></p>
     </div>
@@ -305,8 +306,9 @@
 
   function sekilEl(s) {
     var sinif = 'sekil' + (s.tur === 'yasak' ? ' yasak' : s.tur === 'dis' ? ' dis' : '') + (s.id === durum.seciliId ? ' secili' : '');
+    var o = s.tur === 'dis' && s.koseCm > 0 && s.enCm > 0 ? s.koseCm * s.w / s.enCm : 0;
     var e = s.shape === 'rect'
-      ? el('rect', { x: s.x, y: s.y, width: s.w, height: s.h })
+      ? el('rect', { x: s.x, y: s.y, width: s.w, height: s.h, rx: o, ry: o })
       : el('ellipse', { cx: s.x + s.w / 2, cy: s.y + s.h / 2, rx: s.w / 2, ry: s.h / 2 });
     e.setAttribute('class', sinif);
     e.setAttribute('data-id', s.id);
@@ -424,7 +426,8 @@
         tipler: ['letter', 'number', 'icon'],
         olcuCm: null,
         enCm: eskiDis ? eskiDis.enCm : null,
-        boyCm: eskiDis ? eskiDis.boyCm : null
+        boyCm: eskiDis ? eskiDis.boyCm : null,
+        koseCm: eskiDis ? eskiDis.koseCm : null
       };
       durum.sekiller.push(s);
       durum.seciliId = s.id;
@@ -579,6 +582,8 @@
         var daire = s.shape === 'circle';
         $('#o-dis-en-ad').textContent = daire ? 'Çap (cm)' : 'Genişlik (cm)';
         $('#o-dis-boy-kap').hidden = daire;
+        $('#o-dis-kose-kap').hidden = daire;
+        if ($('#o-dis-kose') !== aktif) $('#o-dis-kose').value = s.koseCm || '';
         if ($('#o-dis-en') !== aktif) $('#o-dis-en').value = s.enCm || '';
         if ($('#o-dis-boy') !== aktif) $('#o-dis-boy').value = s.boyCm || '';
         var dn = '';
@@ -638,6 +643,7 @@
   $('#o-sekil').addEventListener('change', function () { var s = bul(durum.seciliId); if (s) { s.shape = this.value; sinirla(s); ciz(); } });
   $('#o-olcu').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-olcu'); s.olcuCm = v > 0 ? v : null; ciz(); } });
   $('#o-dis-en').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-dis-en'); s.enCm = v > 0 ? v : null; ciz(); } });
+  $('#o-dis-kose').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-dis-kose'); s.koseCm = v > 0 ? v : null; ciz(); } });
   $('#o-dis-boy').addEventListener('input', function () { var s = bul(durum.seciliId); if (s) { var v = sayiAl('#o-dis-boy'); s.boyCm = v > 0 ? v : null; ciz(); } });
   function modSec(m) {
     durum.mod = m;
@@ -724,6 +730,7 @@
         dis: { shape: dis.shape, x: yuzde(dis.x, g.en), y: yuzde(dis.y, g.boy), w: yuzde(dis.w, g.en), h: yuzde(dis.h, g.boy),
           en_cm: dis.enCm, boy_cm: dis.shape === 'circle' ? dis.enCm : dis.boyCm },
         zones: harita.zones, forbidden: harita.forbidden };
+      if (dis.shape !== 'circle' && dis.koseCm > 0) harita.dis.kose_cm = dis.koseCm;
       harita.zones.forEach(function (z, k) {
         var s = alanlar[k];
         delete z.cap_cm; delete z.genislik_cm;
@@ -767,7 +774,7 @@
       if (h.dis) {
         sayac++;
         durum.sekiller.push({ id: 's' + sayac, tur: 'dis', shape: h.dis.shape || 'rect', x: px(h.dis.x, g.en), y: px(h.dis.y, g.boy), w: px(h.dis.w, g.en), h: px(h.dis.h, g.boy),
-          ad: 'Dış ölçü', tipler: [], olcuCm: null, enCm: Number(h.dis.en_cm) || null, boyCm: Number(h.dis.boy_cm) || null });
+          ad: 'Dış ölçü', tipler: [], olcuCm: null, enCm: Number(h.dis.en_cm) || null, boyCm: Number(h.dis.boy_cm) || null, koseCm: Number(h.dis.kose_cm) || null });
       }
       (h.zones || []).forEach(function (z) {
         sayac++;

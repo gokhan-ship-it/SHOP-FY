@@ -41,6 +41,14 @@ Bu proje kapsamında mağazada yapılan her yazma işlemi burada listelenir. Mev
 | 2026-10-08 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js`, `assets/kisisel-editor.css`, `snippets/kisisel-kart.liquid` | Commit 13bf8bc (çekmecede temanın görsel sarmalayıcısı da gizlenir) ve e419482, MD5 doğrulandı. Sepetteki tasarım: "Senin tasarımın · ✓ Sepette" kartı, Düzenle (editör `_tasarim_konum`'dan kurulur; "Sepeti güncelle": önce yeni grup `/cart/add.js`, başarılıysa eski grup `/cart/update.js` ile kaldırılır), Sepetten sil + Geri al, küçük "Bir tane daha" satırı. Mağaza verisine yazılmadı |
 | 2026-10-08 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js`, `assets/kisisel-editor.css`, `snippets/kisisel-kart.liquid` | Commit 4c59544, MD5 doğrulandı (js 0c23445c…, css c9e4e375…, liquid 7e031b6c…). "Bir tane daha" metinleri; temanın Sepete ekle butonları (ana + sabit çubuk) yazısı bizim JS ile "Sadece çantayı sepete ekle" (sabit çubuktaki dahil, kullanıcı onayladı), davranış temanınki (sadece çanta; submit artık yakalanmıyor); kırmızı buton "Tasarımımı sepete ekle · toplam"; kayıtlı ya da sepette tasarım varken Hemen satın al gizli (`body.kisisel-tasarimli`). Galeri: temanın galerisine slayt eklenmedi; ilk slayt ve ilk küçük resmin üstüne katman (tüm çanta, "Senin tasarımın" / "Tasarımın" şeridi), açılışta `gallery-carousel.main.go(0)`. Tema dosyası düzenlenmedi, mağaza verisine yazılmadı |
 | 2026-10-08 | Storefront API `cartCreate` ×2 (anahtarsız, yalnızca deneme) | Geçici sepetler: çanta + 4 harf; çanta + 4 harf + kalem kutusu + School Vibes seti | Kampanya simülasyonunun anahtarsız çalıştığını doğrulamak için. Müşteri sepetine ve siparişlere dokunulmadı, ödeme başlatılmadı; mağaza verisi değişmedi. Faz 1'de başka yazma yok: eşleştirmeler onay bekliyor (`veri/faz1-kontrol.html`) |
+| 2026-10-08 | `metafieldDefinitionCreate` ×2 | Product: `kisisellestirme.es_urun` (product_reference, 1544237089054), `kisisellestirme.set_icerik` (list.product_reference, 1544237121822) | Yeni alanlar, Storefront PUBLIC_READ. Kullanıcı onaylı (Faz 1) |
+| 2026-10-08 | `metafieldsSet` ×24 | 12 yapıştırılabilir aksesuar ↔ 12 Velcro'suz eş: `es_urun` (iki yönde) | Eşleştirme `veri/aksesuar/liste.json`, kullanıcı onaylı (yuvarlaklar dahil) |
+| 2026-10-08 | `metafieldsSet` ×22 | 22 hazır set: `set_icerik` | Eşleştirme `veri/setler/eslestirme.json`, kullanıcı onaylı. Halloween yazılmadı (editörde gizli) |
+| 2026-10-08 | `metaobjectDefinitionUpdate` | `kisisellestirme_katalog`: yeni alanlar `aksesuarlar`, `hazir_setler` (list.product_reference) | Mevcut alanlar değişmedi |
+| 2026-10-08 | `metaobjectUpdate` | Katalog `ana`: `aksesuarlar` (12 yapıştırılabilir), `hazir_setler` (22 set, Halloween hariç), `ayarlar` | `ayarlar`a eklenenler: `kampanya_tutar_esikleri: [{Ekstra %10 İndirim, 5000}]`, `ucretsiz_kargo_esigi: 1500`. Önceki ayar değerleri aynen korundu |
+| 2026-10-08 | `fileCreate` ×12 | Dosyalar: `kisisel-aksesuar-<anahtar>.webp` (şeffaf, en uzun kenar 1000 px) | Kaynak commit 6f74c85, `veri/aksesuar/yukle/`. Kimlikler `veri/aksesuar/dosya-idleri.json`. Ürün medyasına bağlanmadı |
+| 2026-10-08 | `metafieldsSet` ×24 | 12 yapıştırılabilir + 12 eş: `onizleme_gorseli` → aksesuar WebP'si (eşler aynı modelin görselini kullanır) | Ürün ve varyant görsellerine dokunulmadı; bu ürünlerde önceden `kisisellestirme` alanı yoktu |
+| 2026-10-08 | `metafieldsSet` ×18 | 4 zarf + 5 yuvarlak (ve eşleri): `harita` (aksesuar, yalnız dış ölçü) | Zarf 20 × 9 cm dikdörtgen; yuvarlak çap 10 cm gövde dairesi. Velcro yüzeyi yok (`zones: []`); kullanıcı çizince eklenecek. Kalem kutularının haritası kullanıcı çizecek, başlangıç JSON'ları `veri/aksesuar/baslangic-*.json` (köşe yarıçapı 2 cm) |
 
 ## Metafield tanımları
 
@@ -66,6 +74,8 @@ Hepsi `kisisellestirme` namespace'inde, Storefront erişimi `PUBLIC_READ`.
 | Variant | `png_genislik_cm` | number_decimal | | 1543708770590 |
 | Variant | `png_yukseklik_cm` | number_decimal | | 1543708803358 |
 | Variant | `renk_kodu` | color | | 1544041857310 |
+| Product | `es_urun` | product_reference | | 1544237089054 |
+| Product | `set_icerik` | list.product_reference | | 1544237121822 |
 
 ## Patch PNG ölçüleri (2026-10-07)
 
