@@ -42,7 +42,7 @@ const satirRenkleri = () => s.$$eval('.kp-renk-harf', (h) => h.map((x) => {
 
 await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await s.locator('kisisel-kart').waitFor({ state: 'visible' });
-await s.locator('kisisel-kart input[value="kisisel"]').dispatchEvent('click');
+await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 await s.locator('.kp-editor').waitFor({ state: 'visible' });
 await s.waitForTimeout(300);
 
@@ -140,7 +140,7 @@ await dokun(await merkezi('[data-uid="harf-2"]'));
 assert.match(await s.locator('[data-kp-secili-ad]').textContent(), /E harfi/);
 assert.equal(await s.locator('[data-kp-balon]').isVisible(), true);
 await s.locator('[data-kp-balon-dondur]').click();
-console.log('döndürme mesajı:', await s.locator('[data-kp-secim-durum]').textContent());
+console.log('döndürme mesajı:', await s.locator('[data-kp-bildirim]').textContent());
 await s.waitForTimeout(700); // geçersiz açıda kırmızı önizleme 600 ms sürer; son durum
 assert.equal(await s.locator('.kp-parca--hatali').count(), 0);
 assert.equal(await s.locator('[data-kp-aci]').isVisible(), false, 'açı göstergesi kapandı');

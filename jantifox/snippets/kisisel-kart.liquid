@@ -26,28 +26,33 @@
     data-form-id="product-form-{{ section.id }}"
     hidden
   >
-    <fieldset class="kisisel-kart__secim">
-      <legend class="visually-hidden">Satın alma şekli</legend>
-      <label class="kisisel-kart__secenek">
-        <input type="radio" name="kisisel-mod-{{ section.id }}" value="sade" checked data-kisisel-mod>
-        <span>Sadece çanta</span>
-      </label>
-      <label class="kisisel-kart__secenek">
-        <input type="radio" name="kisisel-mod-{{ section.id }}" value="kisisel" data-kisisel-mod>
-        <span>Kişiselleştir</span>
-      </label>
-    </fieldset>
+    <div class="kisisel-kart__davet" data-kisisel-davet>
+      <div class="kisisel-kart__davet-ust">
+        <span class="kisisel-kart__ornek" data-kisisel-ornek aria-hidden="true"><span>A</span><span>B</span><span>C</span></span>
+        <div class="kisisel-kart__metin">
+          <p class="kisisel-kart__baslik">Ürünü kişiselleştir</p>
+          <p class="kisisel-kart__aciklama">İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.</p>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary button--full-width kisisel-kart__buton" data-kisisel-ac>
+        Kişiselleştirmeye başla
+      </button>
+      <div class="kisisel-kart__alt">
+        <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>Patch başına 330 TL</span>
+        <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
+      </div>
+    </div>
 
     <div class="kisisel-kart__govde" data-kisisel-govde hidden>
-      <p class="kisisel-kart__aciklama" data-kisisel-bos>
-        Harf, rakam ve ikon patch'leriyle çantanı tasarla, sonucu çantanın üzerinde gör.
-      </p>
       <ul class="kisisel-kart__ozet" data-kisisel-ozet hidden></ul>
       <p class="kisisel-kart__toplam" data-kisisel-toplam hidden></p>
       <p class="kisisel-kart__not kp-indirim-notu" data-kisisel-indirim-notu hidden>İndirimler sepette uygulanır</p>
       <button type="button" class="btn btn-outline button--full-width kisisel-kart__buton" data-kisisel-ac>
-        Tasarla
+        Tasarımı düzenle
       </button>
+      <div class="kisisel-kart__alt kisisel-kart__alt--sag">
+        <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
+      </div>
     </div>
   </kisisel-kart>
 

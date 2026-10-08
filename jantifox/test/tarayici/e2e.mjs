@@ -36,8 +36,10 @@ const kart = sayfa.locator('kisisel-kart');
 await kart.waitFor({ state: 'visible' });
 await sayfa.screenshot({ path: cikti + '01-urun-sayfasi.png' });
 
-// Kişiselleştir → editör açılır
-await sayfa.getByRole('radio', { name: 'Kişiselleştir' }).tap();
+// Davet kartı → "Kişiselleştirmeye başla" editörü açar
+assert.match(await kart.innerText(), /Ürünü kişiselleştir/);
+assert.match(await kart.innerText(), /Patch başına 330 TL/);
+await sayfa.getByRole('button', { name: 'Kişiselleştirmeye başla' }).tap();
 const editor = sayfa.locator('.kp-editor');
 await editor.waitFor({ state: 'visible' });
 await sayfa.waitForTimeout(400);
@@ -156,7 +158,8 @@ await sayfa.locator('[data-kp-ileri]').click();
 await sayfa.locator('[data-kp-panel="ikon"]').waitFor({ state: 'visible' });
 await sayfa.locator('[data-kp-kategori="Spor"]').click();
 await sayfa.locator('[data-kp-ikon="2"]').click();
-await sayfa.getByText(/Alanda .*ikon/).waitFor();
+await sayfa.locator('.kp-cip__ad', { hasText: 'Futbol Topu' }).waitFor();
+assert.match(await sayfa.locator('[data-kp-doluluk-metin]').textContent(), /^Alanın %\d+'(i|ı|u|ü|si|sı) dolu$/);
 
 // Dokunarak sürükle: ikonu daire dışına sürükle → geçerli konuma geri dönmeli
 const ikon = sayfa.locator('.kp-parca--icon').first();
@@ -166,6 +169,9 @@ const cdp = await baglam.newCDPSession(sayfa);
 const dokun = async (tip, x, y) => cdp.send('Input.dispatchTouchEvent', { type: tip, touchPoints: tip === 'touchEnd' ? [] : [{ x, y }] });
 await dokun('touchStart', k.x + k.width / 2, k.y + k.height / 2);
 for (let i = 1; i <= 10; i++) await dokun('touchMove', k.x + k.width / 2, k.y + k.height / 2 - (i * (k.y - sahne.y + 30)) / 10);
+// Sürüklerken: kırmızı, alan sınırı kalın kırmızı, uyarı kutusunda metin
+assert.equal(await sayfa.locator('.kp-sahne--tasma').count(), 1, 'alan sınırı kırmızı');
+assert.equal(await sayfa.locator('[data-kp-bildirim]').textContent(), 'Futbol Topu alanın dışına taşıyor. Bırakırsan son yerine döner.');
 await dokun('touchEnd');
 await sayfa.waitForTimeout(100);
 const k2 = await ikon.boundingBox();
@@ -177,7 +183,9 @@ const cx = sinirlar.x + sinirlar.w / 2, cy = sinirlar.y + sinirlar.h / 2, r = si
 const kose = [[k2.x, k2.y], [k2.x + k2.width, k2.y], [k2.x, k2.y + k2.height], [k2.x + k2.width, k2.y + k2.height]];
 const merkezUzaklik = Math.hypot(k2.x + k2.width / 2 - cx, k2.y + k2.height / 2 - cy) + k2.width / 2;
 assert.ok(merkezUzaklik <= r + 1, 'yuvarlak ikon dairenin içinde kalmalı');
-assert.ok(k2.y < k.y, 'ikon yukarı doğru taşınmış olmalı');
+// Yol ismin üstünden geçtiği için son geçerli konum başlangıç noktası: ikon yerine döner
+assert.ok(Math.abs(k2.y - k.y) < 1 && Math.abs(k2.x - k.x) < 1, 'ikon son geçerli yerine dönmeli');
+assert.equal(await sayfa.locator('.kp-sahne--tasma').count(), 0, 'bırakınca sınır kaybolur');
 assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0);
 await sayfa.screenshot({ path: cikti + '06-ikon-surukleme.png' });
 
@@ -188,24 +196,14 @@ await sayfa.locator('[data-kp-ileri]').click();
 await sayfa.locator('[data-kp-panel="ozet"]').waitFor({ state: 'visible' });
 const ozet = await sayfa.locator('.kp-ozet').innerText();
 assert.match(ozet, /Toplam\s+4\.650 TL/);
+assert.match(await sayfa.locator('[data-kp-panel="ozet"] h3').textContent(), /Tasarımın hazır/);
+assert.equal(await sayfa.locator('[data-kp-ileri]').textContent(), 'Sepete ekle · 4.650 TL');
 await sayfa.screenshot({ path: cikti + '07-ozet.png' });
+
+// Özetten doğrudan sepete ekle (editör kapanır; çekmece yoksa /cart'a gider)
 await sayfa.locator('[data-kp-ileri]').click();
-await editor.waitFor({ state: 'hidden' });
-
-// Kart ve butonlar
-assert.match(await kart.innerText(), /ECE · 3 harf/);
-assert.match(await kart.innerText(), /7 · 1 rakam/);
-assert.match(await kart.innerText(), /Futbol Topu · 1 ikon/);
-assert.match(await sayfa.locator('#ProductSubmitButton-main span').first().textContent(), /Tasarımımla sepete ekle · 4\.650 TL/);
-assert.equal(await sayfa.locator('.shopify-payment-button').first().isVisible(), false);
-assert.ok(await sayfa.locator('.kp-galeri').isVisible(), 'galeride tasarım önizlemesi');
-await sayfa.screenshot({ path: cikti + '08-kart.png', fullPage: true });
-
-// Sepete ekle (ana butondan: formda name="id" alanı var, form.id tuzağı)
-await sayfa.locator('#ProductSubmitButton-main').click();
 await sayfa.waitForURL('**/cart');
-assert.equal(await sayfa.evaluate(() => window.__temaSubmit || 0), 0, 'tema submit dinleyicisi çalışmamalı');
-assert.ok(eklenen, 'sepete ekleme isteği gitmeli');
+assert.ok(eklenen, 'özetten sepete ekleme isteği gitmeli');
 const [baz, ...patchler] = eklenen.items;
 assert.equal(baz.id, 51795696943390);
 assert.equal(baz.properties['Tasarım'], 'ECE + 7 + Futbol Topu');
@@ -215,6 +213,25 @@ assert.ok(patchler.every((p) => p.properties._tasarim_id === id));
 const e = patchler.find((p) => p.properties['Harf sırası'] === '1, 3');
 assert.equal(e.quantity, 2);
 console.log(JSON.stringify(eklenen, null, 1).slice(0, 1500));
+
+// Ürün sayfasına dön: tasarım oturumdan geri gelir, kart tasarımlı halde
+eklenen = null;
+await sayfa.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
+await kart.waitFor({ state: 'visible' });
+assert.match(await kart.innerText(), /ECE · 3 harf/);
+assert.match(await kart.innerText(), /7 · 1 rakam/);
+assert.match(await kart.innerText(), /Futbol Topu · 1 ikon/);
+assert.equal(await sayfa.locator('[data-kisisel-davet]').isVisible(), false);
+assert.match(await sayfa.locator('#ProductSubmitButton-main span').first().textContent(), /Tasarımımla sepete ekle · 4\.650 TL/);
+assert.equal(await sayfa.locator('.shopify-payment-button').first().isVisible(), false);
+assert.ok(await sayfa.locator('.kp-galeri').isVisible(), 'galeride tasarım önizlemesi');
+await sayfa.screenshot({ path: cikti + '08-kart.png', fullPage: true });
+
+// Ana butondan da (formda name="id" alanı var, form.id tuzağı)
+await sayfa.locator('#ProductSubmitButton-main').click();
+await sayfa.waitForURL('**/cart');
+assert.equal(await sayfa.evaluate(() => window.__temaSubmit || 0), 0, 'tema submit dinleyicisi çalışmamalı');
+assert.ok(eklenen && eklenen.items.length === 5, 'ana buton tasarımla eklemeli');
 
 // Sabit çubuktan da: sayfaya dön, tasarım oturumdan geri gelir
 eklenen = null;

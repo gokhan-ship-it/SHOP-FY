@@ -29,7 +29,7 @@ async function sayfaAc(cihaz) {
   });
   await sayfa.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
   await sayfa.locator('kisisel-kart').waitFor({ state: 'visible' });
-  await sayfa.locator('kisisel-kart input[value="kisisel"]').dispatchEvent('click');
+  await sayfa.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
   await sayfa.locator('.kp-editor').waitFor({ state: 'visible' });
   await sayfa.waitForTimeout(400);
   return { baglam, sayfa, hatalar, durum };
@@ -171,13 +171,13 @@ await sayfa.locator('[data-kp-duzle]').tap();
   for (let i = 0; i < 6; i++) await sayfa.locator('[data-kp-dondur="15"]').tap();
   await sayfa.waitForTimeout(700);
   const sonra = await parcaDurumu(sayfa, meteorSecici);
-  console.log('araç çubuğu kenarda:', aciOnce, '→', sonra.aci, '·', await sayfa.locator('[data-kp-secim-durum]').textContent());
+  console.log('araç çubuğu kenarda:', aciOnce, '→', sonra.aci, '·', await sayfa.locator('[data-kp-bildirim]').textContent());
   assert.equal(sonra.hatali, false);
 }
 
 // 6) Boş alana dokunma seçimi kaldırır
 {
-  const g = await sayfa.evaluate(() => { const r = document.querySelector('.kp-gorunum').getBoundingClientRect(); return [r.left + 12, r.bottom - 12]; });
+  const g = await sayfa.evaluate(() => { const r = document.querySelector('.kp-gorunum').getBoundingClientRect(); return [r.left + 12, r.top + 40]; }); // alt kısımda artık araç çubuğu var
   await dokun('touchStart', [g]);
   await dokun('touchEnd', []);
   await sayfa.waitForTimeout(100);
@@ -204,11 +204,11 @@ await sayfa.waitForTimeout(200);
 await sayfa.locator('[data-kp-sil]').tap();
 assert.equal(await sayfa.locator('#kp-isim').inputValue(), '');
 await sayfa.locator('#kp-isim').fill('ece');
-// Tamamla ve sepete ekle
+// Özet ve sepete ekle
 await sayfa.locator('[data-kp-adim="ozet"]').click();
 await sayfa.locator('[data-kp-ileri]').click();
+// Özetteki "Sepete ekle" doğrudan ekler
 await sayfa.locator('.kp-editor').waitFor({ state: 'hidden' });
-await sayfa.locator('#ProductSubmitButton-main').click();
 await sayfa.waitForTimeout(800);
 const baz = durum.eklenen.items[0].properties;
 const konum = JSON.parse(baz._tasarim_konum);
