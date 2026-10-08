@@ -1954,3 +1954,154 @@ html.kp-kilit body {
     flex: 2 1 0;
   }
 }
+/* Kampanyalı toplam: eski toplam üstü çizili */
+.kp-alt__eski,
+.kisisel-kart__eski {
+  font-weight: 400;
+  color: var(--kp-ikincil);
+  font-size: 0.8em;
+  margin-right: 0.2rem;
+}
+.kp-alt__fiyat .kp-indirim-notu[hidden] {
+  display: none;
+}
+/* Kampanya şeridi: fiyat çubuğunun hemen üstü (~40 px) */
+.kp-serit-kap {
+  position: relative;
+  flex: none;
+}
+.kp-serit {
+  padding: 0.5rem 1.2rem 0.5rem;
+  border-top: 1px solid var(--kp-cizgi);
+  background: var(--kp-zemin);
+  min-height: 40px;
+  box-sizing: border-box;
+}
+.kp-serit[hidden] {
+  display: none;
+}
+.kp-serit__ust {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.kp-serit__sol {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #b3141b;
+  font-weight: 700;
+}
+.kp-serit__sag {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--kp-murekkep);
+  text-align: right;
+  margin-left: auto;
+}
+.kp-serit__sol:empty,
+.kp-serit__sag:empty {
+  display: none;
+}
+.kp-serit__cubuk {
+  position: relative;
+  height: 4px;
+  margin: 0.5rem 0.4rem 0.2rem;
+  border-radius: 2px;
+  background: #ece7e2;
+}
+.kp-serit__dolu {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-radius: 2px;
+  background-image: linear-gradient(90deg, #b3141b, #e8742b);
+  background-repeat: no-repeat;
+  transition: width 0.4s ease;
+}
+.kp-serit__nokta {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--kp-zemin);
+  border: 2px solid #c9c1b9;
+  box-sizing: border-box;
+}
+.kp-serit__nokta--ulasildi {
+  background: #b3141b;
+  border-color: #b3141b;
+}
+.kp-serit__nokta--atim {
+  animation: kp-nokta-atim 0.7s ease;
+}
+@keyframes kp-nokta-atim {
+  40% { transform: scale(1.8); }
+}
+/* Kampanya kazanma bildirimi: şeridin hemen üstünde, marka kırmızısı */
+.kp-kazanc {
+  position: absolute;
+  left: 1.2rem;
+  right: 1.2rem;
+  bottom: calc(100% + 0.8rem);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.4rem;
+  border-radius: 12px;
+  background: #b3141b;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.3;
+  box-shadow: 0 0 0 3px rgba(179, 20, 27, 0.18), 0 8px 24px rgba(179, 20, 27, 0.35);
+  pointer-events: none;
+}
+.kp-kazanc[hidden] {
+  display: none;
+}
+.kp-kazanc__ikon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  font-size: 1.7rem;
+}
+.kp-kazanc--goster {
+  animation: kp-kazanc-gir 0.35s ease-out, kp-kazanc-parilti 0.6s ease-in-out 0.4s 2, kp-kazanc-cik 0.3s ease-in 2.3s forwards;
+}
+@keyframes kp-kazanc-gir {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes kp-kazanc-parilti {
+  50% { box-shadow: 0 0 0 6px rgba(179, 20, 27, 0.25), 0 0 28px rgba(232, 116, 43, 0.65); }
+}
+@keyframes kp-kazanc-cik {
+  to { transform: translateY(8px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kp-kazanc--goster,
+  .kp-serit__nokta--atim {
+    animation: none;
+  }
+  .kp-serit__dolu {
+    transition: none;
+  }
+}

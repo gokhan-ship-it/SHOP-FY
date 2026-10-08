@@ -733,3 +733,35 @@ test('kalem kutusu gerçek haritaları (Kırmızı, Turuncu): Velcro yüzeyi, yu
     assert.equal(am.yer.alanaUygun({ t: 'rect', x: sol + d, y: ust + d, w: 4, h: 4 }, 'icon'), true, anahtar + ': köşe yayının içinde sığar');
   }
 });
+
+test('kampanya şeridi: duraklar, sıradaki hedef, tümü; yönelme eki; bildirim metni', () => {
+  const k = ic.kampanya;
+  assert.equal(k.yonelme('Ekstra %10'), "'a");
+  assert.equal(k.yonelme('Ekstra %20'), "'ye");
+  assert.equal(k.yonelme('Ekstra %15'), "'e");
+  assert.equal(k.yonelme('Ekstra %6'), "'ya");
+  assert.equal(k.kampanyaKisaAd('Ekstra %10 İndirim'), 'Ekstra %10');
+  const merdiven = [{ k: 2, ad: '2li patche indirim ', tutar: 6000 }, { k: 3, ad: " 3'lü  patche indirim ", tutar: 19000 }, { k: 4, ad: "  4'lü  patche indirim ", tutar: 37000 }];
+  const esikler = [{ baslik: 'Ekstra %10 İndirim', tutar: 500000 }];
+  // 3'lü aktif; bir patch daha 4'lü
+  let d = k.seritDurumu({ aktif: { "3'lü patche indirim": 19000 }, sepetIndirim: 19000, altToplam: 399000,
+    ekler: { '+1': { aktif: { "4'lü patche indirim": 37000 }, sepetIndirim: 37000 } } }, merdiven, esikler);
+  assert.equal(d.sol, '✓ 190 TL kampanya indirimi');
+  assert.equal(d.sag, '1 patch daha: indirim 190 TL → 370 TL');
+  assert.deepEqual(duz(d.duraklar.map((x) => x.ulasildi)), [true, true, false, false]);
+  assert.ok(Math.abs(d.dolu - (2 / 4 + 0.5 / 4)) < 1e-9);
+  // Ekstra %10 aktifken bir patch daha indirimi büyütür ama yeni kampanya değildir: hedef sayılmaz
+  d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 60000 }, sepetIndirim: 97000, altToplam: 600000,
+    ekler: { '+1': { aktif: { "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 63300 }, sepetIndirim: 100300 } } }, merdiven, esikler);
+  assert.equal(d.sag, '');
+  assert.equal(d.hepsi, true);
+  assert.equal(d.sol, '✓ 970 TL kampanya indirimi · Tüm kampanyalar yakalandı 🎉');
+  assert.equal(d.dolu, 1);
+  // Hiç kampanya yok: iki patch daha
+  d = k.seritDurumu({ aktif: {}, sepetIndirim: 0, altToplam: 300000, ekler: { '+1': { aktif: {}, sepetIndirim: 0 }, '+2': { aktif: { '2li patche indirim': 6000 }, sepetIndirim: 6000 } } }, merdiven, esikler);
+  assert.equal(d.sol, '');
+  assert.equal(d.sag, '2 patch daha: 60 TL indirim');
+  assert.equal(k.kazancMetni('Ekstra %10 İndirim', 66400, esikler), '✨ Ekstra %10 indirim açıldı · Tüm siparişinde −664 TL');
+  assert.equal(k.kazancMetni("4'lü patche indirim", 37000, esikler), "🎉 4'lü patche indirim · −370 TL");
+  assert.equal(k.kazancMetni('Çanta Alana 1 Patch Hediye', 33000, esikler), '🎁 1 patch hediye eklendi');
+});
