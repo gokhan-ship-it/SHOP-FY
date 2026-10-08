@@ -14,18 +14,21 @@ const s = await baglam.newPage();
 const hatalar = [];
 s.on('pageerror', (e) => hatalar.push(e.message));
 let eklenen = null;
+let sonEklenen = null;
+let sepetYanit = '{"items":[]}';
 let temaGonder = 0;
 await s.route('https://jantifox.test/**', async (r) => {
   const url = new URL(r.request().url());
   if (url.pathname === '/cart/add.js') {
     eklenen = JSON.parse(r.request().postData());
+    sonEklenen = eklenen;
     return r.fulfill({ contentType: 'application/json', body: '{"items":[]}' });
   }
   if (url.pathname === '/cart/add') {
     temaGonder++;
     return r.fulfill({ contentType: 'text/html', body: '<p>tema sepeti</p>' });
   }
-  if (url.pathname === '/cart.js') return r.fulfill({ contentType: 'application/json', body: '{"items":[]}' });
+  if (url.pathname === '/cart.js') return r.fulfill({ contentType: 'application/json', body: sepetYanit });
   if (url.pathname === '/cart') return r.fulfill({ contentType: 'text/html', body: '<p>sepet</p>' });
   return r.fulfill({ contentType: 'text/html', body: html });
 });
@@ -48,7 +51,8 @@ assert.equal(await s.locator('kisisel-kart input[type="radio"]').count(), 0, 'es
 assert.equal(await s.locator('[data-kisisel-ornek] img, [data-kisisel-ornek] span').count(), 3, 'örnek görselde 3 harf');
 // Temanın kırmızı kutusu gizli, kartın içinde yeşil not
 assert.equal(await s.locator('.bag-notice').isVisible(), false, 'kırmızı kutu gizli');
-assert.match(kart, /Ön yüzdeki cırt alana patch'leri sen takarsın, istediğin zaman yerini değiştirirsin\./);
+assert.match(kart, /Ön yüzdeki Velcro yüzeye patch'leri sen takarsın, istediğin zaman yerini değiştirirsin\./);
+assert.doesNotMatch(kart, /cırt/i);
 // "Kişiselleştirmeye başla" markanın kırmızısı, beyaz yazı
 const renk = await s.evaluate(() => { const c = getComputedStyle(document.querySelector('[data-kisisel-davet] [data-kisisel-ac]')); return [c.backgroundColor, c.color]; });
 assert.deepEqual(renk, ['rgb(179, 20, 27)', 'rgb(255, 255, 255)']);
@@ -192,7 +196,8 @@ await s.locator('[data-kp-urune-don]').click();
 await s.locator('.kp-editor').waitFor({ state: 'hidden' });
 assert.equal(await gorunur('[data-kisisel-davet]'), false);
 assert.equal(await gorunur('[data-kisisel-govde]'), true);
-assert.match(await s.locator('[data-kisisel-govde]').innerText(), /ECE · 3 harf/);
+assert.match((await s.locator('[data-kisisel-govde]').innerText()).replace(/\s+/g, ' '), /Senin tasarımın Otomatik kaydedildi ECE · Futbol Topu · Futbol Topu/);
+assert.equal(await gorunur('[data-kisisel-sepete-ekle]'), true, 'kartın altında kırmızı buton');
 assert.ok(await s.locator('[data-kisisel-mini] .kp-parca').count() > 0, 'kartta tasarım önizlemesi');
 assert.deepEqual(await s.$$eval('.kisisel-kart__butonlar button', (b) => b.map((x) => x.textContent.trim())), ['Düzenle', 'Sil']);
 const ANAHTAR = 'kisisel-tasarim-10087205437726';
@@ -266,6 +271,80 @@ await s.locator('[data-kisisel-davet] [data-kisisel-sade]').click();
 await s.waitForTimeout(500);
 assert.equal(eklenen, null, 'tasarım kalemi gitmedi');
 assert.ok(temaGonder > 0 || (await s.evaluate(() => window.__duz)) === 1, 'tema formu gönderildi');
+
+// 2) "Bu adımı geç →": adımda bir şey yokken görünür; İleri her zaman çalışır; "isteğe bağlı" ve eski bağlantı yok
+await s.evaluate(() => localStorage.clear());
+await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
+await s.locator('kisisel-kart').waitFor({ state: 'visible' });
+await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
+const editorMetni = await s.locator('[data-kp-panel="yazi"]').innerText();
+assert.doesNotMatch(editorMetni, /isteğe bağlı|İsim istemiyorum/i);
+assert.equal(await gorunur('[data-kp-panel="yazi"] [data-kp-gec]'), true, 'Yazı boş: Bu adımı geç görünür');
+await s.locator('#kp-isim').fill('ece');
+assert.equal(await gorunur('[data-kp-panel="yazi"] [data-kp-gec]'), false, 'isim yazılınca gizlenir');
+await s.locator('#kp-isim').fill('');
+await s.locator('[data-kp-panel="yazi"] [data-kp-gec]').click();
+assert.equal(await gorunur('[data-kp-panel="rakam"]'), true, 'geç → Rakam');
+assert.equal(await metin('[data-kp-panel="rakam"] [data-kp-gec]'), 'Bu adımı geç →');
+await s.locator('[data-kp-rakam]').first().click();
+assert.equal(await gorunur('[data-kp-panel="rakam"] [data-kp-gec]'), false, 'rakam eklenince gizlenir');
+assert.equal(await metin('[data-kp-ileri]'), 'İleri');
+await s.locator('[data-kp-ileri]').click();
+assert.equal(await gorunur('[data-kp-panel="ikon"]'), true, 'İleri her zaman çalışır');
+assert.equal(await gorunur('[data-kp-panel="ikon"] [data-kp-gec]'), true);
+await s.locator('[data-kp-ileri]').click();
+assert.equal(await gorunur('[data-kp-panel="ozet"]'), true);
+assert.match(await metin('.kp-bilgi'), /Velcro yüzeye takılır/);
+await s.locator('[data-kp-adim="yazi"]').click();
+await s.locator('#kp-isim').fill('');
+await s.evaluate(() => document.querySelector('kisisel-kart').editor.t.parcalar = []);
+s.once('dialog', (d) => d.accept());
+await s.locator('[data-kp-kapat]').click();
+
+// 1c) Bu ürüne ait tasarım sepette: yeşil sepet kartı + "Bir tane daha mı istersin?"
+const baz = sonEklenen.items[0];
+sepetYanit = JSON.stringify({ items: [
+  { key: 'b1', product_id: 10087205437726, quantity: 1, final_line_price: 270000, properties: baz.properties },
+  { key: 'p1', product_id: 1, quantity: 1, final_line_price: 29700, properties: { _tasarim_id: baz.properties._tasarim_id, _tasarim_rol: 'patch' } }
+] });
+await s.evaluate(() => localStorage.clear());
+await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
+await s.locator('kisisel-kart').waitFor({ state: 'visible' });
+await s.locator('[data-kisisel-sepet]').waitFor({ state: 'visible' });
+const sepetKart = (await metin('[data-kisisel-sepet]')).replace(/\s+/g, ' ');
+console.log('sepet kartı:', sepetKart);
+assert.match(sepetKart, /Sepetinde 1 kişiselleştirilmiş çanta var/);
+assert.match(sepetKart, /ECE/);
+assert.match(sepetKart, /2\.997 TL/);
+assert.match(sepetKart, /Sepete git/);
+assert.ok(await s.locator('[data-kisisel-sepet] .kp-parca').count() > 0, 'sepetteki tasarımın önizlemesi _tasarim_konum\'dan');
+assert.equal(await gorunur('[data-kisisel-davet]'), false);
+assert.equal(await gorunur('[data-kisisel-tekrar]'), true);
+assert.match(await metin('[data-kisisel-tekrar]'), /Bir tane daha mı istersin\?[\s\S]*Kardeşi ya da arkadaşı için yeni bir tasarım yap\.[\s\S]*Yeni tasarım yap/);
+await s.screenshot({ path: '/tmp/kart-sepette.png', fullPage: true });
+// Yeni tasarım: boş editör; kaydedilince (b) sepet kartının altında
+await s.locator('[data-kisisel-yeni]').click();
+assert.equal(await s.locator('#kp-isim').inputValue(), '', 'boş editör');
+await s.locator('#kp-isim').fill('ada');
+await s.locator('[data-kp-adim="ozet"]').click();
+await s.locator('[data-kp-urune-don]').click();
+await s.locator('.kp-editor').waitFor({ state: 'hidden' });
+assert.equal(await gorunur('[data-kisisel-sepet]'), true);
+assert.equal(await gorunur('[data-kisisel-govde]'), true);
+assert.equal(await gorunur('[data-kisisel-tekrar]'), false);
+assert.equal(await gorunur('[data-kisisel-sepete-ekle]'), true);
+const sirala = await s.evaluate(() => {
+  const y = (q) => document.querySelector(q).getBoundingClientRect().top;
+  return y('[data-kisisel-sepet]') < y('[data-kisisel-govde]');
+});
+assert.ok(sirala, '(b) sepet kartının altında');
+await s.screenshot({ path: '/tmp/kart-sepette-ve-kayitli.png', fullPage: true });
+// Sepet değişince kart güncellenir (tema cart-update / kisisel:sepet-degisti)
+sepetYanit = '{"items":[]}';
+await s.evaluate(() => document.dispatchEvent(new CustomEvent('kisisel:sepet-degisti')));
+await s.waitForTimeout(300);
+assert.equal(await gorunur('[data-kisisel-sepet]'), false, 'sepet boşalınca sepet kartı kalkar');
+assert.equal(await gorunur('[data-kisisel-govde]'), true);
 
 assert.deepEqual(hatalar, []);
 await t.close();

@@ -26,45 +26,70 @@
     data-form-id="product-form-{{ section.id }}"
     hidden
   >
-    <div class="kisisel-kart__davet" data-kisisel-davet>
-      <div class="kisisel-kart__davet-ust">
-        <span class="kisisel-kart__ornek" data-kisisel-ornek aria-hidden="true"><span>A</span><span>B</span><span>C</span></span>
-        <div class="kisisel-kart__metin">
-          <p class="kisisel-kart__baslik">Ürünü kişiselleştir</p>
-          <p class="kisisel-kart__aciklama">İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.</p>
+    {%- comment -%} (c) Bu ürüne ait tasarım sepette: içerik JS ile sepetten (/cart.js) doldurulur {%- endcomment -%}
+    <div class="kisisel-kart__kutu kisisel-kart__kutu--sepet" data-kisisel-sepet hidden></div>
+
+    <div class="kisisel-kart__kutu" data-kisisel-ana>
+      {%- comment -%} (a) Tasarım yok: davet {%- endcomment -%}
+      <div class="kisisel-kart__davet" data-kisisel-davet>
+        <div class="kisisel-kart__davet-ust">
+          <span class="kisisel-kart__ornek" data-kisisel-ornek aria-hidden="true"><span>A</span><span>B</span><span>C</span></span>
+          <div class="kisisel-kart__metin">
+            <p class="kisisel-kart__baslik">Ürünü kişiselleştir</p>
+            <p class="kisisel-kart__aciklama">İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.</p>
+          </div>
+        </div>
+        <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-ac>
+          Kişiselleştirmeye başla
+        </button>
+        <div class="kisisel-kart__alt">
+          <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>Her patch 330 TL</span>
+          <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
         </div>
       </div>
-      <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-ac>
-        Kişiselleştirmeye başla
-      </button>
-      <div class="kisisel-kart__alt">
-        <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>Her patch 330 TL</span>
-        <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
-      </div>
-    </div>
 
-    <div class="kisisel-kart__govde" data-kisisel-govde hidden>
-      <div class="kisisel-kart__tasarim">
-        <div class="kisisel-kart__mini" data-kisisel-mini aria-hidden="true"></div>
-        <div class="kisisel-kart__bilgiler">
-          <ul class="kisisel-kart__ozet" data-kisisel-ozet hidden></ul>
-          <p class="kisisel-kart__toplam" data-kisisel-toplam hidden></p>
-          <p class="kisisel-kart__not kp-indirim-notu" data-kisisel-indirim-notu hidden>İndirimler sepette uygulanır</p>
+      {%- comment -%} Sepette tasarım varken ve yeni tasarım yokken: bir tane daha {%- endcomment -%}
+      <div class="kisisel-kart__tekrar" data-kisisel-tekrar hidden>
+        <p class="kisisel-kart__baslik">Bir tane daha mı istersin?</p>
+        <p class="kisisel-kart__aciklama">Kardeşi ya da arkadaşı için yeni bir tasarım yap.</p>
+        <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-yeni>
+          Yeni tasarım yap
+        </button>
+      </div>
+
+      {%- comment -%} (b) Kayıtlı tasarım, henüz sepette değil {%- endcomment -%}
+      <div class="kisisel-kart__govde" data-kisisel-govde hidden>
+        <div class="kisisel-kart__ust">
+          <p class="kisisel-kart__baslik">Senin tasarımın</p>
+          <span class="kisisel-kart__kayit">Otomatik kaydedildi</span>
+        </div>
+        <div class="kisisel-kart__tasarim">
+          <div class="kisisel-kart__mini" data-kisisel-mini aria-hidden="true"></div>
+          <div class="kisisel-kart__bilgiler">
+            <p class="kisisel-kart__icerik" data-kisisel-icerik></p>
+            <p class="kisisel-kart__adet" data-kisisel-adet></p>
+            <p class="kisisel-kart__toplam" data-kisisel-toplam></p>
+          </div>
+        </div>
+        <div class="kisisel-kart__butonlar">
+          <button type="button" class="btn btn-outline kisisel-kart__buton" data-kisisel-ac>Düzenle</button>
+          <button type="button" class="btn btn-outline kisisel-kart__buton kisisel-kart__sil" data-kisisel-sil>Sil</button>
         </div>
       </div>
-      <div class="kisisel-kart__butonlar">
-        <button type="button" class="btn btn-outline kisisel-kart__buton" data-kisisel-ac>Düzenle</button>
-        <button type="button" class="btn btn-outline kisisel-kart__buton kisisel-kart__sil" data-kisisel-sil>Sil</button>
-      </div>
+
+      <p class="kisisel-kart__bildirim" data-kisisel-bildirim role="status" aria-live="polite" hidden></p>
+      <p class="kisisel-kart__uyari-not" data-kisisel-not role="status" hidden></p>
+
+      <p class="kisisel-kart__cirt">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <span>Ön yüzdeki Velcro yüzeye patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.</span>
+      </p>
     </div>
 
-    <p class="kisisel-kart__bildirim" data-kisisel-bildirim role="status" aria-live="polite" hidden></p>
-    <p class="kisisel-kart__uyari-not" data-kisisel-not role="status" hidden></p>
-
-    <p class="kisisel-kart__cirt">
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-      <span>Ön yüzdeki cırt alana patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.</span>
-    </p>
+    {%- comment -%} (b) durumunda kartın altında: tasarımla sepete ekle {%- endcomment -%}
+    <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka kisisel-kart__sepete" data-kisisel-sepete-ekle hidden>
+      <span data-kisisel-sepete-yazi>Tasarımımla sepete ekle</span>
+    </button>
   </kisisel-kart>
 
   <script src="{{ 'kisisel-editor.js' | asset_url }}" defer="defer"></script>

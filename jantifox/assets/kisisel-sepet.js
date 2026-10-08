@@ -4,6 +4,8 @@
  * - Çanta (baz kalem) silinirse onay sorar ve grubun tamamını siler.
  * - Tek bir patch silinirse uyarır, siler ve çanta kalemindeki tasarım özetini günceller.
  * - Çanta adedi değişirse patch adetlerini aynı oranda değiştirir.
+ * - Çanta satırında model fotoğrafı yerine tasarımın önizlemesi (ürün sayfasında kaydedilen çizim kitinden),
+ *   içerik özeti ve grubun toplam fiyatı; patch satırları "N patch'i göster" ile açılır.
  * Tasarım kalemi olmayan sepetlerde hiçbir şey yapmaz.
  */
 (function () {
@@ -89,6 +91,98 @@
 
   /* ---------------- Görünüm ---------------- */
 
+  // Ürün sayfasında sepete eklerken kaydedilen çizim kitleri (tasarım kimliğine göre)
+  function cizimKitleri() {
+    try {
+      return JSON.parse(window.localStorage.getItem('kisisel-sepet-cizim') || '{}');
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function kacis(m) {
+    return String(m == null ? '' : m).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // Tasarım önizlemesi: çanta görseli üzerinde patch'ler, takılabilir alana yakın görünüm
+  function kitHtml(kit) {
+    var y = kit.y || { olcek: 1, sol: 0, ust: 0 };
+    var parcalar = (kit.p || [])
+      .map(function (p) {
+        if (!p.u) return '';
+        return '<img class="kp-sepet-mini__parca' + (p.d ? ' kp-sepet-mini__parca--daire' : '') + (p.j ? ' kp-sepet-mini__parca--jpg' : '') + '" src="' + kacis(p.u) + '" alt="" style="left:' + kacis(p.l) + ';top:' + kacis(p.t) + ';width:' + kacis(p.w) + ';height:' + kacis(p.h) + (p.r ? ';transform:' + kacis(p.r) : '') + '">';
+      })
+      .join('');
+    return (
+      '<div class="kp-sepet-mini" style="aspect-ratio:' + kit.o + '" aria-hidden="true">' +
+      '<div class="kp-sepet-mini__sahne" style="aspect-ratio:' + kit.o + ';width:' + y.olcek * 100 + '%;left:' + y.sol + '%;top:' + y.ust + '%">' +
+      '<img class="kp-sepet-mini__urun" src="' + kacis(kit.g) + '" alt="">' + parcalar +
+      '</div></div>'
+    );
+  }
+
+  // Temanın para biçimiyle uyumlu: 4,743.00TL
+  function para(kurus) {
+    var t = (Number(kurus) || 0) / 100;
+    return t.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'TL';
+  }
+
+  var acikGruplar = {};
+
+  // Çanta ve patch satırlarını tasarım grubuna göre düzenler
+  function grupSatirlariniDuzenle(sepet, kap, baz) {
+    var id = baz.getAttribute('data-kp-tasarim');
+    var g = gruplar(sepet)[id];
+    if (!g || !g.baz) return;
+    var patchSatirlari = Array.prototype.slice.call(kap.querySelectorAll(':scope > [data-kp-rol="patch"][data-kp-tasarim="' + id + '"]'));
+    var acik = !!acikGruplar[id];
+    patchSatirlari.forEach(function (p) {
+      p.classList.toggle('kp-sepet-gizli', !acik);
+      // Patch satırında tasarım özeti tekrar etmesin: yalnızca patch adı (varyant), adet ve fiyat
+      Array.prototype.forEach.call(p.querySelectorAll('dl .product-option'), function (o) {
+        var dt = o.querySelector('dt');
+        if (dt && /^(Tasarım|Harf sırası|İsim)\s*:?$/.test(dt.textContent.trim())) o.classList.add('kp-sepet-gizli');
+      });
+    });
+    // Görsel: tasarımın önizlemesi (çizilemezse ürün görseli kalır)
+    var medya = baz.querySelector('.cart-item__media');
+    var kit = cizimKitleri()[id];
+    if (medya && kit && !medya.querySelector('.kp-sepet-mini')) {
+      medya.classList.add('kp-sepet-cizildi');
+      medya.insertAdjacentHTML('beforeend', kitHtml(kit));
+    }
+    // İçerik özeti ve patch'leri göster/gizle
+    var ad = baz.querySelector('.cart-item__name');
+    var ozellik = g.baz.properties || {};
+    var birimAdet = Math.max(1, g.baz.quantity || 1);
+    var patchSayisi = g.patchler.reduce(function (t, p) { return t + Math.round((p.quantity || 0) / birimAdet); }, 0);
+    if (ad && !baz.querySelector('.kp-sepet-icerik')) {
+      var ic = document.createElement('p');
+      ic.className = 'kp-sepet-icerik';
+      ic.textContent = String(ozellik['Tasarım'] || '').split(' + ').join(' · ');
+      ad.insertAdjacentElement('afterend', ic);
+      if (patchSayisi) {
+        var ac = document.createElement('button');
+        ac.type = 'button';
+        ac.className = 'kp-sepet-ac';
+        ac.setAttribute('data-kp-patch-ac', id);
+        ic.insertAdjacentElement('afterend', ac);
+      }
+    }
+    var dugme = baz.querySelector('[data-kp-patch-ac]');
+    if (dugme) {
+      dugme.textContent = acik ? 'Patch\'leri gizle' : patchSayisi + ' patch\'i göster';
+      dugme.setAttribute('aria-expanded', acik ? 'true' : 'false');
+    }
+    // Grubun toplam fiyatı: çanta + patch'lerin indirimli satır fiyatları
+    var toplam = (Number(g.baz.final_line_price) || 0) + g.patchler.reduce(function (t, p) { return t + (Number(p.final_line_price) || 0); }, 0);
+    var fiyat = baz.querySelector('.cart-item__price-wrapper');
+    var yeni = '<span class="price price--end kp-sepet-toplam">' + para(toplam) + '</span>';
+    if (fiyat && fiyat.innerHTML !== yeni) fiyat.innerHTML = yeni;
+  }
+
   function isaretle() {
     if (calisiyor) {
       tekrar = true;
@@ -134,6 +228,7 @@
               s.classList.remove('kp-sepet-son');
             });
             onceki.classList.add('kp-sepet-son');
+            grupSatirlariniDuzenle(sepet, kap, baz);
             if (!baz.querySelector('.kp-sepet-rozet')) {
               var ad = baz.querySelector('.cart-item__name');
               if (ad) {
@@ -159,6 +254,11 @@
   /* ---------------- Sepet güncelleme ---------------- */
 
   function yenidenCiz() {
+    try {
+      document.dispatchEvent(new CustomEvent('kisisel:sepet-degisti'));
+    } catch (e) {
+      /* eski tarayıcı */
+    }
     if (/\/cart\/?$/.test(window.location.pathname)) {
       window.location.reload();
       return;
@@ -278,6 +378,19 @@
         yenidenCiz();
       });
   }
+
+  // "N patch'i göster" / "Patch'leri gizle"
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-kp-patch-ac]');
+    if (!b) return;
+    e.preventDefault();
+    var id = b.getAttribute('data-kp-patch-ac');
+    acikGruplar[id] = !acikGruplar[id];
+    if (sonSepet) {
+      var baz = b.closest('[data-kp-rol="baz"]');
+      if (baz) grupSatirlariniDuzenle(sonSepet, baz.parentNode, baz);
+    }
+  });
 
   // Sil butonu (tema dinleyicisinden önce yakalanır)
   document.addEventListener(

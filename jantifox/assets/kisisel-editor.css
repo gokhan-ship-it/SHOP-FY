@@ -20,6 +20,10 @@ body.kisisel-modu [id^='ProductInfo-'] .shopify-payment-button,
 body.kisisel-modu product-add-to-cart-sticky .shopify-payment-button {
   display: none !important;
 }
+/* Kayıtlı tasarım varken ana "Sepete ekle" yerine kartın altındaki kırmızı buton kullanılır (sabit çubuk kalır) */
+body.kisisel-modu [id^='ProductSubmitButton-'] {
+  display: none !important;
+}
 html.kp-kilit product-add-to-cart-sticky,
 html.kp-kilit .whatsapp-sticky {
   visibility: hidden !important;
@@ -29,11 +33,73 @@ html.kp-kilit .whatsapp-sticky {
 .kisisel-kart {
   display: block;
   margin: 1.6rem 0 0.8rem;
+  color: var(--kp-murekkep);
+}
+.kisisel-kart__kutu {
   padding: 1.4rem;
   border: 1px solid var(--kp-cizgi);
   border-radius: var(--kp-yaricap);
   background: var(--kp-zemin);
-  color: var(--kp-murekkep);
+}
+.kisisel-kart__kutu[hidden],
+.kisisel-kart__tekrar[hidden] {
+  display: none;
+}
+.kisisel-kart__kutu + .kisisel-kart__kutu {
+  margin-top: 1rem;
+}
+/* (c) Sepetteki tasarım: yeşil çerçeve */
+.kisisel-kart__kutu--sepet {
+  border: 2px solid #2f8f4e;
+  background: #f4fbf6;
+}
+.kisisel-kart__sepet-baslik {
+  margin: 0 0 1rem;
+  color: #1d5b33;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.kisisel-kart__kutu--sepet .kisisel-kart__tasarim + .kisisel-kart__tasarim {
+  margin-top: 0.8rem;
+}
+.kisisel-kart__kutu--sepet .kisisel-kart__buton {
+  margin-top: 1.2rem;
+}
+.kisisel-kart__tekrar .kisisel-kart__aciklama {
+  margin: 0.2rem 0 1.2rem;
+}
+/* (b) Senin tasarımın */
+.kisisel-kart__ust {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.kisisel-kart__ust .kisisel-kart__baslik {
+  margin: 0;
+}
+.kisisel-kart__kayit {
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+.kisisel-kart__icerik {
+  margin: 0 0 0.2rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.kisisel-kart__adet {
+  margin: 0 0 0.2rem;
+  font-size: 1.3rem;
+  color: var(--kp-ikincil);
+}
+.kisisel-kart__sepete {
+  margin-top: 1rem;
+}
+.kisisel-kart__sepete[hidden] {
+  display: none !important;
 }
 .kisisel-kart[hidden] {
   display: none;
@@ -111,7 +177,9 @@ body.kisisel-aktif .bag-notice {
   margin-top: 1rem;
 }
 .kisisel-kart .kisisel-kart__sil {
-  color: var(--kp-hata);
+  color: var(--kp-hata) !important;
+  background: #fdf3f2 !important;
+  border-color: #f2c9c5 !important;
 }
 .kisisel-kart__bildirim {
   display: flex;
@@ -245,9 +313,9 @@ body.kisisel-aktif .bag-notice {
   font-weight: 500;
 }
 .kisisel-kart__toplam {
-  margin: 0 0 1rem;
-  font-size: 1.6rem;
-  font-weight: 600;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 .kisisel-kart__buton {
   min-height: var(--kp-dokunma);
@@ -898,6 +966,35 @@ html.kp-kilit body {
 .kp-panel__fiyat {
   font-size: 1.3rem;
   color: var(--kp-ikincil);
+}
+.kp-panel__ust {
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.kp-panel__ust .kp-panel__baslik {
+  margin: 0;
+}
+.kp-panel__sag {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+/* "Bu adımı geç →": başlığın sağında yuvarlak kenarlı küçük buton */
+.kp-gec {
+  min-height: 36px;
+  padding: 0 1.2rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--kp-murekkep);
+  font-size: 1.3rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.kp-gec[hidden] {
+  display: none;
 }
 .kp-panel__aciklama {
   margin: 0 0 1.2rem;

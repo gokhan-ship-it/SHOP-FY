@@ -229,27 +229,31 @@ eklenen = null;
 await sayfa.evaluate(([k, v]) => localStorage.setItem(k, v), [ANAHTAR, kayit]);
 await sayfa.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await kart.waitFor({ state: 'visible' });
-assert.match(await kart.innerText(), /ECE · 3 harf/);
-assert.match(await kart.innerText(), /7 · 1 rakam/);
-assert.match(await kart.innerText(), /Futbol Topu · 1 ikon/);
+// (b) Senin tasarımın: içerik, patch sayısı, toplam; kartın altında kırmızı buton, temanın ana butonu gizli
+const kartMetni = (await kart.innerText()).replace(/\s+/g, ' ');
+assert.match(kartMetni, /Senin tasarımın Otomatik kaydedildi/);
+assert.match(kartMetni, /ECE · 7 · Futbol Topu/);
+assert.match(kartMetni, /5 patch/);
+assert.match(kartMetni, /Toplam 4\.650 TL/);
 assert.equal(await sayfa.locator('[data-kisisel-davet]').isVisible(), false);
-assert.match(await sayfa.locator('#ProductSubmitButton-main span').first().textContent(), /Tasarımımla sepete ekle · 4\.650 TL/);
+assert.match(await sayfa.locator('[data-kisisel-sepete-ekle]').textContent(), /sepete ekle · 4\.650 TL/);
+assert.equal(await sayfa.locator('#ProductSubmitButton-main').isVisible(), false, 'temanın ana butonu gizli');
 assert.equal(await sayfa.locator('.shopify-payment-button').first().isVisible(), false);
 assert.ok(await sayfa.locator('.kp-galeri').isVisible(), 'galeride tasarım önizlemesi');
 await sayfa.screenshot({ path: cikti + '08-kart.png', fullPage: true });
 
-// Ana butondan da (formda name="id" alanı var, form.id tuzağı)
-await sayfa.locator('#ProductSubmitButton-main').click();
+// Kartın altındaki kırmızı butondan
+await sayfa.locator('[data-kisisel-sepete-ekle]').click();
 await sayfa.waitForURL('**/cart');
 assert.equal(await sayfa.evaluate(() => window.__temaSubmit || 0), 0, 'tema submit dinleyicisi çalışmamalı');
-assert.ok(eklenen && eklenen.items.length === 5, 'ana buton tasarımla eklemeli');
+assert.ok(eklenen && eklenen.items.length === 5, 'kırmızı buton tasarımla eklemeli');
 
 // Sabit çubuktan da: kaydı geri koy, sayfaya dön
 eklenen = null;
 await sayfa.evaluate(([k, v]) => localStorage.setItem(k, v), [ANAHTAR, kayit]);
 await sayfa.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await kart.waitFor({ state: 'visible' });
-assert.match(await sayfa.locator('#StickyProductSubmitButton-main span').textContent(), /Tasarımımla sepete ekle/);
+assert.match(await sayfa.locator('#StickyProductSubmitButton-main span').textContent(), /sepete ekle · 4\.650 TL/);
 await sayfa.locator('#StickyProductSubmitButton-main').click();
 await sayfa.waitForURL('**/cart');
 assert.ok(eklenen && eklenen.items.length === 5, 'sabit çubuk da tasarımla eklemeli');

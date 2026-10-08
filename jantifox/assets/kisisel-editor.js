@@ -1563,10 +1563,7 @@
         girdi.focus();
         return;
       }
-      if (hedef.hasAttribute('data-kp-isimsiz')) {
-        self.isimAyarla('');
-        return self.adimaGit('ikon');
-      }
+      if (hedef.hasAttribute('data-kp-gec')) return self.adimGec();
       if (hedef.hasAttribute('data-kp-rakam')) return self.rakamEkle(hedef.getAttribute('data-kp-rakam'));
       if (hedef.hasAttribute('data-kp-ikon')) return self.ikonEkle(hedef.getAttribute('data-kp-ikon'));
       if (hedef.hasAttribute('data-kp-kategori')) {
@@ -1756,6 +1753,11 @@
   };
 
   Editor.prototype.ileri = function () {
+    // Yazı/Rakam/İkon: İleri her zaman çalışır (sorunlu tasarım Özet'te sepete eklenirken durdurulur)
+    if (this.adim !== 'ozet') {
+      var s0 = ADIMLAR.map(function (a) { return a.id; }).indexOf(this.adim);
+      return this.adimaGit(ADIMLAR[s0 + 1].id, false, true);
+    }
     if (this.adimEngeli(this.adim)) {
       this.yenile();
       if (this.adim === 'yazi') {
@@ -1812,10 +1814,10 @@
       })
       .join('');
     panel.innerHTML =
-      '<h3 id="kp-p-yazi" class="kp-panel__baslik" tabindex="-1">Yazı</h3>' +
+      '<div class="kp-panel__ust"><h3 id="kp-p-yazi" class="kp-panel__baslik" tabindex="-1">Yazı</h3>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Bu adımı geç <span aria-hidden="true">→</span></button>' + '</div>' +
       '<fieldset class="kp-setler"><legend>Harf seti</legend>' + setler + '</fieldset>' +
       '<div class="kp-alan-girdi">' +
-      '<label for="kp-isim" class="kp-etiket">İsim <span class="kp-etiket__not">(isteğe bağlı)</span></label>' +
+      '<label for="kp-isim" class="kp-etiket">İsim</label>' +
       '<input id="kp-isim" class="kp-girdi" type="text" data-kp-isim autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" maxlength="24" enterkeyhint="done" aria-describedby="kp-kapasite kp-isim-uyari">' +
       '<div class="kp-isim-alt">' +
       '<button type="button" class="kp-harf-mod" data-kp-harf-mod aria-pressed="false" hidden>Harfleri ayır</button>' +
@@ -1823,8 +1825,7 @@
       '</div>' +
       '<div class="kp-renkler" data-kp-renkler hidden></div>' +
       '</div>' +
-      '<div id="kp-isim-uyari" class="kp-uyarilar" data-kp-isim-uyari aria-live="polite"></div>' +
-      '<button type="button" class="kp-baglanti" data-kp-isimsiz>İsim istemiyorum, sadece ikonla devam et</button>';
+      '<div id="kp-isim-uyari" class="kp-uyarilar" data-kp-isim-uyari aria-live="polite"></div>';
     var girdi = panel.querySelector('[data-kp-isim]');
     girdi.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
@@ -1851,7 +1852,7 @@
           .join('')
       : '<p>Rakam patch\'leri şu an kullanılamıyor.</p>';
     panel.innerHTML =
-      '<h3 id="kp-p-rakam" class="kp-panel__baslik" tabindex="-1">Rakam</h3>' +
+      '<div class="kp-panel__ust"><h3 id="kp-p-rakam" class="kp-panel__baslik" tabindex="-1">Rakam</h3>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Bu adımı geç <span aria-hidden="true">→</span></button>' + '</div>' +
       '<p class="kp-panel__aciklama">Yaş, forma numarası ya da şanslı sayın. Eklediğin rakamı önizlemede sürükleyerek yerleştirebilirsin.</p>' +
       '<div class="kp-uyarilar" data-kp-rakam-ipucu aria-live="polite"></div>' +
       '<div class="kp-izgara kp-izgara--rakam">' + izgara + '</div>';
@@ -1875,7 +1876,7 @@
       .join('');
     panel.innerHTML =
       '<div class="kp-panel__ust"><h3 id="kp-p-ikon" class="kp-panel__baslik" tabindex="-1">İkon</h3>' +
-      '<span class="kp-panel__fiyat">' + kacis(this.ikonFiyatYazisi()) + '</span></div>' +
+      '<span class="kp-panel__sag"><span class="kp-panel__fiyat">' + kacis(this.ikonFiyatYazisi()) + '</span>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Bu adımı geç <span aria-hidden="true">→</span></button>' + '</span></div>' +
       '<div class="kp-kategoriler" role="group" aria-label="İkon kategorileri">' + kategoriler + '</div>' +
       '<div class="kp-izgara kp-izgara--ikon" data-kp-ikon-izgara></div>';
     this.ikonIzgarasiCiz();
@@ -1906,6 +1907,25 @@
   };
 
   /* ---------------- Ekleme / kaldırma ---------------- */
+
+  // "Bu adımı geç →": o adımda hiçbir şey eklenmemişse görünür
+  Editor.prototype.adimGec = function () {
+    var s0 = ADIMLAR.map(function (a) { return a.id; }).indexOf(this.adim);
+    if (s0 < ADIMLAR.length - 1) this.adimaGit(ADIMLAR[s0 + 1].id, false, true);
+  };
+
+  Editor.prototype.gecButonlariGuncelle = function () {
+    var t = this.t;
+    var bos = {
+      yazi: !t.isim,
+      rakam: !t.parcalar.some(function (p) { return p.tip === 'number'; }),
+      ikon: !t.parcalar.some(function (p) { return p.tip === 'icon'; })
+    };
+    this.el.querySelectorAll('[data-kp-panel]').forEach(function (panel) {
+      var b = panel.querySelector('[data-kp-gec]');
+      if (b) b.hidden = !bos[panel.getAttribute('data-kp-panel')];
+    });
+  };
 
   Editor.prototype.parcaEkle = function (tip, urunId, varyant, tanim, yerYok) {
     var ad = tip === 'number' ? varyant.karakter + ' rakamı' : tanim.ad;
@@ -1982,6 +2002,7 @@
     this.dugmeleriGuncelle();
     this.yaziDurumGuncelle();
     this.etiketleriCiz();
+    this.gecButonlariGuncelle();
     this.ikonDurumGuncelle();
     var ipucu = this.el.querySelector('[data-kp-rakam-ipucu]');
     if (ipucu) ipucu.innerHTML = this.rakamIpucu ? '<p class="kp-uyari kp-uyari--bilgi">Şimdi baş harfinin yanına bir rakam seç.</p>' : '';
@@ -2279,7 +2300,7 @@
       (engelliAdim ? '<p class="kp-uyari kp-uyari--hata">' + engelliAdim.ad + ' adımında çözülmesi gereken bir sorun var.</p>' : '') +
       '<table class="kp-ozet"><tbody>' + satirlar + '</tbody>' +
       '<tfoot><tr><th scope="row">Toplam</th><td>' + p(f.toplam) + '</td></tr></tfoot></table>' +
-      '<p class="kp-bilgi">Patch\'ler cırt cırtlı. Çanta eline geçince istediğin yere takar, istediğin zaman yerini değiştirirsin.</p>';
+      '<p class="kp-bilgi">Patch\'ler Velcro yüzeye takılır. Çanta eline geçince istediğin yere takar, istediğin zaman yerini değiştirirsin.</p>';
   };
 
   /* ---------------- Seçim ve döndürme ---------------- */
@@ -2724,6 +2745,85 @@
     );
   };
 
+  // Kart ve sepet için içerik özeti: "GOKHAN · 2 · Beyaz Kalp"
+  function tasarimIcerigi(m, yer, t) {
+    var parcalar = yer.parcalar(t);
+    var ogeler = [];
+    if (t.isim) ogeler.push(t.isim);
+    parcalar.forEach(function (p) {
+      if (p.tip === 'number' || p.tip === 'icon') ogeler.push(p.etiket);
+    });
+    return ogeler.join(' · ');
+  }
+
+  // Sepetteki _tasarim_konum'dan çizilecek parçalar (varyant kimliği + alan merkezine göre cm + açı)
+  function konumParcalari(m, konum) {
+    if (!konum || !Array.isArray(konum.p)) return [];
+    var alan = (konum.alan && m.alanlar.filter(function (a) { return a.id === konum.alan; })[0]) || m.alanBul('letter') || m.alanlar[0];
+    if (!alan) return [];
+    var ac = merkez(alan.sekil);
+    var bul = {};
+    m.setler.forEach(function (st) { st.varyantlar.forEach(function (v) { bul[v.id] = { tanim: st, v: v, tip: 'letter' }; }); });
+    m.rakamSetleri.forEach(function (st) { st.varyantlar.forEach(function (v) { bul[v.id] = { tanim: st, v: v, tip: 'number' }; }); });
+    m.ikonlar.forEach(function (ik) { ik.varyantlar.forEach(function (v) { bul[v.id] = { tanim: ik, v: v, tip: 'icon' }; }); });
+    var liste = [];
+    konum.p.forEach(function (x, i) {
+      var b = bul[x.v];
+      if (!b) return;
+      var o = b.tip === 'letter' ? varyantOlcu(b.tanim, b.v) : parcaOlcu(b.tanim, b.v);
+      var cx = ac[0] + (Number(x.x) || 0);
+      var cy = ac[1] + (Number(x.y) || 0);
+      var aci = Number(x.a) || 0;
+      var sekil = b.tip !== 'letter' && b.tanim.sekil === 'circle'
+        ? { t: 'circle', cx: cx, cy: cy, r: Math.max(o.en, o.boy) / 2 }
+        : donukDikdortgen(cx, cy, o.en, o.boy, aci);
+      liste.push({ uid: 'k' + i, grup: 'k' + i, tip: b.tip, varyant: b.v, sekil: sekil, en: o.en, boy: o.boy, aci: aci, etiket: b.v.karakter || b.tanim.ad });
+    });
+    return liste;
+  }
+
+  // Küçük, alana yakın tasarım önizlemesi (kart ve sepet kartı)
+  function miniSahneKur(kok, m, yer) {
+    kok.style.aspectRatio = m.gorsel.en + ' / ' + m.gorsel.boy;
+    var sahne = new Sahne(m, yer, kok, { etkilesimli: false });
+    var y = yakinGorunum(m);
+    sahne.sahne.style.position = 'absolute';
+    sahne.sahne.style.width = y.olcek * 100 + '%';
+    sahne.sahne.style.left = y.sol + '%';
+    sahne.sahne.style.top = y.ust + '%';
+    return sahne;
+  }
+
+  function konumCiz(kok, m, yer, konum) {
+    if (!kok) return;
+    miniSahneKur(kok, m, yer).ciz(konumParcalari(m, konum), {}, false);
+  }
+
+  // Sepet çekmecesinde tasarım görseli için çizim kiti (ürün sayfası dışında model verisi yok):
+  // çanta görseli, yakın görünüm ve her patch'in görseli ile konumu (yüzde). localStorage'da tasarım kimliğiyle saklanır.
+  var CIZIM_ANAHTARI = 'kisisel-sepet-cizim';
+  function cizimKitiKaydet(kimlik, m, parcalar) {
+    try {
+      var kitler = JSON.parse(window.localStorage.getItem(CIZIM_ANAHTARI) || '{}');
+      kitler[kimlik] = {
+        z: Date.now(),
+        g: m.gorsel.kucuk,
+        o: m.gorsel.en / m.gorsel.boy,
+        y: yakinGorunum(m),
+        p: parcalar.map(function (p) {
+          var st = parcaStili(m, p);
+          return { u: p.varyant && p.varyant.gorsel, l: st.left, t: st.top, w: st.width, h: st.height, r: st.transform, d: p.sekil.t === 'circle', j: !!(p.varyant && !p.varyant.png) };
+        })
+      };
+      // En yeni 20 tasarım saklanır
+      var anahtarlar = Object.keys(kitler).sort(function (a, b) { return kitler[b].z - kitler[a].z; });
+      anahtarlar.slice(20).forEach(function (a) { delete kitler[a]; });
+      window.localStorage.setItem(CIZIM_ANAHTARI, JSON.stringify(kitler));
+    } catch (e) {
+      /* depolama yoksa çekmecede ürün görseli kalır */
+    }
+  }
+
   /* ------------------------------------------------------------------ */
   /* Ürün sayfası kartı                                                  */
   /* ------------------------------------------------------------------ */
@@ -2770,6 +2870,27 @@
     this.querySelectorAll('[data-kisisel-sade]').forEach(function (b) {
       b.addEventListener('click', function () { self.sadeSepet(); });
     });
+    // Sepette tasarım varken: yeni (boş) tasarım
+    this.querySelector('[data-kisisel-yeni]').addEventListener('click', function () {
+      self.notGoster('');
+      self.editor.ac('yazi');
+    });
+    // (b) kartın altındaki kırmızı buton
+    this.querySelector('[data-kisisel-sepete-ekle]').addEventListener('click', function () { self.sepeteEkle(); });
+    this.addEventListener('click', function (e) {
+      if (e.target.closest('[data-kisisel-sepete-git]')) self.sepetiAc();
+    });
+    // Sepet her değiştiğinde kart durumu yeniden belirlenir
+    try {
+      if (typeof subscribe === 'function' && typeof PUB_SUB_EVENTS !== 'undefined') {
+        subscribe(PUB_SUB_EVENTS.cartUpdate, function () { self.sepetOku(); });
+      }
+    } catch (e) {
+      /* tema pubsub yoksa */
+    }
+    document.addEventListener('kisisel:sepet-degisti', function () { self.sepetOku(); });
+    window.addEventListener('pageshow', function () { self.sepetOku(); });
+    window.addEventListener('resize', function () { self.butonlariGuncelle(); });
     this.davetHazirla();
 
     this.gonderYakala = this.gonderYakala.bind(this);
@@ -2779,7 +2900,9 @@
     // Kart çalışıyorsa temanın kırmızı "Değiştirilebilir patchler…" kutusu gizlenir (yerine kartın yeşil notu);
     // JS yüklenemezse kart gizli kalır, temanın kutusu görünmeye devam eder
     document.body.classList.add('kisisel-aktif');
+    this.sepettekiler = [];
     this.kayitOku();
+    this.sepetOku();
   };
 
   // Kayıtlı tasarımı okur, stoğu biten ya da artık olmayan patch'leri ayıklar, kartı günceller
@@ -2862,12 +2985,108 @@
 
   KisiselKart.prototype.modDegistir = function (mod) {
     this.mod = mod;
-    var kisisel = mod === 'kisisel';
-    this.querySelector('[data-kisisel-davet]').hidden = kisisel;
-    this.querySelector('[data-kisisel-govde]').hidden = !kisisel;
-    document.body.classList.toggle('kisisel-modu', kisisel);
+    this.durumCiz();
     this.kaydet();
     this.guncelle();
+  };
+
+  // Kartın üç durumu: (a) tasarım yok → davet; (b) kayıtlı tasarım → "Senin tasarımın";
+  // (c) bu ürüne ait tasarım sepette → sepet kartı, altında (b) ya da "Bir tane daha mı istersin?"
+  KisiselKart.prototype.durumCiz = function () {
+    var tasarimVar = !bosMu(this.tasarim);
+    var sepetVar = (this.sepettekiler || []).length > 0;
+    this.querySelector('[data-kisisel-davet]').hidden = tasarimVar || sepetVar;
+    this.querySelector('[data-kisisel-tekrar]').hidden = tasarimVar || !sepetVar;
+    this.querySelector('[data-kisisel-govde]').hidden = !tasarimVar;
+    this.querySelector('[data-kisisel-sepet]').hidden = !sepetVar;
+    this.querySelector('[data-kisisel-sepete-ekle]').hidden = !tasarimVar;
+    document.body.classList.toggle('kisisel-modu', this.mod === 'kisisel' && tasarimVar);
+  };
+
+  // Sepetteki bu ürüne ait kişiselleştirilmiş gruplar (_tasarim_id), kart (c) durumu için
+  KisiselKart.prototype.sepetOku = function () {
+    var self = this;
+    var m = this.model;
+    var rotalar = window.routes || {};
+    var sira = (this._sepetSira = (this._sepetSira || 0) + 1);
+    return fetch((rotalar.cart_url || '/cart') + '.js', { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (sepet) {
+        if (sira !== self._sepetSira) return;
+        var gruplar = {};
+        var liste = [];
+        (sepet.items || []).forEach(function (k) {
+          var o = k.properties || {};
+          if (!o._tasarim_id) return;
+          var g = gruplar[o._tasarim_id];
+          if (!g) {
+            g = gruplar[o._tasarim_id] = { id: o._tasarim_id, baz: null, toplam: 0 };
+            liste.push(g);
+          }
+          g.toplam += Number(k.final_line_price) || 0;
+          if (o._tasarim_rol === 'baz') g.baz = k;
+        });
+        self.sepettekiler = liste.filter(function (g) { return g.baz && String(g.baz.product_id) === String(m.urun.id); });
+        self.sepetCiz();
+        self.durumCiz();
+      })
+      .catch(function () {});
+  };
+
+  KisiselKart.prototype.sepetCiz = function () {
+    var kutuEl = this.querySelector('[data-kisisel-sepet]');
+    var gruplar = this.sepettekiler || [];
+    if (!gruplar.length) {
+      kutuEl.innerHTML = '';
+      return;
+    }
+    var m = this.model;
+    var adet = gruplar.reduce(function (t, g) { return t + (g.baz.quantity || 1); }, 0);
+    kutuEl.innerHTML =
+      '<p class="kisisel-kart__sepet-baslik"><span aria-hidden="true">✓</span> Sepetinde ' + adet + ' kişiselleştirilmiş çanta var</p>' +
+      gruplar
+        .map(function (g, i) {
+          var o = g.baz.properties || {};
+          return (
+            '<div class="kisisel-kart__tasarim">' +
+            '<div class="kisisel-kart__mini" data-kisisel-sepet-mini="' + i + '" aria-hidden="true"></div>' +
+            '<div class="kisisel-kart__bilgiler">' +
+            '<p class="kisisel-kart__icerik">' + kacis(String(o['Tasarım'] || '').split(' + ').join(' · ')) + '</p>' +
+            (g.baz.quantity > 1 ? '<p class="kisisel-kart__adet">' + g.baz.quantity + ' adet</p>' : '') +
+            '<p class="kisisel-kart__toplam">' + paraBicimle(g.toplam) + '</p>' +
+            '</div></div>'
+          );
+        })
+        .join('') +
+      '<button type="button" class="btn btn-outline button--full-width kisisel-kart__buton" data-kisisel-sepete-git>Sepete git</button>';
+    var self = this;
+    gruplar.forEach(function (g, i) {
+      var el = kutuEl.querySelector('[data-kisisel-sepet-mini="' + i + '"]');
+      try {
+        konumCiz(el, m, self.yer, JSON.parse((g.baz.properties || {})._tasarim_konum || '{}'));
+      } catch (e) {
+        /* konum okunamazsa önizleme boş kalır */
+      }
+    });
+  };
+
+  // "Sepete git": sepet çekmecesini güncel içerikle açar; çekmece yoksa sepet sayfasına gider
+  KisiselKart.prototype.sepetiAc = function () {
+    var cizim = document.querySelector('cart-drawer');
+    var rotalar = window.routes || {};
+    if (!cizim || typeof cizim.renderContents !== 'function') {
+      window.location.href = rotalar.cart_url || '/cart';
+      return;
+    }
+    fetch(window.location.pathname + '?sections=cart-drawer,cart-icon-bubble')
+      .then(function (r) { return r.json(); })
+      .then(function (bolumler) {
+        cizim.classList.remove('is-empty');
+        cizim.renderContents({ id: null, sections: bolumler });
+      })
+      .catch(function () {
+        if (typeof cizim.open === 'function') cizim.open();
+      });
   };
 
   // Davet kartı: siyah daire üzerinde örnek harfler (PNG'si olan ilk setten) ve patch fiyatı
@@ -2955,7 +3174,7 @@
     this.tasarim = null;
     this.yedek = null;
     this.modDegistir('sade');
-    this.bildirimGoster('<span>Tasarımın sepete eklendi</span>', 4000);
+    this.sepetOku();
   };
 
   KisiselKart.prototype.tasarimKaydet = function (t) {
@@ -2966,25 +3185,13 @@
   KisiselKart.prototype.guncelle = function () {
     var m = this.model;
     var t = this.tasarim;
-    var bos = bosMu(t);
-    var ozet = this.querySelector('[data-kisisel-ozet]');
-    var toplam = this.querySelector('[data-kisisel-toplam]');
-    ozet.hidden = bos;
-    toplam.hidden = bos;
-    var indirimNotu = this.querySelector('[data-kisisel-indirim-notu]');
-    if (indirimNotu) indirimNotu.hidden = bos;
     var f = null;
-    if (!bos) {
+    if (!bosMu(t)) {
       f = fiyatHesapla(m, this.yer, t);
-      var parcalar = this.yer.parcalar(t);
-      var maddeler = [];
-      if (t.isim) maddeler.push(kacis(t.isim) + ' · ' + f.harfAdet + ' harf');
-      var rakamlar = parcalar.filter(function (p) { return p.tip === 'number'; }).map(function (p) { return p.etiket; });
-      if (rakamlar.length) maddeler.push(kacis(rakamlar.join(', ')) + ' · ' + rakamlar.length + ' rakam');
-      var ikonlar = parcalar.filter(function (p) { return p.tip === 'icon'; }).map(function (p) { return p.etiket; });
-      if (ikonlar.length) maddeler.push(kacis(ikonlar.join(', ')) + ' · ' + ikonlar.length + ' ikon');
-      ozet.innerHTML = maddeler.map(function (x) { return '<li>' + x + '</li>'; }).join('');
-      toplam.textContent = 'Toplam: ' + paraBicimle(f.toplam);
+      this.querySelector('[data-kisisel-icerik]').textContent = tasarimIcerigi(m, this.yer, t);
+      var adet = f.harfAdet + f.rakamAdet + f.ikonAdet;
+      this.querySelector('[data-kisisel-adet]').textContent = adet + ' patch';
+      this.querySelector('[data-kisisel-toplam]').textContent = 'Toplam ' + paraBicimle(f.toplam);
     }
     this.butonlariGuncelle(f);
     this.galeriGuncelle();
@@ -2996,16 +3203,7 @@
     var kutuEl = this.querySelector('[data-kisisel-mini]');
     if (!kutuEl || bosMu(this.tasarim)) return;
     var m = this.model;
-    if (!this.miniSahne) {
-      kutuEl.style.aspectRatio = m.gorsel.en + ' / ' + m.gorsel.boy;
-      this.miniSahne = new Sahne(m, this.yer, kutuEl, { etkilesimli: false });
-      var y = yakinGorunum(m);
-      var sahne = this.miniSahne.sahne;
-      sahne.style.position = 'absolute';
-      sahne.style.width = y.olcek * 100 + '%';
-      sahne.style.left = y.sol + '%';
-      sahne.style.top = y.ust + '%';
-    }
+    if (!this.miniSahne) this.miniSahne = miniSahneKur(kutuEl, m, this.yer);
     var d = duzenle(m, this.yer, kopyala(this.tasarim));
     this.miniSahne.ciz(d.parcalar, {}, false);
   };
@@ -3017,10 +3215,20 @@
     ].filter(Boolean);
   };
 
+  // Butonlar: kişiselleştirme modunda "Tasarımımla sepete ekle · toplam"; masaüstünde ya da sığmazsa "Sepete ekle · toplam"
   KisiselKart.prototype.butonlariGuncelle = function (f) {
-    var m = this.model;
-    var kisisel = this.mod === 'kisisel';
-    var bos = bosMu(this.tasarim);
+    var kisisel = this.mod === 'kisisel' && !bosMu(this.tasarim);
+    if (kisisel && !f) f = fiyatHesapla(this.model, this.yer, this.tasarim);
+    var masaustu = window.matchMedia && window.matchMedia('(min-width: 990px)').matches;
+    function yaz(yazi, buton) {
+      var tutar = paraBicimle(f.toplam);
+      yazi.textContent = (masaustu ? 'Sepete ekle' : 'Tasarımımla sepete ekle') + ' · ' + tutar;
+      if (!masaustu && buton.offsetWidth && (yazi.scrollWidth > buton.clientWidth || buton.scrollWidth > buton.clientWidth + 1)) {
+        yazi.textContent = 'Sepete ekle · ' + tutar;
+      }
+    }
+    var kirmizi = this.querySelector('[data-kisisel-sepete-ekle]');
+    if (kisisel) yaz(kirmizi.querySelector('[data-kisisel-sepete-yazi]'), kirmizi);
     this.gonderButonlari().forEach(function (b) {
       var yazi = b.querySelector('span');
       if (!yazi) return;
@@ -3033,13 +3241,8 @@
         b.classList.toggle('btn-outline', !kisisel);
         b.classList.toggle('btn-primary', kisisel);
       }
-      if (!kisisel) {
-        yazi.textContent = b._kpOrijinal;
-      } else if (bos) {
-        yazi.textContent = 'Önce tasarımını yap';
-      } else {
-        yazi.textContent = 'Tasarımımla sepete ekle · ' + paraBicimle(f.toplam);
-      }
+      if (!kisisel) yazi.textContent = b._kpOrijinal;
+      else yaz(yazi, b);
     });
   };
 
@@ -3048,7 +3251,7 @@
       document.querySelector('.main-carousel .splide__slide');
     if (!ilk) return;
     var katman = ilk.querySelector('.kp-galeri');
-    var goster = this.mod === 'kisisel' && !bosMu(this.tasarim);
+    var goster = !bosMu(this.tasarim);
     if (!goster) {
       if (katman) katman.remove();
       return;
@@ -3148,7 +3351,7 @@
       ozellik._adet_birim = String(g.adet);
       kalemler.push({ id: g.varyant.id, quantity: g.adet * adet, properties: ozellik });
     });
-    return { kimlik: kimlik, kalemler: kalemler, fiyat: fiyatHesapla(m, this.yer, t), hatalar: d.hatalar, tasarim: t };
+    return { kimlik: kimlik, kalemler: kalemler, fiyat: fiyatHesapla(m, this.yer, t), hatalar: d.hatalar, tasarim: t, parcalar: d.parcalar };
   };
 
   KisiselKart.prototype.sepeteEkle = function () {
@@ -3214,6 +3417,7 @@
         } catch (e) {
           /* yoksay */
         }
+        cizimKitiKaydet(paket.kimlik, m, paket.parcalar);
         self.sepeteEklendi();
         if (cizim && sonuc.veri.sections && sonuc.veri.sections['cart-drawer'] && typeof cizim.renderContents === 'function') {
           cizim.renderContents({ id: m.urun.varyant, sections: sonuc.veri.sections });
@@ -3266,6 +3470,8 @@
     paraBicimle: paraBicimle,
     buyukHarf: buyukHarf,
     renkleriAta: renkleriAta,
+    konumParcalari: konumParcalari,
+    tasarimIcerigi: tasarimIcerigi,
     benzerRenk: benzerRenk,
     harfVaryanti: harfVaryanti,
     stokKontrol: stokKontrol,

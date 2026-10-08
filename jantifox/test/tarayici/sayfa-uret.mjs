@@ -35,7 +35,8 @@ const kart = readFileSync(new URL('../../snippets/kisisel-kart.liquid', import.m
 // Liquid kartının HTML kısmını basitçe çıkar
 const kartHtml = kart
   .slice(kart.indexOf('<kisisel-kart'), kart.indexOf('</kisisel-kart>') + 15)
-  .replace(/\{\{ section\.id \}\}/g, 'main');
+  .replace(/\{\{ section\.id \}\}/g, 'main')
+  .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '');
 
 writeFileSync(new URL('sayfa.html', import.meta.url), `<!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

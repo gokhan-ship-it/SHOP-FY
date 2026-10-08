@@ -23,6 +23,10 @@ body.kisisel-modu [id^='ProductInfo-'] .shopify-payment-button,
 body.kisisel-modu product-add-to-cart-sticky .shopify-payment-button {
   display: none !important;
 }
+/* Kayıtlı tasarım varken ana "Sepete ekle" yerine kartın altındaki kırmızı buton kullanılır (sabit çubuk kalır) */
+body.kisisel-modu [id^='ProductSubmitButton-'] {
+  display: none !important;
+}
 html.kp-kilit product-add-to-cart-sticky,
 html.kp-kilit .whatsapp-sticky {
   visibility: hidden !important;
@@ -32,11 +36,73 @@ html.kp-kilit .whatsapp-sticky {
 .kisisel-kart {
   display: block;
   margin: 1.6rem 0 0.8rem;
+  color: var(--kp-murekkep);
+}
+.kisisel-kart__kutu {
   padding: 1.4rem;
   border: 1px solid var(--kp-cizgi);
   border-radius: var(--kp-yaricap);
   background: var(--kp-zemin);
-  color: var(--kp-murekkep);
+}
+.kisisel-kart__kutu[hidden],
+.kisisel-kart__tekrar[hidden] {
+  display: none;
+}
+.kisisel-kart__kutu + .kisisel-kart__kutu {
+  margin-top: 1rem;
+}
+/* (c) Sepetteki tasarım: yeşil çerçeve */
+.kisisel-kart__kutu--sepet {
+  border: 2px solid #2f8f4e;
+  background: #f4fbf6;
+}
+.kisisel-kart__sepet-baslik {
+  margin: 0 0 1rem;
+  color: #1d5b33;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.kisisel-kart__kutu--sepet .kisisel-kart__tasarim + .kisisel-kart__tasarim {
+  margin-top: 0.8rem;
+}
+.kisisel-kart__kutu--sepet .kisisel-kart__buton {
+  margin-top: 1.2rem;
+}
+.kisisel-kart__tekrar .kisisel-kart__aciklama {
+  margin: 0.2rem 0 1.2rem;
+}
+/* (b) Senin tasarımın */
+.kisisel-kart__ust {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.kisisel-kart__ust .kisisel-kart__baslik {
+  margin: 0;
+}
+.kisisel-kart__kayit {
+  font-size: 1.2rem;
+  color: var(--kp-ikincil);
+}
+.kisisel-kart__icerik {
+  margin: 0 0 0.2rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.kisisel-kart__adet {
+  margin: 0 0 0.2rem;
+  font-size: 1.3rem;
+  color: var(--kp-ikincil);
+}
+.kisisel-kart__sepete {
+  margin-top: 1rem;
+}
+.kisisel-kart__sepete[hidden] {
+  display: none !important;
 }
 .kisisel-kart[hidden] {
   display: none;
@@ -114,7 +180,9 @@ body.kisisel-aktif .bag-notice {
   margin-top: 1rem;
 }
 .kisisel-kart .kisisel-kart__sil {
-  color: var(--kp-hata);
+  color: var(--kp-hata) !important;
+  background: #fdf3f2 !important;
+  border-color: #f2c9c5 !important;
 }
 .kisisel-kart__bildirim {
   display: flex;
@@ -248,9 +316,9 @@ body.kisisel-aktif .bag-notice {
   font-weight: 500;
 }
 .kisisel-kart__toplam {
-  margin: 0 0 1rem;
-  font-size: 1.6rem;
-  font-weight: 600;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 .kisisel-kart__buton {
   min-height: var(--kp-dokunma);
@@ -902,6 +970,35 @@ html.kp-kilit body {
   font-size: 1.3rem;
   color: var(--kp-ikincil);
 }
+.kp-panel__ust {
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.kp-panel__ust .kp-panel__baslik {
+  margin: 0;
+}
+.kp-panel__sag {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+/* "Bu adımı geç →": başlığın sağında yuvarlak kenarlı küçük buton */
+.kp-gec {
+  min-height: 36px;
+  padding: 0 1.2rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--kp-murekkep);
+  font-size: 1.3rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.kp-gec[hidden] {
+  display: none;
+}
 .kp-panel__aciklama {
   margin: 0 0 1.2rem;
   color: var(--kp-ikincil);
@@ -1486,45 +1583,70 @@ html.kp-kilit body {
     data-form-id="product-form-main"
     hidden
   >
-    <div class="kisisel-kart__davet" data-kisisel-davet>
-      <div class="kisisel-kart__davet-ust">
-        <span class="kisisel-kart__ornek" data-kisisel-ornek aria-hidden="true"><span>A</span><span>B</span><span>C</span></span>
-        <div class="kisisel-kart__metin">
-          <p class="kisisel-kart__baslik">Ürünü kişiselleştir</p>
-          <p class="kisisel-kart__aciklama">İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.</p>
+    
+    <div class="kisisel-kart__kutu kisisel-kart__kutu--sepet" data-kisisel-sepet hidden></div>
+
+    <div class="kisisel-kart__kutu" data-kisisel-ana>
+      
+      <div class="kisisel-kart__davet" data-kisisel-davet>
+        <div class="kisisel-kart__davet-ust">
+          <span class="kisisel-kart__ornek" data-kisisel-ornek aria-hidden="true"><span>A</span><span>B</span><span>C</span></span>
+          <div class="kisisel-kart__metin">
+            <p class="kisisel-kart__baslik">Ürünü kişiselleştir</p>
+            <p class="kisisel-kart__aciklama">İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.</p>
+          </div>
+        </div>
+        <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-ac>
+          Kişiselleştirmeye başla
+        </button>
+        <div class="kisisel-kart__alt">
+          <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>Her patch 330 TL</span>
+          <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
         </div>
       </div>
-      <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-ac>
-        Kişiselleştirmeye başla
-      </button>
-      <div class="kisisel-kart__alt">
-        <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>Her patch 330 TL</span>
-        <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
-      </div>
-    </div>
 
-    <div class="kisisel-kart__govde" data-kisisel-govde hidden>
-      <div class="kisisel-kart__tasarim">
-        <div class="kisisel-kart__mini" data-kisisel-mini aria-hidden="true"></div>
-        <div class="kisisel-kart__bilgiler">
-          <ul class="kisisel-kart__ozet" data-kisisel-ozet hidden></ul>
-          <p class="kisisel-kart__toplam" data-kisisel-toplam hidden></p>
-          <p class="kisisel-kart__not kp-indirim-notu" data-kisisel-indirim-notu hidden>İndirimler sepette uygulanır</p>
+      
+      <div class="kisisel-kart__tekrar" data-kisisel-tekrar hidden>
+        <p class="kisisel-kart__baslik">Bir tane daha mı istersin?</p>
+        <p class="kisisel-kart__aciklama">Kardeşi ya da arkadaşı için yeni bir tasarım yap.</p>
+        <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-yeni>
+          Yeni tasarım yap
+        </button>
+      </div>
+
+      
+      <div class="kisisel-kart__govde" data-kisisel-govde hidden>
+        <div class="kisisel-kart__ust">
+          <p class="kisisel-kart__baslik">Senin tasarımın</p>
+          <span class="kisisel-kart__kayit">Otomatik kaydedildi</span>
+        </div>
+        <div class="kisisel-kart__tasarim">
+          <div class="kisisel-kart__mini" data-kisisel-mini aria-hidden="true"></div>
+          <div class="kisisel-kart__bilgiler">
+            <p class="kisisel-kart__icerik" data-kisisel-icerik></p>
+            <p class="kisisel-kart__adet" data-kisisel-adet></p>
+            <p class="kisisel-kart__toplam" data-kisisel-toplam></p>
+          </div>
+        </div>
+        <div class="kisisel-kart__butonlar">
+          <button type="button" class="btn btn-outline kisisel-kart__buton" data-kisisel-ac>Düzenle</button>
+          <button type="button" class="btn btn-outline kisisel-kart__buton kisisel-kart__sil" data-kisisel-sil>Sil</button>
         </div>
       </div>
-      <div class="kisisel-kart__butonlar">
-        <button type="button" class="btn btn-outline kisisel-kart__buton" data-kisisel-ac>Düzenle</button>
-        <button type="button" class="btn btn-outline kisisel-kart__buton kisisel-kart__sil" data-kisisel-sil>Sil</button>
-      </div>
+
+      <p class="kisisel-kart__bildirim" data-kisisel-bildirim role="status" aria-live="polite" hidden></p>
+      <p class="kisisel-kart__uyari-not" data-kisisel-not role="status" hidden></p>
+
+      <p class="kisisel-kart__cirt">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <span>Ön yüzdeki Velcro yüzeye patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.</span>
+      </p>
     </div>
 
-    <p class="kisisel-kart__bildirim" data-kisisel-bildirim role="status" aria-live="polite" hidden></p>
-    <p class="kisisel-kart__uyari-not" data-kisisel-not role="status" hidden></p>
-
-    <p class="kisisel-kart__cirt">
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-      <span>Ön yüzdeki cırt alana patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.</span>
-    </p>
+    
+    <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka kisisel-kart__sepete" data-kisisel-sepete-ekle hidden>
+      <span data-kisisel-sepete-yazi>Tasarımımla sepete ekle</span>
+    </button>
   </kisisel-kart>
     <script type="application/json" id="KisiselVeri-main">{"surum":1,"para":"{{amount_no_decimals_with_comma_separator}} TL","urun":{"id":10087205437726,"baslik":"Kanvas Lacivert Tote Çanta","varyant":51795696943390,"fiyat":300000,"satilabilir":true},"gorsel":{"en":1344,"boy":1460,"kucuk":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221344%22%20height%3D%221460%22%20viewBox%3D%220%200%201344%201460%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%221344%22%20height%3D%221460%22%20rx%3D%2230%22%20fill%3D%22%231f2a44%22%2F%3E%3Ccircle%20cx%3D%22672%22%20cy%3D%22766%22%20r%3D%22420%22%20fill%3D%22%23111%22%2F%3E%3C%2Fsvg%3E","buyuk":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221344%22%20height%3D%221460%22%20viewBox%3D%220%200%201344%201460%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%221344%22%20height%3D%221460%22%20rx%3D%2230%22%20fill%3D%22%231f2a44%22%2F%3E%3Ccircle%20cx%3D%22672%22%20cy%3D%22766%22%20r%3D%22420%22%20fill%3D%22%23111%22%2F%3E%3C%2Fsvg%3E","dev":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221344%22%20height%3D%221460%22%20viewBox%3D%220%200%201344%201460%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%221344%22%20height%3D%221460%22%20rx%3D%2230%22%20fill%3D%22%231f2a44%22%2F%3E%3Ccircle%20cx%3D%22672%22%20cy%3D%22766%22%20r%3D%22420%22%20fill%3D%22%23111%22%2F%3E%3C%2Fsvg%3E"},"harita":{"surum":2,"kalibre":true,"gorsel":{"en":1344,"boy":1460},"zones":[{"id":"on-daire","shape":"circle","x":18.75,"y":23.698630136986303,"w":62.5,"h":57.534246575342465,"cap_cm":25,"allowed_types":["letter","number","icon"]}],"forbidden":[]},"ayarlar":{"varsayilan_harf_genislik_cm":5.5,"patch_arasi_bosluk_cm":0.3,"satir_arasi_bosluk_cm":0.5,"kenar_payi_cm":0.3,"en_fazla_satir":2},"kategoriler":[{"etiket":"janti kalpler","ad":"Kalpler"},{"etiket":"janti sporlar","ad":"Spor"},{"etiket":"janti hayvanlar","ad":"Hayvanlar"},{"etiket":null,"ad":"Diğer"}],"setler":[{"id":9722984005918,"baslik":"Cool Alfabe Patch","tip":"letter","set":"cool","en":null,"boy":"6.0","sekil":"rect","etiketler":[],"gorsel":"a.jpg","png":false,"varyantlar":[{"id":1000,"baslik":"A","karakter":"A","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EA%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1001,"baslik":"B","karakter":"B","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EB%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1002,"baslik":"C","karakter":"C","renk":null,"fiyat":33000,"satilabilir":true,"stok":153,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EC%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1003,"baslik":"D","karakter":"D","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3ED%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1004,"baslik":"E","karakter":"E","renk":null,"fiyat":33000,"satilabilir":true,"stok":129,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EE%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1005,"baslik":"F","karakter":"F","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EF%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1006,"baslik":"G","karakter":"G","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EG%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1007,"baslik":"H","karakter":"H","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EH%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1008,"baslik":"I","karakter":"I","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1009,"baslik":"J","karakter":"J","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EJ%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1010,"baslik":"K","karakter":"K","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EK%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1011,"baslik":"L","karakter":"L","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EL%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1012,"baslik":"M","karakter":"M","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EM%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1013,"baslik":"N","karakter":"N","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EN%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1014,"baslik":"O","karakter":"O","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EO%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1015,"baslik":"P","karakter":"P","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EP%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1016,"baslik":"Q","karakter":"Q","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EQ%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1017,"baslik":"R","karakter":"R","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3ER%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1018,"baslik":"S","karakter":"S","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3ES%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1019,"baslik":"T","karakter":"T","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3ET%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1020,"baslik":"U","karakter":"U","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EU%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1021,"baslik":"V","karakter":"V","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EV%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1022,"baslik":"W","karakter":"W","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EW%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1023,"baslik":"X","karakter":"X","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EX%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1024,"baslik":"Y","karakter":"Y","renk":null,"fiyat":33000,"satilabilir":true,"stok":30,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EY%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":1025,"baslik":"Z","karakter":"Z","renk":null,"fiyat":33000,"satilabilir":true,"stok":80,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%23f2c14e%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3EZ%3C%2Ftext%3E%3C%2Fsvg%3E","png":false}]},{"id":9722983907614,"baslik":"Piramit Alfabe Patch","tip":"letter","set":"piramit","en":null,"boy":"6.0","sekil":"rect","etiketler":[],"gorsel":"p.jpg","png":true,"varyantlar":[{"id":5000,"baslik":"Mavi A","karakter":null,"renk":null,"renk_kodu":"#abcdd1","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":97,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23abcdd1%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EA%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5001,"baslik":"Pembe A","karakter":null,"renk":null,"renk_kodu":"#fd5f76","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":50,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23fd5f76%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EA%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5002,"baslik":"Turuncu A","karakter":null,"renk":null,"renk_kodu":"#e26900","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":44,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23e26900%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EA%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5003,"baslik":"Antrasit B","karakter":null,"renk":null,"renk_kodu":"#657889","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":39,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23657889%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EB%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5004,"baslik":"Beyaz C","karakter":null,"renk":null,"renk_kodu":null,"png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":126,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23f6f7f8%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EC%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5005,"baslik":"Mavi D","karakter":null,"renk":null,"renk_kodu":"#7bc4f0","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":83,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%237bc4f0%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3ED%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5006,"baslik":"Yeşil E","karakter":null,"renk":null,"renk_kodu":"#268180","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":102,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23268180%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EE%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5007,"baslik":"Turkuaz E","karakter":null,"renk":null,"renk_kodu":"#8eddc1","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":1,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%238eddc1%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EE%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5008,"baslik":"Turuncu E","karakter":null,"renk":null,"renk_kodu":"#df6800","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":50,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23df6800%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EE%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5009,"baslik":"Beyaz K","karakter":null,"renk":null,"renk_kodu":"#f6f6f8","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":false,"stok":0,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23f6f6f8%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EK%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5010,"baslik":"Pembe L","karakter":null,"renk":null,"renk_kodu":"#fd5e98","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":126,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23fd5e98%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EL%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5011,"baslik":"Haki L","karakter":null,"renk":null,"renk_kodu":"#64894d","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":46,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%2364894d%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EL%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5012,"baslik":"Mavi O","karakter":null,"renk":null,"renk_kodu":"#5f7286","png_en":5.4,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":135,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%235f7286%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EO%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5013,"baslik":"Kırmızı R","karakter":null,"renk":null,"renk_kodu":"#fe4943","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":113,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23fe4943%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3ER%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5014,"baslik":"Saks R","karakter":null,"renk":null,"renk_kodu":"#004089","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":50,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23004089%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3ER%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5015,"baslik":"Mavi S","karakter":null,"renk":null,"renk_kodu":"#7ac5f2","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":129,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%237ac5f2%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3ES%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5016,"baslik":"Antrasit T","karakter":null,"renk":null,"renk_kodu":"#687b8e","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":40,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23687b8e%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3ET%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5017,"baslik":"Kırmızı T","karakter":null,"renk":null,"renk_kodu":"#f94341","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":30,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23f94341%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3ET%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5018,"baslik":"Yeşil V","karakter":null,"renk":null,"renk_kodu":"#628a4e","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":30,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23628a4e%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EV%3C%2Ftext%3E%3C%2Fsvg%3E","png":true},{"id":5019,"baslik":"Pembe V","karakter":null,"renk":null,"renk_kodu":"#ff62a6","png_en":4.2,"png_boy":6,"fiyat":33000,"satilabilir":true,"stok":20,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ctext%20x%3D%22150%22%20y%3D%22270%22%20font-size%3D%22320%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ff62a6%22%20stroke%3D%22%23333%22%20stroke-width%3D%226%22%3EV%3C%2Ftext%3E%3C%2Fsvg%3E","png":true}]}],"rakamlar":[{"id":9722985382174,"baslik":"Janti Rakam Patch","tip":"number","set":"rakam","en":"7.5","boy":"6.0","sekil":"rect","etiketler":[],"gorsel":"r.jpg","png":false,"varyantlar":[{"id":2000,"baslik":"0","karakter":"0","fiyat":33000,"satilabilir":true,"stok":150,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%237fc8f8%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3E0%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":2001,"baslik":"1","karakter":"1","fiyat":33000,"satilabilir":true,"stok":150,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%237fc8f8%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3E1%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":2002,"baslik":"2","karakter":"2","fiyat":33000,"satilabilir":true,"stok":150,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%237fc8f8%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3E2%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":2003,"baslik":"3","karakter":"3","fiyat":33000,"satilabilir":true,"stok":150,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%237fc8f8%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3E3%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":2004,"baslik":"4","karakter":"4","fiyat":33000,"satilabilir":true,"stok":150,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%237fc8f8%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3E4%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":2005,"baslik":"5","karakter":"5","fiyat":33000,"satilabilir":true,"stok":150,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%237fc8f8%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3E5%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":2006,"baslik":"6","karakter":"6","fiyat":33000,"satilabilir":true,"stok":150,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%237fc8f8%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3E6%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":2007,"baslik":"7","karakter":"7","fiyat":33000,"satilabilir":true,"stok":150,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%237fc8f8%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3E7%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":2008,"baslik":"8","karakter":"8","fiyat":33000,"satilabilir":true,"stok":150,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%237fc8f8%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3E8%3C%2Ftext%3E%3C%2Fsvg%3E","png":false},{"id":2009,"baslik":"9","karakter":"9","fiyat":33000,"satilabilir":true,"stok":150,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22288%22%20height%3D%22288%22%20rx%3D%2240%22%20fill%3D%22%237fc8f8%22%20stroke%3D%22%23222%22%20stroke-width%3D%2210%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22215%22%20font-size%3D%22200%22%20font-family%3D%22Arial%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23222%22%3E9%3C%2Ftext%3E%3C%2Fsvg%3E","png":false}]}],"ikonlar":[{"id":1,"baslik":"Kırmızı Kalp Patch","tip":"icon","en":"5","boy":null,"sekil":"rect","etiketler":["janti kalpler","janti sporlar"],"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%22150%22%20r%3D%22140%22%20fill%3D%22%23e63946%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22175%22%20font-size%3D%2270%22%20text-anchor%3D%22middle%22%20fill%3D%22%23fff%22%20font-family%3D%22Arial%22%3EK%C4%B1rm%C4%B1%3C%2Ftext%3E%3C%2Fsvg%3E","varyantlar":[{"id":3001,"fiyat":33000,"satilabilir":true,"stok":96}]},{"id":2,"baslik":"Futbol Topu Patch","tip":"icon","en":"5.5","boy":"5.5","sekil":"circle","etiketler":["janti sporlar"],"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%22150%22%20r%3D%22140%22%20fill%3D%22%232a9d8f%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22175%22%20font-size%3D%2270%22%20text-anchor%3D%22middle%22%20fill%3D%22%23fff%22%20font-family%3D%22Arial%22%3EFutbo%3C%2Ftext%3E%3C%2Fsvg%3E","varyantlar":[{"id":3002,"fiyat":33000,"satilabilir":true,"stok":142}]},{"id":3,"baslik":"Sevimli Köpek Patch","tip":"icon","en":"7.5","boy":"8","sekil":"rect","etiketler":["janti hayvanlar"],"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%22150%22%20r%3D%22140%22%20fill%3D%22%23e9c46a%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22175%22%20font-size%3D%2270%22%20text-anchor%3D%22middle%22%20fill%3D%22%23fff%22%20font-family%3D%22Arial%22%3ESevim%3C%2Ftext%3E%3C%2Fsvg%3E","varyantlar":[{"id":3003,"fiyat":33000,"satilabilir":true,"stok":0}]},{"id":4,"baslik":"Musical Note","tip":"icon","en":"6","boy":"5","sekil":"rect","etiketler":["aksesuar","gift"],"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%22150%22%20r%3D%22140%22%20fill%3D%22%238d6cab%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22175%22%20font-size%3D%2270%22%20text-anchor%3D%22middle%22%20fill%3D%22%23fff%22%20font-family%3D%22Arial%22%3EMusic%3C%2Ftext%3E%3C%2Fsvg%3E","varyantlar":[{"id":3004,"fiyat":33000,"satilabilir":true,"stok":69}]},{"id":5,"baslik":"Sarı Kalp Patch","tip":"icon","en":"5","boy":"5","sekil":"rect","etiketler":["janti kalpler","janti sporlar"],"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%22150%22%20r%3D%22140%22%20fill%3D%22%23f4a261%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%22175%22%20font-size%3D%2270%22%20text-anchor%3D%22middle%22%20fill%3D%22%23fff%22%20font-family%3D%22Arial%22%3ESar%C4%B1%20%3C%2Ftext%3E%3C%2Fsvg%3E","varyantlar":[{"id":3005,"fiyat":33000,"satilabilir":true,"stok":1}]},{"id":6,"baslik":"Meteor","tip":"icon","en":"3.5","boy":"8.5","sekil":"rect","etiketler":["janti oyuncular"],"png":true,"gorsel":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22350%22%20viewBox%3D%220%200%20100%20350%22%3E%3Cpath%20d%3D%22M50%200%20L90%20300%20L10%20300%20Z%22%20fill%3D%22%232ec4b6%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%22300%22%20r%3D%2248%22%20fill%3D%22%23ff8fa3%22%20stroke%3D%22%23222%22%20stroke-width%3D%226%22%2F%3E%3C%2Fsvg%3E","varyantlar":[{"id":3006,"fiyat":33000,"satilabilir":true,"stok":50}]}]}</script>
     <input type="number" name="quantity" form="product-form-main" value="1" id="Quantity-main">
@@ -3108,10 +3230,7 @@ html.kp-kilit body {
         girdi.focus();
         return;
       }
-      if (hedef.hasAttribute('data-kp-isimsiz')) {
-        self.isimAyarla('');
-        return self.adimaGit('ikon');
-      }
+      if (hedef.hasAttribute('data-kp-gec')) return self.adimGec();
       if (hedef.hasAttribute('data-kp-rakam')) return self.rakamEkle(hedef.getAttribute('data-kp-rakam'));
       if (hedef.hasAttribute('data-kp-ikon')) return self.ikonEkle(hedef.getAttribute('data-kp-ikon'));
       if (hedef.hasAttribute('data-kp-kategori')) {
@@ -3301,6 +3420,11 @@ html.kp-kilit body {
   };
 
   Editor.prototype.ileri = function () {
+    // Yazı/Rakam/İkon: İleri her zaman çalışır (sorunlu tasarım Özet'te sepete eklenirken durdurulur)
+    if (this.adim !== 'ozet') {
+      var s0 = ADIMLAR.map(function (a) { return a.id; }).indexOf(this.adim);
+      return this.adimaGit(ADIMLAR[s0 + 1].id, false, true);
+    }
     if (this.adimEngeli(this.adim)) {
       this.yenile();
       if (this.adim === 'yazi') {
@@ -3357,10 +3481,10 @@ html.kp-kilit body {
       })
       .join('');
     panel.innerHTML =
-      '<h3 id="kp-p-yazi" class="kp-panel__baslik" tabindex="-1">Yazı</h3>' +
+      '<div class="kp-panel__ust"><h3 id="kp-p-yazi" class="kp-panel__baslik" tabindex="-1">Yazı</h3>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Bu adımı geç <span aria-hidden="true">→</span></button>' + '</div>' +
       '<fieldset class="kp-setler"><legend>Harf seti</legend>' + setler + '</fieldset>' +
       '<div class="kp-alan-girdi">' +
-      '<label for="kp-isim" class="kp-etiket">İsim <span class="kp-etiket__not">(isteğe bağlı)</span></label>' +
+      '<label for="kp-isim" class="kp-etiket">İsim</label>' +
       '<input id="kp-isim" class="kp-girdi" type="text" data-kp-isim autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" maxlength="24" enterkeyhint="done" aria-describedby="kp-kapasite kp-isim-uyari">' +
       '<div class="kp-isim-alt">' +
       '<button type="button" class="kp-harf-mod" data-kp-harf-mod aria-pressed="false" hidden>Harfleri ayır</button>' +
@@ -3368,8 +3492,7 @@ html.kp-kilit body {
       '</div>' +
       '<div class="kp-renkler" data-kp-renkler hidden></div>' +
       '</div>' +
-      '<div id="kp-isim-uyari" class="kp-uyarilar" data-kp-isim-uyari aria-live="polite"></div>' +
-      '<button type="button" class="kp-baglanti" data-kp-isimsiz>İsim istemiyorum, sadece ikonla devam et</button>';
+      '<div id="kp-isim-uyari" class="kp-uyarilar" data-kp-isim-uyari aria-live="polite"></div>';
     var girdi = panel.querySelector('[data-kp-isim]');
     girdi.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
@@ -3396,7 +3519,7 @@ html.kp-kilit body {
           .join('')
       : '<p>Rakam patch\'leri şu an kullanılamıyor.</p>';
     panel.innerHTML =
-      '<h3 id="kp-p-rakam" class="kp-panel__baslik" tabindex="-1">Rakam</h3>' +
+      '<div class="kp-panel__ust"><h3 id="kp-p-rakam" class="kp-panel__baslik" tabindex="-1">Rakam</h3>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Bu adımı geç <span aria-hidden="true">→</span></button>' + '</div>' +
       '<p class="kp-panel__aciklama">Yaş, forma numarası ya da şanslı sayın. Eklediğin rakamı önizlemede sürükleyerek yerleştirebilirsin.</p>' +
       '<div class="kp-uyarilar" data-kp-rakam-ipucu aria-live="polite"></div>' +
       '<div class="kp-izgara kp-izgara--rakam">' + izgara + '</div>';
@@ -3420,7 +3543,7 @@ html.kp-kilit body {
       .join('');
     panel.innerHTML =
       '<div class="kp-panel__ust"><h3 id="kp-p-ikon" class="kp-panel__baslik" tabindex="-1">İkon</h3>' +
-      '<span class="kp-panel__fiyat">' + kacis(this.ikonFiyatYazisi()) + '</span></div>' +
+      '<span class="kp-panel__sag"><span class="kp-panel__fiyat">' + kacis(this.ikonFiyatYazisi()) + '</span>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Bu adımı geç <span aria-hidden="true">→</span></button>' + '</span></div>' +
       '<div class="kp-kategoriler" role="group" aria-label="İkon kategorileri">' + kategoriler + '</div>' +
       '<div class="kp-izgara kp-izgara--ikon" data-kp-ikon-izgara></div>';
     this.ikonIzgarasiCiz();
@@ -3451,6 +3574,25 @@ html.kp-kilit body {
   };
 
   /* ---------------- Ekleme / kaldırma ---------------- */
+
+  // "Bu adımı geç →": o adımda hiçbir şey eklenmemişse görünür
+  Editor.prototype.adimGec = function () {
+    var s0 = ADIMLAR.map(function (a) { return a.id; }).indexOf(this.adim);
+    if (s0 < ADIMLAR.length - 1) this.adimaGit(ADIMLAR[s0 + 1].id, false, true);
+  };
+
+  Editor.prototype.gecButonlariGuncelle = function () {
+    var t = this.t;
+    var bos = {
+      yazi: !t.isim,
+      rakam: !t.parcalar.some(function (p) { return p.tip === 'number'; }),
+      ikon: !t.parcalar.some(function (p) { return p.tip === 'icon'; })
+    };
+    this.el.querySelectorAll('[data-kp-panel]').forEach(function (panel) {
+      var b = panel.querySelector('[data-kp-gec]');
+      if (b) b.hidden = !bos[panel.getAttribute('data-kp-panel')];
+    });
+  };
 
   Editor.prototype.parcaEkle = function (tip, urunId, varyant, tanim, yerYok) {
     var ad = tip === 'number' ? varyant.karakter + ' rakamı' : tanim.ad;
@@ -3527,6 +3669,7 @@ html.kp-kilit body {
     this.dugmeleriGuncelle();
     this.yaziDurumGuncelle();
     this.etiketleriCiz();
+    this.gecButonlariGuncelle();
     this.ikonDurumGuncelle();
     var ipucu = this.el.querySelector('[data-kp-rakam-ipucu]');
     if (ipucu) ipucu.innerHTML = this.rakamIpucu ? '<p class="kp-uyari kp-uyari--bilgi">Şimdi baş harfinin yanına bir rakam seç.</p>' : '';
@@ -3824,7 +3967,7 @@ html.kp-kilit body {
       (engelliAdim ? '<p class="kp-uyari kp-uyari--hata">' + engelliAdim.ad + ' adımında çözülmesi gereken bir sorun var.</p>' : '') +
       '<table class="kp-ozet"><tbody>' + satirlar + '</tbody>' +
       '<tfoot><tr><th scope="row">Toplam</th><td>' + p(f.toplam) + '</td></tr></tfoot></table>' +
-      '<p class="kp-bilgi">Patch\'ler cırt cırtlı. Çanta eline geçince istediğin yere takar, istediğin zaman yerini değiştirirsin.</p>';
+      '<p class="kp-bilgi">Patch\'ler Velcro yüzeye takılır. Çanta eline geçince istediğin yere takar, istediğin zaman yerini değiştirirsin.</p>';
   };
 
   /* ---------------- Seçim ve döndürme ---------------- */
@@ -4269,6 +4412,85 @@ html.kp-kilit body {
     );
   };
 
+  // Kart ve sepet için içerik özeti: "GOKHAN · 2 · Beyaz Kalp"
+  function tasarimIcerigi(m, yer, t) {
+    var parcalar = yer.parcalar(t);
+    var ogeler = [];
+    if (t.isim) ogeler.push(t.isim);
+    parcalar.forEach(function (p) {
+      if (p.tip === 'number' || p.tip === 'icon') ogeler.push(p.etiket);
+    });
+    return ogeler.join(' · ');
+  }
+
+  // Sepetteki _tasarim_konum'dan çizilecek parçalar (varyant kimliği + alan merkezine göre cm + açı)
+  function konumParcalari(m, konum) {
+    if (!konum || !Array.isArray(konum.p)) return [];
+    var alan = (konum.alan && m.alanlar.filter(function (a) { return a.id === konum.alan; })[0]) || m.alanBul('letter') || m.alanlar[0];
+    if (!alan) return [];
+    var ac = merkez(alan.sekil);
+    var bul = {};
+    m.setler.forEach(function (st) { st.varyantlar.forEach(function (v) { bul[v.id] = { tanim: st, v: v, tip: 'letter' }; }); });
+    m.rakamSetleri.forEach(function (st) { st.varyantlar.forEach(function (v) { bul[v.id] = { tanim: st, v: v, tip: 'number' }; }); });
+    m.ikonlar.forEach(function (ik) { ik.varyantlar.forEach(function (v) { bul[v.id] = { tanim: ik, v: v, tip: 'icon' }; }); });
+    var liste = [];
+    konum.p.forEach(function (x, i) {
+      var b = bul[x.v];
+      if (!b) return;
+      var o = b.tip === 'letter' ? varyantOlcu(b.tanim, b.v) : parcaOlcu(b.tanim, b.v);
+      var cx = ac[0] + (Number(x.x) || 0);
+      var cy = ac[1] + (Number(x.y) || 0);
+      var aci = Number(x.a) || 0;
+      var sekil = b.tip !== 'letter' && b.tanim.sekil === 'circle'
+        ? { t: 'circle', cx: cx, cy: cy, r: Math.max(o.en, o.boy) / 2 }
+        : donukDikdortgen(cx, cy, o.en, o.boy, aci);
+      liste.push({ uid: 'k' + i, grup: 'k' + i, tip: b.tip, varyant: b.v, sekil: sekil, en: o.en, boy: o.boy, aci: aci, etiket: b.v.karakter || b.tanim.ad });
+    });
+    return liste;
+  }
+
+  // Küçük, alana yakın tasarım önizlemesi (kart ve sepet kartı)
+  function miniSahneKur(kok, m, yer) {
+    kok.style.aspectRatio = m.gorsel.en + ' / ' + m.gorsel.boy;
+    var sahne = new Sahne(m, yer, kok, { etkilesimli: false });
+    var y = yakinGorunum(m);
+    sahne.sahne.style.position = 'absolute';
+    sahne.sahne.style.width = y.olcek * 100 + '%';
+    sahne.sahne.style.left = y.sol + '%';
+    sahne.sahne.style.top = y.ust + '%';
+    return sahne;
+  }
+
+  function konumCiz(kok, m, yer, konum) {
+    if (!kok) return;
+    miniSahneKur(kok, m, yer).ciz(konumParcalari(m, konum), {}, false);
+  }
+
+  // Sepet çekmecesinde tasarım görseli için çizim kiti (ürün sayfası dışında model verisi yok):
+  // çanta görseli, yakın görünüm ve her patch'in görseli ile konumu (yüzde). localStorage'da tasarım kimliğiyle saklanır.
+  var CIZIM_ANAHTARI = 'kisisel-sepet-cizim';
+  function cizimKitiKaydet(kimlik, m, parcalar) {
+    try {
+      var kitler = JSON.parse(window.localStorage.getItem(CIZIM_ANAHTARI) || '{}');
+      kitler[kimlik] = {
+        z: Date.now(),
+        g: m.gorsel.kucuk,
+        o: m.gorsel.en / m.gorsel.boy,
+        y: yakinGorunum(m),
+        p: parcalar.map(function (p) {
+          var st = parcaStili(m, p);
+          return { u: p.varyant && p.varyant.gorsel, l: st.left, t: st.top, w: st.width, h: st.height, r: st.transform, d: p.sekil.t === 'circle', j: !!(p.varyant && !p.varyant.png) };
+        })
+      };
+      // En yeni 20 tasarım saklanır
+      var anahtarlar = Object.keys(kitler).sort(function (a, b) { return kitler[b].z - kitler[a].z; });
+      anahtarlar.slice(20).forEach(function (a) { delete kitler[a]; });
+      window.localStorage.setItem(CIZIM_ANAHTARI, JSON.stringify(kitler));
+    } catch (e) {
+      /* depolama yoksa çekmecede ürün görseli kalır */
+    }
+  }
+
   /* ------------------------------------------------------------------ */
   /* Ürün sayfası kartı                                                  */
   /* ------------------------------------------------------------------ */
@@ -4315,6 +4537,27 @@ html.kp-kilit body {
     this.querySelectorAll('[data-kisisel-sade]').forEach(function (b) {
       b.addEventListener('click', function () { self.sadeSepet(); });
     });
+    // Sepette tasarım varken: yeni (boş) tasarım
+    this.querySelector('[data-kisisel-yeni]').addEventListener('click', function () {
+      self.notGoster('');
+      self.editor.ac('yazi');
+    });
+    // (b) kartın altındaki kırmızı buton
+    this.querySelector('[data-kisisel-sepete-ekle]').addEventListener('click', function () { self.sepeteEkle(); });
+    this.addEventListener('click', function (e) {
+      if (e.target.closest('[data-kisisel-sepete-git]')) self.sepetiAc();
+    });
+    // Sepet her değiştiğinde kart durumu yeniden belirlenir
+    try {
+      if (typeof subscribe === 'function' && typeof PUB_SUB_EVENTS !== 'undefined') {
+        subscribe(PUB_SUB_EVENTS.cartUpdate, function () { self.sepetOku(); });
+      }
+    } catch (e) {
+      /* tema pubsub yoksa */
+    }
+    document.addEventListener('kisisel:sepet-degisti', function () { self.sepetOku(); });
+    window.addEventListener('pageshow', function () { self.sepetOku(); });
+    window.addEventListener('resize', function () { self.butonlariGuncelle(); });
     this.davetHazirla();
 
     this.gonderYakala = this.gonderYakala.bind(this);
@@ -4324,7 +4567,9 @@ html.kp-kilit body {
     // Kart çalışıyorsa temanın kırmızı "Değiştirilebilir patchler…" kutusu gizlenir (yerine kartın yeşil notu);
     // JS yüklenemezse kart gizli kalır, temanın kutusu görünmeye devam eder
     document.body.classList.add('kisisel-aktif');
+    this.sepettekiler = [];
     this.kayitOku();
+    this.sepetOku();
   };
 
   // Kayıtlı tasarımı okur, stoğu biten ya da artık olmayan patch'leri ayıklar, kartı günceller
@@ -4407,12 +4652,108 @@ html.kp-kilit body {
 
   KisiselKart.prototype.modDegistir = function (mod) {
     this.mod = mod;
-    var kisisel = mod === 'kisisel';
-    this.querySelector('[data-kisisel-davet]').hidden = kisisel;
-    this.querySelector('[data-kisisel-govde]').hidden = !kisisel;
-    document.body.classList.toggle('kisisel-modu', kisisel);
+    this.durumCiz();
     this.kaydet();
     this.guncelle();
+  };
+
+  // Kartın üç durumu: (a) tasarım yok → davet; (b) kayıtlı tasarım → "Senin tasarımın";
+  // (c) bu ürüne ait tasarım sepette → sepet kartı, altında (b) ya da "Bir tane daha mı istersin?"
+  KisiselKart.prototype.durumCiz = function () {
+    var tasarimVar = !bosMu(this.tasarim);
+    var sepetVar = (this.sepettekiler || []).length > 0;
+    this.querySelector('[data-kisisel-davet]').hidden = tasarimVar || sepetVar;
+    this.querySelector('[data-kisisel-tekrar]').hidden = tasarimVar || !sepetVar;
+    this.querySelector('[data-kisisel-govde]').hidden = !tasarimVar;
+    this.querySelector('[data-kisisel-sepet]').hidden = !sepetVar;
+    this.querySelector('[data-kisisel-sepete-ekle]').hidden = !tasarimVar;
+    document.body.classList.toggle('kisisel-modu', this.mod === 'kisisel' && tasarimVar);
+  };
+
+  // Sepetteki bu ürüne ait kişiselleştirilmiş gruplar (_tasarim_id), kart (c) durumu için
+  KisiselKart.prototype.sepetOku = function () {
+    var self = this;
+    var m = this.model;
+    var rotalar = window.routes || {};
+    var sira = (this._sepetSira = (this._sepetSira || 0) + 1);
+    return fetch((rotalar.cart_url || '/cart') + '.js', { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (sepet) {
+        if (sira !== self._sepetSira) return;
+        var gruplar = {};
+        var liste = [];
+        (sepet.items || []).forEach(function (k) {
+          var o = k.properties || {};
+          if (!o._tasarim_id) return;
+          var g = gruplar[o._tasarim_id];
+          if (!g) {
+            g = gruplar[o._tasarim_id] = { id: o._tasarim_id, baz: null, toplam: 0 };
+            liste.push(g);
+          }
+          g.toplam += Number(k.final_line_price) || 0;
+          if (o._tasarim_rol === 'baz') g.baz = k;
+        });
+        self.sepettekiler = liste.filter(function (g) { return g.baz && String(g.baz.product_id) === String(m.urun.id); });
+        self.sepetCiz();
+        self.durumCiz();
+      })
+      .catch(function () {});
+  };
+
+  KisiselKart.prototype.sepetCiz = function () {
+    var kutuEl = this.querySelector('[data-kisisel-sepet]');
+    var gruplar = this.sepettekiler || [];
+    if (!gruplar.length) {
+      kutuEl.innerHTML = '';
+      return;
+    }
+    var m = this.model;
+    var adet = gruplar.reduce(function (t, g) { return t + (g.baz.quantity || 1); }, 0);
+    kutuEl.innerHTML =
+      '<p class="kisisel-kart__sepet-baslik"><span aria-hidden="true">✓</span> Sepetinde ' + adet + ' kişiselleştirilmiş çanta var</p>' +
+      gruplar
+        .map(function (g, i) {
+          var o = g.baz.properties || {};
+          return (
+            '<div class="kisisel-kart__tasarim">' +
+            '<div class="kisisel-kart__mini" data-kisisel-sepet-mini="' + i + '" aria-hidden="true"></div>' +
+            '<div class="kisisel-kart__bilgiler">' +
+            '<p class="kisisel-kart__icerik">' + kacis(String(o['Tasarım'] || '').split(' + ').join(' · ')) + '</p>' +
+            (g.baz.quantity > 1 ? '<p class="kisisel-kart__adet">' + g.baz.quantity + ' adet</p>' : '') +
+            '<p class="kisisel-kart__toplam">' + paraBicimle(g.toplam) + '</p>' +
+            '</div></div>'
+          );
+        })
+        .join('') +
+      '<button type="button" class="btn btn-outline button--full-width kisisel-kart__buton" data-kisisel-sepete-git>Sepete git</button>';
+    var self = this;
+    gruplar.forEach(function (g, i) {
+      var el = kutuEl.querySelector('[data-kisisel-sepet-mini="' + i + '"]');
+      try {
+        konumCiz(el, m, self.yer, JSON.parse((g.baz.properties || {})._tasarim_konum || '{}'));
+      } catch (e) {
+        /* konum okunamazsa önizleme boş kalır */
+      }
+    });
+  };
+
+  // "Sepete git": sepet çekmecesini güncel içerikle açar; çekmece yoksa sepet sayfasına gider
+  KisiselKart.prototype.sepetiAc = function () {
+    var cizim = document.querySelector('cart-drawer');
+    var rotalar = window.routes || {};
+    if (!cizim || typeof cizim.renderContents !== 'function') {
+      window.location.href = rotalar.cart_url || '/cart';
+      return;
+    }
+    fetch(window.location.pathname + '?sections=cart-drawer,cart-icon-bubble')
+      .then(function (r) { return r.json(); })
+      .then(function (bolumler) {
+        cizim.classList.remove('is-empty');
+        cizim.renderContents({ id: null, sections: bolumler });
+      })
+      .catch(function () {
+        if (typeof cizim.open === 'function') cizim.open();
+      });
   };
 
   // Davet kartı: siyah daire üzerinde örnek harfler (PNG'si olan ilk setten) ve patch fiyatı
@@ -4500,7 +4841,7 @@ html.kp-kilit body {
     this.tasarim = null;
     this.yedek = null;
     this.modDegistir('sade');
-    this.bildirimGoster('<span>Tasarımın sepete eklendi</span>', 4000);
+    this.sepetOku();
   };
 
   KisiselKart.prototype.tasarimKaydet = function (t) {
@@ -4511,25 +4852,13 @@ html.kp-kilit body {
   KisiselKart.prototype.guncelle = function () {
     var m = this.model;
     var t = this.tasarim;
-    var bos = bosMu(t);
-    var ozet = this.querySelector('[data-kisisel-ozet]');
-    var toplam = this.querySelector('[data-kisisel-toplam]');
-    ozet.hidden = bos;
-    toplam.hidden = bos;
-    var indirimNotu = this.querySelector('[data-kisisel-indirim-notu]');
-    if (indirimNotu) indirimNotu.hidden = bos;
     var f = null;
-    if (!bos) {
+    if (!bosMu(t)) {
       f = fiyatHesapla(m, this.yer, t);
-      var parcalar = this.yer.parcalar(t);
-      var maddeler = [];
-      if (t.isim) maddeler.push(kacis(t.isim) + ' · ' + f.harfAdet + ' harf');
-      var rakamlar = parcalar.filter(function (p) { return p.tip === 'number'; }).map(function (p) { return p.etiket; });
-      if (rakamlar.length) maddeler.push(kacis(rakamlar.join(', ')) + ' · ' + rakamlar.length + ' rakam');
-      var ikonlar = parcalar.filter(function (p) { return p.tip === 'icon'; }).map(function (p) { return p.etiket; });
-      if (ikonlar.length) maddeler.push(kacis(ikonlar.join(', ')) + ' · ' + ikonlar.length + ' ikon');
-      ozet.innerHTML = maddeler.map(function (x) { return '<li>' + x + '</li>'; }).join('');
-      toplam.textContent = 'Toplam: ' + paraBicimle(f.toplam);
+      this.querySelector('[data-kisisel-icerik]').textContent = tasarimIcerigi(m, this.yer, t);
+      var adet = f.harfAdet + f.rakamAdet + f.ikonAdet;
+      this.querySelector('[data-kisisel-adet]').textContent = adet + ' patch';
+      this.querySelector('[data-kisisel-toplam]').textContent = 'Toplam ' + paraBicimle(f.toplam);
     }
     this.butonlariGuncelle(f);
     this.galeriGuncelle();
@@ -4541,16 +4870,7 @@ html.kp-kilit body {
     var kutuEl = this.querySelector('[data-kisisel-mini]');
     if (!kutuEl || bosMu(this.tasarim)) return;
     var m = this.model;
-    if (!this.miniSahne) {
-      kutuEl.style.aspectRatio = m.gorsel.en + ' / ' + m.gorsel.boy;
-      this.miniSahne = new Sahne(m, this.yer, kutuEl, { etkilesimli: false });
-      var y = yakinGorunum(m);
-      var sahne = this.miniSahne.sahne;
-      sahne.style.position = 'absolute';
-      sahne.style.width = y.olcek * 100 + '%';
-      sahne.style.left = y.sol + '%';
-      sahne.style.top = y.ust + '%';
-    }
+    if (!this.miniSahne) this.miniSahne = miniSahneKur(kutuEl, m, this.yer);
     var d = duzenle(m, this.yer, kopyala(this.tasarim));
     this.miniSahne.ciz(d.parcalar, {}, false);
   };
@@ -4562,10 +4882,20 @@ html.kp-kilit body {
     ].filter(Boolean);
   };
 
+  // Butonlar: kişiselleştirme modunda "Tasarımımla sepete ekle · toplam"; masaüstünde ya da sığmazsa "Sepete ekle · toplam"
   KisiselKart.prototype.butonlariGuncelle = function (f) {
-    var m = this.model;
-    var kisisel = this.mod === 'kisisel';
-    var bos = bosMu(this.tasarim);
+    var kisisel = this.mod === 'kisisel' && !bosMu(this.tasarim);
+    if (kisisel && !f) f = fiyatHesapla(this.model, this.yer, this.tasarim);
+    var masaustu = window.matchMedia && window.matchMedia('(min-width: 990px)').matches;
+    function yaz(yazi, buton) {
+      var tutar = paraBicimle(f.toplam);
+      yazi.textContent = (masaustu ? 'Sepete ekle' : 'Tasarımımla sepete ekle') + ' · ' + tutar;
+      if (!masaustu && buton.offsetWidth && (yazi.scrollWidth > buton.clientWidth || buton.scrollWidth > buton.clientWidth + 1)) {
+        yazi.textContent = 'Sepete ekle · ' + tutar;
+      }
+    }
+    var kirmizi = this.querySelector('[data-kisisel-sepete-ekle]');
+    if (kisisel) yaz(kirmizi.querySelector('[data-kisisel-sepete-yazi]'), kirmizi);
     this.gonderButonlari().forEach(function (b) {
       var yazi = b.querySelector('span');
       if (!yazi) return;
@@ -4578,13 +4908,8 @@ html.kp-kilit body {
         b.classList.toggle('btn-outline', !kisisel);
         b.classList.toggle('btn-primary', kisisel);
       }
-      if (!kisisel) {
-        yazi.textContent = b._kpOrijinal;
-      } else if (bos) {
-        yazi.textContent = 'Önce tasarımını yap';
-      } else {
-        yazi.textContent = 'Tasarımımla sepete ekle · ' + paraBicimle(f.toplam);
-      }
+      if (!kisisel) yazi.textContent = b._kpOrijinal;
+      else yaz(yazi, b);
     });
   };
 
@@ -4593,7 +4918,7 @@ html.kp-kilit body {
       document.querySelector('.main-carousel .splide__slide');
     if (!ilk) return;
     var katman = ilk.querySelector('.kp-galeri');
-    var goster = this.mod === 'kisisel' && !bosMu(this.tasarim);
+    var goster = !bosMu(this.tasarim);
     if (!goster) {
       if (katman) katman.remove();
       return;
@@ -4693,7 +5018,7 @@ html.kp-kilit body {
       ozellik._adet_birim = String(g.adet);
       kalemler.push({ id: g.varyant.id, quantity: g.adet * adet, properties: ozellik });
     });
-    return { kimlik: kimlik, kalemler: kalemler, fiyat: fiyatHesapla(m, this.yer, t), hatalar: d.hatalar, tasarim: t };
+    return { kimlik: kimlik, kalemler: kalemler, fiyat: fiyatHesapla(m, this.yer, t), hatalar: d.hatalar, tasarim: t, parcalar: d.parcalar };
   };
 
   KisiselKart.prototype.sepeteEkle = function () {
@@ -4759,6 +5084,7 @@ html.kp-kilit body {
         } catch (e) {
           /* yoksay */
         }
+        cizimKitiKaydet(paket.kimlik, m, paket.parcalar);
         self.sepeteEklendi();
         if (cizim && sonuc.veri.sections && sonuc.veri.sections['cart-drawer'] && typeof cizim.renderContents === 'function') {
           cizim.renderContents({ id: m.urun.varyant, sections: sonuc.veri.sections });
@@ -4811,6 +5137,8 @@ html.kp-kilit body {
     paraBicimle: paraBicimle,
     buyukHarf: buyukHarf,
     renkleriAta: renkleriAta,
+    konumParcalari: konumParcalari,
+    tasarimIcerigi: tasarimIcerigi,
     benzerRenk: benzerRenk,
     harfVaryanti: harfVaryanti,
     stokKontrol: stokKontrol,
@@ -4827,6 +5155,8 @@ html.kp-kilit body {
  * - Çanta (baz kalem) silinirse onay sorar ve grubun tamamını siler.
  * - Tek bir patch silinirse uyarır, siler ve çanta kalemindeki tasarım özetini günceller.
  * - Çanta adedi değişirse patch adetlerini aynı oranda değiştirir.
+ * - Çanta satırında model fotoğrafı yerine tasarımın önizlemesi (ürün sayfasında kaydedilen çizim kitinden),
+ *   içerik özeti ve grubun toplam fiyatı; patch satırları "N patch'i göster" ile açılır.
  * Tasarım kalemi olmayan sepetlerde hiçbir şey yapmaz.
  */
 (function () {
@@ -4912,6 +5242,98 @@ html.kp-kilit body {
 
   /* ---------------- Görünüm ---------------- */
 
+  // Ürün sayfasında sepete eklerken kaydedilen çizim kitleri (tasarım kimliğine göre)
+  function cizimKitleri() {
+    try {
+      return JSON.parse(window.localStorage.getItem('kisisel-sepet-cizim') || '{}');
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function kacis(m) {
+    return String(m == null ? '' : m).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // Tasarım önizlemesi: çanta görseli üzerinde patch'ler, takılabilir alana yakın görünüm
+  function kitHtml(kit) {
+    var y = kit.y || { olcek: 1, sol: 0, ust: 0 };
+    var parcalar = (kit.p || [])
+      .map(function (p) {
+        if (!p.u) return '';
+        return '<img class="kp-sepet-mini__parca' + (p.d ? ' kp-sepet-mini__parca--daire' : '') + (p.j ? ' kp-sepet-mini__parca--jpg' : '') + '" src="' + kacis(p.u) + '" alt="" style="left:' + kacis(p.l) + ';top:' + kacis(p.t) + ';width:' + kacis(p.w) + ';height:' + kacis(p.h) + (p.r ? ';transform:' + kacis(p.r) : '') + '">';
+      })
+      .join('');
+    return (
+      '<div class="kp-sepet-mini" style="aspect-ratio:' + kit.o + '" aria-hidden="true">' +
+      '<div class="kp-sepet-mini__sahne" style="aspect-ratio:' + kit.o + ';width:' + y.olcek * 100 + '%;left:' + y.sol + '%;top:' + y.ust + '%">' +
+      '<img class="kp-sepet-mini__urun" src="' + kacis(kit.g) + '" alt="">' + parcalar +
+      '</div></div>'
+    );
+  }
+
+  // Temanın para biçimiyle uyumlu: 4,743.00TL
+  function para(kurus) {
+    var t = (Number(kurus) || 0) / 100;
+    return t.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'TL';
+  }
+
+  var acikGruplar = {};
+
+  // Çanta ve patch satırlarını tasarım grubuna göre düzenler
+  function grupSatirlariniDuzenle(sepet, kap, baz) {
+    var id = baz.getAttribute('data-kp-tasarim');
+    var g = gruplar(sepet)[id];
+    if (!g || !g.baz) return;
+    var patchSatirlari = Array.prototype.slice.call(kap.querySelectorAll(':scope > [data-kp-rol="patch"][data-kp-tasarim="' + id + '"]'));
+    var acik = !!acikGruplar[id];
+    patchSatirlari.forEach(function (p) {
+      p.classList.toggle('kp-sepet-gizli', !acik);
+      // Patch satırında tasarım özeti tekrar etmesin: yalnızca patch adı (varyant), adet ve fiyat
+      Array.prototype.forEach.call(p.querySelectorAll('dl .product-option'), function (o) {
+        var dt = o.querySelector('dt');
+        if (dt && /^(Tasarım|Harf sırası|İsim)\s*:?$/.test(dt.textContent.trim())) o.classList.add('kp-sepet-gizli');
+      });
+    });
+    // Görsel: tasarımın önizlemesi (çizilemezse ürün görseli kalır)
+    var medya = baz.querySelector('.cart-item__media');
+    var kit = cizimKitleri()[id];
+    if (medya && kit && !medya.querySelector('.kp-sepet-mini')) {
+      medya.classList.add('kp-sepet-cizildi');
+      medya.insertAdjacentHTML('beforeend', kitHtml(kit));
+    }
+    // İçerik özeti ve patch'leri göster/gizle
+    var ad = baz.querySelector('.cart-item__name');
+    var ozellik = g.baz.properties || {};
+    var birimAdet = Math.max(1, g.baz.quantity || 1);
+    var patchSayisi = g.patchler.reduce(function (t, p) { return t + Math.round((p.quantity || 0) / birimAdet); }, 0);
+    if (ad && !baz.querySelector('.kp-sepet-icerik')) {
+      var ic = document.createElement('p');
+      ic.className = 'kp-sepet-icerik';
+      ic.textContent = String(ozellik['Tasarım'] || '').split(' + ').join(' · ');
+      ad.insertAdjacentElement('afterend', ic);
+      if (patchSayisi) {
+        var ac = document.createElement('button');
+        ac.type = 'button';
+        ac.className = 'kp-sepet-ac';
+        ac.setAttribute('data-kp-patch-ac', id);
+        ic.insertAdjacentElement('afterend', ac);
+      }
+    }
+    var dugme = baz.querySelector('[data-kp-patch-ac]');
+    if (dugme) {
+      dugme.textContent = acik ? 'Patch\'leri gizle' : patchSayisi + ' patch\'i göster';
+      dugme.setAttribute('aria-expanded', acik ? 'true' : 'false');
+    }
+    // Grubun toplam fiyatı: çanta + patch'lerin indirimli satır fiyatları
+    var toplam = (Number(g.baz.final_line_price) || 0) + g.patchler.reduce(function (t, p) { return t + (Number(p.final_line_price) || 0); }, 0);
+    var fiyat = baz.querySelector('.cart-item__price-wrapper');
+    var yeni = '<span class="price price--end kp-sepet-toplam">' + para(toplam) + '</span>';
+    if (fiyat && fiyat.innerHTML !== yeni) fiyat.innerHTML = yeni;
+  }
+
   function isaretle() {
     if (calisiyor) {
       tekrar = true;
@@ -4957,6 +5379,7 @@ html.kp-kilit body {
               s.classList.remove('kp-sepet-son');
             });
             onceki.classList.add('kp-sepet-son');
+            grupSatirlariniDuzenle(sepet, kap, baz);
             if (!baz.querySelector('.kp-sepet-rozet')) {
               var ad = baz.querySelector('.cart-item__name');
               if (ad) {
@@ -4982,6 +5405,11 @@ html.kp-kilit body {
   /* ---------------- Sepet güncelleme ---------------- */
 
   function yenidenCiz() {
+    try {
+      document.dispatchEvent(new CustomEvent('kisisel:sepet-degisti'));
+    } catch (e) {
+      /* eski tarayıcı */
+    }
     if (/\/cart\/?$/.test(window.location.pathname)) {
       window.location.reload();
       return;
@@ -5101,6 +5529,19 @@ html.kp-kilit body {
         yenidenCiz();
       });
   }
+
+  // "N patch'i göster" / "Patch'leri gizle"
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-kp-patch-ac]');
+    if (!b) return;
+    e.preventDefault();
+    var id = b.getAttribute('data-kp-patch-ac');
+    acikGruplar[id] = !acikGruplar[id];
+    if (sonSepet) {
+      var baz = b.closest('[data-kp-rol="baz"]');
+      if (baz) grupSatirlariniDuzenle(sonSepet, baz.parentNode, baz);
+    }
+  });
 
   // Sil butonu (tema dinleyicisinden önce yakalanır)
   document.addEventListener(

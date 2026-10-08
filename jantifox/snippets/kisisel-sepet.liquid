@@ -11,5 +11,20 @@
   tr.cart-item.kp-sepet-patch > td:first-child { box-shadow: inset 2px 0 0 #d9d9d9; }
   .kp-sepet-rozet { display: inline-block; margin-bottom: .4rem; padding: .2rem .8rem; border-radius: 999px; background: #111; color: #fff; font-size: 1.1rem; font-weight: 600; letter-spacing: .02em; }
   html.kp-sepet-mesgul .cart-item[data-kp-tasarim] { opacity: .5; pointer-events: none; }
+  .cart-item.kp-sepet-gizli, .cart-item .kp-sepet-gizli { display: none !important; }
+  .cart-item.kp-sepet-baz dl { display: none !important; }
+  .cart-item.kp-sepet-baz .cart-item__details > .cart-item__discounted-prices,
+  .cart-item.kp-sepet-baz .cart-item__details > .product-option.mt-1,
+  .cart-item.kp-sepet-baz .cart-item__details > .discounts { display: none !important; }
+  .kp-sepet-icerik { margin: .2rem 0 0; font-size: 1.3rem; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+  .kp-sepet-ac { margin-top: .4rem; padding: .3rem 1rem; border: 1px solid #d9d9d9; border-radius: 999px; background: #fff; color: #111; font: inherit; font-size: 1.2rem; font-weight: 600; cursor: pointer; }
+  .cart-item__media.kp-sepet-cizildi { position: relative; }
+  .cart-item__media.kp-sepet-cizildi > img, .cart-item__media.kp-sepet-cizildi > picture, .cart-item__media.kp-sepet-cizildi > .media { display: none !important; }
+  .kp-sepet-mini { position: relative; width: 100%; max-width: 90px; overflow: hidden; border-radius: 6px; background: #fff; }
+  .kp-sepet-mini__sahne { position: absolute; }
+  .kp-sepet-mini__urun { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .kp-sepet-mini__parca { position: absolute; object-fit: contain; }
+  .kp-sepet-mini__parca--daire { border-radius: 50%; }
+  .kp-sepet-mini__parca--jpg { background: #fff; }
 </style>
 <script src="{{ 'kisisel-sepet.js' | asset_url }}" defer="defer"></script>
