@@ -33,6 +33,7 @@ Bu proje kapsamında mağazada yapılan her yazma işlemi burada listelenir. Mev
 | 2026-10-08 | `metafieldsSet` ×234 | 39 Piramit varyantı: `onizleme_png`, `png_genislik_cm`, `png_yukseklik_cm` (6,0), `karakter`, `renk`, `renk_kodu` | Ölçü: boy 6 cm, en = 6 × görsel oranı. Varyant adları değiştirilmedi (Mavi O gri görünse de adı "Mavi" kalır, kullanıcı müşteriye soruyor). Ad/renk uyuşmazlıkları: `veri/png/piramit/renk-uyumsuzluk.md` |
 | 2026-10-08 | `metaobjectUpdate` | Katalog `ana` (306704613662): `harf_setleri` | Önce: [Cool]. Sonra: [Cool, Piramit (Product/9722983907614)] |
 | 2026-10-08 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js`, `assets/kisisel-editor.css`, `assets/kisisel-sepet.js`, `snippets/kisisel-veri-patch.liquid` | Commit 932df87, MD5 doğrulandı. Çok renkli harf seti: otomatik renk, renk satırı, önizleme balonu, karıştır, renk bazında stok, sepette renk varyantı ve renkli özet. Önizleme linkinde iPhone emülasyonuyla test edildi (`test/tarayici/canli-piramit.mjs`), test sepeti boşaltıldı |
+| 2026-10-08 | `themeFilesUpsert` (yalnızca kopya tema) | `assets/kisisel-editor.js` | Commit 35d2ffd, MD5 doğrulandı. Otomatik renk ve "Renkleri karıştır" yan yana harfleri varyant adına değil `renk_kodu`ndaki gerçek renge göre ayırır (Lab ΔE < 10 aynı renk: Haki L ≈ Yeşil V, Mavi O ≈ Antrasit). Önizleme linkinde gerçek stokla denendi (`test/tarayici/canli-renk-komsu.mjs`): kaçınılabilir benzer komşu 0. Mağaza verisine yazılmadı |
 
 ## Metafield tanımları
 

@@ -30,4 +30,4 @@ Antrasit (B, F, P, T, W, Z: koyu gri-mavi), Beyaz (C, K), Kırmızı (M, R, U), 
 ## Pratik etkisi
 
 - Aynı isimde iki "Mavi" harf yan yana gelirse (örn. Mavi A + Mavi D) müşteri editörde iki farklı mavi görür; sepette ikisi de "Mavi" yazar.
-- Editör yan yana harflere farklı **varyant adı** atar; bu yüzden Yeşil V ile Haki L gibi aynı görünen iki renk yan yana gelebilir.
+- Editör yan yana harfleri **gerçek renge** göre ayırır (2026-10-08): Yeşil V ile Haki L, Mavi O ile Antrasit yan yana konmaz (iki harf de tek renkliyse kaçınılamaz, örn. BOB). Buna karşılık buz mavisi A ile gök mavisi D yan yana gelebilir; sepette ikisi de "Mavi" yazar.
