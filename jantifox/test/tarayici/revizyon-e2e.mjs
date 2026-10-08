@@ -46,6 +46,12 @@ assert.match(kart, /Patch başına 330 TL/);
 assert.match(kart, /Sadece çantayı al/);
 assert.equal(await s.locator('kisisel-kart input[type="radio"]').count(), 0, 'eski düğme yok');
 assert.equal(await s.locator('[data-kisisel-ornek] img, [data-kisisel-ornek] span').count(), 3, 'örnek görselde 3 harf');
+// Temanın kırmızı kutusu gizli, kartın içinde yeşil not
+assert.equal(await s.locator('.bag-notice').isVisible(), false, 'kırmızı kutu gizli');
+assert.match(kart, /Ön yüzdeki cırt alana patch'leri sen takarsın, istediğin zaman yerini değiştirirsin\./);
+// "Kişiselleştirmeye başla" markanın kırmızısı, beyaz yazı
+const renk = await s.evaluate(() => { const c = getComputedStyle(document.querySelector('[data-kisisel-davet] [data-kisisel-ac]')); return [c.backgroundColor, c.color]; });
+assert.deepEqual(renk, ['rgb(179, 20, 27)', 'rgb(255, 255, 255)']);
 
 // 2) Editör: ilerleme çizgisi başlığın hemen altında, önizleme sabit
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
@@ -75,11 +81,10 @@ assert.equal(await s.locator('[data-kp-panel="ikon"] .kp-secim__fiyat').count(),
 const sutun = await s.evaluate(() => getComputedStyle(document.querySelector('.kp-izgara--ikon')).gridTemplateColumns.split(' ').length);
 assert.equal(sutun, 4);
 
-// Eklenenler etiketleri ve doluluk
+// Eklenenler etiketleri; doluluk çubuğu yok
 assert.equal(await s.locator('.kp-cip').count(), 1, 'isim etiketi');
 assert.equal(await metin('.kp-cip__ad'), 'ECE');
-const doluluk0 = await metin('[data-kp-doluluk-metin]');
-assert.match(doluluk0, /^Alanın %\d+'(i|ı|u|ü|si|sı) dolu$/);
+assert.equal(await s.locator('[data-kp-doluluk], [data-kp-doluluk-metin]').count(), 0, 'doluluk çubuğu kaldırıldı');
 assert.equal(await s.locator('[data-kp-kalan]').count(), 0, 'eski "ikonluk yer kaldı" cümlesi yok');
 assert.equal(await s.locator('[data-kp-eklenen]').count(), 0, 'eski liste yok');
 
@@ -89,26 +94,34 @@ for (let i = 0; i < 20; i++) {
   if (await s.locator('[data-kp-ikon="2"].kp-secim--sigmaz').count()) break;
   await s.locator('[data-kp-ikon="2"]').click();
 }
-const yuzde = parseInt((await metin('[data-kp-doluluk-metin]')).match(/%(\d+)/)[1], 10);
-console.log('doluluk:', await metin('[data-kp-doluluk-metin]'), '· etiket:', await s.locator('.kp-cip').count());
-assert.ok(yuzde > parseInt(doluluk0.match(/%(\d+)/)[1], 10));
+console.log('etiket:', await s.locator('.kp-cip').count());
 assert.equal(await s.locator('[data-kp-ikon="2"].kp-secim--sigmaz').count(), 1, 'Futbol Topu artık sığmaz');
-assert.equal(await s.locator('[data-kp-ikon="2"] .kp-secim__rozet').isVisible(), true, 'Sığmaz etiketi');
-assert.equal(await s.locator('[data-kp-ikon="2"] .kp-secim__rozet').textContent(), 'Sığmaz');
+assert.equal(await s.locator('[data-kp-ikon="2"] .kp-secim__rozet').isVisible(), true, 'Yer aç etiketi');
+assert.equal(await s.locator('[data-kp-ikon="2"] .kp-secim__rozet').textContent(), 'Yer aç');
+// Sığanlar başta, sığmayanlar sonda (kendi aralarında kategori sırası)
+const ikonSirasi = async () => s.$$eval('[data-kp-ikon-izgara] [data-kp-ikon]', (b) => b.map((x) => [x.getAttribute('data-kp-ikon'), x.classList.contains('kp-secim--sigmaz') || x.disabled]));
+const siraDolu = await ikonSirasi();
+console.log('sıra (dolu):', JSON.stringify(siraDolu));
+const ilkSigmaz = siraDolu.findIndex((x) => x[1]);
+assert.ok(siraDolu.slice(ilkSigmaz).every((x) => x[1]), 'sığmayanlar sonda');
 const adet = await s.locator('.kp-cip').count();
 await s.locator('[data-kp-ikon="2"]').click();
 assert.equal(await s.locator('.kp-cip').count(), adet, 'sığmayan ikon eklenmez');
 assert.equal(await gorunur('[data-kp-bildirim]'), true);
-assert.equal(await metin('[data-kp-bildirim]'), "Futbol Topu için alanda yer kalmadı. Bir patch'i kaldırmayı ya da daha küçük bir ikon seçmeyi deneyebilirsin.");
+assert.equal(await metin('[data-kp-bildirim]'), "Futbol Topu için şu an yer yok. Patch'leri kaydırarak yer açabilir, bir patch'i kaldırabilir ya da daha küçük bir ikon seçebilirsin.");
 await s.screenshot({ path: '/tmp/rev-sigmaz.png' });
 // Uyarı birkaç saniye sonra kaybolur
-await s.waitForTimeout(3800);
+await s.waitForTimeout(5300);
 assert.equal(await gorunur('[data-kp-bildirim]'), false, 'uyarı kendiliğinden kapandı');
 
 // Etiketin × ile kaldırma → Sığmaz kalkar
 await s.locator('.kp-cip').last().locator('.kp-cip__kaldir').click();
 assert.equal(await s.locator('.kp-cip').count(), adet - 1);
-assert.equal(await s.locator('[data-kp-ikon="2"].kp-secim--sigmaz').count(), 0, 'yer açılınca Sığmaz kalkar');
+assert.equal(await s.locator('[data-kp-ikon="2"].kp-secim--sigmaz').count(), 0, 'yer açılınca "Yer aç" kalkar');
+const siraBos = await ikonSirasi();
+console.log('sıra (yer açıldı):', JSON.stringify(siraBos));
+const ilkSoluk = siraBos.findIndex((x) => x[1]);
+assert.ok(ilkSoluk === -1 || siraBos.findIndex((x) => x[0] === '2') < ilkSoluk, 'Futbol Topu sığanlar arasına döndü');
 
 // Etikete dokun → patch seçilir, araç çubuğu önizlemenin üzerinde açılır, sayfa kaymaz
 const cip = s.locator('.kp-cip').nth(1);

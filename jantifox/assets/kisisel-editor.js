@@ -1440,10 +1440,6 @@
       '</div>' +
       '</div>' +
       '<div class="kp-etiketler" data-kp-etiketler aria-label="Eklenenler" hidden></div>' +
-      '<div class="kp-doluluk" data-kp-doluluk>' +
-      '<div class="kp-doluluk__cubuk" aria-hidden="true"><span data-kp-doluluk-dolgu></span></div>' +
-      '<p class="kp-doluluk__metin" data-kp-doluluk-metin aria-live="polite"></p>' +
-      '</div>' +
       (this.m.kalibre ? '' : '<p class="kp-onizleme__not">Önizleme ölçüleri henüz kalibre edilmedi.</p>') +
       '</div>' +
       '<div class="kp-kaydir">' +
@@ -1853,14 +1849,14 @@
       b.setAttribute('aria-pressed', b.getAttribute('data-kp-kategori') === kat.ad ? 'true' : 'false');
     });
     this.el.querySelector('[data-kp-ikon-izgara]').innerHTML = kat.ikonlar
-      .map(function (i) {
+      .map(function (i, sira) {
         var v = i.varyant;
         var tukendi = !v.satilabilir || v.stok === 0;
         return (
-          '<button type="button" class="kp-secim kp-secim--ikon" data-kp-ikon="' + i.id + '" title="' + kacis(i.ad) + '"' + (tukendi ? ' disabled' : '') + '>' +
+          '<button type="button" class="kp-secim kp-secim--ikon" data-kp-ikon="' + i.id + '" data-sira="' + sira + '" title="' + kacis(i.ad) + '"' + (tukendi ? ' disabled' : '') + '>' +
           (v.gorsel ? '<img src="' + kacis(v.gorsel) + '" alt="" loading="lazy">' : '') +
           '<span class="kp-secim__ad">' + kacis(i.ad) + '</span>' +
-          (tukendi ? '<span class="kp-secim__rozet kp-secim__rozet--tukendi">Tükendi</span>' : '<span class="kp-secim__rozet" aria-hidden="true">Sığmaz</span>') +
+          (tukendi ? '<span class="kp-secim__rozet kp-secim__rozet--tukendi">Tükendi</span>' : '<span class="kp-secim__rozet" aria-hidden="true">Yer aç</span>') +
           '</button>'
         );
       })
@@ -1870,7 +1866,7 @@
 
   /* ---------------- Ekleme / kaldırma ---------------- */
 
-  Editor.prototype.parcaEkle = function (tip, urunId, varyant, tanim) {
+  Editor.prototype.parcaEkle = function (tip, urunId, varyant, tanim, yerYok) {
     var ad = tip === 'number' ? varyant.karakter + ' rakamı' : tanim.ad;
     var mevcut = !varyant.satilabilir ? 0 : varyant.stok == null ? Infinity : varyant.stok;
     var kullanilan = this.t.parcalar.filter(function (p) { return String(p.varyantId) === String(varyant.id); }).length;
@@ -1894,8 +1890,9 @@
     var baslangic = kaydir(ornek, c[0], hedefY);
     var tasima = this.yer.enYakin([{ tip: tip, sekil: baslangic }], parcalar.filter(function (p) { return !this.durum.hatalar[p.uid]; }, this), 0, 0);
     if (!tasima) {
-      // Soluk ("Sığmaz") ikona dokunulduğunda da aynı açıklama
-      this.bildir(ad + ' için alanda yer kalmadı. Bir patch\'i kaldırmayı' + (tip === 'icon' ? ' ya da daha küçük bir ikon seçmeyi' : '') + ' deneyebilirsin.');
+      this.bildir(yerYok
+        ? ad + ' için şu an yer yok. Patch\'leri kaydırarak yer açabilir, bir patch\'i kaldırabilir ya da daha küçük bir ikon seçebilirsin.'
+        : ad + ' için alanda yer kalmadı. Bir patch\'i kaldırmayı' + (tip === 'icon' ? ' ya da daha küçük bir ikon seçmeyi' : '') + ' deneyebilirsin.', { sure: 5000 });
       return false;
     }
     this.bildirimKapat();
@@ -1915,7 +1912,10 @@
   Editor.prototype.ikonEkle = function (urunId) {
     var ikon = this.m.ikonHarita[urunId];
     if (!ikon) return;
-    if (this.parcaEkle('icon', ikon.id, ikon.varyant, ikon)) {
+    // Soluk ("Yer aç") ikon: yine de denenir (ince aramada yer bulunabilir); olmazsa yer açma açıklaması
+    var kart = this.el.querySelector('[data-kp-ikon="' + urunId + '"]');
+    var yerYok = !!(kart && kart.classList.contains('kp-secim--sigmaz'));
+    if (this.parcaEkle('icon', ikon.id, ikon.varyant, ikon, yerYok)) {
       this.sonIkon = ikon;
       olayYayinla('ikon_eklendi', { urun_id: this.m.urun.id, ikon_id: ikon.id, ikon_adi: ikon.ad });
     }
@@ -1941,7 +1941,6 @@
     this.dugmeleriGuncelle();
     this.yaziDurumGuncelle();
     this.etiketleriCiz();
-    this.dolulukCiz();
     this.ikonDurumGuncelle();
     var ipucu = this.el.querySelector('[data-kp-rakam-ipucu]');
     if (ipucu) ipucu.innerHTML = this.rakamIpucu ? '<p class="kp-uyari kp-uyari--bilgi">Şimdi baş harfinin yanına bir rakam seç.</p>' : '';
@@ -2130,43 +2129,9 @@
     this.etiketleriCiz();
   };
 
-  // Türkçe "%62'si", "%40'ı", "%100'ü": ekin ünlüsü sayının okunuşundaki son heceye göre
-  function yuzdeEki(n) {
-    var birler = { 1: "'i", 2: "'si", 3: "'ü", 4: "'ü", 5: "'i", 6: "'sı", 7: "'si", 8: "'i", 9: "'u" };
-    var onlar = { 1: "'u", 2: "'si", 3: "'u", 4: "'ı", 5: "'si", 6: "'ı", 7: "'i", 8: "'i", 9: "'ı" };
-    if (n === 0) return "'ı";
-    if (n % 10) return birler[n % 10];
-    if (n % 100) return onlar[(n % 100) / 10];
-    return "'ü";
-  }
-
-  function alanYuzolcumu(s) {
-    if (s.t === 'circle') return Math.PI * s.r * s.r;
-    if (s.t === 'ellipse') return Math.PI * s.rx * s.ry;
-    var k = kutu(s);
-    return k.w * k.h;
-  }
-
-  // Doluluk: eklenen patch'lerin toplam yüzölçümünün takılabilir alana oranı
-  function doluluk(m, parcalar) {
-    var alan = m.alanlar.reduce(function (t, a) { return t + alanYuzolcumu(a.sekil); }, 0);
-    if (!alan) return 0;
-    var dolu = parcalar.reduce(function (t, p) {
-      if (p.sekil.t === 'circle') return t + Math.PI * p.sekil.r * p.sekil.r;
-      if (p.en && p.boy) return t + p.en * p.boy;
-      return t + alanYuzolcumu(p.sekil);
-    }, 0);
-    return Math.max(0, Math.min(100, Math.round((dolu / alan) * 100)));
-  }
-
-  Editor.prototype.dolulukCiz = function () {
-    var yuzde = doluluk(this.m, this.durum.parcalar);
-    this.el.querySelector('[data-kp-doluluk-dolgu]').style.width = yuzde + '%';
-    this.el.querySelector('[data-kp-doluluk-metin]').textContent = 'Alanın %' + yuzde + yuzdeEki(yuzde) + ' dolu';
-  };
-
-  // İkon ızgarası: o an alana sığmayacak ikonlar soluk ve "Sığmaz" etiketli.
-  // Aynı ölçüdeki ikonlar bir kez denenir; sonuç, tasarım değişene kadar saklanır.
+  // İkon ızgarası: o an alana sığmayacak ikonlar soluk ve "Yer aç" etiketli, listenin sonunda.
+  // Sığanlar başta; kendi aralarında kategorideki sıra korunur. Aynı ölçüdeki ikonlar bir kez denenir;
+  // sonuç tasarım (patch konumları) değişene kadar saklanır, patch kaydırılınca hemen yenilenir.
   Editor.prototype.ikonDurumGuncelle = function () {
     var izgara = this.el && this.el.querySelector('[data-kp-ikon-izgara]');
     if (!izgara || !this.durum || this.adim !== 'ikon') return;
@@ -2176,15 +2141,28 @@
     if (this.sigmaOnbellek && this.sigmaOnbellek.anahtar !== anahtar) this.sigmaOnbellek = null;
     if (!this.sigmaOnbellek) this.sigmaOnbellek = { anahtar: anahtar, olcu: {} };
     var onbellek = this.sigmaOnbellek.olcu;
-    izgara.querySelectorAll('[data-kp-ikon]').forEach(function (b) {
+    var kartlar = Array.prototype.slice.call(izgara.querySelectorAll('[data-kp-ikon]'));
+    kartlar.forEach(function (b) {
       var ikon = self.m.ikonHarita[b.getAttribute('data-kp-ikon')];
-      if (!ikon || b.disabled) return;
-      var ornek = parcaSekli(ikon, ikon.varyant, 0, 0);
-      var o = ornek.t + ':' + ornek.r + ':' + JSON.stringify(kutu(ornek));
-      if (!(o in onbellek)) onbellek[o] = !!self.yer.ilkUygun(ornek, 'icon', dolu);
-      b.classList.toggle('kp-secim--sigmaz', !onbellek[o]);
-      b.setAttribute('aria-label', ikon.ad + (onbellek[o] ? '' : ', şu an alana sığmıyor'));
+      if (!ikon) return;
+      var sigar = false;
+      if (!b.disabled) {
+        var ornek = parcaSekli(ikon, ikon.varyant, 0, 0);
+        var o = ornek.t + ':' + ornek.r + ':' + JSON.stringify(kutu(ornek));
+        if (!(o in onbellek)) onbellek[o] = !!self.yer.ilkUygun(ornek, 'icon', dolu);
+        sigar = onbellek[o];
+        b.classList.toggle('kp-secim--sigmaz', !sigar);
+        b.setAttribute('aria-label', ikon.ad + (sigar ? '' : ', şu an yer yok'));
+      }
+      b._kpSigar = sigar;
     });
+    // Sıra: sığanlar (kategori sırasıyla), sonra sığmayanlar ve tükenenler (kategori sırasıyla)
+    var sirali = kartlar
+      .map(function (b) { return { b: b, s: Number(b.getAttribute('data-sira')) }; })
+      .sort(function (x, y) { return (y.b._kpSigar - x.b._kpSigar) || (x.s - y.s); })
+      .map(function (x) { return x.b; });
+    var degisti = sirali.some(function (b, i) { return b !== kartlar[i]; });
+    if (degisti) sirali.forEach(function (b) { izgara.appendChild(b); });
   };
 
   /* ---------------- Uyarı kutusu ---------------- */
@@ -2733,6 +2711,9 @@
     document.addEventListener('submit', this.gonderYakala, true);
 
     this.hidden = false;
+    // Kart çalışıyorsa temanın kırmızı "Değiştirilebilir patchler…" kutusu gizlenir (yerine kartın yeşil notu);
+    // JS yüklenemezse kart gizli kalır, temanın kutusu görünmeye devam eder
+    document.body.classList.add('kisisel-aktif');
     this.modDegistir(this.mod);
   };
 

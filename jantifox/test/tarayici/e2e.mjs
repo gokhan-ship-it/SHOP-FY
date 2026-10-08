@@ -159,7 +159,6 @@ await sayfa.locator('[data-kp-panel="ikon"]').waitFor({ state: 'visible' });
 await sayfa.locator('[data-kp-kategori="Spor"]').click();
 await sayfa.locator('[data-kp-ikon="2"]').click();
 await sayfa.locator('.kp-cip__ad', { hasText: 'Futbol Topu' }).waitFor();
-assert.match(await sayfa.locator('[data-kp-doluluk-metin]').textContent(), /^Alanın %\d+'(i|ı|u|ü|si|sı) dolu$/);
 
 // Dokunarak sürükle: ikonu daire dışına sürükle → geçerli konuma geri dönmeli
 const ikon = sayfa.locator('.kp-parca--icon').first();

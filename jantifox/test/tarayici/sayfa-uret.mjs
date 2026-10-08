@@ -56,6 +56,7 @@ writeFileSync(new URL('sayfa.html', import.meta.url), `<!doctype html>
     ${kartHtml}
     <script type="application/json" id="KisiselVeri-main">${JSON.stringify(v)}</script>
     <input type="number" name="quantity" form="product-form-main" value="1" id="Quantity-main">
+    <div class="bag-notice">Değiştirilebilir patchler ayrı olarak satılmaktadır.</div>
     <product-form><form id="product-form-main" action="/cart/add" method="post" data-type="add-to-cart-form">
       <input type="hidden" name="id" value="51795696943390">
       <button id="ProductSubmitButton-main" type="submit" name="add" class="btn btn-outline button--full-width"><span>Sepete ekle</span><div class="loading__spinner hidden">…</div></button>

@@ -34,7 +34,7 @@
           <p class="kisisel-kart__aciklama">İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.</p>
         </div>
       </div>
-      <button type="button" class="btn btn-primary button--full-width kisisel-kart__buton" data-kisisel-ac>
+      <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-ac>
         Kişiselleştirmeye başla
       </button>
       <div class="kisisel-kart__alt">
@@ -54,6 +54,11 @@
         <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
       </div>
     </div>
+
+    <p class="kisisel-kart__cirt">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <span>Ön yüzdeki cırt alana patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.</span>
+    </p>
   </kisisel-kart>
 
   <script src="{{ 'kisisel-editor.js' | asset_url }}" defer="defer"></script>
