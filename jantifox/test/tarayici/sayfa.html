@@ -962,18 +962,30 @@ html.kp-kilit body {
 .kp-onizleme__dugme[hidden] {
   display: none;
 }
+/* Ayır / Birleştir: yazı alanının içinde, sayacın solunda; birleşikken açık, ayrıyken koyu zemin */
 .kp-harf-mod {
-  min-height: var(--kp-dokunma);
-  padding: 0.4rem 1.2rem;
-  border: 1px solid var(--kp-murekkep);
+  position: absolute;
+  top: 50%;
+  right: 5.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0 1rem;
+  border: 1px solid var(--kp-cizgi);
   border-radius: 999px;
-  background: #fff;
+  background: var(--kp-yumusak);
   color: var(--kp-murekkep);
-  font-size: 1.4rem;
+  font: inherit;
+  font-size: 1.25rem;
   font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  transform: translateY(-50%);
   cursor: pointer;
 }
 .kp-harf-mod[aria-pressed='true'] {
+  border-color: var(--kp-murekkep);
   background: var(--kp-murekkep);
   color: #fff;
 }
@@ -2911,6 +2923,66 @@ html.kp-kilit body {
 }
 .kp-kenar-kart--cevap .kp-baglanti {
   flex: none;
+}
+
+/* ---------- Aksesuar kartları: yatay, tek sütun ---------- */
+.kp-izgara--aksesuar {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+}
+.kp-secim.kp-secim--aksesuar {
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+}
+.kp-secim--aksesuar img {
+  flex: none;
+  width: 96px;
+  max-width: 96px;
+  height: 64px;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+.kp-aks-kart__bilgi {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.kp-aks-kart__ust {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  white-space: nowrap;
+}
+.kp-aks-kart__adlar {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kp-aks-kart__ust .kp-aks-kart__fiyat {
+  flex: none;
+}
+.kp-aks-kart__bilgi .kp-aks-kart__not {
+  font-size: 1.15rem;
+}
+.kp-aks-kart__ust .kp-secim__ad {
+  text-align: left;
+}
+.kp-aks-kart__bilgi .kp-aks-kart__not {
+  margin-top: 0;
+  text-align: left;
+}
+.kp-aks-kart__bilgi .kp-aks-kart__dugmeler {
+  margin-top: 0.4rem;
+}
+.kp-aks-kart__bilgi .kp-aks-kart__dugme {
+  min-height: 36px;
 }
 </style>
 <script>
@@ -5123,9 +5195,16 @@ html.kp-kilit body {
         return self.dugmeleriGuncelle();
       }
       if (hedef.hasAttribute('data-kp-harf-mod')) {
+        var ayiriyor = !self.t.harfAyri;
         if (self.t.harfAyri) harfleriBirlestir(self.t);
         else harfleriAyir(self.yer, self.t);
-        return self.yenile();
+        self.yenile();
+        // İlk kez ayırınca bir kez kısa bilgi
+        if (ayiriyor && !depoOku('kp-harf-ayir-bilgi')) {
+          depoYaz('kp-harf-ayir-bilgi', 1);
+          self.bildir('Harfler ayrıldı, her birini tek tek taşıyabilirsin.', { sure: 3500 });
+        }
+        return;
       }
       if (hedef.hasAttribute('data-kp-adim')) return self.adimaGit(hedef.getAttribute('data-kp-adim'), false, true);
       if (hedef.hasAttribute('data-kp-ileri')) return self.ileri();
@@ -5209,7 +5288,7 @@ html.kp-kilit body {
     // Klavye açıkken alttaki butonlara ya da adım çizgisine ilk dokunuş klavyeyi kapatıp kaybolmasın:
     // bu butonlar odağı almaz (tıklama normal çalışır)
     el.addEventListener('mousedown', function (e) {
-      if (e.target.closest('.kp-alt button, .kp-adimlar button, .kp-arac button')) e.preventDefault();
+      if (e.target.closest('.kp-alt button, .kp-adimlar button, .kp-arac button, .kp-harf-mod')) e.preventDefault();
     });
     el.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
@@ -5577,18 +5656,15 @@ html.kp-kilit body {
   Editor.prototype.panelYaziKur = function () {
     var panel = this.el.querySelector('[data-kp-panel="yazi"]');
     panel.innerHTML =
-      '<div class="kp-panel__ust"><h3 id="kp-p-yazi" class="kp-panel__baslik" tabindex="-1">Yazı ve rakam</h3>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Bu adımı geç <span aria-hidden="true">→</span></button>' + '</div>' +
+      '<div class="kp-panel__ust"><h3 id="kp-p-yazi" class="kp-panel__baslik" tabindex="-1">Yazı ve rakam</h3>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Yazı istemiyorum <span aria-hidden="true">→</span></button>' + '</div>' +
       '<div class="kp-alan-girdi">' +
       '<label for="kp-isim" class="kp-gizli">Yazı ve rakam</label>' +
       // Karakter sayacı yazı alanının içinde, sağda
       '<div class="kp-girdi-kap">' +
       '<input id="kp-isim" class="kp-girdi" type="text" data-kp-isim autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" maxlength="24" enterkeyhint="done" placeholder="ör. ECE7" aria-describedby="kp-yazi-ipucu kp-kapasite kp-isim-uyari">' +
+      // Yazı alanının sağında, sayacın solunda: Ayır / Birleştir (2+ karakterde)
+      '<button type="button" class="kp-harf-mod" data-kp-harf-mod aria-pressed="false" hidden></button>' +
       '<span id="kp-kapasite" class="kp-kapasite" data-kp-kapasite></span>' +
-      '</div>' +
-      // Hemen altında: Harfleri ayır / birleştir ve kısa açıklama
-      '<div class="kp-isim-alt" data-kp-harf-mod-satir hidden>' +
-      '<button type="button" class="kp-harf-mod" data-kp-harf-mod aria-pressed="false">Harfleri ayır</button>' +
-      '<span class="kp-harf-mod__not" data-kp-harf-mod-not>Ayırınca her harfi tek tek taşırsın</span>' +
       '</div>' +
       '<div class="kp-stil-secim" data-kp-stil-secim role="group" aria-label="Harflerin stili" hidden></div>' +
       '<p id="kp-yazi-ipucu" class="kp-yazi-ipucu">Harflere dokunarak her birinin stilini ayrı seçebilirsin.</p>' +
@@ -5631,7 +5707,7 @@ html.kp-kilit body {
       : '';
     panel.innerHTML =
       '<div class="kp-panel__ust"><h3 id="kp-p-ikon" class="kp-panel__baslik" tabindex="-1">İkon ekle</h3>' +
-      '<span class="kp-panel__sag"><span class="kp-panel__fiyat" data-kp-ikon-fiyat>' + kacis(this.ikonFiyatYazisi()) + '</span>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Geç <span aria-hidden="true">→</span></button>' + '</span></div>' +
+      '<span class="kp-panel__sag"><span class="kp-panel__fiyat" data-kp-ikon-fiyat>' + kacis(this.ikonFiyatYazisi()) + '</span>' + '<button type="button" class="kp-gec" data-kp-gec hidden>İkon istemiyorum <span aria-hidden="true">→</span></button>' + '</span></div>' +
       yol +
       '<div class="kp-kategoriler" data-kp-kategoriler role="group" aria-label="İkon kategorileri">' + kategoriler + '</div>' +
       '<p class="kp-panel__aciklama" data-kp-set-aciklama hidden>Birlikte uyumlu 3\'lü ve 4\'lü setler. Seti ekleyince patch\'leri tek tek de taşıyıp döndürebilirsin.</p>' +
@@ -5698,11 +5774,13 @@ html.kp-kilit body {
       .map(function (a) {
         var ad = kacis(a.model + (a.renk ? ' ' + a.renk : ''));
         return (
+          // Yatay kart: solda görsel, sağda ad ve renk, fiyat, not ve butonlar
           '<div class="kp-secim kp-secim--aksesuar">' +
           '<img src="' + kacis(a.gorsel.kucuk) + '" alt="" loading="lazy">' +
-          '<span class="kp-secim__ad">' + kacis(a.model) + '</span>' +
-          (a.renk ? '<span class="kp-aks-kart__renk">' + kacis(a.renk) + '</span>' : '') +
-          '<span class="kp-aks-kart__fiyat">' + paraBicimle(a.fiyat) + '</span>' +
+          '<span class="kp-aks-kart__bilgi">' +
+          '<span class="kp-aks-kart__ust"><span class="kp-aks-kart__adlar"><span class="kp-secim__ad">' + kacis(a.model) + '</span>' +
+          (a.renk ? ' <span class="kp-aks-kart__renk">' + kacis(a.renk) + '</span>' : '') + '</span>' +
+          ' <span class="kp-aks-kart__fiyat">' + paraBicimle(a.fiyat) + '</span></span>' +
           (a.tasarlanabilir
             ? '<span class="kp-aks-kart__not kp-aks-kart__not--takilir">Üzerine patch takılabilir</span>' +
               '<span class="kp-aks-kart__dugmeler">' +
@@ -5711,13 +5789,13 @@ html.kp-kilit body {
               '</span>'
             : '<span class="kp-aks-kart__not">Üzerine patch takılmaz</span>' +
               '<span class="kp-aks-kart__dugmeler"><button type="button" class="kp-aks-kart__dugme kp-aks-kart__dugme--ana" data-kp-aksesuar="' + a.id + '" aria-label="' + ad + ', ekle">Ekle</button></span>') +
+          '</span>' +
           '</div>'
         );
       })
       .join('');
     panel.innerHTML =
-      '<div class="kp-panel__ust"><h3 id="kp-p-aksesuar" class="kp-panel__baslik" tabindex="-1">Aksesuar</h3>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Bu adımı geç <span aria-hidden="true">→</span></button>' + '</div>' +
-      '<p class="kp-panel__aciklama">Çantanın Velcro yüzeyine takılabilen aksesuarlar. İstersen önce onu da patch\'lerle tasarlarsın.</p>' +
+      '<div class="kp-panel__ust"><h3 id="kp-p-aksesuar" class="kp-panel__baslik" tabindex="-1">Aksesuar</h3>' + '<button type="button" class="kp-gec" data-kp-gec hidden>Aksesuar istemiyorum <span aria-hidden="true">→</span></button>' + '</div>' +
       '<div class="kp-izgara kp-izgara--aksesuar">' + kartlar + '</div>';
   };
 
@@ -5903,7 +5981,7 @@ html.kp-kilit body {
 
   /* ---------------- Ekleme / kaldırma ---------------- */
 
-  // "Bu adımı geç →": o adımda hiçbir şey eklenmemişse görünür
+  // "Yazı / İkon / Aksesuar istemiyorum →": o adımda hiçbir şey eklenmemişse görünür, sonraki adıma geçer
   Editor.prototype.adimGec = function () {
     var s0 = this.adimlar.map(function (a) { return a.id; }).indexOf(this.adim);
     if (s0 < this.adimlar.length - 1) this.adimaGit(this.adimlar[s0 + 1].id, false, true);
@@ -6648,14 +6726,22 @@ html.kp-kilit body {
   Editor.prototype.dugmeleriGuncelle = function () {
     var ayri = !!this.t.harfAyri;
     var harfSayisi = Array.from(this.t.isim || '').length;
-    var satir = this.el.querySelector('[data-kp-harf-mod-satir]');
-    if (satir) satir.hidden = harfSayisi < 2;
-    this.el.querySelectorAll('[data-kp-harf-mod]').forEach(function (b) {
-      b.textContent = ayri ? 'Harfleri birleştir' : 'Harfleri ayır';
+    var b = this.el.querySelector('[data-kp-harf-mod]');
+    var girdi = this.el.querySelector('[data-kp-isim]');
+    if (b && girdi) {
+      b.hidden = harfSayisi < 2;
+      // Ayır: dışa oklar; Birleştir: içe oklar
+      var html = ayri
+        ? '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M3 12h6M6 9l3 3-3 3M21 12h-6M18 9l-3 3 3 3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Birleştir</span>'
+        : '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M10 12H3M6 9l-3 3 3 3M14 12h7M18 9l3 3-3 3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Ayır</span>';
+      if (b.innerHTML !== html) b.innerHTML = html;
       b.setAttribute('aria-pressed', ayri ? 'true' : 'false');
-    });
-    var not = this.el.querySelector('[data-kp-harf-mod-not]');
-    if (not) not.textContent = ayri ? 'Birleştirince yazı tek parça taşınır' : 'Ayırınca her harfi tek tek taşırsın';
+      b.setAttribute('aria-label', ayri ? 'Harfleri birleştir' : 'Harfleri ayır');
+      // Yazı butonun altına girmesin: sağ iç boşluk butonun sol kenarına göre
+      var gr = girdi.getBoundingClientRect();
+      var sol = b.hidden ? this.el.querySelector('[data-kp-kapasite]').getBoundingClientRect().left : b.getBoundingClientRect().left;
+      if (gr.width) girdi.style.paddingRight = Math.max(48, Math.round(gr.right - sol + 8)) + 'px';
+    }
     var gorunum = this.el.querySelector('[data-kp-gorunum]');
     gorunum.hidden = !this.sahne.yakinlasabilir;
     gorunum.textContent = this.sahne.yakin ? 'Tüm çantayı gör' : 'Alana yakınlaş';

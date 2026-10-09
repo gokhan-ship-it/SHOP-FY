@@ -122,7 +122,8 @@ assert.ok(sonra.every((k, i) => Math.abs(k.y - (once[i].y - 20)) < 4), 'blok bir
 assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0);
 
 await sayfa.locator('[data-kp-harf-mod]').tap();
-assert.equal(await sayfa.locator('[data-kp-harf-mod]').textContent(), 'Harfleri birleştir');
+assert.equal((await sayfa.locator('[data-kp-harf-mod]').textContent()).trim(), 'Birleştir');
+assert.equal(await sayfa.locator('[data-kp-harf-mod]').getAttribute('aria-label'), 'Harfleri birleştir');
 // Ayrı modda yalnızca sürüklenen harf hareket eder
 once = await kutular();
 await surukle('[data-uid="harf-2"]', 0, 70);

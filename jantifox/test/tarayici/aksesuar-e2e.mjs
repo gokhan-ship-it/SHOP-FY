@@ -43,7 +43,19 @@ await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 // 1) Akış: Yazı → İkon → Aksesuar → Özet
 assert.equal(await metin(ana + ' .kp-adimlar'), 'Yazı İkon Aksesuar Özet');
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
-assert.match(await metin(ana + ' [data-kp-panel="aksesuar"] .kp-panel__aciklama'), /^Çantanın Velcro yüzeyine takılabilen aksesuarlar\. İstersen önce onu da patch'lerle tasarlarsın\.$/);
+assert.equal(await metin(ana + ' [data-kp-panel="aksesuar"] [data-kp-gec]'), 'Aksesuar istemiyorum →');
+// Kartlar yatay, tek sütun: solda ~96 px görsel, sağda bilgiler ve butonlar; en az iki kart butonlarıyla panele sığar
+const kartYer = await s.evaluate((q) => {
+  const kaydir = document.querySelector(q + ' .kp-kaydir').getBoundingClientRect();
+  return [...document.querySelectorAll(q + ' .kp-secim--aksesuar')].map((k) => {
+    const r = k.getBoundingClientRect();
+    const img = k.querySelector('img').getBoundingClientRect();
+    const d = k.querySelector('.kp-aks-kart__dugmeler').getBoundingClientRect();
+    return { x: r.left, y: r.top, w: r.width, img: img.width, imgSol: img.right <= d.left, sigar: d.bottom <= kaydir.bottom };
+  });
+}, ana);
+assert.ok(kartYer.every((k) => k.x === kartYer[0].x && Math.abs(k.img - 96) <= 2 && k.imgSol), 'yatay, tek sütun: ' + JSON.stringify(kartYer));
+assert.ok(kartYer[0].sigar && kartYer[1].sigar, 'iki kart butonlarıyla ekrana sığar');
 assert.equal(await s.locator('[data-kp-aksesuar]').count(), 3, 'stokta olmayan yok');
 // Üzerine patch takılabilen: "Düz ekle" + kırmızı "Tasarla", yeşil not; takılamayan: tek "Ekle", gri not
 const kart = (id) => '.kp-secim--aksesuar:has([data-kp-aksesuar="' + id + '"])';

@@ -51,17 +51,25 @@ await s.waitForTimeout(300);
 // 1) Yazı Cool ile başlar; karta dokununca stil paneli: Cool / Piramit. Her karakter ayrı stil alabilir.
 await s.locator('#kp-isim').fill('ece');
 assert.deepEqual(await kartlar(), ['Cool', 'Cool', 'Cool']);
-// Düzen: sayaç yazı alanının içinde sağda; hemen altında Harfleri ayır + açıklama; altında stil seçimi
+// Düzen: sayaç ve "Ayır" yazı alanının içinde sağda (buton sayacın solunda); açıklama satırı yok; altında stil seçimi
 const yer = await s.evaluate(() => {
   const r = (q) => document.querySelector(q).getBoundingClientRect();
-  return { girdi: r('#kp-isim'), sayac: r('[data-kp-kapasite]'), ayir: r('[data-kp-harf-mod]'), not: r('[data-kp-harf-mod-not]'), secim: r('[data-kp-stil-secim]') };
+  return { girdi: r('#kp-isim'), sayac: r('[data-kp-kapasite]'), ayir: r('[data-kp-harf-mod]'), secim: r('[data-kp-stil-secim]'), pad: parseFloat(getComputedStyle(document.querySelector('#kp-isim')).paddingRight) };
 });
-assert.ok(yer.sayac.left > yer.girdi.left + yer.girdi.width / 2 && yer.sayac.right <= yer.girdi.right && yer.sayac.top >= yer.girdi.top && yer.sayac.bottom <= yer.girdi.bottom, 'sayaç girdinin içinde, sağda');
+const icinde = (x) => x.top >= yer.girdi.top - 1 && x.bottom <= yer.girdi.bottom + 1 && x.right <= yer.girdi.right;
+assert.ok(icinde(yer.sayac) && yer.sayac.left > yer.girdi.left + yer.girdi.width / 2, 'sayaç girdinin içinde, sağda');
 assert.match(await s.locator('[data-kp-kapasite]').textContent(), /^3 \/ \d+$/);
-assert.ok(yer.ayir.top >= yer.girdi.bottom && yer.ayir.top - yer.girdi.bottom < 16, 'ayır butonu girdinin hemen altında');
-assert.ok(Math.abs(yer.not.top + yer.not.height / 2 - (yer.ayir.top + yer.ayir.height / 2)) < 4 && yer.not.left > yer.ayir.right, 'açıklama yanında');
-assert.equal(await s.locator('[data-kp-harf-mod-not]').textContent(), 'Ayırınca her harfi tek tek taşırsın');
-assert.ok(yer.secim.top >= yer.ayir.bottom, 'stil seçimi altında');
+assert.ok(icinde(yer.ayir) && yer.ayir.right <= yer.sayac.left, 'Ayır girdinin içinde, sayacın solunda');
+assert.ok(yer.ayir.height >= 36, 'dokunma alanı en az 36 px: ' + yer.ayir.height);
+assert.ok(yer.girdi.right - yer.pad <= yer.ayir.left, 'yazı butonun altına girmez (sağ iç boşluk)');
+assert.equal((await s.locator('[data-kp-harf-mod]').innerText()).trim(), 'Ayır');
+assert.equal(await s.evaluate(() => getComputedStyle(document.querySelector('[data-kp-harf-mod]')).backgroundColor) !== 'rgb(17, 17, 17)', true, 'birleşikken açık zemin');
+assert.equal(await s.locator('[data-kp-harf-mod-not], [data-kp-harf-mod-satir]').count(), 0, 'açıklama satırı yok');
+assert.ok(yer.secim.top >= yer.girdi.bottom, 'stil seçimi altında');
+// Boş ya da tek karakterde görünmez
+await s.locator('#kp-isim').fill('e');
+assert.equal(await s.locator('[data-kp-harf-mod]').isVisible(), false, 'tek karakterde yok');
+await s.locator('#kp-isim').fill('ece');
 assert.equal(await s.locator('[data-kp-stil-panel]').isVisible(), false);
 await s.locator('[data-kp-karakter="0"]').click();
 assert.equal(await s.locator('.kp-stil__baslik').textContent(), '1. harf E · Stil');
@@ -137,6 +145,11 @@ await s.locator('[data-kp-dondur="-15"]').click();
 
 // 5) Harfleri ayır: tek harf seçilir; döndürme yalnızca o harfi döndürür
 await s.locator('[data-kp-harf-mod]').click();
+// İlk ayırmada bir kez kısa bilgi; buton "Birleştir" ve koyu zemin
+assert.equal(await s.locator('[data-kp-bildirim]').innerText(), 'Harfler ayrıldı, her birini tek tek taşıyabilirsin.');
+assert.equal((await s.locator('[data-kp-harf-mod]').innerText()).trim(), 'Birleştir');
+assert.equal(await s.evaluate(() => getComputedStyle(document.querySelector('[data-kp-harf-mod]')).backgroundColor), 'rgb(17, 17, 17)', 'ayrıyken koyu');
+assert.equal(await s.evaluate(() => localStorage.getItem('kp-harf-ayir-bilgi')), '1', 'bir kez gösterilir');
 // Son E'yi komşusundan uzaklaştır (aşağı sürükle), sonra seç
 {
   // Dairenin alt-ortasındaki boş alana: döndürülünce de sığacak bir yer

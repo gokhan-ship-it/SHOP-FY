@@ -959,18 +959,30 @@ html.kp-kilit body {
 .kp-onizleme__dugme[hidden] {
   display: none;
 }
+/* Ayır / Birleştir: yazı alanının içinde, sayacın solunda; birleşikken açık, ayrıyken koyu zemin */
 .kp-harf-mod {
-  min-height: var(--kp-dokunma);
-  padding: 0.4rem 1.2rem;
-  border: 1px solid var(--kp-murekkep);
+  position: absolute;
+  top: 50%;
+  right: 5.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0 1rem;
+  border: 1px solid var(--kp-cizgi);
   border-radius: 999px;
-  background: #fff;
+  background: var(--kp-yumusak);
   color: var(--kp-murekkep);
-  font-size: 1.4rem;
+  font: inherit;
+  font-size: 1.25rem;
   font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  transform: translateY(-50%);
   cursor: pointer;
 }
 .kp-harf-mod[aria-pressed='true'] {
+  border-color: var(--kp-murekkep);
   background: var(--kp-murekkep);
   color: #fff;
 }
@@ -2908,4 +2920,64 @@ html.kp-kilit body {
 }
 .kp-kenar-kart--cevap .kp-baglanti {
   flex: none;
+}
+
+/* ---------- Aksesuar kartları: yatay, tek sütun ---------- */
+.kp-izgara--aksesuar {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+}
+.kp-secim.kp-secim--aksesuar {
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+}
+.kp-secim--aksesuar img {
+  flex: none;
+  width: 96px;
+  max-width: 96px;
+  height: 64px;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+.kp-aks-kart__bilgi {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.kp-aks-kart__ust {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  white-space: nowrap;
+}
+.kp-aks-kart__adlar {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kp-aks-kart__ust .kp-aks-kart__fiyat {
+  flex: none;
+}
+.kp-aks-kart__bilgi .kp-aks-kart__not {
+  font-size: 1.15rem;
+}
+.kp-aks-kart__ust .kp-secim__ad {
+  text-align: left;
+}
+.kp-aks-kart__bilgi .kp-aks-kart__not {
+  margin-top: 0;
+  text-align: left;
+}
+.kp-aks-kart__bilgi .kp-aks-kart__dugmeler {
+  margin-top: 0.4rem;
+}
+.kp-aks-kart__bilgi .kp-aks-kart__dugme {
+  min-height: 36px;
 }
