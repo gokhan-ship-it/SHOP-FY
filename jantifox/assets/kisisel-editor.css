@@ -2655,24 +2655,32 @@ html.kp-kilit body {
 .kp-ust--sekmeler .kp-adimlar {
   flex: 1 1 auto;
   min-width: 0;
-  padding: 0;
+  padding: 0 0.4rem;
   background: none;
+  overflow: visible;
 }
 .kp-ust--sekmeler .kp-adimlar ol {
   display: flex;
   gap: 0;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
 }
+/* Temanın liste/buton stilleri halkayı kesmesin */
 .kp-adim-oge {
   position: relative;
   flex: 1 1 0;
   min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
 }
 /* Önceki daireden bu daireye çizgi: bu adım geçildiyse ya da aktifse koyu */
 .kp-adim-oge + .kp-adim-oge::before {
   content: '';
   position: absolute;
   z-index: 0;
-  top: 16px;
+  top: 18px;
   left: calc(-50% + 17px);
   right: calc(50% + 17px);
   height: 2px;
@@ -2691,11 +2699,16 @@ html.kp-kilit body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.1rem;
+  gap: 0;
   width: 100%;
   min-height: 0;
-  padding: 0.2rem 0 0.2rem;
+  margin: 0;
+  /* Üstte halka için boşluk (aktif daire 30 px + 3 px halka) */
+  padding: 4px 0 2px;
+  overflow: visible;
   border: 0;
+  border-radius: 0;
+  box-shadow: none;
   background: transparent;
   color: #9a9a9a;
   font-size: 1.2rem;
@@ -2752,7 +2765,7 @@ html.kp-kilit body {
   background: #b3141b;
   color: #fff;
   font-weight: 700;
-  box-shadow: 0 0 0 4px rgba(179, 20, 27, 0.18);
+  box-shadow: 0 0 0 3px rgba(179, 20, 27, 0.2);
 }
 .kp-ust--sekmeler .kp-adim-oge--aktif .kp-adim {
   color: #b3141b;
@@ -2853,25 +2866,27 @@ html.kp-kilit body {
   display: none;
 }
 .kp-alt .kp-serit__ust {
-  display: flex;
-  flex-direction: row;
-  align-items: baseline;
-  gap: 0;
+  /* Dar ekranda iki satıra iner; en fazla iki satır, taşma yok */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   margin: 0;
   padding: 0.5rem 1.6rem 0;
   overflow: hidden;
   font-size: 1.25rem;
-  white-space: nowrap;
+  line-height: 1.3;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .kp-alt .kp-serit__sol {
-  flex: none;
   font-size: 1.25rem;
+  white-space: nowrap;
 }
 .kp-alt .kp-serit__sag {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin-left: 0.4rem;
+  margin-left: 0;
   font-size: 1.25rem;
+  white-space: normal;
+  text-overflow: clip;
 }
 /* Çanta editöründe solda eski (üstü çizili) ve yeni fiyat yan yana; "Toplam" yalnızca ekran okuyucuya */
 .kp-alt:not(.kp-alt--aks) .kp-alt__fiyat > span {

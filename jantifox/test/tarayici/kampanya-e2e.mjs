@@ -1,5 +1,7 @@
 // Faz 3: kampanyalı fiyatlar, kampanya şeridi ve kazanma bildirimi. Storefront API, mağazadaki kurallar gibi taklit edilir:
 // uygun patch adedi 2/3/4 → 60/190/370 TL (adları Shopify'daki gibi boşluklu), ara toplam ≥ 5.000 TL → Ekstra %10.
+// Gerçek mağazada simülasyonla doğrulandı (2026-10-09): eşik adet indirimi düşülmüş ara toplama bakar (subtotalAmount da
+// düşülmüş tutardır); ikisi birlikte tutmazsa daha çok kazandıran tek başına uygulanır (7 harf: −531 Ekstra, 4'lü yok).
 // Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node kampanya-e2e.mjs  (önce: node sayfa-uret.mjs)
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
@@ -26,15 +28,23 @@ function sepet(satirlar) {
     merchandise: { id: 'gid://shopify/ProductVariant/' + l.v },
     discountAllocations: adet && uygun(l.v) ? [{ title: adet[0], discountedAmount: { amount: tl(Math.round((adet[1] * fiyat(l.v) * l.q) / uygunTutar)) } }] : []
   }));
-  const adetToplam = adet ? nodes.reduce((t, x) => t + (x.discountAllocations[0] ? Math.round(parseFloat(x.discountAllocations[0].discountedAmount.amount) * 100) : 0), 0) : 0;
-  const sepetDuzeyi = ara >= 500000 ? [{ title: 'Ekstra %10 İndirim', discountedAmount: { amount: tl(Math.round((ara - adetToplam) * 0.1)) } }] : [];
+  let adetToplam = adet ? nodes.reduce((t, x) => t + (x.discountAllocations[0] ? Math.round(parseFloat(x.discountAllocations[0].discountedAmount.amount) * 100) : 0), 0) : 0;
+  // Birlikte: adet + (adet sonrası ≥ 5.000 ise %10); tek başına Ekstra: indirimsiz ≥ 5.000 ise; hangisi daha çoksa
+  const birlikte = adetToplam + (ara - adetToplam >= 500000 ? Math.round((ara - adetToplam) * 0.1) : 0);
+  const tekEkstra = ara >= 500000 ? Math.round(ara * 0.1) : 0;
+  if (tekEkstra > birlikte) {
+    adetToplam = 0;
+    nodes.forEach((x) => { x.discountAllocations = []; });
+  }
+  const alt = ara - adetToplam;
+  const sepetDuzeyi = alt >= 500000 ? [{ title: 'Ekstra %10 İndirim', discountedAmount: { amount: tl(Math.round(alt * 0.1)) } }] : [];
   const indirim = adetToplam + (sepetDuzeyi[0] ? Math.round(parseFloat(sepetDuzeyi[0].discountedAmount.amount) * 100) : 0);
-  return { cost: { subtotalAmount: { amount: tl(ara) }, totalAmount: { amount: tl(ara - indirim) } }, discountAllocations: sepetDuzeyi, lines: { nodes } };
+  return { cost: { subtotalAmount: { amount: tl(alt) }, totalAmount: { amount: tl(alt - (indirim - adetToplam)) } }, discountAllocations: sepetDuzeyi, lines: { nodes } };
 }
 
 const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 async function sayfaAc(secenek = {}) {
-  const baglam = await t.newContext({ ...devices['iPhone 13'], reducedMotion: secenek.azHareket ? 'reduce' : 'no-preference' });
+  const baglam = await t.newContext({ ...devices['iPhone 13'], ...(secenek.genislik ? { viewport: { width: secenek.genislik, height: 740 } } : {}), reducedMotion: secenek.azHareket ? 'reduce' : 'no-preference' });
   const s = await baglam.newPage();
   const hatalar = [];
   s.on('pageerror', (e) => hatalar.push(e.message));
@@ -63,8 +73,8 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
 {
   const { s, hatalar, baglam } = await sayfaAc();
   // Kurallar sayfa açılırken öğrenilir (kampanya basamakları ve dahil ürünler); sonra fiyat anında hesaplanır
-  await s.waitForFunction(() => !!localStorage.getItem('kp-kampanya-kurallari'));
-  const kural = await s.evaluate(() => JSON.parse(localStorage.getItem('kp-kampanya-kurallari')));
+  await s.waitForFunction(() => !!localStorage.getItem('kp-kampanya-kurallari-2'));
+  const kural = await s.evaluate(() => JSON.parse(localStorage.getItem('kp-kampanya-kurallari-2')));
   assert.deepEqual(kural.merdiven.map((x) => [x.k, x.tutar]), [[2, 6000], [3, 19000], [4, 37000]]);
   await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
   await s.locator('#kp-isim').fill('ec');
@@ -85,7 +95,7 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   const [serit, alt, cizgi, satir, fiyat, buton] = await s.evaluate((q) => [' [data-kp-serit]', ' .kp-alt', ' [data-kp-serit-cubuk]', ' .kp-serit__ust', ' .kp-alt__fiyat', ' [data-kp-ileri]'].map((x) => document.querySelector(q + x).getBoundingClientRect()).map((r) => ({ y: r.y, h: r.height, b: r.bottom, x: r.x })), ana);
   assert.ok(serit.y >= alt.y - 1 && serit.b <= alt.b, 'şerit alt çubuğun içinde');
   assert.ok(Math.abs(cizgi.y - alt.y) < 2 && cizgi.h === 3, 'çizgi en üstte, 3 px: ' + JSON.stringify(cizgi));
-  assert.ok(satir.h < 24, 'kampanya metni tek satır: ' + satir.h);
+  assert.ok(satir.h <= 38, 'kampanya metni en fazla iki satır: ' + satir.h);
   assert.ok(fiyat.y >= satir.b - 1 && buton.y >= satir.b - 1 && fiyat.x < buton.x, 'altında solda fiyat, sağda buton');
   assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).color, ana + ' [data-kp-serit-sol]'), 'rgb(179, 20, 27)');
   // Şeritte "kaldı", "→" ve Shopify adları yok
@@ -102,10 +112,11 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
 
   // 4 patch: adet basamakları bitti, sıradaki hedef tutar eşiği
   await s.locator('#kp-isim').fill('ece7');
-  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), "680 TL'lik ürün daha ekle, tüm siparişe %10 indirim gelsin.");
-  // Dar ekranda satır kaymaz: ikinci kısım kısalır
-  const tekSatir = await s.evaluate((q) => { const u = document.querySelector(q + ' .kp-serit__ust'); const g = document.querySelector(q + ' [data-kp-serit-sag]'); return [u.getBoundingClientRect().height, getComputedStyle(g).textOverflow, getComputedStyle(u).whiteSpace]; }, ana);
-  assert.ok(tekSatir[0] < 24 && tekSatir[1] === 'ellipsis' && tekSatir[2] === 'nowrap', 'tek satır, kısalır: ' + tekSatir);
+  // Eşik, Shopify'daki gibi adet indirimi düşülmüş tutara göre: 5.000 − (4.320 − 370) = 1.050 TL
+  assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1.050 TL daha ekle, tüm siparişe %10 indirim.');
+  // Metin taşmaz: sığmazsa en fazla iki satıra iner
+  const seritOlc = await s.evaluate((q) => { const u = document.querySelector(q + ' .kp-serit__ust'); return [u.scrollWidth <= u.clientWidth, u.scrollHeight <= u.clientHeight + 1, Math.round(u.getBoundingClientRect().height)]; }, ana);
+  assert.ok(seritOlc[0] && seritOlc[1] && seritOlc[2] <= 38, 'taşma yok, en fazla iki satır: ' + seritOlc);
   assert.equal(await metin(s, ana + ' [data-kp-serit-sol]'), '370 TL indirim kazandın.');
   await sade();
   const dolu = await s.evaluate((q) => parseFloat(document.querySelector(q + ' [data-kp-serit-dolu]').style.width), ana);
@@ -185,5 +196,32 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   assert.equal(await s.locator(ana + ' [data-kp-kazanc]').isVisible(), false, '~2,5 sn sonra kaybolur');
   await baglam.close();
 }
+// ---------- 360 px genişlik: kampanya metni iki satıra iner, taşmaz; adım halkası kesilmez ----------
+{
+  const { s, hatalar, baglam } = await sayfaAc({ genislik: 360 });
+  await s.waitForFunction(() => !!localStorage.getItem('kp-kampanya-kurallari-2'));
+  await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
+  await s.locator('#kp-isim').fill('ece7');
+  await bekle(s, ana + ' [data-kp-serit-sag]', /daha ekle/);
+  const o = await s.evaluate((q) => {
+    const u = document.querySelector(q + ' .kp-serit__ust');
+    const r = u.getBoundingClientRect();
+    const satir = parseFloat(getComputedStyle(u).lineHeight);
+    return { tasmaYok: u.scrollWidth <= u.clientWidth && u.scrollHeight <= u.clientHeight + 1 && r.right <= innerWidth, satir: Math.round(r.height / satir), metin: u.innerText };
+  }, ana);
+  console.log('360 px şerit:', JSON.stringify(o));
+  assert.ok(o.tasmaYok && o.satir >= 1 && o.satir <= 2, '360 px: taşma yok, en fazla iki satır');
+  // Aktif adımın halkası ekran içinde, kenarlara yapışmıyor
+  const h = await s.evaluate((q) => {
+    const d = document.querySelector(q + ' .kp-adim-oge--aktif .kp-adim__daire').getBoundingClientRect();
+    const son = [...document.querySelectorAll(q + ' .kp-adim__daire')].pop().getBoundingClientRect();
+    const k = document.querySelector(q + ' .kp-kapat').getBoundingClientRect();
+    return { ust: d.top - 3, sol: d.left - 3, sonSag: son.right, kapat: k.left, yukseklik: document.querySelector(q + ' .kp-ust').getBoundingClientRect().height };
+  }, ana);
+  assert.ok(h.ust >= 0 && h.sol >= 8 && h.sonSag <= h.kapat - 4 && h.yukseklik <= 64, 'halka kesilmez, kenara yapışmaz: ' + JSON.stringify(h));
+  assert.deepEqual(hatalar, []);
+  await baglam.close();
+}
+
 await t.close();
 console.log('KAMPANYA E2E TAMAM');

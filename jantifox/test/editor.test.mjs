@@ -787,19 +787,35 @@ test('kampanya şeridi: sade iki satır, daha ucuz hedef, tümü; anlaşılır a
   assert.equal(d.sag, '1 patch daha ekle, indirimin 370 TL olsun');
   assert.deepEqual(duz(d.duraklar.map((x) => x.ulasildi)), [true, true, false, false]);
   sade(d);
-  // 4'lü aktif, ara toplam 4.280: sıradaki tek hedef Ekstra %10 → 720 TL'lik ürün
+  // 4'lü aktif, ara toplam (adet indirimi düşülmüş) 4.280: sıradaki tek hedef Ekstra %10 → 720 TL
   d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000 }, sepetIndirim: 37000, altToplam: 428000, uygunAdet: 4, ekler: {} }, merdiven, esikler, 33000);
-  assert.equal(d.sag, "720 TL'lik ürün daha ekle, tüm siparişe %10 indirim gelsin");
+  assert.equal(d.sag, '720 TL daha ekle, tüm siparişe %10 indirim');
+  // 4.980 TL tasarım, kampanyalı 4.610: eşik indirimden sonraki tutara bakar → 390 TL
+  d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000 }, sepetIndirim: 37000, altToplam: 461000, uygunAdet: 6, ekler: {} }, merdiven, esikler, 33000, 33000);
+  assert.equal(d.sag, '390 TL daha ekle, tüm siparişe %10 indirim');
+  // Kalan en ucuz patch'ten az: "1 patch daha ekle"
+  d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000 }, sepetIndirim: 37000, altToplam: 489000, uygunAdet: 7, ekler: {} }, merdiven, esikler, 33000, 33000);
+  assert.equal(d.sag, '1 patch daha ekle, tüm siparişe %10 indirim gelsin');
   sade(d);
   // 2'li aktif, ara toplam 4.900: 1 patch (330 TL) yerine Ekstra'ya 100 TL daha ucuz
   d = k.seritDurumu({ aktif: { '2li patche indirim': 6000 }, sepetIndirim: 6000, altToplam: 490000, uygunAdet: 2,
     ekler: { '+1': { aktif: { "3'lü patche indirim": 19000 }, sepetIndirim: 19000 } } }, merdiven, esikler, 33000);
-  assert.equal(d.sag, "100 TL'lik ürün daha ekle, tüm siparişe %10 indirim gelsin");
+  assert.equal(d.sag, '100 TL daha ekle, tüm siparişe %10 indirim');
   // Hepsi
   d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 63100 }, sepetIndirim: 100100, altToplam: 668000, uygunAdet: 5, ekler: {} }, merdiven, esikler, 33000);
   assert.equal(d.sol, '1.001 TL indirim kazandın 🎉');
   assert.equal(d.sag, 'Bütün kampanyalar sepetinde');
   assert.equal(d.dolu, 1);
+  // Yerel hesap, Shopify simülasyonuyla aynı (çanta 3.000 + n harf × 330): eşik adet indirimi sonrası ara toplama bakar;
+  // ikisi birlikte tutmazsa daha çok kazandıran seçilir
+  const kural = { merdiven, uygun: { 9: true }, yuzde: { 'Ekstra %10 İndirim': 0.1 } };
+  const sepetN = (n) => [{ p: 1, f: 300000, q: 1 }, { p: 9, f: 33000, q: n }];
+  let y = k.yerelIndirimler(kural, sepetN(6), esikler);
+  assert.deepEqual([duz(y.aktif), y.alt], [{ "4'lü patche indirim": 37000 }, 461000]);
+  y = k.yerelIndirimler(kural, sepetN(7), esikler);
+  assert.deepEqual([duz(y.aktif), y.alt], [{ 'Ekstra %10 İndirim': 53100 }, 531000], '7 harf: tek başına Ekstra %10');
+  y = k.yerelIndirimler(kural, sepetN(8), esikler);
+  assert.deepEqual([duz(y.aktif), y.alt], [{ "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 52700 }, 527000]);
   assert.equal(k.kazancMetni('Ekstra %10 İndirim', 66400, esikler), '✨ Ekstra %10 indirim açıldı · Tüm siparişinde −664 TL');
   assert.equal(k.kazancMetni("4'lü patche indirim", 37000, esikler), "🎉 4'lü patch indirimi · −370 TL");
   assert.equal(k.kazancMetni('Çanta Alana 1 Patch Hediye', 33000, esikler), '🎁 1 patch hediye eklendi');

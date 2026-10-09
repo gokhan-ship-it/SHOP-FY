@@ -2027,7 +2027,7 @@
       '<div class="kp-kazanc" data-kp-kazanc role="status" aria-live="polite" hidden></div>' +
       '<div class="kp-serit" data-kp-serit hidden>' +
       '<div class="kp-serit__cubuk" data-kp-serit-cubuk><span class="kp-serit__dolu" data-kp-serit-dolu></span></div>' +
-      '<p class="kp-serit__ust"><span class="kp-serit__sol" data-kp-serit-sol></span><span class="kp-serit__sag" data-kp-serit-sag></span></p>' +
+      '<p class="kp-serit__ust"><span class="kp-serit__sol" data-kp-serit-sol></span> <span class="kp-serit__sag" data-kp-serit-sag></span></p>' +
       '</div>' +
       (this.alt ? '<button type="button" class="btn kp-alt__vazgec" data-kp-vazgec>Vazgeç</button>' : '') +
       '<div class="kp-alt__fiyat"><span>Toplam</span><strong data-kp-toplam></strong>' +
@@ -4331,7 +4331,7 @@
     var kok = this.kok();
     var esikler = kok ? kok.m.ayar.kampanyaEsikleri : [];
     var kural = kurallariOku();
-    var d = k && !k.hata ? seritDurumu(k, kural ? kural.merdiven : [], esikler, kok ? ornekPatchFiyati(kok.m) : null) : null;
+    var d = k && !k.hata ? seritDurumu(k, kural ? kural.merdiven : [], esikler, kok ? ornekPatchFiyati(kok.m) : null, kok ? enUcuzPatchFiyati(kok.m) : null) : null;
     var goster = !!d && this.adim !== 'ozet' && !!(d.sol || d.sag || d.duraklar.length);
     serit.hidden = !goster;
     if (!goster) return;
@@ -5165,7 +5165,8 @@
 
   /* ---------- Öğrenilen kurallar ---------- */
 
-  var KURAL_ANAHTARI = 'kp-kampanya-kurallari';
+  // v2: Ekstra %10 oranı ürün indirimi düşülmüş ara toplama göre (eski kayıtlar yeniden öğrenilir)
+  var KURAL_ANAHTARI = 'kp-kampanya-kurallari-2';
   var kurallar = null; // { zaman, ornek, merdiven: [{ k, ad, tutar }], uygun: { ürünId: bool }, yuzde: { ad: oran } }
   function kurallariOku() {
     if (kurallar) return kurallar;
@@ -5215,16 +5216,27 @@
       ara += (s.f || 0) * s.q;
       if (k.uygun[String(s.p)] === true) n += s.q;
     });
-    var aktif = {};
+    // Shopify (simülasyonla doğrulandı): tutar eşiği adet (ürün) indirimi düşüldükten sonraki ara toplama bakar.
+    // Adet indirimiyle eşik tutmuyorsa ama indirimsiz tutuyorsa ikisi birlikte uygulanmaz; müşteriye daha çok
+    // kazandıran seçilir (ör. 7 patch: 4'lü −370 yerine tek başına Ekstra %10 −531).
     var adet = null;
     k.merdiven.forEach(function (x) { if (n >= x.k) adet = x; });
-    var adetIndirim = adet ? adet.tutar : 0;
-    if (adet) aktif[kampanyaAdi(adet.ad)] = adet.tutar;
-    (esikler || []).forEach(function (e) {
-      var ad = kampanyaAdi(e.baslik);
-      if (ara >= e.tutar) aktif[ad] = Math.round(yuzdeOrani(ad) * (ara - adetIndirim));
-    });
-    return { aktif: aktif, ara: ara, n: n };
+    var secenek = function (adetli) {
+      var aktif = {};
+      var adetIndirim = adetli && adet ? adet.tutar : 0;
+      if (adetli && adet) aktif[kampanyaAdi(adet.ad)] = adet.tutar;
+      var alt = ara - adetIndirim;
+      (esikler || []).forEach(function (e) {
+        var ad = kampanyaAdi(e.baslik);
+        if (alt >= e.tutar) aktif[ad] = Math.round(yuzdeOrani(ad) * alt);
+      });
+      return { aktif: aktif, alt: alt };
+    };
+    var a = secenek(true);
+    var b = adet ? secenek(false) : a;
+    var sec = toplamIndirim(b.aktif) > toplamIndirim(a.aktif) ? b : a;
+    // alt: Shopify'daki ara toplam (uygulanan ürün indirimi düşülmüş)
+    return { aktif: sec.aktif, ara: ara, alt: sec.alt, n: n };
   }
 
   function yerelKampanya(m, temel, tasarim, ekler) {
@@ -5238,7 +5250,7 @@
       var x = yerelIndirimler(k, temel.concat(tasarim, e.satirlar), esikler);
       ekSonuc[e.ad] = { aktif: x.aktif, sepetIndirim: toplamIndirim(x.aktif), indirim: toplamIndirim(x.aktif) - toplamIndirim(a.aktif) };
     });
-    var s = kampanyaSonucu(a.aktif, b.aktif, b.ara, b.n, ekSonuc);
+    var s = kampanyaSonucu(a.aktif, b.aktif, b.alt, b.n, ekSonuc);
     s.yerel = true;
     return s;
   }
@@ -5281,13 +5293,12 @@
       });
     }
     var indirimler = sepetIndirimleri(cart);
-    var adetIndirim = 0;
-    merdivenAdlari.forEach(function (ad) { adetIndirim += indirimler[ad] || 0; });
+    // Shopify'ın ara toplamı (subtotalAmount) ürün (adet) indirimi düşülmüş tutardır; oran buna göre
     var ara = kurus(cart.cost && cart.cost.subtotalAmount);
     (esikler || []).forEach(function (e) {
       var ad = kampanyaAdi(e.baslik);
-      if (indirimler[ad] && ara - adetIndirim > 0) {
-        var oran = Math.round((indirimler[ad] / (ara - adetIndirim)) * 10000) / 10000;
+      if (indirimler[ad] && ara > 0) {
+        var oran = Math.round((indirimler[ad] / ara) * 10000) / 10000;
         if (!k.yuzde) k.yuzde = {};
         if (k.yuzde[ad] !== oran) {
           k.yuzde[ad] = oran;
@@ -5431,6 +5442,18 @@
     });
     return en ? en.id : null;
   }
+  // Katalogdaki en ucuz satılabilir patch (harf, rakam, ikon)
+  function enUcuzPatchFiyati(m) {
+    var en = null;
+    var bak = function (v) { if (v && v.fiyat != null && v.satilabilir !== false && (en == null || v.fiyat < en)) en = v.fiyat; };
+    (m.ikonlar || []).forEach(function (i) { bak(i.varyant); });
+    (m.setler || []).concat(m.rakamSeti ? [m.rakamSeti()] : []).forEach(function (st) {
+      if (!st) return;
+      Object.keys(st.karakterler || {}).forEach(function (h) { bak(st.karakterler[h]); });
+    });
+    return en;
+  }
+
   function ornekPatchFiyati(m) {
     var id = ornekPatch(m);
     var b = id && varyantHaritasi(m)[String(id)];
@@ -5445,7 +5468,7 @@
 
   // Kampanya şeridi (saf hesap), iki satır: 1) kazanılan toplam, 2) tek somut eylem ve sonucu.
   // Duraklar: adet basamakları (öğrenilen) + tutar eşikleri (ayarlar). Sıradaki hedeflerden daha az harcama gerektireni.
-  function seritDurumu(k, merdiven, esikler, ornekFiyat) {
+  function seritDurumu(k, merdiven, esikler, ornekFiyat, enUcuz) {
     var aktif = k.aktif || {};
     var adlar = Object.keys(aktif);
     var var_ = function (ad) { return adlar.indexOf(kampanyaAdi(ad)) !== -1; };
@@ -5488,13 +5511,25 @@
     // Tutar: sıradaki eşik
     var esik = duraklar.filter(function (d) { return d.tur === 'tutar' && !d.ulasildi; })[0];
     if (esik) {
+      // Eşik, Shopify'daki gibi adet indirimi düşülmüş ara toplama göre (altToplam)
       var kalan = esik.tutar - (k.altToplam || 0);
       var yuzde = yuzdeYazisi(esik.ad);
-      secenekler.push({
-        maliyet: kalan,
-        metin: paraBicimle(kalan) + '\'lik ürün daha ekle, tüm siparişe ' + (yuzde ? yuzde + ' indirim gelsin' : 'indirim gelsin'),
-        hedef: esik
-      });
+      var tekPatch = enUcuz || ornekFiyat;
+      var birPatch = k.ekler && k.ekler['+1'];
+      if (tekPatch && kalan <= tekPatch && (!birPatch || (birPatch.aktif && birPatch.aktif[esik.ad]))) {
+        secenekler.push({
+          maliyet: tekPatch,
+          metin: '1 patch daha ekle, tüm siparişe ' + (yuzde ? yuzde + ' indirim gelsin' : 'indirim gelsin'),
+          hedef: esik,
+          patch: 1
+        });
+      } else {
+        secenekler.push({
+          maliyet: kalan,
+          metin: paraBicimle(kalan) + ' daha ekle, tüm siparişe ' + (yuzde ? yuzde + ' indirim' : 'indirim'),
+          hedef: esik
+        });
+      }
     }
     secenekler.sort(function (a, b) { return a.maliyet - b.maliyet; });
     var hepsi = duraklar.length > 0 && duraklar.every(function (d) { return d.ulasildi; });
