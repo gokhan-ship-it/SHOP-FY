@@ -119,12 +119,12 @@ for (let i = 0; i < 20; i++) {
 }
 console.log('etiket:', await s.locator('.kp-cip').count());
 assert.equal(await s.locator('[data-kp-kenar-grup]').count(), 1, 'sığmayan ikon kenara alındı');
-assert.equal(await metin('[data-kp-bildirim]'), 'Futbol Topu için çantada yer yok, kenara alındı. İstersen yer açıp çantaya sürükleyebilirsin.');
+assert.equal(await metin('[data-kp-bildirim]'), 'Futbol Topu için çantada yer yok, kenara alındı. Yer açıp çantaya sürüklersen fiyata eklenir.');
 assert.deepEqual(await s.$$eval('[data-kp-ikon-izgara] [data-kp-ikon]', (b) => b.map((x) => x.getAttribute('data-kp-ikon'))), siraBas, 'ızgara sırası değişmez');
 // Eklenenlerde soluk ve ↧; altta kenar notu ve "Sığdırmayı dene"
 assert.equal(await s.locator('.kp-cip--kenar').count(), 1);
 assert.match(await metin('.kp-cip--kenar .kp-cip__ad'), /^↧Futbol Topu$/);
-assert.match(await metin('[data-kp-kenar-not]'), /^Kenarda 1 patch var\. Bunlar da sepete eklenir, çantaya sen takarsın\.\s?Sığdırmayı dene$/);
+assert.match(await metin('[data-kp-kenar-not]'), /^Kenarda 1 patch var\. Fiyata dahil değil; istersen Özet'te sepete ekleyebilirsin\.\s?Sığdırmayı dene$/);
 const adet = await s.locator('.kp-cip').count();
 // Bir ikonu kaldır (çantadaki), Sığdırmayı dene → kenardaki çantaya yerleşir
 await s.locator('.kp-cip:not(.kp-cip--kenar)').last().locator('.kp-cip__kaldir').click();
@@ -147,14 +147,17 @@ assert.equal(await gorunur('[data-kp-secim-cubuk]'), true);
 assert.equal(await gorunur('[data-kp-etiketler]'), false, 'etiketler yerine araç çubuğu');
 const sonra = await olcum();
 assert.deepEqual(sonra, once, 'satır yüksekliği ve panel yeri aynı');
-// Eklenenler ve araç çubuğu önizlemenin alt kenarında (içinde)
+// Araç çubuğu önizlemenin hemen altındaki sabit satırda: solda seçili öğenin adı, sağda düğmeler
 const aracYer = await s.evaluate(() => {
   const a = document.querySelector('[data-kp-secim-cubuk]').getBoundingClientRect();
   const o = document.querySelector('.kp-gorunum').getBoundingClientRect();
-  return a.bottom <= o.bottom + 1 && a.top > o.top + o.height / 2;
+  const ad = document.querySelector('[data-kp-secili-ad]').getBoundingClientRect();
+  const d = document.querySelector('.kp-arac__dugmeler').getBoundingClientRect();
+  return a.top >= o.bottom && a.top - o.bottom < 16 && ad.width > 20 && ad.right <= d.left + 1;
 });
-assert.ok(aracYer, 'araç çubuğu önizlemenin alt kenarında');
-assert.deepEqual(await s.$$eval('[data-kp-secim-cubuk] button', (b) => b.filter((x) => !x.hidden).map((x) => x.textContent.trim())), ['15°', '15°', 'Düzle', 'Sil', 'Tamam']);
+assert.ok(aracYer, 'araç çubuğu önizlemenin altında, adı solda');
+assert.equal(await s.locator('.kp-onizleme__ic [data-kp-secim-cubuk]').count(), 0, 'önizlemenin üzerinde değil');
+assert.deepEqual(await s.$$eval('[data-kp-secim-cubuk] button', (b) => b.filter((x) => !x.hidden).map((x) => x.textContent.trim())), ['↺ 15°', '↻ 15°', 'Sil', 'Tamam']);
 // Tamam seçimi kaldırır, satır yine etiketler
 await s.locator('[data-kp-secim-kaldir]').click();
 assert.equal(await gorunur('[data-kp-secim-cubuk]'), false);

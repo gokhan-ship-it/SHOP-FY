@@ -624,6 +624,34 @@ test('sepetten geri kurma: set patch\'leri yeniden set olur, konum patch bazınd
   yakin(konumlar(m, y, k), konumlar(m, y, t));
 });
 
+test('kenar: fiyata dahil değil; Özet\'te seçilenler (kenarAl) dahil; set bütün olarak', () => {
+  const { m, y } = kur();
+  const t = setTasarimi(m);
+  t.isim = 'EC';
+  const tam = ic.fiyatHesapla(m, y, t).toplam;
+  // Setin bir patch'i kenarda: set çantada sayılır, fiyat değişmez
+  t.parcalar[0].kenar = true;
+  assert.equal(ic.fiyatHesapla(m, y, t).toplam, tam);
+  // Setin tamamı kenarda: set fiyata dahil değil
+  t.parcalar.forEach((p) => { p.kenar = true; });
+  assert.equal(ic.fiyatHesapla(m, y, t).toplam, tam - 80000);
+  assert.equal(ic.satinAlinacak(m, t).hazirSetler.length, 0);
+  // Özet'te bir patch'i seçmek setin tamamını getirir
+  t.kenarAl = [t.parcalar[1].uid];
+  assert.equal(ic.fiyatHesapla(m, y, t).toplam, tam);
+  // Yazı kenarda: harfleri dahil değil; isim seçilince dahil
+  t.kenarAl = [];
+  t.isimKenar = true;
+  const kenarsiz = ic.satinAlinacak(m, t);
+  assert.equal(kenarsiz.isim, '');
+  assert.equal(ic.fiyatHesapla(m, y, t).toplam, 300000);
+  t.kenarAl = ['isim'];
+  assert.equal(ic.satinAlinacak(m, t).isim, 'EC');
+  // Asıl tasarım değişmez
+  assert.equal(t.isim, 'EC');
+  assert.equal(t.parcalar.length, 3);
+});
+
 // ---------- Aksesuarlar ----------
 
 test('aksesuarlar: ad, model, renk, dış ölçü; stokta olmayan yok; tasarlanabilirlik Velcro yüzeyinden', () => {

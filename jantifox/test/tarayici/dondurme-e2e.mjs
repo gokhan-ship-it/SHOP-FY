@@ -110,15 +110,14 @@ assert.equal((await parcaDurumu(sayfa, meteorSecici)).aci, 180);
 assert.equal(await sayfa.locator('[data-kp-aci]').isVisible(), false, 'bırakınca gösterge kalkar');
 await sayfa.screenshot({ path: cikti + '02-180.png' });
 
-// 3) Araç çubuğu: 15° sağa / sola, Düzle
+// 3) Araç çubuğu: 15° sağa / sola
 await sayfa.locator('[data-kp-dondur="15"]').tap();
 assert.equal((await parcaDurumu(sayfa, meteorSecici)).aci, 195);
 await sayfa.locator('[data-kp-dondur="-15"]').tap();
 await sayfa.locator('[data-kp-dondur="-15"]').tap();
 assert.equal((await parcaDurumu(sayfa, meteorSecici)).aci, 165);
-await sayfa.locator('[data-kp-duzle]').tap();
+await sayfa.evaluate(() => document.querySelector('kisisel-kart').editor.acisiDegistir(0, 0)); // araç çubuğunda Düzle yok
 assert.equal((await parcaDurumu(sayfa, meteorSecici)).aci, 0);
-assert.equal(await sayfa.locator('[data-kp-duzle]').isDisabled(), true, '0°\'de Düzle pasif');
 
 // 4) İki parmakla döndürme: ikinci parmak birincinin etrafında ~60° döner
 {
@@ -138,7 +137,7 @@ assert.equal(await sayfa.locator('[data-kp-duzle]').isDisabled(), true, '0°\'de
   console.log('iki parmakla açı:', d.aci);
   assert.equal(d.aci, 60);
 }
-await sayfa.locator('[data-kp-duzle]').tap();
+await sayfa.evaluate(() => document.querySelector('kisisel-kart').editor.acisiDegistir(0, 0)); // araç çubuğunda Düzle yok
 
 // 5) Kenar: Meteor'u dairenin sağ kenarına yaklaştır (dikey sığıyor), sonra yatıracak şekilde döndür → kırmızı, bırakınca son geçerli açı
 {

@@ -50,6 +50,9 @@ await kaydir(120);
 assert.equal(await kucuk(), true, 'ikon listesi kayınca küçülür');
 assert.ok(Math.abs((await yukseklik()) - 140) <= 2, 'yaklaşık 140 px: ' + (await yukseklik()));
 assert.equal(await gorunur('[data-kp-gorunum]'), false, 'Tüm çantayı gör gizli');
+// Eklenenler satırı küçük önizlemenin de hemen altında
+const [icK, satirK] = await s.evaluate((q) => [' .kp-onizleme__ic', ' .kp-satir'].map((x) => document.querySelector(q + x).getBoundingClientRect()).map((r) => ({ t: r.top, b: r.bottom, h: r.height })), ed);
+assert.ok(satirK.h > 30 && satirK.t >= icK.b && satirK.t - icK.b < 12, 'satır önizlemenin hemen altında: ' + JSON.stringify([icK, satirK]));
 assert.equal(await gorunur('[data-kp-buyut]'), true);
 const [ic, buyut, geri] = await s.evaluate((q) => [' .kp-onizleme__ic', ' [data-kp-buyut]', ' [data-kp-geri-al]'].map((x) => document.querySelector(q + x).getBoundingClientRect()).map((r) => ({ r: r.right, b: r.bottom, w: r.width })), ed);
 assert.ok(ic.r - buyut.r < 12 && ic.b - buyut.b < 12, 'Büyüt sağ altta');

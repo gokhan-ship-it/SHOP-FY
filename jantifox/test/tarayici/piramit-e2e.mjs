@@ -133,7 +133,7 @@ assert.equal(await s.locator('[data-kp-balon]').isVisible(), false);
 await s.locator('[data-kp-dondur="15"]').click();
 const blokAci = await s.$$eval('.kp-parca--letter', (l) => l.map((e) => e.style.transform));
 assert.ok(blokAci.every((x) => x === 'rotate(15deg)'), blokAci.join());
-await s.locator('[data-kp-duzle]').click();
+await s.locator('[data-kp-dondur="-15"]').click();
 
 // 5) Harfleri ayır: tek harf seçilir; döndürme yalnızca o harfi döndürür
 await s.locator('[data-kp-harf-mod]').click();

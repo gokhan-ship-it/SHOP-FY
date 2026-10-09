@@ -52,7 +52,7 @@ assert.equal(await gorunur('[data-kp-kenar]'), false, 'kenar boşken görünmez'
 assert.equal(await kenarSayisi(), 0);
 assert.equal((await metin('[data-kp-etiketler]').catch(() => '')), '', 'boşken eklenenler yazısı yok');
 
-// 2) Bir ikon ekle; çantadan kenara sürükle: kenarda, eklenenlerde ↧, fiyat aynı, kenar notu
+// 2) Bir ikon ekle; çantadan kenara sürükle: kenarda, eklenenlerde ↧, fiyata dahil değil, kenar notu
 await s.locator('[data-kp-adim="ikon"]').click();
 await s.locator('[data-kp-kategori="Spor"]').click();
 await s.locator('[data-kp-ikon="2"]').click();
@@ -60,8 +60,10 @@ if (await gorunur('[data-kp-secim-kaldir]')) await s.locator('[data-kp-secim-kal
 const toplam0 = await metin('[data-kp-toplam]');
 const ikon = await merkez('.kp-onizleme .kp-parca--icon');
 const ic = await s.locator('.kp-onizleme__ic').boundingBox();
-const kenar = [ic.x + ic.width / 2, ic.y + ic.height - 22];
-// Sürüklerken kenar bölgesi kırmızı kesikli "Kenara bırak" olarak belirir, bitince kaybolur
+const satirK = await s.locator('.kp-onizleme .kp-satir').boundingBox();
+// Kenar satırı eklenenler satırının altında (sürüklerken belirir)
+const kenar = [satirK.x + satirK.width / 2, satirK.y + satirK.height + 4 + 22];
+// Sürüklerken kenar satırı kırmızı kesikli "Kenara bırak" bırakma alanı olarak belirir, bitince kaybolur
 await dokun('touchStart', ikon[0], ikon[1]);
 for (let i = 1; i <= 10; i++) await dokun('touchMove', ikon[0] + ((kenar[0] - ikon[0]) * i) / 10, ikon[1] + ((kenar[1] - ikon[1]) * i) / 10);
 assert.equal(await gorunur('[data-kp-kenar]'), true, 'sürüklerken kenar bölgesi görünür');
@@ -71,19 +73,17 @@ assert.equal(await s.locator('.kp-kenar--hedef').count(), 1, 'üstündeyken hede
 await dokun('touchEnd');
 await s.waitForTimeout(120);
 assert.equal(await kenarSayisi(), 1, 'kenara alındı');
-assert.equal(await s.locator('.kp-onizleme__ic--surukle').count(), 0);
-assert.equal(await gorunur('[data-kp-kenar]'), true, 'kenarda patch varken şerit görünür');
-assert.equal(await metin('[data-kp-kenar] .kp-kenar__bas'), '↧ Kenar 1 patch');
+assert.equal(await s.locator('.kp-onizleme--surukle').count(), 0);
+assert.equal(await gorunur('[data-kp-kenar]'), true, 'kenarda patch varken satır görünür');
+assert.equal(await metin('[data-kp-kenar] .kp-kenar__baslik'), '↧ Kenar · 1 patch · fiyata dahil değil');
 const kb = await s.locator('[data-kp-kenar]').boundingBox();
-assert.ok(Math.abs(kb.y + kb.height - (ic.y + ic.height)) < 2 && kb.height < 56, 'şerit önizlemenin alt kenarında, ince');
+const sb = await s.locator('.kp-onizleme .kp-satir').boundingBox();
+assert.ok(kb.y >= sb.y + sb.height && sb.y >= ic.y + ic.height && kb.height <= 46, 'önizlemenin altında, eklenenler satırının altında ayrı satır');
+assert.equal(await s.locator('.kp-onizleme__ic [data-kp-kenar], .kp-onizleme__ic .kp-satir').count(), 0, 'önizlemenin üzerinde değil');
 assert.equal(await s.locator('.kp-onizleme .kp-parca--icon').count(), 0, 'önizlemede çizilmez');
 assert.deepEqual(await cipler(), ['↧Futbol Topu']);
-assert.equal(await metin('[data-kp-toplam]'), toplam0, 'kenardaki de fiyatlanır');
-assert.match(await metin('[data-kp-kenar-not]'), /^Kenarda 1 patch var\./);
-// Yakın görünümde alan şeridin üstünde kalan bölgeye ortalanır: daire şeridin altına girmez
-await s.waitForTimeout(400); // geçiş animasyonu
-const dAlt = await s.evaluate(() => document.querySelector('.kp-gorunum ellipse').getBoundingClientRect().bottom);
-assert.ok(dAlt <= (await s.locator('[data-kp-kenar]').boundingBox()).y + 1, 'daire şeridin üstünde: ' + dAlt);
+assert.equal(await metin('[data-kp-toplam]'), '3.000 TL', 'kenardaki fiyata dahil değil (önce ' + toplam0 + ')');
+assert.match(await metin('[data-kp-kenar-not]'), /^Kenarda 1 patch var\. Fiyata dahil değil/);
 assert.equal(await s.locator('[data-kp-geri-al]').isDisabled(), false);
 
 // 3) Geri al → çantaya döner; Yinele → tekrar kenarda; Ctrl+Z / Shift+Ctrl+Z
@@ -152,13 +152,35 @@ assert.equal(await kenarSayisi(), kenarSet);
 await s.locator('[data-kp-geri-al]').click();
 assert.equal((await cipler()).length, cipOnce, 'Geri al (düğme) setin tamamını kaldırır');
 
-// 8) Sepet: kenardaki "Durum: Takılmamış"; konumda e:1; galeride yalnızca takılmış
+// 8) Özet'te kenar kartı: hepsi işaretli, dokununca seçim kalkar, tutar canlı; "Evet" seçilenleri fiyata ve sepete
+// ("Durum: Takılmamış") katar; konumda e:1; galeride yalnızca takılmış
 await s.locator('[data-kp-ikon-yol="kendim"]').click();
 await s.locator('[data-kp-kategori="Spor"]').click();
-for (let i = 0; i < 12 && !(await kenarSayisi()); i++) await s.locator('[data-kp-ikon="2"]').click();
-assert.ok(await kenarSayisi(), 'yer kalmayınca ikon da kenara');
+for (let i = 0; i < 12 && (await kenarSayisi()) < 2; i++) await s.locator('[data-kp-ikon="2"]').click();
+assert.equal(await kenarSayisi(), 2, 'yer kalmayınca ikon da kenara');
 await s.locator('[data-kp-adim="ozet"]').click();
 if (await gorunur('[data-kp-ozet-yer]')) await s.locator('[data-kp-ozet-yer] [data-kp-hepsini-duzelt]').click();
+const kenarDisi = await metin('[data-kp-toplam]');
+assert.equal(await metin('.kp-kenar-kart__baslik'), 'Kenarda kullanmadığın 2 patch var');
+assert.match(await metin('.kp-kenar-kart__aciklama'), /^Bunları da almak ister misin\? Çantaya sonradan istediğin zaman takabilirsin\. Almak istemediklerine dokunup seçimi kaldırabilirsin\.$/);
+assert.equal(await metin('.kp-kenar-kart__not'), 'Eklersen kampanya indirimin de yeniden hesaplanır.');
+assert.deepEqual(await s.$$eval('[data-kp-kenar-sec]', (b) => b.map((x) => x.getAttribute('aria-pressed'))), ['true', 'true'], 'varsayılan hepsi işaretli');
+assert.equal(await metin('[data-kp-kenar-hayir]'), 'Hayır, almayacağım');
+assert.equal(await metin('[data-kp-kenar-evet]'), 'Evet, ekle (+660 TL)');
+await s.locator('[data-kp-kenar-sec]').first().click();
+assert.equal(await s.locator('[data-kp-kenar-sec]').first().getAttribute('aria-pressed'), 'false');
+assert.equal(await metin('[data-kp-kenar-evet]'), 'Evet, ekle (+330 TL)', 'tutar seçime göre');
+await s.locator('[data-kp-kenar-sec]').first().click();
+// Hayır: fiyat değişmez, kenardakiler tasarımda kalır
+await s.locator('[data-kp-kenar-hayir]').click();
+assert.equal(await metin('[data-kp-toplam]'), kenarDisi);
+assert.match(await metin('[data-kp-kenar-kart]'), /sepete eklenmeyecek/);
+assert.equal(await kenarSayisi(), 2, 'tasarımdan silinmez');
+// Değiştir → Evet
+await s.locator('[data-kp-kenar-degistir]').click();
+await s.locator('[data-kp-kenar-evet]').click();
+assert.match(await metin('[data-kp-kenar-kart]'), /sepete eklenecek/);
+assert.notEqual(await metin('[data-kp-toplam]'), kenarDisi, 'eklenince fiyata dahil');
 await s.locator('[data-kp-ileri]').click();
 await s.waitForURL('**/cart');
 const satirlar = eklenen.items.filter((k) => k.id === 3002);
@@ -171,6 +193,26 @@ assert.equal(konum.p.filter((x) => x.e === 1).length, kenarSatiri.quantity);
 const kit = await s.evaluate(() => JSON.parse(localStorage.getItem('kisisel-sepet-cizim')));
 const kimlik = eklenen.items[0].properties._tasarim_id;
 assert.equal(kit[kimlik].p.length, takiliSatir.quantity, 'sepet görselinde yalnızca takılmış patch\'ler');
+
+// 9) Karta cevap vermeden "Tasarımımı sepete ekle": kenardakiler eklenmez; kampanya şeridi de saymaz
+{
+  eklenen = null;
+  await s.evaluate(() => localStorage.clear());
+  await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
+  await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
+  await s.locator('[data-kp-adim="ikon"]').click();
+  await s.locator('[data-kp-kategori="Spor"]').click();
+  for (let i = 0; i < 12 && !(await kenarSayisi()); i++) await s.locator('[data-kp-ikon="2"]').click();
+  const kenarAdet = await kenarSayisi();
+  await s.locator('[data-kp-adim="ozet"]').click();
+  assert.equal(await gorunur('[data-kp-kenar-kart]'), true);
+  await s.locator('[data-kp-ileri]').click();
+  await s.waitForURL('**/cart');
+  assert.ok(kenarAdet > 0);
+  assert.ok(!eklenen.items.some((k) => k.properties.Durum), 'cevapsız: kenardakiler sepette yok');
+  const konum2 = JSON.parse(eklenen.items[0].properties._tasarim_konum);
+  assert.equal(konum2.p.filter((x) => x.e === 1).length, 0);
+}
 
 console.log('hatalar:', hatalar);
 assert.deepEqual(hatalar, []);

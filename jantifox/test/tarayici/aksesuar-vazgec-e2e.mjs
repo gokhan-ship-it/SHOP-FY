@@ -82,8 +82,8 @@ if (await gorunur(ana + ' [data-kp-secim-kaldir]')) await s.locator(ana + ' [dat
 await s.locator(ana + ' [data-kp-aks-duzenle]').click();
 await s.locator(alt).waitFor({ state: 'visible' });
 assert.equal(await s.locator('#kpa-isim').inputValue(), 'ADA');
-// Düzenlemede toplam: aksesuar iki kez sayılmaz
-assert.equal(await metin(alt + ' [data-kp-toplam]'), '6.020 TL');
+// Düzenlemede toplam: aksesuar iki kez sayılmaz; kenara alınan Futbol Topu fiyata dahil değil
+assert.equal(await metin(alt + ' [data-kp-toplam]'), '5.690 TL');
 await s.locator('#kpa-isim').fill('eda');
 await s.locator('#kpa-isim').blur();
 await s.locator(alt + ' [data-kp-vazgec]').click();

@@ -102,7 +102,7 @@ assert.equal(await s.locator(ana + ' .kp-aks__parca').count(), 3, 'kalem kutusun
 assert.equal(await s.locator(ana + ' [data-kp-kenar-grup]').count(), 1, 'yuvarlak çanta kenarda');
 assert.equal(await s.locator(ana + ' .kp-parca--hatali').count(), 0);
 assert.deepEqual((await cipler()).sort(), ['Kalem Kutusu Kırmızı', '↧Mini Yuvarlak Çanta Mavi'].sort());
-assert.equal(await toplam(), '6.590 TL', 'kenardaki de fiyatlanır');
+assert.equal(await toplam(), '5.690 TL', 'kenardaki fiyata dahil değil');
 // Geri al: kalem kutusu tasarımıyla kalkar, yuvarlak çanta yerine döner (tek adım); Yinele hepsini geri getirir
 await s.locator(ana + ' [data-kp-bildirim-eylem]').click();
 assert.deepEqual(await cipler(), ['Mini Yuvarlak Çanta Mavi']);

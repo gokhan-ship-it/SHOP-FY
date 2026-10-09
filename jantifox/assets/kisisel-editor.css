@@ -893,8 +893,8 @@ html.kp-kilit body {
 }
 .kp-onizleme__ic {
   position: relative;
-  width: min(100%, calc(40vh * var(--kp-oran, 1)), 560px);
-  width: min(100%, calc(40dvh * var(--kp-oran, 1)), 560px);
+  width: min(100%, calc(36vh * var(--kp-oran, 1)), 560px);
+  width: min(100%, calc(36dvh * var(--kp-oran, 1)), 560px);
 }
 @media (prefers-reduced-motion: no-preference) {
   .kp-onizleme__ic {
@@ -2159,52 +2159,33 @@ html.kp-kilit body {
   opacity: 0.4;
   cursor: default;
 }
-/* ---------- Kenar: çantaya takılmamış patch'ler ----------
-   Önizlemenin içinde, alt kenarında ince beyaz şerit. Boşken görünmez.
-   Bir patch sürüklenirken kırmızı kesikli "Kenara bırak" bölgesi olarak belirir. */
+/* ---------- Kenar: çantaya takılmamış patch'ler (fiyata dahil değil) ----------
+   Önizlemenin altında, eklenenler satırının altında ayrı satır. Boşken görünmez.
+   Bir patch sürüklenirken bırakma alanı olarak vurgulanır (kırmızı kesikli, "Kenara bırak"). */
 .kp-kenar {
-  position: absolute;
-  z-index: 3;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  height: 50px;
-  padding: 0 0.6rem 0 1rem;
-  border-top: 1px solid var(--kp-cizgi);
-  border-radius: 0 0 8px 8px;
+  width: 100%;
+  max-width: 560px;
+  height: 44px;
+  margin-top: 0.4rem;
+  padding: 0 0.4rem 0 0.8rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 10px;
   background: #fff;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
   box-sizing: border-box;
 }
 .kp-kenar[hidden] {
   display: none;
 }
-.kp-kenar__bas {
-  display: flex;
-  flex: none;
-  flex-direction: column;
-  line-height: 1.25;
-}
 .kp-kenar__baslik {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--kp-murekkep);
-  white-space: nowrap;
-}
-.kp-kenar__sayi {
-  font-size: 1.1rem;
+  flex: none;
+  font-size: 1.2rem;
+  font-weight: 600;
   color: var(--kp-ikincil);
   white-space: nowrap;
-}
-.kp-kenar__ayrac {
-  flex: none;
-  align-self: stretch;
-  width: 1px;
-  margin: 0.8rem 0;
-  background: var(--kp-cizgi);
 }
 .kp-kenar__liste {
   display: flex;
@@ -2223,31 +2204,26 @@ html.kp-kilit body {
 .kp-kenar__birak {
   display: none;
 }
-/* Sürüklerken: kırmızı kesikli bölge, "Kenara bırak" (boş kenarda da görünür) */
-.kp-onizleme__ic--surukle .kp-kenar,
-.kp-onizleme__ic--surukle .kp-kenar[hidden] {
+/* Sürüklerken: bırakma alanı (boş kenarda da görünür) */
+.kp-onizleme--surukle .kp-kenar,
+.kp-onizleme--surukle .kp-kenar[hidden] {
   display: flex;
   justify-content: center;
   border: 2px dashed var(--kp-hata);
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: none;
+  background: #fff;
 }
-.kp-onizleme__ic--surukle .kp-kenar > :not(.kp-kenar__birak) {
+.kp-onizleme--surukle .kp-kenar > :not(.kp-kenar__birak) {
   display: none;
 }
-.kp-onizleme__ic--surukle .kp-kenar__birak {
+.kp-onizleme--surukle .kp-kenar__birak {
   display: block;
   font-size: 1.3rem;
   font-weight: 700;
   color: var(--kp-hata);
 }
-.kp-onizleme__ic--surukle .kp-kenar--hedef {
+.kp-onizleme--surukle .kp-kenar--hedef {
   background: var(--kp-hata-zemin);
   border-style: solid;
-}
-/* Kenar şeridi görünürken bildirim şeridin üstünde */
-.kp-onizleme__ic--kenar .kp-yuzen {
-  bottom: calc(50px + 0.8rem);
 }
 .kp-editor--klavye .kp-kenar {
   display: none;
@@ -2644,75 +2620,47 @@ html.kp-kilit body {
 .kp-ust--sekmeler .kp-adim[aria-current='step'] {
   font-weight: 700;
 }
-/* ---------- Eklenenler: önizlemenin alt kenarında, yarı saydam küçük etiketler ---------- */
-.kp-onizleme__ic .kp-satir {
-  position: absolute;
-  z-index: 3;
-  left: 0;
-  right: 0;
-  bottom: 4px;
-  width: auto;
-  max-width: none;
-  height: 34px;
-  margin: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  pointer-events: none;
+/* ---------- Önizlemenin altındaki sabit satır: eklenenler ya da seçili öğenin adı ve araçlar ---------- */
+.kp-onizleme .kp-satir {
+  height: 44px;
+  margin-top: 0.4rem;
 }
-.kp-onizleme__ic--kenar .kp-satir {
-  bottom: 54px;
-}
-.kp-onizleme__ic .kp-etiketler {
+.kp-arac {
+  align-items: center;
   gap: 0.4rem;
-  padding: 0 6px;
-  pointer-events: none;
+  padding: 0.2rem 0.2rem 0.2rem 0.8rem;
 }
-.kp-onizleme__ic .kp-cip {
-  pointer-events: auto;
-  border-color: rgba(0, 0, 0, 0.12);
-  background: rgba(255, 255, 255, 0.82);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-  font-size: 1.15rem;
+.kp-arac__ad {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.kp-onizleme__ic .kp-cip--secili {
-  border-color: var(--kp-murekkep);
-}
-.kp-onizleme__ic .kp-cip--hatali {
-  border-color: var(--kp-hata);
-}
-.kp-onizleme__ic .kp-cip__ad {
-  max-width: 12rem;
-  min-height: 28px;
-  padding: 0 0.2rem 0 0.8rem;
-}
-.kp-onizleme__ic .kp-cip__kaldir,
-.kp-onizleme__ic .kp-cip__duzenle {
-  width: 28px;
-  min-width: 28px;
-  height: 28px;
-}
-/* Seçili patch: aynı yerde araç çubuğu (önizlemeden geniş olabilir, ortalanır) */
-.kp-onizleme__ic .kp-arac {
+.kp-arac__dugmeler {
+  display: flex;
   flex: none;
-  width: max-content;
-  max-width: calc(100vw - 16px);
-  height: 42px;
-  pointer-events: auto;
-  border-radius: 999px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  gap: 0.2rem;
 }
-.kp-onizleme__ic .kp-arac button {
+.kp-arac .kp-arac__dugmeler button {
+  flex: none;
+  min-width: 40px;
   min-height: 36px;
-  border-radius: 999px;
+  padding: 0 0.6rem;
 }
-/* Bildirim eklenenlerin (ve kenar şeridinin) üstünde */
-.kp-onizleme__ic .kp-yuzen {
-  bottom: calc(0.6rem + 38px);
+.kp-onizleme .kp-etiketler {
+  gap: 0.4rem;
 }
-.kp-onizleme__ic--kenar .kp-yuzen {
-  bottom: calc(0.6rem + 88px);
+.kp-onizleme .kp-cip__ad {
+  min-height: 32px;
+}
+.kp-onizleme .kp-cip__kaldir,
+.kp-onizleme .kp-cip__duzenle {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
 }
 /* ---------- Tek alt çubuk: 3 px ilerleme, tek satır kampanya metni, fiyat ve ana buton ---------- */
 .kp-alt {
@@ -2799,8 +2747,6 @@ html.kp-kilit body {
   height: 14px;
 }
 .kp-editor--kucuk [data-kp-gorunum],
-.kp-editor--kucuk .kp-satir,
-.kp-editor--kucuk .kp-kenar,
 .kp-editor--kucuk .kp-set-cerceve {
   display: none !important;
 }
@@ -2841,4 +2787,125 @@ html.kp-kilit body {
     animation: none;
     filter: drop-shadow(0 0 3px #e8742b);
   }
+}
+/* ---------- Özet: kenardaki patch'ler kartı ---------- */
+.kp-kenar-kart {
+  margin: 0 0 1.2rem;
+  padding: 1.2rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 12px;
+  background: var(--kp-yumusak);
+}
+.kp-kenar-kart__baslik {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.kp-kenar-kart__aciklama {
+  margin: 0.4rem 0 0;
+  font-size: 1.3rem;
+  line-height: 1.4;
+  color: var(--kp-ikincil);
+}
+.kp-kenar-kart__ogeler {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.kp-kenar-kart__oge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 56px;
+  height: 56px;
+  padding: 4px 6px;
+  border: 2px solid var(--kp-cizgi);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  opacity: 0.55;
+}
+.kp-kenar-kart__oge[aria-pressed='true'] {
+  border-color: var(--kp-murekkep);
+  opacity: 1;
+}
+.kp-kenar-kart__gorsel {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 100%;
+}
+.kp-kenar-kart__gorsel img {
+  max-width: 44px;
+  max-height: 100%;
+  object-fit: contain;
+}
+.kp-kenar-kart__harf {
+  font-weight: 700;
+}
+.kp-kenar-kart__isaret {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--kp-murekkep);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.kp-kenar-kart__oge[aria-pressed='true'] .kp-kenar-kart__isaret {
+  display: inline-flex;
+}
+.kp-kenar-kart__butonlar {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+}
+.kp-kenar-kart__dugme {
+  flex: 1 1 0;
+  min-height: 44px;
+  padding: 0.4rem 0.6rem;
+  border: 1.5px solid var(--kp-murekkep);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.kp-kenar-kart__dugme--ana {
+  border-color: var(--kp-murekkep);
+  background: var(--kp-murekkep);
+  color: #fff;
+}
+.kp-kenar-kart__dugme:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.kp-kenar-kart__not {
+  margin: 0.6rem 0 0;
+  font-size: 1.15rem;
+  color: var(--kp-ikincil);
+  text-align: center;
+}
+.kp-kenar-kart--cevap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1.2rem;
+  font-size: 1.3rem;
+}
+.kp-kenar-kart--cevap p {
+  margin: 0;
+}
+.kp-kenar-kart--cevap .kp-baglanti {
+  flex: none;
 }

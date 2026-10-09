@@ -131,6 +131,8 @@ if (await gorunur('[data-kp-ozet-yer]')) {
   await s.locator('[data-kp-ozet-yer] [data-kp-hepsini-duzelt]').click();
   assert.equal(await gorunur('[data-kp-ozet-yer]'), false);
 }
+// Yer kalmadığı için kenara alınan varsa Özet'te sorulur: hepsini ekle
+if (await gorunur('[data-kp-kenar-evet]')) await s.locator('[data-kp-kenar-evet]').click();
 await s.locator('[data-kp-ileri]').click();
 await s.waitForURL('**/cart');
 const [baz, ...digerleri] = eklenen.items;
