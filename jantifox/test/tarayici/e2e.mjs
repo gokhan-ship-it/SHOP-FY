@@ -88,10 +88,15 @@ await sayfa.getByText('İ harfi şu an yok, I olarak yazmak ister misin?').waitF
 assert.equal(await sayfa.locator('[data-kp-ileri]').getAttribute('aria-disabled'), 'true');
 await sayfa.screenshot({ path: cikti + '02-turkce-harf-uyarisi.png' });
 
-// Uzun isim → sığmıyor
+// Uzun isim → ürünün karakter sınırı (6): fazlası yazılamaz, not görünür
 await girdi.fill('abdulkadir');
-await sayfa.getByText(/ABDULKADİR bu ürüne sığmıyor \(en fazla \d+ karakter\)/).waitFor();
-await sayfa.screenshot({ path: cikti + '03-sigmiyor.png' });
+assert.equal(await girdi.inputValue(), 'ABDULK');
+assert.equal(await sayfa.locator('[data-kp-kapasite]').textContent(), '6 / 6');
+await sayfa.getByText('Bu ürüne en fazla 6 karakter yazılabilir.').waitFor();
+await girdi.pressSequentially('X');
+assert.equal(await girdi.inputValue(), 'ABDULK', 'sınırdan sonrası yazılmaz');
+assert.equal(await sayfa.locator('[data-kp-rozet="yazi"]').textContent(), '6');
+await sayfa.screenshot({ path: cikti + '03-sinir.png' });
 
 // ECE
 await girdi.fill('ece');
@@ -186,12 +191,19 @@ await sayfa.screenshot({ path: cikti + '04d-birlesti.png' });
 await sayfa.locator('#kp-isim').fill('ece7');
 await sayfa.screenshot({ path: '/tmp/claude-0/-home-user-SHOP-FY/008f51ac-81e5-55fc-a930-e42df008c01d/scratchpad/dbg-ece7.png' });
 assert.deepEqual(await sayfa.$$eval('.kp-karakter__stil', (x) => x.map((e) => e.textContent)), ['Cool', 'Cool', 'Cool', 'Rakam']);
-await sayfa.locator('[data-kp-ileri]').click();
+assert.equal(await sayfa.locator('[data-kp-sinir-notu]').count(), 0, 'sınırın altında not yok');
+// Tek ekran, üç araç: varsayılan Metin; ana düğme Özete geç
+const araclar = () => sayfa.$$eval('.kp-editor:not(.kp-editor--alt) .kp-arac-dugme', (l) => l.map((e) => [e.dataset.kpAdim, e.getAttribute('aria-pressed'), e.querySelector('[data-kp-rozet]').hidden ? '' : e.querySelector('[data-kp-rozet]').textContent]));
+assert.deepEqual(await araclar(), [['yazi', 'true', '4'], ['ikon', 'false', ''], ['aksesuar', 'false', '']]);
+assert.equal(await sayfa.locator('[data-kp-ileri]').textContent(), 'Özete geç →');
+await sayfa.locator('.kp-arac-dugme[data-kp-adim="ikon"]').click();
 
-// İkon: Spor kategorisinden Futbol Topu
+// Görsel: Spor kategorisinin Tümü → ızgara, Futbol Topu
 await sayfa.locator('[data-kp-panel="ikon"]').waitFor({ state: 'visible' });
+assert.equal(await sayfa.locator('.kp-arac-dugme[data-kp-adim="ikon"]').getAttribute('aria-pressed'), 'true');
 await sayfa.locator('[data-kp-kategori="Spor"]').click();
-await sayfa.locator('[data-kp-ikon="2"]').click();
+await sayfa.locator('[data-kp-kategori-geri]').waitFor();
+await sayfa.locator('[data-kp-gorsel-icerik] [data-kp-ikon="2"]').click();
 await sayfa.locator('.kp-cip__ad', { hasText: 'Futbol Topu' }).waitFor();
 
 // Dokunarak sürükle: ikonu daire dışına sürükle → bırakıldığı yerde kalır, kırmızı "!"; Alana yerleştir ile içeri
@@ -230,11 +242,11 @@ await sayfa.screenshot({ path: cikti + '06-ikon-surukleme.png' });
 // Sayfa kaymadı mı?
 assert.equal(await sayfa.evaluate(() => window.scrollY), 0);
 
+assert.deepEqual(await araclar(), [['yazi', 'false', '4'], ['ikon', 'true', '1'], ['aksesuar', 'false', '']]);
 await sayfa.locator('[data-kp-ileri]').click();
-// İkon → Aksesuar → Özet
-await sayfa.locator('[data-kp-panel="aksesuar"]').waitFor({ state: 'visible' });
-await sayfa.locator('[data-kp-ileri]').click();
+// Tasarım → Özet
 await sayfa.locator('[data-kp-panel="ozet"]').waitFor({ state: 'visible' });
+assert.equal(await sayfa.locator('.kp-editor:not(.kp-editor--alt) [data-kp-araclar]').isVisible(), false, 'Özet\'te araçlar gizli');
 await sayfa.locator('.kp-ozet__kampanya').waitFor();
 const ozet = await sayfa.locator('.kp-ozet').innerText();
 assert.match(ozet, /✓ 4'lü patch indirimi\s+−370 TL/);

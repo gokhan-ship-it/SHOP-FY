@@ -116,6 +116,7 @@ const ana = '.kp-editor:not(.kp-editor--alt)';
 await dene(ana, '#kp-isim');
 // Aksesuar tasarım ekranı
 await s.locator(ana + ' [data-kp-secim-kaldir]').click();
+if (await s.locator(ana + ' [data-kp-adim="ozet"][aria-current]').count()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
 await s.locator('[data-kp-aksesuar="9101"]').click();
 await s.locator('.kp-editor--alt').waitFor({ state: 'visible' });

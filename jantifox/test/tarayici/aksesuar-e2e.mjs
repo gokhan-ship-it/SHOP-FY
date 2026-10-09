@@ -40,10 +40,10 @@ await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await s.locator('kisisel-kart').waitFor({ state: 'visible' });
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 
-// 1) Akış: Yazı → İkon → Aksesuar → Özet
-assert.equal(await metin(ana + ' .kp-adimlar'), '1 Yazı 2 İkon 3 Aksesuar 4 Özet');
+// 1) İki adım (Tasarım / Özet); Aksesuar aracı
+assert.equal(await metin(ana + ' .kp-adimlar'), '1 Tasarım 2 Özet');
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
-assert.equal(await metin(ana + ' [data-kp-panel="aksesuar"] [data-kp-gec]'), 'Aksesuar istemiyorum →');
+assert.equal(await s.locator(ana + ' [data-kp-gec]').count(), 0, '"… istemiyorum" butonları yok');
 // Kartlar yatay, tek sütun: solda ~96 px görsel, sağda bilgiler ve butonlar; en az iki kart butonlarıyla panele sığar
 const kartYer = await s.evaluate((q) => {
   const kaydir = document.querySelector(q + ' .kp-kaydir').getBoundingClientRect();
@@ -55,7 +55,7 @@ const kartYer = await s.evaluate((q) => {
   });
 }, ana);
 assert.ok(kartYer.every((k) => k.x === kartYer[0].x && Math.abs(k.img - 96) <= 2 && k.imgSol), 'yatay, tek sütun: ' + JSON.stringify(kartYer));
-assert.ok(kartYer[0].sigar && kartYer[1].sigar, 'iki kart butonlarıyla ekrana sığar');
+assert.ok(kartYer[0].sigar, 'ilk kart butonlarıyla ekrana sığar');
 assert.equal(await s.locator('[data-kp-aksesuar]').count(), 3, 'stokta olmayan yok');
 // Üzerine patch takılabilen: "Düz ekle" + kırmızı "Tasarla", yeşil not; takılamayan: tek "Ekle", gri not
 const kart = (id) => '.kp-secim--aksesuar:has([data-kp-aksesuar="' + id + '"])';
@@ -65,7 +65,6 @@ assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q))
 assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).color, kart(9101) + ' .kp-aks-kart__not'), 'rgb(46, 125, 50)');
 const [b1, b2] = await s.evaluate(() => ['[data-kp-aks-duz="9101"]', '[data-kp-aksesuar="9101"]'].map((q) => document.querySelector(q).getBoundingClientRect()).map((r) => [r.left, r.top]));
 assert.ok(b1[0] < b2[0] && Math.abs(b1[1] - b2[1]) < 1, 'Düz ekle solda, Tasarla sağda');
-assert.equal(await gorunur(ana + ' [data-kp-panel="aksesuar"] [data-kp-gec]'), true);
 
 // 2) Tasarlanamayan (Velcro yüzeyi yok) yuvarlak: doğrudan yerleşir; etiket kalemsiz
 await s.locator('[data-kp-aksesuar="9103"]').click();
@@ -73,7 +72,7 @@ assert.equal(await s.locator(ana + ' .kp-parca--aksesuar').count(), 1);
 assert.deepEqual(await cipler(), ['Mini Yuvarlak Çanta Mavi']);
 assert.equal(await s.locator(ana + ' [data-kp-aks-duzenle]').count(), 0);
 assert.equal(await toplam(), '3.900 TL');
-assert.equal(await gorunur(ana + ' [data-kp-panel="aksesuar"] [data-kp-gec]'), false);
+assert.equal(await s.locator(ana + ' [data-kp-rozet="aksesuar"]').textContent(), '1');
 
 // 3) Kalem kutusu: kendi tasarım ekranı (sade)
 await s.locator('[data-kp-aksesuar="9101"]').click();
@@ -102,8 +101,9 @@ assert.equal(await gorunur(alt + ' [data-kp-alt-ipucu]'), false);
 assert.equal(await s.locator(alt + ' .kp-parca--letter').count(), 3, 'aksesuarın önizlemesinde yazı');
 assert.equal(await s.locator(alt + ' .kp-parca--hatali').count(), 0, 'ADA aksesuarın Velcro yüzeyine sığar');
 await s.locator(alt + ' [data-kp-adim="ikon"]').click();
-assert.equal(await s.locator(alt + ' [data-kp-ikon-yol="set"]').count(), 1, 'aksesuarda da setler');
+assert.equal(await s.locator(alt + ' [data-kp-kategori="Hazır setler"]').count(), 1, 'aksesuarda da setler');
 await s.locator(alt + ' [data-kp-ileri]').click();
+assert.equal(await s.locator(ana + ' .kp-arac-dugme[data-kp-adim="aksesuar"]').getAttribute('aria-pressed'), 'true', 'dönüşte Aksesuar aracı açık');
 
 // 4) Soru sormadan: kalem kutusu Velcro alanın büyük kısmını kapladığı için çantadaki her şey (yuvarlak çanta da) kenara alınır
 assert.equal(await gorunur(alt), false, 'aksesuar ekranı kapandı');
@@ -178,7 +178,7 @@ await buyut();
 await s.locator(ana + ' [data-kp-kaldir]').first().click();
 await s.locator(ana + ' [data-kp-adim="ikon"]').click();
 await s.locator(ana + ' [data-kp-kategori="Spor"]').click();
-await s.locator(ana + ' [data-kp-ikon="2"]').click();
+await s.locator(ana + ' [data-kp-gorsel-icerik] [data-kp-ikon="2"]').click();
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
 await s.locator('[data-kp-aksesuar="9102"]').click();
 assert.equal(await gorunur(ana + ' [data-kp-onay]'), false);
@@ -196,7 +196,8 @@ await s.locator('#kpa-isim').fill('eda');
 await s.locator('#kpa-isim').press('Enter'); // klavye kapanır, alt çubuk görünür
 await s.locator(alt + ' [data-kp-ileri]').click();
 await s.locator(ana + ' [data-kp-adim="ozet"]').click();
-assert.equal(await s.locator(ana + ' [data-kp-adim-ozet="aksesuar"]').textContent(), 'Kalem Kutusu', 'adım göstergesinde aksesuarın adı');
+assert.ok(await s.locator(ana + ' [data-kp-adim-oge="tasarim"]').evaluate((e) => e.classList.contains('kp-adim-oge--gecildi')), 'Tasarım adımı ✓');
+assert.ok(await s.locator(ana + ' .kp-adim-cizgi').evaluate((e) => e.classList.contains('kp-adim-cizgi--dolu')), 'çizgi dolu');
 await s.locator(ana + ' [data-kp-ileri]').click();
 await s.waitForURL('**/cart');
 const [baz, ...digerleri] = eklenen.items;

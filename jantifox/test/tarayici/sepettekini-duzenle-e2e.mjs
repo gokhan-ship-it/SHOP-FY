@@ -65,6 +65,7 @@ const grupAnahtarlari = () => sepet.map((k) => k.key).sort().join(',');
 await urun();
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 await s.locator('#kp-isim').fill('ece7');
+if (await s.locator('[data-kp-adim="ozet"][aria-current]').count()) await s.locator('[data-kp-adim="tasarim"]').click();
 await s.locator('[data-kp-adim="ikon"]').click();
 await s.locator('[data-kp-kategori="Spor"]').click();
 await s.locator('[data-kp-ikon="2"]').click();
@@ -102,6 +103,7 @@ assert.equal(await s.locator('#kp-isim').inputValue(), 'ECE7');
 assert.deepEqual(await s.$$eval('.kp-cip__ad', (b) => b.map((x) => x.textContent)), ['ECE7', 'Futbol Topu']);
 await s.locator('[data-kp-adim="ozet"]').click();
 assert.match(await metin('[data-kp-ileri]'), /^Sepeti güncelle · 4\.650 TL$/);
+if (await s.locator('[data-kp-adim="ozet"][aria-current]').count()) await s.locator('[data-kp-adim="tasarim"]').click();
 await s.locator('[data-kp-adim="yazi"]').click();
 await s.locator('#kp-isim').fill('ada7');
 await s.locator('[data-kp-kapat]').click();
@@ -112,6 +114,7 @@ assert.equal(await s.evaluate(() => localStorage.getItem('kisisel-tasarim-100872
 
 // 2b) Güncelleme hatası: eski grup kalır, editör açık kalır, uyarı
 await s.locator('[data-kisisel-sepet-duzenle="0"]').click();
+if (await s.locator('[data-kp-adim="ozet"][aria-current]').count()) await s.locator('[data-kp-adim="tasarim"]').click();
 await s.locator('[data-kp-adim="yazi"]').click();
 await s.locator('#kp-isim').fill('ada7');
 await s.locator('[data-kp-adim="ozet"]').click();

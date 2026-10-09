@@ -9,6 +9,8 @@ const canta = svg(`<rect x="0" y="0" width="1344" height="1460" rx="30" fill="#1
 
 const v = ornekVeriPiramitli();
 v.gorsel = { en: 1344, boy: 1460, kucuk: canta, buyuk: canta, dev: canta };
+// Kanvas Lacivert Tote: metin karakter sınırı 6 (kisisellestirme.metin_karakter_siniri)
+v.urun.metin_siniri = 6;
 v.harita = {
   surum: 2, kalibre: true, gorsel: { en: 1344, boy: 1460 },
   zones: [{ id: 'on-daire', shape: 'circle', x: (252 / 1344) * 100, y: (346 / 1460) * 100, w: (840 / 1344) * 100, h: (840 / 1460) * 100, cap_cm: 25, allowed_types: ['letter', 'number', 'icon'] }],

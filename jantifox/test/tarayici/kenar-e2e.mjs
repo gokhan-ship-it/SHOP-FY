@@ -53,8 +53,13 @@ assert.equal(await kenarSayisi(), 0);
 assert.equal((await metin('[data-kp-etiketler]').catch(() => '')), '', 'boşken eklenenler yazısı yok');
 
 // 2) Bir ikon ekle; çantadan kenara sürükle: kenarda, eklenenlerde ↧, fiyata dahil değil, kenar notu
+if (await s.locator('[data-kp-adim="ozet"][aria-current]').count()) await s.locator('[data-kp-adim="tasarim"]').click();
 await s.locator('[data-kp-adim="ikon"]').click();
-await s.locator('[data-kp-kategori="Spor"]').click();
+const kategoriAc = async (ad) => {
+  if (await s.locator('[data-kp-kategori-geri]').count()) await s.locator('[data-kp-kategori-geri]').click();
+  await s.locator('[data-kp-kategori="' + ad + '"]').click();
+};
+await kategoriAc('Spor');
 await s.locator('[data-kp-ikon="2"]').click();
 if (await gorunur('[data-kp-secim-kaldir]')) await s.locator('[data-kp-secim-kaldir]').click();
 const toplam0 = await metin('[data-kp-toplam]');
@@ -129,12 +134,13 @@ assert.equal(await gorunur('[data-kp-ozet-yer]'), false);
 assert.equal(await s.locator('.kp-parca--hatali').count(), 0);
 
 // 7) Set her zaman eklenir: alan doluyken sığmayanlar kenara, bildirim + Geri al (setin tamamı)
+if (await s.locator('[data-kp-adim="ozet"][aria-current]').count()) await s.locator('[data-kp-adim="tasarim"]').click();
 await s.locator('[data-kp-adim="ikon"]').click();
-await s.locator('[data-kp-kategori="Spor"]').click();
+await kategoriAc('Spor');
 for (let i = 0; i < 8; i++) await s.locator('[data-kp-ikon="2"]').click();
 const kenarOnce = await kenarSayisi();
 const cipOnce = (await cipler()).length;
-await s.locator('[data-kp-ikon-yol="set"]').click();
+await kategoriAc('Hazır setler');
 assert.equal(await s.locator('[data-kp-hazir-set] .kp-secim__rozet').count(), 0, 'Yer aç etiketi yok');
 await s.locator('[data-kp-hazir-set="8001"]').click();
 const setBildirim = await metin('[data-kp-bildirim]');
@@ -154,8 +160,7 @@ assert.equal((await cipler()).length, cipOnce, 'Geri al (düğme) setin tamamın
 
 // 8) Özet'te kenar kartı: hepsi işaretli, dokununca seçim kalkar, tutar canlı; "Evet" seçilenleri fiyata ve sepete
 // ("Durum: Takılmamış") katar; konumda e:1; galeride yalnızca takılmış
-await s.locator('[data-kp-ikon-yol="kendim"]').click();
-await s.locator('[data-kp-kategori="Spor"]').click();
+await kategoriAc('Spor');
 for (let i = 0; i < 12 && (await kenarSayisi()) < 2; i++) await s.locator('[data-kp-ikon="2"]').click();
 assert.equal(await kenarSayisi(), 2, 'yer kalmayınca ikon da kenara');
 await s.locator('[data-kp-adim="ozet"]').click();
@@ -200,8 +205,9 @@ assert.equal(kit[kimlik].p.length, takiliSatir.quantity, 'sepet görselinde yaln
   await s.evaluate(() => localStorage.clear());
   await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
   await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
+  if (await s.locator('[data-kp-adim="ozet"][aria-current]').count()) await s.locator('[data-kp-adim="tasarim"]').click();
   await s.locator('[data-kp-adim="ikon"]').click();
-  await s.locator('[data-kp-kategori="Spor"]').click();
+  await kategoriAc('Spor');
   for (let i = 0; i < 12 && !(await kenarSayisi()); i++) await s.locator('[data-kp-ikon="2"]').click();
   const kenarAdet = await kenarSayisi();
   await s.locator('[data-kp-adim="ozet"]').click();

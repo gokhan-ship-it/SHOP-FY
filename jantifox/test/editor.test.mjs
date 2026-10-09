@@ -821,3 +821,48 @@ test('kampanya şeridi: sade iki satır, daha ucuz hedef, tümü; anlaşılır a
   assert.equal(k.kazancMetni('Çanta Alana 1 Patch Hediye', 33000, esikler), '🎁 1 patch hediye eklendi');
 });
 
+
+test('metin karakter sınırı: geometriyle küçüğü geçerli, aşınca sığmıyor', () => {
+  const v = ornekVeri();
+  const geo = new ic.Yerlesim(new ic.Model(v)).kapasite(new ic.Model(v).setler[0]);
+  v.urun.metin_siniri = 3;
+  const m = new ic.Model(v);
+  const y = new ic.Yerlesim(m);
+  assert.equal(m.metinSiniri, 3);
+  assert.ok(geo > 3, 'geometri ' + geo);
+  assert.equal(ic.isimAnaliz(m, y, tasarim(m, 'ECE')).kapasite, 3);
+  assert.equal(ic.isimAnaliz(m, y, tasarim(m, 'ECE')).sigiyor, true);
+  assert.equal(ic.isimAnaliz(m, y, tasarim(m, 'ECEM')).sigiyor, false);
+  // Sınır geometriden büyükse geometri geçerli; tanımsızsa yalnız geometri
+  const v2 = ornekVeri(); v2.urun.metin_siniri = 99;
+  const m2 = new ic.Model(v2);
+  assert.equal(ic.isimAnaliz(m2, new ic.Yerlesim(m2), tasarim(m2, 'ECE')).kapasite, geo);
+  const m3 = new ic.Model(ornekVeri());
+  assert.equal(m3.metinSiniri, null);
+  assert.equal(ic.isimAnaliz(m3, new ic.Yerlesim(m3), tasarim(m3, 'ECE')).kapasite, geo);
+});
+
+test('kampanya: tasarımın payı yalnız kendi satırlarına düşen indirim', () => {
+  const k = ic.kampanya;
+  const gid = (v) => 'gid://shopify/ProductVariant/' + v;
+  // Sepette başka bir çanta (3.000) + 2 patch; tasarım: çanta + 4 patch. 4'lü −370 TL 6 patch'e dağıldı, Ekstra %10 sepet düzeyinde
+  const cart = {
+    cost: { subtotalAmount: { amount: '8610.0' } },
+    lines: { nodes: [
+      { quantity: 2, merchandise: { id: gid(1) }, discountAllocations: [] },
+      { quantity: 6, merchandise: { id: gid(9) }, discountAllocations: [{ title: "4'lü patche indirim", discountedAmount: { amount: '370.0' } }] }
+    ] },
+    discountAllocations: [{ title: 'Ekstra %10 İndirim', discountedAmount: { amount: '861.0' } }]
+  };
+  const tasarimSatirlari = [{ v: 1, q: 1, f: 300000 }, { v: 9, q: 4, f: 33000 }];
+  const pay = k.tasarimPayiSepetten(cart, tasarimSatirlari);
+  // Adet: 370 × 4/6 = 246,67; Ekstra: 861 × (4.320 − 246,67) / 8.610 = 407,33
+  assert.deepEqual(duz(pay), { "4'lü patche indirim": 24667, 'Ekstra %10 İndirim': 40733 }, "ham pay (gösterimde tam TL)");
+  assert.equal(k.tasarimIndirimi({ indirim: 123100, tasarimIndirim: 65400 }), 65400);
+  assert.equal(k.tasarimIndirimi({ indirim: 37000 }), 37000);
+  assert.equal(k.tasarimIndirimi({ hata: true, indirim: 5 }), 0);
+  // Şerit: indirimin bir kısmı sepettekilerden geliyorsa belirtir
+  const d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 86100 }, indirim: 93000, tasarimIndirim: 65400, sepetIndirim: 123100, altToplam: 861000, uygunAdet: 6, ekler: {} },
+    [{ k: 4, ad: "4'lü patche indirim", tutar: 37000 }], [{ baslik: 'Ekstra %10 İndirim', tutar: 500000 }], 33000, 33000);
+  assert.match(d.sol, /\(sepetindekilerle birlikte\)/);
+});

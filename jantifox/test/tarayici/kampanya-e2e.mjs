@@ -59,7 +59,7 @@ async function sayfaAc(secenek = {}) {
       for (const [ad, satirlar] of Object.entries(variables)) data[ad] = { cart: sepet(satirlar), userErrors: [] };
       return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ data }) });
     }
-    if (url.pathname === '/cart.js') return r.fulfill({ contentType: 'application/json', body: '{"items":[]}' });
+    if (url.pathname === '/cart.js') return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: secenek.sepet || [] }) });
     return r.fulfill({ contentType: 'text/html', body: html });
   });
   await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
@@ -124,6 +124,7 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
 
   // Adet 2 → ara toplam 5.000 TL'yi geçer: Ekstra %10, tüm kampanyalar
   await s.evaluate(() => { document.querySelector('#Quantity-main').value = '2'; });
+  if (await s.locator(ana + ' [data-kp-adim="ozet"][aria-current]').count()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
   await s.locator(ana + ' [data-kp-adim="ikon"]').click();
   await bekle(s, ana + ' [data-kp-kazanc]', /Ekstra/);
   assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), '✨ Ekstra %10 indirim açıldı · Tüm siparişinde −827 TL');
@@ -141,6 +142,7 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   const gorulen = await s.evaluate(() => JSON.parse(sessionStorage.getItem('kp-kampanya-gorulen')));
   assert.deepEqual(gorulen.sort(), ["2li patche indirim", "3'lü patche indirim", "4'lü patche indirim", 'Ekstra %10 İndirim'].sort());
   await s.waitForTimeout(2700); // önceki bildirim kaybolsun
+  if (await s.locator(ana + ' [data-kp-adim="ozet"][aria-current]').count()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
   await s.locator(ana + ' [data-kp-adim="yazi"]').click();
   await s.locator('#kp-isim').fill('ec');
   await s.waitForTimeout(700);
@@ -150,6 +152,7 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
 
   // Aksesuar ekranında da şerit ve kampanyalı toplam
   await s.evaluate(() => { document.querySelector('#Quantity-main').value = '1'; });
+  if (await s.locator(ana + ' [data-kp-adim="ozet"][aria-current]').count()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
   await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
   await s.locator('[data-kp-aksesuar="9101"]').click();
   await s.locator('.kp-editor--alt').waitFor({ state: 'visible' });
@@ -219,6 +222,36 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
     return { ust: d.top - 3, sol: d.left - 3, sonSag: son.right, kapat: k.left, yukseklik: document.querySelector(q + ' .kp-ust').getBoundingClientRect().height };
   }, ana);
   assert.ok(h.ust >= 0 && h.sol >= 8 && h.sonSag <= h.kapat - 4 && h.yukseklik <= 64, 'halka kesilmez, kenara yapışmaz: ' + JSON.stringify(h));
+  assert.deepEqual(hatalar, []);
+  await baglam.close();
+}
+
+// ---------- Sepette başka ürünler: alt çubukta yalnızca bu tasarımın fiyatı, şeritte "(sepetindekilerle birlikte)" ----------
+{
+  // Sepette: düz çanta 3.000 + 2 Futbol Topu 660. Tasarım: çanta 3.000 + ECE (990)
+  const sepetteki = [
+    { variant_id: 51795696943390, product_id: 10087205437726, quantity: 1, original_price: 300000, properties: {} },
+    { variant_id: 3002, product_id: 2, quantity: 2, original_price: 33000, properties: {} }
+  ];
+  const { s, hatalar, baglam } = await sayfaAc({ sepet: sepetteki, genislik: 360 });
+  await s.waitForFunction(() => !!localStorage.getItem('kp-kampanya-kurallari-2'));
+  await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
+  await s.locator('#kp-isim').fill('ece');
+  // Toplam sepet 7.650: 5 patch → 4'lü −370 (tasarımın 3 harfine 222), ara toplam 7.280 → Ekstra %10 −728
+  // (tasarımın payı 728 × (3.990 − 222) / 7.280 = 376,80). Tasarımın fiyatı 3.990 − 598,80 = 3.391 TL
+  await bekle(s, ana + ' [data-kp-toplam]', /3\.391 TL/);
+  assert.equal(await metin(s, ana + ' [data-kp-toplam]'), '3.990 TL 3.391 TL');
+  const sol = await metin(s, ana + ' [data-kp-serit-sol]');
+  assert.match(sol, /^[\d.]+ TL indirim kazandın \(sepetindekilerle birlikte\)/);
+  // 360 px'te iki satır, taşma yok
+  const o = await s.evaluate((q) => { const u = document.querySelector(q + ' .kp-serit__ust'); const r = u.getBoundingClientRect(); return { tasmaYok: u.scrollWidth <= u.clientWidth && u.scrollHeight <= u.clientHeight + 1 && r.right <= innerWidth, satir: Math.round(r.height / parseFloat(getComputedStyle(u).lineHeight)) }; }, ana);
+  assert.ok(o.tasmaYok && o.satir <= 2, '360 px şerit (birlikte): ' + JSON.stringify(o));
+  // Özet: tasarımın satırlarına düşen indirimler
+  await s.locator(ana + ' [data-kp-adim="ozet"]').click();
+  await bekle(s, ana + ' .kp-ozet', /Ekstra/);
+  assert.deepEqual(await s.$$eval(ana + ' .kp-ozet__kampanya', (x) => x.map((e) => e.innerText.replace(/\s+/g, ' ').trim())), ["✓ 4'lü patch indirimi −222 TL", '✓ Ekstra %10 indirim −377 TL']);
+  assert.match(await metin(s, ana + ' [data-kp-ileri]'), /3\.391 TL$/);
+  console.log('sepetle birlikte:', sol);
   assert.deepEqual(hatalar, []);
   await baglam.close();
 }

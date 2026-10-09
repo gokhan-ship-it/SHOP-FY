@@ -25,7 +25,8 @@
     "baslik": {{ product.title | json }},
     "varyant": {{ baz.id }},
     "fiyat": {{ baz.price }},
-    "satilabilir": {{ baz.available | json }}
+    "satilabilir": {{ baz.available | json }},
+    "metin_siniri": {{ product.metafields.kisisellestirme.metin_karakter_siniri.value | json }}
   },
   "gorsel": {
     "en": {{ onizleme.width | default: 1000 }},

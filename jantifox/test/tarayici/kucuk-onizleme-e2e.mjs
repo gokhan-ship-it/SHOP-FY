@@ -54,6 +54,9 @@ assert.equal(await gorunur('[data-kp-gorunum]'), false, 'Tüm çantayı gör giz
 const [icK, satirK] = await s.evaluate((q) => [' .kp-onizleme__ic', ' .kp-satir'].map((x) => document.querySelector(q + x).getBoundingClientRect()).map((r) => ({ t: r.top, b: r.bottom, h: r.height })), ed);
 assert.ok(satirK.h > 30 && satirK.t >= icK.b && satirK.t - icK.b < 12, 'satır önizlemenin hemen altında: ' + JSON.stringify([icK, satirK]));
 assert.equal(await gorunur('[data-kp-buyut]'), true);
+// Araçlar küçük önizlemede de önizlemenin (ve kenar satırının) altında, panelin üstünde
+const aracK = await s.evaluate((q) => { const a = document.querySelector(q + ' [data-kp-araclar]').getBoundingClientRect(); const k = document.querySelector(q + ' .kp-kaydir').getBoundingClientRect(); return { ust: a.top, alt: a.bottom, panel: k.top }; }, ed);
+assert.ok(aracK.ust >= satirK.b - 1 && aracK.alt <= aracK.panel + 1, 'araçlar önizlemenin altında: ' + JSON.stringify(aracK));
 const [ic, buyut, geri] = await s.evaluate((q) => [' .kp-onizleme__ic', ' [data-kp-buyut]', ' [data-kp-geri-al]'].map((x) => document.querySelector(q + x).getBoundingClientRect()).map((r) => ({ r: r.right, b: r.bottom, w: r.width })), ed);
 assert.ok(ic.r - buyut.r < 12 && ic.b - buyut.b < 12, 'Büyüt sağ altta');
 assert.ok(geri.w <= 26, 'geri al küçük: ' + geri.w);
@@ -88,7 +91,7 @@ await s.waitForTimeout(400);
 assert.equal(await kucuk(), false, 'patch\'e dokununca büyür');
 
 // 7) Hazır setler listesinde de; Yazı adımına geçince tam boyut
-await s.locator(ed + ' [data-kp-ikon-yol="set"]').click();
+await s.locator(ed + ' [data-kp-kategori="Hazır setler"]').click();
 await kaydir(120);
 await s.waitForTimeout(100);
 const setKucuk = await kucuk();

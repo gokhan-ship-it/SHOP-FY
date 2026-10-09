@@ -28,10 +28,12 @@ const anaTasarim = () => s.evaluate(() => JSON.stringify(document.querySelector(
 await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 // Çantaya bir ikon ekle (çantadaki tasarım)
+if (await s.locator(ana + ' [data-kp-adim="ozet"][aria-current]').count()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
 await s.locator(ana + ' [data-kp-adim="ikon"]').click();
 await s.locator(ana + ' [data-kp-kategori="Spor"]').click();
 await s.locator(ana + ' [data-kp-ikon="2"]').click();
 if (await gorunur(ana + ' [data-kp-secim-kaldir]')) await s.locator(ana + ' [data-kp-secim-kaldir]').click();
+if (await s.locator(ana + ' [data-kp-adim="ozet"][aria-current]').count()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
 const bas = await anaTasarim();
 

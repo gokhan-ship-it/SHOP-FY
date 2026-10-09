@@ -73,9 +73,9 @@ await s.locator('#kp-isim').fill('ece');
 assert.equal(await s.locator('[data-kp-stil-panel]').isVisible(), false);
 await s.locator('[data-kp-karakter="0"]').click();
 assert.equal(await s.locator('.kp-stil__baslik').textContent(), '1. harf E · Stil');
-// Üstte üç seçenek: Hepsi Cool (seçili) / Hepsi Piramit / Karışık; harf kartlarında kalem
+// Üstte üç seçenek: Cool Alfabe (seçili) / Piramit Alfabe / Karışık; harf kartlarında kalem
 const stilSecim = () => s.$$eval('[data-kp-stil-secim] button', (b) => b.map((x) => [x.textContent, x.getAttribute('aria-pressed')]));
-assert.deepEqual(await stilSecim(), [['Hepsi Cool', 'true'], ['Hepsi Piramit', 'false'], ['Karışık', 'false']]);
+assert.deepEqual(await stilSecim(), [['Cool Alfabe', 'true'], ['Piramit Alfabe', 'false'], ['Karışık', 'false']]);
 assert.equal(await s.locator('.kp-karakter__kalem').count(), 3);
 assert.equal(await s.locator('[data-kp-stil]').count(), 2);
 assert.equal(await s.locator('.kp-stil__renkler').count(), 0, 'Cool\'da renk yok');

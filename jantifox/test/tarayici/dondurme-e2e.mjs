@@ -77,6 +77,7 @@ async function tutamacCevir(derece, adim = 18, gozle) {
 }
 
 // İkon adımı → Diğer kategorisi → Meteor
+if (await sayfa.locator('[data-kp-adim="ozet"][aria-current]').count()) await sayfa.locator('[data-kp-adim="tasarim"]').click();
 await sayfa.locator('[data-kp-adim="ikon"]').click();
 await sayfa.locator('[data-kp-kategori="Diğer"]').click();
 await sayfa.locator('[data-kp-ikon="6"]').click();
@@ -194,6 +195,7 @@ await sayfa.evaluate(() => document.querySelector('kisisel-kart').editor.acisiDe
 }
 
 // 7) Blok isim bir bütün olarak döner; sepet konumunda açı
+if (await sayfa.locator('[data-kp-adim="ozet"][aria-current]').count()) await sayfa.locator('[data-kp-adim="tasarim"]').click();
 await sayfa.locator('[data-kp-adim="yazi"]').click();
 await sayfa.locator('#kp-isim').fill('ece');
 await sayfa.waitForTimeout(200);
