@@ -41,7 +41,8 @@ await s.locator('kisisel-kart').waitFor({ state: 'visible' });
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 
 // 1) İki adım (Tasarım / Özet); Aksesuar aracı
-assert.equal(await metin(ana + ' .kp-adimlar'), '1 Tasarım 2 Özet');
+assert.equal(await s.locator(ana + ' .kp-adimlar').count(), 0, 'adım göstergesi yok');
+assert.equal(await gorunur(ana + ' .kp-ust'), false, 'Tasarım ekranında üst satır yok');
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
 assert.equal(await s.locator(ana + ' [data-kp-gec]').count(), 0, '"… istemiyorum" butonları yok');
 // Kartlar yatay, tek sütun: solda ~96 px görsel, sağda bilgiler ve butonlar; en az iki kart butonlarıyla panele sığar
@@ -195,9 +196,8 @@ await s.locator('[data-kp-aksesuar="9101"]').click();
 await s.locator('#kpa-isim').fill('eda');
 await s.locator('#kpa-isim').press('Enter'); // klavye kapanır, alt çubuk görünür
 await s.locator(alt + ' [data-kp-ileri]').click();
-await s.locator(ana + ' [data-kp-adim="ozet"]').click();
-assert.ok(await s.locator(ana + ' [data-kp-adim-oge="tasarim"]').evaluate((e) => e.classList.contains('kp-adim-oge--gecildi')), 'Tasarım adımı ✓');
-assert.ok(await s.locator(ana + ' .kp-adim-cizgi').evaluate((e) => e.classList.contains('kp-adim-cizgi--dolu')), 'çizgi dolu');
+await s.locator(ana + ' [data-kp-ileri]').click();
+assert.equal(await metin(ana + ' [data-kp-ozet-ust]'), '‹ Tasarıma dön Özet', 'Özet\'te ince üst satır');
 await s.locator(ana + ' [data-kp-ileri]').click();
 await s.waitForURL('**/cart');
 const [baz, ...digerleri] = eklenen.items;

@@ -866,3 +866,23 @@ test('kampanya: tasarımın payı yalnız kendi satırlarına düşen indirim', 
     [{ k: 4, ad: "4'lü patche indirim", tutar: 37000 }], [{ baslik: 'Ekstra %10 İndirim', tutar: 500000 }], 33000, 33000);
   assert.match(d.sol, /\(sepetindekilerle birlikte\)/);
 });
+
+test('kampanya önerisi yalnızca sıradaki kampanya yakınsa (en fazla 2 patch ya da 2 patch tutarı)', () => {
+  const k = ic.kampanya;
+  const merdiven = [{ k: 2, ad: '2li patche indirim ', tutar: 6000 }, { k: 3, ad: " 3'lü  patche indirim ", tutar: 19000 }, { k: 4, ad: "  4'lü  patche indirim ", tutar: 37000 }];
+  const esikler = [{ baslik: 'Ekstra %10 İndirim', tutar: 500000 }];
+  // 1 patch daha → 3'lü: yakın
+  let d = k.seritDurumu({ aktif: { '2li patche indirim': 6000 }, sepetIndirim: 6000, altToplam: 360000, uygunAdet: 2,
+    ekler: { '+1': { aktif: { "3'lü patche indirim": 19000 }, sepetIndirim: 19000 } } }, merdiven, esikler, 33000, 33000);
+  assert.equal(d.yakin, true);
+  // %10'a 1.050 TL (3 patch'ten fazla): uzak
+  d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000 }, sepetIndirim: 37000, altToplam: 395000, uygunAdet: 4, ekler: {} }, merdiven, esikler, 33000, 33000);
+  assert.equal(d.sag, '1.050 TL daha ekle, tüm siparişe %10 indirim');
+  assert.equal(d.yakin, false);
+  // %10'a 390 TL (2 patch tutarından az): yakın
+  d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000 }, sepetIndirim: 37000, altToplam: 461000, uygunAdet: 6, ekler: {} }, merdiven, esikler, 33000, 33000);
+  assert.equal(d.yakin, true);
+  // Hepsi: öneri yok
+  d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 63100 }, sepetIndirim: 100100, altToplam: 668000, uygunAdet: 5, ekler: {} }, merdiven, esikler, 33000, 33000);
+  assert.equal(d.yakin, false);
+});

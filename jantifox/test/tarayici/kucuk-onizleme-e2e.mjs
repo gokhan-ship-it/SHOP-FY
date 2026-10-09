@@ -54,9 +54,13 @@ assert.equal(await gorunur('[data-kp-gorunum]'), false, 'Tüm çantayı gör giz
 const [icK, satirK] = await s.evaluate((q) => [' .kp-onizleme__ic', ' .kp-satir'].map((x) => document.querySelector(q + x).getBoundingClientRect()).map((r) => ({ t: r.top, b: r.bottom, h: r.height })), ed);
 assert.ok(satirK.h > 30 && satirK.t >= icK.b && satirK.t - icK.b < 12, 'satır önizlemenin hemen altında: ' + JSON.stringify([icK, satirK]));
 assert.equal(await gorunur('[data-kp-buyut]'), true);
-// Araçlar küçük önizlemede de önizlemenin (ve kenar satırının) altında, panelin üstünde
-const aracK = await s.evaluate((q) => { const a = document.querySelector(q + ' [data-kp-araclar]').getBoundingClientRect(); const k = document.querySelector(q + ' .kp-kaydir').getBoundingClientRect(); return { ust: a.top, alt: a.bottom, panel: k.top }; }, ed);
-assert.ok(aracK.ust >= satirK.b - 1 && aracK.alt <= aracK.panel + 1, 'araçlar önizlemenin altında: ' + JSON.stringify(aracK));
+// Araçlar küçük önizlemede de solunda, orantılı küçük (yalnızca simge ve rozet), önizlemeden uzun değil
+const aracK = await s.evaluate((q) => {
+  const a = document.querySelector(q + ' [data-kp-araclar]').getBoundingClientRect(); const o = document.querySelector(q + ' .kp-onizleme__ic').getBoundingClientRect();
+  const d = document.querySelector(q + ' .kp-arac-dugme').getBoundingClientRect();
+  return { solda: a.right <= o.left, ust: Math.abs(a.top - o.top) < 2, sigar: a.bottom <= o.bottom + 1, d: [Math.round(d.width), Math.round(d.height)], adGizli: getComputedStyle(document.querySelector(q + ' .kp-arac-dugme__ad')).display === 'none' };
+}, ed);
+assert.deepEqual(aracK, { solda: true, ust: true, sigar: true, d: [42, 42], adGizli: true });
 const [ic, buyut, geri] = await s.evaluate((q) => [' .kp-onizleme__ic', ' [data-kp-buyut]', ' [data-kp-geri-al]'].map((x) => document.querySelector(q + x).getBoundingClientRect()).map((r) => ({ r: r.right, b: r.bottom, w: r.width })), ed);
 assert.ok(ic.r - buyut.r < 12 && ic.b - buyut.b < 12, 'Büyüt sağ altta');
 assert.ok(geri.w <= 26, 'geri al küçük: ' + geri.w);
@@ -90,12 +94,14 @@ await dokun('touchEnd');
 await s.waitForTimeout(400);
 assert.equal(await kucuk(), false, 'patch\'e dokununca büyür');
 
-// 7) Hazır setler listesinde de; Yazı adımına geçince tam boyut
-await s.locator(ed + ' [data-kp-kategori="Hazır setler"]').click();
-await kaydir(120);
-await s.waitForTimeout(100);
-const setKucuk = await kucuk();
-assert.equal(setKucuk, true, 'hazır setler listesi kayınca da küçülür');
+// 7) Aksesuar listesinde de (kayacak kadar uzunsa); Metin aracına geçince tam boyut
+await s.locator(ed + ' [data-kp-adim="aksesuar"]').click();
+const kayabilir = await s.evaluate((q) => { const k = document.querySelector(q + ' .kp-kaydir'); return k.scrollHeight - k.clientHeight; }, ed);
+if (kayabilir > 40) {
+  await kaydir(120);
+  await s.waitForTimeout(100);
+  assert.equal(await kucuk(), true, 'aksesuar listesi kayınca da küçülür');
+} else console.log('aksesuar listesi kaymıyor (' + kayabilir + ' px), küçülme denetimi atlandı');
 await s.locator(ed + ' [data-kp-adim="yazi"]').click();
 assert.equal(await kucuk(), false, 'Yazı adımında tam boyut');
 

@@ -1931,6 +1931,13 @@
     this.isimOlayGonderildi = false;
   }
 
+  // Araç butonları: Metin "Aa", Görsel kalp çizgisi, Aksesuar sade çanta (yuvarlak köşeli gövde + kulp), aynı çizgi kalınlığı
+  var ARAC_BILGI = {
+    yazi: { ad: 'Metin', etiket: 'Metin ekle', simge: '<span class="kp-arac-dugme__aa">Aa</span>' },
+    ikon: { ad: 'Görsel', etiket: 'Görsel ekle', simge: '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>' },
+    aksesuar: { ad: 'Aksesuar', etiket: 'Aksesuar ekle', simge: '<svg viewBox="0 0 24 24" width="24" height="24"><rect x="4" y="8.5" width="16" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' }
+  };
+
   Editor.prototype.kur = function () {
     if (this.el) return;
     var el = document.createElement('div');
@@ -1941,28 +1948,21 @@
     el.setAttribute('aria-labelledby', 'kp-editor-baslik');
     el.hidden = true;
     el.innerHTML =
-      // Üst satır: çanta editöründe adımlar sekme gibi (başlık yalnızca ekran okuyucuya), sağda kapat.
-      // Aksesuar ekranında geri oku ve "[Aksesuar] tasarla"; Yazı / İkon düğmeleri altında.
-      '<div class="kp-ust' + (this.alt ? '' : ' kp-ust--sekmeler') + '">' +
+      // Aksesuar ekranında üst satır: geri oku ve "[Aksesuar] tasarla"; Yazı / İkon düğmeleri altında.
+      // Çanta editöründe adım göstergesi yok: Tasarım ekranında üst satır hiç yok (X önizlemenin sağ üstünde),
+      // Özet'te ince satır: solda "‹ Tasarıma dön", ortada "Özet"
       (this.alt
-        ? '<button type="button" class="kp-geri" data-kp-kapat aria-label="Çanta tasarımına dön"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+        ? '<div class="kp-ust">' +
+          '<button type="button" class="kp-geri" data-kp-kapat aria-label="Çanta tasarımına dön"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
           '<div class="kp-ust__metin"><h2 id="kp-editor-baslik" class="kp-ust__baslik" data-kp-baslik>' + kacis(aks.ad) + ' tasarla</h2>' +
-          (this.secenek.buyuk ? '<p class="kp-yol">Velcro alanın neredeyse tamamını kaplar</p>' : '') + '</div>'
+          (this.secenek.buyuk ? '<p class="kp-yol">Velcro alanın neredeyse tamamını kaplar</p>' : '') + '</div>' +
+          '</div>'
         : '<h2 id="kp-editor-baslik" class="kp-gizli" data-kp-baslik>Tasarımını oluştur</h2>' +
-          // Adım göstergesi: "1 Tasarım" solda, "2 Özet" sağda (X'in solunda); arada boşluğun tamamını kaplayan çizgi
-          '<nav class="kp-adimlar kp-adimlar--iki" aria-label="Tasarım adımları"><ol>' +
-          [{ id: 'tasarim', ad: 'Tasarım' }, { id: 'ozet', ad: 'Özet' }].map(function (a, i) {
-            return (i ? '<li class="kp-adim-cizgi" aria-hidden="true"><span class="kp-adim-cizgi__dolu"></span></li>' : '') +
-              '<li class="kp-adim-oge" data-kp-adim-oge="' + a.id + '"><button type="button" class="kp-adim" data-kp-adim="' + a.id + '">' +
-              '<span class="kp-adim__daire" aria-hidden="true"><span class="kp-adim__no">' + (i + 1) + '</span><span class="kp-adim__tik">✓</span></span>' +
-              '<span class="kp-adim__ad">' + a.ad + '</span>' +
-              '</button></li>';
-          }).join('') +
-          '</ol></nav>' +
-          '<button type="button" class="kp-kapat" data-kp-kapat aria-label="Kapat">' +
-          '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
-          '</button>') +
-      '</div>' +
+          '<div class="kp-ust kp-ust--ozet" data-kp-ozet-ust hidden>' +
+          '<button type="button" class="kp-ozet-geri" data-kp-adim="tasarim"><span aria-hidden="true">‹</span> Tasarıma dön</button>' +
+          '<p class="kp-ust__orta" aria-hidden="true">Özet</p>' +
+          '<span class="kp-ust__bos" aria-hidden="true"></span>' +
+          '</div>') +
       (this.alt
         ? '<nav class="kp-adimlar kp-adimlar--alt" aria-label="Tasarım"><div class="kp-sekmeler">' +
           this.adimlar.map(function (a) { return '<button type="button" class="kp-sekme" data-kp-adim="' + a.id + '">' + a.ad + '</button>'; }).join('') +
@@ -1970,8 +1970,23 @@
         : '') +
       '<div class="kp-govde">' +
       // Önizleme sabit kalır; yalnızca alttaki panel kayar
-      '<div class="kp-onizleme"><div class="kp-onizleme__ic" style="--kp-oran:' + (this.m.gorsel.en / this.m.gorsel.boy) + '">' +
+      '<div class="kp-onizleme">' +
+      // Araçlar önizlemenin solunda alt alta (Metin / Görsel / Aksesuar); önizleme sağda kalan alanı kaplar
+      '<div class="kp-onizleme__sira">' +
+      (this.alt ? '' :
+        '<div class="kp-araclar" data-kp-araclar role="group" aria-label="Araçlar">' +
+        this.adimlar.filter(function (a) { return a.id !== 'ozet'; }).map(function (a) {
+          return '<button type="button" class="kp-arac-dugme" data-kp-adim="' + a.id + '" aria-pressed="false" aria-label="' + ARAC_BILGI[a.id].etiket + '">' +
+            '<span class="kp-arac-dugme__simge" aria-hidden="true">' + ARAC_BILGI[a.id].simge + '</span><span class="kp-arac-dugme__ad" aria-hidden="true">' + ARAC_BILGI[a.id].ad + '</span>' +
+            '<span class="kp-arac-dugme__rozet" data-kp-rozet="' + a.id + '" hidden></span></button>';
+        }).join('') +
+        '</div>') +
+      '<div class="kp-onizleme__ic" style="--kp-oran:' + (this.m.gorsel.en / this.m.gorsel.boy) + '">' +
       '<div data-kp-sahne></div>' +
+      (this.alt ? '' :
+        '<button type="button" class="kp-kapat kp-kapat--onizleme" data-kp-kapat aria-label="Kapat">' +
+        '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>' +
+        '</button>') +
       '<div class="kp-gecmis" role="group" aria-label="Geçmiş">' +
       '<button type="button" class="kp-gecmis__dugme" data-kp-geri-al aria-label="Geri al" title="Geri al" disabled><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 7L4 12l5 5M4 12h10a6 6 0 0 1 0 12h-2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -3)"/></svg></button>' +
       '<button type="button" class="kp-gecmis__dugme" data-kp-yinele aria-label="Yinele" title="Yinele" disabled><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 7l5 5-5 5M20 12H10a6 6 0 0 0 0 12h2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -3)"/></svg></button>' +
@@ -1987,6 +2002,7 @@
       '<div class="kp-set-cerceve" data-kp-set-cerceve aria-hidden="true" hidden><span class="kp-set-cerceve__etiket"></span></div>' +
       // Küçük önizlemede sağ altta
       '<button type="button" class="kp-buyut" data-kp-buyut hidden>Büyüt</button>' +
+      '</div>' +
       '</div>' +
       // Önizlemenin hemen altında sabit satır: seçim yokken eklenenler, seçimde adı ve araçlar (aynı yükseklik)
       '<div class="kp-satir">' +
@@ -2011,16 +2027,6 @@
         '<div class="kp-kenar__liste" data-kp-kenar-liste></div>' +
         '<span class="kp-kenar__birak" aria-hidden="true">Kenara bırak</span>' +
         '</div>') +
-      // Tasarım ekranının araçları: önizlemenin (ve seçim/kenar satırlarının) hemen altında; önizleme küçülünce de altında
-      (this.alt ? '' :
-        '<div class="kp-araclar" data-kp-araclar role="group" aria-label="Araçlar">' +
-        this.adimlar.filter(function (a) { return a.id !== 'ozet'; }).map(function (a) {
-          var bilgi = { yazi: ['Aa', 'Metin ekle'], ikon: ['♡', 'Görsel ekle'], aksesuar: ['▭', 'Aksesuar ekle'] }[a.id];
-          return '<button type="button" class="kp-arac-dugme" data-kp-adim="' + a.id + '" aria-pressed="false">' +
-            '<span class="kp-arac-dugme__simge" aria-hidden="true">' + bilgi[0] + '</span><span class="kp-arac-dugme__ad">' + bilgi[1] + '</span>' +
-            '<span class="kp-arac-dugme__rozet" data-kp-rozet="' + a.id + '" hidden></span></button>';
-        }).join('') +
-        '</div>') +
       (this.m.kalibre ? '' : '<p class="kp-onizleme__not">Önizleme ölçüleri henüz kalibre edilmedi.</p>') +
       '</div>' +
       '<div class="kp-sag">' +
@@ -2035,28 +2041,41 @@
       }).join('') +
       '</div>' +
       '</div>' +
-      // Tek alt çubuk: en üstte 3 px ilerleme çizgisi, altında tek satır kampanya metni, altında fiyat ve ana buton.
-      // Aksesuar ekranında fiyat satırı: solda Vazgeç, ortada toplam, sağda ana buton
+      // Tek satırlık alt çubuk: en üstte 3 px ilerleme çizgisi; solda fiyat (dokununca kampanya paneli), sağda ana buton.
+      // Kazanma bildirimi ve kampanya önerisi çubuğun hemen üstünde birkaç saniyeliğine belirir.
+      // Aksesuar ekranında: solda Vazgeç, ortada toplam, sağda ana buton
       '<div class="kp-alt' + (this.alt ? ' kp-alt--aks' : '') + '">' +
       '<div class="kp-kazanc" data-kp-kazanc role="status" aria-live="polite" hidden></div>' +
       '<div class="kp-serit" data-kp-serit hidden>' +
       '<div class="kp-serit__cubuk" data-kp-serit-cubuk><span class="kp-serit__dolu" data-kp-serit-dolu></span></div>' +
-      '<p class="kp-serit__ust"><span class="kp-serit__sol" data-kp-serit-sol></span> <span class="kp-serit__sag" data-kp-serit-sag></span></p>' +
       '</div>' +
       (this.alt ? '<button type="button" class="btn kp-alt__vazgec" data-kp-vazgec>Vazgeç</button>' : '') +
-      '<div class="kp-alt__fiyat"><span>Toplam</span><strong data-kp-toplam></strong>' +
-      '<small class="kp-indirim-notu">İndirimler sepette uygulanır</small></div>' +
+      '<button type="button" class="kp-alt__fiyat" data-kp-fiyat-ac aria-haspopup="dialog"><span>Toplam</span><strong data-kp-toplam></strong>' +
+      '<small class="kp-indirim-notu">İndirimler sepette uygulanır</small></button>' +
       (this.alt
         ? '<button type="button" class="btn btn-primary kp-alt__ileri kp-alt__ileri--marka" data-kp-ileri>Düz ekle</button>'
-        : '<button type="button" class="btn btn-primary kp-alt__ileri" data-kp-ileri>İleri</button>') +
-      // Özet adımında: butonun altında not ve iki küçük bağlantı
+        : '<button type="button" class="btn btn-primary kp-alt__ileri" data-kp-ileri>Tasarımı tamamla →</button>') +
+      // Özet'te: butonun altında not ve küçük bağlantı
       '<div class="kp-alt__ozet" data-kp-alt-ozet hidden>' +
       '<p class="kp-indirim-notu">İndirimler sepette uygulanır</p>' +
       '<div class="kp-alt__baglantilar">' +
-      '<button type="button" class="kp-baglanti" data-kp-duzenle>Tasarımı düzenle</button>' +
       '<button type="button" class="kp-baglanti" data-kp-urune-don>Ürün sayfasına dön</button>' +
       '</div></div>' +
       '</div>' +
+      '</div>' +
+      '</div>' +
+      // Kampanya paneli: fiyata dokununca alttan açılır; dışına dokununca kapanır
+      '<div class="kp-kpanel" data-kp-kpanel hidden>' +
+      '<div class="kp-kpanel__perde" data-kp-kpanel-kapat></div>' +
+      '<div class="kp-kpanel__kutu" role="dialog" aria-modal="true" aria-label="Kampanyalar">' +
+      '<div class="kp-kpanel__ust"><h3 class="kp-kpanel__baslik">Kampanyalar</h3>' +
+      '<button type="button" class="kp-kpanel__kapat" data-kp-kpanel-kapat aria-label="Kapat"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>' +
+      '<p class="kp-kpanel__ozet" data-kp-serit-sol></p>' +
+      '<ul class="kp-kpanel__liste" data-kp-kpanel-liste></ul>' +
+      '<p class="kp-kpanel__birlikte" data-kp-kpanel-birlikte hidden></p>' +
+      '<p class="kp-kpanel__hedef" data-kp-serit-sag></p>' +
+      '<div class="kp-kpanel__cubuk"><div class="kp-kpanel__iz"><span class="kp-kpanel__dolu" data-kp-kpanel-dolu></span></div>' +
+      '<ol class="kp-kpanel__duraklar" data-kp-kpanel-duraklar></ol></div>' +
       '</div>' +
       '</div>';
     document.body.appendChild(el);
@@ -2133,8 +2152,11 @@
     var self = this;
     var el = this.el;
     el.addEventListener('click', function (e) {
+      // Kampanya paneli: perdeye ya da ✕'e dokununca kapanır; fiyata dokununca açılır
+      if (e.target.closest('[data-kp-kpanel-kapat]')) return self.kampanyaPaneli(false);
       var hedef = e.target.closest('button');
       if (!hedef || !el.contains(hedef)) return;
+      if (hedef.hasAttribute('data-kp-fiyat-ac')) return self.kampanyaPaneli(true);
       if (hedef.hasAttribute('data-kp-kapat')) return self.alt ? self.altVazgec() : self.kapat(false);
       if (hedef.hasAttribute('data-kp-vazgec')) return self.altVazgec();
       if (hedef.hasAttribute('data-kp-gorunum')) {
@@ -2146,7 +2168,7 @@
       if (hedef.hasAttribute('data-kp-harf-mod') || hedef.hasAttribute('data-kp-cerceve-harf')) return self.harfModDegistir();
       if (hedef.hasAttribute('data-kp-adim')) {
         var hedefAdim = hedef.getAttribute('data-kp-adim');
-        // "1 Tasarım": son açık araca döner (varsayılan Metin)
+        // "‹ Tasarıma dön": son açık araca döner (varsayılan Metin)
         if (hedefAdim === 'tasarim') hedefAdim = self.sonArac || self.adimlar[0].id;
         return self.adimaGit(hedefAdim, false, true);
       }
@@ -2196,7 +2218,6 @@
       if (hedef.hasAttribute('data-kp-kaldir')) return self.parcaKaldir(hedef.getAttribute('data-kp-kaldir'));
       if (hedef.hasAttribute('data-kp-isim-kaldir')) return self.isimAyarla('');
       if (hedef.hasAttribute('data-kp-etiket-sec')) return self.etiketSec(hedef.getAttribute('data-kp-etiket-sec'));
-      if (hedef.hasAttribute('data-kp-duzenle')) return self.adimaGit(self.sonArac || 'yazi', true);
       if (hedef.hasAttribute('data-kp-urune-don')) return self.kapat(!self.duzenlenen);
       if (hedef.hasAttribute('data-kp-geri-don')) return self.adimaGit('yazi', true);
       if (hedef.hasAttribute('data-kp-sade-al')) {
@@ -2236,11 +2257,12 @@
     // Klavye açıkken alttaki butonlara ya da adım çizgisine ilk dokunuş klavyeyi kapatıp kaybolmasın:
     // bu butonlar odağı almaz (tıklama normal çalışır)
     el.addEventListener('mousedown', function (e) {
-      if (e.target.closest('.kp-alt button, .kp-adimlar button, .kp-arac button, .kp-harf-mod, .kp-cerceve__harf')) e.preventDefault();
+      if (e.target.closest('.kp-alt button, .kp-adimlar button, .kp-araclar button, .kp-arac button, .kp-harf-mod, .kp-cerceve__harf')) e.preventDefault();
     });
     el.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
-        if (self.onayAcik) self.onayKapat();
+        if (self.kpanelAcik) self.kampanyaPaneli(false);
+        else if (self.onayAcik) self.onayKapat();
         else if (self.secili) self.sec(null);
         else if (self.alt) self.altVazgec();
         else self.kapat(false);
@@ -2433,58 +2455,25 @@
     this.el.querySelectorAll('[data-kp-panel]').forEach(function (p) {
       p.hidden = p.getAttribute('data-kp-panel') !== adim;
     });
-    // Çanta editöründe üstte iki adım (Tasarım / Özet); araç butonları Metin / Görsel / Aksesuar
-    var gosterge = this.alt ? adim : adim === 'ozet' ? 'ozet' : 'tasarim';
+    // Çanta editörü iki ekran: Tasarım (araçlar Metin / Görsel / Aksesuar) ve Özet (üstte "‹ Tasarıma dön · Özet")
     this.el.querySelectorAll('.kp-arac-dugme[data-kp-adim]').forEach(function (b) {
       b.setAttribute('aria-pressed', b.getAttribute('data-kp-adim') === adim ? 'true' : 'false');
     });
     var araclar = this.el.querySelector('[data-kp-araclar]');
     if (araclar) araclar.hidden = adim === 'ozet';
-    var cizgi = this.el.querySelector('.kp-adim-cizgi');
-    if (cizgi) cizgi.classList.toggle('kp-adim-cizgi--dolu', adim === 'ozet');
-    var gecildi = true;
-    this.el.querySelectorAll('[data-kp-adim]:not(.kp-arac-dugme)').forEach(function (b) {
-      var id = b.getAttribute('data-kp-adim');
-      var adim = gosterge;
-      if (id === adim) {
-        b.setAttribute('aria-current', 'step');
-        gecildi = false;
-      } else {
-        b.removeAttribute('aria-current');
-      }
-      b.classList.toggle('kp-adim--gecildi', gecildi && id !== adim);
-      var li = b.closest('[data-kp-adim-oge]');
-      if (li) {
-        li.classList.toggle('kp-adim-oge--aktif', id === adim);
-        li.classList.toggle('kp-adim-oge--gecildi', gecildi && id !== adim);
-      }
+    var ozetUst = this.el.querySelector('[data-kp-ozet-ust]');
+    if (ozetUst) ozetUst.hidden = adim !== 'ozet';
+    this.el.classList.toggle('kp-editor--ozet', !this.alt && adim === 'ozet');
+    // Aksesuar ekranındaki Yazı / İkon sekmeleri
+    this.el.querySelectorAll('.kp-sekme[data-kp-adim]').forEach(function (b) {
+      if (b.getAttribute('data-kp-adim') === adim) b.setAttribute('aria-current', 'step');
+      else b.removeAttribute('aria-current');
     });
-    this.adimOzetleriCiz();
+    if (adim === 'ozet') this.kampanyaPaneli(false);
     var ozette = adim === 'ozet';
     this.el.querySelector('.kp-alt').classList.toggle('kp-alt--ozet', ozette);
     this.el.querySelector('[data-kp-alt-ozet]').hidden = !ozette;
     this.ileriYazisi();
-  };
-
-  // Biten adımların altında o adımda eklenen: Yazı'da metin, İkon'da "N ikon" ya da set adı, Aksesuar'da adı; boşsa "—"
-  Editor.prototype.adimOzetleriCiz = function () {
-    if (this.alt || !this.el || !this.t) return;
-    var m = this.m;
-    var t = this.t;
-    var setler = saglamSetler(m, t);
-    var setIdleri = setler.map(function (k) { return k.id; });
-    var ikon = (t.parcalar || []).filter(function (p) { return p.tip === 'icon' && !(p.setGrup && setIdleri.indexOf(p.setGrup) !== -1); }).length;
-    var ikonOzet = setler.map(function (k) { return m.hazirSetHarita[k.urunId] ? m.hazirSetHarita[k.urunId].ad : ''; }).filter(Boolean)
-      .concat(ikon ? [ikon + ' ikon'] : []).join(' + ');
-    var aksOzet = (t.aksesuarlar || []).map(function (a) { var x = m.aksesuarHarita[a.urunId]; return x ? x.model || x.ad : ''; }).filter(Boolean).join(', ');
-    var ozet = { yazi: t.isim || '', ikon: ikonOzet, aksesuar: aksOzet, ozet: '' };
-    this.el.querySelectorAll('[data-kp-adim-ozet]').forEach(function (x) {
-      var id = x.getAttribute('data-kp-adim-ozet');
-      var li = x.closest('[data-kp-adim-oge]');
-      var metin = li && li.classList.contains('kp-adim-oge--gecildi') && id !== 'ozet' ? ozet[id] || '—' : '';
-      if (x.textContent !== metin) x.textContent = metin;
-      x.title = metin;
-    });
   };
 
   // Özet adımında ana buton doğrudan sepete ekler: "Sepete ekle · toplam"
@@ -2500,7 +2489,7 @@
     }
     this.el.querySelector('.kp-alt__baglantilar').hidden = this.adim === 'ozet' && bosMu(this.t);
     if (this.adim !== 'ozet') {
-      ileri.textContent = 'Özete geç →';
+      ileri.textContent = 'Tasarımı tamamla →';
       return;
     }
     var f = fiyatHesapla(this.m, this.yer, this.t);
@@ -2557,9 +2546,10 @@
     liste = liste * adet;
     // Yalnızca bu tasarımın fiyatı (satırlarına düşen indirimle); sepetteki diğer ürünlerin indirimi buraya yansımaz
     var ind = tasarimIndirimi(k);
+    // Üstte küçük, üstü çizili eski fiyat; altında yeni fiyat ve küçük kırmızı indirim etiketi
     var html = ind > 0
-      ? '<s class="kp-alt__eski">' + paraBicimle(liste) + '</s> ' + paraBicimle(liste - ind)
-      : paraBicimle(liste);
+      ? '<s class="kp-alt__eski">' + paraBicimle(liste) + '</s> <span class="kp-alt__yeni">' + paraBicimle(liste - ind) + '</span> <span class="kp-alt__etiket">−' + paraBicimle(ind) + '</span>'
+      : '<span class="kp-alt__yeni">' + paraBicimle(liste) + '</span>';
     if (el.innerHTML !== html) el.innerHTML = html;
     this.el.querySelectorAll('.kp-alt__fiyat .kp-indirim-notu').forEach(function (n) { n.hidden = !(k && k.hata); });
   };
@@ -3408,7 +3398,6 @@
     var alanHatali = !this.durum.isimGecerli || Object.keys(this.durum.hatalar).length > 0;
     this.sahne.ciz(this.durum.parcalar, this.durum.hatalar, alanHatali);
     this.dugmeleriGuncelle();
-    this.adimOzetleriCiz();
     this.yaziDurumGuncelle();
     this.etiketleriCiz();
     this.gecButonlariGuncelle();
@@ -3418,7 +3407,8 @@
     if (this.alt) this.altToplamCiz(f);
     else this.toplamCiz(f.toplam);
     var ileri = this.el.querySelector('[data-kp-ileri]');
-    var engel = this.adimEngeli(this.adim);
+    // Tasarım ekranında "Tasarımı tamamla →" her zaman çalışır; sorunlar Özet'te sepete eklerken durdurulur
+    var engel = this.alt ? this.adimEngeli(this.adim) : false;
     if (this.adim === 'ozet') {
       var self = this;
       engel = this.adimlar.some(function (a) { return self.adimEngeli(a.id); });
@@ -4413,7 +4403,8 @@
     this.ileriYazisi();
   };
 
-  // Kampanya şeridi: fiyat çubuğunun üstünde; Özet'te yok (orada kampanyalar satır satır)
+  // Alt çubuğun en üstündeki 3 px ilerleme çizgisi (Özet'te yok) ve kampanya panelinin içeriği. Tasarım değişince
+  // sıradaki kampanya yakınsa öneri birkaç saniyeliğine çubuğun üstünde belirir.
   Editor.prototype.seritCiz = function () {
     var serit = this.el && this.el.querySelector('[data-kp-serit]');
     if (!serit) return;
@@ -4422,35 +4413,92 @@
     var esikler = kok ? kok.m.ayar.kampanyaEsikleri : [];
     var kural = kurallariOku();
     var d = k && !k.hata ? seritDurumu(k, kural ? kural.merdiven : [], esikler, kok ? ornekPatchFiyati(kok.m) : null, kok ? enUcuzPatchFiyati(kok.m) : null) : null;
+    this.kampanyaDurumu = d;
     var goster = !!d && this.adim !== 'ozet' && !!(d.sol || d.sag || d.duraklar.length);
     serit.hidden = !goster;
+    this.el.querySelector('[data-kp-fiyat-ac]').disabled = !d;
+    if (!d) return this.kampanyaPaneli(false);
+    this.kampanyaPaneliCiz(k, d);
     if (!goster) return;
     serit.classList.toggle('kp-serit--tamam', d.hepsi);
-    // Tek satır: "370 TL indirim kazandın. 390 TL'lik ürün daha ekle, tüm siparişe %10 indirim gelsin."
-    var nokta = function (x) { return !x || /[.!?…]$|\p{Extended_Pictographic}$/u.test(x) ? x : x + '.'; };
-    this.el.querySelector('[data-kp-serit-sol]').textContent = d.sag ? nokta(d.sol) : d.sol;
-    this.el.querySelector('[data-kp-serit-sag]').textContent = nokta(d.sag);
-    var cubuk = this.el.querySelector('[data-kp-serit-cubuk]');
     var dolu = this.el.querySelector('[data-kp-serit-dolu]');
     dolu.style.width = (d.dolu * 100).toFixed(1) + '%';
     // Renk geçişi tüm çubuğa yayılır: dolu kısım ilerledikçe kırmızıdan turuncuya
     dolu.style.backgroundSize = d.dolu > 0 ? (100 / d.dolu).toFixed(1) + '% 100%' : '100% 100%';
-    var imza = JSON.stringify(d.duraklar);
-    if (cubuk.getAttribute('data-imza') !== imza) {
-      cubuk.setAttribute('data-imza', imza);
-      cubuk.querySelectorAll('.kp-serit__nokta').forEach(function (n) { n.remove(); });
-      d.duraklar.forEach(function (x) {
-        var n = document.createElement('span');
-        n.className = 'kp-serit__nokta' + (x.ulasildi ? ' kp-serit__nokta--ulasildi' : '');
-        n.style.left = (x.konum * 100).toFixed(1) + '%';
-        n.setAttribute('data-kp-durak', x.ad);
-        n.title = kampanyaGosterimAdi(x.ad);
-        cubuk.appendChild(n);
-      });
+    this.oneriKontrol(d);
+  };
+
+  // Kampanya paneli: kazanılan kampanyalar (bu tasarıma düşen tutarlarıyla), sepettekilerle birlikte notu,
+  // sıradaki hedef tek cümle ve duraklı ilerleme çubuğu
+  Editor.prototype.kampanyaPaneliCiz = function (k, d) {
+    var nokta = function (x) { return !x || /[.!?…]$|\p{Extended_Pictographic}$/u.test(x) ? x : x + '.'; };
+    var pay = k.tasarimPay || k.aktif || {};
+    var adlar = Object.keys(pay).filter(function (ad) { return pay[ad] > 0; });
+    var tasarimInd = tasarimIndirimi(k);
+    // Üstte: "370 TL indirim kazandın" (sepettekiler de katkı veriyorsa "(sepetindekilerle birlikte)")
+    this.el.querySelector('[data-kp-serit-sol]').textContent = d.sag ? nokta(d.sol) : d.sol;
+    var liste = this.el.querySelector('[data-kp-kpanel-liste]');
+    var html = adlar.map(function (ad) {
+      return '<li><span>✓ ' + kacis(kampanyaGosterimAdi(ad)) + '</span><strong>−' + paraBicimle(pay[ad]) + '</strong></li>';
+    }).join('');
+    if (liste.innerHTML !== html) liste.innerHTML = html;
+    liste.hidden = !adlar.length;
+    // İndirimin bir kısmı sepetteki diğer ürünlerden geliyorsa: satırlar bu tasarıma düşen tutarlardır
+    var birlikte = this.el.querySelector('[data-kp-kpanel-birlikte]');
+    var fark = d.indirim - tasarimInd;
+    birlikte.hidden = !(fark >= 100 && adlar.length);
+    if (!birlikte.hidden) birlikte.textContent = 'Bu tasarıma düşen indirim ' + paraBicimle(tasarimInd) + ', kalanı sepetindeki diğer ürünlerden.';
+    var sag = this.el.querySelector('[data-kp-serit-sag]');
+    sag.textContent = nokta(d.sag);
+    sag.hidden = !d.sag;
+    this.el.querySelector('[data-kp-kpanel-dolu]').style.width = (d.dolu * 100).toFixed(1) + '%';
+    var duraklar = this.el.querySelector('[data-kp-kpanel-duraklar]');
+    var dhtml = d.duraklar.map(function (x) {
+      return '<li class="kp-kpanel__durak' + (x.ulasildi ? ' kp-kpanel__durak--ulasildi' : '') + '" data-kp-durak="' + kacis(x.ad) + '" style="left:' + (x.konum * 100).toFixed(1) + '%">' +
+        '<span class="kp-kpanel__nokta" aria-hidden="true"></span><span class="kp-kpanel__ad">' + kacis(kampanyaGosterimAdi(x.ad).replace(/ (patch )?indirimi?$/i, '')) + '</span></li>';
+    }).join('');
+    if (duraklar.innerHTML !== dhtml) duraklar.innerHTML = dhtml;
+  };
+
+  Editor.prototype.kampanyaPaneli = function (ac) {
+    var panel = this.el && this.el.querySelector('[data-kp-kpanel]');
+    if (!panel) return;
+    ac = !!ac && !!this.kampanyaDurumu;
+    this.kpanelAcik = ac;
+    panel.hidden = !ac;
+    var dugme = this.el.querySelector('[data-kp-fiyat-ac]');
+    if (dugme) dugme.setAttribute('aria-expanded', ac ? 'true' : 'false');
+    if (ac) {
+      var kapat = panel.querySelector('.kp-kpanel__kapat');
+      if (kapat) kapat.focus({ preventScroll: true });
     }
   };
 
-  // Kazanma bildirimi: bir kampanyaya oturumda ilk kez ulaşıldığında (müşterinin sepetinde zaten olanlar hariç)
+  // Öneri: müşteri bir şey ekleyip çıkardığında sıradaki kampanya yakınsa ("1 patch daha ekle, tüm siparişe %10 indirim").
+  // Aynı öneri art arda tekrar etmez; kazanma bildirimi varsa önce o gösterilir.
+  Editor.prototype.oneriKontrol = function (d) {
+    var anahtar = this.kampanyaAnahtari;
+    if (this.oneriAnahtari === undefined) {
+      // Editör açılırken öneri yok; yalnızca değişiklikten sonra
+      this.oneriAnahtari = anahtar;
+      return;
+    }
+    if (anahtar === this.oneriAnahtari) return;
+    this.oneriAnahtari = anahtar;
+    if (!d.yakin || d.hepsi || !d.sag) return;
+    var metin = d.sag;
+    if (metin === this.sonOneri) return;
+    var self = this;
+    clearTimeout(this.oneriZamanlayici);
+    // Kısa bir bekleme: aynı değişiklik bir kampanya kazandırdıysa önce kazanma bildirimi çıkar
+    this.oneriZamanlayici = setTimeout(function () {
+      if (!self.el || self.el.hidden || self.adim === 'ozet' || self.oneriAnahtari !== anahtar) return;
+      self.sonOneri = metin;
+      self.altBildirim({ tur: 'oneri', metin: metin, anahtar: anahtar });
+    }, 700);
+  };
+
+    // Kazanma bildirimi: bir kampanyaya oturumda ilk kez ulaşıldığında (müşterinin sepetinde zaten olanlar hariç)
   Editor.prototype.kazancKontrol = function (k) {
     if (!k || k.hata || !k.aktif) return;
     var gorulen = gorulenKampanyalar();
@@ -4459,31 +4507,51 @@
     var yeni = Object.keys(k.aktif).filter(function (ad) { return gorulen.indexOf(ad) === -1; });
     if (!yeni.length) { if (degisti) gorulenKaydet(gorulen); return; }
     gorulenKaydet(gorulen.concat(yeni));
-    var serit = this.el.querySelector('[data-kp-serit]');
-    if (!serit || serit.hidden) return;
+    if (this.adim === 'ozet') return;
     yeni.sort(function (a, b) { return k.aktif[b] - k.aktif[a]; });
     this.kazancGoster(kazancMetni(yeni[0], k.aktif[yeni[0]], this.kok().m.ayar.kampanyaEsikleri), yeni[0]);
   };
 
   Editor.prototype.kazancGoster = function (metin, ad) {
+    this.altBildirim({ tur: 'kazanc', metin: metin, ad: ad });
+  };
+
+  // Alt çubuğun üstündeki kısa bildirimler: kazanma bildirimi (kırmızı) ve kampanya önerisi (koyu).
+  // Kazanma bildirimi öneriden önce gelir: öneri gösterilirken kazanç gelirse öneri kesilir ve sonra yeniden gösterilir.
+  Editor.prototype.altBildirim = function (b) {
     var el = this.el.querySelector('[data-kp-kazanc]');
-    var i = metin.indexOf(' ');
-    el.innerHTML = '<span class="kp-kazanc__ikon" aria-hidden="true">' + kacis(metin.slice(0, i)) + '</span><span>' + kacis(metin.slice(i + 1)) + '</span>';
+    if (!el) return;
+    var self = this;
+    var simdiki = this.altBildirimSimdiki;
+    if (simdiki && simdiki.tur === 'kazanc' && b.tur === 'oneri') {
+      this.altBildirimSirasi = b;
+      return;
+    }
+    if (simdiki && simdiki.tur === 'oneri' && b.tur === 'kazanc') this.altBildirimSirasi = simdiki;
+    this.altBildirimSimdiki = b;
+    var i = b.metin.indexOf(' ');
+    el.innerHTML = b.tur === 'kazanc'
+      ? '<span class="kp-kazanc__ikon" aria-hidden="true">' + kacis(b.metin.slice(0, i)) + '</span><span>' + kacis(b.metin.slice(i + 1)) + '</span>'
+      : '<span class="kp-kazanc__ikon" aria-hidden="true">🎯</span><span>' + kacis(b.metin) + '</span>';
+    el.classList.toggle('kp-kazanc--oneri', b.tur === 'oneri');
     el.hidden = false;
     el.classList.remove('kp-kazanc--goster');
     void el.offsetWidth;
     el.classList.add('kp-kazanc--goster');
-    var nokta = this.el.querySelector('[data-kp-durak="' + (window.CSS && CSS.escape ? CSS.escape(ad) : ad) + '"]');
-    if (nokta) {
-      nokta.classList.remove('kp-serit__nokta--atim');
-      void nokta.offsetWidth;
-      nokta.classList.add('kp-serit__nokta--atim');
+    if (b.tur === 'kazanc' && b.ad) {
+      var nokta = this.el.querySelector('.kp-kpanel [data-kp-durak="' + (window.CSS && CSS.escape ? CSS.escape(b.ad) : b.ad) + '"]');
+      if (nokta) nokta.classList.add('kp-kpanel__durak--atim');
     }
     clearTimeout(this.kazancZamanlayici);
     this.kazancZamanlayici = setTimeout(function () {
       el.hidden = true;
       el.classList.remove('kp-kazanc--goster');
-    }, 2600);
+      self.altBildirimSimdiki = null;
+      var sira = self.altBildirimSirasi;
+      self.altBildirimSirasi = null;
+      // Sıradaki öneri hâlâ güncel tasarıma aitse gösterilir
+      if (sira && self.el && !self.el.hidden && self.adim !== 'ozet' && (sira.tur !== 'oneri' || sira.anahtar === self.kampanyaAnahtari)) self.altBildirim(sira);
+    }, b.tur === 'kazanc' ? 2600 : 3200);
   };
 
   // Güncel tasarıma ait kampanya sonucu (henüz hesaplanmadıysa null)
@@ -5716,11 +5784,16 @@
       if (hedef.tur === 'tutar') kismi = Math.max(0, Math.min(1, (k.altToplam || 0) / hedef.tutar));
       dolu += kismi / say;
     }
+    // Öneri yalnızca sıradaki kampanya yakınsa: en fazla 2 patch ya da en fazla 2 patch'lik tutar
+    var enIyi = secenekler[0];
+    var birim = enUcuz || ornekFiyat || 0;
+    var yakin = !!enIyi && !hepsi && (enIyi.patch ? enIyi.patch <= 2 : birim > 0 && enIyi.maliyet <= 2 * birim);
     return {
       indirim: indirim,
       sol: sol,
       sag: sag,
       hepsi: hepsi,
+      yakin: yakin,
       duraklar: duraklar.map(function (d, i) { return { ad: d.ad, ulasildi: d.ulasildi, konum: (i + 1) / say }; }),
       dolu: Math.min(1, dolu)
     };

@@ -146,7 +146,7 @@ await s.locator('[data-kp-hazir-set="8001"]').click();
 await s.locator('[data-kp-adim="yazi"]').click();
 await s.locator('#kp-isim').fill('ece');
 assert.deepEqual(await s.$$eval('[data-kp-rozet]', (x) => x.map((e) => e.hidden ? '' : e.textContent)), ['3', '3', '']);
-await s.locator('[data-kp-adim="ozet"]').click();
+await s.locator('[data-kp-ileri]').click();
 // Yazı setin üstüne geldiyse: Özet'te liste ve "Hepsini düzelt"; düzeltmeden sepete eklenmez
 if (await gorunur('[data-kp-ozet-yer]')) {
   await s.locator('[data-kp-ileri]').click();

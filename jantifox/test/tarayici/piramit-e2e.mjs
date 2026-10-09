@@ -187,7 +187,7 @@ await s.screenshot({ path: cikti + '04-eksik.png' });
 await s.locator('#kp-isim').fill('ece');
 await s.waitForTimeout(150);
 const secilenler = await satirRenkleri();
-await s.locator('[data-kp-adim="ozet"]').click();
+await s.locator('[data-kp-ileri]').click();
 await s.locator('[data-kp-ileri]').click();
 await s.locator('.kp-editor').waitFor({ state: 'hidden' });
 await s.waitForTimeout(800);

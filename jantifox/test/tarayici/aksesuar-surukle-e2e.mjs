@@ -36,11 +36,11 @@ const aksIc = () => s.locator(ana + ' .kp-aks__parca').count();
 
 await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
-if (await s.locator(ana + ' [data-kp-adim="ozet"][aria-current]').count()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
+if (await s.locator(ana + ' [data-kp-adim="tasarim"]').isVisible()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
 await s.locator(ana + ' [data-kp-adim="ikon"]').click();
 await s.locator(ana + ' [data-kp-kategori="Spor"]').click();
 await s.locator(ana + ' [data-kp-ikon="2"]').click();
-if (await s.locator(ana + ' [data-kp-adim="ozet"][aria-current]').count()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
+if (await s.locator(ana + ' [data-kp-adim="tasarim"]').isVisible()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
 // Düz ekle: kalem kutusu alanın büyük kısmını kaplar, ikon kenara alınır
 await s.locator('[data-kp-aks-duz="9101"]').click();

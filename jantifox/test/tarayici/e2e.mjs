@@ -85,7 +85,8 @@ const girdi = sayfa.locator('#kp-isim');
 await girdi.fill('elif');
 assert.equal(await girdi.inputValue(), 'ELİF');
 await sayfa.getByText('İ harfi şu an yok, I olarak yazmak ister misin?').waitFor();
-assert.equal(await sayfa.locator('[data-kp-ileri]').getAttribute('aria-disabled'), 'true');
+// "Tasarımı tamamla →" Tasarım ekranında her zaman çalışır; sorun Özet'te sepete eklerken durdurulur
+assert.equal(await sayfa.locator('[data-kp-ileri]').getAttribute('aria-disabled'), 'false');
 await sayfa.screenshot({ path: cikti + '02-turkce-harf-uyarisi.png' });
 
 // Uzun isim → ürünün karakter sınırı (6): fazlası yazılamaz, not görünür
@@ -195,7 +196,7 @@ assert.equal(await sayfa.locator('[data-kp-sinir-notu]').count(), 0, 'sınırın
 // Tek ekran, üç araç: varsayılan Metin; ana düğme Özete geç
 const araclar = () => sayfa.$$eval('.kp-editor:not(.kp-editor--alt) .kp-arac-dugme', (l) => l.map((e) => [e.dataset.kpAdim, e.getAttribute('aria-pressed'), e.querySelector('[data-kp-rozet]').hidden ? '' : e.querySelector('[data-kp-rozet]').textContent]));
 assert.deepEqual(await araclar(), [['yazi', 'true', '4'], ['ikon', 'false', ''], ['aksesuar', 'false', '']]);
-assert.equal(await sayfa.locator('[data-kp-ileri]').textContent(), 'Özete geç →');
+assert.equal(await sayfa.locator('[data-kp-ileri]').textContent(), 'Tasarımı tamamla →');
 await sayfa.locator('.kp-arac-dugme[data-kp-adim="ikon"]').click();
 
 // Görsel: Spor kategorisinin Tümü → ızgara, Futbol Topu

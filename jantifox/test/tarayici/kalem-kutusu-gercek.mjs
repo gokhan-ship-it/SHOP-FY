@@ -37,7 +37,7 @@ for (const renk of ['kirmizi', 'turuncu']) {
   const alt = '.kp-editor--alt';
   await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
   await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
-  if (await s.locator(ana + ' [data-kp-adim="ozet"][aria-current]').count()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
+  if (await s.locator(ana + ' [data-kp-adim="tasarim"]').isVisible()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
   await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
   await s.locator('[data-kp-aksesuar="9101"]').click();
   await s.locator(alt).waitFor({ state: 'visible' });
