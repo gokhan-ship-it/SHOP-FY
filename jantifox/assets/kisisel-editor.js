@@ -1966,6 +1966,7 @@
       '<button type="button" data-kp-dondur="15" aria-label="15 derece sağa döndür"><span aria-hidden="true">↻</span> 15°</button>' +
       '<button type="button" data-kp-duzle hidden>Düzle</button>' +
       '<button type="button" data-kp-aks-tasarla hidden>Tasarla</button>' +
+      '<button type="button" data-kp-arac-harf hidden>Ayır</button>' +
       '<button type="button" class="kp-arac__sil" data-kp-sil>Sil</button>' +
       '<button type="button" class="kp-arac__tamam" data-kp-secim-kaldir>Tamam</button>' +
       '</span>' +
@@ -2099,18 +2100,7 @@
         self.sahne.gorunumAyarla(!self.sahne.yakin);
         return self.dugmeleriGuncelle();
       }
-      if (hedef.hasAttribute('data-kp-harf-mod')) {
-        var ayiriyor = !self.t.harfAyri;
-        if (self.t.harfAyri) harfleriBirlestir(self.t);
-        else harfleriAyir(self.yer, self.t);
-        self.yenile();
-        // İlk kez ayırınca bir kez kısa bilgi
-        if (ayiriyor && !depoOku('kp-harf-ayir-bilgi')) {
-          depoYaz('kp-harf-ayir-bilgi', 1);
-          self.bildir('Harfler ayrıldı, her birini tek tek taşıyabilirsin.', { sure: 3500 });
-        }
-        return;
-      }
+      if (hedef.hasAttribute('data-kp-harf-mod') || hedef.hasAttribute('data-kp-arac-harf')) return self.harfModDegistir();
       if (hedef.hasAttribute('data-kp-adim')) return self.adimaGit(hedef.getAttribute('data-kp-adim'), false, true);
       if (hedef.hasAttribute('data-kp-ileri')) return self.ileri();
       if (hedef.hasAttribute('data-kp-oneri-kabul')) return self.harfDegistir(hedef.getAttribute('data-harf'), hedef.getAttribute('data-oneri'));
@@ -3628,6 +3618,27 @@
     liste.addEventListener('pointercancel', bitir);
   };
 
+  // Ayır / Birleştir (yazı alanındaki ve araç çubuğundaki buton aynı işi yapar). Yazı seçiliyse seçim de geçer:
+  // ayırınca ilk harfe, birleştirince bloğa. Tasarım değiştiği için Geri al / Yinele kapsar.
+  Editor.prototype.harfModDegistir = function () {
+    var t = this.t;
+    if (Array.from(t.isim || '').length < 2) return;
+    var ayiriyor = !t.harfAyri;
+    var yaziSecili = this.secili === 'isim' || String(this.secili || '').indexOf('harf-') === 0;
+    if (ayiriyor) harfleriAyir(this.yer, t);
+    else harfleriBirlestir(t);
+    if (yaziSecili) {
+      this.secili = ayiriyor ? 'harf-0' : 'isim';
+      this.seciliHarf = ayiriyor ? 0 : null;
+    }
+    this.yenile();
+    // İlk kez ayırınca bir kez kısa bilgi
+    if (ayiriyor && !depoOku('kp-harf-ayir-bilgi')) {
+      depoYaz('kp-harf-ayir-bilgi', 1);
+      this.bildir('Harfler ayrıldı, her birini tek tek taşıyabilirsin.', { sure: 3500 });
+    }
+  };
+
   Editor.prototype.dugmeleriGuncelle = function () {
     var ayri = !!this.t.harfAyri;
     var harfSayisi = Array.from(this.t.isim || '').length;
@@ -4367,7 +4378,7 @@
   Editor.prototype.secimAdi = function (b) {
     var p = b.parcalar[0];
     if (b.grup === 'isim') return 'Yazı (' + this.t.isim + ')';
-    if (p.tip === 'letter') return (p.varyant && p.varyant.renk && p.tanim && p.tanim.cokRenkli ? p.varyant.renk + ' ' : '') + p.etiket + ' harfi';
+    if (p.tip === 'letter') return p.etiket + ' harfi';
     if (p.tip === 'number') return p.etiket + ' rakamı';
     if (p.setGrup) {
       var k = (this.t.hazirSetler || []).filter(function (x) { return x.id === p.setGrup; })[0];
@@ -4430,6 +4441,12 @@
     this.el.querySelector('[data-kp-aks-tasarla]').hidden = !(p0.tip === 'aksesuar' && p0.tanim.tasarlanabilir);
     var kenarda = !!p0.kenar;
     this.el.querySelectorAll('[data-kp-dondur]').forEach(function (x) { x.hidden = kenarda; });
+    // Yazı seçiliyken Ayır (blok) / Birleştir (ayrı harf); yazı alanındaki butonla aynı durum
+    var harfBtn = this.el.querySelector('[data-kp-arac-harf]');
+    var yazi = b.grup === 'isim' || String(b.grup).indexOf('harf-') === 0;
+    harfBtn.hidden = !yazi || kenarda || Array.from(this.t.isim || '').length < 2;
+    harfBtn.textContent = this.t.harfAyri ? 'Birleştir' : 'Ayır';
+    harfBtn.setAttribute('aria-label', this.t.harfAyri ? 'Harfleri birleştir' : 'Harfleri ayır');
     this.el.querySelectorAll('[data-kp-kenar-grup]').forEach(function (x) { x.classList.toggle('kp-kenar__oge--secili', x.getAttribute('data-kp-kenar-grup') === b.grup); });
     if (kenarda) this.sahne.secimCiz(null);
     else this.sahne.secimCiz(grupCercevesi(b.parcalar, b.pivot, b.aci, 0.15), !!this.durum.hatalar[b.parcalar[0].uid]);
