@@ -1945,9 +1945,14 @@
           '<div class="kp-ust__metin"><h2 id="kp-editor-baslik" class="kp-ust__baslik" data-kp-baslik>' + kacis(aks.ad) + ' tasarla</h2>' +
           (this.secenek.buyuk ? '<p class="kp-yol">Velcro alanın neredeyse tamamını kaplar</p>' : '') + '</div>'
         : '<h2 id="kp-editor-baslik" class="kp-gizli" data-kp-baslik>Tasarımını oluştur</h2>' +
+          // Adım göstergesi: çizgiyle bağlı numaralı daireler; biten adımın altında o adımda eklenen
           '<nav class="kp-adimlar" aria-label="Tasarım adımları"><ol>' +
-          this.adimlar.map(function (a) {
-            return '<li><button type="button" class="kp-adim" data-kp-adim="' + a.id + '"><span class="kp-adim__ad">' + a.ad + '</span><span class="kp-adim__cizgi" aria-hidden="true"></span></button></li>';
+          this.adimlar.map(function (a, i) {
+            return '<li class="kp-adim-oge" data-kp-adim-oge="' + a.id + '"><button type="button" class="kp-adim" data-kp-adim="' + a.id + '">' +
+              '<span class="kp-adim__daire" aria-hidden="true"><span class="kp-adim__no">' + (i + 1) + '</span><span class="kp-adim__tik">✓</span></span>' +
+              '<span class="kp-adim__ad">' + a.ad + '</span>' +
+              '<span class="kp-adim__ozet" data-kp-adim-ozet="' + a.id + '"></span>' +
+              '</button></li>';
           }).join('') +
           '</ol></nav>' +
           '<button type="button" class="kp-kapat" data-kp-kapat aria-label="Kapat">' +
@@ -2411,11 +2416,38 @@
         b.removeAttribute('aria-current');
       }
       b.classList.toggle('kp-adim--gecildi', gecildi && id !== adim);
+      var li = b.closest('[data-kp-adim-oge]');
+      if (li) {
+        li.classList.toggle('kp-adim-oge--aktif', id === adim);
+        li.classList.toggle('kp-adim-oge--gecildi', gecildi && id !== adim);
+      }
     });
+    this.adimOzetleriCiz();
     var ozette = adim === 'ozet';
     this.el.querySelector('.kp-alt').classList.toggle('kp-alt--ozet', ozette);
     this.el.querySelector('[data-kp-alt-ozet]').hidden = !ozette;
     this.ileriYazisi();
+  };
+
+  // Biten adımların altında o adımda eklenen: Yazı'da metin, İkon'da "N ikon" ya da set adı, Aksesuar'da adı; boşsa "—"
+  Editor.prototype.adimOzetleriCiz = function () {
+    if (this.alt || !this.el || !this.t) return;
+    var m = this.m;
+    var t = this.t;
+    var setler = saglamSetler(m, t);
+    var setIdleri = setler.map(function (k) { return k.id; });
+    var ikon = (t.parcalar || []).filter(function (p) { return p.tip === 'icon' && !(p.setGrup && setIdleri.indexOf(p.setGrup) !== -1); }).length;
+    var ikonOzet = setler.map(function (k) { return m.hazirSetHarita[k.urunId] ? m.hazirSetHarita[k.urunId].ad : ''; }).filter(Boolean)
+      .concat(ikon ? [ikon + ' ikon'] : []).join(' + ');
+    var aksOzet = (t.aksesuarlar || []).map(function (a) { var x = m.aksesuarHarita[a.urunId]; return x ? x.model || x.ad : ''; }).filter(Boolean).join(', ');
+    var ozet = { yazi: t.isim || '', ikon: ikonOzet, aksesuar: aksOzet, ozet: '' };
+    this.el.querySelectorAll('[data-kp-adim-ozet]').forEach(function (x) {
+      var id = x.getAttribute('data-kp-adim-ozet');
+      var li = x.closest('[data-kp-adim-oge]');
+      var metin = li && li.classList.contains('kp-adim-oge--gecildi') && id !== 'ozet' ? ozet[id] || '—' : '';
+      if (x.textContent !== metin) x.textContent = metin;
+      x.title = metin;
+    });
   };
 
   // Özet adımında ana buton doğrudan sepete ekler: "Sepete ekle · toplam"
@@ -3293,6 +3325,7 @@
     var alanHatali = !this.durum.isimGecerli || Object.keys(this.durum.hatalar).length > 0;
     this.sahne.ciz(this.durum.parcalar, this.durum.hatalar, alanHatali);
     this.dugmeleriGuncelle();
+    this.adimOzetleriCiz();
     this.yaziDurumGuncelle();
     this.etiketleriCiz();
     this.gecButonlariGuncelle();

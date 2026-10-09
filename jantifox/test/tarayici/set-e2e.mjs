@@ -124,6 +124,8 @@ await s.locator('[data-kp-hazir-set="8001"]').click();
 await s.locator('[data-kp-adim="yazi"]').click();
 await s.locator('#kp-isim').fill('ece');
 await s.locator('[data-kp-adim="ozet"]').click();
+// Adım göstergesi: biten adımların altında eklenen (yazı, set adı); boş geçilen "—"
+assert.deepEqual(await s.$$eval('.kp-adim__ozet', (x) => x.map((e) => e.textContent)), ['ECE', 'School Vibes', '—', '']);
 // Yazı setin üstüne geldiyse: Özet'te liste ve "Hepsini düzelt"; düzeltmeden sepete eklenmez
 if (await gorunur('[data-kp-ozet-yer]')) {
   await s.locator('[data-kp-ileri]').click();

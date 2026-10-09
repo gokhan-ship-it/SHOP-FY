@@ -2649,10 +2649,10 @@ html.kp-kilit body {
   }
 }
 
-/* ---------- Üst satır: adımlar sekme gibi, sağda kapat ---------- */
+/* ---------- Üst satır: adım göstergesi (çizgiyle bağlı numaralı daireler), sağda kapat ---------- */
 .kp-ust--sekmeler {
   gap: 0.2rem;
-  padding: 0 0.2rem 0 0.8rem;
+  padding: 0 0.2rem 0 0.4rem;
   padding-top: env(safe-area-inset-top);
 }
 .kp-ust--sekmeler .kp-adimlar {
@@ -2663,28 +2663,127 @@ html.kp-kilit body {
 }
 .kp-ust--sekmeler .kp-adimlar ol {
   display: flex;
-  gap: 0.6rem;
+  gap: 0;
 }
-.kp-ust--sekmeler .kp-adimlar li {
+.kp-adim-oge {
+  position: relative;
   flex: 1 1 0;
   min-width: 0;
 }
+/* Önceki daireden bu daireye çizgi: bu adım geçildiyse ya da aktifse koyu */
+.kp-adim-oge + .kp-adim-oge::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 16px;
+  left: calc(-50% + 17px);
+  right: calc(50% + 17px);
+  height: 2px;
+  border-radius: 1px;
+  background: #dcdcdc;
+  transition: background-color 0.25s ease;
+}
+.kp-adim-oge--gecildi::before,
+.kp-adim-oge--aktif::before {
+  background: #1e1e24 !important;
+}
 .kp-ust--sekmeler .kp-adim {
-  align-items: stretch;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  min-height: 46px;
-  padding: 0.8rem 0 0;
-  font-size: 1.35rem;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.1rem;
+  width: 100%;
+  min-height: 0;
+  padding: 0.2rem 0 0.2rem;
+  border: 0;
+  background: transparent;
+  color: #9a9a9a;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.15;
   text-align: center;
+  cursor: pointer;
+}
+.kp-adim__daire {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin: 2px 0;
+  border: 1.5px solid #c9c9c9;
+  border-radius: 50%;
+  background: #fff;
+  color: #8a8a8a;
+  font-size: 1.25rem;
+  font-weight: 600;
+  box-sizing: border-box;
+  transition: width 0.25s ease, height 0.25s ease, margin 0.25s ease, background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, color 0.25s ease;
+}
+.kp-adim__tik {
+  display: none;
+}
+.kp-adim__ad {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.25s ease;
+}
+.kp-adim__ozet {
+  display: block;
+  max-width: 100%;
+  min-height: 1.15em;
+  overflow: hidden;
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--kp-ikincil);
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
-.kp-ust--sekmeler .kp-adim__cizgi {
-  height: 3px;
-  border-radius: 2px 2px 0 0;
-}
-.kp-ust--sekmeler .kp-adim[aria-current='step'] {
+/* Aktif: kırmızı dolu, beyaz kalın numara, hafif kırmızı halka; adı kırmızı ve kalın */
+.kp-adim-oge--aktif .kp-adim__daire {
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  border-color: #b3141b;
+  background: #b3141b;
+  color: #fff;
   font-weight: 700;
+  box-shadow: 0 0 0 4px rgba(179, 20, 27, 0.18);
+}
+.kp-ust--sekmeler .kp-adim-oge--aktif .kp-adim {
+  color: #b3141b;
+  font-weight: 700;
+}
+/* Biten: koyu daire, beyaz ✓; adı koyu */
+.kp-adim-oge--gecildi .kp-adim__daire {
+  border-color: #1e1e24;
+  background: #1e1e24;
+  color: #fff;
+}
+.kp-adim-oge--gecildi .kp-adim__no {
+  display: none;
+}
+.kp-adim-oge--gecildi .kp-adim__tik {
+  display: inline;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.kp-ust--sekmeler .kp-adim-oge--gecildi .kp-adim {
+  color: #1e1e24;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kp-adim__daire,
+  .kp-adim__ad,
+  .kp-adim-oge + .kp-adim-oge::before {
+    transition: none;
+  }
 }
 /* ---------- Önizlemenin altındaki sabit satır: eklenenler ya da seçili öğenin adı ve araçlar ---------- */
 .kp-onizleme .kp-satir {
@@ -5091,9 +5190,14 @@ html.kp-kilit body {
           '<div class="kp-ust__metin"><h2 id="kp-editor-baslik" class="kp-ust__baslik" data-kp-baslik>' + kacis(aks.ad) + ' tasarla</h2>' +
           (this.secenek.buyuk ? '<p class="kp-yol">Velcro alanın neredeyse tamamını kaplar</p>' : '') + '</div>'
         : '<h2 id="kp-editor-baslik" class="kp-gizli" data-kp-baslik>Tasarımını oluştur</h2>' +
+          // Adım göstergesi: çizgiyle bağlı numaralı daireler; biten adımın altında o adımda eklenen
           '<nav class="kp-adimlar" aria-label="Tasarım adımları"><ol>' +
-          this.adimlar.map(function (a) {
-            return '<li><button type="button" class="kp-adim" data-kp-adim="' + a.id + '"><span class="kp-adim__ad">' + a.ad + '</span><span class="kp-adim__cizgi" aria-hidden="true"></span></button></li>';
+          this.adimlar.map(function (a, i) {
+            return '<li class="kp-adim-oge" data-kp-adim-oge="' + a.id + '"><button type="button" class="kp-adim" data-kp-adim="' + a.id + '">' +
+              '<span class="kp-adim__daire" aria-hidden="true"><span class="kp-adim__no">' + (i + 1) + '</span><span class="kp-adim__tik">✓</span></span>' +
+              '<span class="kp-adim__ad">' + a.ad + '</span>' +
+              '<span class="kp-adim__ozet" data-kp-adim-ozet="' + a.id + '"></span>' +
+              '</button></li>';
           }).join('') +
           '</ol></nav>' +
           '<button type="button" class="kp-kapat" data-kp-kapat aria-label="Kapat">' +
@@ -5557,11 +5661,38 @@ html.kp-kilit body {
         b.removeAttribute('aria-current');
       }
       b.classList.toggle('kp-adim--gecildi', gecildi && id !== adim);
+      var li = b.closest('[data-kp-adim-oge]');
+      if (li) {
+        li.classList.toggle('kp-adim-oge--aktif', id === adim);
+        li.classList.toggle('kp-adim-oge--gecildi', gecildi && id !== adim);
+      }
     });
+    this.adimOzetleriCiz();
     var ozette = adim === 'ozet';
     this.el.querySelector('.kp-alt').classList.toggle('kp-alt--ozet', ozette);
     this.el.querySelector('[data-kp-alt-ozet]').hidden = !ozette;
     this.ileriYazisi();
+  };
+
+  // Biten adımların altında o adımda eklenen: Yazı'da metin, İkon'da "N ikon" ya da set adı, Aksesuar'da adı; boşsa "—"
+  Editor.prototype.adimOzetleriCiz = function () {
+    if (this.alt || !this.el || !this.t) return;
+    var m = this.m;
+    var t = this.t;
+    var setler = saglamSetler(m, t);
+    var setIdleri = setler.map(function (k) { return k.id; });
+    var ikon = (t.parcalar || []).filter(function (p) { return p.tip === 'icon' && !(p.setGrup && setIdleri.indexOf(p.setGrup) !== -1); }).length;
+    var ikonOzet = setler.map(function (k) { return m.hazirSetHarita[k.urunId] ? m.hazirSetHarita[k.urunId].ad : ''; }).filter(Boolean)
+      .concat(ikon ? [ikon + ' ikon'] : []).join(' + ');
+    var aksOzet = (t.aksesuarlar || []).map(function (a) { var x = m.aksesuarHarita[a.urunId]; return x ? x.model || x.ad : ''; }).filter(Boolean).join(', ');
+    var ozet = { yazi: t.isim || '', ikon: ikonOzet, aksesuar: aksOzet, ozet: '' };
+    this.el.querySelectorAll('[data-kp-adim-ozet]').forEach(function (x) {
+      var id = x.getAttribute('data-kp-adim-ozet');
+      var li = x.closest('[data-kp-adim-oge]');
+      var metin = li && li.classList.contains('kp-adim-oge--gecildi') && id !== 'ozet' ? ozet[id] || '—' : '';
+      if (x.textContent !== metin) x.textContent = metin;
+      x.title = metin;
+    });
   };
 
   // Özet adımında ana buton doğrudan sepete ekler: "Sepete ekle · toplam"
@@ -6439,6 +6570,7 @@ html.kp-kilit body {
     var alanHatali = !this.durum.isimGecerli || Object.keys(this.durum.hatalar).length > 0;
     this.sahne.ciz(this.durum.parcalar, this.durum.hatalar, alanHatali);
     this.dugmeleriGuncelle();
+    this.adimOzetleriCiz();
     this.yaziDurumGuncelle();
     this.etiketleriCiz();
     this.gecButonlariGuncelle();

@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 const require = createRequire(import.meta.url);
 // Akış: Yazı → İkon → (Aksesuar) → Özet
 const ADIM_SAYISI = 4;
-const ADIM_METNI = /^Yazı İkon Aksesuar Özet$/;
+const ADIM_METNI = /^1 Yazı 2 İkon 3 Aksesuar 4 Özet$/;
 const { chromium, devices } = require('playwright');
 
 const html = readFileSync(new URL('sayfa.html', import.meta.url), 'utf8');
@@ -72,14 +72,30 @@ const sira = await s.evaluate(() => {
 assert.ok(Math.abs(sira.ust - sira.adim) < 2 && sira.adim < sira.onizleme && sira.onizleme < sira.panel, JSON.stringify(sira));
 assert.equal(await s.locator('.kp-ust .kp-adimlar').count(), 1, 'adımlar üst satırda');
 assert.ok((await s.locator('.kp-editor [data-kp-baslik]').boundingBox()).width <= 1, '"Tasarımını oluştur" görünmez (yalnızca ekran okuyucu)');
-const ustSatir = await s.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(); return { ust: r('.kp-ust').height, adim: r('.kp-adimlar').right, kapat: r('.kp-kapat').left }; });
-assert.ok(ustSatir.ust <= 52 && ustSatir.adim <= ustSatir.kapat + 1, 'tek satır, kapatın solunda: ' + JSON.stringify(ustSatir));
-// Aktif adım kalın, altında koyu çizgi; sonrakilerde açık çizgi
-const cizgiler = await s.$$eval('.kp-adim', (b) => b.map((x) => [getComputedStyle(x).fontWeight, getComputedStyle(x.querySelector('.kp-adim__cizgi')).backgroundColor, x.querySelector('.kp-adim__cizgi').getBoundingClientRect().top > x.querySelector('.kp-adim__ad').getBoundingClientRect().top]));
-assert.equal(cizgiler[0][0], '700');
-assert.notEqual(cizgiler[0][1], cizgiler[1][1], 'aktif koyu, diğerleri açık');
-assert.ok(cizgiler.every((c) => c[2]), 'çizgi adın altında');
-assert.equal(await s.locator('.kp-adim__cizgi').count(), ADIM_SAYISI);
+const ustSatir = await s.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(); return { ust: r('.kp-ust').height, adim: r('.kp-adimlar').right, kapat: r('.kp-kapat').left, sw: document.querySelector('.kp-adimlar').scrollWidth, cw: document.querySelector('.kp-adimlar').clientWidth }; });
+assert.ok(ustSatir.ust <= 64 && ustSatir.adim <= ustSatir.kapat + 1 && ustSatir.sw <= ustSatir.cw, 'tek satır, kaydırmasız, ≤64 px, kapatın solunda: ' + JSON.stringify(ustSatir));
+// Adım göstergesi: aktif adım 30 px kırmızı daire (beyaz kalın numara, halka), adı kırmızı kalın; sıradakiler 26 px gri çerçeveli
+const adimDurum = async () => (await s.waitForTimeout(350), s.$$eval('.kp-adim-oge', (l) => l.map((li) => {
+  const d = li.querySelector('.kp-adim__daire'); const cs = getComputedStyle(d); const ad = getComputedStyle(li.querySelector('.kp-adim'));
+  return { w: Math.round(d.getBoundingClientRect().width), zemin: cs.backgroundColor, halka: cs.boxShadow !== 'none', metin: li.querySelector('.kp-adim__daire').innerText.trim(), adRenk: ad.color, adKalin: ad.fontWeight, ozet: li.querySelector('.kp-adim__ozet').textContent, cizgi: getComputedStyle(li, '::before').backgroundColor };
+})));
+let ad0 = await adimDurum();
+assert.deepEqual([ad0[0].w, ad0[0].zemin, ad0[0].halka, ad0[0].metin, ad0[0].adRenk, ad0[0].adKalin], [30, 'rgb(179, 20, 27)', true, '1', 'rgb(179, 20, 27)', '700']);
+assert.deepEqual([ad0[1].w, ad0[1].zemin, ad0[1].metin], [26, 'rgb(255, 255, 255)', '2']);
+assert.equal(ad0[1].cizgi, 'rgb(220, 220, 220)', 'sıradaki adıma çizgi açık');
+// Yazı yaz, İkon'a geç: Yazı biter (koyu daire ✓, altında metin), çizgi koyu
+await s.locator('#kp-isim').fill('gokhan');
+await s.locator('[data-kp-adim="ikon"]').click();
+ad0 = await adimDurum();
+assert.deepEqual([ad0[0].w, ad0[0].zemin, ad0[0].metin, ad0[0].ozet, ad0[0].adRenk], [26, 'rgb(30, 30, 36)', '✓', 'GOKHAN', 'rgb(30, 30, 36)']);
+assert.equal(ad0[1].cizgi, 'rgb(30, 30, 36)', 'geçilen adımlara kadar çizgi koyu');
+assert.equal(ad0[1].zemin, 'rgb(179, 20, 27)');
+// Hiçbir şey eklenmeden geçilen adım: "—"; dokunarak geri dönülebilir
+await s.locator('[data-kp-adim="ozet"]').click();
+ad0 = await adimDurum();
+assert.deepEqual(ad0.map((x) => x.ozet), ['GOKHAN', '—', '—', '']);
+await s.locator('[data-kp-adim="yazi"]').click();
+await s.locator('#kp-isim').fill('');
 assert.match((await s.locator('.kp-adimlar').innerText()).replace(/\s+/g, ' '), ADIM_METNI);
 
 await s.locator('#kp-isim').fill('ece');

@@ -41,7 +41,7 @@ await s.locator('kisisel-kart').waitFor({ state: 'visible' });
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 
 // 1) Akış: Yazı → İkon → Aksesuar → Özet
-assert.equal(await metin(ana + ' .kp-adimlar'), 'Yazı İkon Aksesuar Özet');
+assert.equal(await metin(ana + ' .kp-adimlar'), '1 Yazı 2 İkon 3 Aksesuar 4 Özet');
 await s.locator(ana + ' [data-kp-adim="aksesuar"]').click();
 assert.equal(await metin(ana + ' [data-kp-panel="aksesuar"] [data-kp-gec]'), 'Aksesuar istemiyorum →');
 // Kartlar yatay, tek sütun: solda ~96 px görsel, sağda bilgiler ve butonlar; en az iki kart butonlarıyla panele sığar
@@ -196,6 +196,7 @@ await s.locator('#kpa-isim').fill('eda');
 await s.locator('#kpa-isim').press('Enter'); // klavye kapanır, alt çubuk görünür
 await s.locator(alt + ' [data-kp-ileri]').click();
 await s.locator(ana + ' [data-kp-adim="ozet"]').click();
+assert.equal(await s.locator(ana + ' [data-kp-adim-ozet="aksesuar"]').textContent(), 'Kalem Kutusu', 'adım göstergesinde aksesuarın adı');
 await s.locator(ana + ' [data-kp-ileri]').click();
 await s.waitForURL('**/cart');
 const [baz, ...digerleri] = eklenen.items;
