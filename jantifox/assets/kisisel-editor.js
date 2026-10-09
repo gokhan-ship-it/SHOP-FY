@@ -1712,7 +1712,10 @@
           '<span class="kp-cerceve__cizgi"></span>' +
           '<span class="kp-cerceve__tutamac" data-kp-tutamac title="Döndürmek için sürükle">' +
           '<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-          '</span></div></div>'
+          '</span>' +
+          // Yazı seçiliyken tutamacın sağında Ayır / Birleştir (çerçeveyle döner, yazısı hep düz)
+          '<button type="button" class="kp-cerceve__harf" data-kp-cerceve-harf hidden></button>' +
+          '</div></div>'
         : '') +
       '</div>';
     // Editörde sahne bir görünüm penceresi içinde durur; yakınlaştırma sahnenin
@@ -1866,7 +1869,27 @@
     el.style.height = (h / m.Hcm) * 100 + '%';
     el.style.transformOrigin = (-c.x1 / w) * 100 + '% ' + (-c.y1 / h) * 100 + '%';
     el.style.transform = 'rotate(' + c.aci + 'deg)';
+    el.style.setProperty('--kp-ters-aci', -c.aci + 'deg');
     el.classList.toggle('kp-cerceve--hatali', !!hatali);
+    this.cerceveSigdir();
+  };
+
+  // Tutamaç (ve Ayır / Birleştir) önizlemenin dışına taşıyorsa çerçevenin altına; buton sağdan taşıyorsa tutamacın soluna
+  Sahne.prototype.cerceveSigdir = function () {
+    var el = this.secimEl;
+    if (!el || el.hidden || !this.gorunum) return;
+    var g = this.gorunum.getBoundingClientRect();
+    if (!g.width) return;
+    el.classList.remove('kp-cerceve--alt', 'kp-cerceve--sol');
+    var dis = function (x) {
+      var r = x.getBoundingClientRect();
+      return r.top < g.top + 2 || r.bottom > g.bottom - 2 || r.left < g.left + 2 || r.right > g.right - 2;
+    };
+    var tutamac = el.querySelector('[data-kp-tutamac]');
+    var harf = el.querySelector('[data-kp-cerceve-harf]');
+    var dikey = function (x) { var r = x.getBoundingClientRect(); return r.top < g.top + 2 || r.bottom > g.bottom - 2; };
+    if (dikey(tutamac) || (harf && !harf.hidden && dikey(harf))) el.classList.add('kp-cerceve--alt');
+    if (harf && !harf.hidden && dis(harf)) el.classList.add('kp-cerceve--sol');
   };
 
   /* ------------------------------------------------------------------ */
@@ -1966,7 +1989,6 @@
       '<button type="button" data-kp-dondur="15" aria-label="15 derece sağa döndür"><span aria-hidden="true">↻</span> 15°</button>' +
       '<button type="button" data-kp-duzle hidden>Düzle</button>' +
       '<button type="button" data-kp-aks-tasarla hidden>Tasarla</button>' +
-      '<button type="button" data-kp-arac-harf hidden>Ayır</button>' +
       '<button type="button" class="kp-arac__sil" data-kp-sil>Sil</button>' +
       '<button type="button" class="kp-arac__tamam" data-kp-secim-kaldir>Tamam</button>' +
       '</span>' +
@@ -2098,9 +2120,11 @@
       if (hedef.hasAttribute('data-kp-vazgec')) return self.altVazgec();
       if (hedef.hasAttribute('data-kp-gorunum')) {
         self.sahne.gorunumAyarla(!self.sahne.yakin);
+        // Yakınlaşma bitince tutamaç ve Ayır / Birleştir önizlemeye sığdırılır
+        setTimeout(function () { self.sahne.cerceveSigdir(); }, 330);
         return self.dugmeleriGuncelle();
       }
-      if (hedef.hasAttribute('data-kp-harf-mod') || hedef.hasAttribute('data-kp-arac-harf')) return self.harfModDegistir();
+      if (hedef.hasAttribute('data-kp-harf-mod') || hedef.hasAttribute('data-kp-cerceve-harf')) return self.harfModDegistir();
       if (hedef.hasAttribute('data-kp-adim')) return self.adimaGit(hedef.getAttribute('data-kp-adim'), false, true);
       if (hedef.hasAttribute('data-kp-ileri')) return self.ileri();
       if (hedef.hasAttribute('data-kp-oneri-kabul')) return self.harfDegistir(hedef.getAttribute('data-harf'), hedef.getAttribute('data-oneri'));
@@ -2183,7 +2207,7 @@
     // Klavye açıkken alttaki butonlara ya da adım çizgisine ilk dokunuş klavyeyi kapatıp kaybolmasın:
     // bu butonlar odağı almaz (tıklama normal çalışır)
     el.addEventListener('mousedown', function (e) {
-      if (e.target.closest('.kp-alt button, .kp-adimlar button, .kp-arac button, .kp-harf-mod')) e.preventDefault();
+      if (e.target.closest('.kp-alt button, .kp-adimlar button, .kp-arac button, .kp-harf-mod, .kp-cerceve__harf')) e.preventDefault();
     });
     el.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
@@ -4441,11 +4465,12 @@
     this.el.querySelector('[data-kp-aks-tasarla]').hidden = !(p0.tip === 'aksesuar' && p0.tanim.tasarlanabilir);
     var kenarda = !!p0.kenar;
     this.el.querySelectorAll('[data-kp-dondur]').forEach(function (x) { x.hidden = kenarda; });
-    // Yazı seçiliyken Ayır (blok) / Birleştir (ayrı harf); yazı alanındaki butonla aynı durum
-    var harfBtn = this.el.querySelector('[data-kp-arac-harf]');
+    // Önizlemede, tutamacın sağında: yazı seçiliyken Ayır (blok) / Birleştir (ayrı harf); yazı alanındaki butonla aynı durum
+    var harfBtn = this.el.querySelector('[data-kp-cerceve-harf]');
     var yazi = b.grup === 'isim' || String(b.grup).indexOf('harf-') === 0;
     harfBtn.hidden = !yazi || kenarda || Array.from(this.t.isim || '').length < 2;
-    harfBtn.textContent = this.t.harfAyri ? 'Birleştir' : 'Ayır';
+    var harfHtml = this.t.harfAyri ? 'Birleştir' : '<span aria-hidden="true">↔</span> Ayır';
+    if (harfBtn.innerHTML !== harfHtml) harfBtn.innerHTML = harfHtml;
     harfBtn.setAttribute('aria-label', this.t.harfAyri ? 'Harfleri birleştir' : 'Harfleri ayır');
     this.el.querySelectorAll('[data-kp-kenar-grup]').forEach(function (x) { x.classList.toggle('kp-kenar__oge--secili', x.getAttribute('data-kp-kenar-grup') === b.grup); });
     if (kenarda) this.sahne.secimCiz(null);
@@ -4591,6 +4616,8 @@
 
     kok.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+      // Çerçevedeki Ayır / Birleştir: yalnızca tıklama (sürükleme, seçim kaldırma yok)
+      if (e.target.closest('[data-kp-cerceve-harf]')) return;
       parmaklar[e.pointerId] = [e.clientX, e.clientY];
       try {
         kok.setPointerCapture(e.pointerId);

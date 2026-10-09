@@ -615,6 +615,57 @@ body.kisisel-aktif .bag-notice {
 .kp-sahne--donuyor .kp-cerceve__tutamac {
   cursor: grabbing;
 }
+/* Ayır / Birleştir: tutamacın hemen sağında, beyaz zeminli küçük buton; çerçeveyle döner, yazısı hep düz */
+.kp-cerceve__harf {
+  position: absolute;
+  left: calc(50% + 18px);
+  bottom: calc(100% + 12px);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  height: 28px;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  cursor: pointer;
+  transform: rotate(var(--kp-ters-aci, 0deg));
+}
+.kp-cerceve__harf[hidden] {
+  display: none;
+}
+/* Dokunma alanı en az 36 px */
+.kp-cerceve__harf::after {
+  content: '';
+  position: absolute;
+  inset: -4px -2px;
+}
+/* Önizlemenin üst kenarına yakın: tutamaç ve buton çerçevenin altında */
+.kp-cerceve--alt .kp-cerceve__cizgi {
+  top: 100%;
+  bottom: auto;
+}
+.kp-cerceve--alt .kp-cerceve__tutamac {
+  top: calc(100% + 16px);
+  bottom: auto;
+}
+.kp-cerceve--alt .kp-cerceve__harf {
+  top: calc(100% + 12px);
+  bottom: auto;
+}
+/* Sağdan taşıyorsa tutamacın solunda */
+.kp-cerceve--sol .kp-cerceve__harf {
+  left: auto;
+  right: calc(50% + 18px);
+}
 .kp-aci {
   position: absolute;
   z-index: 3;
