@@ -1,0 +1,23 @@
+{%- comment -%} Text To Next PRO - ince cizgili ikon seti. icon: qr|selfie|phone|text|calendar|image|logo|clock|check {%- endcomment -%}
+<svg class="pro-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  {%- case icon -%}
+    {%- when 'qr' -%}
+      <rect x="3.5" y="3.5" width="6" height="6" rx="1"/><rect x="14.5" y="3.5" width="6" height="6" rx="1"/><rect x="3.5" y="14.5" width="6" height="6" rx="1"/><path d="M14.5 14.5h2.5v2.5M20.5 14.5v.01M14.5 20.5h.01M17.5 20.5h3v-3"/>
+    {%- when 'selfie' -%}
+      <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="11" r="3"/><path d="M7.5 17.5c1-1.7 2.6-2.6 4.5-2.6s3.5.9 4.5 2.6"/>
+    {%- when 'phone' -%}
+      <rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/><rect x="9" y="6.5" width="2.6" height="2.6" rx=".5"/><rect x="12.4" y="6.5" width="2.6" height="2.6" rx=".5"/><rect x="9" y="10" width="2.6" height="2.6" rx=".5"/><rect x="12.4" y="10" width="2.6" height="2.6" rx=".5"/>
+    {%- when 'text' -%}
+      <path d="M5 6.5V5h14v1.5M12 5v14M9.5 19h5"/>
+    {%- when 'calendar' -%}
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>
+    {%- when 'image' -%}
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m20.5 16-4.5-4.5L6 19.5"/>
+    {%- when 'logo' -%}
+      <path d="M12 3.5 20 8v8l-8 4.5L4 16V8z"/><path d="M12 12.2 20 8M12 12.2 4 8M12 12.2v8.3"/>
+    {%- when 'clock' -%}
+      <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+    {%- else -%}
+      <path d="m5 12.5 4.5 4.5L19 7.5"/>
+  {%- endcase -%}
+</svg>

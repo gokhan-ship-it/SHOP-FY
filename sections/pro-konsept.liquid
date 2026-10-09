@@ -1,0 +1,224 @@
+{%- comment -%}
+  Text To Next PRO - Konsept secici.
+  Her konsept blogu bir CSS degisken seti uretir:
+    #ProK-<section> .pro-phone[data-konsept="<blok>"] { --k-bg: ...; }
+  Sekmeye tiklandiginda pro.js yalnizca data-konsept niteligini degistirir;
+  renkler @property ile kayitli degiskenler uzerinden yumusak gecer.
+{%- endcomment -%}
+{%- liquid
+  assign sid = 'ProK-' | append: section.id
+  assign first_block = section.blocks | first
+  assign font_list = ''
+-%}
+
+<style>
+  {%- for block in section.blocks -%}
+    {%- liquid
+      case block.settings.font
+        when 'playfair'
+          assign ff = "'Playfair Display', Georgia, serif"
+        when 'cormorant'
+          assign ff = "'Cormorant Garamond', Georgia, serif"
+        when 'dm_serif'
+          assign ff = "'DM Serif Display', Georgia, serif"
+        when 'space_grotesk'
+          assign ff = "'Space Grotesk', 'Helvetica Neue', Arial, sans-serif"
+        when 'unbounded'
+          assign ff = "'Unbounded', 'Arial Black', sans-serif"
+        when 'plex'
+          assign ff = "'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif"
+        when 'syne'
+          assign ff = "'Syne', 'Helvetica Neue', Arial, sans-serif"
+        else
+          assign ff = "'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif"
+      endcase
+      assign font_list = font_list | append: block.settings.font | append: ','
+    -%}
+    #{{ sid }} .pro-phone[data-konsept="{{ block.id }}"] {
+      --k-bg: {{ block.settings.c_bg }};
+      --k-surface: {{ block.settings.c_surface }};
+      --k-ink: {{ block.settings.c_ink }};
+      --k-accent: {{ block.settings.c_accent }};
+      --k-accent-ink: {{ block.settings.c_accent_ink }};
+      --k-radius: {{ block.settings.radius }}px;
+      --k-font: {{ ff }};
+      --k-tracking: {{ block.settings.tracking | divided_by: 100.0 }}em;
+    }
+    #{{ sid }} .pro-tab[data-konsept="{{ block.id }}"] { --tab-dot: {{ block.settings.c_accent }}; }
+  {%- endfor -%}
+</style>
+
+{%- comment -%} Yalnizca kullanilan konsept fontlari yuklenir {%- endcomment -%}
+{%- liquid
+  assign gf = ''
+  if font_list contains 'playfair'
+    assign gf = gf | append: '&family=Playfair+Display:ital,wght@0,500;0,700;1,500'
+  endif
+  if font_list contains 'cormorant'
+    assign gf = gf | append: '&family=Cormorant+Garamond:wght@500;700'
+  endif
+  if font_list contains 'dm_serif'
+    assign gf = gf | append: '&family=DM+Serif+Display'
+  endif
+  if font_list contains 'space_grotesk'
+    assign gf = gf | append: '&family=Space+Grotesk:wght@500;700'
+  endif
+  if font_list contains 'unbounded'
+    assign gf = gf | append: '&family=Unbounded:wght@500;800'
+  endif
+  if font_list contains 'plex'
+    assign gf = gf | append: '&family=IBM+Plex+Sans:wght@400;600'
+  endif
+  if font_list contains 'syne'
+    assign gf = gf | append: '&family=Syne:wght@600;800'
+  endif
+-%}
+{%- if gf != blank -%}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?{{ gf | remove_first: '&' }}&display=swap">
+{%- endif -%}
+
+<section id="{{ sid }}" class="pro-k pro-pad" aria-labelledby="{{ sid }}-title" data-pro-konsept>
+  <div class="pro-wrap">
+    <div class="pro-head pro-reveal">
+      {%- if section.settings.eyebrow != blank -%}<p class="pro-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h2 id="{{ sid }}-title" class="pro-h2">{{ section.settings.title }}</h2>
+      {%- if section.settings.text != blank -%}<p class="pro-lead">{{ section.settings.text }}</p>{%- endif -%}
+    </div>
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="pro-k__stage pro-reveal">
+        <div class="pro-phone" data-konsept="{{ first_block.id }}" data-pro-phone>
+          <div class="pro-phone__screen">
+            {%- for block in section.blocks -%}
+              <div class="pro-phone__tex pro-tex--{{ block.settings.texture }}{% if forloop.first %} is-active{% endif %}" data-tex="{{ block.id }}">
+                {%- if block.settings.bg_image != blank -%}
+                  {{ block.settings.bg_image | image_url: width: 600 | image_tag: loading: 'lazy', alt: '', class: 'pro-phone__bgimg' }}
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+
+            <div class="pro-phone__ui" data-pro-ui>
+              <div class="pro-phone__status" aria-hidden="true"><span>9:41</span><span class="pro-phone__island"></span><span class="pro-phone__sig"></span></div>
+
+              <div class="pro-phone__event">
+                {%- for block in section.blocks -%}
+                  <div class="pro-phone__logo{% if forloop.first %} is-active{% endif %}" data-logo="{{ block.id }}">
+                    {%- if block.settings.logo != blank -%}
+                      {{ block.settings.logo | image_url: height: 80 | image_tag: loading: 'lazy', alt: block.settings.event_name, height: 28 }}
+                    {%- endif -%}
+                  </div>
+                {%- endfor -%}
+                <p class="pro-phone__date" data-k-date>{{ first_block.settings.event_date }}</p>
+                <p class="pro-phone__name" data-k-name>{{ first_block.settings.event_name }}</p>
+              </div>
+
+              <div class="pro-phone__cta">
+                <p class="pro-phone__cta-title">{{ section.settings.screen_title }}</p>
+                <span class="pro-phone__selfie">
+                  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="11" r="3.2"/><path d="M7.5 17.2c1-1.7 2.6-2.6 4.5-2.6s3.5.9 4.5 2.6"/></svg>
+                  {{ section.settings.selfie_label }}
+                </span>
+              </div>
+
+              <div class="pro-phone__results">
+                <p class="pro-phone__results-label"><span>{{ section.settings.grid_label }}</span><span>{{ section.settings.grid_count }}</span></p>
+                <div class="pro-phone__grid">
+                  {%- for i in (1..6) -%}
+                    {%- assign img_key = 'photo_' | append: i -%}
+                    {%- assign ph = section.settings[img_key] -%}
+                    <span class="pro-phone__tile">
+                      {%- if ph != blank -%}
+                        {{ ph | image_url: width: 240 | image_tag: loading: 'lazy', alt: '', widths: '120, 240', sizes: '90px' }}
+                      {%- endif -%}
+                    </span>
+                  {%- endfor -%}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pro-tabs" role="tablist" aria-label="{{ section.settings.tabs_label | escape }}">
+          {%- for block in section.blocks -%}
+            <button type="button" role="tab" class="pro-tab" id="{{ sid }}-tab-{{ block.id }}"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+              data-konsept="{{ block.id }}"
+              data-name="{{ block.settings.event_name | escape }}"
+              data-date="{{ block.settings.event_date | escape }}"
+              {{ block.shopify_attributes }}>
+              <span class="pro-tab__dot" aria-hidden="true"></span>{{ block.settings.label }}
+            </button>
+          {%- endfor -%}
+        </div>
+        {%- if section.settings.note != blank -%}<p class="pro-k__note">{{ section.settings.note }}</p>{%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "PRO - Konsept seçici",
+  "class": "pro-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Üst etiket", "default": "Konsepte özel arayüz" },
+    { "type": "text", "id": "title", "label": "Başlık", "default": "Her etkinlik farklı. Arayüzü de." },
+    { "type": "textarea", "id": "text", "label": "Açıklama", "default": "Aynı uygulama, dört farklı etkinlik. Bir konsept seçin." },
+    { "type": "text", "id": "tabs_label", "label": "Sekmeler için erişilebilirlik etiketi", "default": "Konsept seçin" },
+    { "type": "text", "id": "note", "label": "Sekmelerin altındaki not" },
+    { "type": "header", "content": "Telefon ekranı" },
+    { "type": "text", "id": "screen_title", "label": "Ekran başlığı", "default": "Fotoğraflarını bul" },
+    { "type": "text", "id": "selfie_label", "label": "Selfie butonu", "default": "Selfie çek" },
+    { "type": "text", "id": "grid_label", "label": "Izgara başlığı", "default": "Senin fotoğrafların" },
+    { "type": "text", "id": "grid_count", "label": "Izgara sayısı", "default": "24" },
+    { "type": "image_picker", "id": "photo_1", "label": "Izgara fotoğrafı 1" },
+    { "type": "image_picker", "id": "photo_2", "label": "Izgara fotoğrafı 2" },
+    { "type": "image_picker", "id": "photo_3", "label": "Izgara fotoğrafı 3" },
+    { "type": "image_picker", "id": "photo_4", "label": "Izgara fotoğrafı 4" },
+    { "type": "image_picker", "id": "photo_5", "label": "Izgara fotoğrafı 5" },
+    { "type": "image_picker", "id": "photo_6", "label": "Izgara fotoğrafı 6" }
+  ],
+  "blocks": [
+    {
+      "type": "konsept",
+      "name": "Konsept",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Sekme adı", "default": "Gala" },
+        { "type": "text", "id": "event_name", "label": "Etkinlik adı (ekranda)", "default": "Gala Gecesi 2026" },
+        { "type": "text", "id": "event_date", "label": "Tarih / yer (ekranda)", "default": "14 Aralık · İstanbul" },
+        { "type": "image_picker", "id": "logo", "label": "Etkinlik logosu", "info": "İsteğe bağlı. Etkinlik adının üstünde gösterilir." },
+        { "type": "header", "content": "Renkler" },
+        { "type": "color", "id": "c_bg", "label": "Arka plan", "default": "#0B0B0C" },
+        { "type": "color", "id": "c_surface", "label": "Kart / yüzey", "default": "#1A1812" },
+        { "type": "color", "id": "c_ink", "label": "Yazı", "default": "#F3E9D2" },
+        { "type": "color", "id": "c_accent", "label": "Vurgu (buton)", "default": "#C9A45C" },
+        { "type": "color", "id": "c_accent_ink", "label": "Buton yazısı", "default": "#0B0B0C" },
+        { "type": "header", "content": "Tipografi ve doku" },
+        { "type": "select", "id": "font", "label": "Yazı tipi", "default": "playfair", "options": [
+          { "value": "inter", "label": "Inter (nötr)" },
+          { "value": "playfair", "label": "Playfair Display (klasik serif)" },
+          { "value": "cormorant", "label": "Cormorant Garamond (zarif serif)" },
+          { "value": "dm_serif", "label": "DM Serif Display" },
+          { "value": "space_grotesk", "label": "Space Grotesk (teknolojik)" },
+          { "value": "unbounded", "label": "Unbounded (enerjik)" },
+          { "value": "syne", "label": "Syne (sanatsal)" },
+          { "value": "plex", "label": "IBM Plex Sans (kurumsal)" }
+        ] },
+        { "type": "range", "id": "tracking", "label": "Harf aralığı", "min": -4, "max": 20, "step": 1, "default": 0, "unit": "%" },
+        { "type": "range", "id": "radius", "label": "Köşe yuvarlaklığı", "min": 0, "max": 28, "step": 1, "default": 4, "unit": "px" },
+        { "type": "select", "id": "texture", "label": "Arka plan dokusu", "default": "lines", "options": [
+          { "value": "none", "label": "Düz" },
+          { "value": "lines", "label": "İnce çizgiler" },
+          { "value": "grid", "label": "Izgara" },
+          { "value": "dots", "label": "Noktalar" },
+          { "value": "glow", "label": "Yumuşak ışık" },
+          { "value": "grain", "label": "Gren" }
+        ] },
+        { "type": "image_picker", "id": "bg_image", "label": "Arka plan görseli (KV)", "info": "İsteğe bağlı. Yüklenirse doku yerine ekranın arka planında kullanılır." }
+      ]
+    }
+  ]
+}
+{% endschema %}

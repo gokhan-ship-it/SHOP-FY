@@ -1,0 +1,366 @@
+{
+  "layout": "pro",
+  "sections": {
+    "hero": {
+      "type": "pro-hero",
+      "blocks": {
+        "card_1": {
+          "type": "card",
+          "settings": {
+            "kind": "kv",
+            "palette": "gala",
+            "title": "Gala 2026",
+            "sub": "Ödül Gecesi"
+          }
+        },
+        "card_2": {
+          "type": "card",
+          "settings": {
+            "kind": "phone",
+            "palette": "lansman",
+            "title": "NOVA X",
+            "sub": "Lansman"
+          }
+        },
+        "card_3": {
+          "type": "card",
+          "settings": {
+            "kind": "phone",
+            "palette": "festival",
+            "title": "Yaz Fest",
+            "sub": "Festival"
+          }
+        },
+        "card_4": {
+          "type": "card",
+          "settings": {
+            "kind": "kv",
+            "palette": "kongre",
+            "title": "Kongre",
+            "sub": "Tıp 2026"
+          }
+        },
+        "card_5": {
+          "type": "card",
+          "settings": {
+            "kind": "kv",
+            "palette": "konser",
+            "title": "Live",
+            "sub": "Konser"
+          }
+        },
+        "card_6": {
+          "type": "card",
+          "settings": {
+            "kind": "phone",
+            "palette": "odul",
+            "title": "Altın Ödüller",
+            "sub": "Tören"
+          }
+        },
+        "card_7": {
+          "type": "card",
+          "settings": {
+            "kind": "phone",
+            "palette": "spor",
+            "title": "Maraton",
+            "sub": "İstanbul"
+          }
+        },
+        "card_8": {
+          "type": "card",
+          "settings": {
+            "kind": "kv",
+            "palette": "dugun",
+            "title": "Aylin & Can",
+            "sub": "12.09"
+          }
+        }
+      },
+      "block_order": [
+        "card_1",
+        "card_2",
+        "card_3",
+        "card_4",
+        "card_5",
+        "card_6",
+        "card_7",
+        "card_8"
+      ],
+      "settings": {}
+    },
+    "konsept": {
+      "type": "pro-konsept",
+      "blocks": {
+        "gala": {
+          "type": "konsept",
+          "settings": {
+            "label": "Gala",
+            "event_name": "Gala Gecesi 2026",
+            "event_date": "14 Aralık · İstanbul",
+            "c_bg": "#0B0B0C",
+            "c_surface": "#1A1812",
+            "c_ink": "#F3E9D2",
+            "c_accent": "#C9A45C",
+            "c_accent_ink": "#0B0B0C",
+            "font": "playfair",
+            "tracking": 2,
+            "radius": 2,
+            "texture": "lines"
+          }
+        },
+        "lansman": {
+          "type": "konsept",
+          "settings": {
+            "label": "Lansman",
+            "event_name": "NOVA X Lansmanı",
+            "event_date": "3 Mart · Zorlu PSM",
+            "c_bg": "#F1F0EC",
+            "c_surface": "#FFFFFF",
+            "c_ink": "#121212",
+            "c_accent": "#FF4D1A",
+            "c_accent_ink": "#FFFFFF",
+            "font": "space_grotesk",
+            "tracking": -2,
+            "radius": 14,
+            "texture": "grid"
+          }
+        },
+        "festival": {
+          "type": "konsept",
+          "settings": {
+            "label": "Festival",
+            "event_name": "Yaz Festivali",
+            "event_date": "Ağustos · Bodrum",
+            "c_bg": "#26185A",
+            "c_surface": "#36277A",
+            "c_ink": "#FFF3DF",
+            "c_accent": "#FFD23F",
+            "c_accent_ink": "#26185A",
+            "font": "unbounded",
+            "tracking": 0,
+            "radius": 22,
+            "texture": "dots"
+          }
+        },
+        "kongre": {
+          "type": "konsept",
+          "settings": {
+            "label": "Kongre",
+            "event_name": "Ulusal Tıp Kongresi",
+            "event_date": "19–21 Nisan · Antalya",
+            "c_bg": "#0E2440",
+            "c_surface": "#163457",
+            "c_ink": "#E8F1FA",
+            "c_accent": "#4FB3E8",
+            "c_accent_ink": "#0E2440",
+            "font": "plex",
+            "tracking": 0,
+            "radius": 8,
+            "texture": "glow"
+          }
+        }
+      },
+      "block_order": [
+        "gala",
+        "lansman",
+        "festival",
+        "kongre"
+      ],
+      "settings": {}
+    },
+    "nasil": {
+      "type": "pro-nasil",
+      "blocks": {
+        "step_1": {
+          "type": "step",
+          "settings": {
+            "icon": "qr",
+            "title": "QR kodu okut",
+            "text": "Etkinlik alanındaki QR kod, katılımcıyı etkinliğin kendi ekranına götürür."
+          }
+        },
+        "step_2": {
+          "type": "step",
+          "settings": {
+            "icon": "selfie",
+            "title": "Selfie çek",
+            "text": "Tek bir selfie yeterli. Yüz tanıma, etkinlikte çekilen tüm fotoğrafları tarar."
+          }
+        },
+        "step_3": {
+          "type": "step",
+          "settings": {
+            "icon": "phone",
+            "title": "Fotoğrafların telefonuna gelsin",
+            "text": "Katılımcı yalnızca kendi fotoğraflarını görür, indirir ve paylaşır."
+          }
+        }
+      },
+      "block_order": [
+        "step_1",
+        "step_2",
+        "step_3"
+      ],
+      "settings": {}
+    },
+    "ajans": {
+      "type": "pro-ajans",
+      "blocks": {
+        "item_1": {
+          "type": "item",
+          "settings": {
+            "icon": "text",
+            "title": "Etkinlik adı"
+          }
+        },
+        "item_2": {
+          "type": "item",
+          "settings": {
+            "icon": "calendar",
+            "title": "Tarih"
+          }
+        },
+        "item_3": {
+          "type": "item",
+          "settings": {
+            "icon": "image",
+            "title": "KV"
+          }
+        },
+        "item_4": {
+          "type": "item",
+          "settings": {
+            "icon": "logo",
+            "title": "Marka logoları"
+          }
+        }
+      },
+      "block_order": [
+        "item_1",
+        "item_2",
+        "item_3",
+        "item_4"
+      ],
+      "settings": {}
+    },
+    "guven": {
+      "type": "pro-guven",
+      "blocks": {
+        "logo_1": {
+          "type": "logo",
+          "settings": {
+            "name": "Ajans logosu"
+          }
+        },
+        "logo_2": {
+          "type": "logo",
+          "settings": {
+            "name": "Ajans logosu"
+          }
+        },
+        "logo_3": {
+          "type": "logo",
+          "settings": {
+            "name": "Ajans logosu"
+          }
+        },
+        "logo_4": {
+          "type": "logo",
+          "settings": {
+            "name": "Ajans logosu"
+          }
+        },
+        "logo_5": {
+          "type": "logo",
+          "settings": {
+            "name": "Ajans logosu"
+          }
+        },
+        "logo_6": {
+          "type": "logo",
+          "settings": {
+            "name": "Ajans logosu"
+          }
+        },
+        "logo_7": {
+          "type": "logo",
+          "settings": {
+            "name": "Ajans logosu"
+          }
+        },
+        "logo_8": {
+          "type": "logo",
+          "settings": {
+            "name": "Ajans logosu"
+          }
+        },
+        "photo_1": {
+          "type": "photo",
+          "settings": {
+            "rotate": -4
+          }
+        },
+        "photo_2": {
+          "type": "photo",
+          "settings": {
+            "rotate": 3
+          }
+        },
+        "photo_3": {
+          "type": "photo",
+          "settings": {
+            "rotate": -2
+          }
+        },
+        "photo_4": {
+          "type": "photo",
+          "settings": {
+            "rotate": 5
+          }
+        },
+        "photo_5": {
+          "type": "photo",
+          "settings": {
+            "rotate": -3
+          }
+        },
+        "photo_6": {
+          "type": "photo",
+          "settings": {
+            "rotate": 2
+          }
+        }
+      },
+      "block_order": [
+        "logo_1",
+        "logo_2",
+        "logo_3",
+        "logo_4",
+        "logo_5",
+        "logo_6",
+        "logo_7",
+        "logo_8",
+        "photo_1",
+        "photo_2",
+        "photo_3",
+        "photo_4",
+        "photo_5",
+        "photo_6"
+      ],
+      "settings": {}
+    },
+    "basvuru": {
+      "type": "pro-basvuru",
+      "settings": {}
+    }
+  },
+  "order": [
+    "hero",
+    "konsept",
+    "nasil",
+    "ajans",
+    "guven",
+    "basvuru"
+  ]
+}

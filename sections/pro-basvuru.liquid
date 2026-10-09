@@ -1,0 +1,109 @@
+{%- comment -%}
+  Text To Next PRO - Kapanis ve basvuru. Shopify'in standart iletisim formu
+  ({% form 'contact' %}) kullanilir; basvurular magaza e-postasina duser.
+{%- endcomment -%}
+{%- liquid
+  assign form_id = 'ProForm-' | append: section.id
+  assign wa_number = section.settings.whatsapp | remove: ' ' | remove: '+' | remove: '-' | remove: '(' | remove: ')'
+  assign wa_text = section.settings.whatsapp_message | url_encode
+-%}
+
+<section id="basvuru" class="pro-apply pro-pad" aria-labelledby="pro-apply-{{ section.id }}">
+  <div class="pro-wrap pro-apply__grid">
+    <div class="pro-apply__copy pro-reveal">
+      {%- if section.settings.eyebrow != blank -%}<p class="pro-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h2 id="pro-apply-{{ section.id }}" class="pro-h2 pro-h2--xl">{{ section.settings.title }}</h2>
+      {%- if section.settings.text != blank -%}<p class="pro-lead">{{ section.settings.text }}</p>{%- endif -%}
+
+    </div>
+
+    <div class="pro-apply__card">
+      {%- form 'contact', id: form_id, class: 'pro-form' -%}
+        {%- if form.posted_successfully? -%}
+          <div class="pro-form__ok" role="status" tabindex="-1" autofocus>
+            {%- render 'pro-icon', icon: 'check' -%}
+            <p>{{ section.settings.success }}</p>
+          </div>
+        {%- else -%}
+          {%- if form.errors -%}
+            <div class="pro-form__err" role="alert">
+              <p>{{ section.settings.error }}</p>
+              <ul>
+                {%- for field in form.errors -%}
+                  <li>
+                    {%- if field == 'form' -%}{{ form.errors.messages[field] }}
+                    {%- elsif field == 'email' -%}{{ section.settings.label_email }}: {{ form.errors.messages[field] }}
+                    {%- else -%}{{ form.errors.translated_fields[field] | capitalize }}: {{ form.errors.messages[field] }}{%- endif -%}
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+
+          <input type="hidden" name="contact[Kaynak]" value="{{ section.settings.source | escape }}">
+
+          <div class="pro-field">
+            <label for="{{ form_id }}-agency">{{ section.settings.label_agency }}</label>
+            <input id="{{ form_id }}-agency" type="text" name="contact[Ajans adı]" autocomplete="organization" required>
+          </div>
+          <div class="pro-field">
+            <label for="{{ form_id }}-name">{{ section.settings.label_name }}</label>
+            <input id="{{ form_id }}-name" type="text" name="contact[name]" autocomplete="name" required value="{{ form.name }}">
+          </div>
+          <div class="pro-field">
+            <label for="{{ form_id }}-phone">{{ section.settings.label_phone }}</label>
+            <input id="{{ form_id }}-phone" type="tel" name="contact[phone]" autocomplete="tel" inputmode="tel" required value="{{ form.phone }}" placeholder="05xx xxx xx xx">
+          </div>
+          <div class="pro-field">
+            <label for="{{ form_id }}-email">{{ section.settings.label_email }}</label>
+            <input id="{{ form_id }}-email" type="email" name="contact[email]" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" required value="{{ form.email }}">
+          </div>
+
+          <button type="submit" class="pro-btn pro-btn--lg pro-btn--block">{{ section.settings.submit }}</button>
+          {%- if section.settings.legal != blank -%}<p class="pro-form__legal">{{ section.settings.legal }}</p>{%- endif -%}
+        {%- endif -%}
+      {%- endform -%}
+
+      {%- if wa_number != blank -%}
+        <div class="pro-apply__or"><span>{{ section.settings.or_label }}</span></div>
+        <a class="pro-btn pro-btn--ghost pro-btn--block pro-apply__wa" href="https://wa.me/{{ wa_number }}{% if wa_text != blank %}?text={{ wa_text }}{% endif %}" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.7-.3Z"/></svg>
+          {{ section.settings.whatsapp_label }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="pro-wrap">
+    <p class="pro-foot">&copy; {{ 'now' | date: '%Y' }} {{ section.settings.footer | default: shop.name }}</p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "PRO - Başvuru",
+  "class": "pro-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Üst etiket", "default": "Ücretsiz deneme" },
+    { "type": "text", "id": "title", "label": "Başlık", "default": "İlk etkinliğiniz bizden." },
+    { "type": "textarea", "id": "text", "label": "Açıklama", "default": "Bilgilerinizi bırakın, aynı gün size dönelim." },
+    { "type": "header", "content": "Form" },
+    { "type": "text", "id": "label_agency", "label": "Ajans adı etiketi", "default": "Ajans adı" },
+    { "type": "text", "id": "label_name", "label": "Yetkili kişi etiketi", "default": "Yetkili kişi" },
+    { "type": "text", "id": "label_phone", "label": "Telefon etiketi", "default": "Telefon" },
+    { "type": "text", "id": "label_email", "label": "E-posta etiketi", "default": "E-posta" },
+    { "type": "text", "id": "submit", "label": "Gönder butonu", "default": "Başvuruyu gönder" },
+    { "type": "text", "id": "legal", "label": "Form altı not", "default": "Bilgileriniz yalnızca sizinle iletişim kurmak için kullanılır." },
+    { "type": "text", "id": "success", "label": "Başarı mesajı", "default": "Teşekkürler. Başvurunuz bize ulaştı, en kısa sürede dönüş yapacağız." },
+    { "type": "text", "id": "error", "label": "Hata mesajı", "default": "Lütfen alanları kontrol edin." },
+    { "type": "text", "id": "source", "label": "E-postada görünen kaynak etiketi", "default": "Text To Next PRO başvurusu" },
+    { "type": "header", "content": "WhatsApp" },
+    { "type": "text", "id": "whatsapp", "label": "WhatsApp numarası", "info": "Ülke koduyla, örn. 905xxxxxxxxx. Boş bırakılırsa buton gizlenir.", "default": "905555555555" },
+    { "type": "text", "id": "whatsapp_label", "label": "Buton yazısı", "default": "WhatsApp'tan yaz" },
+    { "type": "textarea", "id": "whatsapp_message", "label": "Hazır mesaj", "default": "Merhaba, Text To Next PRO hakkında bilgi almak istiyorum." },
+    { "type": "text", "id": "or_label", "label": "Ayırıcı yazı", "default": "ya da" },
+    { "type": "header", "content": "Alt bilgi" },
+    { "type": "text", "id": "footer", "label": "Telif satırı", "default": "Text To Next" }
+  ]
+}
+{% endschema %}

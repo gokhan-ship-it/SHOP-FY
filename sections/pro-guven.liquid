@@ -1,0 +1,77 @@
+{%- comment -%} Text To Next PRO - Guven: kayan logo seridi + fotograf kolaji {%- endcomment -%}
+{%- assign logos = section.blocks | where: 'type', 'logo' -%}
+{%- assign photos = section.blocks | where: 'type', 'photo' -%}
+
+<section class="pro-trust pro-pad" aria-labelledby="pro-trust-{{ section.id }}">
+  <div class="pro-wrap">
+    <div class="pro-head pro-reveal">
+      <h2 id="pro-trust-{{ section.id }}" class="pro-h2 pro-h2--sm">{{ section.settings.title }}</h2>
+    </div>
+  </div>
+
+  {%- if logos.size > 0 -%}
+    {%- capture logo_row -%}
+      {%- for block in logos -%}
+        <li class="pro-logo" {{ block.shopify_attributes }}>
+          {%- if block.settings.image != blank -%}
+            {{ block.settings.image | image_url: height: 96 | image_tag: loading: 'lazy', alt: block.settings.name, class: 'pro-logo__img' }}
+          {%- else -%}
+            <span class="pro-logo__ph">{{ block.settings.name }}</span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    {%- endcapture -%}
+    <div class="pro-marquee" style="--pro-marquee-dur: {{ section.settings.speed }}s;">
+      <ul class="pro-marquee__track">{{ logo_row }}</ul>
+      <ul class="pro-marquee__track" aria-hidden="true">{{ logo_row | replace: 'alt="', 'alt="" data-alt="' }}</ul>
+    </div>
+  {%- endif -%}
+
+  {%- if photos.size > 0 -%}
+    <div class="pro-wrap">
+      <div class="pro-collage pro-reveal">
+        {%- for block in photos -%}
+          <figure class="pro-collage__item" style="--rot: {{ block.settings.rotate }}deg;" {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank -%}
+              {{ block.settings.image | image_url: width: 900 | image_tag: loading: 'lazy', widths: '360, 540, 720, 900', sizes: '(min-width: 990px) 30vw, 60vw', alt: block.settings.caption }}
+            {%- else -%}
+              <span class="pro-collage__ph pro-collage__ph--{{ forloop.index | modulo: 4 }}" aria-hidden="true"></span>
+            {%- endif -%}
+            {%- if block.settings.caption != blank -%}<figcaption>{{ block.settings.caption }}</figcaption>{%- endif -%}
+          </figure>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "PRO - Güven",
+  "class": "pro-section",
+  "max_blocks": 40,
+  "settings": [
+    { "type": "text", "id": "title", "label": "Başlık", "default": "Ajansların ve markaların etkinliklerinde" },
+    { "type": "range", "id": "speed", "label": "Logo şeridi süresi (yavaş = büyük)", "min": 15, "max": 90, "step": 5, "unit": "sn", "default": 40 }
+  ],
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "Logo",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Logo", "info": "Tek renkli, açık tonlu (beyaz) PNG/SVG önerilir." },
+        { "type": "text", "id": "name", "label": "Marka / ajans adı", "default": "Ajans logosu" }
+      ]
+    },
+    {
+      "type": "photo",
+      "name": "Kolaj fotoğrafı",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Fotoğraf" },
+        { "type": "text", "id": "caption", "label": "Alt yazı (isteğe bağlı)" },
+        { "type": "range", "id": "rotate", "label": "Açı", "min": -8, "max": 8, "step": 1, "unit": "°", "default": -3 }
+      ]
+    }
+  ]
+}
+{% endschema %}

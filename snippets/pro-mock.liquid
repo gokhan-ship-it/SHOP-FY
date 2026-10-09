@@ -1,0 +1,21 @@
+{%- comment -%}
+  Text To Next PRO - gorsel yuklenmemis kartlar icin yer tutucu.
+  kind: 'kv' | 'phone'   palette: gala|lansman|festival|kongre|dugun|spor|odul|konser
+  title, sub: kart ustundeki yer tutucu metinler
+{%- endcomment -%}
+{%- if kind == 'phone' -%}
+  <div class="pro-mock pro-mock--phone pro-pal--{{ palette }}" aria-hidden="true">
+    <span class="pro-mock__notch"></span>
+    <span class="pro-mock__brand">{{ title }}</span>
+    <span class="pro-mock__sub">{{ sub }}</span>
+    <span class="pro-mock__selfie"><span></span></span>
+    <span class="pro-mock__grid"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+  </div>
+{%- else -%}
+  <div class="pro-mock pro-mock--kv pro-pal--{{ palette }}" aria-hidden="true">
+    <span class="pro-mock__tex"></span>
+    <span class="pro-mock__kv-sub">{{ sub }}</span>
+    <span class="pro-mock__kv-title">{{ title }}</span>
+    <span class="pro-mock__kv-line"></span>
+  </div>
+{%- endif -%}

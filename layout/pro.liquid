@@ -1,0 +1,63 @@
+{%- comment -%}
+  Text To Next PRO - B2B landing sayfasi icin sade duzen.
+  Yalnizca templates/page.pro.json bu duzeni kullanir. theme.liquid'deki
+  ust menu, alt bilgi, duyuru cubugu, sepet cekmecesi, cark ve pop-up'lar
+  burada render edilmez; tema CSS/JS'i de yuklenmez.
+{%- endcomment -%}
+<!doctype html>
+<html lang="tr" class="pro-html">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#0E0E10">
+    <meta name="color-scheme" content="dark">
+    <link rel="canonical" href="{{ canonical_url }}">
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" href="{{ settings.favicon | image_url: width: 32, height: 32 }}" type="image/png">
+      <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180, height: 180 }}">
+    {%- endif -%}
+
+    <title>{{ page_title }}{% unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless %}</title>
+    {%- if page_description -%}
+      <meta name="description" content="{{ page_description | escape }}">
+    {%- endif -%}
+
+    {%- comment -%} WhatsApp / sosyal onizleme {%- endcomment -%}
+    <meta property="og:site_name" content="{{ shop.name | escape }}">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:title" content="{{ page_title | escape }}">
+    <meta property="og:type" content="website">
+    {%- if page_description -%}
+      <meta property="og:description" content="{{ page_description | escape }}">
+    {%- endif -%}
+    {%- if page_image -%}
+      <meta property="og:image" content="https:{{ page_image | image_url: width: 1200 }}">
+      <meta property="og:image:width" content="1200">
+      <meta property="og:image:height" content="{{ 1200 | divided_by: page_image.aspect_ratio | round }}">
+    {%- endif -%}
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
+    <script>
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !{{ request.design_mode | json }}) {
+        document.documentElement.classList.add('pro-js');
+      }
+    </script>
+    {{ 'pro.css' | asset_url | stylesheet_tag }}
+
+    {{ content_for_header }}
+
+    <script src="{{ 'pro.js' | asset_url }}" defer="defer"></script>
+  </head>
+
+  <body class="pro">
+    <a class="pro-skip" href="#pro-main">İçeriğe geç</a>
+    {% section 'pro-header' %}
+    <main id="pro-main" class="pro-main" role="main">
+      {{ content_for_layout }}
+    </main>
+  </body>
+</html>

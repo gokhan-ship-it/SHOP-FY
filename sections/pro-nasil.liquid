@@ -1,0 +1,61 @@
+{%- comment -%} Text To Next PRO - Nasil calisir {%- endcomment -%}
+<section class="pro-steps pro-pad" aria-labelledby="pro-steps-{{ section.id }}">
+  <div class="pro-wrap">
+    <div class="pro-head pro-reveal">
+      {%- if section.settings.eyebrow != blank -%}<p class="pro-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h2 id="pro-steps-{{ section.id }}" class="pro-h2">{{ section.settings.title }}</h2>
+    </div>
+
+    <ol class="pro-steps__list pro-reveal">
+      {%- for block in section.blocks -%}
+        <li class="pro-step" {{ block.shopify_attributes }}>
+          <div class="pro-step__media">
+            {%- if block.settings.image != blank -%}
+              {{ block.settings.image | image_url: width: 640 | image_tag: loading: 'lazy', widths: '320, 480, 640', sizes: '(min-width: 990px) 360px, 90vw', alt: block.settings.title, class: 'pro-step__img' }}
+            {%- else -%}
+              <span class="pro-step__icon">{%- render 'pro-icon', icon: block.settings.icon -%}</span>
+            {%- endif -%}
+          </div>
+          <p class="pro-step__num">{{ forloop.index | prepend: '0' }}</p>
+          <h3 class="pro-h3">{{ block.settings.title }}</h3>
+          {%- if block.settings.text != blank -%}<p class="pro-step__text">{{ block.settings.text }}</p>{%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ol>
+
+    {%- if section.settings.note != blank -%}
+      <p class="pro-steps__note"><span class="pro-live-dot" aria-hidden="true"></span>{{ section.settings.note }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "PRO - Nasıl çalışır",
+  "class": "pro-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Üst etiket", "default": "Nasıl çalışır" },
+    { "type": "text", "id": "title", "label": "Başlık", "default": "Üç adım. Uygulama indirmek yok." },
+    { "type": "text", "id": "note", "label": "Alt not", "default": "Fotoğraflar etkinlik devam ederken dağıtılmaya başlar." }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Adım",
+      "settings": [
+        { "type": "select", "id": "icon", "label": "İkon", "default": "qr", "options": [
+          { "value": "qr", "label": "QR kod" },
+          { "value": "selfie", "label": "Selfie" },
+          { "value": "phone", "label": "Telefon / galeri" },
+          { "value": "clock", "label": "Saat" },
+          { "value": "check", "label": "Onay" }
+        ] },
+        { "type": "image_picker", "id": "image", "label": "Görsel", "info": "İsteğe bağlı. Yüklenirse ikonun yerine geçer." },
+        { "type": "text", "id": "title", "label": "Başlık", "default": "QR kodu okut" },
+        { "type": "textarea", "id": "text", "label": "Kısa metin" }
+      ]
+    }
+  ]
+}
+{% endschema %}

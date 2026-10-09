@@ -1,0 +1,35 @@
+{%- comment -%} Text To Next PRO - minimal ust bar. layout/pro.liquid icinden statik olarak render edilir. {%- endcomment -%}
+<header class="pro-bar" data-pro-bar>
+  <div class="pro-bar__inner">
+    <a class="pro-bar__logo" href="{{ section.settings.logo_link | default: '#' }}" aria-label="{{ section.settings.logo_text | escape }}">
+      {%- if section.settings.logo != blank -%}
+        {%- assign logo_h = section.settings.logo_height -%}
+        {{ section.settings.logo | image_url: height: 96 | image_tag: height: logo_h, alt: section.settings.logo_text, class: 'pro-bar__logo-img', loading: 'eager' }}
+      {%- else -%}
+        <span class="pro-bar__wordmark">{{ section.settings.logo_text }}</span>
+        {%- if section.settings.badge != blank -%}
+          <span class="pro-bar__badge">{{ section.settings.badge }}</span>
+        {%- endif -%}
+      {%- endif -%}
+    </a>
+    {%- if section.settings.button_label != blank -%}
+      <a class="pro-btn pro-btn--sm" href="{{ section.settings.button_link | default: '#basvuru' }}">{{ section.settings.button_label }}</a>
+    {%- endif -%}
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "PRO - Üst bar",
+  "class": "pro-section-header",
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo", "info": "Koyu zemin için açık renkli logo yükleyin. Boş bırakılırsa aşağıdaki yazı kullanılır." },
+    { "type": "range", "id": "logo_height", "label": "Logo yüksekliği", "min": 16, "max": 48, "step": 2, "unit": "px", "default": 26 },
+    { "type": "text", "id": "logo_text", "label": "Logo yazısı", "default": "Text To Next" },
+    { "type": "text", "id": "badge", "label": "Logo rozeti", "default": "PRO" },
+    { "type": "text", "id": "logo_link", "label": "Logo bağlantısı", "default": "#", "info": "Örn. # (sayfa başı) veya /" },
+    { "type": "text", "id": "button_label", "label": "Buton yazısı", "default": "Ücretsiz Dene" },
+    { "type": "text", "id": "button_link", "label": "Buton bağlantısı", "default": "#basvuru", "info": "#basvuru sayfadaki başvuru formuna kaydırır." }
+  ]
+}
+{% endschema %}

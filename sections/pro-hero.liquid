@@ -1,0 +1,130 @@
+{%- comment -%}
+  Text To Next PRO - Giris. Kartlar iki gruba bolunur (tek/cift sira):
+  mobilde biri basligin ustunde, digeri altinda serit olur; masaustunde
+  ikisi de basligin etrafina dagilir.
+{%- endcomment -%}
+{%- comment -%} Yalnizca gorselsiz (yer tutucu) kartlarin paletleri icin font yukle {%- endcomment -%}
+{%- liquid
+  assign pals = ''
+  for block in section.blocks
+    if block.settings.image == blank
+      assign pals = pals | append: block.settings.palette | append: ','
+    endif
+  endfor
+  assign gf = ''
+  if pals contains 'gala'
+    assign gf = gf | append: '&family=Playfair+Display:wght@700'
+  endif
+  if pals contains 'lansman' or pals contains 'spor'
+    assign gf = gf | append: '&family=Space+Grotesk:wght@700'
+  endif
+  if pals contains 'festival'
+    assign gf = gf | append: '&family=Unbounded:wght@800'
+  endif
+  if pals contains 'kongre'
+    assign gf = gf | append: '&family=IBM+Plex+Sans:wght@600'
+  endif
+  if pals contains 'dugun'
+    assign gf = gf | append: '&family=Cormorant+Garamond:wght@700'
+  endif
+  if pals contains 'odul'
+    assign gf = gf | append: '&family=DM+Serif+Display'
+  endif
+  if pals contains 'konser'
+    assign gf = gf | append: '&family=Syne:wght@800'
+  endif
+-%}
+{%- if gf != blank -%}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?{{ gf | remove_first: '&' }}&display=swap">
+{%- endif -%}
+
+{%- capture pro_cards_a -%}{%- endcapture -%}
+{%- capture pro_cards_b -%}{%- endcapture -%}
+
+{%- for block in section.blocks -%}
+  {%- capture card -%}
+    <figure class="pro-float pro-float--{{ block.settings.kind }}" {{ block.shopify_attributes }}>
+      <div class="pro-float__inner">
+        {%- if block.settings.image != blank -%}
+          {{ block.settings.image | image_url: width: 480 | image_tag: loading: 'lazy', widths: '200, 320, 480', sizes: '(min-width: 990px) 200px, 34vw', alt: block.settings.title, class: 'pro-float__img' }}
+        {%- else -%}
+          {%- render 'pro-mock', kind: block.settings.kind, palette: block.settings.palette, title: block.settings.title, sub: block.settings.sub -%}
+        {%- endif -%}
+      </div>
+    </figure>
+  {%- endcapture -%}
+  {%- assign odd = forloop.index | modulo: 2 -%}
+  {%- if odd == 1 -%}
+    {%- assign pro_cards_a = pro_cards_a | append: card -%}
+  {%- else -%}
+    {%- assign pro_cards_b = pro_cards_b | append: card -%}
+  {%- endif -%}
+{%- endfor -%}
+
+<section class="pro-hero" aria-labelledby="pro-hero-title-{{ section.id }}">
+  <div class="pro-hero__cards pro-hero__cards--a">{{ pro_cards_a }}</div>
+
+  <div class="pro-hero__copy">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="pro-eyebrow">{{ section.settings.eyebrow }}</p>
+    {%- endif -%}
+    {%- assign t_parts = section.settings.title | split: '. ' -%}
+    <h1 id="pro-hero-title-{{ section.id }}" class="pro-hero__title">
+      {%- if t_parts.size > 1 -%}
+        {%- assign t_rest = section.settings.title | remove_first: t_parts.first | remove_first: '. ' -%}
+        {{ t_parts.first }}. <span class="pro-hero__title-mute">{{ t_rest }}</span>
+      {%- else -%}
+        {{ section.settings.title }}
+      {%- endif -%}
+    </h1>
+    {%- if section.settings.text != blank -%}
+      <p class="pro-hero__text">{{ section.settings.text }}</p>
+    {%- endif -%}
+    {%- if section.settings.button_label != blank -%}
+      <a class="pro-btn pro-btn--lg" href="{{ section.settings.button_link | default: '#basvuru' }}">{{ section.settings.button_label }}</a>
+    {%- endif -%}
+  </div>
+
+  <div class="pro-hero__cards pro-hero__cards--b">{{ pro_cards_b }}</div>
+</section>
+
+{% schema %}
+{
+  "name": "PRO - Giriş",
+  "class": "pro-section",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Üst etiket", "default": "Text To Next PRO" },
+    { "type": "textarea", "id": "title", "label": "Başlık", "default": "Fotoğraflar yüzle bulunur. Ekran, etkinliğin kendisi gibi görünür." },
+    { "type": "textarea", "id": "text", "label": "Açıklama", "default": "Katılımcılarınız fotoğraflarını selfie ile saniyeler içinde bulsun. Her etkinlik kendi konseptinde." },
+    { "type": "text", "id": "button_label", "label": "Buton yazısı", "default": "İlk etkinliğini ücretsiz yap" },
+    { "type": "text", "id": "button_link", "label": "Buton bağlantısı", "default": "#basvuru" },
+    { "type": "paragraph", "content": "Kartlar: masaüstünde ilk 10 kart başlığın etrafında, mobilde ilk 6 kart başlığın üstünde ve altında gösterilir. Sıra önemli: tek sıradaki kartlar üstte, çift sıradakiler altta yer alır." }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Kart",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Görsel", "info": "KV için 4:5, telefon ekranı için 9:19 oranı önerilir." },
+        { "type": "select", "id": "kind", "label": "Kart tipi", "default": "kv", "options": [
+          { "value": "kv", "label": "Etkinlik KV" },
+          { "value": "phone", "label": "Telefon ekranı" }
+        ] },
+        { "type": "text", "id": "title", "label": "Başlık (görsel yokken ve alt metin olarak)", "default": "Etkinlik" },
+        { "type": "text", "id": "sub", "label": "Alt yazı (görsel yokken)" },
+        { "type": "select", "id": "palette", "label": "Yer tutucu renk teması", "default": "gala", "options": [
+          { "value": "gala", "label": "Gala" },
+          { "value": "lansman", "label": "Lansman" },
+          { "value": "festival", "label": "Festival" },
+          { "value": "kongre", "label": "Kongre" },
+          { "value": "dugun", "label": "Düğün" },
+          { "value": "spor", "label": "Spor" },
+          { "value": "odul", "label": "Ödül töreni" },
+          { "value": "konser", "label": "Konser" }
+        ] }
+      ]
+    }
+  ]
+}
+{% endschema %}
