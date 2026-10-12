@@ -307,6 +307,16 @@
             "ust": "",
             "ad": ""
           }
+        },
+        "k16": {
+          "type": "urun",
+          "settings": {
+            "urun": "white-luna-couple-zaman-kapsulu",
+            "kategori": "couple",
+            "rozet": "",
+            "ust": "",
+            "ad": "White + Luna"
+          }
         }
       },
       "block_order": [
@@ -324,13 +334,14 @@
         "k12",
         "k13",
         "k14",
-        "k15"
+        "k15",
+        "k16"
       ],
       "settings": {
         "aktif": true,
         "bos_metin": "Henüz ürün kartı eklenmedi — soldaki \"Ürün kartı\" bloklarından ekleyin.",
         "baslik": "En çok tercih edilenler",
-        "alt_baslik": "Bu sezon en çok hediye edilen kapsüller.",
+        "alt_baslik": "En çok hediye edilen kapsüller.",
         "bas_boyut_m": 24,
         "bas_boyut_d": 30,
         "cip_goster": true,
@@ -350,6 +361,7 @@
         "rozet_erkek": "Erkek",
         "ust_couple": "COUPLE ZAMAN KAPSÜLÜ",
         "ust_tekli": "SINGLE ZAMAN KAPSÜLÜ",
+        "ust_boyut": 9,
         "etiket_normal": "",
         "kod_etiket": "İNDİRİM KODU İLE",
         "kisi_etiket": "Kişi başı [tutar]",
@@ -358,12 +370,34 @@
         "onceki": "Önceki kartlar",
         "sonraki": "Sonraki kartlar",
         "gorsel_oran": "1 / 1",
+        "kart_genislik_m": 44,
+        "kart_adet_d": 4,
         "zemin": "#f7f8fa",
         "genislik": 1200,
         "bosluk_ust_m": 32,
         "bosluk_alt_m": 32,
         "bosluk_ust_d": 56,
         "bosluk_alt_d": 56,
+        "cark_goster": true,
+        "cark_kompakt_baslik": "Çarkı çevir, indirimini kazan",
+        "cark_kompakt_alt": "Herkes kazanır",
+        "cark_kompakt_dugme": "Çevir",
+        "cark_vazgec": "İstemiyorum",
+        "cark_cevir_dugme": "Çarkı çevir",
+        "cark_not": "Kupon 30 dakika geçerli, sepete otomatik eklenir",
+        "cark_dilimler": "500,1000,500,750,500,750,500,1000",
+        "cark_birim": "TL",
+        "cark_dilim_renkleri": "#1F4648,#5CC98F,#0A1A1C,#4FB883,#1F4648,#5CC98F,#0A1A1C,#4FB883",
+        "cark_kupon_baslik": "[tutar] kazandın",
+        "cark_kupon_onay": "✓ Sepetine eklendi",
+        "cark_kart_zemin": "#d3ddd2",
+        "cark_vurgu": "#78f5ab",
+        "cark_koyu": "#0a1a1c",
+        "cark_alt_yazi": "#3c4e40",
+        "cark_halka": "#f2f2f2",
+        "cark_genislik": 1200,
+        "cark_ust_bosluk": 0,
+        "cark_alt_bosluk": 14,
         "rozet_zemin": "#0071e3",
         "vurgu": "#0071e3",
         "kod_renk": "#3e5e4a",
