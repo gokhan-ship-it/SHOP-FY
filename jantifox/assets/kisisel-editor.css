@@ -510,10 +510,22 @@ body.kisisel-aktif .bag-notice {
   }
 }
 .kp-yasak {
-  fill: rgba(255, 59, 48, 0.18);
-  stroke: rgba(255, 59, 48, 0.7);
+  /* Yasaklı bölge normalde görünmez; sürüklerken soluk, bir patch değince kırmızı (mobil ve masaüstü aynı) */
+  fill: rgba(255, 59, 48, 0);
+  stroke: rgba(255, 59, 48, 0);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
+  transition: fill 0.15s ease, stroke 0.15s ease;
+}
+.kp-sahne--surukleniyor .kp-yasak {
+  fill: rgba(255, 59, 48, 0.07);
+  stroke: rgba(255, 59, 48, 0.4);
+  stroke-dasharray: 4 4;
+}
+.kp-yasak.kp-yasak--degdi {
+  fill: rgba(255, 59, 48, 0.22);
+  stroke: rgba(255, 59, 48, 0.9);
+  stroke-dasharray: none;
 }
 .kp-sahne__parcalar {
   position: absolute;
@@ -3713,9 +3725,7 @@ html.kp-kilit body {
   list-style: none;
 }
 .kp-kpanel__liste li {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  display: block;
   padding: 0.6rem 0;
   border-bottom: 1px solid var(--kp-cizgi);
   font-size: 1.4rem;
@@ -3724,10 +3734,20 @@ html.kp-kilit body {
   color: #b3141b;
   white-space: nowrap;
 }
-.kp-kpanel__birlikte {
-  margin: 0.6rem 0 0;
-  font-size: 1.3rem;
+/* Kampanya satırı (mobil panel ve masaüstü kartı): ad ve bu tasarıma düşen tutar; altında isteğe bağlı gri not */
+.kp-kampanya-satir {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+.kp-kampanya-not {
+  display: block;
+  margin-top: 0.2rem;
   color: var(--kp-ikincil);
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.35;
 }
 .kp-kpanel__hedef {
   margin: 1.2rem 0 0;
@@ -4085,8 +4105,8 @@ html.kp-kilit body {
     white-space: nowrap;
   }
   .kp-kkart__yol {
-    margin: 1.4rem 0 0;
-    padding: 0 2.4rem 3.6rem 0.8rem;
+    margin: 1.6rem 0 0;
+    padding: 0 2.4rem 0 0.8rem;
   }
   .kp-kkart__iz {
     position: relative;
@@ -4102,10 +4122,12 @@ html.kp-kilit body {
     border-radius: 2px;
     background: linear-gradient(90deg, #b3141b, #e8742b);
   }
+  /* Durak etiketleri izin altında mutlak konumlu; liste, en yüksek etiket kadar (nokta 22px − 13px kayma +
+     ad + tutar) yer ayırır, böylece alttaki kampanya listesi hiçbir etiketin üstüne binmez */
   .kp-kkart__duraklar {
     position: relative;
-    height: 0;
-    margin: 0;
+    height: calc(9px + 0.4rem + 1.2rem * 1.3 + 1.1rem * 1.3);
+    margin: 0 0 1.2rem;
     padding: 0;
     list-style: none;
   }
@@ -4142,12 +4164,14 @@ html.kp-kilit body {
   .kp-kkart__ad {
     margin-top: 0.4rem;
     font-size: 1.2rem;
+    line-height: 1.3;
     font-weight: 700;
     color: var(--kp-ikincil);
     white-space: nowrap;
   }
   .kp-kkart__tutar {
     font-size: 1.1rem;
+    line-height: 1.3;
     color: var(--kp-ikincil);
     white-space: nowrap;
   }
@@ -4163,14 +4187,11 @@ html.kp-kilit body {
     padding: 0;
     list-style: none;
   }
-  .kp-kkart__liste[hidden],
-  .kp-kkart__birlikte[hidden] {
+  .kp-kkart__liste[hidden] {
     display: none;
   }
   .kp-kkart__liste li {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
+    display: block;
     padding: 0.3rem 0;
     color: #b3141b;
     font-size: 1.35rem;
@@ -4178,11 +4199,6 @@ html.kp-kilit body {
   }
   .kp-kkart__liste strong {
     white-space: nowrap;
-  }
-  .kp-kkart__birlikte {
-    margin: 0.4rem 0 0;
-    font-size: 1.25rem;
-    color: var(--kp-ikincil);
   }
   .kp-kkart__hedef {
     margin: 1rem 0 0;
@@ -4690,4 +4706,90 @@ html.kp-kilit body {
 .kp-alan-etiket--hata {
   background: #ff3b30;
   color: #fff;
+}
+
+/* ---------- Masaüstü: sağ sütunun başlık satırı (aracın adı · Taslak olarak kaydet · ✕) ---------- */
+.kp-sag__ust {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .kp-sag__ust {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1.4rem 1.2rem 0.4rem 2.4rem;
+  }
+  .kp-sag__ust .kp-sag__baslik {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0;
+  }
+  .kp-sag__ust .kp-sag__baslik[hidden] {
+    display: block !important;
+    visibility: hidden;
+  }
+  .kp-sag__taslak {
+    flex: none;
+    min-height: 36px;
+    padding: 0 1.4rem;
+    border: 1px solid var(--kp-murekkep);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--kp-murekkep);
+    font: inherit;
+    font-size: 1.3rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .kp-sag__taslak:hover {
+    background: #f4f4f4;
+  }
+  .kp-sag__kapat {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--kp-murekkep);
+    cursor: pointer;
+  }
+  .kp-sag__kapat:hover {
+    background: #f2f2f2;
+  }
+  .kp-sag__taslak:focus-visible,
+  .kp-sag__kapat:focus-visible {
+    outline: 2px solid var(--kp-murekkep);
+    outline-offset: 2px;
+  }
+  /* Masaüstünde önizlemenin köşesindeki ✕ yok; kapatma yalnızca sağ sütunda */
+  .kp-onizleme__ic > .kp-kapat--onizleme {
+    display: none !important;
+  }
+  /* "Tasarımın kaydedilsin mi?" masaüstünde ekranın ortasında küçük pencere */
+  .kp-taslak .kp-taslak__kutu {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    width: min(420px, calc(100% - 4rem));
+    max-height: none;
+    padding: 2.4rem;
+    border-radius: 16px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+    transform: translate(-50%, -50%);
+    animation: none;
+  }
+}
+@media (min-width: 1024px) {
+  /* Özet'in kendi üst satırı (‹ Tasarıma dön · Özet · ✕) var; taslak bağlantısı alt çubukta */
+  .kp-editor--ozet .kp-sag__ust {
+    display: none;
+  }
 }

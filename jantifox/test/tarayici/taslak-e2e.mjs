@@ -29,7 +29,7 @@ await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 
 // 1) Boşken X doğrudan kapatır
-await s.locator(ana + ' [data-kp-kapat]').click();
+await s.locator(ana + ' [data-kp-kapat]:visible').click();
 assert.equal(await editorAcik(), false, 'boş tasarımda panel yok');
 
 // 2) Bir şey varken X: "Tasarımın kaydedilsin mi?" paneli; "Tasarıma devam et" kapatır; Esc de
@@ -40,20 +40,20 @@ await s.locator('[data-kp-kategori="Spor"]').click();
 await s.locator('[data-kp-gorsel-icerik] [data-kp-ikon="2"]').click();
 await s.locator(ana + ' [data-kp-gorunum]').click(); // tüm çanta görünümü
 await s.waitForTimeout(400);
-await s.locator(ana + ' [data-kp-kapat]').click();
+await s.locator(ana + ' [data-kp-kapat]:visible').click();
 assert.equal(await gorunur(ana + ' [data-kp-taslak]'), true);
 assert.equal(await metin(ana + ' [data-kp-taslak] .kp-kpanel__kutu'), 'Tasarımın kaydedilsin mi? Taslak olarak saklarız, bu ürünün sayfasına döndüğünde kaldığın yerden devam edersin. Taslak olarak kaydet ve çık Tasarıma devam et Kaydetmeden çık');
 assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q + ' .kp-taslak__ana')).backgroundColor, ana), 'rgb(179, 20, 27)');
 await s.locator(ana + ' [data-kp-taslak] .kp-taslak__ikincil').click();
 assert.equal(await gorunur(ana + ' [data-kp-taslak]'), false);
 assert.equal(await editorAcik(), true);
-await s.locator(ana + ' [data-kp-kapat]').click();
+await s.locator(ana + ' [data-kp-kapat]:visible').click();
 await s.keyboard.press('Escape');
 assert.equal(await gorunur(ana + ' [data-kp-taslak]'), false, 'Esc paneli kapatır');
 assert.equal(await editorAcik(), true);
 
 // 3) "Taslak olarak kaydet ve çık": kartta "Taslak · bugün HH:MM", Devam et / Sil; kayıtta araç ve yakınlaştırma
-await s.locator(ana + ' [data-kp-kapat]').click();
+await s.locator(ana + ' [data-kp-kapat]:visible').click();
 await s.locator(ana + ' [data-kp-taslak] .kp-taslak__ana').click();
 assert.equal(await editorAcik(), false);
 assert.match(await metin('[data-kisisel-taslak]'), /^Taslak · bugün \d\d:\d\d$/);
@@ -73,7 +73,7 @@ assert.equal(await metin(ana + ' [data-kp-gorunum]'), 'Alana yakınlaş', 'kald�
 assert.equal(await s.locator('#kp-isim').inputValue(), 'ECE');
 
 // 4) "Kaydetmeden çık": taslak silinir, kartta "Tasarım silindi · Geri al"; Geri al taslağı geri getirir
-await s.locator(ana + ' [data-kp-kapat]').click();
+await s.locator(ana + ' [data-kp-kapat]:visible').click();
 await s.locator(ana + ' [data-kp-taslak-sil]').click();
 assert.equal(await editorAcik(), false);
 assert.equal(await gorunur('[data-kisisel-davet]'), true);

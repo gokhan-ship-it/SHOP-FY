@@ -42,7 +42,7 @@ function sepet(satirlar) {
 
 const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 const ana = '.kp-editor:not(.kp-editor--alt)';
-for (const [w, h] of [[1440, 900], [1024, 768]]) {
+for (const [w, h] of [[1920, 1080], [1440, 900], [1280, 800], [1024, 768]]) {
   const baglam = await t.newContext({ viewport: { width: w, height: h } });
   const s = await baglam.newPage();
   const hatalar = [];
@@ -59,6 +59,23 @@ for (const [w, h] of [[1440, 900], [1024, 768]]) {
     return r.fulfill({ contentType: 'text/html', body: html });
   });
   const metin = async (q) => (await s.locator(q).first().innerText()).replace(/\s+/g, ' ').trim();
+  // Kampanyalar kartında hiçbir metin diğerinin üstüne binmez (durak etiketleri, liste satırları, notlar, hedef)
+  const binmeYok = async (ad) => {
+    const sonuc = await s.evaluate((q) => {
+      const kutu = (e) => { const r = document.createRange(); r.selectNodeContents(e); const b = r.getBoundingClientRect(); return { e: e.className || e.tagName, t: e.textContent.trim().slice(0, 20), x1: b.left, x2: b.right, y1: b.top, y2: b.bottom }; };
+      const k = document.querySelector(q + ' [data-kp-kkart]');
+      const ogeler = [...k.querySelectorAll('.kp-kkart__ad, .kp-kkart__tutar, .kp-kkart__kazanc, .kp-kkart__baslik, .kp-kampanya-satir > span, .kp-kampanya-satir > strong, .kp-kampanya-not, .kp-kkart__hedef')].filter((e) => e.offsetWidth).map(kutu);
+      const cak = [];
+      for (let i = 0; i < ogeler.length; i++) for (let j = i + 1; j < ogeler.length; j++) {
+        const a = ogeler[i], b = ogeler[j];
+        if (a.x1 < b.x2 - 0.5 && b.x1 < a.x2 - 0.5 && a.y1 < b.y2 - 0.5 && b.y1 < a.y2 - 0.5) cak.push(a.t + ' ↔ ' + b.t);
+      }
+      const kr = k.getBoundingClientRect();
+      const tasan = ogeler.filter((o) => o.x1 < kr.left - 0.5 || o.x2 > kr.right + 0.5).map((o) => o.t);
+      return { cak, tasan };
+    }, ana);
+    assert.deepEqual(sonuc, { cak: [], tasan: [] }, w + ' ' + ad + ': ' + JSON.stringify(sonuc));
+  };
   const gorunur = (q) => s.locator(q).first().isVisible();
   await s.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
   await s.waitForFunction(() => !!localStorage.getItem('kp-kampanya-kurallari-2'));
@@ -75,7 +92,7 @@ for (const [w, h] of [[1440, 900], [1024, 768]]) {
       dugme: [Math.round(d.width), Math.round(d.height)],
       solda: a.right <= ic.left, orta: Math.abs((a.top + a.bottom) / 2 - (ic.top + ic.bottom) / 2) < 2,
       yuvarlak: parseFloat(getComputedStyle(document.querySelector(q + ' .kp-gorunum')).borderTopLeftRadius) >= 12,
-      gecmis: g.left - ic.left < 16 && g.top - ic.top < 16, x: ic.right - x.right < 16 && x.top - ic.top < 16, gorunum: ic.right - gor.right < 16 && ic.bottom - gor.bottom < 16,
+      gecmis: g.left - ic.left < 16 && g.top - ic.top < 16, x: !x.width, gorunum: ic.right - gor.right < 16 && ic.bottom - gor.bottom < 16,
       sagGenislik: Math.round(sag.width), sagZemin: getComputedStyle(document.querySelector(q + ' .kp-sag')).backgroundColor, onizlemeSolda: ic.right <= sag.left
     };
   }, ana);
@@ -83,7 +100,16 @@ for (const [w, h] of [[1440, 900], [1024, 768]]) {
   // Geri al / Yinele: SVG kıvrık oklar
   assert.deepEqual(await s.$$eval(ana + ' .kp-gecmis__dugme', (b) => b.map((x) => x.querySelectorAll('svg path').length)), [2, 2]);
 
-  // Sağ sütun: en üstte seçili aracın adı
+  // Sağ sütun: en üstte seçili aracın adı; aynı satırın sağında çerçeveli "Taslak olarak kaydet" ve ✕
+  // (önizlemenin köşesindeki ✕ masaüstünde yok: yukarıda x)
+  const ust = await s.evaluate((q) => {
+    const r = (x) => document.querySelector(q + ' ' + x).getBoundingClientRect();
+    const b = r('[data-kp-arac-baslik]'), tk = r('.kp-sag__taslak'), k = r('.kp-sag__kapat'), sag = r('.kp-sag');
+    const ayniSatir = (a) => Math.abs((a.top + a.bottom) / 2 - (b.top + b.bottom) / 2) < 6;
+    const st = getComputedStyle(document.querySelector(q + ' .kp-sag__taslak'));
+    return { sira: b.right <= tk.left && tk.right <= k.left, sagda: sag.right - k.right < 24, ayniSatir: ayniSatir(tk) && ayniSatir(k), cerceve: parseFloat(st.borderTopWidth) >= 1, metin: document.querySelector(q + ' .kp-sag__taslak').textContent, kapatEtiket: document.querySelector(q + ' .kp-sag__kapat').getAttribute('aria-label'), gorunenKapat: [...document.querySelectorAll(q + ' [data-kp-kapat]')].filter((e) => e.offsetWidth).length };
+  }, ana);
+  assert.deepEqual(ust, { sira: true, sagda: true, ayniSatir: true, cerceve: true, metin: 'Taslak olarak kaydet', kapatEtiket: 'Kapat', gorunenKapat: 1 }, w + ': ' + JSON.stringify(ust));
   assert.equal(await metin(ana + ' [data-kp-arac-baslik]'), 'Metin');
   await s.locator(ana + ' .kp-arac-dugme[data-kp-adim="ikon"]').click();
   assert.equal(await metin(ana + ' [data-kp-arac-baslik]'), 'Görsel');
@@ -97,7 +123,9 @@ for (const [w, h] of [[1440, 900], [1024, 768]]) {
   }, ana);
   assert.deepEqual(kart, { ustunde: true, kazanc: '370 TL kazandın', kazancRenk: 'rgb(179, 20, 27)', kalin: true });
   const duraklar = await s.$$eval(ana + ' .kp-kkart__durak', (l) => l.map((x) => [x.querySelector('.kp-kkart__ad').textContent, x.querySelector('.kp-kkart__tutar').textContent, x.classList.contains('kp-kkart__durak--ulasildi') ? 'ulaşıldı' : x.classList.contains('kp-kkart__durak--siradaki') ? 'sıradaki' : 'gri', x.querySelector('.kp-kkart__nokta').textContent]));
-  assert.deepEqual(duraklar, [["2'li", '−60 TL', 'ulaşıldı', '✓'], ["3'lü", '−190 TL', 'ulaşıldı', '✓'], ["4'lü", '−370 TL', 'ulaşıldı', '✓'], ['%10', '5.000 TL+', 'sıradaki', '']]);
+  // Durakların altında kampanyanın kendi kuralı; kazanılan tutarlar yalnızca listede
+  assert.deepEqual(duraklar, [["2'li", '−60 TL', 'ulaşıldı', '✓'], ["3'lü", '−190 TL', 'ulaşıldı', '✓'], ["4'lü", '−370 TL', 'ulaşıldı', '✓'], ['%10', '5.000 TL', 'sıradaki', '']]);
+  await binmeYok('ilk');
   assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q + ' .kp-kkart__durak--siradaki .kp-kkart__nokta')).borderTopColor, ana), 'rgb(232, 116, 43)');
   assert.deepEqual(await s.$$eval(ana + ' [data-kp-kkart-liste] li', (l) => l.map((x) => x.innerText.replace(/\s+/g, ' ').trim())), ["✓ 4'lü patch indirimi −370 TL"]);
   assert.equal(await metin(ana + ' [data-kp-kkart-hedef]'), '1.050 TL daha ekle, tüm siparişe %10 indirim.');
@@ -124,6 +152,10 @@ for (const [w, h] of [[1440, 900], [1024, 768]]) {
   }, ana);
   assert.deepEqual(bil, { metin: '✨ Ekstra %10 indirim açıldı · −827 TL', ince: true, ustunde: true, genislik: true, onizlemeDisinda: true, mobil: false }, JSON.stringify(bil));
   assert.equal(await metin(ana + ' [data-kp-kkart-kazanc]'), '1.197 TL kazandın 🎉');
+  // Kart başlığı = alt çubuktaki indirim etiketi (bu tasarıma düşen); durakta hesaplanmış tutar yok
+  assert.equal(await metin(ana + ' .kp-alt__etiket'), '−1.197 TL');
+  assert.deepEqual(await s.$$eval(ana + ' .kp-kkart__tutar', (l) => l.map((x) => x.textContent)), ['−60 TL', '−190 TL', '−370 TL', '5.000 TL']);
+  await binmeYok('iki kampanya');
   assert.equal(await metin(ana + ' [data-kp-kkart-hedef]'), 'Bütün kampanyalar sepetinde.');
   await s.waitForFunction((q) => document.querySelector(q + ' [data-kp-kazanc-masa]').hidden, ana, { timeout: 8000 });
   // Masaüstünde öneri bildirimi yok (hedef kartta)
@@ -141,10 +173,45 @@ for (const [w, h] of [[1440, 900], [1024, 768]]) {
   await s.locator(ana + ' [data-kp-sigdir-kenar]').click();
   assert.equal(await gorunur(ana + ' [data-kp-kenar]'), false, 'kenar boşaldı');
 
-  // Özet: kart yok, başlık yok
+  // Yasaklı bölge (örnek çantanın sapı): normalde görünmez
+  const yasakStil = () => s.evaluate((q) => [...document.querySelectorAll(q + ' .kp-onizleme .kp-yasak')].map((y) => [getComputedStyle(y).fill, y.classList.contains('kp-yasak--degdi')]), ana);
+  const ilkYasak = await yasakStil();
+  if (ilkYasak.length) assert.ok(ilkYasak.every(([f, d]) => /, 0\)$/.test(f) && !d), 'yasaklı bölge görünmez: ' + JSON.stringify(ilkYasak));
+
+  // Esc = ✕: tasarım doluyken "Tasarımın kaydedilsin mi?" ekranın ortasında küçük pencere
+  await s.locator(ana + ' #kp-isim').focus();
+  await s.keyboard.press('Escape');
+  const pencere = await s.evaluate((q) => {
+    const k = document.querySelector(q + ' .kp-taslak__kutu'); const r = k.getBoundingClientRect();
+    return { acik: !!k.offsetWidth, orta: Math.abs((r.left + r.right) / 2 - innerWidth / 2) < 2 && Math.abs((r.top + r.bottom) / 2 - innerHeight / 2) < 2, kucuk: r.width <= 420, butonlar: [...k.querySelectorAll('button')].map((b) => b.textContent) };
+  }, ana);
+  assert.deepEqual(pencere, { acik: true, orta: true, kucuk: true, butonlar: ['Taslak olarak kaydet ve çık', 'Tasarıma devam et', 'Kaydetmeden çık'] }, w + ': ' + JSON.stringify(pencere));
+  await s.locator(ana + ' .kp-taslak__ikincil').click();
+  assert.equal(await gorunur(ana + ' .kp-taslak__kutu'), false);
+  assert.equal(await gorunur(ana), true, 'Tasarıma devam et: editör açık');
+  // ✕ (sağ sütunda) aynı soruyu açar; Esc pencereyi kapatır
+  await s.locator(ana + ' .kp-sag__kapat').click();
+  assert.equal(await gorunur(ana + ' .kp-taslak__kutu'), true);
+  await s.keyboard.press('Escape');
+  assert.equal(await gorunur(ana + ' .kp-taslak__kutu'), false);
+  // "Taslak olarak kaydet": kaydedip kapatır; kartta "Taslak · zaman" ve kısa bildirim
+  await s.locator(ana + ' .kp-sag__taslak').click();
+  assert.equal(await gorunur(ana), false, 'editör kapandı');
+  assert.match(await metin('[data-kisisel-taslak]'), /^Taslak · /);
+  assert.equal(await metin('[data-kisisel-bildirim]'), 'Tasarımın taslak olarak kaydedildi.');
+  await s.locator('kisisel-kart [data-kisisel-ac]:visible').first().click();
+  await s.locator(ana + ' .kp-sag__ust').waitFor();
+
+  // Özet: kart yok, başlık satırı yok (Özet'in kendi üst satırı var); alt çubukta "Taslak olarak kaydet ve çık"
   await s.locator(ana + ' [data-kp-ileri]').click();
   assert.equal(await gorunur(ana + ' [data-kp-kkart]'), false);
   assert.equal(await gorunur(ana + ' [data-kp-arac-baslik]'), false);
+  assert.equal(await gorunur(ana + ' .kp-sag__ust'), false);
+  const oz = await s.evaluate((q) => { const l = document.querySelector(q + ' .kp-alt__ozet [data-kp-taslak-kaydet]'); const a = document.querySelector(q + ' .kp-alt').getBoundingClientRect(); const r = l.getBoundingClientRect(); return { gorunur: !!l.offsetWidth, metin: l.textContent, altta: r.top >= a.top && r.bottom <= a.bottom + 1 }; }, ana);
+  assert.deepEqual(oz, { gorunur: true, metin: 'Taslak olarak kaydet ve çık', altta: true });
+  await s.locator(ana + ' .kp-alt__ozet [data-kp-taslak-kaydet]').click();
+  assert.equal(await gorunur(ana), false);
+  assert.equal(await metin('[data-kisisel-bildirim]'), 'Tasarımın taslak olarak kaydedildi.');
   assert.deepEqual(hatalar, []);
   await baglam.close();
   console.log(w + ' px tamam');

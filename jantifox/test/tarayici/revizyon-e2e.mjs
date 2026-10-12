@@ -312,7 +312,7 @@ assert.equal(await gorunur('[data-kp-panel="yazi"]'), true, 'geri dön Yazı ad�
 // Araçtan doğrudan geçiş
 await s.locator('[data-kp-adim="ikon"]').click();
 assert.equal(await gorunur('[data-kp-panel="ikon"]'), true);
-await s.locator('[data-kp-kapat]').click();
+await s.locator('[data-kp-kapat]:visible').click();
 
 // 1) "Sadece çantayı al": düz ürün akışı (temanın formu, tasarım kalemleri yok)
 eklenen = null;
@@ -345,7 +345,7 @@ await s.locator('[data-kp-adim="yazi"]').click();
 await s.locator('#kp-isim').fill('');
 await s.evaluate(() => document.querySelector('kisisel-kart').editor.t.parcalar = []);
 // Tasarım boşken X doğrudan kapatır (panel yok)
-await s.locator('[data-kp-kapat]').click();
+await s.locator('[data-kp-kapat]:visible').click();
 assert.equal(await s.locator('.kp-editor').first().isVisible(), false);
 
 // Sepetteki tasarımın kartı, düzenlenmesi ve silinmesi: sepettekini-duzenle-e2e.mjs

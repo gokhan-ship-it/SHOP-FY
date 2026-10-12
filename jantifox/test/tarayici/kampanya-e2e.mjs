@@ -111,7 +111,6 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   assert.equal(await s.locator(ana + ' [data-kp-kpanel]').isVisible(), true);
   assert.deepEqual(await s.$$eval(ana + ' [data-kp-kpanel-liste] li', (x) => x.map((e) => e.innerText.replace(/\s+/g, ' ').trim())), ["✓ 2'li patch indirimi −60 TL"]);
   assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1 patch daha ekle, indirimin 190 TL olsun.');
-  assert.equal(await s.locator(ana + ' [data-kp-kpanel-birlikte]').isVisible(), false);
   const panelMetni = await metin(s, ana + ' [data-kp-kpanel] .kp-kpanel__kutu');
   assert.ok(!/kaldı|→|patche|İndirim /.test(panelMetni), panelMetni);
   await s.locator(ana + ' [data-kp-kpanel] .kp-kpanel__perde').click({ position: { x: 30, y: 30 } });
@@ -233,7 +232,8 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   await baglam.close();
 }
 
-// ---------- Sepette başka ürünler: alt çubukta yalnızca bu tasarımın fiyatı, şeritte "(sepetindekilerle birlikte)" ----------
+// ---------- Sepette başka ürünler: alt çubukta ve şeritte yalnızca bu tasarıma düşen indirim; kampanya satırlarının
+// altında sepettekilerle birlikte toplam notu ----------
 {
   // Sepette: düz çanta 3.000 + 2 Futbol Topu 660. Tasarım: çanta 3.000 + ECE (990)
   const sepetteki = [
@@ -245,24 +245,24 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
   await s.locator('#kp-isim').fill('ece');
   // Toplam sepet 7.650: 5 patch → 4'lü −370 (tasarımın 3 harfine 222), ara toplam 7.280 → Ekstra %10 −728
-  // (tasarımın payı 728 × (3.990 − 222) / 7.280 = 376,80). Tasarımın fiyatı 3.990 − 598,80 = 3.391 TL
-  await bekle(s, ana + ' [data-kp-toplam]', /3\.391 TL/);
-  assert.equal(await metin(s, ana + ' [data-kp-toplam]'), '3.990 TL 3.391 TL −599 TL');
+  // (tasarımın payı 728 × (3.990 − 222) / 7.280 = 376,80). Tasarımın fiyatı 3.990 − 598,80 = 3.391,20 TL; sepette de
+  // aynı tutar (Shopify payları kuruşlu dağıtır), gösterim yuvarlanmaz
+  await bekle(s, ana + ' [data-kp-toplam]', /3\.391,20 TL/);
+  assert.equal(await metin(s, ana + ' [data-kp-toplam]'), '3.990 TL 3.391,20 TL −598,80 TL');
   const sol = await pm(s, ana + ' [data-kp-serit-sol]');
-  assert.match(sol, /^[\d.]+ TL indirim kazandın \(sepetindekilerle birlikte\)/);
-  // Kampanya panelinde: bu tasarıma düşen tutarlar ve sepettekilerle birlikte notu
+  assert.equal(sol, '598,80 TL indirim kazandın 🎉');
+  // Kampanya panelinde: bu tasarıma düşen tutarlar; altlarında sepettekilerle birlikte toplam notu
   await s.locator(ana + ' [data-kp-fiyat-ac]').click();
-  assert.match(await metin(s, ana + ' [data-kp-serit-sol]'), /\(sepetindekilerle birlikte\)/);
-  assert.deepEqual(await s.$$eval(ana + ' [data-kp-kpanel-liste] li', (x) => x.map((e) => e.innerText.replace(/\s+/g, ' ').trim())), ["✓ 4'lü patch indirimi −222 TL", '✓ Ekstra %10 indirim −377 TL']);
-  assert.equal(await metin(s, ana + ' [data-kp-kpanel-birlikte]'), 'Bu tasarıma düşen indirim 599 TL, kalanı sepetindeki diğer ürünlerden.');
+  assert.match(await metin(s, ana + ' [data-kp-serit-sol]'), /^598,80 TL indirim kazandın/);
+  assert.deepEqual(await s.$$eval(ana + ' [data-kp-kpanel-liste] li', (x) => x.map((e) => e.innerText.replace(/\s+/g, ' ').trim())), ["✓ 4'lü patch indirimi −222 TL Sepetindeki diğer ürünlerle birlikte toplam −370 TL", '✓ Ekstra %10 indirim −376,80 TL Sepetindeki diğer ürünlerle birlikte toplam −728 TL']);
   await s.keyboard.press('Escape');
   assert.equal(await s.locator(ana + ' [data-kp-kpanel]').isVisible(), false, 'Esc ile kapanır');
   assert.equal(await s.locator('.kp-editor').first().isVisible(), true, 'editör açık kalır');
   // Özet: tasarımın satırlarına düşen indirimler
   await s.locator(ana + ' [data-kp-ileri]').click();
   await bekle(s, ana + ' .kp-ozet', /Ekstra/);
-  assert.deepEqual(await s.$$eval(ana + ' .kp-ozet__kampanya', (x) => x.map((e) => e.innerText.replace(/\s+/g, ' ').trim())), ["✓ 4'lü patch indirimi −222 TL", '✓ Ekstra %10 indirim −377 TL']);
-  assert.match(await metin(s, ana + ' [data-kp-ileri]'), /3\.391 TL$/);
+  assert.deepEqual(await s.$$eval(ana + ' .kp-ozet__kampanya', (x) => x.map((e) => e.innerText.replace(/\s+/g, ' ').trim())), ["✓ 4'lü patch indirimi Sepetindeki diğer ürünlerle birlikte toplam −370 TL −222 TL", '✓ Ekstra %10 indirim Sepetindeki diğer ürünlerle birlikte toplam −728 TL −376,80 TL']);
+  assert.match(await metin(s, ana + ' [data-kp-ileri]'), /3\.391,20 TL$/);
   console.log('sepetle birlikte:', sol);
   assert.deepEqual(hatalar, []);
   await baglam.close();

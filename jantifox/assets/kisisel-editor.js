@@ -2877,6 +2877,8 @@
       .join('');
     icerikEsitle(this.katman, html, 'data-uid');
     if (!this.etkilesimli) return;
+    this.cizilenler = parcalar;
+    this.yasaklariIsaretle(parcalar);
     if (m.alanlar.length > 1) {
       // Çok alanlı: yalnızca hatalı parçanın bulunduğu alan kırmızı
       var kirmizi = {};
@@ -2892,6 +2894,17 @@
     } else {
       this.sahne.classList.toggle('kp-sahne--hata', !!alanHatali);
     }
+  };
+
+  // Yasaklı bölgeler (fermuar vb.) normalde görünmez; sürüklerken soluk görünür (CSS), bir patch değince kırmızı
+  Sahne.prototype.yasaklariIsaretle = function (parcalar) {
+    var m = this.m;
+    if (!this.sahne || !m.yasaklar.length) return;
+    var els = this.sahne.querySelectorAll('.kp-yasak');
+    m.yasaklar.forEach(function (y, i) {
+      var degdi = parcalar.some(function (p) { return !p.kenar && p.sekil && cakisir(p.sekil, y, 0); });
+      if (els[i]) els[i].classList.toggle('kp-yasak--degdi', degdi);
+    });
   };
 
   // Çok alanlı üründe alanların durumu: kirmizi (alan kimlikleri → true), aktif (sürüklenen parçanın alanı)
@@ -3113,8 +3126,13 @@
       (this.m.kalibre ? '' : '<p class="kp-onizleme__not">Önizleme ölçüleri henüz kalibre edilmedi.</p>') +
       '</div>' +
       '<div class="kp-sag">' +
-      // Masaüstü: sağ sütunun en üstünde seçili aracın adı
-      (this.alt ? '' : '<h3 class="kp-sag__baslik" data-kp-arac-baslik aria-hidden="true"></h3>') +
+      // Masaüstü: sağ sütunun en üstünde seçili aracın adı; sağında "Taslak olarak kaydet" ve kapatma (✕).
+      // Masaüstünde kapatma yalnızca burada (önizlemenin köşesindeki ✕ gizli)
+      (this.alt ? '' : '<div class="kp-sag__ust">' +
+        '<h3 class="kp-sag__baslik" data-kp-arac-baslik aria-hidden="true"></h3>' +
+        '<button type="button" class="kp-sag__taslak" data-kp-taslak-kaydet>Taslak olarak kaydet</button>' +
+        '<button type="button" class="kp-sag__kapat" data-kp-kapat aria-label="Kapat"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>' +
+        '</div>') +
       '<div class="kp-kaydir">' +
       // Önizlemenin altında, panelin en üstünde: geçersiz konum uyarısı ve kenar notu
       '<div class="kp-yer-uyari" data-kp-yer-uyari role="status" aria-live="polite" hidden></div>' +
@@ -3133,7 +3151,6 @@
       '<div class="kp-kkart__yol"><div class="kp-kkart__iz"><span class="kp-kkart__dolu" data-kp-kkart-dolu></span></div>' +
       '<ol class="kp-kkart__duraklar" data-kp-kkart-duraklar></ol></div>' +
       '<ul class="kp-kkart__liste" data-kp-kkart-liste></ul>' +
-      '<p class="kp-kkart__birlikte" data-kp-kkart-birlikte hidden></p>' +
       '<p class="kp-kkart__hedef" data-kp-kkart-hedef></p>' +
       '</section>' +
       // Tek satırlık alt çubuk: en üstte 3 px ilerleme çizgisi; solda fiyat (dokununca kampanya paneli), sağda ana buton.
@@ -3185,7 +3202,6 @@
       '<button type="button" class="kp-kpanel__kapat" data-kp-kpanel-kapat aria-label="Kapat"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>' +
       '<p class="kp-kpanel__ozet" data-kp-serit-sol></p>' +
       '<ul class="kp-kpanel__liste" data-kp-kpanel-liste></ul>' +
-      '<p class="kp-kpanel__birlikte" data-kp-kpanel-birlikte hidden></p>' +
       '<p class="kp-kpanel__hedef" data-kp-serit-sag></p>' +
       '<div class="kp-kpanel__cubuk"><div class="kp-kpanel__iz"><span class="kp-kpanel__dolu" data-kp-kpanel-dolu></span></div>' +
       '<ol class="kp-kpanel__duraklar" data-kp-kpanel-duraklar></ol></div>' +
@@ -3237,7 +3253,7 @@
     this.yenile();
     var self = this;
     setTimeout(function () {
-      var kapat = self.el.querySelector('[data-kp-kapat]');
+      var kapat = Array.prototype.filter.call(self.el.querySelectorAll('[data-kp-kapat]'), function (b) { return b.offsetParent; })[0];
       if (kapat) kapat.focus();
     }, 50);
     if (!this.alt) olayYayinla('kisisellestirme_acildi', { urun_id: this.m.urun.id, urun_adi: this.m.urun.baslik });
@@ -3263,9 +3279,13 @@
     }
   };
 
+  // "Taslak olarak kaydet" (masaüstü başlık satırı, Özet'teki bağlantı, X sorusu): tasarım taslak olarak saklanır,
+  // editör kapanır; ürün kartında "Taslak · [zaman]" ve kısa bildirim. Boş tasarımda yalnızca kapatır.
   Editor.prototype.taslakKaydetCik = function () {
+    var kaydedilir = !this.alt && !this.duzenlenen && !bosMu(this.t);
     this.taslakPaneli(false);
     this.kapat(true);
+    if (kaydedilir && this.el.hidden && this.kart.bildirimGoster) this.kart.bildirimGoster('<span>Tasarımın taslak olarak kaydedildi.</span>');
   };
 
   // "Kaydetmeden çık": tasarım silinir; ürün kartında birkaç saniye "Tasarım silindi · Geri al"
@@ -3465,6 +3485,7 @@
         else if (self.taslakAcik) self.taslakPaneli(false);
         else if (self.kpanelAcik) self.kampanyaPaneli(false);
         else if (self.onayAcik) self.onayKapat();
+        // Seçili patch varsa önce seçim kalkar (döndürme sonrası alışkanlık); seçim yokken Esc = ✕
         else if (self.secili) self.sec(null);
         else if (self.alt) self.altVazgec();
         else self.kapatIstek();
@@ -5718,6 +5739,15 @@
   // bulunduğu alan belirginleşir, taşma ya da çakışmada yalnızca o alan kırmızı olur (parcalar: taşınan parçalar).
   Editor.prototype.sinirTasma = function (acik, parcalar, sorun) {
     var sahne = this.sahne.sahne;
+    // Yasaklı bölge: taşınan (ya da döndürülen) parçalar yeni yerleriyle, diğerleri son çizildiği yerde
+    var cizilen = this.sahne.cizilenler || [];
+    if (parcalar && parcalar.length) {
+      var tasinan = {};
+      parcalar.forEach(function (p) { tasinan[p.uid] = true; });
+      this.sahne.yasaklariIsaretle(cizilen.filter(function (p) { return !tasinan[p.uid]; }).concat(parcalar));
+    } else {
+      this.sahne.yasaklariIsaretle(cizilen);
+    }
     if (this.m.alanlar.length > 1) {
       var aktif = null;
       if (parcalar && parcalar.length) {
@@ -5923,7 +5953,11 @@
     var pay = k && !k.hata ? k.tasarimPay || null : null;
     if (pay) {
       kampanyaSirala(Object.keys(pay)).forEach(function (ad) {
-        if (pay[ad] > 0) kampanyaSatirlari += satir('✓ ' + kacis(kampanyaGosterimAdi(ad)), '', '−' + p(pay[ad]), 'kp-ozet__kampanya');
+        if (!(pay[ad] > 0)) return;
+        // Kampanyanın bir kısmı sepetteki diğer ürünlere düşüyorsa altında gri not (toplam tutar)
+        var butun = (k.aktif || {})[ad] || 0;
+        var not = butun - pay[ad] >= 100 ? '<small class="kp-kampanya-not">Sepetindeki diğer ürünlerle birlikte toplam −' + p(butun) + '</small>' : '';
+        kampanyaSatirlari += satir('✓ ' + kacis(kampanyaGosterimAdi(ad)) + not, '', '−' + p(pay[ad]), 'kp-ozet__kampanya');
       });
     } else if (k && k.kampanyalar) {
       k.kampanyalar.forEach(function (x) {
@@ -6097,26 +6131,29 @@
     this.oneriKontrol(d);
   };
 
-  // Kampanya paneli: kazanılan kampanyalar (bu tasarıma düşen tutarlarıyla), sepettekilerle birlikte notu,
-  // sıradaki hedef tek cümle ve duraklı ilerleme çubuğu
+  // Kazanılan kampanya satırları: bu tasarımın kendi satırlarına düşen tutar. Kampanyanın bir kısmı sepetteki diğer
+  // ürünlere düşüyorsa (ör. 4'lü −370 TL'nin 92,50 TL'si bu tasarımda) altında küçük gri not: toplam tutar.
+  // Masaüstü kartı ve mobil kampanya paneli aynı satırları kullanır.
+  function kampanyaSatirlari(k) {
+    var pay = k.tasarimPay || k.aktif || {};
+    var hepsi = k.aktif || {};
+    return kampanyaSirala(Object.keys(pay)).filter(function (ad) { return pay[ad] > 0; }).map(function (ad) {
+      var toplam = hepsi[ad] || 0;
+      var not = toplam - pay[ad] >= 100 ? '<small class="kp-kampanya-not">Sepetindeki diğer ürünlerle birlikte toplam −' + paraBicimle(toplam) + '</small>' : '';
+      return '<li><span class="kp-kampanya-satir"><span>✓ ' + kacis(kampanyaGosterimAdi(ad)) + '</span><strong>−' + paraBicimle(pay[ad]) + '</strong></span>' + not + '</li>';
+    }).join('');
+  }
+
+  // Kampanya paneli (mobil): kazanılan kampanyalar (bu tasarıma düşen tutarlarıyla), sıradaki hedef tek cümle ve
+  // duraklı ilerleme çubuğu
   Editor.prototype.kampanyaPaneliCiz = function (k, d) {
     var nokta = function (x) { return !x || /[.!?…]$|\p{Extended_Pictographic}$/u.test(x) ? x : x + '.'; };
-    var pay = k.tasarimPay || k.aktif || {};
-    var adlar = kampanyaSirala(Object.keys(pay)).filter(function (ad) { return pay[ad] > 0; });
-    var tasarimInd = tasarimIndirimi(k);
-    // Üstte: "370 TL indirim kazandın" (sepettekiler de katkı veriyorsa "(sepetindekilerle birlikte)")
+    // Üstte: "370 TL indirim kazandın" (bu tasarıma düşen; alt çubuktaki indirim etiketiyle aynı)
     this.el.querySelector('[data-kp-serit-sol]').textContent = d.sag ? nokta(d.sol) : d.sol;
     var liste = this.el.querySelector('[data-kp-kpanel-liste]');
-    var html = adlar.map(function (ad) {
-      return '<li><span>✓ ' + kacis(kampanyaGosterimAdi(ad)) + '</span><strong>−' + paraBicimle(pay[ad]) + '</strong></li>';
-    }).join('');
+    var html = kampanyaSatirlari(k);
     if (liste.innerHTML !== html) liste.innerHTML = html;
-    liste.hidden = !adlar.length;
-    // İndirimin bir kısmı sepetteki diğer ürünlerden geliyorsa: satırlar bu tasarıma düşen tutarlardır
-    var birlikte = this.el.querySelector('[data-kp-kpanel-birlikte]');
-    var fark = d.indirim - tasarimInd;
-    birlikte.hidden = !(fark >= 100 && adlar.length);
-    if (!birlikte.hidden) birlikte.textContent = 'Bu tasarıma düşen indirim ' + paraBicimle(tasarimInd) + ', kalanı sepetindeki diğer ürünlerden.';
+    liste.hidden = !html;
     var sag = this.el.querySelector('[data-kp-serit-sag]');
     sag.textContent = nokta(d.sag);
     sag.hidden = !d.sag;
@@ -6144,7 +6181,8 @@
     d.duraklar.forEach(function (x, i) { if (siradaki < 0 && !x.ulasildi) siradaki = i; });
     var dhtml = d.duraklar.map(function (x, i) {
       var ad = x.tur === 'tutar' ? yuzdeYazisi(x.ad) || kampanyaGosterimAdi(x.ad) : kampanyaGosterimAdi(x.ad).replace(/ (patch )?indirimi?$/i, '');
-      var tutar = x.tur === 'tutar' ? (x.kazanc ? '−' + paraBicimle(x.kazanc) : paraBicimle(x.tutar) + '+') : '−' + paraBicimle(x.tutar);
+      // Durağın altında kampanyanın kendi kuralı (2'li −60 TL, %10 için 5.000 TL); kazanılan tutarlar yalnızca listede
+      var tutar = x.tur === 'tutar' ? paraBicimle(x.tutar) : '−' + paraBicimle(x.tutar);
       var durum = x.ulasildi ? ' kp-kkart__durak--ulasildi' : i === siradaki ? ' kp-kkart__durak--siradaki' : '';
       return '<li class="kp-kkart__durak' + durum + '" data-kp-durak="' + kacis(x.ad) + '" style="left:' + (x.konum * 100).toFixed(1) + '%">' +
         '<span class="kp-kkart__nokta" aria-hidden="true">' + (x.ulasildi ? '✓' : '') + '</span>' +
@@ -6152,18 +6190,10 @@
     }).join('');
     var duraklar = this.el.querySelector('[data-kp-kkart-duraklar]');
     if (duraklar.innerHTML !== dhtml) duraklar.innerHTML = dhtml;
-    var pay = k.tasarimPay || k.aktif || {};
-    var adlar = kampanyaSirala(Object.keys(pay)).filter(function (ad) { return pay[ad] > 0; });
     var liste = this.el.querySelector('[data-kp-kkart-liste]');
-    var lhtml = adlar.map(function (ad) {
-      return '<li><span>✓ ' + kacis(kampanyaGosterimAdi(ad)) + '</span><strong>−' + paraBicimle(pay[ad]) + '</strong></li>';
-    }).join('');
+    var lhtml = kampanyaSatirlari(k);
     if (liste.innerHTML !== lhtml) liste.innerHTML = lhtml;
-    liste.hidden = !adlar.length;
-    var birlikte = this.el.querySelector('[data-kp-kkart-birlikte]');
-    var fark = d.indirim - tasarimInd;
-    birlikte.hidden = !(fark >= 100);
-    if (!birlikte.hidden) birlikte.textContent = paraBicimle(d.indirim) + ' indirim kazandın (sepetindekilerle birlikte).';
+    liste.hidden = !lhtml;
     var hedef = this.el.querySelector('[data-kp-kkart-hedef]');
     var hedefMetin = d.hepsi ? 'Bütün kampanyalar sepetinde.' : nokta(d.sag) || nokta(d.sol);
     if (hedef.textContent !== hedefMetin) hedef.textContent = hedefMetin;
@@ -7087,8 +7117,8 @@
   }
 
   function payEkle(sonuc, pay) {
-    // Gösterim tam TL (Shopify'ın satır payları kuruşlu olabilir)
-    Object.keys(pay).forEach(function (ad) { pay[ad] = Math.round(pay[ad] / 100) * 100; if (!pay[ad]) delete pay[ad]; });
+    // Kuruş hassasiyetinde: sepette görünecek tutarla aynı (Shopify satır paylarını kuruşlu dağıtır, ör. 370 / 4 = 92,50)
+    Object.keys(pay).forEach(function (ad) { pay[ad] = Math.round(pay[ad]); if (!pay[ad]) delete pay[ad]; });
     sonuc.tasarimPay = pay;
     sonuc.tasarimIndirim = toplamIndirim(pay);
     return sonuc;
@@ -7507,10 +7537,11 @@
     secenekler.sort(function (a, b) { return a.maliyet - b.maliyet; });
     var hepsi = duraklar.length > 0 && duraklar.every(function (d) { return d.ulasildi; });
     var ilkAdet = duraklar.filter(function (d) { return d.tur === 'adet'; })[0];
-    // İndirimin bir kısmı sepetteki diğer ürünlerden geliyorsa belirtilir
-    var birlikte = k.tasarimIndirim != null && indirim - k.tasarimIndirim >= 100;
-    var sol = indirim > 0
-      ? paraBicimle(indirim) + ' indirim kazandın' + (birlikte ? ' (sepetindekilerle birlikte)' : '') + (hepsi ? ' 🎉' : '')
+    // Kazanılan: bu tasarımın kendi satırlarına düşen indirim (alt çubuktaki etiketle aynı sayı); sepetteki diğer
+    // ürünlerle birlikte toplam yalnızca kampanya satırlarının altındaki notta geçer
+    var tasarimInd = k.tasarimIndirim != null ? Math.max(0, k.tasarimIndirim) : indirim;
+    var sol = tasarimInd > 0
+      ? paraBicimle(tasarimInd) + ' indirim kazandın' + (hepsi ? ' 🎉' : '')
       : 'Patch indirimleri ' + (ilkAdet ? ilkAdet.k : 2) + ' patch\'ten başlıyor';
     var sag = hepsi ? 'Bütün kampanyalar sepetinde' : secenekler.length ? secenekler[0].metin : '';
     // Çubuk: duraklar eşit aralıklı; son ulaşılan durağa kadar dolu, sonrakine yaklaştıkça biraz daha

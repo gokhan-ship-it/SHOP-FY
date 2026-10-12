@@ -106,7 +106,7 @@ assert.match(await metin('[data-kp-ileri]'), /^Sepeti güncelle · 4\.650 TL$/);
 if (await s.locator('[data-kp-adim="tasarim"]').isVisible()) await s.locator('[data-kp-adim="tasarim"]').click();
 await s.locator('[data-kp-adim="yazi"]').click();
 await s.locator('#kp-isim').fill('ada7');
-await s.locator('[data-kp-kapat]').click();
+await s.locator('[data-kp-kapat]:visible').click();
 await s.locator('.kp-editor').waitFor({ state: 'hidden' });
 assert.equal(grupAnahtarlari(), ilkAnahtarlar, 'yarıda kapatınca sepet değişmedi');
 assert.equal(log.filter((x) => x[0] !== 'add' || x[1] !== 'ECE7 + Futbol Topu').length, 0);

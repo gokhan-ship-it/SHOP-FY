@@ -861,14 +861,15 @@ test('kampanya: tasarımın payı yalnız kendi satırlarına düşen indirim', 
   const tasarimSatirlari = [{ v: 1, q: 1, f: 300000 }, { v: 9, q: 4, f: 33000 }];
   const pay = k.tasarimPayiSepetten(cart, tasarimSatirlari);
   // Adet: 370 × 4/6 = 246,67; Ekstra: 861 × (4.320 − 246,67) / 8.610 = 407,33
-  assert.deepEqual(duz(pay), { "4'lü patche indirim": 24667, 'Ekstra %10 İndirim': 40733 }, "ham pay (gösterimde tam TL)");
+  assert.deepEqual(duz(pay), { "4'lü patche indirim": 24667, 'Ekstra %10 İndirim': 40733 }, "ham pay (kuruş; sepette görünecek tutar)");
   assert.equal(k.tasarimIndirimi({ indirim: 123100, tasarimIndirim: 65400 }), 65400);
   assert.equal(k.tasarimIndirimi({ indirim: 37000 }), 37000);
   assert.equal(k.tasarimIndirimi({ hata: true, indirim: 5 }), 0);
-  // Şerit: indirimin bir kısmı sepettekilerden geliyorsa belirtir
+  // Şerit: kazanılan, bu tasarıma düşen indirim (alt çubuk etiketiyle aynı sayı); sepettekilerle birlikte toplam
+  // yalnızca kampanya satırlarının altındaki notta geçer
   const d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 86100 }, indirim: 93000, tasarimIndirim: 65400, sepetIndirim: 123100, altToplam: 861000, uygunAdet: 6, ekler: {} },
     [{ k: 4, ad: "4'lü patche indirim", tutar: 37000 }], [{ baslik: 'Ekstra %10 İndirim', tutar: 500000 }], 33000, 33000);
-  assert.match(d.sol, /\(sepetindekilerle birlikte\)/);
+  assert.equal(d.sol, '654 TL indirim kazandın 🎉');
 });
 
 test('kampanya önerisi yalnızca sıradaki kampanya yakınsa (en fazla 2 patch ya da 2 patch tutarı)', () => {

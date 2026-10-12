@@ -263,6 +263,23 @@ const sonuc = {};
   assert.equal(dn.hatali, 0, 'Alana yerleştir');
   assert.deepEqual(dn.sorun, []);
 
+  // Yasaklı bölge (fermuar) normalde görünmez; sürüklerken soluk; bir patch değince kırmızı
+  const yasak = () => s.evaluate(() => { const y = document.querySelector('.kp-onizleme .kp-yasak'); const c = getComputedStyle(y); return { dolgu: c.fill, degdi: y.classList.contains('kp-yasak--degdi') }; });
+  assert.deepEqual(await yasak(), { dolgu: 'rgba(255, 59, 48, 0)', degdi: false }, 'normalde görünmez');
+  {
+    const b = await ikonlar.first().boundingBox();
+    const x = b.x + b.width / 2, y = b.y + b.height / 2;
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + 6, y: y + 6 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + 10, y: y + 10 }] });
+    await s.waitForTimeout(250);
+    const surerken = await yasak();
+    assert.ok(surerken.dolgu !== 'rgba(255, 59, 48, 0)' && !surerken.degdi, 'sürüklerken soluk: ' + JSON.stringify(surerken));
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await s.waitForTimeout(250);
+    assert.deepEqual(await yasak(), { dolgu: 'rgba(255, 59, 48, 0)', degdi: false }, 'bırakınca yine görünmez');
+  }
   // İki ikon fermuarın (yasaklı) üstüne → "Hepsini düzelt"
   const fermuar = await s.locator('.kp-onizleme .kp-yasak').boundingBox();
   for (const k of [0, 1]) {
@@ -270,11 +287,15 @@ const sonuc = {};
     await surukle(ikonlar.nth(k), fermuar.x + fermuar.width * (0.3 + 0.4 * k) - (b.x + b.width / 2), fermuar.y + fermuar.height / 2 - (b.y + b.height / 2));
   }
   assert.ok((await denetle()).hatali >= 1, 'fermuardakiler işaretlendi');
+  await s.waitForTimeout(200);
+  assert.deepEqual(await yasak(), { dolgu: 'rgba(255, 59, 48, 0.22)', degdi: true }, 'patch değince kırmızı');
   assert.match(await s.locator('[data-kp-yer-uyari]').innerText(), /Hepsini düzelt/);
   await s.locator('[data-kp-yer-uyari] [data-kp-hepsini-duzelt]').click();
   await s.waitForTimeout(200);
   dn = await denetle();
   assert.equal(dn.hatali, 0, 'Hepsini düzelt');
+  await s.waitForTimeout(200);
+  assert.deepEqual(await yasak(), { dolgu: 'rgba(255, 59, 48, 0)', degdi: false }, 'düzeltince yeniden görünmez');
   assert.deepEqual(dn.sorun, []);
 
   // Aksesuar (düz): ikon alanlarından birine yerleşir
