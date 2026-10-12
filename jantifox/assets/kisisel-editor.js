@@ -3830,9 +3830,14 @@
     if (!gorunum || !ic || this.el.hidden || !this.durum) return;
     var d = this.durum;
     var gruplar = this.hataliGruplar().filter(function (g) { return !d.parcalar.some(function (p) { return p.grup === g && p.kenar; }); });
+    // Hatalı grup yoksa ölçüm yapma (her tuşta zorunlu yerleşim hesabını önler)
+    if (!gruplar.length) {
+      if (katman.innerHTML) katman.innerHTML = '';
+      return;
+    }
     var g0 = gorunum.getBoundingClientRect();
     var i0 = ic.getBoundingClientRect();
-    if (!gruplar.length || !g0.width) {
+    if (!g0.width) {
       if (katman.innerHTML) katman.innerHTML = '';
       return;
     }
@@ -4146,9 +4151,17 @@
       b.setAttribute('aria-pressed', ayri ? 'true' : 'false');
       b.setAttribute('aria-label', ayri ? 'Harfleri birleştir' : 'Harfleri ayır');
       // Yazı butonun altına girmesin: sağ iç boşluk butonun sol kenarına göre
-      var gr = girdi.getBoundingClientRect();
-      var sol = b.hidden ? this.el.querySelector('[data-kp-kapasite]').getBoundingClientRect().left : b.getBoundingClientRect().left;
-      if (gr.width) girdi.style.paddingRight = Math.max(48, Math.round(gr.right - sol + 8)) + 'px';
+      // Ölçüm yalnızca etkileyen bir şey değiştiğinde yapılır (her tuşta zorunlu yerleşim hesabını önler)
+      var kap = this.el.querySelector('[data-kp-kapasite]');
+      var anahtar = [b.hidden, ayri, kap ? kap.textContent : '', this.el.className, window.innerWidth, window.innerHeight].join('|');
+      if (this._dolguAnahtar !== anahtar) {
+        var gr = girdi.getBoundingClientRect();
+        var sol = b.hidden ? kap.getBoundingClientRect().left : b.getBoundingClientRect().left;
+        if (gr.width) {
+          girdi.style.paddingRight = Math.max(48, Math.round(gr.right - sol + 8)) + 'px';
+          this._dolguAnahtar = anahtar;
+        } else this._dolguAnahtar = null;
+      }
     }
     var gorunum = this.el.querySelector('[data-kp-gorunum]');
     gorunum.hidden = !this.sahne.yakinlasabilir;
@@ -5318,13 +5331,27 @@
     var iki = null; // iki parmakla döndürme
     var bosDokunma = null; // boş alana dokunma: bırakınca (kısa dokunuşsa) seçimi kaldırır
 
+    // Sürükleme boyunca sahnenin ekran kutusu bir kez ölçülür (her harekette zorunlu yerleşim hesabını önler);
+    // dokunma başında, sürükleme görünümü açılınca, kaydırma/boyut değişince ve bırakınca yeniden ölçülür.
+    var sahneKutusu = null;
+    var kenarKutusu = null;
+    function sahneRect() {
+      return sahneKutusu || (sahneKutusu = self.sahne.sahne.getBoundingClientRect());
+    }
+    function kutuSifirla() {
+      sahneKutusu = null;
+      kenarKutusu = null;
+    }
+    window.addEventListener('scroll', kutuSifirla, { passive: true, capture: true });
+    window.addEventListener('resize', kutuSifirla, { passive: true });
+
     function cmCevir(dxPx, dyPx) {
-      var r = self.sahne.sahne.getBoundingClientRect();
+      var r = sahneRect();
       return [(dxPx / r.width) * self.m.Wcm, (dyPx / r.height) * self.m.Hcm];
     }
 
     function ekranNoktasi(cm) {
-      var r = self.sahne.sahne.getBoundingClientRect();
+      var r = sahneRect();
       return [r.left + (cm[0] / self.m.Wcm) * r.width, r.top + (cm[1] / self.m.Hcm) * r.height];
     }
 
@@ -5341,6 +5368,7 @@
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       // Çerçevedeki Ayır / Birleştir: yalnızca tıklama (sürükleme, seçim kaldırma yok)
       if (e.target.closest('[data-kp-cerceve-harf]')) return;
+      kutuSifirla();
       parmaklar[e.pointerId] = [e.clientX, e.clientY];
       try {
         kok.setPointerCapture(e.pointerId);
@@ -5443,6 +5471,7 @@
         self.yerlestirBalonGizle();
         // Kenar bölgesi kırmızı kesikli "Kenara bırak" olarak belirir (aksesuar ekranında kenar yok)
         if (self.el.querySelector('[data-kp-kenar]')) self.el.querySelector('.kp-onizleme').classList.add('kp-onizleme--surukle');
+        kutuSifirla();
       }
       aktif.hareket = true;
       aktif.dx = d[0];
@@ -5452,7 +5481,8 @@
       });
       // Kenarın üstündeyse bırakınca kenara alınır
       var kenarEl = self.el.querySelector('[data-kp-kenar]');
-      var kr = kenarEl && kenarEl.getBoundingClientRect();
+      if (kenarEl && !kenarKutusu) kenarKutusu = kenarEl.getBoundingClientRect();
+      var kr = kenarEl && kenarKutusu;
       aktif.kenaraBirak = !!kr && e.clientX >= kr.left && e.clientX <= kr.right && e.clientY >= kr.top && e.clientY <= kr.bottom;
       if (kenarEl) kenarEl.classList.toggle('kp-kenar--hedef', aktif.kenaraBirak);
       // Aksesuarın Velcro yüzeyinin üstündeyse bırakınca aksesuarın tasarımına geçer
@@ -5474,6 +5504,7 @@
     }
 
     function birak(e) {
+      kutuSifirla();
       delete parmaklar[e.pointerId];
       if (bosDokunma && bosDokunma.id === e.pointerId) {
         var kisa = Math.abs(e.clientX - bosDokunma.x) + Math.abs(e.clientY - bosDokunma.y) < 10;
