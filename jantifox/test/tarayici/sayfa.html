@@ -9623,7 +9623,7 @@ html.kp-kilit body {
     return this.kart.sepetKalemleri(adet, this.t).kalemler.map(function (k) { return { v: k.id, q: k.quantity }; });
   };
 
-  // Kampanyalı fiyat: değişiklikler biriktirilir (350 ms), sonuç önbellekte. Hata: liste fiyatı + "İndirimler sepette uygulanır"
+  // Kampanyalı fiyat: değişiklikler biriktirilir (400 ms), sonuç önbellekte. Hata: liste fiyatı + "İndirimler sepette uygulanır"
   // Çanta editörü (aksesuar ekranında: onu açan çanta editörü)
   Editor.prototype.kok = function () {
     return this.alt ? this.secenek.ana : this;
@@ -9661,7 +9661,7 @@ html.kp-kilit body {
         function (s) { self.kampanyaBitti(anahtar, s); },
         function () { self.kampanyaBitti(anahtar, { hata: true }); }
       );
-    }, 350);
+    }, 400);
   };
 
   // Shopify'ın sonucu: yerel hesapla aynıysa bir şey değişmez; farklıysa fiyat sessizce düzeltilir
