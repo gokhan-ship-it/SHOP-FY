@@ -4213,3 +4213,52 @@ html.kp-kilit body {
     font-size: 2.4rem;
   }
 }
+/* Yazı alanının altındaki küçük gri tek satırlık not (otomatik Türkçe karakter çevirisi, patch'i olmayan karakter) */
+.kp-yazi-notu {
+  margin: 0.4rem 0 0;
+  overflow: hidden;
+  color: var(--kp-ikincil);
+  font-size: 1.2rem;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* ---------- Bildirimler: alttan kayarak belirir (~250 ms), aşağı kayarak söner (~200 ms); dokunulabilir ---------- */
+@keyframes kp-bildirim-gir {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes kp-bildirim-cik {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(10px); }
+}
+.kp-editor .kp-bildirim,
+.kp-editor .kp-kazanc,
+.kisisel-kart__bildirim {
+  animation: none;
+  pointer-events: auto;
+}
+.kp-editor .kp-bildirim.kp-bildirim-giris,
+.kisisel-kart__bildirim.kp-bildirim-giris,
+.kp-editor .kp-kazanc--oneri.kp-bildirim-giris {
+  animation: kp-bildirim-gir 0.25s ease-out both;
+}
+.kp-editor .kp-kazanc.kp-bildirim-giris:not(.kp-kazanc--oneri) {
+  animation: kp-bildirim-gir 0.25s ease-out both, kp-kazanc-parilti 0.6s ease-in-out 0.35s 2;
+}
+.kp-editor .kp-bildirim.kp-bildirim-cikis,
+.kp-editor .kp-kazanc.kp-bildirim-cikis,
+.kisisel-kart__bildirim.kp-bildirim-cikis {
+  animation: kp-bildirim-cik 0.2s ease-in forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kp-editor .kp-bildirim.kp-bildirim-giris,
+  .kp-editor .kp-kazanc.kp-bildirim-giris,
+  .kp-editor .kp-kazanc.kp-bildirim-giris:not(.kp-kazanc--oneri),
+  .kisisel-kart__bildirim.kp-bildirim-giris,
+  .kp-editor .kp-bildirim.kp-bildirim-cikis,
+  .kp-editor .kp-kazanc.kp-bildirim-cikis,
+  .kisisel-kart__bildirim.kp-bildirim-cikis {
+    animation: none;
+  }
+}

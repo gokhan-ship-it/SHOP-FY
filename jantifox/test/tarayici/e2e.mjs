@@ -82,9 +82,23 @@ assert.equal(await sayfa.locator('[data-kp-gorunum]').textContent(), 'Tüm çant
 
 // ELİF yaz → İ uyarısı
 const girdi = sayfa.locator('#kp-isim');
+// Türkçe karakter otomatik çevrilir (İ patch'i yok): ELİF → ELIF, altta küçük not; onay sorusu yok
 await girdi.fill('elif');
-assert.equal(await girdi.inputValue(), 'ELİF');
-await sayfa.getByText('İ harfi şu an yok, I olarak yazmak ister misin?').waitFor();
+assert.equal(await girdi.inputValue(), 'ELIF');
+assert.equal(await sayfa.locator('[data-kp-ceviri-notu]').textContent(), "İ patch'i olmadığı için I kullanıldı.");
+assert.equal(await sayfa.locator('[data-kp-oneri-kabul]').count(), 0, 'eski "… olarak yaz" butonu yok');
+await girdi.fill('gökhaş');
+assert.equal(await girdi.inputValue(), 'GOKHAS');
+assert.equal(await sayfa.locator('[data-kp-ceviri-notu]').textContent(), "Ö ve Ş patch'leri olmadığı için O ve S kullanıldı.");
+// Önizlemede de çevrilmiş harfler (eklenenler etiketi ve karakter kartları)
+assert.equal(await sayfa.locator('.kp-cip__ad').first().textContent(), 'GOKHAS');
+assert.deepEqual(await sayfa.evaluate(() => document.querySelector('kisisel-kart').editor.durum.parcalar.filter((p) => p.tip === 'letter').map((p) => p.varyant && p.varyant.karakter).join('')), 'GOKHAS');
+// Patch'i olmayan karakter yazılmaz, aynı yerde not
+await girdi.fill('ece!');
+assert.equal(await girdi.inputValue(), 'ECE');
+assert.equal(await sayfa.locator('[data-kp-gecersiz-notu]').textContent(), "Bu karakterin patch'i yok.");
+assert.equal(await sayfa.locator('[data-kp-ceviri-notu]').count(), 0, 'çeviri kalmayınca not kaybolur');
+await girdi.fill('elif');
 // "Tasarımı tamamla →" Tasarım ekranında her zaman çalışır; sorun Özet'te sepete eklerken durdurulur
 assert.equal(await sayfa.locator('[data-kp-ileri]').getAttribute('aria-disabled'), 'false');
 await sayfa.screenshot({ path: cikti + '02-turkce-harf-uyarisi.png' });

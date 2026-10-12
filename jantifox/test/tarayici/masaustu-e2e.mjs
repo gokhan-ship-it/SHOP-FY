@@ -115,7 +115,7 @@ for (const [w, h] of [[1440, 900], [1024, 768]]) {
   // Kazanma bildirimi: kartın hemen üstünde, kartla aynı genişlikte, ince, kısa metin; önizlemeye/karta binmez
   await s.evaluate(() => { document.querySelector('#Quantity-main').value = '2'; });
   await s.locator(ana + ' .kp-arac-dugme[data-kp-adim="yazi"]').click();
-  await s.waitForFunction((q) => { const e = document.querySelector(q + ' [data-kp-kazanc-masa]'); return e && !e.hidden; }, ana, { timeout: 5000 });
+  await s.waitForFunction((q) => { const e = document.querySelector(q + ' [data-kp-kazanc-masa]'); return e && !e.hidden && /Ekstra/.test(e.textContent); }, ana, { timeout: 12000 });
   await s.waitForTimeout(450); // giriş animasyonu
   const bil = await s.evaluate((q) => {
     const b = document.querySelector(q + ' [data-kp-kazanc-masa]'); const r = b.getBoundingClientRect(); const k = document.querySelector(q + ' [data-kp-kkart]').getBoundingClientRect();
@@ -125,7 +125,7 @@ for (const [w, h] of [[1440, 900], [1024, 768]]) {
   assert.deepEqual(bil, { metin: '✨ Ekstra %10 indirim açıldı · −827 TL', ince: true, ustunde: true, genislik: true, onizlemeDisinda: true, mobil: false }, JSON.stringify(bil));
   assert.equal(await metin(ana + ' [data-kp-kkart-kazanc]'), '1.197 TL kazandın 🎉');
   assert.equal(await metin(ana + ' [data-kp-kkart-hedef]'), 'Bütün kampanyalar sepetinde.');
-  await s.waitForFunction((q) => document.querySelector(q + ' [data-kp-kazanc-masa]').hidden, ana, { timeout: 5000 });
+  await s.waitForFunction((q) => document.querySelector(q + ' [data-kp-kazanc-masa]').hidden, ana, { timeout: 8000 });
   // Masaüstünde öneri bildirimi yok (hedef kartta)
   await s.locator('#kp-isim').fill('ec');
   await s.waitForTimeout(1500);

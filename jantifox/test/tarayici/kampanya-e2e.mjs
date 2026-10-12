@@ -69,7 +69,7 @@ const ana = '.kp-editor:not(.kp-editor--alt)';
 const metin = async (s, q) => (await s.locator(q).first().innerText()).replace(/\s+/g, ' ').trim();
 // Kampanya panelinin içeriği (panel kapalıyken de güncel)
 const pm = async (s, q) => ((await s.locator(q).first().textContent()) || '').replace(/\s+/g, ' ').trim();
-const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = document.querySelector(q); return e && new RegExp(d).test(e.textContent.replace(/\s+/g, ' ')); }, [q, desen.source], { timeout: 4000 });
+const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = document.querySelector(q); return e && new RegExp(d).test(e.textContent.replace(/\s+/g, ' ')); }, [q, desen.source], { timeout: 12000 });
 
 // ---------- 1) Şerit, duraklar, bildirim ----------
 {
@@ -92,10 +92,10 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   await s.locator(ana + ' [data-kp-kazanc]:not([hidden])').waitFor();
   assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), "🎉 2'li patch indirimi · −60 TL");
   assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).backgroundColor, ana + ' [data-kp-kazanc]'), 'rgb(179, 20, 27)');
-  await s.waitForFunction((q) => { const e = document.querySelector(q); return e && !e.hidden && e.classList.contains('kp-kazanc--oneri'); }, ana + ' [data-kp-kazanc]', { timeout: 5000 });
+  await s.waitForFunction((q) => { const e = document.querySelector(q); return e && !e.hidden && e.classList.contains('kp-kazanc--oneri'); }, ana + ' [data-kp-kazanc]', { timeout: 8000 });
   assert.equal(await metin(s, ana + ' [data-kp-kazanc]'), '🎯 1 patch daha ekle, indirimin 190 TL olsun');
   assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).backgroundColor, ana + ' [data-kp-kazanc]'), 'rgb(30, 30, 36)');
-  await s.waitForFunction((q) => document.querySelector(q).hidden, ana + ' [data-kp-kazanc]', { timeout: 5000 });
+  await s.waitForFunction((q) => document.querySelector(q).hidden, ana + ' [data-kp-kazanc]', { timeout: 8000 });
   assert.equal(await metin(s, ana + ' [data-kp-toplam] s'), '3.660 TL');
   assert.equal(await s.locator(ana + ' .kp-alt__fiyat .kp-indirim-notu').isVisible(), false);
   // Tek satırlık alt çubuk (~64 px): en üstte 3 px çizgi, solda fiyat, sağda buton; sabit kampanya metni yok
@@ -152,7 +152,7 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   // Aynı oturumda bildirim tekrar çıkmaz
   const gorulen = await s.evaluate(() => JSON.parse(sessionStorage.getItem('kp-kampanya-gorulen')));
   assert.deepEqual(gorulen.sort(), ["2li patche indirim", "3'lü patche indirim", "4'lü patche indirim", 'Ekstra %10 İndirim'].sort());
-  await s.waitForTimeout(2700); // önceki bildirim kaybolsun
+  await s.waitForFunction((q) => document.querySelector(q).hidden, ana + ' [data-kp-kazanc]', { timeout: 12000 }); // önceki bildirim kaybolsun
   if (await s.locator(ana + ' [data-kp-adim="tasarim"]').isVisible()) await s.locator(ana + ' [data-kp-adim="tasarim"]').click();
   await s.locator(ana + ' [data-kp-adim="yazi"]').click();
   await s.locator('#kp-isim').fill('ec');
@@ -207,10 +207,10 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   await s.locator(ana + ' [data-kp-kazanc]:not([hidden])').waitFor();
   assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).animationName, ana + ' [data-kp-kazanc]'), 'none');
   // Kazanma bildirimi ~2,6 sn sonra kaybolur, ardından öneri; o da birkaç saniye sonra kaybolur
-  await s.waitForFunction((q) => document.querySelector(q).classList.contains('kp-kazanc--oneri'), ana + ' [data-kp-kazanc]', { timeout: 4000 });
+  await s.waitForFunction((q) => document.querySelector(q).classList.contains('kp-kazanc--oneri'), ana + ' [data-kp-kazanc]', { timeout: 7000 });
   assert.equal(await s.evaluate((q) => getComputedStyle(document.querySelector(q)).animationName, ana + ' [data-kp-kazanc]'), 'none');
-  await s.waitForTimeout(3400);
-  assert.equal(await s.locator(ana + ' [data-kp-kazanc]').isVisible(), false, 'öneri de kaybolur');
+  await s.waitForTimeout(4900);
+  assert.equal(await s.locator(ana + ' [data-kp-kazanc]').isVisible(), false, 'öneri de kaybolur (4,5 sn)');
   await baglam.close();
 }
 // ---------- 360 px genişlik: kampanya metni iki satıra iner, taşmaz; adım halkası kesilmez ----------

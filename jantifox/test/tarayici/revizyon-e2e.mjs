@@ -161,6 +161,7 @@ await s.locator('.kp-cip:not(.kp-cip--kenar)').last().locator('.kp-cip__kaldir')
 assert.equal(await s.locator('.kp-cip').count(), adet - 1);
 await s.locator('[data-kp-sigdir]').click();
 assert.equal(await s.locator('[data-kp-kenar-grup]').count(), 0, 'kenar boşaldı');
+await s.waitForFunction(() => /Hepsi çantaya yerleşti/.test(document.querySelector('[data-kp-bildirim]').textContent), null, { timeout: 8000 });
 assert.equal(await metin('[data-kp-bildirim]'), 'Hepsi çantaya yerleşti.');
 assert.equal(await gorunur('[data-kp-kenar-not]'), false);
 assert.equal(await s.locator('.kp-parca--hatali').count(), 0);

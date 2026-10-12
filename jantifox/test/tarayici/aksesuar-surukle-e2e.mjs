@@ -55,6 +55,8 @@ await surukle(oge[0], oge[1], aks[0], aks[1]);
 assert.equal(await kenarSayisi(), 0, 'kenardan çıktı');
 assert.equal(await aksIc(), 1, 'kalem kutusunun üzerinde');
 assert.deepEqual(await cipler(), ['Kalem Kutusu Kırmızı']);
+// Bildirimler sıraya girer: önceki bildirim bitince gelir
+await s.waitForFunction((q) => /Futbol Topu, kalem kutusu tasarımına eklendi/.test(document.querySelector(q).textContent), ana + ' [data-kp-bildirim]', { timeout: 8000 });
 assert.equal(await metin(ana + ' [data-kp-bildirim]'), 'Futbol Topu, kalem kutusu tasarımına eklendi. Geri al');
 assert.equal(toplam0, '4.700 TL', 'kenardaki fiyata dahil değil');
 assert.equal(await metin(ana + ' [data-kp-toplam]'), '5.030 TL', 'aksesuara geçince fiyata eklenir');

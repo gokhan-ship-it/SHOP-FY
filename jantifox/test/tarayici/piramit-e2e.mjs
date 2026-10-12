@@ -179,7 +179,7 @@ await s.locator('#kp-isim').fill('ökr');
 await s.waitForTimeout(150);
 const uyarilar = (await s.locator('[data-kp-isim-uyari]').innerText()).replace(/\s+/g, ' ');
 console.log('uyarılar:', uyarilar);
-assert.match(uyarilar, /Ö harfi şu an yok, O olarak yazmak ister misin/);
+assert.match(uyarilar, /Ö patch'i olmadığı için O kullanıldı\./);
 assert.match(uyarilar, /K harfi bu stilde şu an yok/);
 await s.screenshot({ path: cikti + '04-eksik.png' });
 

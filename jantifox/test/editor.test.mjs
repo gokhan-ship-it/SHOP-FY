@@ -899,3 +899,52 @@ test('ayrılmış harfler üst üste gelince ikisi de işaretlenir (son dokunula
   assert.ok(!d.hatalar['harf-2']);
   assert.equal(d.isimGecerli, false, 'Özet ve sepet kontrolü: yazı geçersiz');
 });
+
+test('Türkçe karakterler otomatik çevrilir; veri odaklı ve karakter başına set', () => {
+  // Cool'da Ç Ğ İ Ö Ş Ü yok: GÖKHAN → GOKHAN, yazılan saklanır, not
+  let m = new ic.Model(ornekVeri());
+  let t = tasarim(m, ic.buyukHarf('gökhan şiir'.replace(' ', '')));
+  assert.equal(t.isim, 'GÖKHANŞİİR');
+  assert.equal(ic.turkceCevir(m, t), true);
+  assert.equal(t.isim, 'GOKHANSIIR');
+  assert.equal(ic.yazilanIsim(t), 'GÖKHANŞİİR');
+  assert.equal(ic.ceviriNotu(t), "Ö, Ş ve İ patch'leri olmadığı için O, S ve I kullanıldı.");
+  assert.equal(ic.turkceCevir(m, t), false, 'ikinci kez değişmez');
+  // ı → I (Türkçe büyük harf kuralı), tek karakter notu
+  t = tasarim(m, ic.buyukHarf('ışık'));
+  ic.turkceCevir(m, t);
+  assert.equal(t.isim, 'ISIK');
+  assert.equal(ic.ceviriNotu(t), "Ş patch'i olmadığı için S kullanıldı.");
+  // Özet ve sepette çevrilmiş hali, yanında yazılan
+  t = tasarim(m, 'GÖKHAN');
+  ic.turkceCevir(m, t);
+  assert.equal(ic.tasarimOzeti(m, t), 'GOKHAN (yazılan: GÖKHAN)');
+  // Mağazaya stokta Cool Ö eklenirse çeviri yapılmaz (kod değişmeden)
+  const v = ornekVeri();
+  v.setler[0].varyantlar.push({ id: 1999, baslik: 'Ö', karakter: 'Ö', renk: null, fiyat: 33000, satilabilir: true, stok: 5, gorsel: 'Ö.jpg', png: false });
+  m = new ic.Model(v);
+  t = tasarim(m, 'GÖKHAN');
+  assert.equal(ic.turkceCevir(m, t), false);
+  assert.equal(t.isim, 'GÖKHAN');
+  assert.equal(ic.ceviriNotu(t), '');
+  // Stokta değilse yine çevrilir
+  v.setler[0].varyantlar[v.setler[0].varyantlar.length - 1].stok = 0;
+  m = new ic.Model(v);
+  t = tasarim(m, 'GÖKHAN');
+  ic.turkceCevir(m, t);
+  assert.equal(t.isim, 'GOKHAN');
+  // Karışık: Ö Piramit'te var, Cool'da yok → yalnızca Cool seçili Ö çevrilir; set değişince geri döner
+  const vp = ornekVeriPiramitli();
+  vp.setler[1].varyantlar.push({ id: 5999, baslik: 'Mavi Ö', karakter: null, renk: null, renk_kodu: '#5f7286', png_en: 5.4, png_boy: 6, fiyat: 33000, satilabilir: true, stok: 20, gorsel: 'MaviÖ.png', png: true });
+  m = new ic.Model(vp);
+  const piramit = m.setler.find((x) => x.cokRenkli);
+  t = tasarim(m, 'ÖÖ');
+  t.karakterSetleri = [m.setler[0].id, piramit.id];
+  ic.turkceCevir(m, t);
+  assert.equal(t.isim, 'OÖ');
+  assert.deepEqual(duz(t.ceviriler), ['Ö', null]);
+  t.karakterSetleri = [piramit.id, piramit.id];
+  ic.turkceCevir(m, t);
+  assert.equal(t.isim, 'ÖÖ', 'Piramit seçilince Ö geri gelir');
+  assert.equal(t.ceviriler, null);
+});

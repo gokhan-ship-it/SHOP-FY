@@ -731,6 +731,59 @@
     return { en: (v && v.en) || set.en, boy: (v && v.boy) || set.boy };
   }
 
+  // Karakterin bu sette satılabilir ve stokta bir patch'i var mı (çok renkli sette herhangi bir renk)
+  function karakterStoktaMi(set, h) {
+    if (!set) return false;
+    var stokta = function (v) { return !!v && v.satilabilir !== false && (v.stok == null || v.stok > 0); };
+    if (set.cokRenkli) return (set.karakterVaryantlari[h] || []).some(stokta);
+    return stokta(set.karakterler[h]);
+  }
+
+  // Türkçe karakterleri otomatik çevirir: Ç Ğ İ Ö Ş Ü'nün o karakterin setinde stokta patch'i yoksa C G I O S U kullanılır.
+  // Veri odaklı: sete Türkçe karakter patch'i eklenip stokta olursa çeviri yapılmaz (önceden çevrilmiş olan da geri döner).
+  // Karışık modda her karakter kendi setine göre. Müşterinin yazdığı karakter t.ceviriler[i]'de saklanır.
+  // Dönüş: yazı değiştiyse true
+  function turkceCevir(model, t) {
+    var harfler = Array.from(t.isim || '');
+    var ceviri = Array.isArray(t.ceviriler) ? t.ceviriler.slice(0, harfler.length) : [];
+    var degisti = false;
+    harfler.forEach(function (h, i) {
+      var asil = ceviri[i] || (TR_ESLEME[h] ? h : null);
+      if (!asil || !TR_ESLEME[asil]) {
+        ceviri[i] = null;
+        return;
+      }
+      var set = karakterSeti(model, t, i, asil);
+      var hedef = karakterStoktaMi(set, asil) ? asil : TR_ESLEME[asil];
+      if (h !== hedef) {
+        harfler[i] = hedef;
+        degisti = true;
+      }
+      ceviri[i] = hedef === asil ? null : asil;
+    });
+    while (ceviri.length < harfler.length) ceviri.push(null);
+    t.ceviriler = ceviri.some(Boolean) ? ceviri : null;
+    if (degisti) t.isim = harfler.join('');
+    return degisti;
+  }
+
+  // Müşterinin yazdığı hali (çeviriden önce): "GÖKHAN"
+  function yazilanIsim(t) {
+    var c = t.ceviriler || [];
+    return Array.from(t.isim || '').map(function (h, i) { return c[i] || h; }).join('');
+  }
+
+  // "Ö ve Ş patch'leri olmadığı için O ve S kullanıldı." (her karakter bir kez)
+  function ceviriNotu(t) {
+    var c = t.ceviriler || [];
+    var asillar = [];
+    c.forEach(function (x) { if (x && asillar.indexOf(x) === -1) asillar.push(x); });
+    if (!asillar.length) return '';
+    var liste = function (a) { return a.length === 1 ? a[0] : a.slice(0, -1).join(', ') + ' ve ' + a[a.length - 1]; };
+    return liste(asillar) + (asillar.length === 1 ? ' patch\'i' : ' patch\'leri') + ' olmadığı için ' +
+      liste(asillar.map(function (x) { return TR_ESLEME[x]; })) + ' kullanıldı.';
+  }
+
   // İsimdeki i. harfin varyantı. Çok renkli sette seçilen renk (t.harfRenkleri), yoksa ilk stoktaki renk.
   function harfVaryanti(set, t, i, h) {
     if (!set.cokRenkli) return set.karakterler[h] || null;
@@ -1261,6 +1314,7 @@
     }
     t.karakterSetleri = hizala(t.karakterSetleri || eski.map(function () { return null; }), function () { return t.setId; });
     t.harfRenkleri = hizala(t.harfRenkleri, null);
+    t.ceviriler = hizala(t.ceviriler, null);
     if (t.harfAyri) {
       // Yeni karakterlerin konumu ve açısı harfKonumlariniEsitle'de blok dizilimden atanır
       t.harfKonumlari = hizala(t.harfKonumlari, null);
@@ -1573,7 +1627,9 @@
       }
       return h;
     });
-    return renkVar ? t.isim + ' (' + renkli.join(', ') + ')' : t.isim;
+    var yazilan = yazilanIsim(t);
+    var ek = yazilan !== t.isim ? ' (yazılan: ' + yazilan + ')' : '';
+    return renkVar ? t.isim + ' (' + renkli.join(', ') + ')' + ek : t.isim + ek;
   }
 
   function tasarimOzeti(model, t) {
@@ -1933,6 +1989,12 @@
     this.isimOlayGonderildi = false;
   }
 
+  // Kampanya satırları hep aynı sırada: önce adet (patch) indirimleri, sonra yüzde (tutar eşikli) indirim
+  function kampanyaSirala(adlar) {
+    var yuzdeli = function (ad) { return /%\s*\d/.test(ad) ? 1 : 0; };
+    return adlar.slice().sort(function (a, b) { return yuzdeli(a) - yuzdeli(b); });
+  }
+
   function masaustuMu() {
     return !!(window.matchMedia && window.matchMedia('(min-width: 1024px)').matches);
   }
@@ -2159,6 +2221,9 @@
     // Sepetteki tasarımı düzenlerken kapatmak sepeti de kayıtlı tasarımı da değiştirmez
     if (kaydet && !this.duzenlenen && !this.alt) this.kart.tasarimKaydet(this.t);
     this.duzenlenen = null;
+    // Bekleyen bildirimler düşer
+    this.bildirimSirasi = [];
+    if (this.bildirimSimdiki) this.bildirimBitir(this.bildirimSimdiki, true);
     this.el.hidden = true;
     if (this.alt) {
       if (this.donusOdagi && this.donusOdagi.focus) this.donusOdagi.focus();
@@ -2282,6 +2347,16 @@
     el.addEventListener('mousedown', function (e) {
       if (e.target.closest('.kp-alt button, .kp-adimlar button, .kp-araclar button, .kp-arac button, .kp-harf-mod, .kp-cerceve__harf')) e.preventDefault();
     });
+    // Bildirime dokununca / fare üstündeyken kaybolmaz; bırakınca süre baştan başlar
+    el.querySelectorAll('[data-kp-bildirim], [data-kp-kazanc], [data-kp-kazanc-masa]').forEach(function (b) {
+      var dur = function () { self.bildirimDuraklat(b, true); };
+      var devam = function () { self.bildirimDuraklat(b, false); };
+      b.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') dur(); });
+      b.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') devam(); });
+      b.addEventListener('pointerdown', dur);
+      b.addEventListener('pointerup', function (e) { if (e.pointerType !== 'mouse') devam(); });
+      b.addEventListener('pointercancel', devam);
+    });
     el.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         if (self.kpanelAcik) self.kampanyaPaneli(false);
@@ -2317,9 +2392,10 @@
     girdi.addEventListener('input', function () {
       var ham = buyukHarf(girdi.value);
       var temiz = Array.from(ham).filter(function (h) { return KARAKTER_DESENI.test(h); }).join('');
+      // Patch'i olmayan karakter (emoji, noktalama, boşluk) yazılmaz; altta kısa not
+      self.gecersizKarakter = temiz !== ham;
       // Ürünün karakter sınırından fazlası yazılamaz
       if (self.m.metinSiniri) temiz = Array.from(temiz).slice(0, self.m.metinSiniri).join('');
-      self.gecersizKarakter = temiz !== ham.replace(/\s/g, '') || /\s/.test(ham);
       if (girdi.value !== temiz) girdi.value = temiz;
       karakterleriHizala(self.t, temiz);
       sonaAl(self.t, self.t.harfAyri ? null : 'isim');
@@ -3454,6 +3530,17 @@
     // Bekleyen "geçersiz açı" önizlemesi varsa kapat; dönüş sürmüyorsa açı göstergesi gizlenir
     clearTimeout(this.donmeZamanlayici);
     if (!this.sahne.sahne.classList.contains('kp-sahne--donuyor')) this.aciGostergesiGizle();
+    // Türkçe karakterler otomatik çevrilir (stokta patch'i yoksa); yazı alanı çevrilmiş hali gösterir, imleç yerinde kalır
+    if (turkceCevir(this.m, this.t)) {
+      var girdi = this.el.querySelector('[data-kp-isim]');
+      if (girdi && girdi.value !== this.t.isim) {
+        var odakta = document.activeElement === girdi;
+        var bas = girdi.selectionStart;
+        var son = girdi.selectionEnd;
+        girdi.value = this.t.isim;
+        if (odakta && bas != null) try { girdi.setSelectionRange(bas, son); } catch (e) { /* yok say */ }
+      }
+    }
     this.analiz = isimAnaliz(this.m, this.yer, this.t);
     setleriTemizle(this.m, this.t);
     this.durum = duzenle(this.m, this.yer, this.t);
@@ -4155,21 +4242,15 @@
     var uyarilar = [];
     var ad = function (h) { return h + (RAKAM_DESENI.test(h) ? ' rakamı' : ' harfi'); };
     if (this.yaziIpucu) uyarilar.push('<p class="kp-uyari kp-uyari--bilgi">' + kacis(this.yaziIpucu) + '</p>');
+    // Otomatik Türkçe karakter çevirisi: küçük gri tek satır
+    var cevNot = ceviriNotu(this.t);
+    if (cevNot) uyarilar.push('<p class="kp-yazi-notu" data-kp-ceviri-notu>' + kacis(cevNot) + '</p>');
     if (this.gecersizKarakter) {
-      uyarilar.push('<p class="kp-uyari kp-uyari--bilgi">Yazıda yalnızca harf ve rakam kullanabilirsin.</p>');
+      uyarilar.push('<p class="kp-yazi-notu" data-kp-gecersiz-notu>Bu karakterin patch\'i yok.</p>');
     }
     if (this.m.metinSiniri && harfSayisi >= this.m.metinSiniri) {
       uyarilar.push('<p class="kp-uyari kp-uyari--bilgi" data-kp-sinir-notu>Bu ürüne en fazla ' + this.m.metinSiniri + ' karakter yazılabilir.</p>');
     }
-    a.eksikler.forEach(function (e) {
-      uyarilar.push(
-        '<div class="kp-uyari kp-uyari--hata"><p>' + e.harf + ' harfi şu an yok, ' + e.oneri + ' olarak yazmak ister misin?</p>' +
-        '<div class="kp-uyari__butonlar">' +
-        '<button type="button" class="kp-oneri" data-kp-oneri-kabul data-harf="' + e.harf + '" data-oneri="' + e.oneri + '">' + e.oneri + ' olarak yaz</button>' +
-        '<button type="button" class="kp-oneri kp-oneri--ikincil" data-kp-harf-sil data-harf="' + e.harf + '">' + e.harf + ' harfini sil</button>' +
-        '</div></div>'
-      );
-    });
     a.yoklar.forEach(function (h) {
       var rakam = RAKAM_DESENI.test(h);
       uyarilar.push(
@@ -4268,34 +4349,155 @@
 
   // Tüm uyarılar tek yerde: önizlemenin alt kısmında, araç çubuğunun üstünde koyu kutu.
   // sure: ms sonra kendiliğinden kapanır (0: sorun bitene kadar açık kalır)
+  // Kısa bilgi bildirimi (önizlemenin altında). Süre 4,5 sn; "Geri al" gibi eylemli olanlar 6 sn.
+  // anahtar: canlı uyarılar (ör. döndürme), aynı anahtarlı bildirim yerinde güncellenir ve anahtarla kapatılır.
   Editor.prototype.bildir = function (metin, secenek) {
-    var kutu = this.el && this.el.querySelector('[data-kp-bildirim]');
-    if (!kutu) return;
-    var eylem = secenek && secenek.eylem;
-    var sure = secenek && secenek.sure != null ? secenek.sure : eylem ? 6000 : 3500;
-    clearTimeout(this.bildirimZamanlayici);
-    this.bildirimEylemFn = eylem ? eylem.fn : null;
-    var html = '<span>' + kacis(metin) + '</span>' + (eylem ? ' <button type="button" class="kp-bildirim__eylem" data-kp-bildirim-eylem>' + kacis(eylem.yazi) + '</button>' : '');
-    if (kutu.innerHTML !== html) kutu.innerHTML = html;
-    kutu.hidden = false;
-    this.bildirimAnahtar = (secenek && secenek.anahtar) || null;
-    var self = this;
-    if (sure) this.bildirimZamanlayici = setTimeout(function () { self.bildirimKapat(); }, sure);
+    secenek = secenek || {};
+    var b = { tur: 'diger', metin: metin, eylem: secenek.eylem || null, anahtar: secenek.anahtar || null };
+    // Canlı uyarıların kendi süresi (0: kapatılana kadar)
+    if (secenek.anahtar && secenek.sure != null) b.sure = secenek.sure;
+    this.bildirimEkle(b);
   };
 
   Editor.prototype.bildirimEylemi = function () {
-    var fn = this.bildirimEylemFn;
-    this.bildirimKapat();
+    var b = this.bildirimSimdiki;
+    var fn = b && b.eylem ? b.eylem.fn : null;
+    if (b) this.bildirimBitir(b, true);
     if (typeof fn === 'function') fn.call(this);
   };
 
-  // anahtar verilirse yalnızca o sorunun uyarısı kapanır
+  // anahtar verilirse yalnızca o sorunun uyarısı kapanır (sıradaki aynı anahtarlılar da düşer)
   Editor.prototype.bildirimKapat = function (anahtar) {
-    var kutu = this.el && this.el.querySelector('[data-kp-bildirim]');
-    if (!kutu || (anahtar && this.bildirimAnahtar !== anahtar)) return;
+    var b = this.bildirimSimdiki;
+    if (anahtar) this.bildirimSirasi = (this.bildirimSirasi || []).filter(function (x) { return x.anahtar !== anahtar; });
+    if (!b || b.tur !== 'diger' || (anahtar && b.anahtar !== anahtar)) return;
+    this.bildirimBitir(b, true);
+  };
+
+  /* ---------------- Bildirim kuyruğu ---------------- */
+
+  // Tüm bildirimler sıraya girer, üst üste binmez: önce kampanya kazanma, sonra öneri, sonra diğerleri.
+  // Aynı bildirim art arda tekrar etmez (gösterilen aynıysa süresi baştan başlar). Dokununca / fare üstündeyken
+  // kaybolmaz, bırakınca süre baştan başlar. Giriş ~250 ms (alttan kayarak), çıkış ~200 ms (aşağı kayarak söner).
+  var BILDIRIM_SURE = 4500;
+  var BILDIRIM_EYLEMLI_SURE = 6000;
+  var BILDIRIM_CIKIS = 200;
+  var BILDIRIM_ONCELIK = { kazanc: 0, oneri: 1, diger: 2 };
+
+  Editor.prototype.bildirimEkle = function (b) {
+    if (!this.el) return;
+    b.kimlik = b.tur + '|' + (b.anahtar || b.metin);
+    if (b.sure == null) b.sure = b.eylem ? BILDIRIM_EYLEMLI_SURE : BILDIRIM_SURE;
+    var simdi = this.bildirimSimdiki;
+    if (simdi && simdi.kimlik === b.kimlik && !simdi.cikiyor) {
+      // Aynısı gösteriliyor: içerik güncellenir, süre baştan
+      simdi.metin = b.metin;
+      simdi.eylem = b.eylem;
+      simdi.sure = b.sure;
+      simdi.anahtar = b.anahtar;
+      this.bildirimCiz(simdi, false);
+      this.bildirimZamanla(simdi);
+      return;
+    }
+    var sira = this.bildirimSirasi || (this.bildirimSirasi = []);
+    for (var i = 0; i < sira.length; i++) {
+      if (sira[i].kimlik === b.kimlik) {
+        sira[i] = b;
+        return;
+      }
+    }
+    if (!simdi) return this.bildirimGoster(b);
+    sira.push(b);
+    sira.sort(function (x, y) { return BILDIRIM_ONCELIK[x.tur] - BILDIRIM_ONCELIK[y.tur]; });
+  };
+
+  Editor.prototype.bildirimEl = function (b) {
+    if (b.tur === 'diger') return this.el.querySelector('[data-kp-bildirim]');
+    return (masaustuMu() && this.el.querySelector('[data-kp-kazanc-masa]')) || this.el.querySelector('[data-kp-kazanc]');
+  };
+
+  Editor.prototype.bildirimCiz = function (b, animasyon) {
+    var el = b.el;
+    var html;
+    if (b.tur === 'diger') {
+      html = '<span>' + kacis(b.metin) + '</span>' + (b.eylem ? ' <button type="button" class="kp-bildirim__eylem" data-kp-bildirim-eylem>' + kacis(b.eylem.yazi) + '</button>' : '');
+    } else {
+      // Masaüstünde kazanma bildirimi kısa: "✨ Ekstra %10 indirim açıldı · −351 TL"
+      var metin = el.hasAttribute('data-kp-kazanc-masa') ? b.metin.replace(' · Tüm siparişinde ', ' · ') : b.metin;
+      var i = metin.indexOf(' ');
+      html = b.tur === 'kazanc'
+        ? '<span class="kp-kazanc__ikon" aria-hidden="true">' + kacis(metin.slice(0, i)) + '</span><span>' + kacis(metin.slice(i + 1)) + '</span>'
+        : '<span class="kp-kazanc__ikon" aria-hidden="true">🎯</span><span>' + kacis(metin) + '</span>';
+      el.classList.toggle('kp-kazanc--oneri', b.tur === 'oneri');
+    }
+    if (el.innerHTML !== html) el.innerHTML = html;
+    if (animasyon) {
+      el.classList.remove('kp-bildirim-cikis', 'kp-bildirim-giris');
+      void el.offsetWidth;
+      el.classList.add('kp-bildirim-giris');
+    }
+  };
+
+  Editor.prototype.bildirimGoster = function (b) {
+    var el = this.bildirimEl(b);
+    if (!el) return this.bildirimSiradaki();
+    b.el = el;
+    b.cikiyor = false;
+    this.bildirimSimdiki = b;
+    el.hidden = false;
+    this.bildirimCiz(b, true);
+    if (b.tur === 'kazanc' && b.ad) {
+      var nokta = this.el.querySelector('.kp-kpanel [data-kp-durak="' + (window.CSS && CSS.escape ? CSS.escape(b.ad) : b.ad) + '"]');
+      if (nokta) nokta.classList.add('kp-kpanel__durak--atim');
+    }
+    this.bildirimZamanla(b);
+  };
+
+  Editor.prototype.bildirimZamanla = function (b) {
     clearTimeout(this.bildirimZamanlayici);
-    kutu.hidden = true;
-    this.bildirimAnahtar = null;
+    if (b.duraklat || !b.sure) return;
+    var self = this;
+    this.bildirimZamanlayici = setTimeout(function () { self.bildirimBitir(b); }, b.sure);
+  };
+
+  // Bildirimi kapatır (çıkış animasyonuyla; hemen: animasyonsuz) ve sıradakini gösterir
+  Editor.prototype.bildirimBitir = function (b, hemen) {
+    if (this.bildirimSimdiki !== b || b.cikiyor) return;
+    clearTimeout(this.bildirimZamanlayici);
+    b.cikiyor = true;
+    var self = this;
+    var el = b.el;
+    var kapat = function () {
+      el.hidden = true;
+      el.classList.remove('kp-bildirim-giris', 'kp-bildirim-cikis');
+      if (self.bildirimSimdiki === b) self.bildirimSimdiki = null;
+      self.bildirimSiradaki();
+    };
+    if (hemen) return kapat();
+    el.classList.remove('kp-bildirim-giris');
+    el.classList.add('kp-bildirim-cikis');
+    setTimeout(kapat, BILDIRIM_CIKIS);
+  };
+
+  Editor.prototype.bildirimSiradaki = function () {
+    var sira = this.bildirimSirasi || [];
+    while (sira.length) {
+      var n = sira.shift();
+      if (!this.el || this.el.hidden) continue;
+      // Kampanya bildirimleri Özet'te gösterilmez; öneri yalnızca hâlâ güncel tasarıma aitse
+      if (n.tur !== 'diger' && this.adim === 'ozet') continue;
+      if (n.tur === 'oneri' && n.anahtar !== this.kampanyaAnahtari) continue;
+      return this.bildirimGoster(n);
+    }
+  };
+
+  // Dokununca / fare üstündeyken bekler; bırakınca süre baştan başlar
+  Editor.prototype.bildirimDuraklat = function (el, dur) {
+    var b = this.bildirimSimdiki;
+    if (!b || b.el !== el || b.cikiyor) return;
+    b.duraklat = !!dur;
+    if (dur) clearTimeout(this.bildirimZamanlayici);
+    else this.bildirimZamanla(b);
   };
 
   // Alan sınırı: normalde görünmez; sürüklerken soluk; alan dışına taşmada kalın kırmızı ve yanıp söner
@@ -4469,7 +4671,7 @@
     var tS = satinAlinacak(m, this.t);
     var dS = tS === this.t ? this.durum : duzenle(m, this.yer, tS);
     var satirlar = satir(kacis(m.urun.baslik), '', p(f.urun));
-    if (f.harfAdet + f.rakamAdet) satirlar += satir('Yazı ve rakam: ' + kacis(tS.isim), '(' + (f.harfAdet + f.rakamAdet) + ' patch)', p(f.harf + f.rakam));
+    if (f.harfAdet + f.rakamAdet) satirlar += satir('Yazı ve rakam: ' + kacis(tS.isim) + (yazilanIsim(tS) !== tS.isim ? ' <span>(yazılan: ' + kacis(yazilanIsim(tS)) + ')</span>' : ''), '(' + (f.harfAdet + f.rakamAdet) + ' patch)', p(f.harf + f.rakam));
     var saglam = saglamSetler(m, tS);
     var setIdleri = saglam.map(function (k) { return k.id; });
     var ikonlar = dS.parcalar.filter(function (x) { return x.tip === 'icon' && !(x.setGrup && setIdleri.indexOf(x.setGrup) !== -1); });
@@ -4485,7 +4687,7 @@
     // Kampanya satırları: bu tasarımın satırlarına düşen indirimler
     var pay = k && !k.hata ? k.tasarimPay || null : null;
     if (pay) {
-      Object.keys(pay).forEach(function (ad) {
+      kampanyaSirala(Object.keys(pay)).forEach(function (ad) {
         if (pay[ad] > 0) kampanyaSatirlari += satir('✓ ' + kacis(kampanyaGosterimAdi(ad)), '', '−' + p(pay[ad]), 'kp-ozet__kampanya');
       });
     } else if (k && k.kampanyalar) {
@@ -4618,7 +4820,7 @@
   Editor.prototype.kampanyaPaneliCiz = function (k, d) {
     var nokta = function (x) { return !x || /[.!?…]$|\p{Extended_Pictographic}$/u.test(x) ? x : x + '.'; };
     var pay = k.tasarimPay || k.aktif || {};
-    var adlar = Object.keys(pay).filter(function (ad) { return pay[ad] > 0; });
+    var adlar = kampanyaSirala(Object.keys(pay)).filter(function (ad) { return pay[ad] > 0; });
     var tasarimInd = tasarimIndirimi(k);
     // Üstte: "370 TL indirim kazandın" (sepettekiler de katkı veriyorsa "(sepetindekilerle birlikte)")
     this.el.querySelector('[data-kp-serit-sol]').textContent = d.sag ? nokta(d.sol) : d.sol;
@@ -4669,7 +4871,7 @@
     var duraklar = this.el.querySelector('[data-kp-kkart-duraklar]');
     if (duraklar.innerHTML !== dhtml) duraklar.innerHTML = dhtml;
     var pay = k.tasarimPay || k.aktif || {};
-    var adlar = Object.keys(pay).filter(function (ad) { return pay[ad] > 0; });
+    var adlar = kampanyaSirala(Object.keys(pay)).filter(function (ad) { return pay[ad] > 0; });
     var liste = this.el.querySelector('[data-kp-kkart-liste]');
     var lhtml = adlar.map(function (ad) {
       return '<li><span>✓ ' + kacis(kampanyaGosterimAdi(ad)) + '</span><strong>−' + paraBicimle(pay[ad]) + '</strong></li>';
@@ -4719,8 +4921,10 @@
     // Kısa bir bekleme: aynı değişiklik bir kampanya kazandırdıysa önce kazanma bildirimi çıkar
     this.oneriZamanlayici = setTimeout(function () {
       if (!self.el || self.el.hidden || self.adim === 'ozet' || self.oneriAnahtari !== anahtar) return;
+      // Masaüstünde öneri bildirimi yok: sıradaki hedef Kampanyalar kartında yazıyor
+      if (masaustuMu()) return;
       self.sonOneri = metin;
-      self.altBildirim({ tur: 'oneri', metin: metin, anahtar: anahtar });
+      self.bildirimEkle({ tur: 'oneri', metin: metin, anahtar: anahtar });
     }, 700);
   };
 
@@ -4739,49 +4943,7 @@
   };
 
   Editor.prototype.kazancGoster = function (metin, ad) {
-    this.altBildirim({ tur: 'kazanc', metin: metin, ad: ad });
-  };
-
-  // Alt çubuğun üstündeki kısa bildirimler: kazanma bildirimi (kırmızı) ve kampanya önerisi (koyu).
-  // Kazanma bildirimi öneriden önce gelir: öneri gösterilirken kazanç gelirse öneri kesilir ve sonra yeniden gösterilir.
-  Editor.prototype.altBildirim = function (b) {
-    // Masaüstü: kazanma bildirimi Kampanyalar kartının hemen üstünde, ince ve kısa; öneri yok (hedef kartta yazıyor)
-    var masa = masaustuMu() && this.el.querySelector('[data-kp-kazanc-masa]');
-    if (masa && b.tur === 'oneri') return;
-    if (masa) b = { tur: b.tur, ad: b.ad, metin: b.metin.replace(' · Tüm siparişinde ', ' · '), anahtar: b.anahtar };
-    var el = masa || this.el.querySelector('[data-kp-kazanc]');
-    if (!el) return;
-    var self = this;
-    var simdiki = this.altBildirimSimdiki;
-    if (simdiki && simdiki.tur === 'kazanc' && b.tur === 'oneri') {
-      this.altBildirimSirasi = b;
-      return;
-    }
-    if (simdiki && simdiki.tur === 'oneri' && b.tur === 'kazanc') this.altBildirimSirasi = simdiki;
-    this.altBildirimSimdiki = b;
-    var i = b.metin.indexOf(' ');
-    el.innerHTML = b.tur === 'kazanc'
-      ? '<span class="kp-kazanc__ikon" aria-hidden="true">' + kacis(b.metin.slice(0, i)) + '</span><span>' + kacis(b.metin.slice(i + 1)) + '</span>'
-      : '<span class="kp-kazanc__ikon" aria-hidden="true">🎯</span><span>' + kacis(b.metin) + '</span>';
-    el.classList.toggle('kp-kazanc--oneri', b.tur === 'oneri');
-    el.hidden = false;
-    el.classList.remove('kp-kazanc--goster');
-    void el.offsetWidth;
-    el.classList.add('kp-kazanc--goster');
-    if (b.tur === 'kazanc' && b.ad) {
-      var nokta = this.el.querySelector('.kp-kpanel [data-kp-durak="' + (window.CSS && CSS.escape ? CSS.escape(b.ad) : b.ad) + '"]');
-      if (nokta) nokta.classList.add('kp-kpanel__durak--atim');
-    }
-    clearTimeout(this.kazancZamanlayici);
-    this.kazancZamanlayici = setTimeout(function () {
-      el.hidden = true;
-      el.classList.remove('kp-kazanc--goster');
-      self.altBildirimSimdiki = null;
-      var sira = self.altBildirimSirasi;
-      self.altBildirimSirasi = null;
-      // Sıradaki öneri hâlâ güncel tasarıma aitse gösterilir
-      if (sira && self.el && !self.el.hidden && self.adim !== 'ozet' && (sira.tur !== 'oneri' || sira.anahtar === self.kampanyaAnahtari)) self.altBildirim(sira);
-    }, b.tur === 'kazanc' ? 2600 : 3200);
+    this.bildirimEkle({ tur: 'kazanc', metin: metin, ad: ad });
   };
 
   // Güncel tasarıma ait kampanya sonucu (henüz hesaplanmadıysa null)
@@ -4853,10 +5015,10 @@
 
   // Uyarıyı biraz sonra kapat (sorun bitti, metin bir an daha okunabilsin)
   Editor.prototype.bildirimSonra = function (anahtar, ms) {
-    if (this.bildirimAnahtar !== anahtar) return;
-    var self = this;
-    clearTimeout(this.bildirimZamanlayici);
-    this.bildirimZamanlayici = setTimeout(function () { self.bildirimKapat(anahtar); }, ms);
+    var b = this.bildirimSimdiki;
+    if (!b || b.anahtar !== anahtar) return;
+    b.sure = ms;
+    this.bildirimZamanla(b);
   };
 
   // Uyarılarda patch'in adı: isim için yazılan isim, diğerlerinde seçim adı
@@ -6566,18 +6728,45 @@
   };
 
   // Kart içi bildirim ("Tasarım silindi · Geri al", "Tasarımın sepete eklendi"); sure sonra kapanır
-  KisiselKart.prototype.bildirimGoster = function (html, sure) {
+  // Kart içi bildirim ("Tasarım silindi · Geri al"): 4,5 sn, "Geri al" içerenler 6 sn. Dokununca / fare üstündeyken
+  // kaybolmaz, bırakınca süre baştan başlar; alttan kayarak gelir, aşağı kayarak söner.
+  KisiselKart.prototype.bildirimGoster = function (html) {
     var el = this.querySelector('[data-kisisel-bildirim]');
     var self = this;
+    var sure = /data-kisisel-geri-al/.test(html) ? 6000 : 4500;
     clearTimeout(this.bildirimZamanlayici);
     el.innerHTML = html;
     el.hidden = false;
-    this.bildirimZamanlayici = setTimeout(function () {
-      el.hidden = true;
-      el.innerHTML = '';
-      self.yedek = null;
-      self.sepetYedek = null;
-    }, sure || 6000);
+    el.classList.remove('kp-bildirim-cikis', 'kp-bildirim-giris');
+    void el.offsetWidth;
+    el.classList.add('kp-bildirim-giris');
+    var bitir = function () {
+      el.classList.remove('kp-bildirim-giris');
+      el.classList.add('kp-bildirim-cikis');
+      self.bildirimZamanlayici = setTimeout(function () {
+        el.hidden = true;
+        el.innerHTML = '';
+        el.classList.remove('kp-bildirim-cikis');
+        self.yedek = null;
+        self.sepetYedek = null;
+      }, 200);
+    };
+    var zamanla = function () {
+      clearTimeout(self.bildirimZamanlayici);
+      self.bildirimZamanlayici = setTimeout(bitir, sure);
+    };
+    if (!el.kpDinleyici) {
+      el.kpDinleyici = true;
+      var dur = function () { if (!el.classList.contains('kp-bildirim-cikis')) clearTimeout(self.bildirimZamanlayici); };
+      var devam = function () { if (!el.hidden && !el.classList.contains('kp-bildirim-cikis') && el.kpZamanla) el.kpZamanla(); };
+      el.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') dur(); });
+      el.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') devam(); });
+      el.addEventListener('pointerdown', dur);
+      el.addEventListener('pointerup', function (e) { if (e.pointerType !== 'mouse') devam(); });
+      el.addEventListener('pointercancel', devam);
+    }
+    el.kpZamanla = zamanla;
+    zamanla();
   };
 
   KisiselKart.prototype.tasarimSil = function () {
@@ -7019,6 +7208,9 @@
     harfleriBirlestir: harfleriBirlestir,
     fiyatHesapla: fiyatHesapla,
     tasarimOzeti: tasarimOzeti,
+    turkceCevir: turkceCevir,
+    yazilanIsim: yazilanIsim,
+    ceviriNotu: ceviriNotu,
     paraBicimle: paraBicimle,
     buyukHarf: buyukHarf,
     renkleriAta: renkleriAta,
