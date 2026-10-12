@@ -5244,11 +5244,13 @@ html.kp-kilit body {
         var a = aktif[i];
         var b = aktif[j];
         if (a.grup === b.grup || !cakisir(a.sekil, b.sekil, 0)) continue;
-        // Üst üste gelen iki gruptan yalnızca en son taşınan/eklenen işaretlenir (bilinmiyorsa ikisi de)
+        // Üst üste gelen iki gruptan yalnızca en son taşınan/eklenen işaretlenir (bilinmiyorsa ikisi de).
+        // Ayrılmış iki harf üst üste geldiyse ikisi de işaretlenir (hangisinin üstte göründüğünden bağımsız)
         var son = t.son || [];
         var ra = son.indexOf(a.grup);
         var rb = son.indexOf(b.grup);
-        var ciftler = ra === rb ? [[a, b], [b, a]] : ra > rb ? [[a, b]] : [[b, a]];
+        var ikiHarf = yazidaMi(a) && yazidaMi(b);
+        var ciftler = ikiHarf || ra === rb ? [[a, b], [b, a]] : ra > rb ? [[a, b]] : [[b, a]];
         ciftler.forEach(function (c) {
           hatalar[c[0].uid] = true;
           if (!sorunlar[c[0].uid]) sorunlar[c[0].uid] = { tur: 'cakisma', ile: c[1].grup };
@@ -6210,6 +6212,13 @@ html.kp-kilit body {
       if (girdi.value !== temiz) girdi.value = temiz;
       karakterleriHizala(self.t, temiz);
       sonaAl(self.t, self.t.harfAyri ? null : 'isim');
+      // Harfler ayrıyken yeni yazılan harf boş bir yere konur (başka harfin üstüne değil)
+      if (self.t.harfAyri) {
+        var konum = self.t.harfKonumlari || [];
+        var yeniler = [];
+        Array.from(temiz).forEach(function (h, i) { if (!konum[i]) yeniler.push(i); });
+        if (yeniler.length) self.yeniHarfleriYerlestir(yeniler);
+      }
       if (self.t.isimMerkez && !self.t.harfAyri && !self.t.isimKenar) {
         var blok = self.yer.parcalar(yaziKopyasi(self.t)).filter(function (p) { return p.grup === 'isim'; });
         if (blok.some(function (p) { return self.yer.konumSorunu(p.sekil, p.tip); })) self.t.isimMerkez = null;
@@ -6257,10 +6266,34 @@ html.kp-kilit body {
 
   Editor.prototype.isimAyarla = function (isim) {
     karakterleriHizala(this.t, isim);
+    // Harfler ayrıyken yeni yazılan karakterler (konumu henüz yok)
+    var yeniler = [];
+    if (this.t.harfAyri) {
+      var konum = this.t.harfKonumlari || [];
+      Array.from(isim).forEach(function (h, i) { if (!konum[i]) yeniler.push(i); });
+    }
     if (this.seciliKarakter != null && this.seciliKarakter >= Array.from(isim).length) this.seciliKarakter = null;
     var girdi = this.el.querySelector('[data-kp-isim]');
     if (girdi.value !== isim) girdi.value = isim;
+    if (yeniler.length) this.yeniHarfleriYerlestir(yeniler);
     this.yenile();
+  };
+
+  // Harfler ayrıyken yazılan yeni harf diğer patch'lerin üstüne değil, en yakın boş yere konur.
+  // Boş yer yoksa yerinde kalır ve kırmızı işaretlenir.
+  Editor.prototype.yeniHarfleriYerlestir = function (siralar) {
+    var self = this;
+    siralar.forEach(function (i) {
+      var grup = 'harf-' + i;
+      self.durum = duzenle(self.m, self.yer, self.t);
+      var d = self.durum;
+      var parcalar = d.parcalar.filter(function (p) { return p.grup === grup; });
+      sonaAl(self.t, grup);
+      if (!parcalar.length || parcalar[0].kenar || !parcalar.some(function (p) { return d.hatalar[p.uid]; })) return;
+      var diger = d.parcalar.filter(function (p) { return p.grup !== grup && !p.kenar; });
+      var t0 = self.yer.enYakin(parcalar, diger, 0, 0);
+      if (t0) self.grubuKaydir(grup, parcalar[0], t0[0], t0[1]);
+    });
   };
 
   Editor.prototype.harfDegistir = function (harf, yerine) {
@@ -7321,7 +7354,8 @@ html.kp-kilit body {
     var engel = this.alt ? this.adimEngeli(this.adim) : false;
     if (this.adim === 'ozet') {
       var self = this;
-      engel = this.adimlar.some(function (a) { return self.adimEngeli(a.id); });
+      // Yeri uygun olmayan her patch (ayrılmış harfler dahil) sepete eklemeyi durdurur
+      engel = this.adimlar.some(function (a) { return self.adimEngeli(a.id); }) || this.hataliGruplar().length > 0;
     }
     ileri.setAttribute('aria-disabled', engel ? 'true' : 'false');
     ileri.classList.toggle('kp-alt__ileri--engelli', !!engel);

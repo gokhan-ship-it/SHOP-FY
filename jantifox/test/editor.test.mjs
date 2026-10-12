@@ -886,3 +886,16 @@ test('kampanya önerisi yalnızca sıradaki kampanya yakınsa (en fazla 2 patch 
   d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000, 'Ekstra %10 İndirim': 63100 }, sepetIndirim: 100100, altToplam: 668000, uygunAdet: 5, ekler: {} }, merdiven, esikler, 33000, 33000);
   assert.equal(d.yakin, false);
 });
+
+test('ayrılmış harfler üst üste gelince ikisi de işaretlenir (son dokunulandan bağımsız)', () => {
+  const { m, y } = kur();
+  const t = tasarim(m, 'GOK');
+  ic.harfleriAyir(y, t);
+  // O'yu G'nin üstüne koy; G en son dokunulan olsa da ikisi de hatalı
+  t.harfKonumlari[1] = t.harfKonumlari[0].slice();
+  t.son = ['harf-1', 'harf-0'];
+  const d = ic.duzenle(m, y, t);
+  assert.ok(d.hatalar['harf-0'] && d.hatalar['harf-1'], JSON.stringify(Object.keys(d.hatalar)));
+  assert.ok(!d.hatalar['harf-2']);
+  assert.equal(d.isimGecerli, false, 'Özet ve sepet kontrolü: yazı geçersiz');
+});

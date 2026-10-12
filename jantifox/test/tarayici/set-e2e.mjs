@@ -149,7 +149,8 @@ assert.deepEqual(await s.$$eval('[data-kp-rozet]', (x) => x.map((e) => e.hidden 
 await s.locator('[data-kp-ileri]').click();
 // Yazı setin üstüne geldiyse: Özet'te liste ve "Hepsini düzelt"; düzeltmeden sepete eklenmez
 if (await gorunur('[data-kp-ozet-yer]')) {
-  await s.locator('[data-kp-ileri]').click();
+  assert.equal(await s.locator('[data-kp-ileri]').getAttribute('aria-disabled'), 'true');
+  await s.locator('[data-kp-ileri]').click({ force: true });
   assert.equal(await s.evaluate(() => location.pathname), '/products/kanvas-lacivert-tote-canta', 'sepete eklenmedi');
   await s.locator('[data-kp-ozet-yer] [data-kp-hepsini-duzelt]').click();
   assert.equal(await gorunur('[data-kp-ozet-yer]'), false);
