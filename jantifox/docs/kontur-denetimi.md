@@ -42,6 +42,8 @@ Editör görseli patch'in kayıtlı ölçü kutusuna (genislik_cm × yukseklik_c
 
 Yeni kontrol, çokgeni önizlemedeki gibi yerleştiriyor; kırmızı uyarı ekranda görünen şekle göre çıkıyor. Kayıtlı ölçülere dokunulmadı. Gerçek ürün ölçüsünü kontrol edip gerekirse ölçüyü ya da görseli düzeltmek gerekebilir.
 
+**Düzeltildi (2026-10-12):** aşağıdaki 29 ikonun `png_genislik_cm` / `png_yukseklik_cm` değerleri görselin oranına göre güncellendi. Görselin önizlemede sığdığı kenar korundu, yani görünen boyut değişmedi; kayıtlı `genislik_cm` / `yukseklik_cm` aynen duruyor. Ayrıntı: `araclar/olcu-duzeltme.json`.
+
 Farkı %3'ü aşanlar (görsel oranı / kayıtlı ölçü oranı):
 
 | Patch | Görsel oranı | Ölçü oranı |
