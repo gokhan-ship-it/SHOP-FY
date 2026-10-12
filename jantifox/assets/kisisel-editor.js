@@ -79,6 +79,57 @@
       .replace(/"/g, '&quot;');
   }
 
+  // Kutunun içeriğini html ile aynı yapar, ama yalnızca değişen öğeleri değiştirir: aynı kalan öğeler
+  // (ve yüklenmiş görselleri) yerinde durur. Sonuç innerHTML = html ile birebir aynıdır.
+  // anahtar verilirse (ör. data-uid) içi aynı olup yalnızca öznitelikleri değişen öğe yerinde güncellenir.
+  function dugumImzasi(n) {
+    return n.nodeType === 1 ? n.outerHTML : '#' + n.nodeType + ':' + n.nodeValue;
+  }
+  function icerikEsitle(kutu, html, anahtar) {
+    var sablon = document.createElement('template');
+    sablon.innerHTML = html;
+    var yeniler = Array.prototype.slice.call(sablon.content.childNodes);
+    var eskiler = Array.prototype.slice.call(kutu.childNodes);
+    var imzalar = {};
+    var anahtarlilar = {};
+    var kullanildi = [];
+    eskiler.forEach(function (n, i) {
+      var k = dugumImzasi(n);
+      (imzalar[k] = imzalar[k] || []).push(i);
+      if (anahtar && n.nodeType === 1 && n.hasAttribute(anahtar)) anahtarlilar[n.getAttribute(anahtar)] = i;
+    });
+    var sonuc = yeniler.map(function (y) {
+      var liste = imzalar[dugumImzasi(y)];
+      while (liste && liste.length) {
+        var i = liste.shift();
+        if (!kullanildi[i]) {
+          kullanildi[i] = true;
+          return eskiler[i];
+        }
+      }
+      return null;
+    });
+    sonuc = sonuc.map(function (n, j) {
+      if (n) return n;
+      var y = yeniler[j];
+      var i = anahtar && y.nodeType === 1 && y.hasAttribute(anahtar) ? anahtarlilar[y.getAttribute(anahtar)] : undefined;
+      var e = i === undefined || kullanildi[i] ? null : eskiler[i];
+      if (!e || e.tagName !== y.tagName || e.innerHTML !== y.innerHTML) return y;
+      kullanildi[i] = true;
+      Array.prototype.slice.call(e.attributes).forEach(function (at) {
+        if (!y.hasAttribute(at.name)) e.removeAttribute(at.name);
+      });
+      Array.prototype.slice.call(y.attributes).forEach(function (at) {
+        if (e.getAttribute(at.name) !== at.value) e.setAttribute(at.name, at.value);
+      });
+      return e;
+    });
+    sonuc.forEach(function (n, j) {
+      if (kutu.childNodes[j] !== n) kutu.insertBefore(n, kutu.childNodes[j] || null);
+    });
+    while (kutu.childNodes.length > sonuc.length) kutu.removeChild(kutu.lastChild);
+  }
+
   // Mağazanın money_format ayarından bağımsız olarak Türkçe biçim: 4.980 TL, 4.980,50 TL
   function paraBicimle(kurus) {
     var negatif = kurus < 0;
@@ -1894,7 +1945,7 @@
         return '<div class="' + sinif + '" style="' + stil + '" data-uid="' + kacis(p.uid) + '" data-grup="' + kacis(p.grup) + '" aria-hidden="true">' + ic + '</div>';
       })
       .join('');
-    this.katman.innerHTML = html;
+    icerikEsitle(this.katman, html, 'data-uid');
     if (this.etkilesimli) this.sahne.classList.toggle('kp-sahne--hata', !!alanHatali);
   };
 
@@ -4227,7 +4278,7 @@
       })
       .join('');
     kutu.hidden = !harfler.length;
-    if (kutu.innerHTML !== html) kutu.innerHTML = html;
+    icerikEsitle(kutu, html);
 
     // Hepsi Cool / Hepsi Piramit / Karışık
     var secim = this.el.querySelector('[data-kp-stil-secim]');
@@ -4438,7 +4489,7 @@
       });
     // Hiçbir şey eklenmemişken satır boş kalır
     var yeni = html.join('');
-    if (kutu.innerHTML !== yeni) kutu.innerHTML = yeni;
+    icerikEsitle(kutu, yeni);
   };
 
   // Etikete dokununca o patch önizlemede seçilir
