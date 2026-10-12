@@ -8895,7 +8895,8 @@ html.kp-kilit body {
       // Yazı butonun altına girmesin: sağ iç boşluk butonun sol kenarına göre
       // Ölçüm yalnızca etkileyen bir şey değiştiğinde yapılır (her tuşta zorunlu yerleşim hesabını önler)
       var kap = this.el.querySelector('[data-kp-kapasite]');
-      var anahtar = [b.hidden, ayri, kap ? kap.textContent : '', this.el.className, window.innerWidth, window.innerHeight].join('|');
+      // Buton görünürken konumu sabittir (sağdan); sayacın genişliği yalnızca buton gizliyken etkiler
+      var anahtar = [b.hidden, ayri, b.hidden && kap ? kap.textContent : '', this.el.className, window.innerWidth, window.innerHeight].join('|');
       if (this._dolguAnahtar !== anahtar) {
         var gr = girdi.getBoundingClientRect();
         var sol = b.hidden ? kap.getBoundingClientRect().left : b.getBoundingClientRect().left;
@@ -9620,7 +9621,13 @@ html.kp-kilit body {
     }
     var adet = this.kart.adet ? this.kart.adet() : 1;
     if (bosMu(this.t)) return [{ v: this.m.urun.varyant, q: adet }];
-    return this.kart.sepetKalemleri(adet, this.t).kalemler.map(function (k) { return { v: k.id, q: k.quantity }; });
+    // Tasarım ve adet aynıysa satırlar da aynıdır: her yenilemede sepet kalemlerini baştan kurma
+    var anahtar = JSON.stringify([this.t, adet]);
+    if (this.simAnahtar !== anahtar) {
+      this.simAnahtar = anahtar;
+      this.simSatirlar = this.kart.sepetKalemleri(adet, this.t).kalemler.map(function (k) { return { v: k.id, q: k.quantity }; });
+    }
+    return this.simSatirlar.map(function (r) { return { v: r.v, q: r.q }; });
   };
 
   // Kampanyalı fiyat: değişiklikler biriktirilir (400 ms), sonuç önbellekte. Hata: liste fiyatı + "İndirimler sepette uygulanır"
