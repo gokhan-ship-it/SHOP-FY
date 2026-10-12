@@ -5261,11 +5261,7 @@
     if (b.grup === 'isim') return 'Yazı (' + this.t.isim + ')';
     if (p.tip === 'letter') return p.etiket + ' harfi';
     if (p.tip === 'number') return p.etiket + ' rakamı';
-    if (p.setGrup) {
-      var k = (this.t.hazirSetler || []).filter(function (x) { return x.id === p.setGrup; })[0];
-      var st = k && this.m.hazirSetHarita[k.urunId];
-      if (st) return p.etiket + ' (' + st.ad + ' seti)';
-    }
+    // Set patch'i de yalnızca kendi adıyla anılır ("Octopus"); set adı araç çubuğunu ve uyarıları uzatıyordu
     return p.etiket;
   };
 
