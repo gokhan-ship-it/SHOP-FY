@@ -154,7 +154,7 @@
             "heading": "⚠ Yıkama ve Bakım Talimatları",
             "heading_size": "h6",
             "icon": "none",
-            "content": "<ul><li>Patchlerinizi kendi özel JantiFox pvc zarflarında tek tek saklayınız. </li><li>Patchlerinizi makinede yıkamayınız ve kurutmayınız. </li><li>Sabun ve su ile nazikçe yıkayabilir ya da<br/>silebilirsiniz. </li><li>Patchleri üst<br/>üste getirmeyiniz ve birbirine kesinlikle yapıştırmayınız.</li><li>Patchleri, tüylü kıyafet, oyuncak ve<br/>aksesuarlardan uzak tutunuz. Patchlerin yapışkan yüzeyinin tüylenmemesi yapışkanlığının azalmaması için önemlidir.</li><li>Patchleri JantiFox ürünlerindeki cırt cırtlı alan<br/>dışında hiçbir materyale yapıştırmayınız.</li><li>Ütülemeyin veya yüksek sıcaklığa maruz bırakmayın.</li></ul>",
+            "content": "<ul><li>Patchlerinizi kendi özel JantiFox pvc zarflarında tek tek saklayınız. </li><li>Patchlerinizi makinede yıkamayınız ve kurutmayınız. </li><li>Sabun ve su ile nazikçe yıkayabilir ya da<br/>silebilirsiniz. </li><li>Patchleri üst<br/>üste getirmeyiniz ve birbirine kesinlikle yapıştırmayınız.</li><li>Patchleri, tüylü kıyafet, oyuncak ve<br/>aksesuarlardan uzak tutunuz. Patchlerin yapışkan yüzeyinin tüylenmemesi yapışkanlığının azalmaması için önemlidir.</li><li>Patchleri JantiFox ürünlerindeki cırt cırtlı alan<br/>dışında hiçbir materyale yapıştırmayınız.</li><li>Ütülemeyin veya yüksek sıcaklığa maruz bırakmayın.</li></ul>",
             "content_liquid": "",
             "page": "",
             "open_by_default": false
@@ -164,10 +164,10 @@
           "type": "collapsible_tab",
           "disabled": true,
           "settings": {
-            "heading": "💡 Malzeme Bazlı Bakım Talimatları:",
+            "heading": "💡 Malzeme Bazlı Bakım Talimatları:",
             "heading_size": "h6",
             "icon": "none",
-            "content": "<p><strong>Nakışlı Patchler:</strong> Ilık sabunlu su ile nazikçe silin, fazla suyu yumuşak bir bezle alın.</p><ul><li><strong>Baskılı (Flexi, Emprime, UV, Lentiküler) Patchler:</strong> Nemli bir bezle silerek temizleyin, fazla suya maruz bırakmayın.</li><li><strong>Silikon ve PVC Patchler:</strong> Nemli bir sünger veya mikrofiber bezle silin, sabunlu su kullanabilirsiniz.</li><li><strong>Keçe ve Sherpa Patchler:</strong> Kuru bir fırça veya nemli bezle tozunu ve lekesini alın, fazla ıslatmayın.</li></ul>",
+            "content": "<p><strong>Nakışlı Patchler:</strong> Ilık sabunlu su ile nazikçe silin, fazla suyu yumuşak bir bezle alın.</p><ul><li><strong>Baskılı (Flexi, Emprime, UV, Lentiküler) Patchler:</strong> Nemli bir bezle silerek temizleyin, fazla suya maruz bırakmayın.</li><li><strong>Silikon ve PVC Patchler:</strong> Nemli bir sünger veya mikrofiber bezle silin, sabunlu su kullanabilirsiniz.</li><li><strong>Keçe ve Sherpa Patchler:</strong> Kuru bir fırça veya nemli bezle tozunu ve lekesini alın, fazla ıslatmayın.</li></ul>",
             "content_liquid": "",
             "page": "",
             "open_by_default": false
@@ -211,7 +211,7 @@
             "icon_2": "truck",
             "heading_2": "₺1500 üzerine <strong>ücretsiz kargo!</strong>",
             "icon_3": "box",
-            "heading_3": "Siparişlerin <strong>3 iş günü</strong> içerisinde kargoya verilecektir.",
+            "heading_3": "Siparişlerin <strong>3 iş günü</strong> içerisinde kargoya verilecektir.",
             "icon_4": "shoe",
             "heading_4": ""
           }
@@ -221,6 +221,12 @@
           "settings": {
             "share_label": "Paylaş:"
           }
+        },
+        "kisisel_kart": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{% render 'kisisel-kart', product: product, section: section %}"
+          }
         }
       },
       "block_order": [
@@ -228,6 +234,7 @@
         "title",
         "rating_UhVAtV",
         "price",
+        "kisisel_kart",
         "variant_picker_xAGX7m",
         "separator_fTXQic",
         "sku_yqmVAY",
@@ -324,7 +331,7 @@
           "type": "custom-content",
           "settings": {
             "tab_heading": "Product care",
-            "content": "<p>Hand or machine wash on a cool, gentle cycle with similar colours. Avoid harsh chemicals or stain removers, which can affect the colour. </p>",
+            "content": "<p>Hand or machine wash on a cool, gentle cycle with similar colours. Avoid harsh chemicals or stain removers, which can affect the colour. </p>",
             "page": ""
           }
         },
