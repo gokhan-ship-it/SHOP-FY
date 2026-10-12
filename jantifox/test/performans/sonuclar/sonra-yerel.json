@@ -1,0 +1,1876 @@
+{
+ "etiket": "sonra",
+ "zaman": "2026-10-12T16:00:04.247Z",
+ "kosullar": {
+  "iphone13": {
+   "acilis": 41,
+   "acilisMetrik": {
+    "yerlesim": 6,
+    "yerlesimMs": 12,
+    "stil": 8,
+    "stilMs": 7,
+    "betikMs": 20
+   },
+   "acilisLoaf": [],
+   "yazTek": {
+    "medyan": 19,
+    "p95": 31,
+    "enUzun": 31,
+    "n": 6
+   },
+   "yazTekSayac": {
+    "isimAnaliz": 6,
+    "duzenle": 12,
+    "fiyatHesapla": 12,
+    "stokKontrol": 6,
+    "Editor.yenile": 6,
+    "Sahne.ciz": 6,
+    "Sahne.konumla": 0,
+    "Editor.kampanyaGuncelle": 6,
+    "kampanyaAnlik": 6,
+    "Editor.grupSorunu": 0,
+    "Editor.yerlestirBalonCiz": 6,
+    "Editor.gecmisKaydet": 6,
+    "Editor.etiketleriCiz": 6,
+    "Editor.karakterleriCiz": 6,
+    "turkceCevir": 6,
+    "Yerlesim.parcalar": 30,
+    "cakisir": 0,
+    "Editor.seritCiz": 6,
+    "Editor.kenarCiz": 6
+   },
+   "yazTekMetrik": {
+    "yerlesim": 138,
+    "yerlesimMs": 35,
+    "stil": 147,
+    "stilMs": 32,
+    "betikMs": 36
+   },
+   "yazTekLoaf": [],
+   "yazTekIstek": 1,
+   "yazHizli": {
+    "medyan": 8,
+    "p95": 19,
+    "enUzun": 19,
+    "n": 6
+   },
+   "yazHizliSayac": {
+    "isimAnaliz": 6,
+    "duzenle": 11,
+    "fiyatHesapla": 11,
+    "stokKontrol": 6,
+    "Editor.yenile": 6,
+    "Sahne.ciz": 6,
+    "Sahne.konumla": 0,
+    "Editor.kampanyaGuncelle": 6,
+    "kampanyaAnlik": 6,
+    "Editor.grupSorunu": 0,
+    "Editor.yerlestirBalonCiz": 6,
+    "Editor.gecmisKaydet": 6,
+    "Editor.etiketleriCiz": 6,
+    "Editor.karakterleriCiz": 6,
+    "turkceCevir": 6,
+    "Yerlesim.parcalar": 28,
+    "cakisir": 0,
+    "Editor.seritCiz": 6,
+    "Editor.kenarCiz": 6
+   },
+   "yazHizliLoaf": [],
+   "yazHizliIstek": 1,
+   "harfSayisi": 6,
+   "surukle": {
+    "fps": 60,
+    "takilan": 0,
+    "kare": 269,
+    "p95": 17,
+    "enUzun": 17
+   },
+   "surukleMetrik": {
+    "yerlesim": 95,
+    "yerlesimMs": 28,
+    "stil": 254,
+    "stilMs": 56,
+    "betikMs": 48
+   },
+   "surukleSayac": {
+    "isimAnaliz": 1,
+    "duzenle": 2,
+    "fiyatHesapla": 2,
+    "stokKontrol": 1,
+    "Editor.yenile": 1,
+    "Sahne.ciz": 1,
+    "Sahne.konumla": 90,
+    "Editor.kampanyaGuncelle": 1,
+    "kampanyaAnlik": 0,
+    "Editor.grupSorunu": 90,
+    "Editor.yerlestirBalonCiz": 1,
+    "Editor.gecmisKaydet": 1,
+    "Editor.etiketleriCiz": 1,
+    "Editor.karakterleriCiz": 2,
+    "turkceCevir": 1,
+    "Yerlesim.parcalar": 5,
+    "cakisir": 0,
+    "Editor.seritCiz": 1,
+    "Editor.kenarCiz": 1
+   },
+   "surukleLoaf": [],
+   "dondur": {
+    "fps": 60,
+    "takilan": 0,
+    "kare": 269,
+    "p95": 17,
+    "enUzun": 17
+   },
+   "dondurLoaf": [],
+   "islem": {
+    "aracGorsel": {
+     "ms": 10,
+     "yerlesim": 3,
+     "yerlesimMs": 4,
+     "stil": 3,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "aracAksesuar": {
+     "ms": 6,
+     "yerlesim": 3,
+     "yerlesimMs": 2,
+     "stil": 3,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "aracMetin": {
+     "ms": 8,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 3,
+     "stilMs": 2,
+     "betikMs": 3
+    },
+    "stilPiramit": {
+     "ms": 23,
+     "yerlesim": 3,
+     "yerlesimMs": 6,
+     "stil": 3,
+     "stilMs": 2,
+     "betikMs": 6
+    },
+    "stilCool": {
+     "ms": 10,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 5
+    },
+    "ayir": {
+     "ms": 9,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 4
+    },
+    "birlestir": {
+     "ms": 12,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 3,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "aracGorsel2": {
+     "ms": 7,
+     "yerlesim": 3,
+     "yerlesimMs": 1,
+     "stil": 4,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "setEkle": {
+     "ms": 84,
+     "yerlesim": 4,
+     "yerlesimMs": 3,
+     "stil": 4,
+     "stilMs": 1,
+     "betikMs": 74
+    },
+    "tumuAc": {
+     "ms": 10,
+     "yerlesim": 1,
+     "yerlesimMs": 0,
+     "stil": 2,
+     "stilMs": 0,
+     "betikMs": 1
+    },
+    "ikonEkle": {
+     "ms": 34,
+     "yerlesim": 2,
+     "yerlesimMs": 2,
+     "stil": 3,
+     "stilMs": 1,
+     "betikMs": 30
+    },
+    "geriAl": {
+     "ms": 12,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 4,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "yinele": {
+     "ms": 13,
+     "yerlesim": 2,
+     "yerlesimMs": 2,
+     "stil": 3,
+     "stilMs": 1,
+     "betikMs": 4
+    },
+    "aracAksesuar2": {
+     "ms": 6,
+     "yerlesim": 3,
+     "yerlesimMs": 1,
+     "stil": 4,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "aksesuarDuz": {
+     "ms": 18,
+     "yerlesim": 3,
+     "yerlesimMs": 2,
+     "stil": 5,
+     "stilMs": 2,
+     "betikMs": 11
+    },
+    "aksesuarTasarlaAc": {
+     "ms": 16,
+     "yerlesim": 5,
+     "yerlesimMs": 2,
+     "stil": 6,
+     "stilMs": 3,
+     "betikMs": 8
+    },
+    "aksesuarVazgec": {
+     "ms": 7,
+     "yerlesim": 3,
+     "yerlesimMs": 1,
+     "stil": 6,
+     "stilMs": 1,
+     "betikMs": 4
+    },
+    "gorunumTumu": {
+     "ms": 3,
+     "yerlesim": 2,
+     "yerlesimMs": 0,
+     "stil": 3,
+     "stilMs": 0,
+     "betikMs": 1
+    },
+    "gorunumYakin": {
+     "ms": 5,
+     "yerlesim": 2,
+     "yerlesimMs": 0,
+     "stil": 3,
+     "stilMs": 0,
+     "betikMs": 1
+    },
+    "kampanyaPaneli": {
+     "ms": 5,
+     "yerlesim": 1,
+     "yerlesimMs": 3,
+     "stil": 3,
+     "stilMs": 1,
+     "betikMs": 0
+    },
+    "ozet": {
+     "ms": 24,
+     "yerlesim": 3,
+     "yerlesimMs": 8,
+     "stil": 6,
+     "stilMs": 2,
+     "betikMs": 8
+    },
+    "tasarimaDon": {
+     "ms": 10,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 4,
+     "stilMs": 2,
+     "betikMs": 3
+    }
+   },
+   "hareket": {
+    "kucul": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 49,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 17,
+     "yerlesimMs": 7,
+     "stil": 18,
+     "stilMs": 6,
+     "betikMs": 5
+    },
+    "buyu": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 70,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 16,
+     "yerlesimMs": 4,
+     "stil": 17,
+     "stilMs": 4,
+     "betikMs": 5
+    },
+    "yakinlastir": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 29,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 21,
+     "yerlesimMs": 5,
+     "stil": 26,
+     "stilMs": 3,
+     "betikMs": 4
+    },
+    "uzaklastir": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 28,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 23,
+     "yerlesimMs": 7,
+     "stil": 34,
+     "stilMs": 5,
+     "betikMs": 4
+    },
+    "aracDegisim": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 20,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 4,
+     "yerlesimMs": 1,
+     "stil": 22,
+     "stilMs": 4,
+     "betikMs": 6
+    },
+    "bildirim": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 23,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 0,
+     "yerlesimMs": 0,
+     "stil": 0,
+     "stilMs": 0,
+     "betikMs": 1
+    },
+    "aksesuarEkraniAc": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 32,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 4,
+     "yerlesimMs": 1,
+     "stil": 8,
+     "stilMs": 2,
+     "betikMs": 6
+    }
+   },
+   "kuculdu": true,
+   "bellek": {
+    "onceMB": 3.61,
+    "sonraMB": 3.8,
+    "dugumOnce": 1313,
+    "dugumSonra": 1313
+   }
+  },
+  "cpu4": {
+   "acilis": 178,
+   "acilisMetrik": {
+    "yerlesim": 6,
+    "yerlesimMs": 23,
+    "stil": 8,
+    "stilMs": 20,
+    "betikMs": 117
+   },
+   "acilisLoaf": [],
+   "yazTek": {
+    "medyan": 93,
+    "p95": 110,
+    "enUzun": 110,
+    "n": 6
+   },
+   "yazTekSayac": {
+    "isimAnaliz": 6,
+    "duzenle": 12,
+    "fiyatHesapla": 12,
+    "stokKontrol": 6,
+    "Editor.yenile": 6,
+    "Sahne.ciz": 6,
+    "Sahne.konumla": 0,
+    "Editor.kampanyaGuncelle": 6,
+    "kampanyaAnlik": 6,
+    "Editor.grupSorunu": 0,
+    "Editor.yerlestirBalonCiz": 6,
+    "Editor.gecmisKaydet": 6,
+    "Editor.etiketleriCiz": 6,
+    "Editor.karakterleriCiz": 6,
+    "turkceCevir": 6,
+    "Yerlesim.parcalar": 30,
+    "cakisir": 0,
+    "Editor.seritCiz": 6,
+    "Editor.kenarCiz": 6
+   },
+   "yazTekMetrik": {
+    "yerlesim": 137,
+    "yerlesimMs": 159,
+    "stil": 147,
+    "stilMs": 115,
+    "betikMs": 157
+   },
+   "yazTekLoaf": [
+    {
+     "sure": 69,
+     "blok": 18,
+     "bas": 2128,
+     "stil": 2,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 44,
+       "tur": "event-listener",
+       "kuvvet": 1
+      }
+     ]
+    },
+    {
+     "sure": 74,
+     "blok": 23,
+     "bas": 2513,
+     "stil": 2,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 57,
+       "tur": "event-listener",
+       "kuvvet": 23
+      }
+     ]
+    },
+    {
+     "sure": 80,
+     "blok": 26,
+     "bas": 2904,
+     "stil": 4,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 54,
+       "tur": "event-listener",
+       "kuvvet": 8
+      }
+     ]
+    },
+    {
+     "sure": 57,
+     "blok": 0,
+     "bas": 3616,
+     "stil": 3,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 32,
+       "tur": "event-listener",
+       "kuvvet": 3
+      }
+     ]
+    },
+    {
+     "sure": 76,
+     "blok": 12,
+     "bas": 3982,
+     "stil": 6,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 33,
+       "tur": "event-listener",
+       "kuvvet": 6
+      }
+     ]
+    }
+   ],
+   "yazTekIstek": 1,
+   "yazHizli": {
+    "medyan": 44,
+    "p95": 54,
+    "enUzun": 54,
+    "n": 6
+   },
+   "yazHizliSayac": {
+    "isimAnaliz": 6,
+    "duzenle": 11,
+    "fiyatHesapla": 11,
+    "stokKontrol": 6,
+    "Editor.yenile": 6,
+    "Sahne.ciz": 6,
+    "Sahne.konumla": 0,
+    "Editor.kampanyaGuncelle": 6,
+    "kampanyaAnlik": 6,
+    "Editor.grupSorunu": 0,
+    "Editor.yerlestirBalonCiz": 6,
+    "Editor.gecmisKaydet": 6,
+    "Editor.etiketleriCiz": 6,
+    "Editor.karakterleriCiz": 6,
+    "turkceCevir": 6,
+    "Yerlesim.parcalar": 28,
+    "cakisir": 0,
+    "Editor.seritCiz": 6,
+    "Editor.kenarCiz": 6
+   },
+   "yazHizliLoaf": [],
+   "yazHizliIstek": 1,
+   "harfSayisi": 6,
+   "surukle": {
+    "fps": 60,
+    "takilan": 2,
+    "kare": 280,
+    "p95": 17,
+    "enUzun": 33
+   },
+   "surukleMetrik": {
+    "yerlesim": 95,
+    "yerlesimMs": 124,
+    "stil": 261,
+    "stilMs": 306,
+    "betikMs": 240
+   },
+   "surukleSayac": {
+    "isimAnaliz": 1,
+    "duzenle": 2,
+    "fiyatHesapla": 2,
+    "stokKontrol": 1,
+    "Editor.yenile": 1,
+    "Sahne.ciz": 1,
+    "Sahne.konumla": 90,
+    "Editor.kampanyaGuncelle": 1,
+    "kampanyaAnlik": 0,
+    "Editor.grupSorunu": 90,
+    "Editor.yerlestirBalonCiz": 1,
+    "Editor.gecmisKaydet": 1,
+    "Editor.etiketleriCiz": 1,
+    "Editor.karakterleriCiz": 2,
+    "turkceCevir": 1,
+    "Yerlesim.parcalar": 5,
+    "cakisir": 0,
+    "Editor.seritCiz": 1,
+    "Editor.kenarCiz": 1
+   },
+   "surukleLoaf": [
+    {
+     "sure": 63,
+     "blok": 4,
+     "bas": 9660,
+     "stil": 0,
+     "betik": [
+      {
+       "fn": "DIV.onpointerdown",
+       "sure": 46,
+       "tur": "event-listener",
+       "kuvvet": 27
+      }
+     ]
+    },
+    {
+     "sure": 53,
+     "blok": 0,
+     "bas": 9765,
+     "stil": 8,
+     "betik": [
+      {
+       "fn": "DIV.onpointermove",
+       "sure": 30,
+       "tur": "event-listener",
+       "kuvvet": 15
+      }
+     ]
+    }
+   ],
+   "dondur": {
+    "fps": 60,
+    "takilan": 1,
+    "kare": 271,
+    "p95": 17,
+    "enUzun": 33
+   },
+   "dondurLoaf": [],
+   "islem": {
+    "aracGorsel": {
+     "ms": 60,
+     "yerlesim": 3,
+     "yerlesimMs": 15,
+     "stil": 3,
+     "stilMs": 11,
+     "betikMs": 22
+    },
+    "aracAksesuar": {
+     "ms": 41,
+     "yerlesim": 3,
+     "yerlesimMs": 8,
+     "stil": 3,
+     "stilMs": 5,
+     "betikMs": 18
+    },
+    "aracMetin": {
+     "ms": 50,
+     "yerlesim": 2,
+     "yerlesimMs": 10,
+     "stil": 3,
+     "stilMs": 10,
+     "betikMs": 21
+    },
+    "stilPiramit": {
+     "ms": 95,
+     "yerlesim": 3,
+     "yerlesimMs": 13,
+     "stil": 3,
+     "stilMs": 9,
+     "betikMs": 29
+    },
+    "stilCool": {
+     "ms": 81,
+     "yerlesim": 3,
+     "yerlesimMs": 9,
+     "stil": 3,
+     "stilMs": 8,
+     "betikMs": 40
+    },
+    "ayir": {
+     "ms": 58,
+     "yerlesim": 3,
+     "yerlesimMs": 9,
+     "stil": 4,
+     "stilMs": 6,
+     "betikMs": 25
+    },
+    "birlestir": {
+     "ms": 51,
+     "yerlesim": 2,
+     "yerlesimMs": 5,
+     "stil": 2,
+     "stilMs": 5,
+     "betikMs": 23
+    },
+    "aracGorsel2": {
+     "ms": 53,
+     "yerlesim": 3,
+     "yerlesimMs": 6,
+     "stil": 5,
+     "stilMs": 12,
+     "betikMs": 22
+    },
+    "setEkle": {
+     "ms": 485,
+     "yerlesim": 4,
+     "yerlesimMs": 14,
+     "stil": 5,
+     "stilMs": 12,
+     "betikMs": 423
+    },
+    "tumuAc": {
+     "ms": 24,
+     "yerlesim": 1,
+     "yerlesimMs": 1,
+     "stil": 3,
+     "stilMs": 2,
+     "betikMs": 5
+    },
+    "ikonEkle": {
+     "ms": 177,
+     "yerlesim": 2,
+     "yerlesimMs": 6,
+     "stil": 5,
+     "stilMs": 4,
+     "betikMs": 152
+    },
+    "geriAl": {
+     "ms": 37,
+     "yerlesim": 2,
+     "yerlesimMs": 5,
+     "stil": 5,
+     "stilMs": 8,
+     "betikMs": 17
+    },
+    "yinele": {
+     "ms": 33,
+     "yerlesim": 2,
+     "yerlesimMs": 4,
+     "stil": 3,
+     "stilMs": 3,
+     "betikMs": 16
+    },
+    "aracAksesuar2": {
+     "ms": 38,
+     "yerlesim": 3,
+     "yerlesimMs": 5,
+     "stil": 4,
+     "stilMs": 5,
+     "betikMs": 19
+    },
+    "aksesuarDuz": {
+     "ms": 92,
+     "yerlesim": 4,
+     "yerlesimMs": 8,
+     "stil": 6,
+     "stilMs": 7,
+     "betikMs": 58
+    },
+    "aksesuarTasarlaAc": {
+     "ms": 82,
+     "yerlesim": 5,
+     "yerlesimMs": 10,
+     "stil": 7,
+     "stilMs": 12,
+     "betikMs": 48
+    },
+    "aksesuarVazgec": {
+     "ms": 35,
+     "yerlesim": 4,
+     "yerlesimMs": 5,
+     "stil": 7,
+     "stilMs": 4,
+     "betikMs": 19
+    },
+    "gorunumTumu": {
+     "ms": 22,
+     "yerlesim": 2,
+     "yerlesimMs": 2,
+     "stil": 5,
+     "stilMs": 4,
+     "betikMs": 3
+    },
+    "gorunumYakin": {
+     "ms": 8,
+     "yerlesim": 2,
+     "yerlesimMs": 2,
+     "stil": 3,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "kampanyaPaneli": {
+     "ms": 27,
+     "yerlesim": 1,
+     "yerlesimMs": 10,
+     "stil": 4,
+     "stilMs": 4,
+     "betikMs": 5
+    },
+    "ozet": {
+     "ms": 128,
+     "yerlesim": 3,
+     "yerlesimMs": 33,
+     "stil": 6,
+     "stilMs": 16,
+     "betikMs": 51
+    },
+    "tasarimaDon": {
+     "ms": 61,
+     "yerlesim": 2,
+     "yerlesimMs": 7,
+     "stil": 4,
+     "stilMs": 11,
+     "betikMs": 18
+    }
+   },
+   "hareket": {
+    "kucul": {
+     "fps": 50,
+     "takilan": 7,
+     "kare": 49,
+     "p95": 50,
+     "enUzun": 50,
+     "yerlesim": 9,
+     "yerlesimMs": 20,
+     "stil": 10,
+     "stilMs": 26,
+     "betikMs": 26
+    },
+    "buyu": {
+     "fps": 58,
+     "takilan": 2,
+     "kare": 74,
+     "p95": 17,
+     "enUzun": 33,
+     "yerlesim": 18,
+     "yerlesimMs": 24,
+     "stil": 44,
+     "stilMs": 34,
+     "betikMs": 33
+    },
+    "yakinlastir": {
+     "fps": 60,
+     "takilan": 1,
+     "kare": 1013,
+     "p95": 17,
+     "enUzun": 50,
+     "yerlesim": 26,
+     "yerlesimMs": 31,
+     "stil": 97,
+     "stilMs": 60,
+     "betikMs": 343
+    },
+    "uzaklastir": {
+     "fps": 58,
+     "takilan": 1,
+     "kare": 37,
+     "p95": 17,
+     "enUzun": 33,
+     "yerlesim": 20,
+     "yerlesimMs": 25,
+     "stil": 23,
+     "stilMs": 13,
+     "betikMs": 26
+    },
+    "aracDegisim": {
+     "fps": 57,
+     "takilan": 1,
+     "kare": 23,
+     "p95": 17,
+     "enUzun": 33,
+     "yerlesim": 2,
+     "yerlesimMs": 6,
+     "stil": 5,
+     "stilMs": 5,
+     "betikMs": 30
+    },
+    "bildirim": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 24,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 2,
+     "yerlesimMs": 2,
+     "stil": 18,
+     "stilMs": 14,
+     "betikMs": 5
+    },
+    "aksesuarEkraniAc": {
+     "fps": 54,
+     "takilan": 1,
+     "kare": 34,
+     "p95": 17,
+     "enUzun": 83,
+     "yerlesim": 4,
+     "yerlesimMs": 13,
+     "stil": 8,
+     "stilMs": 19,
+     "betikMs": 46
+    }
+   },
+   "kuculdu": true,
+   "bellek": {
+    "onceMB": 3.66,
+    "sonraMB": 3.87,
+    "dugumOnce": 1327,
+    "dugumSonra": 1327
+   }
+  },
+  "cpu6": {
+   "acilis": 248,
+   "acilisMetrik": {
+    "yerlesim": 7,
+    "yerlesimMs": 43,
+    "stil": 9,
+    "stilMs": 39,
+    "betikMs": 145
+   },
+   "acilisLoaf": [],
+   "yazTek": {
+    "medyan": 167,
+    "p95": 214,
+    "enUzun": 214,
+    "n": 6
+   },
+   "yazTekSayac": {
+    "isimAnaliz": 6,
+    "duzenle": 12,
+    "fiyatHesapla": 12,
+    "stokKontrol": 6,
+    "Editor.yenile": 6,
+    "Sahne.ciz": 6,
+    "Sahne.konumla": 0,
+    "Editor.kampanyaGuncelle": 6,
+    "kampanyaAnlik": 6,
+    "Editor.grupSorunu": 0,
+    "Editor.yerlestirBalonCiz": 6,
+    "Editor.gecmisKaydet": 6,
+    "Editor.etiketleriCiz": 6,
+    "Editor.karakterleriCiz": 6,
+    "turkceCevir": 6,
+    "Yerlesim.parcalar": 30,
+    "cakisir": 0,
+    "Editor.seritCiz": 6,
+    "Editor.kenarCiz": 6
+   },
+   "yazTekMetrik": {
+    "yerlesim": 131,
+    "yerlesimMs": 219,
+    "stil": 142,
+    "stilMs": 172,
+    "betikMs": 326
+   },
+   "yazTekLoaf": [
+    {
+     "sure": 187,
+     "blok": 135,
+     "bas": 2843,
+     "stil": 2,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 129,
+       "tur": "event-listener",
+       "kuvvet": 11
+      }
+     ]
+    },
+    {
+     "sure": 139,
+     "blok": 87,
+     "bas": 3332,
+     "stil": 3,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 115,
+       "tur": "event-listener",
+       "kuvvet": 45
+      }
+     ]
+    },
+    {
+     "sure": 142,
+     "blok": 81,
+     "bas": 3764,
+     "stil": 3,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 96,
+       "tur": "event-listener",
+       "kuvvet": 10
+      }
+     ]
+    },
+    {
+     "sure": 112,
+     "blok": 49,
+     "bas": 4197,
+     "stil": 5,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 60,
+       "tur": "event-listener",
+       "kuvvet": 9
+      }
+     ]
+    },
+    {
+     "sure": 87,
+     "blok": 33,
+     "bas": 4608,
+     "stil": 6,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 58,
+       "tur": "event-listener",
+       "kuvvet": 8
+      }
+     ]
+    },
+    {
+     "sure": 72,
+     "blok": 19,
+     "bas": 4994,
+     "stil": 3,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 45,
+       "tur": "event-listener",
+       "kuvvet": 4
+      }
+     ]
+    }
+   ],
+   "yazTekIstek": 1,
+   "yazHizli": {
+    "medyan": 116,
+    "p95": 128,
+    "enUzun": 128,
+    "n": 6
+   },
+   "yazHizliSayac": {
+    "isimAnaliz": 6,
+    "duzenle": 11,
+    "fiyatHesapla": 11,
+    "stokKontrol": 6,
+    "Editor.yenile": 6,
+    "Sahne.ciz": 6,
+    "Sahne.konumla": 0,
+    "Editor.kampanyaGuncelle": 6,
+    "kampanyaAnlik": 6,
+    "Editor.grupSorunu": 0,
+    "Editor.yerlestirBalonCiz": 6,
+    "Editor.gecmisKaydet": 6,
+    "Editor.etiketleriCiz": 6,
+    "Editor.karakterleriCiz": 6,
+    "turkceCevir": 6,
+    "Yerlesim.parcalar": 28,
+    "cakisir": 0,
+    "Editor.seritCiz": 6,
+    "Editor.kenarCiz": 6
+   },
+   "yazHizliLoaf": [
+    {
+     "sure": 77,
+     "blok": 24,
+     "bas": 8243,
+     "stil": 5,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 39,
+       "tur": "event-listener",
+       "kuvvet": 8
+      }
+     ]
+    },
+    {
+     "sure": 90,
+     "blok": 36,
+     "bas": 8355,
+     "stil": 4,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 47,
+       "tur": "event-listener",
+       "kuvvet": 9
+      }
+     ]
+    },
+    {
+     "sure": 85,
+     "blok": 33,
+     "bas": 8484,
+     "stil": 5,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 46,
+       "tur": "event-listener",
+       "kuvvet": 7
+      }
+     ]
+    },
+    {
+     "sure": 93,
+     "blok": 41,
+     "bas": 8621,
+     "stil": 3,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 54,
+       "tur": "event-listener",
+       "kuvvet": 16
+      }
+     ]
+    },
+    {
+     "sure": 93,
+     "blok": 37,
+     "bas": 8746,
+     "stil": 3,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 59,
+       "tur": "event-listener",
+       "kuvvet": 6
+      }
+     ]
+    },
+    {
+     "sure": 67,
+     "blok": 12,
+     "bas": 8876,
+     "stil": 5,
+     "betik": [
+      {
+       "fn": "INPUT#kp-isim.oninput",
+       "sure": 39,
+       "tur": "event-listener",
+       "kuvvet": 6
+      }
+     ]
+    }
+   ],
+   "yazHizliIstek": 1,
+   "harfSayisi": 6,
+   "surukle": {
+    "fps": 56,
+    "takilan": 14,
+    "kare": 250,
+    "p95": 33,
+    "enUzun": 67
+   },
+   "surukleMetrik": {
+    "yerlesim": 95,
+    "yerlesimMs": 220,
+    "stil": 222,
+    "stilMs": 413,
+    "betikMs": 312
+   },
+   "surukleSayac": {
+    "isimAnaliz": 1,
+    "duzenle": 2,
+    "fiyatHesapla": 2,
+    "stokKontrol": 1,
+    "Editor.yenile": 1,
+    "Sahne.ciz": 1,
+    "Sahne.konumla": 90,
+    "Editor.kampanyaGuncelle": 1,
+    "kampanyaAnlik": 0,
+    "Editor.grupSorunu": 90,
+    "Editor.yerlestirBalonCiz": 1,
+    "Editor.gecmisKaydet": 1,
+    "Editor.etiketleriCiz": 1,
+    "Editor.karakterleriCiz": 2,
+    "turkceCevir": 1,
+    "Yerlesim.parcalar": 5,
+    "cakisir": 0,
+    "Editor.seritCiz": 1,
+    "Editor.kenarCiz": 1
+   },
+   "surukleLoaf": [
+    {
+     "sure": 114,
+     "blok": 64,
+     "bas": 11108,
+     "stil": 1,
+     "betik": [
+      {
+       "fn": "DIV.onpointerdown",
+       "sure": 106,
+       "tur": "event-listener",
+       "kuvvet": 67
+      }
+     ]
+    },
+    {
+     "sure": 64,
+     "blok": 2,
+     "bas": 11275,
+     "stil": 14,
+     "betik": [
+      {
+       "fn": "DIV.onpointermove",
+       "sure": 33,
+       "tur": "event-listener",
+       "kuvvet": 16
+      }
+     ]
+    },
+    {
+     "sure": 64,
+     "blok": 0,
+     "bas": 12239,
+     "stil": 8,
+     "betik": []
+    }
+   ],
+   "dondur": {
+    "fps": 56,
+    "takilan": 16,
+    "kare": 273,
+    "p95": 33,
+    "enUzun": 50
+   },
+   "dondurLoaf": [
+    {
+     "sure": 54,
+     "blok": 0,
+     "bas": 16689,
+     "stil": 6,
+     "betik": [
+      {
+       "fn": "DIV.onpointermove",
+       "sure": 5,
+       "tur": "event-listener",
+       "kuvvet": 0
+      }
+     ]
+    },
+    {
+     "sure": 53,
+     "blok": 0,
+     "bas": 18173,
+     "stil": 0,
+     "betik": [
+      {
+       "fn": "DIV.onpointermove",
+       "sure": 18,
+       "tur": "event-listener",
+       "kuvvet": 11
+      }
+     ]
+    }
+   ],
+   "islem": {
+    "aracGorsel": {
+     "ms": 83,
+     "yerlesim": 4,
+     "yerlesimMs": 32,
+     "stil": 5,
+     "stilMs": 7,
+     "betikMs": 28
+    },
+    "aracAksesuar": {
+     "ms": 84,
+     "yerlesim": 3,
+     "yerlesimMs": 17,
+     "stil": 3,
+     "stilMs": 11,
+     "betikMs": 34
+    },
+    "aracMetin": {
+     "ms": 107,
+     "yerlesim": 2,
+     "yerlesimMs": 18,
+     "stil": 3,
+     "stilMs": 14,
+     "betikMs": 36
+    },
+    "stilPiramit": {
+     "ms": 160,
+     "yerlesim": 3,
+     "yerlesimMs": 19,
+     "stil": 3,
+     "stilMs": 11,
+     "betikMs": 60
+    },
+    "stilCool": {
+     "ms": 120,
+     "yerlesim": 3,
+     "yerlesimMs": 6,
+     "stil": 3,
+     "stilMs": 5,
+     "betikMs": 52
+    },
+    "ayir": {
+     "ms": 131,
+     "yerlesim": 3,
+     "yerlesimMs": 14,
+     "stil": 4,
+     "stilMs": 16,
+     "betikMs": 61
+    },
+    "birlestir": {
+     "ms": 129,
+     "yerlesim": 2,
+     "yerlesimMs": 14,
+     "stil": 2,
+     "stilMs": 12,
+     "betikMs": 59
+    },
+    "aracGorsel2": {
+     "ms": 118,
+     "yerlesim": 3,
+     "yerlesimMs": 17,
+     "stil": 5,
+     "stilMs": 25,
+     "betikMs": 52
+    },
+    "setEkle": {
+     "ms": 741,
+     "yerlesim": 4,
+     "yerlesimMs": 24,
+     "stil": 5,
+     "stilMs": 12,
+     "betikMs": 663
+    },
+    "tumuAc": {
+     "ms": 40,
+     "yerlesim": 1,
+     "yerlesimMs": 3,
+     "stil": 3,
+     "stilMs": 8,
+     "betikMs": 7
+    },
+    "ikonEkle": {
+     "ms": 274,
+     "yerlesim": 2,
+     "yerlesimMs": 8,
+     "stil": 4,
+     "stilMs": 5,
+     "betikMs": 236
+    },
+    "geriAl": {
+     "ms": 71,
+     "yerlesim": 2,
+     "yerlesimMs": 8,
+     "stil": 3,
+     "stilMs": 6,
+     "betikMs": 38
+    },
+    "yinele": {
+     "ms": 73,
+     "yerlesim": 2,
+     "yerlesimMs": 7,
+     "stil": 3,
+     "stilMs": 7,
+     "betikMs": 42
+    },
+    "aracAksesuar2": {
+     "ms": 59,
+     "yerlesim": 3,
+     "yerlesimMs": 7,
+     "stil": 4,
+     "stilMs": 8,
+     "betikMs": 29
+    },
+    "aksesuarDuz": {
+     "ms": 149,
+     "yerlesim": 3,
+     "yerlesimMs": 10,
+     "stil": 5,
+     "stilMs": 12,
+     "betikMs": 95
+    },
+    "aksesuarTasarlaAc": {
+     "ms": 133,
+     "yerlesim": 5,
+     "yerlesimMs": 18,
+     "stil": 7,
+     "stilMs": 19,
+     "betikMs": 76
+    },
+    "aksesuarVazgec": {
+     "ms": 60,
+     "yerlesim": 4,
+     "yerlesimMs": 7,
+     "stil": 7,
+     "stilMs": 9,
+     "betikMs": 34
+    },
+    "gorunumTumu": {
+     "ms": 31,
+     "yerlesim": 3,
+     "yerlesimMs": 3,
+     "stil": 4,
+     "stilMs": 7,
+     "betikMs": 10
+    },
+    "gorunumYakin": {
+     "ms": 28,
+     "yerlesim": 3,
+     "yerlesimMs": 3,
+     "stil": 4,
+     "stilMs": 5,
+     "betikMs": 9
+    },
+    "kampanyaPaneli": {
+     "ms": 46,
+     "yerlesim": 1,
+     "yerlesimMs": 10,
+     "stil": 4,
+     "stilMs": 17,
+     "betikMs": 3
+    },
+    "ozet": {
+     "ms": 206,
+     "yerlesim": 3,
+     "yerlesimMs": 40,
+     "stil": 6,
+     "stilMs": 22,
+     "betikMs": 103
+    },
+    "tasarimaDon": {
+     "ms": 82,
+     "yerlesim": 2,
+     "yerlesimMs": 15,
+     "stil": 4,
+     "stilMs": 18,
+     "betikMs": 35
+    }
+   },
+   "hareket": {
+    "kucul": {
+     "fps": 47,
+     "takilan": 7,
+     "kare": 50,
+     "p95": 50,
+     "enUzun": 67,
+     "yerlesim": 8,
+     "yerlesimMs": 21,
+     "stil": 36,
+     "stilMs": 69,
+     "betikMs": 42
+    },
+    "buyu": {
+     "fps": 58,
+     "takilan": 1,
+     "kare": 73,
+     "p95": 17,
+     "enUzun": 50,
+     "yerlesim": 14,
+     "yerlesimMs": 28,
+     "stil": 15,
+     "stilMs": 20,
+     "betikMs": 36
+    },
+    "yakinlastir": {
+     "fps": 59,
+     "takilan": 7,
+     "kare": 988,
+     "p95": 17,
+     "enUzun": 50,
+     "yerlesim": 19,
+     "yerlesimMs": 31,
+     "stil": 93,
+     "stilMs": 83,
+     "betikMs": 514
+    },
+    "uzaklastir": {
+     "fps": 57,
+     "takilan": 2,
+     "kare": 38,
+     "p95": 33,
+     "enUzun": 33,
+     "yerlesim": 18,
+     "yerlesimMs": 29,
+     "stil": 21,
+     "stilMs": 15,
+     "betikMs": 24
+    },
+    "aracDegisim": {
+     "fps": 53,
+     "takilan": 1,
+     "kare": 23,
+     "p95": 17,
+     "enUzun": 67,
+     "yerlesim": 2,
+     "yerlesimMs": 12,
+     "stil": 5,
+     "stilMs": 11,
+     "betikMs": 48
+    },
+    "bildirim": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 25,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 2,
+     "yerlesimMs": 4,
+     "stil": 17,
+     "stilMs": 20,
+     "betikMs": 14
+    },
+    "aksesuarEkraniAc": {
+     "fps": 54,
+     "takilan": 1,
+     "kare": 37,
+     "p95": 17,
+     "enUzun": 83,
+     "yerlesim": 4,
+     "yerlesimMs": 14,
+     "stil": 8,
+     "stilMs": 16,
+     "betikMs": 50
+    }
+   },
+   "kuculdu": true,
+   "bellek": {
+    "onceMB": 3.66,
+    "sonraMB": 3.88,
+    "dugumOnce": 1327,
+    "dugumSonra": 1327
+   }
+  },
+  "masaustu": {
+   "acilis": 39,
+   "acilisMetrik": {
+    "yerlesim": 6,
+    "yerlesimMs": 14,
+    "stil": 8,
+    "stilMs": 5,
+    "betikMs": 19
+   },
+   "acilisLoaf": [],
+   "yazTek": {
+    "medyan": 29,
+    "p95": 29,
+    "enUzun": 29,
+    "n": 6
+   },
+   "yazTekSayac": {
+    "isimAnaliz": 6,
+    "duzenle": 12,
+    "fiyatHesapla": 12,
+    "stokKontrol": 6,
+    "Editor.yenile": 6,
+    "Sahne.ciz": 6,
+    "Sahne.konumla": 0,
+    "Editor.kampanyaGuncelle": 6,
+    "kampanyaAnlik": 6,
+    "Editor.grupSorunu": 0,
+    "Editor.yerlestirBalonCiz": 6,
+    "Editor.gecmisKaydet": 6,
+    "Editor.etiketleriCiz": 6,
+    "Editor.karakterleriCiz": 6,
+    "turkceCevir": 6,
+    "Yerlesim.parcalar": 30,
+    "cakisir": 0,
+    "Editor.seritCiz": 6,
+    "Editor.kenarCiz": 6
+   },
+   "yazTekMetrik": {
+    "yerlesim": 134,
+    "yerlesimMs": 39,
+    "stil": 141,
+    "stilMs": 28,
+    "betikMs": 29
+   },
+   "yazTekLoaf": [],
+   "yazTekIstek": 1,
+   "yazHizli": {
+    "medyan": 17,
+    "p95": 21,
+    "enUzun": 21,
+    "n": 6
+   },
+   "yazHizliSayac": {
+    "isimAnaliz": 6,
+    "duzenle": 11,
+    "fiyatHesapla": 11,
+    "stokKontrol": 6,
+    "Editor.yenile": 6,
+    "Sahne.ciz": 6,
+    "Sahne.konumla": 0,
+    "Editor.kampanyaGuncelle": 6,
+    "kampanyaAnlik": 6,
+    "Editor.grupSorunu": 0,
+    "Editor.yerlestirBalonCiz": 6,
+    "Editor.gecmisKaydet": 6,
+    "Editor.etiketleriCiz": 6,
+    "Editor.karakterleriCiz": 6,
+    "turkceCevir": 6,
+    "Yerlesim.parcalar": 28,
+    "cakisir": 0,
+    "Editor.seritCiz": 6,
+    "Editor.kenarCiz": 6
+   },
+   "yazHizliLoaf": [],
+   "yazHizliIstek": 1,
+   "harfSayisi": 6,
+   "surukle": {
+    "fps": 60,
+    "takilan": 0,
+    "kare": 273,
+    "p95": 17,
+    "enUzun": 17
+   },
+   "surukleMetrik": {
+    "yerlesim": 94,
+    "yerlesimMs": 27,
+    "stil": 247,
+    "stilMs": 55,
+    "betikMs": 47
+   },
+   "surukleSayac": {
+    "isimAnaliz": 1,
+    "duzenle": 2,
+    "fiyatHesapla": 2,
+    "stokKontrol": 1,
+    "Editor.yenile": 1,
+    "Sahne.ciz": 1,
+    "Sahne.konumla": 90,
+    "Editor.kampanyaGuncelle": 1,
+    "kampanyaAnlik": 0,
+    "Editor.grupSorunu": 90,
+    "Editor.yerlestirBalonCiz": 1,
+    "Editor.gecmisKaydet": 1,
+    "Editor.etiketleriCiz": 1,
+    "Editor.karakterleriCiz": 2,
+    "turkceCevir": 1,
+    "Yerlesim.parcalar": 5,
+    "cakisir": 0,
+    "Editor.seritCiz": 1,
+    "Editor.kenarCiz": 1
+   },
+   "surukleLoaf": [],
+   "dondur": {
+    "fps": 60,
+    "takilan": 0,
+    "kare": 269,
+    "p95": 17,
+    "enUzun": 17
+   },
+   "dondurLoaf": [],
+   "islem": {
+    "aracGorsel": {
+     "ms": 9,
+     "yerlesim": 2,
+     "yerlesimMs": 3,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "aracAksesuar": {
+     "ms": 7,
+     "yerlesim": 2,
+     "yerlesimMs": 2,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "aracMetin": {
+     "ms": 7,
+     "yerlesim": 1,
+     "yerlesimMs": 1,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "stilPiramit": {
+     "ms": 18,
+     "yerlesim": 2,
+     "yerlesimMs": 3,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 6
+    },
+    "stilCool": {
+     "ms": 9,
+     "yerlesim": 1,
+     "yerlesimMs": 1,
+     "stil": 1,
+     "stilMs": 1,
+     "betikMs": 4
+    },
+    "ayir": {
+     "ms": 12,
+     "yerlesim": 3,
+     "yerlesimMs": 2,
+     "stil": 3,
+     "stilMs": 1,
+     "betikMs": 5
+    },
+    "birlestir": {
+     "ms": 9,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 5
+    },
+    "aracGorsel2": {
+     "ms": 6,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 4,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "setEkle": {
+     "ms": 81,
+     "yerlesim": 3,
+     "yerlesimMs": 5,
+     "stil": 3,
+     "stilMs": 1,
+     "betikMs": 69
+    },
+    "tumuAc": {
+     "ms": 10,
+     "yerlesim": 1,
+     "yerlesimMs": 1,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 1
+    },
+    "ikonEkle": {
+     "ms": 35,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 32
+    },
+    "geriAl": {
+     "ms": 12,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 5
+    },
+    "yinele": {
+     "ms": 16,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 2,
+     "stilMs": 1,
+     "betikMs": 5
+    },
+    "aracAksesuar2": {
+     "ms": 6,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 3,
+     "stilMs": 1,
+     "betikMs": 3
+    },
+    "aksesuarDuz": {
+     "ms": 34,
+     "yerlesim": 2,
+     "yerlesimMs": 6,
+     "stil": 3,
+     "stilMs": 2,
+     "betikMs": 21
+    },
+    "aksesuarTasarlaAc": {
+     "ms": 16,
+     "yerlesim": 5,
+     "yerlesimMs": 2,
+     "stil": 6,
+     "stilMs": 2,
+     "betikMs": 9
+    },
+    "aksesuarVazgec": {
+     "ms": 8,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 5,
+     "stilMs": 1,
+     "betikMs": 4
+    },
+    "gorunumTumu": {
+     "ms": 3,
+     "yerlesim": 1,
+     "yerlesimMs": 0,
+     "stil": 2,
+     "stilMs": 0,
+     "betikMs": 1
+    },
+    "gorunumYakin": {
+     "ms": 16,
+     "yerlesim": 1,
+     "yerlesimMs": 0,
+     "stil": 2,
+     "stilMs": 0,
+     "betikMs": 1
+    },
+    "ozet": {
+     "ms": 21,
+     "yerlesim": 5,
+     "yerlesimMs": 7,
+     "stil": 7,
+     "stilMs": 2,
+     "betikMs": 7
+    },
+    "tasarimaDon": {
+     "ms": 11,
+     "yerlesim": 4,
+     "yerlesimMs": 2,
+     "stil": 5,
+     "stilMs": 2,
+     "betikMs": 4
+    }
+   },
+   "hareket": {
+    "yakinlastir": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 402,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 21,
+     "yerlesimMs": 5,
+     "stil": 37,
+     "stilMs": 4,
+     "betikMs": 29
+    },
+    "uzaklastir": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 29,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 20,
+     "yerlesimMs": 5,
+     "stil": 23,
+     "stilMs": 2,
+     "betikMs": 3
+    },
+    "aracDegisim": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 19,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 4,
+     "stilMs": 1,
+     "betikMs": 5
+    },
+    "bildirim": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 23,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 2,
+     "yerlesimMs": 0,
+     "stil": 18,
+     "stilMs": 2,
+     "betikMs": 1
+    },
+    "aksesuarEkraniAc": {
+     "fps": 60,
+     "takilan": 0,
+     "kare": 33,
+     "p95": 17,
+     "enUzun": 17,
+     "yerlesim": 2,
+     "yerlesimMs": 1,
+     "stil": 6,
+     "stilMs": 1,
+     "betikMs": 5
+    }
+   },
+   "bellek": {
+    "onceMB": 3.59,
+    "sonraMB": 3.79,
+    "dugumOnce": 1299,
+    "dugumSonra": 1299
+   }
+  }
+ }
+}
