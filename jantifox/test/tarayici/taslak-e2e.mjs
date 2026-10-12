@@ -98,7 +98,8 @@ const oz = await s.evaluate((q) => {
     icerik: document.querySelector(q + ' [data-kp-oz-icerik]').textContent, adet: document.querySelector(q + ' [data-kp-oz-adet]').textContent
   };
 }, ana);
-assert.deepEqual(oz, { ustH: 48, ustMetin: '‹ Tasarıma dön Özet', gorsel: [130, 130], kartUstte: true, onizlemeYok: true, tekEkran: true, icerik: 'ECE · Futbol Topu', adet: '4 patch · çantaya takılı' }, JSON.stringify(oz));
+// Dikey görsel 130px yüksekliğe sığar (kesilmez): genişlik orantılı
+assert.deepEqual(oz, { ustH: 48, ustMetin: '‹ Tasarıma dön Özet', gorsel: [120, 130], kartUstte: true, onizlemeYok: true, tekEkran: true, icerik: 'ECE · Futbol Topu', adet: '4 patch · çantaya takılı' }, JSON.stringify(oz));
 assert.equal(await gorunur(ana + ' [data-kp-kapat-ozet]'), true, 'üst satırda X');
 assert.equal(await metin(ana + ' .kp-oz__not'), "ⓘ Patch'ler Velcro yüzeye takılır, istediğin zaman yerini değiştirirsin.");
 assert.equal(await metin(ana + ' [data-kp-alt-ozet] [data-kp-taslak-kaydet]'), 'Taslak olarak kaydet ve çık');

@@ -1223,3 +1223,129 @@ test('çokgen alan: ismin ortası girintiye düşüyorsa ismin sığdığı yer 
   assert.ok(yer.satir >= 1, 'sığdı');
   assert.ok(yer.merkez[1] > 55 * 0.4, 'girintinin altında: ' + yer.merkez);
 });
+
+/* ---------------- Çok alanlı ürün: yazının alanlara dağıtılması ---------------- */
+
+// Üst panel (kemer, 24 cm) ve daha küçük alt cep (22 × 8 cm); ikisi de harf alır
+const ikiAlanVeri = () => cokgenVeri([
+  kemerZone(),
+  { id: 'alt-cep', ad: 'Alt cep', shape: 'rect', x: 22.5, y: 75, w: 55, h: 20, allowed_types: ['letter', 'number', 'icon'] }
+]);
+const ikiAlanKur = () => {
+  const m = new ic.Model(ikiAlanVeri());
+  return { m, y: new ic.Yerlesim(m) };
+};
+const blokParcalari = (y, t) => y.parcalar(t).filter((p) => !p.kenar);
+
+test('çok alanlı: sığmayan yazı hece sınırından bölünür, ilk parça üstteki alana', () => {
+  const { m, y } = ikiAlanKur();
+  const t = tasarim(m, 'GOKHANCAN');
+  const d = ic.duzenle(m, y, t);
+  assert.equal(t.bol, 6, 'GOKHAN | CAN');
+  assert.deepEqual(duz(t.bolAlan), ['ust-panel', 'alt-cep']);
+  assert.deepEqual(Object.keys(d.hatalar), []);
+  const gruplar = d.parcalar.map((p) => p.grup);
+  assert.deepEqual(duz(gruplar), ['isim', 'isim', 'isim', 'isim', 'isim', 'isim', 'isim2', 'isim2', 'isim2']);
+  // İkinci bloğun harfleri alt cepte
+  const cep = m.alanlar[1].sekil;
+  d.parcalar.filter((p) => p.grup === 'isim2').forEach((p) => assert.equal(g.icinde(p.sekil, cep, -0.2), true));
+  const a = ic.isimAnaliz(m, y, t);
+  assert.equal(a.sigiyor, true);
+  assert.deepEqual(duz(a.bolunme.parcalar), ['GOKHAN', 'CAN']);
+  // Otomatik: kapasite iki alanın toplamı
+  const k1 = y.kapasite(m.setler[0], 0, m.alanlar[0]);
+  const k2 = y.kapasite(m.setler[0], 0, m.alanlar[1]);
+  assert.equal(a.kapasite, k1 + k2);
+  // Kısa yazı tek blok, en büyük alanda
+  const t2 = tasarim(m, 'ECE');
+  ic.duzenle(m, y, t2);
+  assert.equal(t2.bol, null);
+  assert.equal(t2.bolAlan[0], 'ust-panel');
+});
+
+test('çok alanlı: yazılan boşluk sığıyorsa bölme noktası olur', () => {
+  const { m, y } = ikiAlanKur();
+  const t = tasarim(m, 'GOKHANCAN');
+  t.bosluk = 7;
+  ic.duzenle(m, y, t);
+  assert.equal(t.bol, 7, 'GOKHANC | AN');
+  t.bosluk = 2;
+  t.bol = null;
+  ic.duzenle(m, y, t);
+  assert.equal(t.bol, 6, 'GO | KHANCAN sığmaz: hece sınırı');
+});
+
+test('çok alanlı: seçili alana sığmayan yazı bölünmez; uyarı bilgisi, diğer alan önerisi', () => {
+  const { m, y } = ikiAlanKur();
+  const t = tasarim(m, 'GOKHAN');
+  t.yaziYeri = 'alt-cep';
+  const d = ic.duzenle(m, y, t);
+  assert.equal(t.bol, null);
+  assert.equal(t.bolAlan[0], 'alt-cep');
+  const a = ic.isimAnaliz(m, y, t);
+  assert.equal(a.sigiyor, false);
+  assert.equal(a.alanTasmasi.alan.id, 'alt-cep');
+  assert.equal(a.alanTasmasi.kapasite, y.kapasite(m.setler[0], 0, m.alanlar[1]));
+  assert.equal(a.alanTasmasi.diger.id, 'ust-panel');
+  assert.equal(a.kapasite, a.alanTasmasi.kapasite, 'seçili alanda kapasite yalnızca o alan');
+  assert.ok(Object.keys(d.hatalar).length > 0, 'taşan harfler işaretli');
+  // Sığan kısa yazı seçili alanda kalır
+  t.isim = 'CAN';
+  ic.duzenle(m, y, t);
+  const cep = m.alanlar[1].sekil;
+  blokParcalari(y, t).forEach((p) => assert.equal(g.icinde(p.sekil, cep, -0.2), true));
+});
+
+test('çok alanlı: Ayır / Birleştir blok başına; yazı değişince bölme kayar', () => {
+  const { m, y } = ikiAlanKur();
+  const t = tasarim(m, 'GOKHANCAN');
+  ic.duzenle(m, y, t);
+  const once = blokParcalari(y, t).map((p) => g.merkez(p.sekil));
+  ic.harfleriAyir(y, t, 1);
+  assert.equal(!!t.harfAyri, false);
+  assert.equal(t.harfAyri2, true);
+  const d = ic.duzenle(m, y, t);
+  assert.deepEqual(duz(d.parcalar.map((p) => p.grup)), ['isim', 'isim', 'isim', 'isim', 'isim', 'isim', 'harf-6', 'harf-7', 'harf-8']);
+  d.parcalar.forEach((p, i) => { const c = g.merkez(p.sekil); assert.ok(Math.abs(c[0] - once[i][0]) < 1e-6 && Math.abs(c[1] - once[i][1]) < 1e-6, 'yerinde kaldı'); });
+  // Harfler ayrıyken bölme sabit: başa harf eklenince bölme kayar
+  ic.karakterleriHizala(t, 'XGOKHANCAN');
+  assert.equal(t.bol, 7);
+  ic.karakterleriHizala(t, 'GOKHANCAN');
+  assert.equal(t.bol, 6);
+  ic.harfleriBirlestir(t, 1);
+  assert.equal(!!t.harfAyri2, false);
+  assert.equal(t.harfKonumlari, null);
+  assert.deepEqual(duz(ic.duzenle(m, y, t).parcalar.map((p) => p.grup).slice(6)), ['isim2', 'isim2', 'isim2']);
+  // Kenardaki ikinci blok satın alınmaz (sepete girmez)
+  t.isim2Kenar = true;
+  assert.equal(ic.satinAlinacak(m, t).isim, 'GOKHAN');
+});
+
+test('çok alanlı: sepet konumunda her parçanın alanı; sepetten iki blok olarak geri kurulur', () => {
+  const { m, y } = ikiAlanKur();
+  const t = tasarim(m, 'GOKHANCAN');
+  const d = ic.duzenle(m, y, t);
+  const konum = ic.tasarimKonumu(m, d.parcalar, t);
+  assert.deepEqual(duz(konum.p.map((x) => x.z)), ['ust-panel', 'ust-panel', 'ust-panel', 'ust-panel', 'ust-panel', 'ust-panel', 'alt-cep', 'alt-cep', 'alt-cep']);
+  assert.ok(konum.p.every((x) => x.s === 1));
+  const g2 = ic.konumdanTasarim(m, y, duz(konum));
+  assert.equal(g2.isim, 'GOKHANCAN');
+  assert.equal(g2.bol, 6);
+  assert.equal(!!g2.harfAyri, false);
+  assert.equal(!!g2.harfAyri2, false);
+  const d2 = ic.duzenle(m, y, g2);
+  d2.parcalar.forEach((p, i) => {
+    const a = g.merkez(p.sekil);
+    const b = g.merkez(d.parcalar[i].sekil);
+    assert.ok(Math.abs(a[0] - b[0]) < 0.2 && Math.abs(a[1] - b[1]) < 0.2, 'aynı yerde');
+  });
+});
+
+test('tek alanlı üründe yazı eskisi gibi: bölme yok, seçim seçenekleri yok', () => {
+  const { m, y } = kur();
+  const t = tasarim(m, 'ABDULKADIR');
+  ic.duzenle(m, y, t);
+  assert.equal(t.bol, null);
+  const konum = ic.tasarimKonumu(m, ic.duzenle(m, y, t).parcalar, t);
+  assert.ok(konum.p.every((x) => x.z === undefined));
+});

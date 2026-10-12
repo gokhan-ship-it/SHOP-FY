@@ -4588,3 +4588,106 @@ html.kp-kilit body {
     padding-right: 1.6rem;
   }
 }
+
+/* ---------- Çok alanlı ürün: yazının yeri ---------- */
+.kp-yazi-yeri {
+  margin: 0.8rem 0 0;
+}
+.kp-yazi-yeri__ust {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+.kp-yazi-yeri__baslik {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.kp-yazi-yeri__not {
+  color: var(--kp-ikincil);
+  font-size: 1.2rem;
+}
+.kp-yazi-yeri__secenekler {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.kp-yazi-yeri__secenek {
+  min-height: 3.6rem;
+  padding: 0.5rem 1.2rem;
+  border: 1px solid #c9c9c9;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--kp-murekkep);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.kp-yazi-yeri__secenek[aria-checked='true'] {
+  border-color: var(--kp-murekkep);
+  background: var(--kp-murekkep);
+  color: #fff;
+}
+.kp-uyari--tamam {
+  background: #e7f6ec;
+  color: #0b5a27;
+}
+
+/* ---------- Çok alanlı ürün: alanlar her zaman soluk, etiketli; sürüklenen parçanın alanı belirgin ---------- */
+.kp-sahne--cok-alan .kp-alan {
+  opacity: 0.55;
+  stroke-dasharray: 4 4;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.55));
+}
+.kp-sahne--cok-alan.kp-sahne--surukleniyor .kp-alan {
+  opacity: 0.4;
+}
+.kp-sahne--cok-alan .kp-alan.kp-alan--aktif {
+  opacity: 1;
+  stroke-width: 2.5;
+}
+.kp-alan.kp-alan--hata {
+  stroke: #ff3b30;
+  stroke-width: 5;
+  stroke-dasharray: none;
+  opacity: 1;
+  filter: drop-shadow(0 0 3px rgba(255, 59, 48, 0.7));
+  animation: kp-nabiz 0.6s ease-in-out 3;
+}
+.kp-sahne--cok-alan.kp-sahne--surukleniyor .kp-alan.kp-alan--hata {
+  opacity: 1;
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kp-alan.kp-alan--hata {
+    animation: none;
+  }
+}
+.kp-alan-etiketleri {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.kp-alan-etiket {
+  position: absolute;
+  max-width: 45%;
+  overflow: hidden;
+  padding: 0.1rem 0.6rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.6rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transform: translate(0.4rem, 0.4rem);
+  transition: background-color var(--kp-sure-kisa) var(--kp-egri), color var(--kp-sure-kisa) var(--kp-egri);
+}
+.kp-alan-etiket--aktif {
+  background: #fff;
+  color: var(--kp-murekkep);
+  font-weight: 600;
+}
+.kp-alan-etiket--hata {
+  background: #ff3b30;
+  color: #fff;
+}
