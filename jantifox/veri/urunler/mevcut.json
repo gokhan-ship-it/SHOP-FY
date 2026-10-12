@@ -1,0 +1,147 @@
+{
+ "kanvas-lacivert-tote-canta": {
+  "onizleme_gorseli": "gid://shopify/MediaImage/72562227314974",
+  "gorsel_yerel": "mevcut/kanvas-lacivert-tote-canta.png",
+  "harita": {
+   "surum": 2,
+   "kalibre": true,
+   "gorsel": {
+    "en": 1920,
+    "boy": 1920
+   },
+   "zones": [
+    {
+     "id": "on-alan",
+     "ad": "Ön alan",
+     "shape": "circle",
+     "x": 27.687,
+     "y": 45.384,
+     "w": 41.36,
+     "h": 41.36,
+     "cap_cm": 25,
+     "allowed_types": [
+      "letter",
+      "number",
+      "icon"
+     ]
+    }
+   ],
+   "forbidden": []
+  },
+  "metin_karakter_siniri": 6,
+  "aktif": true,
+  "not": "Mağazada yayında olan harita (2026-10-07)."
+ },
+ "kalem-kutusu-le-koko-collectif": {
+  "onizleme_gorseli": "gid://shopify/MediaImage/72591192785182",
+  "gorsel_yerel": "../aksesuar/duz/kalem-kutusu-kirmizi-on.png",
+  "harita": {
+   "surum": 2,
+   "tip": "aksesuar",
+   "kalibre": true,
+   "gorsel": {
+    "en": 1200,
+    "boy": 655
+   },
+   "dis": {
+    "shape": "rect",
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 100,
+    "en_cm": 22,
+    "boy_cm": 12,
+    "kose_cm": 3.3
+   },
+   "zones": [
+    {
+     "id": "velcro-yuzeyi",
+     "ad": "Velcro yüzeyi",
+     "shape": "rect",
+     "x": 2.556,
+     "y": 3.999,
+     "w": 94.851,
+     "h": 92.907,
+     "kose_cm": 2,
+     "allowed_types": [
+      "letter",
+      "number",
+      "icon"
+     ],
+     "genislik_cm": 20.87
+    }
+   ],
+   "forbidden": [
+    {
+     "ad": "Bölge 1",
+     "shape": "ellipse",
+     "x": 72.626,
+     "y": 53.946,
+     "w": 14.377,
+     "h": 27.443
+    }
+   ]
+  },
+  "not": "Velcro'suz ürünün kendi alanlarında yapıştırılabilir sürümün (15869129818398) görseli ve haritası zaten var (2026-10-08). Eksik olan yalnızca aktif."
+ },
+ "kalem-kutusu-le-koko-collectif-1": {
+  "onizleme_gorseli": "gid://shopify/MediaImage/72591192817950",
+  "gorsel_yerel": "../aksesuar/duz/kalem-kutusu-turuncu-on.png",
+  "harita": {
+   "surum": 2,
+   "tip": "aksesuar",
+   "kalibre": true,
+   "gorsel": {
+    "en": 1200,
+    "boy": 655
+   },
+   "dis": {
+    "shape": "rect",
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 100,
+    "en_cm": 22,
+    "boy_cm": 12,
+    "kose_cm": 3.3
+   },
+   "zones": [
+    {
+     "id": "velcro-yuzeyi",
+     "ad": "Velcro yüzeyi",
+     "shape": "rect",
+     "x": 2.556,
+     "y": 3.999,
+     "w": 94.851,
+     "h": 92.907,
+     "kose_cm": 2,
+     "allowed_types": [
+      "letter",
+      "number",
+      "icon"
+     ],
+     "genislik_cm": 20.87
+    }
+   ],
+   "forbidden": [
+    {
+     "ad": "Bölge 1",
+     "shape": "ellipse",
+     "x": 74.501,
+     "y": 53.87,
+     "w": 14.377,
+     "h": 27.443
+    },
+    {
+     "ad": "D halkası",
+     "shape": "rect",
+     "x": 93.833,
+     "y": 66.565,
+     "w": 6.167,
+     "h": 14.198
+    }
+   ]
+  },
+  "not": "Velcro'suz ürünün kendi alanlarında yapıştırılabilir sürümün (15869138829598) görseli ve haritası zaten var (2026-10-08). Eksik olan yalnızca aktif."
+ }
+}

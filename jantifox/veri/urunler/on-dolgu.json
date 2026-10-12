@@ -1,0 +1,269 @@
+{
+ "bej-tshirt": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "circle",
+    "x": 366.0,
+    "y": 270.0,
+    "w": 361.6,
+    "h": 361.6,
+    "olcuCm": 22,
+    "olcuYon": "genislik"
+   }
+  ],
+  "kaynak": "görselden otomatik bulunan Velcro dairesi (HoughCircles)"
+ },
+ "sari-tshirt": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "circle",
+    "x": 367.7,
+    "y": 273.1,
+    "w": 358.2,
+    "h": 358.2,
+    "olcuCm": 22,
+    "olcuYon": "genislik"
+   }
+  ],
+  "kaynak": "görselden otomatik bulunan Velcro dairesi (HoughCircles)"
+ },
+ "mavi-tshirt": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "circle",
+    "x": 435.9,
+    "y": 312.9,
+    "w": 437.8,
+    "h": 437.8,
+    "olcuCm": 22,
+    "olcuYon": "genislik"
+   }
+  ],
+  "kaynak": "görselden otomatik bulunan Velcro dairesi (HoughCircles)"
+ },
+ "pudra-pembe-tshirt": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "circle",
+    "x": 421.3,
+    "y": 308.9,
+    "w": 451.8,
+    "h": 451.8,
+    "olcuCm": 22,
+    "olcuYon": "genislik"
+   }
+  ],
+  "kaynak": "görselden otomatik bulunan Velcro dairesi (HoughCircles)"
+ },
+ "bej-sweatshirt": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "circle",
+    "x": 381.8,
+    "y": 293.4,
+    "w": 464.8,
+    "h": 464.8,
+    "olcuCm": 22,
+    "olcuYon": "genislik"
+   }
+  ],
+  "kaynak": "görselden otomatik bulunan Velcro dairesi (HoughCircles)"
+ },
+ "mavi-sweatshirt": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "circle",
+    "x": 382.8,
+    "y": 295.8,
+    "w": 462.8,
+    "h": 462.8,
+    "olcuCm": 22,
+    "olcuYon": "genislik"
+   }
+  ],
+  "kaynak": "görselden otomatik bulunan Velcro dairesi (HoughCircles)"
+ },
+ "yesil-sweatshirt": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "circle",
+    "x": 392.8,
+    "y": 304.4,
+    "w": 448.8,
+    "h": 448.8,
+    "olcuCm": 22,
+    "olcuYon": "genislik"
+   }
+  ],
+  "kaynak": "görselden otomatik bulunan Velcro dairesi (HoughCircles)"
+ },
+ "indigo-sweatshirt": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "circle",
+    "x": 356.0,
+    "y": 239.5,
+    "w": 503.0,
+    "h": 503.0,
+    "olcuCm": 22,
+    "olcuYon": "genislik"
+   }
+  ],
+  "kaynak": "siyah Velcro dairesinin kutusu"
+ },
+ "pembe-sweatshirt": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "circle",
+    "x": 398.5,
+    "y": 256.5,
+    "w": 531.0,
+    "h": 531.0,
+    "olcuCm": 22,
+    "olcuYon": "genislik"
+   }
+  ],
+  "kaynak": "siyah Velcro dairesinin kutusu"
+ },
+ "mavi-beyaz-cizgili-spor-canta": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "ellipse",
+    "x": 98,
+    "y": 770,
+    "w": 470,
+    "h": 581,
+    "olcuCm": 21,
+    "olcuYon": "yukseklik"
+   },
+   {
+    "tur": "yasak",
+    "ad": "Fermuar",
+    "shape": "rect",
+    "x": 150,
+    "y": 862,
+    "w": 355,
+    "h": 56
+   },
+   {
+    "tur": "yasak",
+    "ad": "Fermuar çekeceği",
+    "shape": "rect",
+    "x": 150,
+    "y": 900,
+    "w": 40,
+    "h": 135
+   }
+  ],
+  "kaynak": "lacivert Velcro dairesinin kutusu (çanta dönük: oval, ölçek yükseklikten 21 cm); fermuar kırmızı pikselden"
+ },
+ "pembe-kirmizi-cizgili-spor-canta": {
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Ön alan",
+    "shape": "ellipse",
+    "x": 290,
+    "y": 780,
+    "w": 474,
+    "h": 510,
+    "olcuCm": 21,
+    "olcuYon": "yukseklik"
+   },
+   {
+    "tur": "yasak",
+    "ad": "Fermuar",
+    "shape": "rect",
+    "x": 360,
+    "y": 885,
+    "w": 340,
+    "h": 45
+   },
+   {
+    "tur": "yasak",
+    "ad": "Fermuar çekeceği",
+    "shape": "rect",
+    "x": 410,
+    "y": 890,
+    "w": 42,
+    "h": 145
+   }
+  ],
+  "kaynak": "rötuşlu görselde Velcro dairesi (oran 0,93: oval, ölçek yükseklikten 21 cm); fermuar rötuştaki koruma kutusundan"
+ },
+ "the-performer-sirt-cantasi-jantifox-x-le-koko-collectif": {
+  "sekiller": [],
+  "cizgi": {
+   "x1": 175,
+   "y1": 640,
+   "x2": 1132,
+   "y2": 640,
+   "cm": 30
+  },
+  "kaynak": "ölçek önerisi: açıklamadaki çanta genişliği (30 cm), gövdenin bu yükseklikteki genişliği"
+ },
+ "the-gamer-sirt-cantasi-jantifox-x-le-koko-collectif": {
+  "sekiller": [],
+  "cizgi": {
+   "x1": 138,
+   "y1": 720,
+   "x2": 1156,
+   "y2": 720,
+   "cm": 30
+  },
+  "kaynak": "ölçek önerisi: açıklamadaki çanta genişliği (30 cm), gövdenin bu yükseklikteki genişliği"
+ },
+ "the-artist-sirt-cantasi-jantifox-x-le-koko-collectif-copy": {
+  "sekiller": [],
+  "cizgi": {
+   "x1": 178,
+   "y1": 720,
+   "x2": 1173,
+   "y2": 720,
+   "cm": 30
+  },
+  "kaynak": "ölçek önerisi: açıklamadaki çanta genişliği (30 cm), gövdenin bu yükseklikteki genişliği"
+ },
+ "the-daymaker-sirt-cantasi-jantifox-x-le-koko-collectif-copy": {
+  "sekiller": [],
+  "cizgi": {
+   "x1": 199,
+   "y1": 720,
+   "x2": 1170,
+   "y2": 720,
+   "cm": 25
+  },
+  "kaynak": "ölçek önerisi: açıklamadaki çanta genişliği (25 cm), gövdenin bu yükseklikteki genişliği"
+ },
+ "the-adventurer-sirt-cantasi-jantifox-x-le-koko-collectif": {
+  "sekiller": [],
+  "cizgi": {
+   "x1": 239,
+   "y1": 720,
+   "x2": 1193,
+   "y2": 720,
+   "cm": 25
+  },
+  "kaynak": "ölçek önerisi: açıklamadaki çanta genişliği (25 cm), gövdenin bu yükseklikteki genişliği"
+ }
+}

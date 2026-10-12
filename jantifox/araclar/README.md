@@ -1,4 +1,87 @@
-# Alan çizici
+# Alan paneli (toplu)
+
+`alan-paneli/panel.html`: kişiselleştirilecek tüm ürünlerin alanlarını tek yerde çizmek için. İnternet gerekmez. **Klasörü olduğu gibi** kopyala (`panel.html`, `veri.js`, `gorseller/`) ve `panel.html`'i Chrome, Edge ya da Safari'de çift tıklayıp aç.
+
+## Kullanım
+
+1. **Sol** liste: gruplar ve renkleri, her ürünün durumu (**Çizilecek**, **Hazır**, **Görsel yok**, **Atlandı**) ve işaretleri (**ölçü tahmini**, **ölçü bekleniyor**, **kontrol et**).
+   - Üstte ilerleme ("12 / 21 hazır"; atlananlar sayılmaz).
+   - "Yalnızca çizilecekler" filtresi.
+2. **Orta** alan: ürünün editör görseli. Araçlar:
+   - Daire `C`, Oval `O`, Dikdörtgen `R` (köşe yarıçapı sağ panelden), Yasaklı ▭ `Y` / ◯, Ölçek çizgisi `L`, Seç `V`.
+   - Tutamaçlardan boyutlandır, gövdeden taşı. Ok tuşları 1 px, Shift+ok 10 px, `Delete` siler.
+   - Yakınlık `+` `−` `0`, Ctrl/Cmd + tekerlek.
+   - Sarı **A** karesi gerçek ölçüde bir harf patch'idir (5,5 × 6 cm, değiştirilebilir); alan dışına taşarsa kırmızı olur.
+3. **Sağ** panel:
+   - **Gerçek Velcro ölçüsü**: alanı seçip gir. Daire için çap; oval ve dikdörtgen için genişlik ya da yükseklik. Ölçek buradan hesaplanır.
+   - Velcro ölçüsü bilinmiyorsa **ölçek çizgisi**: bilinen bir uzunluğu çiz (ör. çanta genişliği), cm'sini gir. Bu bir tahmindir; ürün "ölçü tahmini" diye işaretlenir. Bir alana gerçek ölçü girilince ölçek oradan alınır, işaret kalkar.
+   - **Metin karakter sınırı** (boş: yalnızca alanın sığdırdığı kadar), **izin verilen tipler** (harf, rakam, ikon, set, aksesuar), **Bu üründe kişiselleştirme olmasın**.
+   - **Önceki üründen kopyala**, **Grubun tüm renklerine uygula**. Görsel oranları farklıysa şekiller genişlik oranıyla taşınır, ürün "kontrol et" diye işaretlenir.
+   - **Durum** kutusu sorunları listeler. Kırmızı sorun varken ürün Hazır olamaz.
+4. Kısayollar: `]` / `[` ya da `Alt`+`→` / `←` sonraki / önceki ürün, `Ctrl`/`Cmd`+`S` kaydet (Hazır).
+5. Çalışma tarayıcıya **otomatik kaydedilir**; panel yeniden açılınca kaldığın üründen devam eder. **Sıfırla** başlangıca döner.
+6. **Dışa aktar**: tek JSON dosyası (`alan-paneli-YYYYMMDD-HHMM.json`). İçinde:
+   - hazır ürünlerin haritası (`kisisellestirme.harita` biçiminde), ölçeği, karakter sınırı ve izinleri;
+   - atlanan ürünler;
+   - panelin tüm durumu (başka bilgisayarda **İçe aktar** ile devam edilir).
+
+## Mağazaya yazma (dışa aktarılan dosya geldikten sonra)
+
+1. Mağazadaki mevcut değerler okunur: ilgili ürünlerin `kisisellestirme` alanları → `magaza.json` (`{handle: {anahtar: değer}}`).
+2. Denetim, hiçbir şey yazmaz:
+
+   ```
+   python3 -I araclar/alan-paneli/dogrula.py alan-paneli-....json --magaza magaza.json
+   ```
+
+   Kontrol edilenler:
+   - Ürün plan'da var mı, görsel dosyası var mı, boyutu haritayla aynı mı.
+   - Alanlar ve yasaklı bölgeler görselin içinde mi.
+   - İlk alanda ölçü var mı; ölçek akla yatkın mı (görselin cm genişliği ürün ölçüsüyle uyumlu mu); örnek harf her alana sığıyor mu.
+   - Patch tipi ve izinler eksik mi; ölçü tahmini mi.
+   - Mevcut değerlerle çakışma var mı (dolu bir alanın üzerine yazılacaksa ayrıca belirtilir).
+
+   Sorunsuzsa `-plan.json` yazma planını çıkarır.
+3. Sorun listesi kullanıcıya gösterilir. Onaydan sonra hepsi tek seferde yazılır:
+   - Yeni görseller: `fileCreate` (kaynak: depodaki PNG'nin commit'e sabit ham GitHub adresi) → MediaImage → `kisisellestirme.onizleme_gorseli`. Ürün medyasına eklenmez.
+   - `metafieldsSet` (25'erli): `harita`, `metin_karakter_siniri`, `aktif`.
+   - Atlanan ürünlere `aktif = false`.
+   - Her yazma `docs/degisiklik-kaydi.md` dosyasına eklenir.
+
+Haritaya panelin eklediği alanlar:
+- `izinler: {set, aksesuar}` (ürün düzeyinde set ve aksesuar izni);
+- `olcu_tahmini: true` (ölçek tahmindeyse);
+- `yukseklik_cm` (ölçek yükseklikten alındıysa, kayıt için).
+
+Editör ölçeği ilk alanın `cap_cm` / `genislik_cm` değerinden okur. Panel, yükseklikten ya da çizgiden gelen ölçeği bu değere çevirip yazar.
+
+## Yeni ürün ekleme (hazırlık)
+
+1. Ürüne Shopify'da `patch-notice` etiketi verilir.
+2. `veri/urunler/urunler.json`'a ürünün vitrin verisi (`/products/<handle>.js`) eklenir.
+3. `veri/urunler/secim.json`'a önden, patch'siz görselin sırası yazılır. Gerekirse temizleme ayarı da eklenir:
+   - `bosluk_doldur`: açık renkli gövde parçaları arka plan sanılıyorsa;
+   - `delik_temizle`: sap içindeki arka plan kalıyorsa.
+4. Görsel hazırlanır: şeffaf PNG, en uzun kenar 1600 px.
+
+   ```
+   U2NET_HOME=<model klasörü> <venv>/bin/python -I veri/urunler/hazirla.py veri/urunler/urunler.json veri/urunler/secim.json veri/urunler/png
+   ```
+
+   PNG'ye göz atılır. Velcro üstünde patch takılıysa önce patch'siz fotoğraf istenir; olmazsa rötuş yapılır (örnek: `veri/urunler/rotus/`).
+5. `veri/urunler/plan.json`'da ürün grubuna eklenir: `handle`, `urun_id`, `baslik`, `png`, `png_boyut`, `durum: "cizilecek"`. Yeni modelse grup da eklenir:
+   - `velcro`: sitedeki Velcro ölçüsü;
+   - `urun_olcu`: ürünün ölçüsü (ölçek denetimi için).
+6. İsteğe bağlı ön dolgu: `veri/urunler/on-dolgu.json`. İçine önceden çizilmiş şekiller (px) ya da ölçek çizgisi yazılır.
+7. Panel verisi yeniden üretilir:
+
+   ```
+   python3 -I araclar/alan-paneli/panel-verisi.py veri/urunler araclar/alan-paneli
+   ```
+
+   `veri.js` ve `gorseller/` güncellenir. Tarayıcıdaki çalışma korunur; yeni ürün listede "Çizilecek" olarak çıkar.
+
+# Alan çizici (tek ürün)
 
 `alan-cizici.html`: tek dosya, internet bağlantısı gerektirmez. Bilgisayarda çift tıklayıp tarayıcıda aç.
 
