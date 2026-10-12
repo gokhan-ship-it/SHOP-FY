@@ -96,3 +96,32 @@ Her düzeltmeden sonra 57 birim + 20 tarayıcı testi çalıştırıldı; hepsi 
    Büyük yeniden yazım; uygulanmadı.
 4. **Yavaş 4G'de görsellerin 5,4 s'de yüklenmesi**: Safari bu şeffaf görseller için Shopify'dan PNG alıyor (WebP/AVIF verilmiyor). Öneri: patch görsellerinin WebP olarak yüklenmesi ya da `kisisellestirme` alanına ayrıca küçük (ör. 220 px) WebP yüklenmesi. Görsel yüklemesi gerektiği için uygulanmadı.
 5. **Kırmızı nabız / parıltı / yeni patch vurgusu** boyama gerektiren özellikleri canlandırıyor, ama kısa süreli; ölçümde kare kaybı yok. Bırakıldı.
+
+## Çokgen alanlar (2026-10-12)
+
+`test/performans/cokgen-karsilastir.mjs`, iPhone 13 + CPU 4×, 7 tekrar (medyan). Sonuç `test/performans/sonuclar/cokgen-karsilastir.json`.
+
+Karşılaştırılan ürünler:
+- **A**: Tote, daire alan (örnek sayfa).
+- **B**: The Performer; sihirli değnekle seçilmiş iki çokgen alan (60 ve 53 nokta) ve kalemle çizilmiş yasaklı bölge.
+- **C**: The Performer'ın aynı görseli, tek daire alan.
+
+| Ölçüm | A daire (tote) | B çokgen (performer) | C daire (performer) |
+|---|---|---|---|
+| Harf yazma, tuştan çizime (medyan / en uzun) | 77 / 91 ms | 83 / 96 ms | 68 / 93 ms |
+| Yazı bloğu sürükleme | 59 fps | 59 fps | 59 fps |
+| İkon sürükleme (en uzun kare) | 60 fps (17 ms) | 60 fps (33 ms) | — (set kenara gitti) |
+| Set ekleme (3 patch) | 237 ms | 310 ms | 162 ms* |
+| Editörü açma | 152 ms | 190 ms | 149 ms |
+
+\* C'de set alana sığmadığı için kenara gitti; süre karşılaştırılamaz.
+
+Saf hesap (Node, yavaşlatmasız, 20 tekrar ortalaması):
+- 4 tuşluk yazma: çokgende 0,7 ms, dairede 0,3 ms.
+- 3 ikonun yerini bulma: çokgende 21 ms, dairede 14 ms.
+
+İlk ölçümde çokgen üründe editörü açmak 722 ms sürüyordu (daire 99 ms). Sebebi kapasite hesabıydı: isim ortaya sığmayınca alanın içinde her 0,5 cm'de bir aday deneniyordu. İki düzeltme yapıldı:
+- isim bloğunun kutusu alanın kutusuna sığmayan adaylar baştan eleniyor;
+- sıralı aday listesi bir kez hesaplanıyor.
+
+Kapasite hesabı 300 ms'den 15 ms'ye indi; sonuç aynı (8 harf). Yer aramada da, parçanın kutusu hiçbir uygun alanın kutusuna sığmayan adaylar baştan eleniyor (iki alanlı üründe ortak kutudaki boşluk).

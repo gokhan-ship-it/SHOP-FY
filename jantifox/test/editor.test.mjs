@@ -1120,3 +1120,106 @@ test('yerleştirme: konturlu ikonlar daireye dikdörtgen kutularından daha çok
     for (let j = i + 1; j < a.length; j++) assert.equal(g.cakisir(a[i].sekil, a[j].sekil, -0.2), false);
   }
 });
+
+/* ---------------- Çokgen alanlar (harita shape 'poly') ---------------- */
+
+// U biçimli içbükey alan (cm): 30 × 20, üstten açılan girinti x 16,5–17,5, y 0–12
+const uAlan = () => g.cokgenAlan([[0, 0], [16.5, 0], [16.5, 12], [17.5, 12], [17.5, 0], [30, 0], [30, 20], [0, 20]]);
+// Görsel 1000 × 1000 px; noktalar %. Kemerli üst panel: alt köşeler düz, üstü yarım daire (yaklaşık), genişlik 24 cm
+const kemerNoktalari = () => {
+  const p = [[20, 70], [80, 70]];
+  for (let i = 0; i <= 16; i++) { const a = (i / 16) * Math.PI; p.push([50 + 30 * Math.cos(a), 40 - 30 * Math.sin(a)]); }
+  return p;
+};
+const cokgenVeri = (zones, forbidden = []) => {
+  const v = ornekVeri();
+  v.gorsel = { en: 1000, boy: 1000, kucuk: 'k.jpg', buyuk: 'b.jpg' };
+  v.harita = { surum: 2, kalibre: true, gorsel: { en: 1000, boy: 1000 }, zones, forbidden };
+  return v;
+};
+const kemerZone = () => {
+  const p = kemerNoktalari();
+  return { id: 'ust-panel', ad: 'Üst panel', shape: 'poly', x: 20, y: 10, w: 60, h: 60, genislik_cm: 24, points: p, allowed_types: ['letter', 'number', 'icon'] };
+};
+
+test('çokgen alan: içbükey girinti patch\'in altında kalamaz (köşeleri içeride olsa da)', () => {
+  const Z = uAlan();
+  const ic = (s) => g.icinde(s, Z, 0);
+  // Girintinin altında: geçerli
+  assert.equal(ic(g.donukDikdortgen(15, 15, 10, 3, 0)), true);
+  // Girintiyi aşan, ama köşeleri ve kenar ortaları kollarda: eski nokta örneklemesi kaçırırdı
+  const s = g.donukDikdortgen(15, 9, 10, 3, 0);
+  assert.equal(ic(s), false);
+  // Döndürülmüş ve daire patch'ler
+  assert.equal(ic(g.donukDikdortgen(8, 10, 6, 6, 45)), true);
+  assert.equal(ic({ t: 'circle', cx: 17, cy: 15, r: 2.5 }), true);
+  assert.equal(ic({ t: 'circle', cx: 17, cy: 13, r: 2.5 }), false, 'daire girintiye giriyor');
+  // Kenardan taşma: 0,2 cm tolerans içinde geçerli, fazlası değil
+  assert.equal(g.icinde(g.donukDikdortgen(3 - 0.15, 15, 6, 4, 0), Z, -0.2), true);
+  assert.equal(g.icinde(g.donukDikdortgen(3 - 0.3, 15, 6, 4, 0), Z, -0.2), false);
+  // Nokta içinde (girinti dışarıda)
+  assert.equal(g.noktaIcinde(17, 5, Z), false);
+  assert.equal(g.noktaIcinde(17, 5, Z, -0.6), true, 'tolerans kadar genişletilmiş');
+  assert.equal(g.noktaIcinde(17, 15, Z), true);
+});
+
+test('çokgen alan haritadan: ölçek girilen genişlikten, kemerli panelde kapasite ve yerleştirme', () => {
+  const m = new ic.Model(cokgenVeri([kemerZone()]));
+  const y = new ic.Yerlesim(m);
+  const a = m.alanlar[0].sekil;
+  assert.equal(a.t, 'cokgen');
+  assert.ok(Math.abs(a.w - 24) < 0.01, 'genişlik ' + a.w);
+  assert.ok(Math.abs(m.Wcm - 40) < 0.01);
+  assert.ok(g.noktaIcinde(...g.merkez(a), a), 'merkez alanın içinde');
+  const k = y.kapasite(m.setler[0]);
+  assert.ok(k >= 4, 'kapasite ' + k);
+  const tm = tasarim(m, 'ECE');
+  assert.equal(ic.isimAnaliz(m, y, tm).sigiyor, true);
+  // İkonlar sırayla yerleşir; hepsi alanın içinde ve birbirine çakışmıyor
+  const t = m.ikonHarita[5];
+  const dolu = [];
+  for (let i = 0; i < 20; i++) {
+    const s = y.ilkUygun(ic.parcaSekli(t, null, 0, 0, 0), 'icon', dolu);
+    if (!s) break;
+    dolu.push({ tip: 'icon', sekil: s });
+  }
+  assert.ok(dolu.length >= 6, 'yerleşen ' + dolu.length);
+  for (let i = 0; i < dolu.length; i++) {
+    assert.equal(y.konumSorunu(dolu[i].sekil, 'icon'), null);
+    for (let j = i + 1; j < dolu.length; j++) assert.equal(g.cakisir(dolu[i].sekil, dolu[j].sekil, -0.2), false);
+  }
+  // Kemerin üst köşesine (dışarıya) konan patch taşıyor; en yakın geçerli yer bulunur
+  const ust = [{ tip: 'icon', sekil: ic.parcaSekli(t, null, a.x + 1, a.y + 1, 0) }];
+  assert.equal(y.konumSorunu(ust[0].sekil, 'icon'), 'tasma');
+  const d = y.enYakin(ust, [], 0, 0);
+  assert.ok(d, 'yer bulundu');
+  assert.equal(y.konumSorunu(g.kaydir(ust[0].sekil, d[0], d[1]), 'icon'), null);
+});
+
+test('çokgen yasaklı bölge ve iki çokgen alan (üst panel + alt cep)', () => {
+  const alt = [[22, 75], [78, 75], [78, 95], [22, 95]];
+  const yasak = [[40, 50], [60, 50], [60, 56], [40, 56]];
+  const m = new ic.Model(cokgenVeri([kemerZone(), { id: 'alt-cep', ad: 'Alt cep', shape: 'poly', x: 22, y: 75, w: 56, h: 20, points: alt, allowed_types: ['icon'] }],
+    [{ ad: 'Fermuar', shape: 'poly', x: 40, y: 50, w: 20, h: 6, points: yasak }]));
+  const y = new ic.Yerlesim(m);
+  assert.equal(m.yasaklar[0].t, 'cokgen');
+  const t = m.ikonHarita[5];
+  const Y = m.yasaklar[0];
+  assert.equal(y.konumSorunu(ic.parcaSekli(t, null, Y.x + Y.w / 2, Y.y + Y.h + 1, 0), 'icon'), 'yasak');
+  assert.equal(y.konumSorunu(ic.parcaSekli(t, null, Y.x + Y.w / 2, Y.y + Y.h + 3, 0), 'icon'), null);
+  // Alt cep yalnızca ikon: harf orada geçersiz, ikon geçerli
+  const A = m.alanlar[1].sekil;
+  const c = g.merkez(A);
+  assert.equal(y.konumSorunu(ic.parcaSekli(t, null, c[0], c[1], 0), 'icon'), null);
+  assert.equal(y.konumSorunu(g.donukDikdortgen(c[0], c[1], 4, 5, 0), 'letter'), 'tasma');
+});
+
+test('çokgen alan: ismin ortası girintiye düşüyorsa ismin sığdığı yer aranır', () => {
+  // U alanı (%): 1000 px = 40 cm; girinti ortada
+  const p = [[10, 20], [47, 20], [47, 55], [53, 55], [53, 20], [90, 20], [90, 80], [10, 80]];
+  const m = new ic.Model(cokgenVeri([{ id: 'u', shape: 'poly', x: 10, y: 20, w: 80, h: 60, genislik_cm: 32, points: p }]));
+  const y = new ic.Yerlesim(m);
+  const yer = y.isimYeri([{ en: 5, boy: 6 }, { en: 5, boy: 6 }, { en: 5, boy: 6 }], 0);
+  assert.ok(yer.satir >= 1, 'sığdı');
+  assert.ok(yer.merkez[1] > 55 * 0.4, 'girintinin altında: ' + yer.merkez);
+});

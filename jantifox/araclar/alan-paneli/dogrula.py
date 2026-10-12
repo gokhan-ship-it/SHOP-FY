@@ -16,7 +16,7 @@ import sys
 
 KOK = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))  # jantifox/
 TIPLER = {'letter', 'number', 'icon'}
-SEKILLER = {'circle', 'ellipse', 'rect'}
+SEKILLER = {'circle', 'ellipse', 'rect', 'poly'}
 HARF = (5.5, 6.0)  # örnek harf patch'i (cm)
 TOL = 0.05  # % cinsinden sınır toleransı
 
@@ -48,11 +48,77 @@ def sekil_sorunlari(z, ad):
         s.append('%s: boyut sıfır' % ad)
     if x < -TOL or y < -TOL or x + w > 100 + TOL or y + h > 100 + TOL:
         s.append('%s: görselin dışına taşıyor (x %.2f–%.2f, y %.2f–%.2f %%)' % (ad, x, x + w, y, y + h))
+    if z.get('shape') == 'poly':
+        p = z.get('points')
+        try:
+            p = [(float(q[0]), float(q[1])) for q in p]
+        except (TypeError, ValueError, IndexError):
+            return s + ['%s: çokgen noktaları okunamadı' % ad]
+        if len(p) < 3:
+            return s + ['%s: çokgende en az 3 nokta olmalı' % ad]
+        xs, ys = [q[0] for q in p], [q[1] for q in p]
+        if min(xs) < -TOL or min(ys) < -TOL or max(xs) > 100 + TOL or max(ys) > 100 + TOL:
+            s.append('%s: çokgen noktaları görselin dışında' % ad)
+        if abs(min(xs) - x) > 0.1 or abs(min(ys) - y) > 0.1 or abs(max(xs) - (x + w)) > 0.1 or abs(max(ys) - (y + h)) > 0.1:
+            s.append('%s: x / y / w / h çokgenin kutusuyla uyuşmuyor' % ad)
+        if kendini_keser(p):
+            s.append('%s: çokgenin kenarları birbirini kesiyor' % ad)
     return s
 
 
-def harf_sigar(z, en_cm, boy_cm):
+def _vek(a, b, c):
+    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+
+
+def _kesisir(a, b, c, d):
+    d1, d2, d3, d4 = _vek(c, d, a), _vek(c, d, b), _vek(a, b, c), _vek(a, b, d)
+    return ((d1 > 0 > d2) or (d1 < 0 < d2)) and ((d3 > 0 > d4) or (d3 < 0 < d4))
+
+
+def kendini_keser(p):
+    n = len(p)
+    for i in range(n):
+        for j in range(i + 2, n):
+            if i == 0 and j == n - 1:
+                continue
+            if _kesisir(p[i], p[(i + 1) % n], p[j], p[(j + 1) % n]):
+                return True
+    return False
+
+
+def _icinde(x, y, p):
+    ic = False
+    j = len(p) - 1
+    for i in range(len(p)):
+        if (p[i][1] > y) != (p[j][1] > y) and x < (p[j][0] - p[i][0]) * (y - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]:
+            ic = not ic
+        j = i
+    return ic
+
+
+def cokgen_dikdortgen_sigar(p, w, h):
+    """w × h dikdörtgen çokgenin (cm) içinde bir yere sığıyor mu: köşeler içeride, kenar kesmiyor, köşe içine girmiyor."""
+    xs, ys = [q[0] for q in p], [q[1] for q in p]
+    adim = max(0.25, min(w, h) / 4)
+    y = min(ys)
+    while y + h <= max(ys) + 1e-9:
+        x = min(xs)
+        while x + w <= max(xs) + 1e-9:
+            r = [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
+            if all(_icinde(q[0], q[1], p) for q in r) and not any(
+                    x < a[0] < x + w and y < a[1] < y + h for a in p) and not any(
+                    _kesisir(p[k], p[(k + 1) % len(p)], r[m], r[(m + 1) % 4]) for k in range(len(p)) for m in range(4)):
+                return True
+            x += adim
+        y += adim
+    return False
+
+
+def harf_sigar(z, en_cm, boy_cm, en=None, boy=None, px_cm=None):
     lw, lh = HARF
+    if z['shape'] == 'poly':
+        p = [(q[0] / 100 * en / px_cm, q[1] / 100 * boy / px_cm) for q in z['points']]
+        return cokgen_dikdortgen_sigar(p, lw, lh)
     if z['shape'] == 'rect':
         return en_cm >= lw and boy_cm >= lh
     a, b = en_cm / 2, boy_cm / 2
@@ -63,9 +129,11 @@ def ayni_geometri(a, b):
     """İki haritanın alanları ve yasaklı bölgeleri aynı mı (tip / dis gibi ek alanlar hariç)."""
     def ozet(h):
         z = [(q.get('shape'), round(q['x'], 1), round(q['y'], 1), round(q['w'], 1), round(q['h'], 1),
-              q.get('cap_cm') or q.get('genislik_cm'), q.get('kose_cm'), tuple(sorted(q.get('allowed_types') or [])))
+              q.get('cap_cm') or q.get('genislik_cm'), q.get('kose_cm'), tuple(sorted(q.get('allowed_types') or [])),
+              tuple(tuple(round(v, 1) for v in n) for n in q.get('points') or []))
              for q in h.get('zones') or []]
-        f = [(q.get('shape'), round(q['x'], 1), round(q['y'], 1), round(q['w'], 1), round(q['h'], 1)) for q in h.get('forbidden') or []]
+        f = [(q.get('shape'), round(q['x'], 1), round(q['y'], 1), round(q['w'], 1), round(q['h'], 1),
+              tuple(tuple(round(v, 1) for v in n) for n in q.get('points') or [])) for q in h.get('forbidden') or []]
         return z, sorted(f)
     return ozet(a) == ozet(b)
 
@@ -144,7 +212,7 @@ def denetle(u, bilinen, magaza):
                 uyarilar.append('Çap %.1f cm, sitede %s cm' % (cm, v['cap_cm']))
             for z in zones:
                 zw, zh = z['w'] / 100 * en / px_cm, z['h'] / 100 * boy / px_cm
-                if not harf_sigar(z, zw, zh):
+                if not harf_sigar(z, zw, zh, en, boy, px_cm):
                     hatalar.append('Alan "%s" (%.1f × %.1f cm) %s × %s cm harfi almıyor' % (z.get('ad'), zw, zh, HARF[0], HARF[1]))
     if hr.get('olcu_tahmini') or (u.get('olcek') or {}).get('tahmini'):
         uyarilar.append('Ölçü tahmini (çanta genişliğinden); gerçek Velcro ölçüsü gelince güncellenmeli')

@@ -91,6 +91,12 @@
   .ornek.disarda { fill: rgba(255, 59, 48, .85); }
   .ornek-yazi { font-weight: 800; fill: #111; pointer-events: none; text-anchor: middle; dominant-baseline: central; }
   .cizim { cursor: crosshair; }
+  .nokta { fill: #fff; stroke: var(--vurgu); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: move; }
+  .nokta.secili { fill: var(--vurgu); }
+  .nokta.ilk { fill: #ffd400; stroke: #111; cursor: pointer; }
+  .kenar-yakala { fill: none; stroke: transparent; stroke-width: 12; vector-effect: non-scaling-stroke; cursor: copy; }
+  .cizim-yol { fill: rgba(0, 194, 255, .08); stroke: var(--vurgu); stroke-width: 2; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; pointer-events: none; }
+  .cizim-yol.yasak { stroke: var(--yasak); fill: rgba(255, 59, 48, .08); }
   .soluk { opacity: .45; }
   .kayit-durum { font-size: 12px; color: var(--ikincil); }
 </style>
@@ -122,6 +128,10 @@
     <span class="ayirac"></span>
     <button type="button" data-arac="yasak-rect" aria-pressed="false" title="Yasaklı bölge, dikdörtgen (Y)">Yasaklı ▭</button>
     <button type="button" data-arac="yasak-ellipse" aria-pressed="false" title="Yasaklı bölge, oval">Yasaklı ◯</button>
+    <span class="ayirac"></span>
+    <button type="button" data-arac="kalem" aria-pressed="false" title="Kalem: alanın kenarı boyunca tıklayarak nokta koy; ilk noktaya tıkla ya da Enter ile kapat, Esc iptal (P)">Kalem</button>
+    <button type="button" data-arac="degnek" aria-pressed="false" title="Sihirli değnek: tıkladığın noktadan benzer renkli bitişik bölgeyi seçer (W)">Sihirli değnek</button>
+    <select id="cizim-tur" title="Kalem ve sihirli değnekle çizilecek şekil" style="width:auto"><option value="alan">Velcro alanı</option><option value="yasak">Yasaklı bölge</option></select>
     <span class="ayirac"></span>
     <button type="button" data-arac="cizgi" aria-pressed="false" title="Ölçek çizgisi: bilinen bir uzunluğu çiz (L)">Ölçek çizgisi</button>
     <span class="ayirac"></span>
@@ -159,12 +169,21 @@
     </div>
   </section>
 
+  <section id="degnek-bolum" hidden>
+    <h2>Sihirli değnek</h2>
+    <label for="degnek-hassasiyet">Hassasiyet: <span id="degnek-hassasiyet-yazi">15</span></label>
+    <input type="range" id="degnek-hassasiyet" min="1" max="60" step="1" value="15" style="width:100%">
+    <label for="degnek-pay">Kenarı içeri çek</label>
+    <div class="satir"><input type="number" id="degnek-pay" min="0" step="0.1" value="0.3" style="width:90px"> <span>cm</span></div>
+    <p class="not" id="degnek-durum">Görselde seçmek istediğin bölgeye tıkla. Seçim fazla taşıyorsa hassasiyeti düşür, eksik kalıyorsa artır; seçili şekil anında güncellenir.</p>
+  </section>
+
   <section id="ozellik" hidden>
     <h2>Seçili şekil</h2>
     <div class="izgara">
       <div><label for="o-ad">Ad</label><input type="text" id="o-ad"></div>
       <div><label for="o-sekil">Şekil</label>
-        <select id="o-sekil"><option value="circle">Daire</option><option value="ellipse">Oval</option><option value="rect">Dikdörtgen</option></select></div>
+        <select id="o-sekil"><option value="circle">Daire</option><option value="ellipse">Oval</option><option value="rect">Dikdörtgen</option><option value="poly" disabled>Çokgen</option></select></div>
       <div><label for="o-x">Sol (px)</label><input type="number" id="o-x" step="1"></div>
       <div><label for="o-y">Üst (px)</label><input type="number" id="o-y" step="1"></div>
       <div><label for="o-w">Genişlik (px)</label><input type="number" id="o-w" step="1" min="1"></div>
@@ -181,6 +200,10 @@
         <label for="o-kose">Köşe yarıçapı (cm)</label>
         <div class="satir"><input type="number" id="o-kose" step="0.1" min="0" placeholder="0" style="width:100px"> <span>cm</span></div>
       </div>
+      <div id="cokgen-ayar" hidden>
+        <label class="onay" style="margin-top:8px"><input type="checkbox" id="o-yumusat"> Kenarları yumuşat</label>
+        <div class="satir"><input type="range" id="o-yumusat-miktar" min="0.1" max="1" step="0.05" value="0.6" style="flex:1"> <span id="o-yumusat-yazi" class="not" style="margin:0"></span></div>
+      </div>
       <label for="o-olcu">Gerçek Velcro ölçüsü</label>
       <div class="satir">
         <select id="o-olcu-yon" style="width:120px"><option value="genislik">Genişlik</option><option value="yukseklik">Yükseklik</option></select>
@@ -190,6 +213,10 @@
       <p class="not" id="o-olcu-not"></p>
     </div>
     <div class="satir" style="margin-top:8px"><button type="button" class="tehlike" id="sil">Şekli sil</button></div>
+    <div id="cokgen-yasak-ayar" hidden>
+      <label class="onay"><input type="checkbox" id="o-yumusat-y"> Kenarları yumuşat</label>
+    </div>
+    <p class="not" id="cokgen-not" hidden>Noktaları sürükleyerek taşı; kenara tıklayınca araya nokta eklenir; noktayı seçip <kbd>Delete</kbd> ile sil. <span id="o-nokta-sayisi"></span></p>
     <p class="not">İnce ayar: ok tuşları 1 px, <kbd>Shift</kbd>+ok 10 px. Silmek: <kbd>Delete</kbd>.</p>
   </section>
 
@@ -231,11 +258,12 @@
       <button type="button" class="tehlike" id="sifirla" title="Kaydedilmiş çalışmayı sil, veri.js'teki başlangıca dön">Sıfırla</button>
     </div>
     <p class="not">Dışa aktarılan dosya hazır ve atlanan ürünlerin haritalarını, ölçülerini ve ayarlarını içerir; panelin tüm durumu da içindedir, başka bilgisayarda "İçe aktar" ile kaldığın yerden devam edebilirsin.</p>
-    <p class="not">Kısayollar: <kbd>]</kbd>/<kbd>[</kbd> ya da <kbd>Alt</kbd>+<kbd>→</kbd>/<kbd>←</kbd> sonraki/önceki, <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>S</kbd> kaydet, <kbd>V</kbd> <kbd>C</kbd> <kbd>O</kbd> <kbd>R</kbd> <kbd>Y</kbd> <kbd>L</kbd> araçlar, <kbd>+</kbd>/<kbd>−</kbd>/<kbd>0</kbd> yakınlık.</p>
+    <p class="not">Kısayollar: <kbd>]</kbd>/<kbd>[</kbd> ya da <kbd>Alt</kbd>+<kbd>→</kbd>/<kbd>←</kbd> sonraki/önceki, <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>S</kbd> kaydet, <kbd>V</kbd> <kbd>C</kbd> <kbd>O</kbd> <kbd>R</kbd> <kbd>Y</kbd> <kbd>P</kbd> (kalem) <kbd>W</kbd> (değnek) <kbd>L</kbd> araçlar, <kbd>+</kbd>/<kbd>−</kbd>/<kbd>0</kbd> yakınlık.</p>
   </section>
 </aside>
 
 <script src="veri.js"></script>
+<script src="cokgen.js"></script>
 <script>
 (function () {
   'use strict';
@@ -245,6 +273,7 @@
   var SEKIL_ADI = { circle: 'daire', ellipse: 'oval', rect: 'dikdörtgen' };
   var IZIN_TIP = { harf: 'letter', rakam: 'number', ikon: 'icon' };
   var $ = function (s) { return document.querySelector(s); };
+  var C = window.PanelCokgen;
   var svg = $('#sahne'), kap = $('#sahne-kap');
   var VERI = window.PANEL_VERI;
   if (!VERI) { document.body.innerHTML = '<p style="padding:24px">veri.js bulunamadı. Paneli klasörüyle birlikte aç.</p>'; return; }
@@ -325,6 +354,7 @@
   /* ---------------- Doğrulama ---------------- */
 
   function harfSigar(s, o, lw, lh) {
+    if (s.shape === 'poly') return !!C.dikdortgenYeri(cizimNoktalari(s), lw * o.pxCm, lh * o.pxCm);
     var w = s.w / o.pxCm, h = s.h / o.pxCm;
     if (s.shape === 'rect') {
       return w >= lw && h >= lh;
@@ -350,6 +380,11 @@
     alanlar.forEach(function (s) {
       if (!s.tipler.length && (izin.harf || izin.rakam || izin.ikon)) r.hatalar.push('"' + s.ad + '" alanında hiçbir patch tipi seçili değil.');
       if (s.x < -0.5 || s.y < -0.5 || s.x + s.w > u.png.en + 0.5 || s.y + s.h > u.png.boy + 0.5) r.hatalar.push('"' + s.ad + '" görselin dışına taşıyor.');
+    });
+    d.sekiller.forEach(function (s) {
+      if (s.shape !== 'poly') return;
+      if (s.noktalar.length < 3) r.hatalar.push('"' + s.ad + '" en az 3 nokta olmalı.');
+      else if (C.kendiniKeser(cizimNoktalari(s))) r.hatalar.push('"' + s.ad + '" kenarları birbirini kesiyor; noktaları düzelt.');
     });
     if (o) {
       var lw = sayi($('#ornek-en').value) || 5.5, lh = sayi($('#ornek-boy').value) || 6;
@@ -496,7 +531,9 @@
   /* ---------------- Araçlar ---------------- */
 
   function aracSec(a) {
+    if (a !== 'kalem' && gor.cizim) { gor.cizim = null; gor.imlec = null; }
     gor.arac = a;
+    $('#degnek-bolum').hidden = !(a === 'degnek' || (bul(gor.seciliId) || {}).degnek);
     document.querySelectorAll('[data-arac]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-arac') === a ? 'true' : 'false'); });
     svg.classList.toggle('cizim', a !== 'sec');
   }
@@ -504,12 +541,24 @@
 
   /* ---------------- Çizim ---------------- */
 
-  function el(ad, o) { var e = document.createElementNS(NS, ad); for (var k in o) e.setAttribute(k, o[k]); return e; }
+  function el(ad, o) { var e = document.createElementNS(NS, ad); for (var k in o) if (o[k] != null) e.setAttribute(k, o[k]); return e; }
   function bul(id) { var l = D().sekiller; for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i]; return null; }
   function koseR(s) {
     if (s.shape !== 'rect' || !(s.koseCm > 0) || s.tur !== 'alan') return 0;
     var o = olcek();
     return o ? Math.min(s.koseCm * o.pxCm, s.w / 2, s.h / 2) : 0;
+  }
+  // Çokgen: s.noktalar (kontrol noktaları, px) + s.yumusat (0 = köşeli, 0–1 kavis miktarı). x/y/w/h çizilen şeklin kutusu.
+  function cizimNoktalari(s) { return C.yumusat(s.noktalar, s.yumusat || 0, 8); }
+  function polyGuncelle(s) { var k = C.kutu(cizimNoktalari(s)); s.x = k.x; s.y = k.y; s.w = k.w; s.h = k.h; }
+  function yolD(p) { return 'M' + p.map(function (q) { return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join('L') + 'Z'; }
+  function polyTasi(s, dx, dy) {
+    var u = U(), k = C.kutu(s.noktalar);
+    dx = Math.max(-k.x, Math.min(u.png.en - (k.x + k.w), dx));
+    dy = Math.max(-k.y, Math.min(u.png.boy - (k.y + k.h), dy));
+    s.noktalar = s.noktalar.map(function (q) { return [q[0] + dx, q[1] + dy]; });
+    if (s.degnek) { s.degnek.x += dx; s.degnek.y += dy; }
+    polyGuncelle(s);
   }
   function ciz() {
     var u = U();
@@ -521,7 +570,9 @@
     var yazi = 13 / gor.zoom;
     d.sekiller.forEach(function (s) {
       var r = koseR(s);
-      var e = s.shape === 'rect'
+      var e = s.shape === 'poly'
+        ? el('path', { d: yolD(cizimNoktalari(s)) })
+        : s.shape === 'rect'
         ? el('rect', { x: s.x, y: s.y, width: s.w, height: s.h, rx: r, ry: r })
         : el('ellipse', { cx: s.x + s.w / 2, cy: s.y + s.h / 2, rx: s.w / 2, ry: s.h / 2 });
       e.setAttribute('class', 'sekil' + (s.tur === 'yasak' ? ' yasak' : '') + (s.id === gor.seciliId ? ' secili' : '') + soluk);
@@ -540,6 +591,15 @@
       svg.appendChild(ct);
     }
     ornekCiz();
+    if (gor.cizim) {
+      // Kalemle çizilmekte olan şekil: noktalar, imlece giden çizgi; ilk nokta kapatma noktası
+      var cn = gor.cizim.noktalar.concat(gor.imlec ? [[gor.imlec.x, gor.imlec.y]] : []);
+      if (cn.length >= 2) svg.appendChild(el('path', { d: 'M' + cn.map(function (q) { return q[0] + ' ' + q[1]; }).join('L'), class: 'cizim-yol' + (gor.cizim.tur === 'yasak' ? ' yasak' : '') }));
+      var rn = 6 / gor.zoom;
+      gor.cizim.noktalar.forEach(function (q, i) {
+        svg.appendChild(el('circle', { cx: q[0], cy: q[1], r: i === 0 ? rn * 1.4 : rn, class: 'nokta' + (i === 0 ? ' ilk' : ''), 'data-ilk': i === 0 ? '1' : null }));
+      });
+    }
     if (gor.seciliId === 'cizgi' && d.cizgi) {
       var r2 = 7 / gor.zoom;
       [['p1', d.cizgi.x1, d.cizgi.y1], ['p2', d.cizgi.x2, d.cizgi.y2]].forEach(function (t) {
@@ -552,6 +612,14 @@
   }
   function tutamacCiz(s) {
     var r = 7 / gor.zoom;
+    if (s.shape === 'poly') {
+      // Kenara tıklayınca araya nokta eklenir; noktalar sürüklenir, seçilen nokta Delete ile silinir
+      svg.appendChild(el('path', { d: yolD(cizimNoktalari(s)), class: 'kenar-yakala', 'data-kenar': '1' }));
+      s.noktalar.forEach(function (q, i) {
+        svg.appendChild(el('circle', { cx: q[0], cy: q[1], r: r * 0.85, class: 'nokta' + (gor.seciliNokta === i ? ' secili' : ''), 'data-nokta': i }));
+      });
+      return;
+    }
     var x1 = s.x, y1 = s.y, x2 = s.x + s.w, y2 = s.y + s.h, mx = s.x + s.w / 2, my = s.y + s.h / 2;
     var t = [['nw', x1, y1], ['ne', x2, y1], ['sw', x1, y2], ['se', x2, y2]];
     if (s.shape !== 'circle') t.push(['n', mx, y1], ['s', mx, y2], ['w', x1, my], ['e', x2, my]);
@@ -561,6 +629,7 @@
     });
   }
   function icinde(px, py, s) {
+    if (s.shape === 'poly') return C.icinde(px, py, cizimNoktalari(s));
     if (s.shape === 'rect') {
       if (!(px >= s.x - 0.5 && px <= s.x + s.w + 0.5 && py >= s.y - 0.5 && py <= s.y + s.h + 0.5)) return false;
       var r = koseR(s);
@@ -584,7 +653,9 @@
     var w = (sayi($('#ornek-en').value) || 5.5) * o.pxCm, h = (sayi($('#ornek-boy').value) || 6) * o.pxCm;
     if (gor.ornek.cx == null || gor.ornek.alanId !== alan.id) gor.ornek = { cx: alan.x + alan.w / 2, cy: alan.y + alan.h / 2, alanId: alan.id };
     var x = gor.ornek.cx - w / 2, y = gor.ornek.cy - h / 2;
-    var disarda = ![[x, y], [x + w, y], [x, y + h], [x + w, y + h]].every(function (k) { return icinde(k[0], k[1], alan); });
+    var disarda = alan.shape === 'poly'
+      ? !C.dikdortgenIcinde(cizimNoktalari(alan), x, y, w, h)
+      : ![[x, y], [x + w, y], [x, y + h], [x + w, y + h]].every(function (k) { return icinde(k[0], k[1], alan); });
     svg.appendChild(el('rect', { x: x, y: y, width: w, height: h, rx: w * 0.08, class: 'ornek' + (disarda ? ' disarda' : ''), 'data-ornek': '1' }));
     var t = el('text', { x: gor.ornek.cx, y: gor.ornek.cy, class: 'ornek-yazi', 'font-size': h * 0.62 });
     t.textContent = 'A';
@@ -601,6 +672,12 @@
   function sinirla(s, en, boy) {
     var u = U();
     var W = en || u.png.en, H = boy || u.png.boy;
+    if (s.shape === 'poly') {
+      s.noktalar = s.noktalar.map(function (q) { return [Math.max(0, Math.min(W, q[0])), Math.max(0, Math.min(H, q[1]))]; });
+      var k = C.kutu(C.yumusat(s.noktalar, s.yumusat || 0, 8));
+      s.x = k.x; s.y = k.y; s.w = k.w; s.h = k.h;
+      return;
+    }
     s.w = Math.max(4, Math.min(s.w, W));
     s.h = Math.max(4, Math.min(s.h, H));
     if (s.shape === 'circle') { var dd = Math.min(s.w, s.h); s.w = dd; s.h = dd; }
@@ -622,6 +699,8 @@
     var u = U();
     if (!u || !u.png || e.button !== 0) return;
     var pt = nokta(e), hedef = e.target, d = D();
+    if (gor.arac === 'kalem') { kalemTikla(pt, hedef); return; }
+    if (gor.arac === 'degnek') { degnekTikla(pt); return; }
     svg.setPointerCapture(e.pointerId);
     if (gor.arac === 'cizgi') {
       var cmEski = d.cizgi ? d.cizgi.cm : null;
@@ -651,6 +730,23 @@
       islem = { tur: 'boyut', s: sec, kenar: k, bas: { x: sec.x, y: sec.y, w: sec.w, h: sec.h }, bx: pt.x, by: pt.y };
       return;
     }
+    if (hedef.hasAttribute('data-nokta')) {
+      gor.seciliNokta = Number(hedef.getAttribute('data-nokta'));
+      islem = { tur: 'nokta', s: bul(gor.seciliId), i: gor.seciliNokta };
+      ciz();
+      return;
+    }
+    if (hedef.hasAttribute('data-kenar')) {
+      var ps = bul(gor.seciliId);
+      var ek = C.enYakinKenar(ps.noktalar, pt.x, pt.y);
+      ps.noktalar.splice(ek.i + 1, 0, [pt.x, pt.y]);
+      delete ps.degnek;
+      gor.seciliNokta = ek.i + 1;
+      polyGuncelle(ps);
+      islem = { tur: 'nokta', s: ps, i: ek.i + 1 };
+      hepsiniCiz();
+      return;
+    }
     if (hedef.hasAttribute('data-ornek')) { islem = { tur: 'ornek', bx: pt.x, by: pt.y, ox: gor.ornek.cx, oy: gor.ornek.cy }; return; }
     var id = hedef.getAttribute('data-id');
     if (id === 'cizgi') {
@@ -662,20 +758,31 @@
     if (id) {
       gor.seciliId = id;
       var t = bul(id);
-      islem = { tur: 'tasi', s: t, bas: { x: t.x, y: t.y }, bx: pt.x, by: pt.y };
+      if (gor.seciliId !== id) gor.seciliNokta = null;
+      islem = { tur: 'tasi', s: t, bas: { x: t.x, y: t.y }, son: [0, 0], bx: pt.x, by: pt.y };
       hepsiniCiz();
       return;
     }
     gor.seciliId = null;
+    gor.seciliNokta = null;
     hepsiniCiz();
   });
   svg.addEventListener('pointermove', function (e) {
+    if (gor.cizim && !islem) { gor.imlec = nokta(e); ciz(); return; }
     if (!islem) return;
     var pt = nokta(e), dx = pt.x - (islem.bx || 0), dy = pt.y - (islem.by || 0), s = islem.s, c = D().cizgi;
     if (islem.tur === 'ciz') {
       var w = Math.abs(dx), h = Math.abs(dy);
       if (s.shape === 'circle') { var m = Math.max(w, h); w = m; h = m; }
       s.w = w; s.h = h; s.x = dx < 0 ? islem.bx - w : islem.bx; s.y = dy < 0 ? islem.by - h : islem.by;
+    } else if (islem.tur === 'tasi' && s.shape === 'poly') {
+      polyTasi(s, dx - islem.son[0], dy - islem.son[1]);
+      islem.son = [dx, dy];
+    } else if (islem.tur === 'nokta') {
+      var u0 = U();
+      s.noktalar[islem.i] = [Math.max(0, Math.min(u0.png.en, pt.x)), Math.max(0, Math.min(u0.png.boy, pt.y))];
+      delete s.degnek;
+      polyGuncelle(s);
     } else if (islem.tur === 'tasi') {
       s.x = islem.bas.x + dx; s.y = islem.bas.y + dy; sinirla(s);
     } else if (islem.tur === 'boyut') {
@@ -728,6 +835,123 @@
   svg.addEventListener('pointerup', birak);
   svg.addEventListener('pointercancel', birak);
 
+  /* ---------------- Kalem ve sihirli değnek ---------------- */
+
+  function yeniAd(tur) {
+    var u = U(), d = D();
+    var n = d.sekiller.filter(function (s) { return s.tur === tur; }).length + 1;
+    var cok = VERI.gruplar[u.grup].cokluAlan;
+    return tur === 'yasak' ? 'Bölge ' + n : cok ? (n === 1 ? 'Üst panel' : n === 2 ? 'Alt cep' : 'Alan ' + n) : (n === 1 ? 'Ön alan' : 'Alan ' + n);
+  }
+  function cokgenEkle(tur, noktalar, ek) {
+    var s = { id: yeniId(), tur: tur, shape: 'poly', noktalar: noktalar, yumusat: 0, ad: yeniAd(tur) };
+    if (tur === 'alan') { s.tipler = varsayilanTipler(); s.olcuCm = null; s.olcuYon = 'genislik'; }
+    for (var k in ek) s[k] = ek[k];
+    polyGuncelle(s);
+    D().sekiller.push(s);
+    gor.seciliId = s.id;
+    gor.seciliNokta = null;
+    degisti();
+    return s;
+  }
+  function kalemTikla(pt, hedef) {
+    var u = U();
+    var q = [Math.max(0, Math.min(u.png.en, pt.x)), Math.max(0, Math.min(u.png.boy, pt.y))];
+    if (!gor.cizim) { gor.cizim = { noktalar: [], tur: $('#cizim-tur').value }; gor.seciliId = null; }
+    var c = gor.cizim;
+    var ilk = c.noktalar[0];
+    if (c.noktalar.length >= 3 && (hedef.hasAttribute('data-ilk') || Math.hypot(q[0] - ilk[0], q[1] - ilk[1]) < 10 / gor.zoom)) { kalemBitir(); return; }
+    c.noktalar.push(q);
+    hepsiniCiz();
+  }
+  function kalemBitir() {
+    var c = gor.cizim;
+    gor.cizim = null;
+    gor.imlec = null;
+    if (!c || c.noktalar.length < 3) { hepsiniCiz(); return; }
+    var s = cokgenEkle(c.tur, c.noktalar, {});
+    aracSec('sec');
+    hepsiniCiz();
+    if (s.tur === 'alan' && !olcek()) setTimeout(function () { $('#o-olcu').focus(); }, 0);
+  }
+
+  // Değnek görselin piksellerini gorseller/<handle>.js'teki data: adresinden okur (file:// sayfada <img> pikselleri okunamaz)
+  var pikseller = {};
+  function pikselYukle(u) {
+    if (pikseller[u.handle]) return pikseller[u.handle];
+    pikseller[u.handle] = new Promise(function (tamam, hata) {
+      var veriAl = function () {
+        var url = (window.PANEL_PIKSEL || {})[u.handle];
+        if (!url) { hata(new Error('görsel verisi yok')); return; }
+        var img = new Image();
+        img.onload = function () {
+          var cv = document.createElement('canvas');
+          cv.width = u.png.en; cv.height = u.png.boy;
+          var cx = cv.getContext('2d');
+          cx.drawImage(img, 0, 0, u.png.en, u.png.boy);
+          tamam({ W: u.png.en, H: u.png.boy, data: cx.getImageData(0, 0, u.png.en, u.png.boy).data });
+        };
+        img.onerror = function () { hata(new Error('görsel açılamadı')); };
+        img.src = url;
+      };
+      if ((window.PANEL_PIKSEL || {})[u.handle]) { veriAl(); return; }
+      var sc = document.createElement('script');
+      sc.src = 'gorseller/' + u.handle + '.js';
+      sc.onload = veriAl;
+      sc.onerror = function () { hata(new Error('gorseller/' + u.handle + '.js yüklenemedi')); };
+      document.head.appendChild(sc);
+    });
+    pikseller[u.handle].catch(function () { delete pikseller[u.handle]; });
+    return pikseller[u.handle];
+  }
+  function degnekAyari() {
+    var o = olcek();
+    var payCm = Math.max(0, sayi($('#degnek-pay').value) || 0);
+    return { hassasiyet: Number($('#degnek-hassasiyet').value) || 15, payCm: payCm, pay: o ? payCm * o.pxCm : payCm * 20 };
+  }
+  function degnekDurum(m) { $('#degnek-durum').textContent = m; }
+  function degnekTikla(pt) {
+    var u = U(), tur = $('#cizim-tur').value, a = degnekAyari();
+    degnekDurum('Seçiliyor…');
+    return pikselYukle(u).then(function (img) {
+      if (p.aktif !== u.handle) return null;
+      var t0 = performance.now();
+      var noktalar = C.degnek(img, pt.x, pt.y, a);
+      if (!noktalar) { degnekDurum('Bu noktada seçilecek bölge bulunamadı (şeffaf ya da çok küçük). Başka bir yere tıkla.'); return null; }
+      var s = cokgenEkle(tur, noktalar, { degnek: { x: pt.x, y: pt.y, hassasiyet: a.hassasiyet, payCm: a.payCm } });
+      degnekDurum(noktalar.length + ' noktalı çokgen seçildi (' + Math.round(performance.now() - t0) + ' ms). Hassasiyeti değiştirirsen seçim güncellenir; noktaları sürükleyerek düzeltebilirsin.' +
+        (olcek() ? '' : ' Ölçek henüz yok: kenar payı yaklaşık uygulandı, ölçüyü girince değneği yeniden çalıştır.'));
+      aracSec('sec');
+      hepsiniCiz();
+      return s;
+    }, function (err) { degnekDurum('Sihirli değnek çalışmadı: ' + err.message + '.'); });
+  }
+  // Seçili değnek şeklini yeni ayarla yeniden hesaplar (kaydırıcı); kare başına bir kez
+  var degnekBekleyen = null;
+  function degnekYenile() {
+    var s = bul(gor.seciliId);
+    if (!s || !s.degnek) return;
+    if (degnekBekleyen) return;
+    degnekBekleyen = requestAnimationFrame(function () {
+      degnekBekleyen = null;
+      var u = U(), a = degnekAyari();
+      pikselYukle(u).then(function (img) {
+        var t = bul(gor.seciliId);
+        if (!t || !t.degnek) return;
+        var noktalar = C.degnek(img, t.degnek.x, t.degnek.y, a);
+        if (!noktalar) { degnekDurum('Bu ayarla bölge bulunamadı.'); return; }
+        t.noktalar = noktalar;
+        t.degnek.hassasiyet = a.hassasiyet;
+        t.degnek.payCm = a.payCm;
+        polyGuncelle(t);
+        degnekDurum(noktalar.length + ' noktalı çokgen (hassasiyet ' + a.hassasiyet + ', kenar payı ' + a.payCm + ' cm).');
+        degisti(); hepsiniCiz();
+      });
+    });
+  }
+  $('#degnek-hassasiyet').addEventListener('input', function () { $('#degnek-hassasiyet-yazi').textContent = this.value; degnekYenile(); });
+  $('#degnek-pay').addEventListener('input', degnekYenile);
+
   /* ---------------- Klavye ---------------- */
 
   document.addEventListener('keydown', function (e) {
@@ -735,13 +959,27 @@
     if (e.altKey && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { e.preventDefault(); komsu(e.key === 'ArrowRight' ? 1 : -1); return; }
     if (document.activeElement.matches('input[type=text], input[type=number], textarea, select')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (gor.cizim) {
+      // Kalemle çizerken: Enter kapatır, Esc iptal eder, Backspace son noktayı siler
+      if (e.key === 'Enter') { e.preventDefault(); kalemBitir(); }
+      else if (e.key === 'Escape') { e.preventDefault(); gor.cizim = null; ciz(); }
+      else if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); gor.cizim.noktalar.pop(); if (!gor.cizim.noktalar.length) gor.cizim = null; ciz(); }
+      return;
+    }
     var s = bul(gor.seciliId), adim = e.shiftKey ? 10 : 1;
     var hareket = { ArrowLeft: [-adim, 0], ArrowRight: [adim, 0], ArrowUp: [0, -adim], ArrowDown: [0, adim] }[e.key];
     if (hareket && (s || gor.seciliId === 'cizgi')) {
       e.preventDefault();
-      if (s) { s.x += hareket[0]; s.y += hareket[1]; sinirla(s); }
+      if (s && s.shape === 'poly') polyTasi(s, hareket[0], hareket[1]);
+      else if (s) { s.x += hareket[0]; s.y += hareket[1]; sinirla(s); }
       else { var c = D().cizgi; c.x1 += hareket[0]; c.x2 += hareket[0]; c.y1 += hareket[1]; c.y2 += hareket[1]; noktaSinirla(c); }
       degisti(); hepsiniCiz();
+    } else if ((e.key === 'Delete' || e.key === 'Backspace') && s && s.shape === 'poly' && gor.seciliNokta != null && s.noktalar.length > 3) {
+      e.preventDefault();
+      s.noktalar.splice(gor.seciliNokta, 1);
+      delete s.degnek;
+      gor.seciliNokta = null;
+      polyGuncelle(s); degisti(); hepsiniCiz();
     } else if ((e.key === 'Delete' || e.key === 'Backspace') && (s || gor.seciliId === 'cizgi')) { e.preventDefault(); sil(); }
     else if (e.key === ']') komsu(1);
     else if (e.key === '[') komsu(-1);
@@ -751,10 +989,12 @@
     else if (/^[rR]$/.test(e.key)) aracSec('rect');
     else if (/^[yY]$/.test(e.key)) aracSec('yasak-rect');
     else if (/^[lL]$/.test(e.key)) aracSec('cizgi');
+    else if (/^[pP]$/.test(e.key)) aracSec('kalem');
+    else if (/^[wW]$/.test(e.key)) aracSec('degnek');
     else if (e.key === '+' || e.key === '=') zoomDegistir(1.25);
     else if (e.key === '-') zoomDegistir(0.8);
     else if (e.key === '0') sigdir();
-    else if (e.key === 'Escape') { gor.seciliId = null; aracSec('sec'); hepsiniCiz(); }
+    else if (e.key === 'Escape') { gor.seciliId = null; gor.seciliNokta = null; aracSec('sec'); hepsiniCiz(); }
   });
   function sil() {
     var d = D();
@@ -815,10 +1055,26 @@
     // Seçili şekil
     var s = bul(gor.seciliId);
     $('#ozellik').hidden = !s;
+    if (!s) $('#degnek-bolum').hidden = gor.arac !== 'degnek';
     if (s) {
       deger('#o-ad', s.ad); deger('#o-sekil', s.shape);
       deger('#o-x', Math.round(s.x)); deger('#o-y', Math.round(s.y)); deger('#o-w', Math.round(s.w)); deger('#o-h', Math.round(s.h));
       $('#o-alan-ayar').hidden = s.tur !== 'alan';
+      var poly = s.shape === 'poly';
+      $('#cokgen-ayar').hidden = !poly;
+      $('#cokgen-yasak-ayar').hidden = !poly || s.tur !== 'yasak';
+      $('#cokgen-not').hidden = !poly;
+      $('#o-sekil').disabled = poly;
+      if (poly) {
+        $('#o-yumusat').checked = $('#o-yumusat-y').checked = s.yumusat > 0;
+        $('#o-yumusat-miktar').disabled = !(s.yumusat > 0);
+        if (s.yumusat > 0) deger('#o-yumusat-miktar', s.yumusat);
+        $('#o-yumusat-yazi').textContent = s.yumusat > 0 ? '%' + Math.round(s.yumusat * 100) : '';
+        $('#o-nokta-sayisi').textContent = s.noktalar.length + ' nokta' + (gor.seciliNokta != null ? ', ' + (gor.seciliNokta + 1) + '. nokta seçili' : '') + '.';
+        if (s.tur === 'yasak') $('#cokgen-ayar').hidden = true;
+      }
+      $('#degnek-bolum').hidden = !(gor.arac === 'degnek' || s.degnek);
+      if (s.degnek) { deger('#degnek-hassasiyet', s.degnek.hassasiyet); $('#degnek-hassasiyet-yazi').textContent = s.degnek.hassasiyet; deger('#degnek-pay', s.degnek.payCm); }
       if (s.tur === 'alan') {
         document.querySelectorAll('[data-tip]').forEach(function (c) { c.checked = s.tipler.indexOf(c.getAttribute('data-tip')) !== -1; });
         $('#o-kose-kap').hidden = s.shape !== 'rect';
@@ -849,11 +1105,35 @@
   [['#o-x', 'x'], ['#o-y', 'y'], ['#o-w', 'w'], ['#o-h', 'h']].forEach(function (a) {
     $(a[0]).addEventListener('input', function () {
       var v = sayi(this.value); if (v == null) return;
-      seciliGuncelle(function (s) { s[a[1]] = v; if (s.shape === 'circle' && (a[1] === 'w' || a[1] === 'h')) { s.w = v; s.h = v; } sinirla(s); });
+      seciliGuncelle(function (s) {
+        if (s.shape === 'poly') {
+          // Çokgen: sol/üst taşır, genişlik/yükseklik sol üst köşeye göre ölçekler
+          if (a[1] === 'x') polyTasi(s, v - s.x, 0);
+          else if (a[1] === 'y') polyTasi(s, 0, v - s.y);
+          else if (v > 4) {
+            var k = v / (a[1] === 'w' ? s.w : s.h), x0 = s.x, y0 = s.y;
+            s.noktalar = s.noktalar.map(function (q) { return a[1] === 'w' ? [x0 + (q[0] - x0) * k, q[1]] : [q[0], y0 + (q[1] - y0) * k]; });
+            delete s.degnek;
+            sinirla(s);
+          }
+          return;
+        }
+        s[a[1]] = v; if (s.shape === 'circle' && (a[1] === 'w' || a[1] === 'h')) { s.w = v; s.h = v; } sinirla(s);
+      });
     });
   });
   $('#o-ad').addEventListener('input', function () { var v = this.value; seciliGuncelle(function (s) { s.ad = v || 'Alan'; }); });
-  $('#o-sekil').addEventListener('change', function () { var v = this.value; seciliGuncelle(function (s) { s.shape = v; sinirla(s); }); });
+  $('#o-sekil').addEventListener('change', function () { var v = this.value; seciliGuncelle(function (s) { if (s.shape !== 'poly') { s.shape = v; sinirla(s); } }); });
+  function yumusatUygula(acik) {
+    seciliGuncelle(function (s) {
+      if (s.shape !== 'poly') return;
+      s.yumusat = acik ? (sayi($('#o-yumusat-miktar').value) || 0.6) : 0;
+      sinirla(s);
+    });
+  }
+  $('#o-yumusat').addEventListener('change', function () { yumusatUygula(this.checked); });
+  $('#o-yumusat-y').addEventListener('change', function () { yumusatUygula(this.checked); });
+  $('#o-yumusat-miktar').addEventListener('input', function () { yumusatUygula(true); });
   $('#o-olcu').addEventListener('input', function () { var v = sayi(this.value); seciliGuncelle(function (s) { s.olcuCm = v > 0 ? v : null; }); });
   $('#o-olcu-yon').addEventListener('change', function () { var v = this.value; seciliGuncelle(function (s) { s.olcuYon = v; }); });
   $('#o-kose').addEventListener('input', function () { var v = sayi(this.value); seciliGuncelle(function (s) { s.koseCm = v > 0 ? v : null; }); });
@@ -910,6 +1190,8 @@
       var y = kopya(s);
       y.id = yeniId();
       y.x *= k; y.y *= k; y.w *= k; y.h *= k;
+      if (y.noktalar) y.noktalar = y.noktalar.map(function (q) { return [q[0] * k, q[1] * k]; });
+      if (y.degnek) { y.degnek.x *= k; y.degnek.y *= k; }
       sinirla(y, hu.png.en, hu.png.boy);
       return y;
     });
@@ -974,11 +1256,24 @@
     var alanlar = d.sekiller.filter(function (s) { return s.tur === 'alan'; });
     if (o.sekil) alanlar = [o.sekil].concat(alanlar.filter(function (s) { return s !== o.sekil; }));
     var kimlik = kimlikUret();
+    // Çokgen: çizilen (yumuşatılmışsa eğri) şeklin noktaları sadeleştirilip % olarak yazılır; kutu bu noktalardan.
+    // duzen: paneldeki kontrol noktaları ve yumuşatma (yeniden düzenlemek için; editör okumaz)
+    function konum(s) {
+      if (s.shape !== 'poly') return { x: yuzde(s.x, g.en), y: yuzde(s.y, g.boy), w: yuzde(s.w, g.en), h: yuzde(s.h, g.boy) };
+      var pts = C.sadelestirEps(cizimNoktalari(s), 0.4);
+      var k = C.kutu(pts);
+      return { x: yuzde(k.x, g.en), y: yuzde(k.y, g.boy), w: yuzde(k.w, g.en), h: yuzde(k.h, g.boy),
+        points: pts.map(function (q) { return [yuzde(q[0], g.en), yuzde(q[1], g.boy)]; }),
+        duzen: { noktalar: s.noktalar.map(function (q) { return [yuzde(q[0], g.en), yuzde(q[1], g.boy)]; }), yumusat: s.yumusat || 0 }, _w: k.w };
+    }
     var zones = alanlar.map(function (s, i) {
-      var z = { id: kimlik(s.ad), ad: s.ad, shape: s.shape, x: yuzde(s.x, g.en), y: yuzde(s.y, g.boy), w: yuzde(s.w, g.en), h: yuzde(s.h, g.boy) };
+      var kn = konum(s);
+      var z = { id: kimlik(s.ad), ad: s.ad, shape: s.shape, x: kn.x, y: kn.y, w: kn.w, h: kn.h };
+      if (kn.points) { z.points = kn.points; z.duzen = kn.duzen; }
+      var wPx = kn._w || s.w;
       if (i === 0) {
         if (s.shape === 'circle') z.cap_cm = s === o.sekil ? s.olcuCm : yuvarla(Math.min(s.w, s.h) / o.pxCm, 2);
-        else z.genislik_cm = s === o.sekil && s.olcuYon !== 'yukseklik' ? s.olcuCm : yuvarla(s.w / o.pxCm, 2);
+        else z.genislik_cm = s === o.sekil && s.olcuYon !== 'yukseklik' && s.shape !== 'poly' ? s.olcuCm : yuvarla(wPx / o.pxCm, 2);
         if (s === o.sekil && s.olcuYon === 'yukseklik' && s.shape !== 'circle') z.yukseklik_cm = s.olcuCm;
       }
       if (s.shape === 'rect' && s.koseCm > 0) z.kose_cm = s.koseCm;
@@ -987,7 +1282,10 @@
     });
     var harita = { surum: 2, kalibre: true, gorsel: g, zones: zones,
       forbidden: d.sekiller.filter(function (s) { return s.tur === 'yasak'; }).map(function (s) {
-        return { ad: s.ad, shape: s.shape, x: yuzde(s.x, g.en), y: yuzde(s.y, g.boy), w: yuzde(s.w, g.en), h: yuzde(s.h, g.boy) };
+        var kn = konum(s);
+        var f = { ad: s.ad, shape: s.shape, x: kn.x, y: kn.y, w: kn.w, h: kn.h };
+        if (kn.points) { f.points = kn.points; f.duzen = kn.duzen; }
+        return f;
       }),
       izinler: { set: !!iz.set, aksesuar: !!iz.aksesuar } };
     if (o.tahmini) harita.olcu_tahmini = true;
@@ -1056,7 +1354,7 @@
 
   yukle();
   urunSec(p.aktif);
-  window.AlanPaneli = { get p() { return p; }, denetle: denetle, olcek: olcek, haritaUret: haritaUret, disaAktar: disaAktar, urunSec: urunSec, aktar: aktar, D: D, gor: gor };
+  window.AlanPaneli = { degnekTikla: degnekTikla, get p() { return p; }, denetle: denetle, olcek: olcek, haritaUret: haritaUret, disaAktar: disaAktar, urunSec: urunSec, aktar: aktar, D: D, gor: gor };
 })();
 </script>
 </body>

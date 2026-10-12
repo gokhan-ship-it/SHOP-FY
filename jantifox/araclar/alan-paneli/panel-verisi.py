@@ -12,7 +12,9 @@ Girdiler (veri/urunler altında):
 Çıktılar:
     veri.js        window.PANEL_VERI = {...}
     gorseller/     panelde gösterilen WebP kopyaları (PNG ile aynı piksel boyutunda; koordinatlar PNG'ye göre)
+                   ve sihirli değnek için aynı görselin data: adresli betik kopyası (<handle>.js)
 """
+import base64
 import json
 import os
 import sys
@@ -27,6 +29,15 @@ def webp_yaz(kaynak, hedef):
     img = Image.open(kaynak).convert('RGBA')
     if not os.path.exists(hedef) or os.path.getmtime(hedef) < os.path.getmtime(kaynak):
         img.save(hedef, 'WEBP', quality=82, method=6)
+    # Sihirli değnek görselin piksellerini okur. Dosyadan (file://) açılan sayfada tarayıcı <img> piksellerini okutmaz;
+    # aynı görsel bir betik dosyasında data: adresi olarak da verilir (yalnızca değnek kullanılınca yüklenir).
+    betik = os.path.splitext(hedef)[0] + '.js'
+    if not os.path.exists(betik) or os.path.getmtime(betik) < os.path.getmtime(hedef):
+        ad = os.path.splitext(os.path.basename(hedef))[0]
+        with open(hedef, 'rb') as f:
+            veri = base64.b64encode(f.read()).decode('ascii')
+        with open(betik, 'w', encoding='ascii') as f:
+            f.write('(window.PANEL_PIKSEL = window.PANEL_PIKSEL || {})[%s] = "data:image/webp;base64,%s";\n' % (json.dumps(ad), veri))
     return img.size
 
 
@@ -38,6 +49,10 @@ def haritadan_sekiller(h, en, boy):
         s = {'tur': 'alan', 'ad': z.get('ad') or z.get('id') or 'Alan', 'shape': z.get('shape', 'rect'),
              'x': px(z['x'], en), 'y': px(z['y'], boy), 'w': px(z['w'], en), 'h': px(z['h'], boy),
              'tipler': z.get('allowed_types') or ['letter', 'number', 'icon']}
+        if z.get('shape') == 'poly':
+            kaynak = (z.get('duzen') or {}).get('noktalar') or z.get('points') or []
+            s['noktalar'] = [[px(q[0], en), px(q[1], boy)] for q in kaynak]
+            s['yumusat'] = (z.get('duzen') or {}).get('yumusat', 0) if z.get('duzen') else 0
         cm = z.get('cap_cm') or z.get('genislik_cm')
         if cm:
             s['olcuCm'] = cm
@@ -46,8 +61,13 @@ def haritadan_sekiller(h, en, boy):
             s['koseCm'] = z['kose_cm']
         sekiller.append(s)
     for z in h.get('forbidden') or []:
-        sekiller.append({'tur': 'yasak', 'ad': z.get('ad') or 'Bölge', 'shape': z.get('shape', 'rect'),
-                         'x': px(z['x'], en), 'y': px(z['y'], boy), 'w': px(z['w'], en), 'h': px(z['h'], boy)})
+        y = {'tur': 'yasak', 'ad': z.get('ad') or 'Bölge', 'shape': z.get('shape', 'rect'),
+             'x': px(z['x'], en), 'y': px(z['y'], boy), 'w': px(z['w'], en), 'h': px(z['h'], boy)}
+        if z.get('shape') == 'poly':
+            kaynak = (z.get('duzen') or {}).get('noktalar') or z.get('points') or []
+            y['noktalar'] = [[px(q[0], en), px(q[1], boy)] for q in kaynak]
+            y['yumusat'] = (z.get('duzen') or {}).get('yumusat', 0) if z.get('duzen') else 0
+        sekiller.append(y)
     return sekiller
 
 

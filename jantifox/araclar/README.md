@@ -12,6 +12,17 @@
    - Tutamaçlardan boyutlandır, gövdeden taşı. Ok tuşları 1 px, Shift+ok 10 px, `Delete` siler.
    - Yakınlık `+` `−` `0`, Ctrl/Cmd + tekerlek.
    - Sarı **A** karesi gerçek ölçüde bir harf patch'idir (5,5 × 6 cm, değiştirilebilir); alan dışına taşarsa kırmızı olur.
+   - **Kalem** `P` (serbest çokgen): alanın kenarı boyunca tıklayarak nokta koy. İlk noktaya tıklayınca ya da `Enter` ile şekil kapanır; `Esc` iptal eder, `Backspace` son noktayı siler.
+     - Araç çubuğundaki seçimle **Velcro alanı** ya da **Yasaklı bölge** çizilir.
+     - Kapandıktan sonra noktaları sürükle. Kenara tıklayınca araya yeni nokta eklenir. Noktayı seçip `Delete` ile sil (en az 3 nokta kalır).
+     - Sağ panelde **Kenarları yumuşat**: köşeler kavisli olur; kaydırıcı kavis miktarını ayarlar. Kemerli alanlarda az noktayla düzgün kavis verir.
+   - **Sihirli değnek** `W`: görselde tıkladığın noktadan benzer renkli bitişik bölgeyi seçip kenarını 20–60 noktalı bir çokgene çevirir.
+     - **Hassasiyet** (varsayılan 15): seçim taşıyorsa düşür, eksik kalıyorsa artır. Seçili şekil anında güncellenir.
+     - Kumaş dokusundan ve gölgeden kalan küçük delikler doldurulur, ince çıkıntılar atılır.
+     - **Kenarı içeri çek** (varsayılan 0,3 cm): biye ve dikiş alana girmez. Ölçek henüz yoksa yaklaşık uygulanır; ölçüyü girince değneği yeniden çalıştır.
+     - Seçimden sonra şekil kalemle çizilmiş gibi noktalarla düzenlenir. Elle düzenlenince hassasiyet kaydırıcısı o şekli artık değiştirmez.
+     - Aynı renkteki komşu parçalar (ör. The Performer'da ön cep ile yan cepler) birlikte seçilebilir. Hassasiyeti düşür ya da noktaları düzelt.
+   - Çokgen ve diğer şekiller birlikte kullanılabilir. Bir patch tek bir alanın içinde kalmak zorundadır; bu yüzden şekilleri üst üste koyarak alan genişletme, alanın tamamını tek çokgenle çiz.
 3. **Sağ** panel:
    - **Gerçek Velcro ölçüsü**: alanı seçip gir. Daire için çap; oval ve dikdörtgen için genişlik ya da yükseklik. Ölçek buradan hesaplanır.
    - Velcro ölçüsü bilinmiyorsa **ölçek çizgisi**: bilinen bir uzunluğu çiz (ör. çanta genişliği), cm'sini gir. Bu bir tahmindir; ürün "ölçü tahmini" diye işaretlenir. Bir alana gerçek ölçü girilince ölçek oradan alınır, işaret kalkar.
@@ -48,6 +59,14 @@
    - Atlanan ürünlere `aktif = false`.
    - Her yazma `docs/degisiklik-kaydi.md` dosyasına eklenir.
 
+Çokgen alan ve yasaklı bölge haritada şöyle yazılır:
+- `"shape": "poly"`;
+- `points`: noktalar, görselin genişliği / yüksekliğine göre %. Yumuşatılmışsa eğri noktalarıyla, sadeleştirilmiş.
+- `x / y / w / h`: noktaların kutusu. Ölçek için kutunun genişliği kullanılır (`genislik_cm`).
+- `duzen`: paneldeki kontrol noktaları ve yumuşatma miktarı. Yalnızca yeniden düzenlemek için; editör okumaz.
+
+Editör patch'in dışbükey zarfının çokgenin tamamen içinde olmasını ister: alanın kenarı patch'i kesemez, içbükey alanın girintisi patch'in altında kalamaz. Alan taşma toleransı (0,2 cm) çokgende de geçerlidir.
+
 Haritaya panelin eklediği alanlar:
 - `izinler: {set, aksesuar}` (ürün düzeyinde set ve aksesuar izni);
 - `olcu_tahmini: true` (ölçek tahmindeyse);
@@ -80,6 +99,8 @@ Editör ölçeği ilk alanın `cap_cm` / `genislik_cm` değerinden okur. Panel, 
    ```
 
    `veri.js` ve `gorseller/` güncellenir. Tarayıcıdaki çalışma korunur; yeni ürün listede "Çizilecek" olarak çıkar.
+
+   `gorseller/<handle>.js`: aynı görselin `data:` adresli kopyası. Sihirli değnek pikselleri buradan okur, çünkü dosyadan açılan sayfada tarayıcı görselin piksellerini okutmaz. Yalnızca değnek kullanılınca yüklenir.
 
 # Alan çizici (tek ürün)
 

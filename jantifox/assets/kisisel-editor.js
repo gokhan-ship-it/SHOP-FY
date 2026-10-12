@@ -268,6 +268,7 @@
 
   function merkez(s) {
     if (s.t === 'rect') return [s.x + s.w / 2, s.y + s.h / 2];
+    if (s.t === 'cokgen') return s.ic;
     return [s.cx, s.cy];
   }
 
@@ -283,12 +284,18 @@
       return { x: x1, y: y1, w: Math.max.apply(null, xs) - x1, h: Math.max.apply(null, ys) - y1 };
     }
     if (s.t === 'circle') return { x: s.cx - s.r, y: s.cy - s.r, w: s.r * 2, h: s.r * 2 };
+    if (s.t === 'cokgen') return { x: s.x, y: s.y, w: s.w, h: s.h };
     return { x: s.cx - s.rx, y: s.cy - s.ry, w: s.rx * 2, h: s.ry * 2 };
   }
 
   // m > 0: şekli içeri daraltır, m < 0: dışarı genişletir
   function noktaIcinde(px, py, s, m) {
     m = m || 0;
+    if (s.t === 'cokgen') {
+      var icZ = cokgendeMi(px, py, s);
+      if (!m) return icZ;
+      return m > 0 ? icZ && !kenaraYakin(px, py, s, m) : icZ || kenaraYakin(px, py, s, -m + EPS);
+    }
     if (s.t === 'poly') {
       var cp = cokgenNoktalari(s);
       var ic = noktaCokgende(px, py, cp);
@@ -338,6 +345,7 @@
     n = n || 24;
     var p = [];
     if (s.t === 'poly') return cokgenNoktalari(s);
+    if (s.t === 'cokgen') return s.p;
     if (s.t === 'rect') {
       var x2 = s.x + s.w;
       var y2 = s.y + s.h;
@@ -377,6 +385,7 @@
 
   // İç şekil, dış (dışbükey) şeklin içinde mi? (m: kenar payı)
   function icinde(ic, dis, m) {
+    if (dis.t === 'cokgen') return cokgenAlandaMi(ic, dis, m || 0);
     if (ic.t === 'circle' && dis.t === 'circle') {
       return Math.sqrt(Math.pow(ic.cx - dis.cx, 2) + Math.pow(ic.cy - dis.cy, 2)) + ic.r <= dis.r - m + EPS;
     }
@@ -398,6 +407,8 @@
 
   function cakisir(a, b, bosluk) {
     bosluk = bosluk || 0;
+    if (b.t === 'cokgen') return cokgenYasakCakisir(a, b);
+    if (a.t === 'cokgen') return cokgenYasakCakisir(b, a);
     if (a.t === 'poly' || b.t === 'poly') return cokgenCakisir(a, b, bosluk);
     if (a.t === 'rect' && b.t === 'rect') {
       return (
@@ -430,13 +441,18 @@
   }
 
   function kaydir(s, dx, dy) {
-    if (s.t === 'rect') return { t: 'rect', x: s.x + dx, y: s.y + dy, w: s.w, h: s.h };
-    var k = {};
-    for (var a in s) k[a] = s[a];
-    k.cx += dx;
-    k.cy += dy;
-    // Çokgenin hesaplanmış noktaları yeniden döndürülmez, yalnızca kaydırılır (yer aramada binlerce aday)
-    if (s.t === 'poly' && s._ob) kaydirilmisOnbellek(s._ob, k, dx, dy);
+    var k;
+    if (s.t === 'rect') {
+      k = { t: 'rect', x: s.x + dx, y: s.y + dy, w: s.w, h: s.h };
+      if (s.r) k.r = s.r;
+    } else {
+      k = {};
+      for (var a in s) k[a] = s[a];
+      k.cx += dx;
+      k.cy += dy;
+    }
+    // Hesaplanmış noktalar (çokgen, zarf) yeniden hesaplanmaz, yalnızca kaydırılır (yer aramada binlerce aday)
+    if (s._ob) kaydirilmisOnbellek(s._ob, k, dx, dy);
     return k;
   }
 
@@ -448,6 +464,7 @@
       var v = o[a];
       if (a === 'p') y.p = t(v);
       else if (a === 'kutu') y.kutu = tk(v);
+      else if (a.charAt(0) === 'h') y[a] = { p: t(v.p), kutu: tk(v.kutu) };
       else if (a.charAt(0) === 'c') {
         y[a] = { p: t(v.p), kutu: tk(v.kutu), ic: t(v.ic), d: v.d && { c: [v.d.c[0] + dx, v.d.c[1] + dy], ri: v.d.ri, ro: v.d.ro } };
         if (v.e) y[a].e = v.e.map(function (z, i) { return z + (i % 2 ? dy : dx); });
@@ -647,6 +664,7 @@
 
   // Yer aramadan önce: adaylar bu şeklin kaydırılmış kopyaları; hesaplar bir kez yapılır, adaylara kaydırılarak taşınır
   function onbellegiIsit(s, m) {
+    if (m.cokgenAlan) alanZarfi(s, m.ayar.tasmaTol);
     if (s.t !== 'poly') return;
     cokgenNoktalari(s);
     sikiKutu(s);
@@ -754,6 +772,173 @@
     return cokgenlerKesisir(carpismaCokgeni(a, t), carpismaCokgeni(b, t));
   }
 
+  /* ---------------- Çokgen alan (harita: shape 'poly') ---------------- */
+  // Velcro alanı ya da yasaklı bölge serbest çokgen olabilir (içbükey de: ör. kemerli üst panel). Şekil t: 'cokgen',
+  // p: noktalar (cm), x/y/w/h: sınır kutusu. Kenarlar yatay bantlara dağıtılır: nokta-içinde ve kenar kesişimi
+  // denetimleri yalnızca ilgili bantlardaki kenarlara bakar (yer aramada binlerce aday).
+
+  function cokgenAlan(p) {
+    if (isaretliAlan(p) < 0) p = p.slice().reverse();
+    var b = noktaKutusu(p);
+    var n = Math.max(1, Math.min(64, Math.round(p.length / 2)));
+    var s = { t: 'cokgen', p: p, x: b.x, y: b.y, w: b.w, h: b.h };
+    var bant = { y0: b.y, bh: b.h / n || 1, n: n, k: [] };
+    for (var i = 0; i < n; i++) bant.k.push([]);
+    for (var j = 0; j < p.length; j++) {
+      var a = p[j];
+      var c = p[(j + 1) % p.length];
+      var b1 = Math.max(0, Math.min(n - 1, Math.floor((Math.min(a[1], c[1]) - bant.y0) / bant.bh)));
+      var b2 = Math.max(0, Math.min(n - 1, Math.floor((Math.max(a[1], c[1]) - bant.y0) / bant.bh)));
+      for (var k = b1; k <= b2; k++) bant.k[k].push(j);
+    }
+    Object.defineProperty(s, '_z', { value: { bant: bant, e: kenarKutulari(p), damga: new Int32Array(p.length), sayac: 0 }, enumerable: false });
+    s.alanBuyuklugu = Math.abs(isaretliAlan(p));
+    // Merkez: kutunun ortası şeklin içinde ve kenara yeterince uzaksa o, değilse en derin iç nokta
+    var o = [b.x + b.w / 2, b.y + b.h / 2];
+    var d = cokgenDaireleri(p.slice());
+    s.ic = cokgendeMi(o[0], o[1], s) && kenaraYakin(o[0], o[1], s, d.ri * 0.5) === false ? o : d.c;
+    return s;
+  }
+
+  // [y1, y2] aralığındaki bantlara düşen kenarların sıraları (tekrarsız)
+  function bantKenarlari(Z, y1, y2) {
+    var z = Z._z;
+    var bt = z.bant;
+    var b1 = Math.max(0, Math.floor((y1 - bt.y0) / bt.bh));
+    var b2 = Math.min(bt.n - 1, Math.floor((y2 - bt.y0) / bt.bh));
+    if (b1 === b2) return bt.k[b1] || [];
+    var damga = ++z.sayac;
+    var liste = [];
+    for (var b = b1; b <= b2; b++) {
+      var k = bt.k[b];
+      for (var i = 0; i < k.length; i++) {
+        if (z.damga[k[i]] === damga) continue;
+        z.damga[k[i]] = damga;
+        liste.push(k[i]);
+      }
+    }
+    return liste;
+  }
+
+  function cokgendeMi(x, y, Z) {
+    if (x < Z.x || x > Z.x + Z.w || y < Z.y || y > Z.y + Z.h) return false;
+    var p = Z.p;
+    var k = bantKenarlari(Z, y, y);
+    var ic = false;
+    for (var n = 0; n < k.length; n++) {
+      var i = k[n];
+      var a = p[i];
+      var b = p[(i + 1) % p.length];
+      if ((a[1] > y) !== (b[1] > y) && x < ((b[0] - a[0]) * (y - a[1])) / (b[1] - a[1]) + a[0]) ic = !ic;
+    }
+    return ic;
+  }
+
+  // Noktaya r'den yakın kenar var mı
+  function kenaraYakin(x, y, Z, r) {
+    var p = Z.p;
+    var e = Z._z.e;
+    var k = bantKenarlari(Z, y - r, y + r);
+    for (var n = 0; n < k.length; n++) {
+      var i = k[n];
+      var q = i * 4;
+      if (e[q] > x + r || e[q + 2] < x - r) continue;
+      if (parcayaUzaklik(x, y, p[i], p[(i + 1) % p.length]) < r - EPS) return true;
+    }
+    return false;
+  }
+
+  // Dışbükey zarf (monoton zincir)
+  function disbukeyZarf(noktalar) {
+    var p = noktalar.slice().sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+    if (p.length < 3) return p;
+    var alt = [];
+    var ust = [];
+    var i;
+    for (i = 0; i < p.length; i++) {
+      while (alt.length >= 2 && vektorel(alt[alt.length - 2], alt[alt.length - 1], p[i]) <= 0) alt.pop();
+      alt.push(p[i]);
+    }
+    for (i = p.length - 1; i >= 0; i--) {
+      while (ust.length >= 2 && vektorel(ust[ust.length - 2], ust[ust.length - 1], p[i]) <= 0) ust.pop();
+      ust.push(p[i]);
+    }
+    alt.pop();
+    ust.pop();
+    return alt.concat(ust);
+  }
+
+  // Patch'in çokgen alana göre denetlenen şekli: dışbükey zarfı, t kadar içe çekilmiş (t = taşma toleransı). Önbellekli.
+  function alanZarfi(s, t) {
+    var o = sekilOnbellegi(s);
+    var anahtar = 'h' + t;
+    if (o[anahtar]) return o[anahtar];
+    var p;
+    if (s.t === 'circle') {
+      var r = Math.max(s.r - t, s.r * 0.05);
+      p = [];
+      for (var i = 0; i < 24; i++) {
+        var a = (i / 24) * Math.PI * 2;
+        p.push([s.cx + Math.cos(a) * r, s.cy + Math.sin(a) * r]);
+      }
+    } else {
+      p = iceCek(disbukeyZarf(s.t === 'poly' ? cokgenNoktalari(s) : sinirNoktalari(s, 36)), t);
+    }
+    o[anahtar] = { p: p, kutu: noktaKutusu(p) };
+    return o[anahtar];
+  }
+
+  // Patch çokgen alanın içinde mi: zarfın tüm köşeleri alanda, alanın hiçbir kenarı zarfı kesmiyor, alanın hiçbir
+  // köşesi zarfın içine girmiyor (içbükey alanın girintisi patch'in altında kalamaz). m < 0: taşma toleransı.
+  function cokgenAlandaMi(s, Z, m) {
+    var H = alanZarfi(s, -m);
+    var hk = H.kutu;
+    if (hk.x < Z.x - EPS || hk.y < Z.y - EPS || hk.x + hk.w > Z.x + Z.w + EPS || hk.y + hk.h > Z.y + Z.h + EPS) return false;
+    var h = H.p;
+    var i, n;
+    for (i = 0; i < h.length; i++) if (!cokgendeMi(h[i][0], h[i][1], Z)) return false;
+    var p = Z.p;
+    var e = Z._z.e;
+    var k = bantKenarlari(Z, hk.y, hk.y + hk.h);
+    for (n = 0; n < k.length; n++) {
+      var j = k[n];
+      var q = j * 4;
+      if (e[q] > hk.x + hk.w || e[q + 2] < hk.x || e[q + 1] > hk.y + hk.h || e[q + 3] < hk.y) continue;
+      var a = p[j];
+      var b = p[(j + 1) % p.length];
+      for (i = 0; i < h.length; i++) if (parcalarKesisir(a, b, h[i], h[(i + 1) % h.length])) return false;
+      if (a[0] >= hk.x && a[0] <= hk.x + hk.w && a[1] >= hk.y && a[1] <= hk.y + hk.h && noktaCokgende(a[0], a[1], h)) return false;
+    }
+    return true;
+  }
+
+  // Patch ile çokgen yasaklı bölge çakışıyor mu (yasaklı bölgede tolerans yok)
+  function cokgenYasakCakisir(s, Z) {
+    var sk = sikiKutu(s);
+    if (sk.x > Z.x + Z.w || sk.x + sk.w < Z.x || sk.y > Z.y + Z.h || sk.y + sk.h < Z.y) return false;
+    if (s.t === 'circle') return cokgendeMi(s.cx, s.cy, Z) || kenaraYakin(s.cx, s.cy, Z, s.r);
+    var P = s.t === 'poly' ? cokgenNoktalari(s) : sinirNoktalari(s, 36);
+    var i, n;
+    for (i = 0; i < P.length; i++) if (cokgendeMi(P[i][0], P[i][1], Z)) return true;
+    var p = Z.p;
+    var e = Z._z.e;
+    var k = bantKenarlari(Z, sk.y, sk.y + sk.h);
+    for (n = 0; n < k.length; n++) {
+      var j = k[n];
+      var q = j * 4;
+      if (e[q] > sk.x + sk.w || e[q + 2] < sk.x || e[q + 1] > sk.y + sk.h || e[q + 3] < sk.y) continue;
+      var a = p[j];
+      var b = p[(j + 1) % p.length];
+      for (i = 0; i < P.length; i++) if (parcalarKesisir(a, b, P[i], P[(i + 1) % P.length])) return true;
+      if (noktaCokgende(a[0], a[1], P)) return true;
+    }
+    return false;
+  }
+
+  function cokgenYolu(p) {
+    return 'M' + p.map(function (q) { return q[0].toFixed(3) + ' ' + q[1].toFixed(3); }).join('L') + 'Z';
+  }
+
   /* ------------------------------------------------------------------ */
   /* Veri modeli                                                         */
   /* ------------------------------------------------------------------ */
@@ -825,6 +1010,16 @@
       var y = ((Number(z.y) || 0) / 100) * H;
       var w = ((Number(z.w) || 0) / 100) * W;
       var h = ((Number(z.h) || 0) / 100) * H;
+      if (z.shape === 'poly' && Array.isArray(z.points)) {
+        // Serbest çokgen: noktalar görselin genişliği / yüksekliğine göre %
+        var p = z.points
+          .map(function (q) { return [((Number(q && q[0]) || 0) / 100) * W / pxCm, ((Number(q && q[1]) || 0) / 100) * H / pxCm]; })
+          .filter(function (q) { return isFinite(q[0]) && isFinite(q[1]); });
+        if (p.length >= 3) {
+          self.cokgenAlan = true;
+          return cokgenAlan(p);
+        }
+      }
       if (z.shape === 'circle') {
         var r = Math.min(w, h) / 2;
         return { t: 'circle', cx: (x + w / 2) / pxCm, cy: (y + h / 2) / pxCm, r: r / pxCm };
@@ -1350,18 +1545,34 @@
     for (var satir = 1; satir <= Math.min(this.m.ayar.satir, 2); satir++) if (satir === 1 || adet >= 2) satirlar.push(satir);
     var sonuc = null;
     satirlar.some(function (n) { if (sigar(c0, n)) sonuc = { satir: n, merkez: c0 }; return !!sonuc; });
-    if (!sonuc && this.m.yasaklar.length) {
+    if (!sonuc && (this.m.yasaklar.length || alan.sekil.t === 'cokgen')) {
       var k = kutu(alan.sekil);
-      var adaylar = [];
-      for (var x = k.x; x <= k.x + k.w + EPS; x += 0.5) {
-        for (var y = k.y; y <= k.y + k.h + EPS; y += 0.5) adaylar.push([x, y]);
+      // Aday merkezler (alanın içi, 0,5 cm adım) ortaya uzaklık sırasıyla; alan değişmediği sürece bir kez hesaplanır
+      var adaylar = this._isimAdaylari && this._isimAdaylari.alan === alan ? this._isimAdaylari.liste : null;
+      if (!adaylar) {
+        adaylar = [];
+        for (var x = k.x; x <= k.x + k.w + EPS; x += 0.5) {
+          for (var y = k.y; y <= k.y + k.h + EPS; y += 0.5) if (noktaIcinde(x, y, alan.sekil)) adaylar.push([x, y, (x - c0[0]) * (x - c0[0]) + (y - c0[1]) * (y - c0[1])]);
+        }
+        adaylar.sort(function (a, b) { return a[2] - b[2]; });
+        this._isimAdaylari = { alan: alan, liste: adaylar };
       }
-      adaylar.sort(function (a, b) {
-        return Math.pow(a[0] - c0[0], 2) + Math.pow(a[1] - c0[1], 2) - (Math.pow(b[0] - c0[0], 2) + Math.pow(b[1] - c0[1], 2));
-      });
+      var tol = this.m.ayar.tasmaTol;
       satirlar.some(function (n) {
+        // Ön eleme: isim bloğunun kutusu (gerçek şekillerinden) alanın kutusuna sığmayan merkezler denenmez
+        var b = { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity };
+        isimHarfleri(self.isimDiz(olculer, c0[0], c0[1], n), c0, aci).forEach(function (p) {
+          var q = sikiKutu(p.sekil);
+          b.x1 = Math.min(b.x1, q.x - c0[0]);
+          b.y1 = Math.min(b.y1, q.y - c0[1]);
+          b.x2 = Math.max(b.x2, q.x + q.w - c0[0]);
+          b.y2 = Math.max(b.y2, q.y + q.h - c0[1]);
+        });
+        if (b.x2 - b.x1 > k.w + 2 * tol + EPS || b.y2 - b.y1 > k.h + 2 * tol + EPS) return false;
         for (var i = 0; i < adaylar.length; i++) {
-          if (sigar(adaylar[i], n)) { sonuc = { satir: n, merkez: adaylar[i] }; return true; }
+          var c = adaylar[i];
+          if (c[0] + b.x1 < k.x - tol - EPS || c[0] + b.x2 > k.x + k.w + tol + EPS || c[1] + b.y1 < k.y - tol - EPS || c[1] + b.y2 > k.y + k.h + tol + EPS) continue;
+          if (sigar(c, n)) { sonuc = { satir: n, merkez: [c[0], c[1]] }; return true; }
         }
         return false;
       });
@@ -1554,9 +1765,11 @@
     // Arama sınırı: uygun alanların kutusu (taşma toleransı kadar geniş); grubun kutusu gerçek şekillerinden
     var tol = m.ayar.tasmaTol;
     var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    var alanKutulari = [];
     m.alanlar.forEach(function (a) {
       if (a.tipler.indexOf(tip) === -1) return;
       var k = kutu(a.sekil);
+      alanKutulari.push(k);
       minX = Math.min(minX, k.x - tol);
       minY = Math.min(minY, k.y - tol);
       maxX = Math.max(maxX, k.x + k.w + tol);
@@ -1605,6 +1818,22 @@
       }
     }
     for (var h = (n >> 1) - 1; h >= 0; h--) asagi(h, n);
+    // Ön eleme: her parçanın kutusu, kaydırılınca uygun alanlardan birinin kutusuna (tolerans kadar geniş) sığmalı
+    // (birden çok alan varsa ortak kutudaki boşluklar denenmez)
+    var parcaKutulari = grupParcalari.map(function (p) { return sikiKutu(p.sekil); });
+    function kutulardaMi(ddx, ddy) {
+      for (var i = 0; i < parcaKutulari.length; i++) {
+        var q = parcaKutulari[i];
+        var x1 = q.x + ddx, y1 = q.y + ddy, x2 = x1 + q.w, y2 = y1 + q.h;
+        var var_ = false;
+        for (var a = 0; a < alanKutulari.length; a++) {
+          var k = alanKutulari[a];
+          if (x1 >= k.x - tol - EPS && y1 >= k.y - tol - EPS && x2 <= k.x + k.w + tol + EPS && y2 <= k.y + k.h + tol + EPS) { var_ = true; break; }
+        }
+        if (!var_) return false;
+      }
+      return true;
+    }
     var kalan = n;
     while (kalan > 0) {
       var j = yigin[0];
@@ -1612,6 +1841,7 @@
       asagi(0, kalan);
       var ddx = xs[j];
       var ddy = ys[j];
+      if (!kutulardaMi(ddx, ddy)) continue;
       var tasinmis = grupParcalari.map(function (p) {
         return { tip: p.tip, sekil: kaydir(p.sekil, ddx, ddy) };
       });
@@ -2206,6 +2436,7 @@
     var alanSvg = m.alanlar
       .map(function (a) {
         var s = a.sekil;
+        if (s.t === 'cokgen') return '<path class="kp-alan" data-alan="' + kacis(a.id) + '" d="' + cokgenYolu(s.p) + '" />';
         if (s.t === 'rect') {
           return '<rect class="kp-alan" data-alan="' + kacis(a.id) + '" x="' + s.x + '" y="' + s.y + '" width="' + s.w + '" height="' + s.h + '" rx="' + (s.r || 0.4) + '" />';
         }
@@ -2216,6 +2447,7 @@
       .join('');
     var yasakSvg = m.yasaklar
       .map(function (s) {
+        if (s.t === 'cokgen') return '<path class="kp-yasak" d="' + cokgenYolu(s.p) + '" />';
         if (s.t === 'rect') return '<rect class="kp-yasak" x="' + s.x + '" y="' + s.y + '" width="' + s.w + '" height="' + s.h + '" />';
         var rx = s.t === 'circle' ? s.r : s.rx;
         var ry = s.t === 'circle' ? s.r : s.ry;
@@ -3455,11 +3687,11 @@
   /* ---------------- Aksesuar ---------------- */
 
   // Aksesuar Velcro alanın yarısından fazlasını kaplıyorsa "neredeyse tamamını kaplar" notu
-  function aksesuarBuyukMu(m, aks) {
-    var alan = m.alanBul('icon');
+  function aksesuarBuyukMu(m, aks, alan) {
+    alan = alan || m.alanBul('icon');
     if (!alan) return false;
     var s = alan.sekil;
-    var alanAlani = s.t === 'circle' ? Math.PI * s.r * s.r : s.t === 'ellipse' ? Math.PI * s.rx * s.ry : s.w * s.h - (4 - Math.PI) * Math.pow(s.r || 0, 2);
+    var alanAlani = s.t === 'cokgen' ? s.alanBuyuklugu : s.t === 'circle' ? Math.PI * s.r * s.r : s.t === 'ellipse' ? Math.PI * s.rx * s.ry : s.w * s.h - (4 - Math.PI) * Math.pow(s.r || 0, 2);
     var d = aks.dis;
     var aksAlani = d.sekil === 'circle' ? Math.PI * Math.pow(d.en / 2, 2) : d.en * d.boy - (4 - Math.PI) * d.kose * d.kose;
     return aksAlani / alanAlani >= 0.5;
@@ -3568,28 +3800,41 @@
       return this.yenile();
     }
     var yer = this.yer;
-    var alan = this.m.alanBul('icon');
-    if (!alan) return;
+    var m = this.m;
+    // İkon takılabilen tüm alanlar denenir (ör. sırt çantasında üst panel ve alt cep); eşitlikte ilk alan, sonra merkeze yakın
+    var alanlar = m.alanlar.filter(function (a) { return a.tipler.indexOf('icon') !== -1; });
+    if (!alanlar.length) return;
     var once = JSON.stringify(t);
-    var c = merkez(alan.sekil);
-    var d = duzenle(this.m, yer, t);
+    var d = duzenle(m, yer, t);
     var cantada = d.parcalar.filter(function (p) { return !p.kenar; });
-    var buyuk = aksesuarBuyukMu(this.m, aks);
-    // Aday konumlar: alanda (yasaklı bölge dışında) aksesuarın sığdığı yerler; maliyet = üstüne gelen patch sayısı
+    // Aday konumlar: alanda (yasaklı bölge dışında) aksesuarın sığdığı yerler; maliyet = üstüne gelen patch sayısı.
+    // Aksesuar alanın yarısından büyükse o alandaki tüm patch'ler kenara alınır.
     var ornek = aksesuarSekli(aks, 0, 0, 0);
-    var k = kutu(alan.sekil);
+    onbellegiIsit(ornek, m);
     var ok = kutu(ornek);
     var en = null;
-    for (var y = k.y + ok.h / 2; y <= k.y + k.h - ok.h / 2 + EPS; y += 0.5) {
-      for (var x = k.x + ok.w / 2; x <= k.x + k.w - ok.w / 2 + EPS; x += 0.5) {
-        var sk = kaydir(ornek, x, y);
-        if (!yer.alanaUygun(sk, 'aksesuar')) continue;
-        var ustte = buyuk ? cantada : cantada.filter(function (p) { return cakisir(sk, p.sekil, 0); });
-        var maliyet = ustte.reduce(function (t0, p) { return t0 + (p.tip === 'aksesuar' ? 100 : 1); }, 0);
-        var uzaklik = Math.pow(x - c[0], 2) + Math.pow(y - c[1], 2);
-        if (!en || maliyet < en.maliyet || (maliyet === en.maliyet && uzaklik < en.uzaklik)) en = { x: x, y: y, ustte: ustte, maliyet: maliyet, uzaklik: uzaklik };
+    alanlar.forEach(function (alan, ai) {
+      var c = merkez(alan.sekil);
+      var k = kutu(alan.sekil);
+      var buyuk = aksesuarBuyukMu(m, aks, alan);
+      var alandakiler = alanlar.length === 1 ? cantada : cantada.filter(function (p) {
+        var pm = merkez(p.sekil);
+        return noktaIcinde(pm[0], pm[1], alan.sekil, -m.ayar.tasmaTol);
+      });
+      for (var y = k.y + ok.h / 2; y <= k.y + k.h - ok.h / 2 + EPS; y += 0.5) {
+        for (var x = k.x + ok.w / 2; x <= k.x + k.w - ok.w / 2 + EPS; x += 0.5) {
+          if (!noktaIcinde(x, y, alan.sekil)) continue;
+          var sk = kaydir(ornek, x, y);
+          if (!icinde(sk, alan.sekil, -m.ayar.tasmaTol) || !yer.alanaUygun(sk, 'aksesuar')) continue;
+          var ustte = buyuk ? alandakiler : cantada.filter(function (p) { return cakisir(sk, p.sekil, 0); });
+          var maliyet = ustte.reduce(function (t0, p) { return t0 + (p.tip === 'aksesuar' ? 100 : 1); }, 0);
+          var uzaklik = Math.pow(x - c[0], 2) + Math.pow(y - c[1], 2);
+          if (!en || maliyet < en.maliyet || (maliyet === en.maliyet && (ai < en.ai || (ai === en.ai && uzaklik < en.uzaklik)))) {
+            en = { x: x, y: y, ustte: ustte, maliyet: maliyet, uzaklik: uzaklik, ai: ai };
+          }
+        }
       }
-    }
+    });
     if (!en) {
       this.bildir(aks.ad + ' bu alana sığmıyor.', { sure: 5000 });
       return;
@@ -7897,6 +8142,6 @@
     kampanya: { seritDurumu: seritDurumu, yonelme: yonelme, kazancMetni: kazancMetni, kampanyaKisaAd: kampanyaKisaAd, kampanyaGosterimAdi: kampanyaGosterimAdi, yerelIndirimler: yerelIndirimler, tasarimPayiSepetten: tasarimPayiSepetten, tasarimIndirimi: tasarimIndirimi },
     kenar: { kenaraAl: kenaraAl, kenardanAl: kenardanAl },
     parcaSekli: parcaSekli,
-    geometri: { icinde: icinde, cakisir: cakisir, noktaIcinde: noktaIcinde, donukDikdortgen: donukDikdortgen, kutu: kutu, merkez: merkez, yuvarlakKoseli: yuvarlakKoseli, konturHazirla: konturHazirla, konturluSekil: konturluSekil, sikiKutu: sikiKutu, kaydir: kaydir }
+    geometri: { icinde: icinde, cakisir: cakisir, noktaIcinde: noktaIcinde, donukDikdortgen: donukDikdortgen, kutu: kutu, merkez: merkez, yuvarlakKoseli: yuvarlakKoseli, konturHazirla: konturHazirla, konturluSekil: konturluSekil, sikiKutu: sikiKutu, kaydir: kaydir, cokgenAlan: cokgenAlan, disbukeyZarf: disbukeyZarf }
   };
 })();
