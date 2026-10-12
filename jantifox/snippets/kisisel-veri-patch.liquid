@@ -1,6 +1,7 @@
 {%- comment -%}
   Bir patch ürününü (harf seti, rakam seti veya ikon) editör için JSON nesnesi olarak basar.
   png_en / png_boy / png_sekil: kırpılmış şeffaf PNG'den hesaplanan ölçü ve şekil (varsa editör bunları kullanır).
+  kontur: PNG'nin opak alanının dış çizgisi (sadeleştirilmiş çokgen); alan, yasaklı bölge ve çakışma denetimi bununla yapılır.
   Kullanım: {% render 'kisisel-veri-patch', p: product %}
 {%- endcomment -%}
 {%- liquid
@@ -22,6 +23,7 @@
   "png_boy": {{ mf.png_yukseklik_cm.value | json }},
   "sekil": {{ mf.sekil.value | default: 'rect' | json }},
   "png_sekil": {{ mf.png_sekil.value | json }},
+  "kontur": {{ mf.kontur.value | json }},
   "etiketler": {{ p.tags | json }},
   "gorsel": {%- if urun_png != blank -%}{{ urun_png | image_url: width: 300 | json }}{%- elsif p.featured_media -%}{{ p.featured_media | image_url: width: 300 | json }}{%- else -%}null{%- endif -%},
   "png": {{ urun_png_var }},
@@ -49,6 +51,7 @@
         "renk_kodu": {%- assign rk = v.metafields.kisisellestirme.renk_kodu.value -%}{%- if rk != blank -%}{{ rk | append: '' | json }}{%- else -%}null{%- endif -%},
         "png_en": {{ v.metafields.kisisellestirme.png_genislik_cm.value | json }},
         "png_boy": {{ v.metafields.kisisellestirme.png_yukseklik_cm.value | json }},
+        "kontur": {{ v.metafields.kisisellestirme.kontur.value | json }},
         "fiyat": {{ v.price }},
         "satilabilir": {{ v.available | json }},
         "stok": {{ stok | json }},

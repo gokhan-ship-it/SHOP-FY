@@ -255,8 +255,8 @@ test('SAT: eksen kutuları çakışsa da dönük dikdörtgenler çakışmayabili
 test('dönük patch alana sığma: köşeler dairenin içinde olmalı', () => {
   const { m, y } = kur();
   const c = m.alanlar[0].sekil; // çap 25 cm
-  // 8×3,5 dikdörtgen kenara yakın: düzken sığar, 45°'de köşesi daireden taşar
-  const cx = c.cx + 8.2;
+  // 8×3,5 dikdörtgen kenara yakın: düzken sığar, 45°'de köşesi daireden toleranstan (0,2 cm) fazla taşar
+  const cx = c.cx + 9;
   assert.equal(y.alanaUygun(g.donukDikdortgen(cx, c.cy, 3.5, 8, 0), 'icon'), true);
   assert.equal(y.alanaUygun(g.donukDikdortgen(cx, c.cy, 3.5, 8, 45), 'icon'), false);
 });
@@ -671,7 +671,10 @@ test('kalem kutusu 25 cm daireye yalnızca yuvarlak köşeleriyle sığar; her a
   const alan = m.alanBul('icon');
   const c = ic.geometri.merkez(alan.sekil);
   const yk = (aci, r) => ({ t: 'obb', cx: c[0], cy: c[1], w: 22, h: 12, a: aci, r });
-  assert.equal(y.alanaUygun(yk(0, 0), 'aksesuar'), false, 'düz dikdörtgen sığmaz (köşegen 25,06 cm)');
+  // Köşegen 25,06 cm: köşeler 0,03 cm taşar, 0,2 cm tolerans içinde kalır. 22,6 × 12 düz dikdörtgen (köşegen 25,59) taşar.
+  assert.equal(y.alanaUygun(yk(0, 0), 'aksesuar'), true, 'düz dikdörtgen tolerans içinde');
+  assert.equal(y.alanaUygun({ t: 'obb', cx: c[0], cy: c[1], w: 22.6, h: 12, a: 0, r: 0 }, 'aksesuar'), false, 'toleranstan fazla taşan düz dikdörtgen');
+  assert.equal(y.alanaUygun({ t: 'obb', cx: c[0], cy: c[1], w: 22.6, h: 12, a: 0, r: 2 }, 'aksesuar'), true, 'aynısı yuvarlak köşeli sığar');
   for (const a of [0, 30, 45, 90, 135]) assert.equal(y.alanaUygun(yk(a, 2), 'aksesuar'), true, a + '°');
 });
 
@@ -755,10 +758,11 @@ test('kalem kutusu gerçek haritaları (Kırmızı, Turuncu): Velcro yüzeyi, yu
       assert.equal(am.yer.alanaUygun({ t: 'rect', x: 1095 / pxCm, y: 455 / pxCm, w: 1, h: 1 }, 'icon'), false, 'D halkasının üstüne konmaz');
       assert.equal(am.yer.alanaUygun({ t: 'rect', x: 1095 / pxCm, y: 330 / pxCm, w: 1, h: 1 }, 'icon'), true, 'şeridin üstünde serbest');
     }
-    // Köşeye dayalı 4 × 4 cm ikon yuvarlak köşeden taşar; köşe dairesine teğet konumda sığar
-    const sol = alan.x + am.m.ayar.kenar, ust = alan.y + am.m.ayar.kenar;
+    // Köşeye dayalı 4 × 4 cm ikon yuvarlak köşeden taşar; köşe dairesine teğet konumda sığar (alan kenarı 0,2 cm tolerans kadar dışarıda)
+    const tol = am.m.ayar.tasmaTol;
+    const sol = alan.x - tol, ust = alan.y - tol;
     assert.equal(am.yer.alanaUygun({ t: 'rect', x: sol, y: ust, w: 4, h: 4 }, 'icon'), false, anahtar + ': köşede taşar');
-    const d = (2 - am.m.ayar.kenar) * (1 - 1 / Math.SQRT2) + 0.02;
+    const d = (2 + tol) * (1 - 1 / Math.SQRT2) + 0.02;
     assert.equal(am.yer.alanaUygun({ t: 'rect', x: sol + d, y: ust + d, w: 4, h: 4 }, 'icon'), true, anahtar + ': köşe yayının içinde sığar');
   }
 });
@@ -947,4 +951,172 @@ test('Türkçe karakterler otomatik çevrilir; veri odaklı ve karakter başına
   ic.turkceCevir(m, t);
   assert.equal(t.isim, 'ÖÖ', 'Piramit seçilince Ö geri gelir');
   assert.equal(t.ceviriler, null);
+});
+
+/* ---------------- Gerçek şekil (kontur) ve toleranslar ---------------- */
+
+const yuvarlakKontur = (n = 32) => ({ v: 1, o: 1, d: 1, p: Array.from({ length: n }, (_, i) => [0.5 + 0.5 * Math.cos((i / n) * 2 * Math.PI), 0.5 + 0.5 * Math.sin((i / n) * 2 * Math.PI)]) });
+// Mağazadaki Octopus patch'inin konturu (içbükey: dokunaçlar)
+const ahtapotKontur = { v: 1, o: 1.0256, d: 0, p: [[0.56, 0], [0.388, 0.026], [0.283, 0.106], [0.207, 0.268], [0.192, 0.381], [0.213, 0.532], [0.06, 0.627], [0, 0.696], [0, 0.771], [0.152, 0.944], [0.263, 0.938], [0.34, 0.998], [0.393, 0.998], [0.475, 0.938], [0.588, 0.991], [0.693, 0.92], [0.76, 0.942], [0.83, 0.926], [0.998, 0.781], [0.967, 0.651], [0.76, 0.523], [0.803, 0.297], [0.758, 0.14], [0.685, 0.056]] };
+// L harfi: sağ üstte büyük girinti
+const lKontur = { v: 1, o: 0.75, d: 0, p: [[0, 0], [0.35, 0], [0.35, 0.7], [1, 0.7], [1, 1], [0, 1]] };
+
+const konturluKur = (ayarlar) => {
+  const v = ornekVeri();
+  v.ikonlar[3] = { ...v.ikonlar[3], en: '8', boy: '7', kontur: ahtapotKontur }; // Musical Note → ahtapot şekli
+  v.ikonlar[4] = { ...v.ikonlar[4], en: '6', boy: '6', kontur: yuvarlakKontur() }; // Sarı Kalp → yuvarlak şekil (kare kutu)
+  if (ayarlar) v.ayarlar = { ...v.ayarlar, ...ayarlar };
+  const m = new ic.Model(v);
+  return { m, y: new ic.Yerlesim(m) };
+};
+
+test('kontur: geçersiz veri yok sayılır, şekil yoksa eski dikdörtgen kullanılır', () => {
+  assert.equal(g.konturHazirla(null), null);
+  assert.equal(g.konturHazirla({ o: 1, p: [[0, 0], [1, 1]] }), null, 'en az 3 nokta');
+  assert.equal(g.konturHazirla('bozuk json'), null);
+  assert.ok(g.konturHazirla(JSON.stringify(yuvarlakKontur())), 'metin olarak gelen JSON da okunur');
+  const { m } = kur();
+  const t = tasarim(m, '', [{ uid: 'i1', tip: 'icon', urunId: 4, varyantId: 3004, cx: 20, cy: 20, aci: 0 }]);
+  const p = new ic.Yerlesim(m).parcalar(t)[0];
+  assert.equal(p.sekil.t, 'rect', 'konturu olmayan ikon dikdörtgen');
+  const k = konturluKur();
+  const p2 = k.y.parcalar(tasarim(k.m, '', [{ uid: 'i1', tip: 'icon', urunId: 4, varyantId: 3004, cx: 20, cy: 20, aci: 0 }]))[0];
+  assert.equal(p2.sekil.t, 'poly', 'konturlu ikon çokgen');
+  assert.equal(p2.sekil.y.length, ahtapotKontur.p.length);
+});
+
+test('dairenin kenarında yuvarlak patch: kutusunun köşeleri taşsa da şekil içerideyse uyarı yok', () => {
+  const { m, y } = konturluKur();
+  const c = m.alanlar[0].sekil; // çap 25 cm
+  // 6 × 6 kutu, yuvarlak şekil (yarıçap 3). Merkez 9,6 cm dışarıda: şekil 12,6 cm'ye uzanır (≤ 12,5 + 0,2),
+  // kutunun köşeleri ise ~13,9 cm'de (eski kontrol taşma derdi)
+  const ikon = (d) => [{ uid: 'y1', tip: 'icon', urunId: 5, varyantId: 3005, cx: c.cx + d, cy: c.cy, aci: 0 }];
+  const t = tasarim(m, '', ikon(9.6));
+  const d = ic.duzenle(m, y, t);
+  assert.deepEqual(Object.keys(d.hatalar), [], 'yuvarlak şekil daire içinde');
+  assert.equal(y.alanaUygun(g.donukDikdortgen(c.cx + 9.6, c.cy, 6, 6, 0), 'icon'), false, 'aynı yerde dikdörtgen kutu taşardı');
+  // 0,3 cm daha dışarı: şekil 12,9 cm'ye uzanır, tolerans aşılır
+  const d2 = ic.duzenle(m, y, tasarim(m, '', ikon(9.9)));
+  assert.deepEqual(Object.keys(d2.hatalar), ['y1']);
+  assert.equal(d2.sorunlar.y1.tur, 'tasma');
+});
+
+test('dairenin kenarında düzensiz şekilli patch (ahtapot): her yönde ve dönükken gerçek şekille denetlenir', () => {
+  const { m, y } = konturluKur();
+  const c = m.alanlar[0].sekil;
+  const t = m.ikonHarita[4];
+  const sekil = (x, yy, a) => y.parcalar(tasarim(m, '', [{ uid: 'o1', tip: 'icon', urunId: 4, varyantId: 3004, cx: x, cy: yy, aci: a }]))[0].sekil;
+  for (const aci of [0, 30, 135]) {
+    for (let k = 0; k < 8; k++) {
+      const yon = (k / 8) * 2 * Math.PI;
+      // Merkezden dışa doğru: gerçek şekil ile kabul edilen en uzak mesafe, dikdörtgenle kabul edilenden fazla
+      let rSekil = 0, rKutu = 0;
+      for (let d = 0; d <= 12; d += 0.1) {
+        const x = c.cx + Math.cos(yon) * d, yy = c.cy + Math.sin(yon) * d;
+        if (y.alanaUygun(sekil(x, yy, aci), 'icon')) rSekil = d; else break;
+      }
+      for (let d = 0; d <= 12; d += 0.1) {
+        const x = c.cx + Math.cos(yon) * d, yy = c.cy + Math.sin(yon) * d;
+        if (y.alanaUygun(g.donukDikdortgen(x, yy, t.en, t.boy, aci), 'icon')) rKutu = d; else break;
+      }
+      assert.ok(rSekil > rKutu, aci + '° yön ' + k + ': şekil ' + rSekil.toFixed(1) + ' > kutu ' + rKutu.toFixed(1));
+      // Kabul edilen en uzak konumda şeklin hiçbir noktası alanın 0,2 cm'den fazla dışında değil
+      const s = sekil(c.cx + Math.cos(yon) * rSekil, c.cy + Math.sin(yon) * rSekil, aci);
+      const r = (s.a * Math.PI) / 180;
+      for (const q of s.y) {
+        const px = s.cx + q[0] * Math.cos(r) - q[1] * Math.sin(r), py = s.cy + q[0] * Math.sin(r) + q[1] * Math.cos(r);
+        assert.ok(Math.hypot(px - c.cx, py - c.cy) <= c.r + 0.2 + 1e-6);
+      }
+    }
+  }
+});
+
+test('çakışma toleransı: iki patch 0,2 cm\'ye kadar üst üste binebilir; daha fazlası çakışma', () => {
+  const { m, y } = konturluKur();
+  const c = m.alanlar[0].sekil;
+  // İki yuvarlak (yarıçap 3) patch yan yana: merkezler arası 6 − binme
+  const iki = (binme) => tasarim(m, '', [
+    { uid: 'a', tip: 'icon', urunId: 5, varyantId: 3005, cx: c.cx - 3 + binme / 2, cy: c.cy, aci: 0 },
+    { uid: 'b', tip: 'icon', urunId: 5, varyantId: 3005, cx: c.cx + 3 - binme / 2, cy: c.cy, aci: 0 }
+  ]);
+  assert.deepEqual(Object.keys(ic.duzenle(m, y, iki(0.15)).hatalar), [], '0,15 cm binme serbest');
+  assert.ok(Object.keys(ic.duzenle(m, y, iki(0.3)).hatalar).length > 0, '0,3 cm binme çakışma');
+  // Aynı yere konan iki patch (kenarları tam üst üste) çakışır
+  const ayni = tasarim(m, '', [
+    { uid: 'a', tip: 'icon', urunId: 4, varyantId: 3004, cx: c.cx, cy: c.cy, aci: 0 },
+    { uid: 'b', tip: 'icon', urunId: 4, varyantId: 3004, cx: c.cx, cy: c.cy, aci: 0 }
+  ]);
+  assert.ok(Object.keys(ic.duzenle(m, y, ayni).hatalar).length > 0, 'aynı konum çakışma');
+  // Dikdörtgen (konturu olmayan) patch'lerde de aynı tolerans
+  const k = kur();
+  const ck = k.m.alanlar[0].sekil;
+  const dk = (binme) => tasarim(k.m, '', [
+    { uid: 'a', tip: 'icon', urunId: 4, varyantId: 3004, cx: ck.cx - 3 + binme / 2, cy: ck.cy, aci: 0 },
+    { uid: 'b', tip: 'icon', urunId: 4, varyantId: 3004, cx: ck.cx + 3 - binme / 2, cy: ck.cy, aci: 0 }
+  ]);
+  assert.deepEqual(Object.keys(ic.duzenle(k.m, k.y, dk(0.15)).hatalar), []);
+  assert.ok(Object.keys(ic.duzenle(k.m, k.y, dk(0.3)).hatalar).length > 0);
+});
+
+test('içbükey şekil: L\'nin girintisine konan patch çakışmaz (dışbükey zarf olsa çakışırdı)', () => {
+  const L = g.konturluSekil(g.konturHazirla(lKontur), 10, 10, 6, 8, 0); // kutu 6 × 8; görsel oranı 0,75 → tam oturur
+  const kare = { t: 'rect', x: 10 - 3 + 6 * 0.35 + 0.3, y: 10 - 4 + 0.2, w: 3, h: 3 }; // L'nin sağ üstteki boşluğu
+  assert.equal(g.cakisir(L, kare, 0), false, 'girintide');
+  assert.equal(g.cakisir(L, { ...kare, y: kare.y + 3 }, 0), true, 'aşağı inince L\'nin ayağına değer');
+  // Küçük şekil büyüğün tamamen içindeyse (kenarlar kesişmez) de çakışma
+  const buyuk = g.konturluSekil(g.konturHazirla(yuvarlakKontur()), 10, 10, 10, 10, 0);
+  const kucuk = g.konturluSekil(g.konturHazirla(yuvarlakKontur()), 10.5, 9.5, 2, 2, 0);
+  assert.equal(g.cakisir(buyuk, kucuk, 0), true, 'iç içe çokgen');
+  assert.equal(g.cakisir(buyuk, kucuk, -0.2), true, 'toleransla da');
+  assert.equal(g.cakisir(kucuk, { t: 'rect', x: 10.3, y: 9.3, w: 0.4, h: 0.4 }, 0), true, 'çokgenin içindeki küçük kare');
+  // Dönük L de aynı
+  const L90 = g.konturluSekil(g.konturHazirla(lKontur), 10, 10, 6, 8, 90);
+  assert.equal(g.cakisir(L90, { t: 'rect', x: 20, y: 20, w: 1, h: 1 }, 0), false);
+});
+
+test('yasaklı bölgede tolerans yok; alan taşması toleransı katalog ayarından', () => {
+  const v = ornekVeri();
+  v.ikonlar[4] = { ...v.ikonlar[4], en: '6', boy: '6', kontur: yuvarlakKontur() };
+  v.harita = { ...v.harita, forbidden: [{ shape: 'circle', x: 48, y: 50, w: 4, h: 4 }] };
+  const m = new ic.Model(v);
+  const y = new ic.Yerlesim(m);
+  const yasak = m.yasaklar[0];
+  // Yuvarlak patch yasaklı daireye 0,05 cm değiyor: tolerans olmadığı için 'yasak'
+  const s = g.konturluSekil(m.ikonHarita[5].kontur, yasak.cx - yasak.r - 3 + 0.05, yasak.cy, 6, 6, 0);
+  assert.equal(y.konumSorunu(s, 'icon'), 'yasak');
+  const s2 = g.konturluSekil(m.ikonHarita[5].kontur, yasak.cx - yasak.r - 3 - 0.05, yasak.cy, 6, 6, 0);
+  assert.equal(y.konumSorunu(s2, 'icon'), null);
+  // Alan toleransı 0 yapılırsa kenardan 0,1 cm taşan patch geçersiz olur
+  const c = m.alanlar[0].sekil;
+  const kenar = (mm) => g.konturluSekil(mm.ikonHarita[5].kontur, c.cx, c.cy - c.r + 3 - 0.1, 6, 6, 0);
+  assert.equal(y.konumSorunu(kenar(m), 'icon'), null, 'varsayılan 0,2 cm tolerans');
+  const v0 = { ...v, ayarlar: { ...v.ayarlar, alan_tasma_toleransi_cm: 0, cakisma_toleransi_cm: 0.5 } };
+  const m0 = new ic.Model(v0);
+  assert.equal(m0.ayar.tasmaTol, 0);
+  assert.equal(m0.ayar.cakismaTol, 0.5);
+  assert.equal(new ic.Yerlesim(m0).konumSorunu(kenar(m0), 'icon'), 'tasma');
+});
+
+test('yerleştirme: konturlu ikonlar daireye dikdörtgen kutularından daha çok sığar', () => {
+  const say = ({ m, y }, urunId) => {
+    const t = m.ikonHarita[urunId];
+    const dolu = [];
+    for (let i = 0; i < 30; i++) {
+      const s = y.ilkUygun(ic.parcaSekli(t, t.varyant, 0, 0, 0), 'icon', dolu);
+      if (!s) break;
+      dolu.push({ tip: 'icon', sekil: s });
+    }
+    return dolu;
+  };
+  const k = konturluKur();
+  const kutulu = konturluKur();
+  kutulu.m.ikonHarita[4].kontur = null;
+  kutulu.m.ikonHarita[4].varyant.kontur = null;
+  const a = say(k, 4), b = say(kutulu, 4);
+  assert.ok(a.length > b.length, 'ahtapot: şekille ' + a.length + ', kutuyla ' + b.length);
+  // Yerleşenlerin hiçbiri birbiriyle (toleransı aşarak) çakışmaz ve alan içinde
+  for (let i = 0; i < a.length; i++) {
+    assert.equal(k.y.konumSorunu(a[i].sekil, 'icon'), null);
+    for (let j = i + 1; j < a.length; j++) assert.equal(g.cakisir(a[i].sekil, a[j].sekil, -0.2), false);
+  }
 });

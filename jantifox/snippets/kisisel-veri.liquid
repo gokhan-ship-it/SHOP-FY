@@ -94,7 +94,8 @@
             "kucuk": {{ a_gorsel | image_url: width: 600 | json }},
             "buyuk": {{ a_gorsel | image_url: width: 1000 | json }}
           },
-          "harita": {{ a_harita | json }}
+          "harita": {{ a_harita | json }},
+          "kontur": {{ p.metafields.kisisellestirme.kontur.value | json }}
         }
       {%- endif -%}
     {%- endfor -%}

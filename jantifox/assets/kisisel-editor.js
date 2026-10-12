@@ -273,7 +273,8 @@
 
   function kutu(s) {
     if (s.t === 'rect') return { x: s.x, y: s.y, w: s.w, h: s.h };
-    if (s.t === 'obb') {
+    // Çokgende de görsel kutusu (dönük dikdörtgen) esas: seçim ve set çerçeveleri bu kutuya göre çizilir
+    if (s.t === 'obb' || s.t === 'poly') {
       var k = koseler(s);
       var xs = k.map(function (p) { return p[0]; });
       var ys = k.map(function (p) { return p[1]; });
@@ -288,6 +289,13 @@
   // m > 0: şekli içeri daraltır, m < 0: dışarı genişletir
   function noktaIcinde(px, py, s, m) {
     m = m || 0;
+    if (s.t === 'poly') {
+      var cp = cokgenNoktalari(s);
+      var ic = noktaCokgende(px, py, cp);
+      if (!m) return ic;
+      var u = kenarUzakligi(px, py, cp);
+      return m > 0 ? ic && u >= m - EPS : ic || u <= -m + EPS;
+    }
     if (s.t === 'rect') {
       if (!(px >= s.x + m - EPS && px <= s.x + s.w - m + EPS && py >= s.y + m - EPS && py <= s.y + s.h - m + EPS)) return false;
       if (s.r) {
@@ -329,6 +337,7 @@
   function sinirNoktalari(s, n) {
     n = n || 24;
     var p = [];
+    if (s.t === 'poly') return cokgenNoktalari(s);
     if (s.t === 'rect') {
       var x2 = s.x + s.w;
       var y2 = s.y + s.h;
@@ -389,6 +398,7 @@
 
   function cakisir(a, b, bosluk) {
     bosluk = bosluk || 0;
+    if (a.t === 'poly' || b.t === 'poly') return cokgenCakisir(a, b, bosluk);
     if (a.t === 'rect' && b.t === 'rect') {
       return (
         a.x < b.x + b.w + bosluk - EPS &&
@@ -425,7 +435,323 @@
     for (var a in s) k[a] = s[a];
     k.cx += dx;
     k.cy += dy;
+    // Çokgenin hesaplanmış noktaları yeniden döndürülmez, yalnızca kaydırılır (yer aramada binlerce aday)
+    if (s.t === 'poly' && s._ob) kaydirilmisOnbellek(s._ob, k, dx, dy);
     return k;
+  }
+
+  function kaydirilmisOnbellek(o, k, dx, dy) {
+    var t = function (p) { return p.map(function (q) { return [q[0] + dx, q[1] + dy]; }); };
+    var tk = function (b) { return { x: b.x + dx, y: b.y + dy, w: b.w, h: b.h }; };
+    var y = {};
+    for (var a in o) {
+      var v = o[a];
+      if (a === 'p') y.p = t(v);
+      else if (a === 'kutu') y.kutu = tk(v);
+      else if (a.charAt(0) === 'c') {
+        y[a] = { p: t(v.p), kutu: tk(v.kutu), ic: t(v.ic), d: v.d && { c: [v.d.c[0] + dx, v.d.c[1] + dy], ri: v.d.ri, ro: v.d.ro } };
+        if (v.e) y[a].e = v.e.map(function (z, i) { return z + (i % 2 ? dy : dx); });
+      }
+    }
+    Object.defineProperty(k, '_ob', { value: y, enumerable: false, writable: true });
+  }
+
+  /* ---------------- Gerçek şekil (çokgen) ---------------- */
+  // Patch'in şeffaf PNG'sinden çıkarılmış dış çizgi (kisisellestirme.kontur): { o: görsel en/boy, d: dışbükey mi,
+  // p: [[x, y], ...] 0..1 }. Şekil t: 'poly' — cx, cy, w, h, a dönük dikdörtgenle aynıdır (görsel kutusu ve seçim
+  // çerçevesi bu kutuya göre), y: noktaların kutu merkezine göre yerel konumu (cm, dönmemiş).
+
+  var konturSayac = 0;
+  function konturHazirla(k) {
+    if (typeof k === 'string') {
+      try { k = JSON.parse(k); } catch (e) { return null; }
+    }
+    if (!k || !Array.isArray(k.p) || !(Number(k.o) > 0)) return null;
+    var p = k.p
+      .map(function (q) { return [Number(q && q[0]), Number(q && q[1])]; })
+      .filter(function (q) { return isFinite(q[0]) && isFinite(q[1]); });
+    if (p.length < 3) return null;
+    return { n: ++konturSayac, o: Number(k.o), d: !!k.d, p: p, onbellek: {} };
+  }
+
+  // Konturun en × boy kutusundaki yerel noktaları. Görsel kutuya önizlemedeki gibi oranını koruyarak oturur
+  // (object-fit: contain): görselin oranı kutununkinden farklıysa çizgi de aynı şekilde küçülür.
+  function konturYerel(k, en, boy) {
+    var anahtar = en + 'x' + boy;
+    var y = k.onbellek[anahtar];
+    if (y) return y;
+    var gw = en;
+    var gh = boy;
+    if (k.o > en / boy) gh = en / k.o;
+    else gw = boy * k.o;
+    y = k.p.map(function (q) { return [(q[0] - 0.5) * gw, (q[1] - 0.5) * gh]; });
+    y.icler = {};
+    k.onbellek[anahtar] = y;
+    return y;
+  }
+
+  function konturluSekil(k, cx, cy, en, boy, aci) {
+    return { t: 'poly', cx: cx, cy: cy, w: en, h: boy, a: aciNormal(aci), y: konturYerel(k, en, boy) };
+  }
+
+  // Konturu varsa gerçek şekil, yoksa eskisi gibi (dönük) dikdörtgen
+  function sekilOlustur(k, cx, cy, en, boy, aci) {
+    return k ? konturluSekil(k, cx, cy, en, boy, aci) : donukDikdortgen(cx, cy, en, boy, aci);
+  }
+
+  // Şekil başına hesap önbelleği (sayılamaz özellik: kaydir() kopyalarken taşınmaz; şekiller yerinde değişmez)
+  function sekilOnbellegi(s) {
+    var o = s._ob;
+    if (!o) {
+      o = {};
+      Object.defineProperty(s, '_ob', { value: o, enumerable: false, writable: true });
+    }
+    return o;
+  }
+
+  // Çokgenin dünya koordinatlarındaki noktaları (önbellekli)
+  function cokgenNoktalari(s) {
+    var o = sekilOnbellegi(s);
+    return o.p || (o.p = dunyaNoktalari(s, s.y));
+  }
+
+  function noktaKutusu(p) {
+    var x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+    for (var i = 0; i < p.length; i++) {
+      var q = p[i];
+      if (q[0] < x1) x1 = q[0];
+      if (q[0] > x2) x2 = q[0];
+      if (q[1] < y1) y1 = q[1];
+      if (q[1] > y2) y2 = q[1];
+    }
+    return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+  }
+
+  function dunyaNoktalari(s, yerel) {
+    var r = (s.a * Math.PI) / 180;
+    var cs = Math.cos(r);
+    var sn = Math.sin(r);
+    return yerel.map(function (q) { return [s.cx + q[0] * cs - q[1] * sn, s.cy + q[0] * sn + q[1] * cs]; });
+  }
+
+  function isaretliAlan(p) {
+    var a = 0;
+    for (var i = 0; i < p.length; i++) {
+      var j = (i + 1) % p.length;
+      a += p[i][0] * p[j][1] - p[j][0] * p[i][1];
+    }
+    return a / 2;
+  }
+
+  // Çokgeni t kadar içe çeker (t < 0: dışa genişletir). Kenarlar t kadar kaydırılır, köşeler komşu kenarların kesişimi.
+  function iceCek(p, t) {
+    if (!t) return p;
+    var yon = isaretliAlan(p) > 0 ? 1 : -1;
+    var n = p.length;
+    var normaller = p.map(function (a, i) {
+      var b = p[(i + 1) % n];
+      var dx = b[0] - a[0];
+      var dy = b[1] - a[1];
+      var u = Math.sqrt(dx * dx + dy * dy) || 1;
+      return [(-dy / u) * yon, (dx / u) * yon];
+    });
+    return p.map(function (q, i) {
+      var n1 = normaller[(i - 1 + n) % n];
+      var n2 = normaller[i];
+      var bx = n1[0] + n2[0];
+      var by = n1[1] + n2[1];
+      var c = 1 + n1[0] * n2[0] + n1[1] * n2[1];
+      // Köşe kayması: iki kenar normalinin açıortayı boyunca t / cos(yarım açı); çok sivri köşelerde sınırlanır
+      var k = c > 0.1 ? t / c : t * 10;
+      if (Math.abs(k) * Math.sqrt(bx * bx + by * by) > Math.abs(t) * 4) {
+        var u = Math.sqrt(bx * bx + by * by) || 1;
+        return [q[0] + (bx / u) * t, q[1] + (by / u) * t];
+      }
+      return [q[0] + bx * k, q[1] + by * k];
+    });
+  }
+
+  function vektorel(a, b, c) {
+    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+  }
+
+  // İki doğru parçası birbirini kesiyor mu (yalnızca değme sayılmaz)
+  function parcalarKesisir(a, b, c, d) {
+    var d1 = vektorel(c, d, a);
+    var d2 = vektorel(c, d, b);
+    var d3 = vektorel(a, b, c);
+    var d4 = vektorel(a, b, d);
+    return ((d1 > EPS && d2 < -EPS) || (d1 < -EPS && d2 > EPS)) && ((d3 > EPS && d4 < -EPS) || (d3 < -EPS && d4 > EPS));
+  }
+
+  function noktaCokgende(x, y, p) {
+    var ic = false;
+    for (var i = 0, j = p.length - 1; i < p.length; j = i++) {
+      if ((p[i][1] > y) !== (p[j][1] > y) && x < ((p[j][0] - p[i][0]) * (y - p[i][1])) / (p[j][1] - p[i][1]) + p[i][0]) ic = !ic;
+    }
+    return ic;
+  }
+
+  function parcayaUzaklik(x, y, a, b) {
+    var dx = b[0] - a[0];
+    var dy = b[1] - a[1];
+    var u = dx * dx + dy * dy;
+    var t = u ? Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / u)) : 0;
+    var px = a[0] + t * dx - x;
+    var py = a[1] + t * dy - y;
+    return Math.sqrt(px * px + py * py);
+  }
+
+  function kenarUzakligi(x, y, p) {
+    var en = Infinity;
+    for (var i = 0; i < p.length; i++) en = Math.min(en, parcayaUzaklik(x, y, p[i], p[(i + 1) % p.length]));
+    return en;
+  }
+
+  // Kenar ortalarının biraz içerisi: kenarları çakışan (aynı hizadaki) çokgenlerde de üst üste binmeyi yakalar
+  function icNoktalar(p) {
+    var yon = isaretliAlan(p) > 0 ? 1 : -1;
+    var d = 1e-3;
+    return p.map(function (a, i) {
+      var b = p[(i + 1) % p.length];
+      var dx = b[0] - a[0];
+      var dy = b[1] - a[1];
+      var u = Math.sqrt(dx * dx + dy * dy) || 1;
+      return [(a[0] + b[0]) / 2 - (dy / u) * yon * d, (a[1] + b[1]) / 2 + (dx / u) * yon * d];
+    });
+  }
+
+  // Çokgenin (yerel) iç ve dış dairesi: iç dairenin merkezi şeklin içinde en derin noktaya yakın (ızgara taraması),
+  // ri = o noktadan en yakın kenara, ro = en uzak köşeye uzaklık. İki şeklin iç daireleri kesişiyorsa kesin çakışır,
+  // dış daireleri ayrıksa kesin çakışmaz; yalnızca arada kalanlar kenar kenar denenir.
+  function cokgenDaireleri(y) {
+    if (y.daireler) return y.daireler;
+    var b = noktaKutusu(y);
+    var enIyi = null;
+    var enIyiR = -1;
+    for (var i = 1; i < 12; i++) {
+      for (var j = 1; j < 12; j++) {
+        var x = b.x + (b.w * i) / 12;
+        var yy = b.y + (b.h * j) / 12;
+        if (!noktaCokgende(x, yy, y)) continue;
+        var u = kenarUzakligi(x, yy, y);
+        if (u > enIyiR) { enIyiR = u; enIyi = [x, yy]; }
+      }
+    }
+    if (!enIyi) { enIyi = [b.x + b.w / 2, b.y + b.h / 2]; enIyiR = 0; }
+    var ro = 0;
+    y.forEach(function (q) { ro = Math.max(ro, Math.sqrt(Math.pow(q[0] - enIyi[0], 2) + Math.pow(q[1] - enIyi[1], 2))); });
+    y.daireler = { c: enIyi, ri: enIyiR, ro: ro };
+    return y.daireler;
+  }
+
+  // Yer aramadan önce: adaylar bu şeklin kaydırılmış kopyaları; hesaplar bir kez yapılır, adaylara kaydırılarak taşınır
+  function onbellegiIsit(s, m) {
+    if (s.t !== 'poly') return;
+    cokgenNoktalari(s);
+    sikiKutu(s);
+    carpismaCokgeni(s, m.ayar.cakismaTol / 2);
+  }
+
+  // Kenarların kutuları (x1, y1, x2, y2 art arda)
+  function kenarKutulari(p) {
+    var e = new Array(p.length * 4);
+    for (var i = 0; i < p.length; i++) {
+      var a = p[i];
+      var b = p[(i + 1) % p.length];
+      e[i * 4] = a[0] < b[0] ? a[0] : b[0];
+      e[i * 4 + 1] = a[1] < b[1] ? a[1] : b[1];
+      e[i * 4 + 2] = a[0] > b[0] ? a[0] : b[0];
+      e[i * 4 + 3] = a[1] > b[1] ? a[1] : b[1];
+    }
+    return e;
+  }
+
+  // Kutunun (x1, y1, x2, y2) içine değen kenarların başlangıç sıraları
+  function kutudakiKenarlar(P, x1, y1, x2, y2) {
+    var e = P.e || (P.e = kenarKutulari(P.p));
+    var liste = [];
+    for (var i = 0, n = P.p.length; i < n; i++) {
+      var k = i * 4;
+      if (e[k + 2] < x1 || e[k] > x2 || e[k + 3] < y1 || e[k + 1] > y2) continue;
+      liste.push(i);
+    }
+    return liste;
+  }
+
+  // P, Q: { p: noktalar, kutu, ic: içerideki örnek noktalar }. Yalnızca iki kutunun ortak bölgesindeki kenarlar denenir.
+  function cokgenlerKesisir(P, Q) {
+    var p = P.p;
+    var q = Q.p;
+    if (P.d && Q.d) {
+      var u = Math.sqrt(Math.pow(P.d.c[0] - Q.d.c[0], 2) + Math.pow(P.d.c[1] - Q.d.c[1], 2));
+      if (u < P.d.ri + Q.d.ri - EPS) return true;
+      if (u > P.d.ro + Q.d.ro + EPS) return false;
+    }
+    var x1 = Math.max(P.kutu.x, Q.kutu.x) - EPS;
+    var y1 = Math.max(P.kutu.y, Q.kutu.y) - EPS;
+    var x2 = Math.min(P.kutu.x + P.kutu.w, Q.kutu.x + Q.kutu.w) + EPS;
+    var y2 = Math.min(P.kutu.y + P.kutu.h, Q.kutu.y + Q.kutu.h) + EPS;
+    if (x1 > x2 || y1 > y2) return false;
+    var kp = kutudakiKenarlar(P, x1, y1, x2, y2);
+    var kq = kutudakiKenarlar(Q, x1, y1, x2, y2);
+    var i, j;
+    for (i = 0; i < kp.length; i++) {
+      var a = p[kp[i]];
+      var b = p[(kp[i] + 1) % p.length];
+      for (j = 0; j < kq.length; j++) {
+        if (parcalarKesisir(a, b, q[kq[j]], q[(kq[j] + 1) % q.length])) return true;
+      }
+    }
+    // Kesişen kenar yok: biri ötekinin içinde ya da kenarları üst üste (aynı hizada) olabilir
+    var ic = function (n) { return n[0] >= x1 && n[0] <= x2 && n[1] >= y1 && n[1] <= y2; };
+    for (i = 0; i < P.ic.length; i++) if (ic(P.ic[i]) && noktaCokgende(P.ic[i][0], P.ic[i][1], q)) return true;
+    for (j = 0; j < Q.ic.length; j++) if (ic(Q.ic[j]) && noktaCokgende(Q.ic[j][0], Q.ic[j][1], p)) return true;
+    return false;
+  }
+
+  function cokgenDaire(P, c, r) {
+    var p = P.p;
+    if (r <= 0) return false;
+    if (noktaCokgende(c.cx, c.cy, p)) return true;
+    return kenarUzakligi(c.cx, c.cy, p) < r - EPS;
+  }
+
+  // Şeklin gerçek sınır kutusu (çokgende çizginin kutusu; diğerlerinde kutu()), önbellekli
+  function sikiKutu(s) {
+    var o = sekilOnbellegi(s);
+    if (!o.kutu) o.kutu = s.t === 'poly' ? noktaKutusu(cokgenNoktalari(s)) : kutu(s);
+    return o.kutu;
+  }
+
+  // Çakışma denetimi için şeklin çokgeni, t kadar içe çekilmiş (daire hariç); { p, kutu, ic }, önbellekli
+  function carpismaCokgeni(s, t) {
+    var o = sekilOnbellegi(s);
+    var anahtar = 'c' + t;
+    if (o[anahtar]) return o[anahtar];
+    var p;
+    var d = null;
+    if (s.t === 'poly') {
+      var yerel = s.y.icler[t] || (s.y.icler[t] = iceCek(s.y, t));
+      p = dunyaNoktalari(s, yerel);
+      var dy = cokgenDaireleri(yerel);
+      d = { c: dunyaNoktalari(s, [dy.c])[0], ri: dy.ri, ro: dy.ro };
+    } else if (s.t === 'ellipse') p = iceCek(sinirNoktalari(s, 36), t);
+    else p = iceCek(koseler(s), t);
+    o[anahtar] = { p: p, kutu: noktaKutusu(p), ic: icNoktalar(p), d: d };
+    return o[anahtar];
+  }
+
+  // En az biri çokgen olan iki şeklin çakışması. bosluk < 0 tolerans demektir: iki şekil toplam |bosluk| kadar
+  // üst üste binebilir (her biri |bosluk| / 2 içe çekilip kesin olarak denetlenir).
+  function cokgenCakisir(a, b, bosluk) {
+    var ka = sikiKutu(a);
+    var kb = sikiKutu(b);
+    if (ka.x + ka.w + bosluk <= kb.x + EPS || kb.x + kb.w + bosluk <= ka.x + EPS || ka.y + ka.h + bosluk <= kb.y + EPS || kb.y + kb.h + bosluk <= ka.y + EPS) return false;
+    var t = -bosluk / 2;
+    if (a.t === 'circle') return cokgenDaire(carpismaCokgeni(b, t), a, a.r - t);
+    if (b.t === 'circle') return cokgenDaire(carpismaCokgeni(a, t), b, b.r - t);
+    return cokgenlerKesisir(carpismaCokgeni(a, t), carpismaCokgeni(b, t));
   }
 
   /* ------------------------------------------------------------------ */
@@ -446,7 +772,10 @@
       harfEn: sayi(ayar.varsayilan_harf_genislik_cm) || 5.5,
       bosluk: ayar.patch_arasi_bosluk_cm != null ? Number(ayar.patch_arasi_bosluk_cm) : 0.3,
       satirBosluk: ayar.satir_arasi_bosluk_cm != null ? Number(ayar.satir_arasi_bosluk_cm) : 0.5,
-      kenar: ayar.kenar_payi_cm != null ? Number(ayar.kenar_payi_cm) : 0.3,
+      // Toleranslar (cm): patch alan kenarından bu kadar taşabilir, iki patch bu kadar üst üste binebilir
+      // (kumaş ve cırtlı yüzey küçük taşmaları kaldırır). Yasaklı bölgelerde tolerans yok.
+      tasmaTol: ayar.alan_tasma_toleransi_cm != null ? Math.max(0, Number(ayar.alan_tasma_toleransi_cm) || 0) : 0.2,
+      cakismaTol: ayar.cakisma_toleransi_cm != null ? Math.max(0, Number(ayar.cakisma_toleransi_cm) || 0) : 0.2,
       satir: Math.max(1, parseInt(ayar.en_fazla_satir, 10) || 2),
       // Tutar eşikli kampanyalar (ör. Ekstra %10 İndirim, 5.000 TL) ve ücretsiz kargo eşiği: katalog ayarlarından, kuruş
       kampanyaEsikleri: (Array.isArray(ayar.kampanya_tutar_esikleri) ? ayar.kampanya_tutar_esikleri : [])
@@ -524,6 +853,7 @@
 
     // Ölçü önceliği: kırpılmış PNG'den hesaplanan ölçü (png_en/png_boy) > kayıtlı ölçü > varsayılan
     function patchHazirla(p, varsayilanEn) {
+      var urunKonturu = konturHazirla(p.kontur);
       var varyantlar = (p.varyantlar || []).map(function (v) {
         return {
           en: sayi(v.png_en),
@@ -537,7 +867,9 @@
           satilabilir: !!v.satilabilir,
           stok: v.stok == null ? null : Math.max(0, Number(v.stok) || 0),
           gorsel: v.gorsel || p.gorsel,
-          png: !!(v.png || (!v.gorsel && p.png))
+          png: !!(v.png || (!v.gorsel && p.png)),
+          // Varyantın kendi görseli varsa kendi konturu; ürünün görselini kullanıyorsa ürünün konturu
+          kontur: konturHazirla(v.kontur) || (!v.gorsel ? urunKonturu : null)
         };
       });
       var en = sayi(p.png_en) || sayi(p.en);
@@ -561,6 +893,7 @@
         etiketler: p.etiketler || [],
         gorsel: p.gorsel,
         png: !!p.png,
+        kontur: urunKonturu,
         varyantlar: varyantlar
       };
     }
@@ -659,7 +992,13 @@
             // Dış kutunun görseldeki yeri (%): görsel bu kutuya göre yerleşir
             x: Number(dis.x) || 0, y: Number(dis.y) || 0, w: Number(dis.w) || 100, h: Number(dis.h) || 100
           },
-          tasarlanabilir: !!(h.zones && h.zones.length)
+          tasarlanabilir: !!(h.zones && h.zones.length),
+          kontur: (function () {
+            var k = konturHazirla(a.kontur);
+            // Aksesuar konturu dış ölçü kutusuna göredir; görsel bu kutuya gerildiği için oran kutunun oranı
+            if (k) k.o = Number(dis.en_cm) / (Number(dis.boy_cm) || Number(dis.en_cm));
+            return k;
+          })()
         };
       })
       .filter(function (a) { return a && (a.stok == null || a.stok > 0); });
@@ -847,7 +1186,10 @@
   function isimOlculeri(m, t) {
     return Array.from(t.isim || '').map(function (h, i) {
       var set = karakterSeti(m, t, i, h);
-      return set ? varyantOlcu(set, harfVaryanti(set, t, i, h)) : { en: m.ayar.harfEn, boy: 6 };
+      if (!set) return { en: m.ayar.harfEn, boy: 6 };
+      var v = harfVaryanti(set, t, i, h);
+      var o = varyantOlcu(set, v);
+      return { en: o.en, boy: o.boy, k: (v && v.kontur) || null };
     });
   }
 
@@ -938,7 +1280,7 @@
       var x = cx - satirEn / 2;
       var orta = y + satirBoylari[i] / 2;
       p.forEach(function (o) {
-        sonuc.push({ cx: x + o.en / 2, cy: orta, en: o.en, boy: o.boy });
+        sonuc.push({ cx: x + o.en / 2, cy: orta, en: o.en, boy: o.boy, k: o.k || null });
         x += o.en + a.bosluk;
       });
       y += satirBoylari[i] + a.satirBosluk;
@@ -962,7 +1304,7 @@
     var uygunAlan = false;
     for (var i = 0; i < m.alanlar.length; i++) {
       var alan = m.alanlar[i];
-      if (alan.tipler.indexOf(tip) !== -1 && icinde(sekil, alan.sekil, m.ayar.kenar)) {
+      if (alan.tipler.indexOf(tip) !== -1 && icinde(sekil, alan.sekil, -m.ayar.tasmaTol)) {
         uygunAlan = true;
         break;
       }
@@ -976,7 +1318,7 @@
   function isimHarfleri(dizi, merkezNokta, aci) {
     return dizi.map(function (p) {
       var k = dondurNokta([p.cx, p.cy], merkezNokta, aci);
-      return { cx: k[0], cy: k[1], en: p.en, boy: p.boy, aci: aci, sekil: donukDikdortgen(k[0], k[1], p.en, p.boy, aci) };
+      return { cx: k[0], cy: k[1], en: p.en, boy: p.boy, k: p.k || null, aci: aci, sekil: sekilOlustur(p.k, k[0], k[1], p.en, p.boy, aci) };
     });
   }
 
@@ -995,7 +1337,7 @@
     var c0 = alan ? merkez(alan.sekil) : [this.m.Wcm / 2, this.m.Hcm / 2];
     if (!alan || adet === 0) return { satir: adet === 0 ? 1 : 0, merkez: c0 };
     aci = aciNormal(aci);
-    var anahtar = JSON.stringify([olculer, aci]);
+    var anahtar = JSON.stringify([olculer.map(function (o) { return [o.en, o.boy, o.k ? o.k.n : 0]; }), aci]);
     this._isimYeri = this._isimYeri || {};
     if (this._isimYeri[anahtar]) return this._isimYeri[anahtar];
     var self = this;
@@ -1076,7 +1418,7 @@
           en: dizi[i].en,
           boy: dizi[i].boy,
           aci: aci,
-          sekil: donukDikdortgen(k[0], k[1], dizi[i].en, dizi[i].boy, aci)
+          sekil: sekilOlustur(v && v.kontur, k[0], k[1], dizi[i].en, dizi[i].boy, aci)
         });
       });
     }
@@ -1129,6 +1471,7 @@
 
   // Aksesuarın çantadaki şekli: dış ölçüsüyle daire ya da köşeleri yuvarlatılmış dikdörtgen
   function aksesuarSekli(aks, cx, cy, aci) {
+    if (aks.kontur) return konturluSekil(aks.kontur, cx, cy, aks.dis.en, aks.dis.boy, aci);
     if (aks.dis.sekil === 'circle') return { t: 'circle', cx: cx, cy: cy, r: aks.dis.en / 2 };
     return yuvarlakKoseli(cx, cy, aks.dis.en, aks.dis.boy, aci, aks.dis.kose);
   }
@@ -1142,7 +1485,7 @@
   function parcaSekli(tanim, varyant, cx, cy, aci) {
     var o = parcaOlcu(tanim, varyant);
     if (tanim.sekil === 'circle') return { t: 'circle', cx: cx, cy: cy, r: Math.max(o.en, o.boy) / 2 };
-    return donukDikdortgen(cx, cy, o.en, o.boy, aci);
+    return sekilOlustur((varyant && varyant.kontur) || tanim.kontur, cx, cy, o.en, o.boy, aci);
   }
 
   function kopyaParca(p, ek) {
@@ -1161,7 +1504,9 @@
       var aci = aciNormal((p.aci || 0) + d);
       var sekil = p.sekil.t === 'circle'
         ? { t: 'circle', cx: c[0], cy: c[1], r: p.sekil.r }
-        : p.sekil.r ? yuvarlakKoseli(c[0], c[1], p.en, p.boy, aci, p.sekil.r) : donukDikdortgen(c[0], c[1], p.en, p.boy, aci);
+        : p.sekil.t === 'poly'
+          ? { t: 'poly', cx: c[0], cy: c[1], w: p.sekil.w, h: p.sekil.h, a: aci, y: p.sekil.y }
+          : p.sekil.r ? yuvarlakKoseli(c[0], c[1], p.en, p.boy, aci, p.sekil.r) : donukDikdortgen(c[0], c[1], p.en, p.boy, aci);
       return kopyaParca(p, { sekil: sekil, aci: aci });
     });
   }
@@ -1195,7 +1540,7 @@
       var p = grupParcalari[i];
       if (!this.alanaUygun(p.sekil, p.tip)) return false;
       for (var j = 0; j < digerleri.length; j++) {
-        if (cakisir(p.sekil, digerleri[j].sekil, 0)) return false;
+        if (cakisir(p.sekil, digerleri[j].sekil, -this.m.ayar.cakismaTol)) return false;
       }
     }
     return true;
@@ -1206,20 +1551,22 @@
     adim = adim || 0.25;
     var m = this.m;
     var tip = alanTipi(grupParcalari[0].tip);
-    // Arama sınırı: uygun alanların kutusu
+    // Arama sınırı: uygun alanların kutusu (taşma toleransı kadar geniş); grubun kutusu gerçek şekillerinden
+    var tol = m.ayar.tasmaTol;
     var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     m.alanlar.forEach(function (a) {
       if (a.tipler.indexOf(tip) === -1) return;
       var k = kutu(a.sekil);
-      minX = Math.min(minX, k.x);
-      minY = Math.min(minY, k.y);
-      maxX = Math.max(maxX, k.x + k.w);
-      maxY = Math.max(maxY, k.y + k.h);
+      minX = Math.min(minX, k.x - tol);
+      minY = Math.min(minY, k.y - tol);
+      maxX = Math.max(maxX, k.x + k.w + tol);
+      maxY = Math.max(maxY, k.y + k.h + tol);
     });
     if (!isFinite(minX)) return null;
     var g = { x: Infinity, y: Infinity, x2: -Infinity, y2: -Infinity };
     grupParcalari.forEach(function (p) {
-      var k = kutu(p.sekil);
+      onbellegiIsit(p.sekil, m);
+      var k = sikiKutu(p.sekil);
       g.x = Math.min(g.x, k.x);
       g.y = Math.min(g.y, k.y);
       g.x2 = Math.max(g.x2, k.x + k.w);
@@ -1293,11 +1640,13 @@
     var a = m.alanBul(alanTipi(tip));
     if (!a) return null;
     var k = kutu(a.sekil);
-    var ok = kutu(ornek);
-    for (var y = k.y + ok.h / 2; y <= k.y + k.h - ok.h / 2 + EPS; y += adim) {
-      for (var x = k.x + ok.w / 2; x <= k.x + k.w - ok.w / 2 + EPS; x += adim) {
-        var c = merkez(ornek);
-        var s = kaydir(ornek, x - c[0], y - c[1]);
+    var tol = m.ayar.tasmaTol;
+    // Örneğin gerçek şeklinin kutusu alan kutusunun (tolerans kadar geniş) içinde kalacak kaydırmalar taranır
+    onbellegiIsit(ornek, m);
+    var ok = sikiKutu(ornek);
+    for (var dy = k.y - tol - ok.y; dy <= k.y + k.h + tol - (ok.y + ok.h) + EPS; dy += adim) {
+      for (var dx = k.x - tol - ok.x; dx <= k.x + k.w + tol - (ok.x + ok.w) + EPS; dx += adim) {
+        var s = kaydir(ornek, dx, dy);
         if (this.grupGecerli([{ tip: tip, sekil: s }], dolu)) return s;
       }
     }
@@ -1466,7 +1815,7 @@
       for (var j = i + 1; j < aktif.length; j++) {
         var a = aktif[i];
         var b = aktif[j];
-        if (a.grup === b.grup || !cakisir(a.sekil, b.sekil, 0)) continue;
+        if (a.grup === b.grup || !cakisir(a.sekil, b.sekil, -model.ayar.cakismaTol)) continue;
         // Üst üste gelen iki gruptan yalnızca en son taşınan/eklenen işaretlenir (bilinmiyorsa ikisi de).
         // Ayrılmış iki harf üst üste geldiyse ikisi de işaretlenir (hangisinin üstte göründüğünden bağımsız)
         var son = t.son || [];
@@ -7547,6 +7896,7 @@
     aciYakala: aciYakala,
     kampanya: { seritDurumu: seritDurumu, yonelme: yonelme, kazancMetni: kazancMetni, kampanyaKisaAd: kampanyaKisaAd, kampanyaGosterimAdi: kampanyaGosterimAdi, yerelIndirimler: yerelIndirimler, tasarimPayiSepetten: tasarimPayiSepetten, tasarimIndirimi: tasarimIndirimi },
     kenar: { kenaraAl: kenaraAl, kenardanAl: kenardanAl },
-    geometri: { icinde: icinde, cakisir: cakisir, noktaIcinde: noktaIcinde, donukDikdortgen: donukDikdortgen, kutu: kutu, merkez: merkez, yuvarlakKoseli: yuvarlakKoseli }
+    parcaSekli: parcaSekli,
+    geometri: { icinde: icinde, cakisir: cakisir, noktaIcinde: noktaIcinde, donukDikdortgen: donukDikdortgen, kutu: kutu, merkez: merkez, yuvarlakKoseli: yuvarlakKoseli, konturHazirla: konturHazirla, konturluSekil: konturluSekil, sikiKutu: sikiKutu, kaydir: kaydir }
   };
 })();
