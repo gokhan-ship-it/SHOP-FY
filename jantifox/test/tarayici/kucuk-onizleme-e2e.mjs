@@ -58,7 +58,7 @@ assert.equal(await gorunur('[data-kp-buyut]'), true);
 const aracK = await s.evaluate((q) => {
   const a = document.querySelector(q + ' [data-kp-araclar]').getBoundingClientRect(); const o = document.querySelector(q + ' .kp-onizleme__ic').getBoundingClientRect();
   const d = document.querySelector(q + ' .kp-arac-dugme').getBoundingClientRect();
-  return { solda: a.right <= o.left, ust: Math.abs(a.top - o.top) < 2, sigar: a.bottom <= o.bottom + 1, d: [Math.round(d.width), Math.round(d.height)], adGizli: getComputedStyle(document.querySelector(q + ' .kp-arac-dugme__ad')).display === 'none' };
+  return { solda: a.right <= o.left, ust: Math.abs((a.top + a.bottom) / 2 - (o.top + o.bottom) / 2) < 2, sigar: a.bottom <= o.bottom + 1, d: [Math.round(d.width), Math.round(d.height)], adGizli: getComputedStyle(document.querySelector(q + ' .kp-arac-dugme__ad')).display === 'none' };
 }, ed);
 assert.deepEqual(aracK, { solda: true, ust: true, sigar: true, d: [42, 42], adGizli: true });
 const [ic, buyut, geri] = await s.evaluate((q) => [' .kp-onizleme__ic', ' [data-kp-buyut]', ' [data-kp-geri-al]'].map((x) => document.querySelector(q + x).getBoundingClientRect()).map((r) => ({ r: r.right, b: r.bottom, w: r.width })), ed);

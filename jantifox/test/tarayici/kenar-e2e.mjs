@@ -124,7 +124,7 @@ assert.match(await metin('.kp-cip--hatali .kp-cip__ad'), /^⚠Futbol Topu/);
 // 6) Özet: geçersiz varken sepete eklenmez; liste + Hepsini düzelt
 await s.locator('[data-kp-ileri]').click();
 assert.equal(await gorunur('[data-kp-ozet-yer]'), true);
-assert.match(await metin('[data-kp-ozet-yer]'), /Futbol Topu Velcro alanın dışına taşıyor\./);
+assert.match(await metin('[data-kp-ozet-yer]'), /Futbol Topu Velcro alanın dışına taşıyor\./); // Özet listesi ayrıntılı kalır
 assert.equal(await s.locator('[data-kp-ileri]').getAttribute('aria-disabled'), 'true');
 await s.locator('[data-kp-ileri]').click({ force: true });
 assert.equal(eklenen, null, 'sepete eklenmedi');

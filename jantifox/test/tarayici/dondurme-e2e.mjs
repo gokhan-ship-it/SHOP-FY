@@ -168,7 +168,7 @@ await sayfa.evaluate(() => document.querySelector('kisisel-kart').editor.acisiDe
   assert.ok(gecerliler.length > 0, 'başta geçerli açılar da var');
   if (son.hatali) {
     assert.equal(await sayfa.locator('[data-kp-yer-uyari]').isVisible(), true);
-    await sayfa.locator('[data-kp-alana-yerlestir]').tap();
+    await sayfa.locator('[data-kp-yerlestir-balon]').tap();
     const duz = await parcaDurumu(sayfa, meteorSecici);
     assert.equal(duz.hatali, false, 'Alana yerleştir açıyı koruyarak içeri alır');
     assert.equal(duz.aci, son.aci);
@@ -181,7 +181,7 @@ await sayfa.evaluate(() => document.querySelector('kisisel-kart').editor.acisiDe
   const sonra = await parcaDurumu(sayfa, meteorSecici);
   console.log('araç çubuğu kenarda:', aciOnce, '→', sonra.aci, '· hatalı', sonra.hatali);
   assert.equal(sonra.aci, (aciOnce + 90) % 360);
-  if (sonra.hatali) await sayfa.locator('[data-kp-alana-yerlestir]').tap();
+  if (sonra.hatali) await sayfa.locator('[data-kp-yerlestir-balon]').tap();
   assert.equal((await parcaDurumu(sayfa, meteorSecici)).hatali, false);
 }
 

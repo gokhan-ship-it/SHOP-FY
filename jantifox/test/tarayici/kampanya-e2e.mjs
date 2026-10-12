@@ -224,7 +224,7 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   const o = await s.evaluate((q) => {
     const r = (x) => document.querySelector(q + ' ' + x).getBoundingClientRect();
     const alt = r('.kp-alt'), f = r('.kp-alt__fiyat'), b = r('[data-kp-ileri]'), x = r('.kp-kapat--onizleme'), a = r('.kp-araclar'), ic = r('.kp-onizleme__ic');
-    return { altH: Math.round(alt.height), yanYana: f.right <= b.left && b.right <= innerWidth - 8, x: x.right <= innerWidth - 4 && x.top >= 0, araclar: a.left >= 8 && a.right <= ic.left, tasma: document.documentElement.scrollWidth <= innerWidth };
+    return { altH: Math.round(alt.height), yanYana: f.right <= b.left && b.right <= innerWidth - 8, x: x.right <= innerWidth - 4 && x.top >= 0, araclar: a.left >= 4 && a.right <= ic.left, tasma: document.documentElement.scrollWidth <= innerWidth };
   }, ana);
   console.log('360 px:', JSON.stringify(o));
   assert.deepEqual(o, { altH: o.altH, yanYana: true, x: true, araclar: true, tasma: true });

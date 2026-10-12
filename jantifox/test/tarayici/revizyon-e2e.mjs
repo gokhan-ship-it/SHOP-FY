@@ -73,17 +73,18 @@ const yer = await s.evaluate(() => {
     xSagUst: x.right <= ic.right && ic.right - x.right < 14 && x.top - ic.top < 14 && getComputedStyle(document.querySelector('.kp-kapat--onizleme')).borderRadius === '50%',
     gecmisSolUst: g.left - ic.left < 14 && g.top - ic.top < 14,
     gorunumSagAlt: ic.right - gor.right < 14 && ic.bottom - gor.bottom < 14,
-    araclarSolda: a.right <= ic.left && Math.abs(a.top - ic.top) < 2,
-    onizlemeSagda: ic.right >= innerWidth - 24,
+    // Araçlar önizlemenin solunda, dikeyde ortalı; ekran kenarı ve önizlemenin sağı ~6 px
+    araclarSolda: a.right <= ic.left && Math.abs((a.top + a.bottom) / 2 - (ic.top + ic.bottom) / 2) < 2 && Math.abs(a.left - 6) <= 1 && Math.abs(innerWidth - ic.right - 6) <= 1,
+    onizlemeSagda: ic.right >= innerWidth - 8,
     panelAltta: k.top >= ic.bottom,
     d
   };
 });
 const { d: araclar, ...yerler } = yer;
 assert.deepEqual(yerler, { xSagUst: true, gecmisSolUst: true, gorunumSagAlt: true, araclarSolda: true, onizlemeSagda: true, panelAltta: true });
-// Alt alta, ~62 × 66 px; üstte simge, altta yazı; Metin "Aa", Görsel ve Aksesuar çizgi simge
+// Alt alta, ~56 × 66 px; üstte simge, altta yazı; Metin "Aa", Görsel ve Aksesuar çizgi simge
 assert.deepEqual(araclar.map((x) => x.ad), ['Metin', 'Görsel', 'Aksesuar']);
-assert.ok(araclar.every((x, i) => Math.abs(x.w - 62) <= 2 && Math.abs(x.h - 66) <= 2 && x.simgeUstte && x.x === araclar[0].x && (!i || x.y > araclar[i - 1].y + 60)), JSON.stringify(araclar));
+assert.ok(araclar.every((x, i) => Math.abs(x.w - 56) <= 2 && Math.abs(x.h - 66) <= 2 && x.simgeUstte && x.x === araclar[0].x && (!i || x.y > araclar[i - 1].y + 60)), JSON.stringify(araclar));
 assert.deepEqual(araclar.map((x) => x.svg), [false, true, true]);
 assert.equal(await metin('.kp-arac-dugme[data-kp-adim="yazi"] .kp-arac-dugme__simge'), 'Aa');
 // Seçili (varsayılan Metin) koyu, diğerleri beyaz
@@ -212,8 +213,8 @@ const disariSurukle = async (bekleBildirim) => {
   assert.equal(await s.locator('.kp-sahne--tasma').count(), 0);
   // Bıraktığı yerde kalır: "!" işareti ve altta uyarı; Alana yerleştir ile geri
   assert.equal(await s.locator('.kp-parca--hatali').count(), 1);
-  assert.match(await metin('[data-kp-yer-uyari]'), /Velcro alanın dışına taşıyor\. İstediğin gibi düzenlemeye devam edebilirsin, sepete eklemeden önce düzeltmen yeterli\./);
-  await s.locator('[data-kp-alana-yerlestir]').click();
+  assert.match(await metin('[data-kp-yer-uyari]'), /alanın dışına taşıyor\. Sepete eklemeden önce düzeltmen yeterli\./);
+  await s.locator('[data-kp-yerlestir-balon]').click();
   assert.equal(await s.locator('.kp-parca--hatali').count(), 0);
   assert.equal(await alanOpak(), '0', 'düzelince sınır kaybolur');
 };

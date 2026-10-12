@@ -116,7 +116,7 @@ assert.equal(ciplerSonra.length, 1);
 assert.match(ciplerSonra[0], /School Vibes seti · 3$/, 'set bozulmadı');
 assert.equal(await toplam(), '3.800 TL');
 // Başka bir patch'e değdiyse yerinde kalır ve işaretlenir; Alana yerleştir düzeltir
-if (await gorunur('[data-kp-yer-uyari]')) await s.locator('[data-kp-alana-yerlestir]').click();
+if (await gorunur('[data-kp-yer-uyari]')) await s.locator('[data-kp-yerlestir-balon]').click();
 assert.equal(await s.locator('.kp-parca--hatali').count(), 0);
 
 // 4) Seçili patch'i sil: onay kutusu; Vazgeç → set aynen; Patch'i sil → set bozulur, kalanlar tek tek fiyatlanır

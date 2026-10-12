@@ -143,8 +143,19 @@ hk = await kutular();
 assert.ok(ust(hk[2], hk[0]), 'geri fırlamadı');
 assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 2, 'üst üste gelen iki harf de işaretlenir');
 const yerUyari = () => sayfa.locator('[data-kp-yer-uyari]').innerText().then((x) => x.replace(/\s+/g, ' ').trim());
-assert.match(await yerUyari(), /^!\s?E harfi başka bir patch'in üstüne geliyor\. İstediğin gibi düzenlemeye devam edebilirsin, sepete eklemeden önce düzeltmen yeterli\. \(\+1 patch daha\) Alana yerleştir Hepsini düzelt$/);
-await sayfa.locator('[data-kp-alana-yerlestir]').tap();
+// Kısa uyarı ve yalnızca "Hepsini düzelt"; tek tek düzeltme önizlemedeki "Alana yerleştir" ile
+assert.equal(await yerUyari(), '!İki E harfi üst üste geliyor. Sepete eklemeden önce düzeltmen yeterli. Hepsini düzelt');
+// Önizlemede, üst üste gelen iki harfin hemen altında (yakın oldukları için) tek "! Alana yerleştir"
+assert.equal(await sayfa.locator('[data-kp-yerlestir-balon]').count(), 1);
+const balon = await sayfa.evaluate(() => {
+  const b = document.querySelector('[data-kp-yerlestir-balon]'); const r = b.getBoundingClientRect();
+  const h = [...document.querySelectorAll('.kp-onizleme .kp-parca--hatali')].map((e) => e.getBoundingClientRect());
+  const g = document.querySelector('.kp-gorunum').getBoundingClientRect(); const cs = getComputedStyle(b); const a = getComputedStyle(b, '::after');
+  const alt = Math.max(...h.map((x) => x.bottom)), ust = Math.min(...h.map((x) => x.top));
+  return { metin: b.innerText.replace(/\s+/g, ' ').trim(), zemin: cs.backgroundColor, ikon: getComputedStyle(b.querySelector('.kp-yerlestir-balon__ikon')).backgroundColor, yakin: (r.top >= alt && r.top - alt < 14) || (r.bottom <= ust && ust - r.bottom < 14), icinde: r.left >= g.left && r.right <= g.right && r.top >= g.top && r.bottom <= g.bottom, dokunma: r.height + 2 * parseFloat(a.top) * -1 };
+});
+assert.deepEqual({ ...balon, dokunma: balon.dokunma >= 36 }, { metin: '! Alana yerleştir', zemin: 'rgb(255, 255, 255)', ikon: 'rgb(255, 59, 48)', yakin: true, icinde: true, dokunma: true });
+await sayfa.locator('[data-kp-yerlestir-balon]').tap();
 hk = await kutular();
 assert.ok(!ust(hk[2], hk[0]) && !ust(hk[2], hk[1]), 'Alana yerleştir en yakın boş yere taşır');
 assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0);
@@ -153,8 +164,10 @@ assert.equal(await sayfa.locator('[data-kp-yer-uyari]').isVisible(), false);
 if (await sayfa.locator('[data-kp-secim-kaldir]').isVisible()) await sayfa.locator('[data-kp-secim-kaldir]').tap();
 await surukle('[data-uid="harf-0"]', -400, 0);
 assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 1);
-assert.match(await yerUyari(), /E harfi Velcro alanın dışına taşıyor\./);
-await sayfa.locator('[data-kp-alana-yerlestir]').tap();
+assert.match(await yerUyari(), /^!E harfi alanın dışına taşıyor\. Sepete eklemeden önce düzeltmen yeterli\. Hepsini düzelt$/);
+// Patch önizlemenin dışında: buton yine önizlemenin içinde kalır
+assert.ok(await sayfa.evaluate(() => { const r = document.querySelector('[data-kp-yerlestir-balon]').getBoundingClientRect(); const g = document.querySelector('.kp-gorunum').getBoundingClientRect(); return r.left >= g.left && r.right <= g.right && r.top >= g.top && r.bottom <= g.bottom; }), 'buton önizlemenin içinde');
+await sayfa.locator('[data-kp-yerlestir-balon]').tap();
 hk = await kutular();
 
 let d = await daire();
@@ -168,7 +181,7 @@ await sayfa.waitForTimeout(400);
 if (await sayfa.locator('[data-kp-secim-kaldir]').isVisible()) await sayfa.locator('[data-kp-secim-kaldir]').tap();
 await surukle('[data-uid="harf-1"]', 0, -300);
 assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 1, 'tüm çanta görünümünde de dışarıda kalır');
-await sayfa.locator('[data-kp-alana-yerlestir]').tap();
+await sayfa.locator('[data-kp-yerlestir-balon]').tap();
 hk = await kutular();
 d = await daire();
 assert.ok(hk.every((x) => icinde(x, d)), 'her harf dairenin içinde (tüm çanta)');
@@ -223,10 +236,10 @@ const kDisari = await ikon.boundingBox();
 assert.ok(kDisari.y < k.y - 30, 'geri fırlamadı');
 assert.equal(await sayfa.locator('.kp-parca--icon.kp-parca--hatali').count(), 1);
 assert.equal(await sayfa.evaluate(() => getComputedStyle(document.querySelector('.kp-parca--hatali'), '::after').content), '"!"');
-assert.match(await yerUyari(), /^!\s?Futbol Topu Velcro alanın dışına taşıyor\. İstediğin gibi düzenlemeye devam edebilirsin, sepete eklemeden önce düzeltmen yeterli\. Alana yerleştir$/);
+assert.equal(await yerUyari(), '!Futbol Topu alanın dışına taşıyor. Sepete eklemeden önce düzeltmen yeterli. Hepsini düzelt');
 // Eklenenler satırında kırmızı ve ⚠
 assert.equal(await sayfa.locator('.kp-cip--hatali .kp-cip__ad', { hasText: 'Futbol Topu' }).innerText(), '⚠Futbol Topu');
-await sayfa.locator('[data-kp-alana-yerlestir]').tap();
+await sayfa.locator('[data-kp-yerlestir-balon]').tap();
 const k2 = await ikon.boundingBox();
 const sinirlar = await sayfa.evaluate(() => {
   const el = document.querySelector('.kp-onizleme .kp-sahne ellipse').getBoundingClientRect();
