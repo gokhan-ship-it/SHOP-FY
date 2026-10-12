@@ -5927,18 +5927,46 @@ html.kp-kilit body {
       g.x2 = Math.max(g.x2, k.x + k.w);
       g.y2 = Math.max(g.y2, k.y + k.h);
     });
-    var adaylar = [];
+    // Adaylar hedefe uzaklık sırasıyla denenir (eşit uzaklıkta üretim sırası). Hepsini sıralamak yerine
+    // bir öncelik kuyruğundan sırayla alınır: ilk geçerli aday genelde yakındadır, sonuç tam sıralamayla aynıdır.
+    var xs = [];
+    var ys = [];
+    var uz = [];
     for (var dx = minX - g.x; dx <= maxX - g.x2 + EPS; dx += adim) {
       for (var dy = minY - g.y; dy <= maxY - g.y2 + EPS; dy += adim) {
         var mx = dx - hedefDx;
         var my = dy - hedefDy;
-        adaylar.push([mx * mx + my * my, dx, dy]);
+        xs.push(dx);
+        ys.push(dy);
+        uz.push(mx * mx + my * my);
       }
     }
-    adaylar.sort(function (a, b) { return a[0] - b[0]; });
-    for (var i = 0; i < adaylar.length; i++) {
-      var ddx = adaylar[i][1];
-      var ddy = adaylar[i][2];
+    var n = uz.length;
+    var yigin = new Array(n);
+    for (var k = 0; k < n; k++) yigin[k] = k;
+    function once(a, b) {
+      return uz[a] < uz[b] || (uz[a] === uz[b] && a < b);
+    }
+    function asagi(i, boy) {
+      for (;;) {
+        var sol = 2 * i + 1;
+        if (sol >= boy) return;
+        var en = sol + 1 < boy && once(yigin[sol + 1], yigin[sol]) ? sol + 1 : sol;
+        if (!once(yigin[en], yigin[i])) return;
+        var tmp = yigin[i];
+        yigin[i] = yigin[en];
+        yigin[en] = tmp;
+        i = en;
+      }
+    }
+    for (var h = (n >> 1) - 1; h >= 0; h--) asagi(h, n);
+    var kalan = n;
+    while (kalan > 0) {
+      var j = yigin[0];
+      yigin[0] = yigin[--kalan];
+      asagi(0, kalan);
+      var ddx = xs[j];
+      var ddy = ys[j];
       var tasinmis = grupParcalari.map(function (p) {
         return { tip: p.tip, sekil: kaydir(p.sekil, ddx, ddy) };
       });
