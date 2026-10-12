@@ -12477,6 +12477,27 @@ html.kp-kilit body {
     this.sepettekiler = [];
     this.kayitOku();
     this.sepetOku();
+    this.adrestenAc();
+  };
+
+  // Kategori sayfasındaki "Kişiselleştir" / "Tasarla": adres ?kisisellestir=1 ile gelir, editör açık başlar.
+  // Parametre adresten hemen silinir; editör kapanınca müşteri normal ürün sayfasında kalır (yenileyince yeniden açılmaz).
+  KisiselKart.prototype.adrestenAc = function () {
+    var adres;
+    try {
+      adres = new URL(window.location.href);
+    } catch (e) {
+      return;
+    }
+    if (!adres.searchParams.has('kisisellestir')) return;
+    adres.searchParams.delete('kisisellestir');
+    try {
+      history.replaceState(history.state, '', adres.pathname + adres.search + adres.hash);
+    } catch (e) {
+      /* yoksay */
+    }
+    var bilgi = !bosMu(this.tasarim) && this.taslakBilgi;
+    this.editor.ac(bilgi && bilgi.arac ? bilgi.arac : bosMu(this.tasarim) ? 'yazi' : 'ikon', bilgi ? { yakin: bilgi.yakin } : null);
   };
 
   // Kayıtlı tasarımı okur, stoğu biten ya da artık olmayan patch'leri ayıklar, kartı günceller

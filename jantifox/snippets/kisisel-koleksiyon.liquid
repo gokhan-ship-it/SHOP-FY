@@ -1,0 +1,64 @@
+{%- comment -%}
+  Kategori / koleksiyon sayfası: kişiselleştirmesi açık ürünlerin kartlarına "✎ Kişiselleştirilebilir" etiketi,
+  "Kişiselleştir" butonu ve sepet butonu; sıralamanın yanına "✎ Sadece kişiselleştirilebilenler" filtresi.
+  Temanın kart dosyasına (card-product.liquid) dokunmaz: kartlar sayfaya geldikten sonra JS ile işaretlenir.
+
+  Hangi ürünlerin açık olduğu: shop.metafields.kisisellestirme.acik_urunler (ürün listesi) aday listesidir;
+  her aday için ürün sayfasındaki kartla aynı koşul burada da denetlenir (patch-notice etiketi,
+  kisisellestirme.aktif = true, haritası var). "Kişiselleştirme olmasın" seçilen ürün (aktif = false) listede olsa
+  bile kapalı sayılır. Bütün bilgi sayfayla gelir; kartlar için ek istek atılmaz.
+
+  layout/theme.liquid içinden, koleksiyon sayfalarında render edilir:
+  {% if request.page_type == 'collection' %}{% render 'kisisel-koleksiyon' %}{% endif %}
+{%- endcomment -%}
+{%- liquid
+  assign adaylar = shop.metafields.kisisellestirme.acik_urunler.value
+  assign katalog = shop.metaobjects.kisisellestirme_katalog.ana
+  assign kartlar = ''
+  assign ilk = true
+-%}
+{%- if adaylar != blank and katalog != blank and collection -%}
+  <script type="application/json" id="KisiselKoleksiyon">
+    {"urunler":{
+    {%- for p in adaylar -%}
+      {%- liquid
+        unless p.tags contains 'patch-notice' and p.metafields.kisisellestirme.aktif.value == true and p.metafields.kisisellestirme.harita.value != blank
+          continue
+        endunless
+        assign burada = false
+        if collection.handle == 'all'
+          assign burada = true
+        else
+          for c in p.collections
+            if c.id == collection.id
+              assign burada = true
+              break
+            endif
+          endfor
+        endif
+      -%}
+      {%- unless ilk %},{% endunless -%}
+      {%- assign ilk = false -%}
+      {{- p.handle | json }}:{"u":{{ p.url | json }},"b":{{ p.title | json }},"k":{{ burada }},"v":[
+      {%- for v in p.variants -%}
+        {%- unless forloop.first %},{% endunless -%}
+        {"id":{{ v.id }},"t":{{ v.title | json }},"a":{{ v.available }}}
+      {%- endfor -%}
+      ]}
+      {%- if burada -%}
+        {%- capture kart -%}
+          <li class="grid__item" data-kp-kk-ek="{{ p.handle | escape }}">
+            {%- render 'card-product', card_product: p, section_id: 'kisisel', product_placeholder: 'product-1' -%}
+          </li>
+        {%- endcapture -%}
+        {%- assign kartlar = kartlar | append: kart -%}
+      {%- endif -%}
+    {%- endfor -%}
+    }}
+  </script>
+  {%- comment -%} Filtre açılınca bu sayfada olmayan (başka sayfadaki) kişiselleştirilebilir ürünlerin kartları;
+    <template> içinde olduğu için görselleri yüklenmez {%- endcomment -%}
+  <template id="KisiselKoleksiyonKartlar">{{ kartlar }}</template>
+  {{ 'kisisel-koleksiyon.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'kisisel-koleksiyon.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}

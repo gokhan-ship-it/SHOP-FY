@@ -154,5 +154,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
    {%- render "whatsapp-sticky" -%}
    {% render 'jantifox-shipping-popup' %}
    {%- render 'kisisel-sepet' -%}
+   {%- if request.page_type == 'collection' -%}{%- render 'kisisel-koleksiyon' -%}{%- endif -%}
   </body>
 </html>
