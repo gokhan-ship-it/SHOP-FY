@@ -150,7 +150,7 @@ await s.locator('[data-kp-ileri]').click();
 // Yazı setin üstüne geldiyse: Özet'te liste ve "Hepsini düzelt"; düzeltmeden sepete eklenmez
 if (await gorunur('[data-kp-ozet-yer]')) {
   assert.equal(await s.locator('[data-kp-ileri]').getAttribute('aria-disabled'), 'true');
-  await s.locator('[data-kp-ileri]').click({ force: true });
+  assert.equal(await s.locator('[data-kp-ileri]').isVisible(), false, 'butonun yerinde Hepsini düzelt / Tasarıma dön');
   assert.equal(await s.evaluate(() => location.pathname), '/products/kanvas-lacivert-tote-canta', 'sepete eklenmedi');
   await s.locator('[data-kp-ozet-yer] [data-kp-hepsini-duzelt]').click();
   assert.equal(await gorunur('[data-kp-ozet-yer]'), false);

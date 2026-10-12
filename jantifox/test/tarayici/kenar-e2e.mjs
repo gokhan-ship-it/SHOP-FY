@@ -126,9 +126,10 @@ await s.locator('[data-kp-ileri]').click();
 assert.equal(await gorunur('[data-kp-ozet-yer]'), true);
 assert.match(await metin('[data-kp-ozet-yer]'), /Futbol Topu Velcro alanın dışına taşıyor\./); // Özet listesi ayrıntılı kalır
 assert.equal(await s.locator('[data-kp-ileri]').getAttribute('aria-disabled'), 'true');
-await s.locator('[data-kp-ileri]').click({ force: true });
+// Butonun yerinde "Hepsini düzelt / Tasarıma dön"
+assert.equal(await s.locator('[data-kp-ileri]').isVisible(), false);
+assert.equal(await gorunur('[data-kp-alt-engel] [data-kp-tasarima-don]'), true);
 assert.equal(eklenen, null, 'sepete eklenmedi');
-assert.match(await metin('[data-kp-bildirim]'), /Yeri uygun olmayan patch'ler var/);
 await s.locator('[data-kp-ozet-yer] [data-kp-hepsini-duzelt]').click();
 assert.equal(await gorunur('[data-kp-ozet-yer]'), false);
 assert.equal(await s.locator('.kp-parca--hatali').count(), 0);
@@ -166,11 +167,10 @@ assert.equal(await kenarSayisi(), 2, 'yer kalmayınca ikon da kenara');
 await s.locator('[data-kp-ileri]').click();
 if (await gorunur('[data-kp-ozet-yer]')) await s.locator('[data-kp-ozet-yer] [data-kp-hepsini-duzelt]').click();
 const kenarDisi = await metin('[data-kp-toplam]');
-assert.equal(await metin('.kp-kenar-kart__baslik'), 'Kenarda kullanmadığın 2 patch var');
-assert.match(await metin('.kp-kenar-kart__aciklama'), /^Bunları da almak ister misin\? Çantaya sonradan istediğin zaman takabilirsin\. Almak istemediklerine dokunup seçimi kaldırabilirsin\.$/);
-assert.equal(await metin('.kp-kenar-kart__not'), 'Eklersen kampanya indirimin de yeniden hesaplanır.');
+assert.equal(await metin('.kp-kenar-kart__baslik'), 'Kenarda 2 patch var, bunları da alalım mı?');
+assert.equal(await metin('.kp-kenar-kart__aciklama'), 'İstemediğine dokunup seçimi kaldır');
 assert.deepEqual(await s.$$eval('[data-kp-kenar-sec]', (b) => b.map((x) => x.getAttribute('aria-pressed'))), ['true', 'true'], 'varsayılan hepsi işaretli');
-assert.equal(await metin('[data-kp-kenar-hayir]'), 'Hayır, almayacağım');
+assert.equal(await metin('[data-kp-kenar-hayir]'), 'Hayır');
 assert.equal(await metin('[data-kp-kenar-evet]'), 'Evet, ekle (+660 TL)');
 await s.locator('[data-kp-kenar-sec]').first().click();
 assert.equal(await s.locator('[data-kp-kenar-sec]').first().getAttribute('aria-pressed'), 'false');

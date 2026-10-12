@@ -112,9 +112,9 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
   assert.deepEqual(await s.$$eval(ana + ' [data-kp-kpanel-liste] li', (x) => x.map((e) => e.innerText.replace(/\s+/g, ' ').trim())), ["✓ 2'li patch indirimi −60 TL"]);
   assert.equal(await metin(s, ana + ' [data-kp-serit-sag]'), '1 patch daha ekle, indirimin 190 TL olsun.');
   assert.equal(await s.locator(ana + ' [data-kp-kpanel-birlikte]').isVisible(), false);
-  const panelMetni = await metin(s, ana + ' .kp-kpanel__kutu');
+  const panelMetni = await metin(s, ana + ' [data-kp-kpanel] .kp-kpanel__kutu');
   assert.ok(!/kaldı|→|patche|İndirim /.test(panelMetni), panelMetni);
-  await s.locator(ana + ' .kp-kpanel__perde').click({ position: { x: 30, y: 30 } });
+  await s.locator(ana + ' [data-kp-kpanel] .kp-kpanel__perde').click({ position: { x: 30, y: 30 } });
   assert.equal(await s.locator(ana + ' [data-kp-kpanel]').isVisible(), false, 'dışına dokununca kapanır');
 
   await s.locator('#kp-isim').fill('ece');
@@ -175,7 +175,7 @@ const bekle = (s, q, desen) => s.waitForFunction(([q, d]) => { const e = documen
 
   // Ürün kartında kampanyalı toplam ve buton
   await s.locator(ana + ' [data-kp-ileri]').click();
-  await s.locator(ana + ' [data-kp-urune-don]').click();
+  await s.locator(ana + ' [data-kp-alt-ozet] [data-kp-taslak-kaydet]').click();
   await bekle(s, '[data-kisisel-toplam]', /4\.\d{3} TL \d/);
   assert.equal(await metin(s, '[data-kisisel-toplam]'), 'Toplam 4.320 TL 3.950 TL');
   assert.equal((await s.locator('[data-kisisel-sepete-ekle]').innerText()).trim(), 'Tasarımımı sepete ekle · 3.950 TL');

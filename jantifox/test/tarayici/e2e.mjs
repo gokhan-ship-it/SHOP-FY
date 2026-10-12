@@ -282,7 +282,8 @@ assert.match(ozet, /Toplam\s+4\.650 TL\s+4\.280 TL/);
 assert.equal(await sayfa.locator('.kp-ozet__eski').textContent(), '4.650 TL');
 assert.equal(await sayfa.locator('.kp-indirim-notu--ozet').count(), 0, 'simülasyon başarılıysa not yok');
 assert.ok(simulasyon && simulasyon.variables.a.length === 0 && simulasyon.variables.b.length > 1, 'boş sepet + tasarım simüle edilmeli');
-assert.match(await sayfa.locator('[data-kp-panel="ozet"] h3').textContent(), /Tasarımın hazır/);
+assert.equal(await sayfa.locator('[data-kp-panel="ozet"] h3').textContent(), 'Özet');
+assert.equal(await sayfa.locator('.kp-oz__kart').isVisible(), true, 'kompakt tasarım kartı');
 assert.equal(await sayfa.locator('[data-kp-ileri]').textContent(), 'Tasarımımı sepete ekle · 4.280 TL');
 await sayfa.screenshot({ path: cikti + '07-ozet.png' });
 
@@ -316,7 +317,7 @@ await sayfa.goto('https://jantifox.test/products/kanvas-lacivert-tote-canta');
 await kart.waitFor({ state: 'visible' });
 // (b) Senin tasarımın: içerik, patch sayısı, toplam; kartın altında kırmızı buton, temanın ana butonu gizli
 const kartMetni = (await kart.innerText()).replace(/\s+/g, ' ');
-assert.match(kartMetni, /Senin tasarımın Otomatik kaydedildi/);
+assert.match(kartMetni, /Senin tasarımın Taslak · bugün \d\d:\d\d/);
 assert.match(kartMetni, /ECE7 · Futbol Topu/);
 assert.match(kartMetni, /5 patch/);
 assert.match(kartMetni, /Toplam 4\.650 TL/);

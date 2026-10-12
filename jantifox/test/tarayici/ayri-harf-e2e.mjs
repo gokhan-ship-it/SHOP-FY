@@ -74,7 +74,7 @@ await s.locator(ana + ' [data-kp-ileri]').click();
 assert.equal(await s.locator(ana + ' [data-kp-ozet-yer]').isVisible(), true);
 assert.match(await s.locator(ana + ' [data-kp-ozet-yer]').innerText(), /üst üste geliyor/);
 assert.equal(await s.locator(ana + ' [data-kp-ileri]').getAttribute('aria-disabled'), 'true');
-await s.locator(ana + ' [data-kp-ileri]').click({ force: true });
+assert.equal(await s.locator(ana + ' [data-kp-ileri]').isVisible(), false, 'butonun yerinde Hepsini düzelt / Tasarıma dön');
 assert.equal(eklenen, null, 'sepete eklenmedi');
 await s.locator(ana + ' [data-kp-ozet-yer] [data-kp-hepsini-duzelt]').click();
 await s.locator(ana + ' [data-kp-adim="tasarim"]').click();

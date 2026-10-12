@@ -234,26 +234,26 @@ await s.locator('#kp-isim').fill('ece');
 
 // 7) Özet: başlık, Sepete ekle · toplam, not ve iki bağlantı
 await s.locator('[data-kp-ileri]').click();
-assert.equal(await metin('[data-kp-panel="ozet"] h3'), 'Tasarımın hazır');
+assert.equal(await metin('[data-kp-panel="ozet"] h3'), 'Özet');
 assert.match(await metin('[data-kp-ileri]'), /^Tasarımımı sepete ekle · [\d.]+ TL$/);
 // Kampanya notu yalnızca simülasyon başarısız olursa görünür (Shopify'ın kendi notu kaldırıldı)
 // Bu testte Storefront API yanıt vermiyor: simülasyon başarısız → liste fiyatı ve "İndirimler sepette uygulanır"
 assert.equal(await gorunur('.kp-alt__ozet .kp-indirim-notu'), true);
 assert.equal(await s.locator('[data-kp-duzenle]').count(), 0, '"Tasarımı düzenle" yerine üstte "‹ Tasarıma dön"');
-assert.equal(await gorunur('[data-kp-urune-don]'), true);
+assert.equal(await gorunur('[data-kp-alt-ozet] [data-kp-taslak-kaydet]'), true);
 // "‹ Tasarıma dön" son kullanılan araca döner (Metin)
 await s.locator('[data-kp-adim="tasarim"]').click();
 assert.equal(await gorunur('[data-kp-panel="yazi"]'), true);
 await s.locator('[data-kp-ileri]').click();
-// "Ürün sayfasına dön": tasarım kaydedilir, kart tasarımlı halde (küçük önizleme, Düzenle / Sil)
-await s.locator('[data-kp-urune-don]').click();
+// "Taslak olarak kaydet ve çık": tasarım kaydedilir, kart tasarımlı halde (küçük önizleme, Devam et / Sil)
+await s.locator('[data-kp-alt-ozet] [data-kp-taslak-kaydet]').click();
 await s.locator('.kp-editor').waitFor({ state: 'hidden' });
 assert.equal(await gorunur('[data-kisisel-davet]'), false);
 assert.equal(await gorunur('[data-kisisel-govde]'), true);
-assert.match((await s.locator('[data-kisisel-govde]').innerText()).replace(/\s+/g, ' '), /Senin tasarımın Otomatik kaydedildi ECE · Futbol Topu · Futbol Topu/);
+assert.match((await s.locator('[data-kisisel-govde]').innerText()).replace(/\s+/g, ' '), /Senin tasarımın Taslak · bugün \d\d:\d\d ECE · Futbol Topu · Futbol Topu/);
 assert.equal(await gorunur('[data-kisisel-sepete-ekle]'), true, 'kartın altında kırmızı buton');
 assert.ok(await s.locator('[data-kisisel-mini] .kp-parca').count() > 0, 'kartta tasarım önizlemesi');
-assert.deepEqual(await s.$$eval('.kisisel-kart__butonlar button', (b) => b.map((x) => x.textContent.trim())), ['Düzenle', 'Sil']);
+assert.deepEqual(await s.$$eval('.kisisel-kart__butonlar button', (b) => b.map((x) => x.textContent.trim())), ['Devam et', 'Sil']);
 const ANAHTAR = 'kisisel-tasarim-10087205437726';
 assert.ok(await s.evaluate((k) => !!localStorage.getItem(k), ANAHTAR), 'localStorage\'da kayıt');
 // Sil → davet + "Tasarım silindi · Geri al" → Geri al
@@ -306,7 +306,7 @@ assert.equal(await metin('[data-kp-panel="ozet"] h3'), 'Henüz patch eklemedin')
 assert.equal(await gorunur('[data-kp-geri-don]'), true);
 assert.equal(await gorunur('[data-kp-sade-al]'), true);
 assert.equal(await metin('[data-kp-ileri]'), 'Sepete ekle · 3.000 TL');
-assert.equal(await gorunur('[data-kp-urune-don]'), false, 'boş özette alt bağlantılar gizli');
+assert.equal(await gorunur('[data-kp-alt-ozet] [data-kp-taslak-kaydet]'), false, 'boş özette alt bağlantılar gizli');
 await s.locator('[data-kp-geri-don]').click();
 assert.equal(await gorunur('[data-kp-panel="yazi"]'), true, 'geri dön Yazı adımına');
 // Araçtan doğrudan geçiş
@@ -339,13 +339,14 @@ await s.locator('[data-kp-kategori="Spor"]').click();
 await s.locator('[data-kp-gorsel-icerik] [data-kp-ikon]:not([disabled])').first().click();
 await s.locator('[data-kp-ileri]').click();
 assert.equal(await gorunur('[data-kp-panel="ozet"]'), true, 'Özete geç her zaman çalışır');
-assert.match(await metin('.kp-bilgi'), /Velcro yüzeye takılır/);
+assert.match(await metin('.kp-oz__not'), /Velcro yüzeye takılır/);
 await s.locator('[data-kp-adim="tasarim"]').click();
 await s.locator('[data-kp-adim="yazi"]').click();
 await s.locator('#kp-isim').fill('');
 await s.evaluate(() => document.querySelector('kisisel-kart').editor.t.parcalar = []);
-s.once('dialog', (d) => d.accept());
+// Tasarım boşken X doğrudan kapatır (panel yok)
 await s.locator('[data-kp-kapat]').click();
+assert.equal(await s.locator('.kp-editor').first().isVisible(), false);
 
 // Sepetteki tasarımın kartı, düzenlenmesi ve silinmesi: sepettekini-duzenle-e2e.mjs
 
