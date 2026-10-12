@@ -1782,13 +1782,46 @@
   /* Önizleme çizimi                                                     */
   /* ------------------------------------------------------------------ */
 
+  // Shopify patch görselleri 300 px genişlikte gelir (…&width=300). Ekranda çoğu 16–110 px gösterildiği için
+  // srcset ile daha küçük boyutlar da sunulur; tarayıcı ekrandaki boyuta (× piksel oranı) yetecek en küçüğünü seçer.
+  // En büyük seçenek yine 300 px'tir: hiçbir yerde bugünkünden düşük çözünürlük gösterilmez.
+  var GORSEL_GENISLIKLERI = [100, 150, 220, 300];
+  var GENISLIK_DESENI = /([?&])width=300(?=&|$)/;
+  function gorselKaynak(url, cssPx) {
+    if (!url || !cssPx || !GENISLIK_DESENI.test(url)) return 'src="' + kacis(url) + '"';
+    var srcset = GORSEL_GENISLIKLERI.map(function (w) { return url.replace(GENISLIK_DESENI, '$1width=' + w) + ' ' + w + 'w'; }).join(', ');
+    return 'src="' + kacis(url) + '" srcset="' + kacis(srcset) + '" sizes="' + Math.ceil(cssPx) + 'px"';
+  }
+  // Önizlemedeki patch'in ekrandaki genişliği (8 px'e yuvarlanır ki küçük oynamalar öğeyi değiştirmesin)
+  function parcaGenisligi(sahneGen, oran) {
+    return Math.max(8, Math.ceil((sahneGen * oran) / 8) * 8);
+  }
+
   function Sahne(model, yer, kok, secenek) {
     this.m = model;
     this.yer = yer;
     this.kok = kok;
     this.etkilesimli = !!(secenek && secenek.etkilesimli);
     this.olustur();
+    this.genislikIzle();
   }
+
+  // Sahnenin ekrandaki genişliği (görsel boyutu seçimi için). Yalnızca büyür: küçülünce daha küçük dosya indirilmez.
+  Sahne.prototype.genislikIzle = function () {
+    var self = this;
+    this.genislik = 0;
+    if (!window.ResizeObserver || !this.sahne) return;
+    new ResizeObserver(function (girdiler) {
+      var w = girdiler[0] && girdiler[0].contentRect.width;
+      if (!w || w <= self.genislik) return;
+      self.genislik = w;
+      // Var olan görsellerin sizes değeri yerinde güncellenir (öğeler yeniden kurulmaz)
+      Array.prototype.forEach.call(self.katman.querySelectorAll('.kp-parca > img[sizes]'), function (img) {
+        var oran = parseFloat(img.parentNode.style.width) / 100;
+        if (oran > 0) img.setAttribute('sizes', parcaGenisligi(w, oran) + 'px');
+      });
+    }).observe(this.sahne);
+  };
 
   Sahne.prototype.olustur = function () {
     var m = this.m;
@@ -1930,6 +1963,8 @@
 
   Sahne.prototype.ciz = function (parcalar, hatalar, alanHatali) {
     var m = this.m;
+    if (!this.genislik) this.genislik = (this.sahne && this.sahne.getBoundingClientRect().width) || Math.min(window.innerWidth || 0, 800);
+    var sahneGen = this.genislik;
     var html = parcalar
       .filter(function (p) { return !p.kenar; })
       .map(function (p) {
@@ -1940,7 +1975,7 @@
         var ic = p.tip === 'aksesuar'
           ? aksesuarIcHtml(m, p)
           : gorsel
-            ? '<img src="' + kacis(gorsel) + '" alt="" draggable="false" decoding="async">'
+            ? '<img ' + gorselKaynak(gorsel, sahneGen && parcaGenisligi(sahneGen, (parseFloat(st.width) || 0) / 100)) + ' alt="" draggable="false" decoding="async">'
             : '<span>' + kacis(p.etiket) + '</span>';
         return '<div class="' + sinif + '" style="' + stil + '" data-uid="' + kacis(p.uid) + '" data-grup="' + kacis(p.grup) + '" aria-hidden="true">' + ic + '</div>';
       })
@@ -2957,7 +2992,7 @@
     var v = i.varyant;
     var tukendi = !v.satilabilir || v.stok === 0;
     return '<button type="button" class="kp-secim kp-secim--ikon" data-kp-ikon="' + i.id + '" title="' + kacis(i.ad) + '"' + (tukendi ? ' disabled' : '') + '>' +
-      (v.gorsel ? '<img src="' + kacis(v.gorsel) + '" alt="" loading="lazy">' : '') +
+      (v.gorsel ? '<img ' + gorselKaynak(v.gorsel, 68) + ' alt="" loading="lazy">' : '') +
       '<span class="kp-secim__ad">' + kacis(i.ad) + '</span>' +
       (tukendi ? '<span class="kp-secim__rozet kp-secim__rozet--tukendi">Tükendi</span>' : '') +
       '</button>';
@@ -3260,7 +3295,7 @@
     return (
       '<button type="button" class="kp-secim kp-secim--set" data-kp-hazir-set="' + s.id + '" data-sira="' + sira + '" title="' + kacis(s.ad) + ' seti">' +
       '<span class="kp-set-kart__onizleme" aria-hidden="true">' +
-      s.patchler.map(function (p) { return p.varyant.gorsel ? '<img src="' + kacis(p.varyant.gorsel) + '" alt="" loading="lazy">' : ''; }).join('') +
+      s.patchler.map(function (p) { return p.varyant.gorsel ? '<img ' + gorselKaynak(p.varyant.gorsel, 34) + ' alt="" loading="lazy">' : ''; }).join('') +
       '</span>' +
       '<span class="kp-secim__ad">' + kacis(s.ad) + '</span>' +
       '<span class="kp-set-kart__fiyat">' + s.patchler.length + ' patch · <span class="kp-set-kart__tutar">' + paraBicimle(s.fiyat) + '</span>' +
@@ -4272,7 +4307,7 @@
         return (
           '<button type="button" class="kp-karakter' + (on ? ' kp-karakter--secili' : '') + (!v ? ' kp-karakter--yok' : '') + '" data-kp-karakter="' + i + '" aria-pressed="' + on + '" aria-label="' + (i + 1) + '. karakter ' + kacis(h) + ', ' + kacis(stil) + (v && v.renk && set.cokRenkli ? ' ' + kacis(v.renk) : '') + (!rakam && cokSet ? ', stilini değiştir' : '') + '">' +
           (!rakam && cokSet ? '<span class="kp-karakter__kalem" aria-hidden="true"><svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span>' : '') +
-          '<span class="kp-karakter__gorsel">' + (v && v.gorsel ? '<img src="' + kacis(v.gorsel) + '" alt="" draggable="false">' : '<span class="kp-karakter__harf">' + kacis(h) + '</span>') + '</span>' +
+          '<span class="kp-karakter__gorsel">' + (v && v.gorsel ? '<img ' + gorselKaynak(v.gorsel, 38) + ' alt="" draggable="false">' : '<span class="kp-karakter__harf">' + kacis(h) + '</span>') + '</span>' +
           '<span class="kp-karakter__stil">' + nokta + kacis(stil) + '</span>' +
           '</button>'
         );
@@ -4308,7 +4343,7 @@
         var on = s === set;
         return (
           '<button type="button" class="kp-stil__set" data-kp-stil="' + kacis(s.id) + '" aria-pressed="' + on + '"' + (yok && !on ? ' disabled' : '') + '>' +
-          '<span class="kp-stil__ornek">' + (v && v.gorsel ? '<img src="' + kacis(v.gorsel) + '" alt="">' : '<span>' + kacis(h) + '</span>') + '</span>' +
+          '<span class="kp-stil__ornek">' + (v && v.gorsel ? '<img ' + gorselKaynak(v.gorsel, 30) + ' alt="">' : '<span>' + kacis(h) + '</span>') + '</span>' +
           '<span class="kp-stil__ad">' + kacis(stilAdi(s)) + (yok ? ' <small>yok</small>' : '') + '</span>' +
           '</button>'
         );
@@ -6923,7 +6958,7 @@
       ornek.innerHTML = ['A', 'B', 'C']
         .map(function (h) {
           var v = set.karakterler[h];
-          return v && v.gorsel ? '<img src="' + kacis(v.gorsel) + '" alt="" loading="lazy">' : '<span>' + h + '</span>';
+          return v && v.gorsel ? '<img ' + gorselKaynak(v.gorsel, 16) + ' alt="" loading="lazy">' : '<span>' + h + '</span>';
         })
         .join('');
     }
