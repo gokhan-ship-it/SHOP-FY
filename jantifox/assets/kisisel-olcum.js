@@ -182,10 +182,13 @@
     if (enUzun) ust.push('En uzun kare boşluğu: ' + yaz(enUzun.b / 1000) + ' (' + yaz(sn(koken + enUzun.bas)) + ' → ' + yaz(sn(koken + enUzun.son)) + ')');
     if (k != null) ust.push('Kullanılabilir ana kadar: ' + toplamYaz(toplam(k)));
     ust.push('Şu ana kadar: ' + toplamYaz(toplam(null)));
-    var gec = kaynaklar().filter(function (r) { return !/kisisel-olcum\.js/.test(r.name); })
+    // Sayfa yüklendiyse load'u en son bekletenler (sonradan başlayanlar sayılmaz)
+    var nv = performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null;
+    var yuklendi = nv && nv.loadEventStart ? nv.loadEventStart : null;
+    var gec = kaynaklar().filter(function (r) { return !/kisisel-olcum\.js/.test(r.name) && (!yuklendi || r.responseEnd <= yuklendi); })
       .sort(function (a, b) { return b.responseEnd - a.responseEnd; }).slice(0, 8);
     if (gec.length) {
-      ust.push('En geç bitenler:');
+      ust.push(yuklendi ? 'En geç bitenler (sayfa yüklenmesini bekletenler):' : 'En geç bitenler (sayfa henüz yüklenmedi):');
       gec.forEach(function (r) {
         var u;
         try { u = new URL(r.name); } catch (e) { u = { host: '', pathname: r.name }; }
