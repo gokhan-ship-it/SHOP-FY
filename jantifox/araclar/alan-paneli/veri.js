@@ -1543,17 +1543,17 @@ window.PANEL_VERI = {
    "urunId": 15869133226270,
    "baslik": "Yapıştırılabilir Kalem Kutusu Sarı - LE KOKO COLLECTIF-",
    "grup": 11,
-   "not": "Rozet: PATCH ALANI YOKTUR (yalnızca arkasında cırt alanı var). Önde patch alanı yoksa 'Bu üründe kişiselleştirme olmasın' seç. Görsel açılı çekim (düzeltilmemiş aksesuar görseli).",
+   "not": "Rozet: PATCH ALANI YOKTUR (yalnızca arkasında cırt alanı var). Görsel perspektifi düzeltilmiş ön yüz (Kırmızı ve Turuncu ile aynı yöntem). Önde patch alanı yoksa 'Bu üründe kişiselleştirme olmasın' seç.",
    "png": {
-    "dosya": "veri/aksesuar/png/kisisel-aksesuar-kalem-kutusu-sari.png",
-    "en": 1000,
-    "boy": 493
+    "dosya": "veri/aksesuar/duz/kalem-kutusu-sari-on.png",
+    "en": 1200,
+    "boy": 655
    },
    "gorsel": "gorseller/yapistirilabilir-kalem-kutusu-x-le-koko-collectif-copy.webp",
    "mevcut": {
-    "onizleme_gorseli": "gid://shopify/MediaImage/72590847017246",
+    "onizleme_gorseli": null,
     "harita": null,
-    "not": "Haritası yok; aksesuar görseli (1000 × 493, açılı)."
+    "not": "Perspektifi düzeltilmiş ön yüz (2026-10-13, duz/duzelt.py ... s; 1200 × 655, 22 × 12 oranı). Mağazadaki eski aksesuar görseli (MediaImage 72590847017246, açılı 1000 × 493) bu geometriye uymaz: yazarken yeni görsel yüklenir."
    },
    "sekiller": [],
    "cizgi": null,

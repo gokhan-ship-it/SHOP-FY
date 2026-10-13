@@ -1,11 +1,14 @@
 import cv2, numpy as np, sys
 S=sys.argv[1]
-for ad,f in [('k','ham/pembe-kalem-kutusu-v.png'),('t','ham/turuncu-kalem-kutusu-v.png')]:
+SEC=(sys.argv[3] if len(sys.argv)>3 else 'k,t').split(',')  # işlenecek ürünler: k kırmızı, t turuncu, s sarı
+for ad,f in [('k','ham/pembe-kalem-kutusu-v.png'),('t','ham/turuncu-kalem-kutusu-v.png'),('s','ham/sari-kalem-kutusu-v.png')]:
+    if ad not in SEC: continue
     im=cv2.imread(f); hsv=cv2.cvtColor(im,cv2.COLOR_BGR2HSV)
     h,s,v=cv2.split(hsv)
     b,g,r=cv2.split(im.astype(int))
     if ad=='k': m=((r>150)&(g<90)&(b<90)&(s>150))
-    else: m=((h>=5)&(h<=16)&(s>170)&(v>180))
+    elif ad=='t': m=((h>=5)&(h<=16)&(s>170)&(v>180))
+    else: m=((h>=18)&(h<=35)&(s>120)&(v>150))
     m=m.astype(np.uint8)*255
     m=cv2.morphologyEx(m,cv2.MORPH_OPEN,np.ones((21,21),np.uint8)); m=cv2.morphologyEx(m,cv2.MORPH_CLOSE,np.ones((9,9),np.uint8))
     n,lab,st,cen=cv2.connectedComponentsWithStats(m)

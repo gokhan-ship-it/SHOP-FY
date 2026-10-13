@@ -1,6 +1,7 @@
 import cv2, numpy as np, sys, json
 from scipy.optimize import minimize
 S=sys.argv[1]; K=json.load(open(f'{S}/koseler.json')); out={}
+SEC=(sys.argv[3] if len(sys.argv)>3 else 'k,t').split(',')  # işlenecek ürünler: k kırmızı, t turuncu, s sarı
 KS=0.25
 def yuvarlak(a,rho,n=60):
     r=rho*a; pts=[]
@@ -10,7 +11,7 @@ def yuvarlak(a,rho,n=60):
     return np.array(pts,np.float32)
 def hom(q,a):
     src=np.float32([[0,0],[1,0],[1,a],[0,a]]); return cv2.getPerspectiveTransform(src,np.float32(q))
-for ad in ['k','t']:
+for ad in SEC:
     m=cv2.imread(f'{S}/{ad}-maske.png',0); ms=cv2.resize(m,None,fx=KS,fy=KS,interpolation=cv2.INTER_AREA)>127
     a=0.5
     def kayip(p):

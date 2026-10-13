@@ -1,12 +1,14 @@
 import cv2, numpy as np, sys, json
 S=sys.argv[1]; out={}
+SEC=(sys.argv[3] if len(sys.argv)>3 else 'k,t').split(',')  # işlenecek ürünler: k kırmızı, t turuncu, s sarı
 def hat(pts):
     vx,vy,x0,y0=cv2.fitLine(np.array(pts,np.float32),cv2.DIST_HUBER,0,0.01,0.01).ravel()
     return np.array([x0,y0]),np.array([vx,vy])
 def kes(a,b):
     p,d=a; q,e=b
     A=np.array([d,-e]).T; t=np.linalg.solve(A,q-p); return p+t[0]*d
-for ad,f in [('k','ham/pembe-kalem-kutusu-v.png'),('t','ham/turuncu-kalem-kutusu-v.png')]:
+for ad,f in [('k','ham/pembe-kalem-kutusu-v.png'),('t','ham/turuncu-kalem-kutusu-v.png'),('s','ham/sari-kalem-kutusu-v.png')]:
+    if ad not in SEC: continue
     m=cv2.imread(f'{S}/{ad}-maske.png',0)>0
     ys,xs=np.nonzero(m); x0,x1,y0,y1=xs.min(),xs.max(),ys.min(),ys.max(); w=x1-x0; h=y1-y0
     ust=[];alt=[];sol=[];sag=[]

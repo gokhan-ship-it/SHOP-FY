@@ -2,10 +2,12 @@
 # Kullanım: python3 duzelt.py <ara-klasör: uyum.json, *-maske.png> <çıktı klasörü>  (çalışma dizini: veri/aksesuar)
 import cv2, numpy as np, sys, json
 S=sys.argv[1]; U=json.load(open(f'{S}/uyum.json')); rapor={}
-W,H=1000,500; EE={'k':19,'t':18}                     # iç panel düzlemi; biye payı (px, W=1000 ölçeğinde)
+SEC=(sys.argv[3] if len(sys.argv)>3 else 'k,t').split(',')  # işlenecek ürünler: k kırmızı, t turuncu, s sarı
+W,H=1000,500; EE={'k':19,'t':18,'s':18}                     # iç panel düzlemi; biye payı (px, W=1000 ölçeğinde)
 OW,OH=1200,655                        # 22 × 12 cm oranı
 SS=4
-for ad,f in [('k','ham/pembe-kalem-kutusu-v.png'),('t','ham/turuncu-kalem-kutusu-v.png')]:
+for ad,f in [('k','ham/pembe-kalem-kutusu-v.png'),('t','ham/turuncu-kalem-kutusu-v.png'),('s','ham/sari-kalem-kutusu-v.png')]:
+    if ad not in SEC: continue
     E=EE[ad]; src=cv2.imread(f); q=np.float32(U[ad]['q']); rho=U[ad]['rho']
     M=cv2.getPerspectiveTransform(q,np.float32([[0,0],[W,0],[W,H],[0,H]]))
     sx,sy=OW/(W+2*E),OH/(H+2*E)
@@ -40,6 +42,6 @@ for ad,f in [('k','ham/pembe-kalem-kutusu-v.png'),('t','ham/turuncu-kalem-kutusu
     sonra=lab[pm>0].mean(axis=0)
     rgb=cv2.cvtColor(np.round(lab).astype(np.uint8),cv2.COLOR_LAB2BGR)
     rapor[ad]={'L_aralik_once':float(np.ptp(yuzey[sel])),'lab_once':once.round(2).tolist(),'lab_sonra':sonra.round(2).tolist(),'kose_cm':round(ro*sx/OW*22,2)}
-    bgra=cv2.merge([*cv2.split(rgb),alfa]); cv2.imwrite(sys.argv[2]+'/'+{'k':'kalem-kutusu-kirmizi','t':'kalem-kutusu-turuncu'}[ad]+'-on.png',bgra)
+    bgra=cv2.merge([*cv2.split(rgb),alfa]); cv2.imwrite(sys.argv[2]+'/'+{'k':'kalem-kutusu-kirmizi','t':'kalem-kutusu-turuncu','s':'kalem-kutusu-sari'}[ad]+'-on.png',bgra)
     print(ad,rapor[ad])
-json.dump(rapor,open(sys.argv[2]+'/rapor.json','w'),indent=1)
+json.dump(rapor,open(sys.argv[2]+'/rapor'+('' if SEC==['k','t'] else '-'+'-'.join(SEC))+'.json','w'),indent=1)
