@@ -210,3 +210,31 @@ iPhone 13 kullanıcı ajanı, kopya tema, Bej Tişört editörü, "atlase" (6 ha
 | **Kişiselleştirme görselleri toplam** | **5757 KB** | **1154 KB (−80 %)** |
 | Tema / ürün fotoğrafları (değişmedi) | 1329 KB | 1329 KB |
 | Sayfadaki bütün görseller | 7086 KB | 2483 KB |
+
+## 2026-10-14: gerçek iPhone ölçümü (Aşama 1, hız teması önizlemesi, 5G)
+
+iPhone, iOS 18.7, Safari 26.6, 430×932 @3. Ölçüm modu `?kp_olcum=1` (`assets/kisisel-olcum.js`). Sıfır: "Kişiselleştir"e basış.
+
+| Adım (s) | Ana sayfa → Mavi Beyaz Spor Çanta | Tüm Ürünler → Şapka |
+|---|---|---|
+| Buton tepkisi (ilk kare) | 0,02 | 0,02 |
+| HTML indi | 1,38 | 0,61 |
+| HTML ayrıştırıldı | 1,64 | 0,86 |
+| Editör kodu çalıştı / veri hazır | 1,82 | 1,01 |
+| Editör ekranı çizildi (DOM) | 1,85 | 1,03 |
+| Önizleme görseli hazır | 4,35 (2,5 s bekleme sınırına takıldı; görsel 5,12'de geldi) | 2,74 |
+| "Kullanılabilir" işareti | 4,36 | 2,74 |
+| Kampanya bitti | 5,95 | 2,74 (önbellekten) |
+| Sayfa load olayı | 15,00 | 11,64 |
+| **İlk kare boyandı** | **15,14** | **12,10** |
+| İlk patch görseli | 15,05 | 11,94 |
+
+Bulgular:
+- Ağ ve editör kodu darboğaz değil: editör 1–1,9 s'de hazır.
+- Safari ilk kareyi sayfanın load olayından hemen sonra boyuyor (12–15 s). Açılışta ürün sayfasının gövdesi
+  `visibility: hidden` (kp-acilis-bekle / kp-acilis-arka); Safari ekranda içerik görmediği için boyamayı tüm sayfa
+  yüklenene kadar (gizli ürün sayfasının ~240 isteği: galeri, uygulamalar, pikseller) erteliyor. Chromium bunu yapmadığı
+  için taklit edilen iPhone ölçümlerinde görünmüyordu. Tembel yüklenen patch görselleri de ancak o zaman isteniyor.
+- Önizleme görseli iki kez indiriliyor (ilk `sizes=100vw`, yerleşimden sonra yeni `sizes` → farklı genişlik): 2 × 150–160 KB.
+- shop.app yönlendirmesi Safari'de yok (yönlendirme "yok", istek 0,04–0,22 s'de başlıyor).
+- Safari çoğu dosyanın boyutunu vermiyor; bayt toplamları alt sınırdır.
