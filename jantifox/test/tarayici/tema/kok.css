@@ -1,0 +1,446 @@
+
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_n4.0ba78fa5af9b0e1a374041b3ceaadf0a43b41362.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_n4.214741a72ff2596839fc9760ee7a770386cf16ca.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_n5.ad5b4b72b59a00358afc706450c864c3c8323842.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_n5.33757fdf985af2d24b32fcd84c9a09224d4b2c39.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_n6.aa29d4918bc243723d56b59572e18228ed0786f6.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_n6.5f815d845fe073750885d5b7e619ee00e8111208.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_n7.56758dcf284489feb014a026f3727f2f20a54626.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_n7.f34f55d9b3d3205d2cd6f64955ff4b36f0cfd8da.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_i4.846ad1e22474f856bd6b81ba4585a60799a9f5d2.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_i4.56b43284e8b52fc64c1fd271f289a39e8477e9ec.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_i7.42fd71da11e9d101e1e6c7932199f925f9eea42d.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_i7.ec8499dbd7616004e21155106d13837fff4cf556.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_n4.0ba78fa5af9b0e1a374041b3ceaadf0a43b41362.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_n4.214741a72ff2596839fc9760ee7a770386cf16ca.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_n5.ad5b4b72b59a00358afc706450c864c3c8323842.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_n5.33757fdf985af2d24b32fcd84c9a09224d4b2c39.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_n6.aa29d4918bc243723d56b59572e18228ed0786f6.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_n6.5f815d845fe073750885d5b7e619ee00e8111208.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_n7.56758dcf284489feb014a026f3727f2f20a54626.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_n7.f34f55d9b3d3205d2cd6f64955ff4b36f0cfd8da.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_i4.846ad1e22474f856bd6b81ba4585a60799a9f5d2.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_i4.56b43284e8b52fc64c1fd271f289a39e8477e9ec.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Poppins;
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+  src: url("//jantifox.com/cdn/fonts/poppins/poppins_i7.42fd71da11e9d101e1e6c7932199f925f9eea42d.woff2") format("woff2"),
+       url("//jantifox.com/cdn/fonts/poppins/poppins_i7.ec8499dbd7616004e21155106d13837fff4cf556.woff") format("woff");
+}
+
+
+/**
+ * Typography
+ * https://type-scale.com/
+ */
+ :root {
+    --size-hxl: 4.0rem;
+    --size-h0: 3.6rem;
+    --size-h1: 3.2rem;
+    --size-h2: 2.8rem;
+    --size-h3: 2.2rem;
+    --size-h4: 1.8rem;
+    --size-h5: 1.6rem;
+    --size-h6: 1.5rem;
+    --size-large:1.6rem;  
+    --size-body: 1.5rem;  
+    --size-small:1.3rem;
+    --size-tiny: 1.2rem;
+  }
+@media only screen and (min-width: 990px) {
+    :root {
+      --size-hxl: 5.6rem;
+      --size-h0: 4.8rem;
+      --size-h1: 4rem;
+      --size-h2: 3.2rem;
+      --size-h3: 2.8rem;
+      --size-h4: 2.2rem;
+      --size-h5: 1.7rem;
+      --size-h6: 1.6rem;
+      --size-large:1.75rem; 
+      --size-body: 1.6rem;  
+      --size-small:1.4rem;
+      --size-tiny: 1.2rem;
+    }
+  }
+
+
+      :root{
+        /*Color*/
+        --color-background: 255 255 255;
+        --color-foreground: 32 34 35;
+        --color-heading: 32 34 35;
+        --color-accent: 255 80 27;
+        --color-border: 224 230 244; 
+        --color-input-border: 216 220 229;
+        --color-overlay: 51 51 51;
+        --color-drawer-background: 255 255 255;
+        --color-header-background: 255 255 255;
+        --color-header-text: 32 34 35;
+        --color-header-link-hover: 32 34 35;
+        --color-footer-background: 89 0 28;
+        --color-footer-border: 251 234 214;
+        --color-footer-heading: 251 234 214;
+        --color-footer-text: 251 234 214;
+        --color-footer-link: 251 234 214;
+        --color-footer-link-hover: 188 0 39;
+        --color-placeholder-bg:#f1f1f1;
+        --color-placeholder-fill:rgba(var(--color-foreground)/0.5);
+
+        --color-price-discount-background: 255 80 27;--color-price-discount:255 255 255;
+        --color-sold-out-background: 204 204 204;--color-sold-out:0 0 0;
+        --color-stars: 255 170 71;
+        --color-background-card:245 245 245;
+       
+        /*Button*/
+        --btn-solid-bg: 32 34 35;
+        --btn-solid-border: 32 34 35;
+        --btn-solid-bg-hover: 51 51 51;
+        --btn-solid-border-hover: 51 51 51;
+        --btn-solid-text: 255 255 255;
+        --btn-solid-text-hover: 255 255 255;
+        --btn-solid-text-white:32 34 35;
+        --btn-solid-white-bg:32 34 35;
+        --btn-secondary-solid-bg: 251 234 214;
+        --btn-secondary-solid-border: 251 234 214;
+        --btn-secondary-solid-text: 94 22 49;
+        --btn-secondary-solid-text-hover: 1 45 24;
+        --btn-secondary-solid-bg-hover: 233 209 184;
+        --btn-secondary-solid-border-hover: 233 209 184;
+        --btn-outline-border: 32 34 35;
+        --btn-outline-text: 32 34 35;
+        --btn-outline-text-white-hover: 32 34 35;
+        --btn-underlined-text: 32 34 35;
+        --btn-underlined-bg: 32 34 35;
+      }
+     
+      :root{
+        /* Appearance and spacing */
+        --dropdown-radius: 0px;
+        --inputs-radius: 0px;
+        --color-shadow:var(--color-heading);
+        --shadow: 0 5px 30px rgb(var(--color-heading) / 0.1);
+        --shadow-sm: 0 2px 8px rgb(var(--color-heading) / 0.1);
+        --badge-corner-radius: 0.2rem;
+      }
+      :root {
+       
+        /*Font*/
+        --font-body-family: Poppins, sans-serif;
+        --font-body-style: normal;
+        --font-body-weight: 400;
+        --font-body-weight-bold: 700;
+
+        --font-heading-family: Poppins, sans-serif;
+        --font-heading-style: normal;
+        --font-heading-weight: 400;
+        --font-heading-weight-bold: 700;
+
+        --font-body-scale: 0.96;
+        --font-heading-scale: 1.0;
+
+        --text-size-hxl : calc(var(--font-heading-scale)*var(--size-hxl));
+        --text-size-h0 : calc(var(--font-heading-scale)*var(--size-h0));
+        --text-size-h1 : calc(var(--font-heading-scale)*var(--size-h1));
+        --text-size-h2 : calc(var(--font-heading-scale)*var(--size-h2));
+        --text-size-h3 : calc(var(--font-heading-scale)*var(--size-h3));
+        --text-size-h4 : calc(var(--font-heading-scale)*var(--size-h4));
+        --text-size-h5 : calc(var(--font-heading-scale)*var(--size-h5));
+        --text-size-h6 : calc(var(--font-heading-scale)*var(--size-h6));
+        --text-size-large : calc(var(--font-body-scale)*var(--size-large));
+        --text-size-base : calc(var(--font-body-scale)*var(--size-body));
+        --text-size-small : calc(var(--font-body-scale)*var(--size-small));
+        --text-size-tiny : calc(var(--font-body-scale)*var(--size-tiny));
+
+        --font-heading-spacing: 0px;
+        --font-body-spacing: 0px;
+        --font-heading-transform: uppercase;
+        --font-subheading-family: var(--font-body-family) ;
+        --font-subheading-scale:  1.08;
+        --font-subheading-spacing: 2px;
+        --font-subheading-transform: uppercase;
+        --font-subheading-weight: 500;
+        --text-size-subheading:  calc(var(--font-subheading-scale)* 1.2rem);
+        --font-card-title-family: var(--font-heading-family) ;
+        --font-card-title-scale:  1.0;
+        --font-card-title-spacing: 0px;
+        --font-card-title-transform: uppercase;
+        --font-card-title-weight: 600;
+
+
+        --container-max-width:1300px;
+        --fluid-container-width:100%;
+        --inputs-border-width:1px;
+        --icon-stroke-width: 1.5;
+        --icon-style : ;
+        
+        /* Buttons */
+        --btn-padding-vertical:8px;
+        --btn-padding-horizontal:28px;
+        --btn-padding-vertical-sm:0.8rem;
+        --btn-padding-horizontal-sm:1.6rem;
+        --height-btn: 48px;
+        --thickness-btn-outline: 2px;
+        --thickness-btn-underline: 1px;
+        --inputs-thickness: 1px;
+
+        --btn-font-family:  var(--font-body-family) ;
+        --btn-font-scale :0.9;
+        --btn-font-size: calc(var(--btn-font-scale) * 1.6rem);
+        --btn-font-spacing: 1px;
+        --btn-font-weight: 600;
+        --btn-font-transform: uppercase;
+        --btn-border-radius:0px;
+        
+
+        --media-radius: 0px;
+        --fluid-offset:24px;
+        --max-width-drawer:540px;
+
+        /*Animation hover*/
+        
+        --btn-transform: scaleX(0);
+        --btn-transform-origin: center right;
+        --btn-transform-hover: none;
+        --btn-transform-origin-hover:center left;
+        --btn-opacity: 1;
+        --btn-opacity-hover: 1;
+      }
+      :root {
+        --duration-short: 100ms;
+        --duration-default: 200ms;
+        --duration-announcement-bar: 250ms;
+        --duration-medium: 300ms;
+        --duration-long: 500ms;
+        --duration-extra-long: 600ms;
+        --duration-extra-longer: 750ms;
+        --duration-extended: 0.5s;
+        --ease-out-slow: cubic-bezier(.26,.54,.32,1);
+        --animation-slide-in: slideIn  var(--duration-extended) var(--ease-out-slow) forwards;
+        --animation-fade-in: fadeIn var(--duration-extended) var(--ease-out-slow);
+      }
+
+        shopify-accelerated-checkout {
+          --shopify-accelerated-checkout-button-block-size: var(--height-btn);
+          --shopify-accelerated-checkout-button-border-radius: var(--btn-border-radius);
+          --shopify-accelerated-checkout-button-box-shadow: none;
+          --shopify-accelerated-checkout-skeleton-background-color: #dedede;
+          --shopify-accelerated-checkout-skeleton-animation-opacity-start: 1;
+          --shopify-accelerated-checkout-skeleton-animation-opacity-end: 0.5;
+          --shopify-accelerated-checkout-skeleton-animation-duration: 4s;
+          --shopify-accelerated-checkout-skeleton-animation-timing-function: ease;
+        }
+
+        shopify-accelerated-checkout-cart {
+          --shopify-accelerated-checkout-button-block-size: var(--height-btn);
+          --shopify-accelerated-checkout-button-inline-size: var(--height-btn);
+          --shopify-accelerated-checkout-button-border-radius:var(--btn-border-radius);
+          --shopify-accelerated-checkout-button-box-shadow: none;
+          --shopify-accelerated-checkout-inline-alignment: flex-center;
+          --shopify-accelerated-checkout-row-gap: 8px;
+          --shopify-accelerated-checkout-skeleton-background-color: #dedede;
+          --shopify-accelerated-checkout-skeleton-animation-opacity-start: 1;
+          --shopify-accelerated-checkout-skeleton-animation-opacity-end: 0.5;
+          --shopify-accelerated-checkout-skeleton-animation-duration: 4s;
+          --shopify-accelerated-checkout-skeleton-animation-timing-function: ease;
+        }
+      
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: inherit;
+      }
+
+      html {
+        box-sizing: border-box;
+        font-size: calc(var(--font-body-scale) * 62.25%);
+        height: 100%;
+      }
+
+      body {
+        text-rendering: optimizeSpeed;
+        display: flex;
+        flex-direction: column;
+        justify-content:start;
+        overflow-wrap: break-word;
+        margin: 0;
+        letter-spacing: var(--font-body-spacing);
+        line-height: calc(1 + 0.8 / var(--font-body-scale));
+        font-family: var(--font-body-family);
+        font-style: var(--font-body-style);
+        font-weight: var(--font-body-weight);
+        font-size: var(--text-size-base);
+        color:rgb(var(--color-foreground));
+        background-color: rgb(var(--color-background));
+      }
+      
+
+      @media screen and (min-width: 750px) {
+        body {
+          font-size: var(--text-size-base);
+        }
+      }
+      .no-js .no-js-hidden {
+          display: none ;
+      }
+:root{
+    --navigation_font_family:  var(--font-heading-family) ;
+    --navigation_scale : 0.9;
+    --navigation_font_size: calc(var(--navigation_scale)* var(--size-body));
+    --navigation_letter_spacing: 1px;
+    --navigation_transform : uppercase;
+    --navigation_weight: 500;
+    --color-header-transparent-background: 255 255 255;--header-height-transparent:0px;}
+
+  .header {
+    padding: calc( var(--header-padding-top) - 0.5rem ) 0  calc( var(--header-padding-bottom) - 0.5rem ) 0;
+    margin-bottom: var(--header-margin-bottom);
+  }
+  .header .header__heading-link{
+    position:relative;
+  }
+  .header  .header__heading-logo.header__heading-logo-light{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+  }
+  .header.header--transparent {
+    position: absolute;
+    width: 100%;
+    background-color: transparent;
+    transition: all var(--duration-medium) var(--ease-out-slow); 
+  }
+  .header--transparent.header-wrapper--border-bottom:not(:hover):not(.is-sticky){
+    border-bottom-color: rgba(var(--color-header-transparent-background) / 0.2);
+  }
+  .header.header--transparent.is-sticky{
+    background-color: rgb(var(--color-header-background));
+  }
+  /*hover header*/
+  .header.header--transparent:not(:hover):not(.is-sticky) .header__heading-logo{
+    opacity: 0;
+  }
+  .header.header--transparent:not(:hover):not(.is-sticky) .header__heading-logo.header__heading-logo-light{
+    opacity: 1;
+  }
+  
+  .header.header--transparent:not(:hover):not(.is-sticky) .header__menu-item, .header.header--transparent:not(:hover):not(.is-sticky) .header__icon, .header.header--transparent:not(:hover):not(.is-sticky) .header__icon .icon, .header.header--transparent:not(:hover):not(.is-sticky) .desktop-localization-wrapper .localization-selector.link, .header.header--transparent:not(:hover):not(.is-sticky) .header__heading-link span, .header.header--transparent:not(:hover):not(.is-sticky) .header__icons--nav-item{
+    color: rgb(var(--color-header-transparent-background));
+  }
+  .header.header--transparent:not(:hover):not(.is-sticky) .header__menu-item:focus-visible,   .header.header--transparent:not(:hover):not(.is-sticky) .desktop-localization-wrapper .localization-selector.link:focus-visible,.header.header--transparent:not(:hover):not(.is-sticky) .header__icon:focus-visible{
+    --color-foreground : var(--color-header-transparent-background);
+  }
+  .header.header--transparent:not(:hover):not(.is-sticky)  .cart-count-bubble{
+    color: rgb(var(--color-header-text)) ;
+    background-color: rgb(var(--color-header-transparent-background));
+  }
+  .header.header--transparent:hover{
+    background: rgb(var(--color-header-transparent-background));
+  }
+  .header.header--transparent:not(:hover):not(.is-sticky) .menu-drawer, .template-index  .header.header--transparent .menu-drawer{
+    border-top: 1px solid rgb(var(--color-border));
+  }
+
+  .section-header {
+    position: sticky; /* This is for fixing a Safari z-index issue. PR #2147 */
+    margin-bottom:calc(var(--header-margin-bottom) - 1rem);
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-header {
+      margin-bottom: var(--header-margin-bottom);
+    }
+  }
+
+  @media screen and (min-width: 1070px) {
+    .header {
+      padding-top: var(--header-padding-top);
+      padding-bottom: var(--header-padding-bottom);
+    }
+  }
+ :root {--navigation_transform: inherit !important; --btn-font-transform: inherit; --btn-font-scale: 1; --btn-font-weight: 400; --font-heading-transform: inherit; --font-card-title-transform: inherit; --media-radius: 10px;} 

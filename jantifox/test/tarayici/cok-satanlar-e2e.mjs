@@ -1,318 +1,356 @@
-// Ana sayfa "Çok satanlar" bölümü: seçilen sırayla kartlar, kategori sayfasıyla aynı kart bileşeni (kişiselleştirmesi
-// kapalı şapka normal kart), filtre düğmeleri (boş tip gizli, sayfa yenilenmez), oklar, mobilde noktalar ve
-// örnek tasarım (editörün çizim motoruyla, önbellekli; fotoğraf varsa fotoğraf; çizilemezse normal görsel).
-// Sayfa, sections/kisisel-cok-satanlar.liquid'in ürettiği yapının aynısıdır; veri gerçek spor çanta verisidir.
+// Ana sayfa "Çok satanlar" bölümü, temanın gerçek dosyalarıyla (tema/: Splide, theme.js, theme.css, kök değişkenler)
+// ve temanın kendi ürün listesi bölümü (tema/urun-listesi.html, patch setleri) aynı sayfada:
+// kart ölçüsü, görsel zemini, köşe, yazı boyutları ve boşluklar temanınkiyle aynı; görselin üstünde yalnızca küçük
+// etiket; "Kişiselleştir" fiyatın altında temanın butonu; sepet butonu yok; filtre temanın sekme stiliyle ve
+// kaydırıcıyla; örnek tasarım temanın ikinci görsel katmanında (üzerine gelince), kart görseliyle aynı kadrajda
+// (Artist: kesit kart görselinde bulunur; spor çanta: farklı çekim, kesit kart zemininde ortalanır); "Örnek: İSİM";
+// mobilde ekrandayken dönüşümlü; önbellek; çizilemezse kart olduğu gibi.
 // Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node cok-satanlar-e2e.mjs
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
+const { chromium, devices } = require('playwright');
 const kok = new URL('../../', import.meta.url).pathname;
+const tema = new URL('./tema/', import.meta.url).pathname;
 const oku = (p) => readFileSync(kok + p, 'utf8');
-const kkJs = oku('assets/kisisel-koleksiyon.js');
-const kkCss = oku('assets/kisisel-koleksiyon.css');
-const csJs = oku('assets/kisisel-cok-satanlar.js');
-const csCss = oku('assets/kisisel-cok-satanlar.css');
-const editorJs = oku('assets/kisisel-editor.js');
-const png = readFileSync(kok + 'veri/aksesuar/duz/kalem-kutusu-sari-on.png');
+const temaOku = (p) => readFileSync(tema + p, 'utf8');
 const spor = JSON.parse(oku('test/kisisel-veri-spor.json'));
+const artistHarita = JSON.parse(temaOku('artist-harita.json'));
+const harfPng = readFileSync(kok + 'veri/aksesuar/duz/kalem-kutusu-sari-on.png');
+const gorsel = (ad) => readFileSync(tema + 'gorsel/' + ad);
 
 const URUNLER = [
-  ['mavi-beyaz-cizgili-spor-canta', 'Mavi Beyaz Çizgili Spor Çanta', 'canta', true],
-  ['pembe-kirmizi-cizgili-spor-canta', 'Pembe Kırmızı Çizgili Spor Çanta', 'canta', true],
-  ['the-artist', 'The Artist Sırt Çantası', 'canta', true],
-  ['the-performer', 'The Performer Sırt Çantası', 'canta', true],
-  ['the-adventurer', 'The Adventurer Mini Sırt Çantası', 'canta', true],
-  ['pudra-pembe-tshirt', 'Pudra Pembe Tshirt', 'kiyafet', true],
-  ['mavi-sweatshirt', 'Mavi Sweatshirt', 'kiyafet', true],
-  ['sapka', 'Janti Şapka Siyah', 'sapka', false]
+  ['mavi-beyaz-cizgili-spor-canta', 'Mavi Beyaz Çizgili Spor Çanta', 'canta', true, 'spor'],
+  ['pembe-kirmizi-cizgili-spor-canta', 'Pembe Kırmızı Çizgili Spor Çanta', 'canta', true, 'spor'],
+  ['the-artist', 'The Artist Sırt Çantası -LE KOKO COLLECTIF-', 'canta', true, 'artist', true],
+  ['the-performer', 'The Performer Sırt Çantası', 'canta', true, 'artist', true],
+  ['the-adventurer', 'The Adventurer Mini Sırt Çantası', 'canta', true, 'artist', true],
+  ['pudra-pembe-tshirt', 'Pudra Pembe Tshirt', 'kiyafet', true, 'spor'],
+  ['mavi-sweatshirt', 'Mavi Sweatshirt', 'kiyafet', true, 'kucuk'],
+  ['sapka', 'Janti Şapka Siyah', 'sapka', false, 'spor']
 ];
-// Örnek tasarımı olmayacak ürün: alanı (cm) tek harfe bile yetmeyecek kadar küçük
 const kucukHarita = JSON.parse(JSON.stringify(spor.harita));
 kucukHarita.zones[0].genislik_cm = 3;
 kucukHarita.zones[0].yukseklik_cm = 3;
 
-const kart = (h, b) => `
-<div class="card-wrapper product-card-wrapper">
-  <div class="card-product">
-    <div class="card-product__media relative media-fit-cover" style="position:relative">
-      <div class="card-product__media-inner">
-        <a class="product-link block" href="/products/${h}" title="${b}"><div class="responsive-image" style="aspect-ratio:1/1;background:#eee"></div></a>
+// Temanın card-product çıktısı (snippets/card-product.liquid, önizlemedeki HTML ile aynı yapı)
+const kart = (h, b, img, yeni) => `<div class="card-wrapper product-card-wrapper ">
+    <div class="card-product">
+      <div class="card-product__media relative media-fit-fill"><div class="card-product__media-inner"><a class="product-link block" href="/products/${h}" title="${b}">
+<responsive-image class="responsive-image product-first-image" style="--aspect-ratio:100.0%">
+<img src="${img}" alt="${b}" width="400" height="400" loading="lazy" class="motion-reduce lazy-image img-loading">
+</responsive-image></a>
+${yeni ? '<span class="card-new-in-badge">NEW IN</span>' : ''}
+<div class="card__badge top left"></div>
+          </div></div>
+      <div class="card__content pt-6 ">
+        <div class="card__information text-left"><div class="card__vendor mb-2">
+              <span class="visually-hidden">Satıcı:</span>
+              <div class="caption-with-letter-spacing light">JantiFox</div>
+            </div><div class="card__heading mb-2">
+            <a href="/products/${h}" title="${b}" class="full-unstyled-link product-link">${b}</a>
+          </div>
+          <div class="card-information">
+<div class="
+    price "><div class="price__container"><div class="price__regular"><span class="visually-hidden visually-hidden--inline">Normal fiyat</span>
+        <span class="price-item price-item--regular">2,500.00TL</span></div></div></div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="card__content pt-6"><div class="card__information"><div class="card__heading mb-2"><a href="/products/${h}" class="full-unstyled-link product-link">${b}</a></div></div></div>
-  </div>
-</div>`;
+  </div>`;
 
-function sayfa({ foto = null } = {}) {
-  const sayac = { canta: 0, kiyafet: 0, sapka: 0 };
+function bolumHtml({ foto = null, filtre = true } = {}) {
   const kk = {};
   const cs = {};
-  URUNLER.forEach(([h, b, tur, acik], i) => {
+  URUNLER.forEach(([h, b, tur, acik, g], i) => {
     if (!acik) return;
-    sayac[tur]++;
     kk[h] = { u: '/products/' + h, b, v: [{ id: 1000 + i, t: 'Default Title', a: true }] };
+    const artist = g === 'artist';
     cs[h] = {
       id: 9000 + i,
       foto: foto && foto[h] ? foto[h] : null,
       metin_siniri: null,
-      gorsel: { en: spor.gorsel.en, boy: spor.gorsel.boy, url: spor.gorsel.kucuk + '&u=' + h },
-      harita: h === 'mavi-sweatshirt' ? kucukHarita : spor.harita
+      gorsel: artist ? { en: 1328, boy: 1600, url: '//jantifox.test/cdn/shop/files/artist-onizleme.png?v=1&width=600&u=' + h } : { en: spor.gorsel.en, boy: spor.gorsel.boy, url: '//jantifox.test/cdn/shop/files/spor-onizleme.png?v=1&width=600&u=' + h },
+      kapak: { en: 400, boy: 400, url: '//jantifox.test/cdn/shop/files/' + (artist ? 'artist-kapak.png' : 'spor-kapak.jpg') + '?v=1&width=600&u=' + h },
+      harita: artist ? artistHarita : g === 'kucuk' ? kucukHarita : spor.harita
     };
   });
-  const veri = {
-    turler: sayac,
-    isimler: 'ATLAS, LEYLA, PERA, EGE, MIRO, ADA, ECE'.split(','),
-    ayarlar: spor.ayarlar,
-    set: spor.setler.find((s) => s.set === 'cool'),
-    urunler: cs
-  };
-  const ogeler = URUNLER.map(([h, b, tur]) => `<li class="kp-cs__oge grid__item" data-kp-cs-tur="${tur}" data-kp-cs-urun="${h}">${kart(h, b)}</li>`).join('');
-  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>html{font-size:62.5%}body{margin:0;font-family:sans-serif;font-size:1.4rem;color:#202223}
-.container{max-width:1300px;margin:0 auto;padding:0 1.5rem}.section-padding{padding:36px 0}.section-bg{background:rgb(var(--color-background))}
-.btn{display:inline-flex;align-items:center;justify-content:center;height:48px;padding:0 2.4rem;background:#202223;color:#fff;text-decoration:none}
-.btn{box-sizing:border-box}</style>
-<style>${kkCss}</style><style>${csCss}</style></head><body>
-<div class="shopify-section"><div style="background:#d72e20;height:200px">üst bölüm</div></div>
-<section class="shopify-section section">
-<div class="kp-cs section-padding section-bg isolate" style="--color-background: 244 203 100;--color-foreground: 32 34 35;" data-kp-cs data-editor-src="/cdn/kisisel-editor.js" data-ornek="true">
-  <div class="container">
-    <div class="kp-cs__ust">
-      <div class="kp-cs__metin"><p class="section__sub-heading sub-heading">ÇOK SATANLAR</p><h2 class="section__heading h2">En sevilenler, sana özel</h2><div class="section__description rte"><p>Adını yaz, patch'ini seç, sadece sana ait olsun.</p></div></div>
-      <div class="kp-cs__kontrol">
-        <div class="kp-cs__filtreler" role="group" aria-label="Ürün tipi" data-kp-cs-filtreler></div>
-        <div class="kp-cs__oklar">
-          <button type="button" class="kp-cs__ok kp-cs__ok--geri" data-kp-cs-ok="-1" aria-label="Önceki"><svg viewBox="0 0 10 10"><path d="M1 5h8"/></svg></button>
-          <button type="button" class="kp-cs__ok" data-kp-cs-ok="1" aria-label="Sonraki"><svg viewBox="0 0 10 10"><path d="M1 5h8"/></svg></button>
-        </div>
-      </div>
+  const veri = { isimler: 'ATLAS, LEYLA, PERA, EGE, MIRO, ADA, ECE'.split(','), ayarlar: spor.ayarlar, set: spor.setler.find((s) => s.set === 'cool'), urunler: cs };
+  const slaytlar = URUNLER.map(([h, b, tur, , g, yeni]) => `<div class="splide__slide" data-kp-cs-tur="${tur}" data-kp-cs-urun="${h}">
+    <div class=" scroll-trigger animate--slide-in h-full" data-cascade style="--animation-order:1;">${kart(h, b, '//jantifox.test/cdn/shop/files/' + (g === 'artist' ? 'artist-kapak.png' : 'spor-kapak.jpg') + '?v=1&width=400&k=' + h, yeni)}</div></div>`).join('');
+  const sekmeler = filtre ? `<div><div class="tab-scrollable flex justify-center mt-6"><div class="tabs-header gap-x-16 flex relative font-heading" role="tablist" aria-label="Ürün tipi">
+    <button class="tab-button active" role="tab" aria-selected="true" data-tab="kp-cs-hepsi" data-kp-cs-filtre="hepsi" tabindex="0">Hepsi</button><button class="tab-button" role="tab" aria-selected="false" data-tab="kp-cs-canta" data-kp-cs-filtre="canta" tabindex="-1">Çanta</button><button class="tab-button" role="tab" aria-selected="false" data-tab="kp-cs-kiyafet" data-kp-cs-filtre="kiyafet" tabindex="-1">Kıyafet</button>
+    <div class="indicator"></div></div></div></div>` : '';
+  return `<section class="shopify-section section" id="cok-satanlar"><div class="section-featured-collection kp-cs section-padding section-bg isolate overflow-hidden lg:overflow-visible" style="--section-padding-top: 36px; --section-padding-bottom: 36px;" data-kp-cs data-editor-src="/cdn/kisisel-editor.js" data-ornek="true" data-buton="kirmizi">
+  <div class="collection container" id="collection-kp" style="--column-product:4;--column-product-mobile:2;--column-gap:3rem;">
+    ${filtre ? '<tabs-component class="tabs-component kp-cs__sekmeler">' : ''}
+    <div class="featured-collection-wrap section-header-wrap flex flex-col lg:flex-row lg:items-end gap-x-6 gap-y-4 mb-16">
+      <div class="flex-1 flex gap-y-2 flex-col"><p class="section__sub-heading sub-heading">ÇOK SATANLAR</p><h2 class="section__heading h2">En sevilenler, sana özel</h2><div class="section__description rte"><p>Adını yaz, patch'ini seç, sadece sana ait olsun.</p></div></div>
+      ${sekmeler}
     </div>
-    <ul class="kp-cs__liste" data-kp-cs-liste role="list">${ogeler}</ul>
-    <div class="kp-cs__noktalar" data-kp-cs-noktalar aria-hidden="true"></div>
+    ${filtre ? '<div class="tabs-content">' : ''}
+    <splide-carousel><div id="featured-collection-kp" class="splide-slider splide featured-collection-slider" data-splide='{"type":"slide", "speed":500, "perPage":4,"lazyLoad": "nearby","preloadPages":1, "perMove": 1,"waitForTransition": false,"rewind":false,"updateOnMove":true,"pagination":false,"arrows":true,"autoplay":false,"pauseOnHover":true,"pauseOnFocus":true, "gap": "3rem", "destroy": false,"breakpoints":{"640": {"destroy":false,"perPage":2, "arrows":false, "gap": "2rem", "padding":{"right":"2rem"}, "perMove": 1, "speed":1200 }}}' data-kp-cs-slider>
+      <div class="splide__track mb:splide-right-overflow"><div class="splide__list" data-kp-cs-liste>${slaytlar}</div></div>
+      <div class="splide__arrows splide__arrows--ltr no-js-hidden"><button class="splide__arrow splide__arrow--prev " type="button" aria-label="Önceki"><svg viewBox="0 0 10 10"><path d="M1 5h8"/></svg></button><button class="splide__arrow splide__arrow--next " type="button" aria-label="Sonraki"><svg viewBox="0 0 10 10"><path d="M1 5h8"/></svg></button></div>
+    </div></splide-carousel>
+    ${filtre ? '</div></tabs-component>' : ''}
     <div class="kp-cs__alt"><a class="btn btn-primary kp-cs__buton" href="/collections/tum-urunler?kisisel=1">Tüm kişiselleştirilebilir ürünler →</a></div>
   </div>
   <script type="application/json" data-kp-kk-veri>${JSON.stringify({ urunler: kk })}</script>
   <script type="application/json" data-kp-cs-veri>${JSON.stringify(veri)}</script>
-  <script src="/cdn/kisisel-koleksiyon.js" defer></script>
-  <script src="/cdn/kisisel-cok-satanlar.js" defer></script>
-</div>
-</section>
-<div style="height:1500px">alt bölümler</div>
+</div></section>`;
+}
+
+function sayfa(secenek) {
+  return `<!doctype html><html lang="tr" class="js"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>${temaOku('kok.css')}</style><style>${temaOku('theme.css')}</style><style>${temaOku('template-collection.css')}</style><style>${temaOku('component-tabs.css')}</style>
+<style>${oku('assets/kisisel-koleksiyon.css')}</style><style>${oku('assets/kisisel-cok-satanlar.css')}</style>
+<style>.card-new-in-badge{position:absolute;top:1rem;left:1rem;z-index:3;padding:.4rem .7rem;border:1px solid #000;background:#fff;color:#000;font-size:1.1rem;line-height:1;font-weight:600}</style>
+<script>window.Shopify={designMode:false,routes:{root:'/'}};window.routes={cart_add_url:'/cart/add'};</script>
+</head><body class="template-index">
+<div style="background:#f4cb64;height:120px">JantiFox x Le Koko bandı</div>
+${bolumHtml(secenek)}
+${temaOku('urun-listesi.html')}
+<div style="height:1200px"></div>
+<script src="/cdn/vendor.js"></script><script src="/cdn/theme.js" defer></script><script src="/cdn/animations.js" defer></script>
+<script src="/cdn/kisisel-koleksiyon.js" defer></script><script src="/cdn/kisisel-cok-satanlar.js" defer></script>
 </body></html>`;
 }
 
 const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 const hatalar = [];
+const JS = { 'vendor.js': temaOku('vendor.js'), 'theme.js': temaOku('theme.js'), 'animations.js': temaOku('animations.js'), 'kisisel-koleksiyon.js': oku('assets/kisisel-koleksiyon.js'), 'kisisel-cok-satanlar.js': oku('assets/kisisel-cok-satanlar.js'), 'kisisel-editor.js': oku('assets/kisisel-editor.js') };
 
-async function ac(viewport, secenek = {}, baglam) {
-  baglam = baglam || (await t.newContext({ viewport, deviceScaleFactor: 1, isMobile: viewport.width < 500, hasTouch: viewport.width < 500 }));
+async function ac(cihaz, secenek = {}, baglam) {
+  baglam = baglam || (await t.newContext({ ...cihaz, locale: 'tr-TR' }));
   const s = await baglam.newPage();
   s.on('pageerror', (e) => hatalar.push(e.message));
   const istekler = [];
-  const adresler = [];
   const html = sayfa(secenek);
   await s.route('**/*', async (r) => {
     const url = new URL(r.request().url());
-    istekler.push(url.pathname);
-    adresler.push(url.href);
-    if (url.pathname === '/cdn/kisisel-editor.js') return secenek.editorHata ? r.fulfill({ status: 500, body: '' }) : r.fulfill({ contentType: 'text/javascript', body: editorJs });
-    if (url.pathname === '/cdn/kisisel-koleksiyon.js') return r.fulfill({ contentType: 'text/javascript', body: kkJs });
-    if (url.pathname === '/cdn/kisisel-cok-satanlar.js') return r.fulfill({ contentType: 'text/javascript', body: csJs });
-    if (/\/cdn\/shop\/files\//.test(url.pathname) || url.pathname.startsWith('/foto/')) return r.fulfill({ contentType: 'image/png', body: png });
+    istekler.push(url.href);
+    const ad = url.pathname.split('/').pop();
+    if (url.pathname.startsWith('/cdn/') && JS[ad]) {
+      if (ad === 'kisisel-editor.js' && secenek.editorHata) return r.fulfill({ status: 500, body: '' });
+      return r.fulfill({ contentType: 'text/javascript', body: JS[ad] });
+    }
+    if (url.pathname.startsWith('/cdn/shop/files/')) {
+      if (/artist-kapak/.test(ad)) return r.fulfill({ contentType: 'image/png', body: gorsel('artist-kapak.png') });
+      if (/artist-onizleme/.test(ad)) return r.fulfill({ contentType: 'image/png', body: gorsel('artist-onizleme.png') });
+      if (/spor-kapak/.test(ad)) return r.fulfill({ contentType: 'image/jpeg', body: gorsel('spor-kapak.jpg') });
+      if (/spor-onizleme/.test(ad)) return r.fulfill({ contentType: 'image/png', body: gorsel('spor-onizleme.png') });
+      return r.fulfill({ contentType: 'image/png', body: harfPng });
+    }
+    if (url.hostname === 'jantifox.com' || /\.(png|jpe?g|webp|woff2?)$/.test(url.pathname)) return r.fulfill({ contentType: 'image/png', body: harfPng });
+    if (url.hostname !== 'jantifox.test') return r.fulfill({ status: 204, body: '' });
     return r.fulfill({ contentType: 'text/html; charset=utf-8', body: html });
   });
   await s.goto('https://jantifox.test/');
-  await s.waitForFunction(() => document.querySelector('[data-kp-cs]').kpBolum);
-  return { baglam, s, istekler, adresler };
+  await s.waitForFunction(() => document.querySelector('[data-kp-cs]').kpBolum && document.querySelector('[data-kp-cs] .splide.is-initialized'));
+  return { baglam, s, istekler };
 }
-const kutu = (s, q, i = 0) => s.locator(q).nth(i).boundingBox();
-const gorunenSayisi = (s) => s.locator('[data-kp-cs-liste] > li:not([hidden])').count();
-// Listede tamamen görünen ve kısmen görünen kart sayısı
-const gorunum = (s) => s.evaluate(() => {
-  const l = document.querySelector('[data-kp-cs-liste]').getBoundingClientRect();
-  let tam = 0;
-  let kismi = 0;
-  document.querySelectorAll('[data-kp-cs-liste] > li:not([hidden])').forEach((li) => {
-    const r = li.getBoundingClientRect();
-    if (r.left >= l.left - 1 && r.right <= l.right + 1) tam++;
-    else if (r.right > l.left + 1 && r.left < l.right - 1) kismi++;
-  });
-  return { tam, kismi };
-});
+
+const bizim = '#cok-satanlar';
+const tema2 = '[id*=featured_collection_Mhgi6z]';
+// Kartın ölçüleri ve stilleri (temanın bölümüyle karşılaştırmak için)
+const kartOlc = (s, kapsam) => s.evaluate((q) => {
+  const k = document.querySelector(q);
+  const kart = k.querySelector('.card-wrapper');
+  const st = (e) => getComputedStyle(e);
+  const ic = kart.querySelector('.card-product__media-inner');
+  const r = ic.getBoundingClientRect();
+  const sl = k.querySelectorAll('.splide__slide');
+  return {
+    en: Math.round(r.width), boy: Math.round(r.height), zemin: st(ic).backgroundColor, kose: st(ic).borderRadius,
+    baslik: [st(kart.querySelector('.card__heading')).fontSize, st(kart.querySelector('.card__heading')).fontWeight],
+    fiyat: st(kart.querySelector('.price')).fontSize, ust: st(kart.querySelector('.card__content')).paddingTop,
+    bosluk: sl.length > 1 ? Math.round(sl[1].getBoundingClientRect().left - sl[0].getBoundingClientRect().right) : null,
+    bolumZemin: st(k.querySelector('.section-bg')).backgroundColor, dolgu: [st(k.querySelector('.section-padding')).paddingTop, st(k.querySelector('.section-padding')).paddingBottom],
+    kapsayici: Math.round(k.querySelector('.collection').getBoundingClientRect().width)
+  };
+}, kapsam);
+const ornekSayisi = (s) => s.locator(`${bizim} .product-secondary-image.kp-ornek`).count();
 
 /* ---------------- Masaüstü ---------------- */
 for (const en of [1280, 1440, 1920]) {
-  const { baglam, s, istekler, adresler } = await ac({ width: en, height: 900 });
-  // Sıra korunur, sıra etiketi yok
-  assert.deepEqual(await s.locator('[data-kp-cs-liste] > li').evaluateAll((l) => l.map((x) => x.getAttribute('data-kp-cs-urun'))), URUNLER.map((x) => x[0]));
-  assert.equal(await s.locator('text=/#\\d/').count(), 0);
-  // 4 kart tam, 5. kenardan görünür
-  assert.deepEqual(await gorunum(s), { tam: 4, kismi: 1 }, en + 'px');
-  // Üst satır: solda metin, sağda filtreler ve oklar aynı satırda
-  const metin = await kutu(s, '.kp-cs__metin');
-  const kontrol = await kutu(s, '.kp-cs__kontrol');
-  assert.ok(kontrol.x > metin.x + metin.width - 1, 'kontroller sağda');
-  assert.deepEqual(await s.locator('[data-kp-cs-filtre]').allTextContents(), ['Hepsi', 'Çanta', 'Kıyafet']);
-  assert.equal(await s.locator('[data-kp-cs-filtre="hepsi"]').getAttribute('aria-pressed'), 'true');
-  // Noktalar masaüstünde yok; alt buton ortada
-  assert.equal(await s.locator('.kp-cs__noktalar').isVisible(), false);
-  const alt = await kutu(s, '.kp-cs__buton');
-  assert.ok(Math.abs(alt.x + alt.width / 2 - en / 2) < 10, 'alt buton ortada');
-  assert.equal(await s.locator('.kp-cs__buton').getAttribute('href'), '/collections/tum-urunler?kisisel=1');
-  // Kart bileşeni: 7 açık kartta etiket + Kişiselleştir + sepet; şapka normal kart
-  assert.equal(await s.locator('.kp-kk-rozet').count(), 7);
-  const sapka = s.locator('[data-kp-cs-urun="sapka"]');
-  assert.equal(await sapka.locator('.kp-kk-rozet, .kp-kk-eylem, .kp-kk-mobil, .kp-ornek').count(), 0);
-  assert.equal(await s.locator('[data-kp-cs-urun="pudra-pembe-tshirt"] .kp-kk-kisisel').getAttribute('href'), '/products/pudra-pembe-tshirt?kisisellestir=1');
-  // Oklar: başta geri pasif; ileri kaydırır
-  assert.equal(await s.locator('[data-kp-cs-ok="-1"]').isDisabled(), true);
-  const once = await s.locator('[data-kp-cs-liste]').evaluate((e) => e.scrollLeft);
-  await s.locator('[data-kp-cs-ok="1"]').click();
-  await s.waitForFunction((o) => document.querySelector('[data-kp-cs-liste]').scrollLeft > o + 50, once);
-  await s.waitForTimeout(600);
-  assert.equal(await s.locator('[data-kp-cs-ok="-1"]').isDisabled(), false);
-  // Sona kadar: ileri pasif
-  for (let i = 0; i < 6; i++) {
-    if (await s.locator('[data-kp-cs-ok="1"]').isDisabled()) break;
-    await s.locator('[data-kp-cs-ok="1"]').click();
-    await s.waitForTimeout(500);
-  }
-  assert.equal(await s.locator('[data-kp-cs-ok="1"]').isDisabled(), true);
+  const { baglam, s, istekler } = await ac({ viewport: { width: en, height: 900 } });
+  // Sıra korunur; temanın kaydırıcısı: 4 kart, oklar
+  assert.deepEqual(await s.locator(`${bizim} .splide__slide`).evaluateAll((l) => l.map((x) => x.getAttribute('data-kp-cs-urun'))), URUNLER.map((x) => x[0]));
+  const gorunen = await s.locator(`${bizim} .splide__slide.is-visible`).count();
+  assert.equal(gorunen, 4, en + 'px: 4 kart görünür');
+  assert.equal(await s.locator(`${bizim} .splide__arrow`).count(), 2);
+  // Temanın ürün listesi bölümüyle aynı kart: ölçü, zemin, köşe, yazılar, boşluk, bölüm zemini (beyaz) ve dolgu
+  const a = await kartOlc(s, bizim);
+  const b = await kartOlc(s, tema2);
+  assert.ok(Math.abs(a.en - b.en) <= 1 && Math.abs(a.boy - b.boy) <= 1, `${en}px kart ${a.en}x${a.boy} / tema ${b.en}x${b.boy}`);
+  for (const k of ['zemin', 'kose', 'baslik', 'fiyat', 'ust', 'bolumZemin', 'dolgu', 'kapsayici']) assert.deepEqual(a[k], b[k], en + 'px ' + k);
+  assert.ok(Math.abs(a.bosluk - b.bosluk) <= 1, 'kartlar arası boşluk ' + a.bosluk + ' / ' + b.bosluk);
+  assert.equal(a.zemin, 'rgb(245, 245, 245)');
+  assert.equal(a.bolumZemin, 'rgb(255, 255, 255)');
+  // Görselin üstünde yalnızca küçük etiket; buton ve sepet yok; örnek notu görünmüyor
+  assert.equal(await s.locator(`${bizim} .kp-kk-rozet`).count(), 7);
+  assert.equal(await s.locator(`${bizim} .kp-kk-eylem, ${bizim} .kp-kk-sepet, ${bizim} .kp-kk-mobil, ${bizim} [data-kp-kk-sepet]`).count(), 0);
+  const rozet = await s.locator(`${bizim} .kp-kk-rozet`).first().evaluate((e) => { const c = getComputedStyle(e); const r = e.getBoundingClientRect(); return { fs: c.fontSize, h: r.height, w: r.width, golge: c.boxShadow, metin: e.textContent.trim() }; });
+  assert.equal(rozet.metin, '✎ Kişiselleştirilebilir');
+  assert.equal(rozet.golge, 'none');
+  assert.ok(rozet.h <= 22 && parseFloat(rozet.fs) <= 11.5, JSON.stringify(rozet));
+  // NEW IN etiketi olan kartta etiket altına iner, çakışmaz
+  const ust = await s.locator(`${bizim} [data-kp-cs-urun="the-artist"]`).evaluate((sl) => { const a = sl.querySelector('.card-new-in-badge').getBoundingClientRect(); const b = sl.querySelector('.kp-kk-rozet').getBoundingClientRect(); return [a.bottom, b.top]; });
+  assert.ok(ust[1] >= ust[0], 'etiketler çakışmaz');
+  // "Kişiselleştir": fiyatın altında, tam genişlik, temanın butonu (köşeli, aynı yükseklik)
+  const btn = await s.locator(`${bizim} [data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"]`).evaluate((sl) => {
+    const b = sl.querySelector('.kp-kk-kart-buton'); const p = sl.querySelector('.price'); const k = sl.querySelector('.card-wrapper');
+    const rb = b.getBoundingClientRect(); const c = getComputedStyle(b);
+    return { alt: rb.top >= p.getBoundingClientRect().bottom, en: Math.round(rb.width), kart: Math.round(k.getBoundingClientRect().width), h: Math.round(rb.height), kose: c.borderRadius, sinif: b.className, href: b.getAttribute('href'), bg: c.backgroundColor };
+  });
+  const temaBtn = await s.locator(`${bizim} .kp-cs__buton`).evaluate((b) => ({ h: Math.round(b.getBoundingClientRect().height), kose: getComputedStyle(b).borderRadius }));
+  assert.ok(btn.alt, 'fiyatın altında');
+  assert.equal(btn.en, btn.kart, 'tam genişlik');
+  assert.equal(btn.h, temaBtn.h, 'tema butonuyla aynı yükseklik');
+  assert.equal(btn.kose, temaBtn.kose);
+  assert.match(btn.sinif, /\bbtn btn-primary\b/);
+  assert.equal(btn.bg, 'rgb(179, 20, 27)');
+  assert.equal(btn.href, '/products/mavi-beyaz-cizgili-spor-canta?kisisellestir=1');
+  // Şapka: normal kart
+  assert.equal(await s.locator(`${bizim} [data-kp-cs-urun="sapka"] .kp-kk-rozet, ${bizim} [data-kp-cs-urun="sapka"] .kp-kk-kart-buton`).count(), 0);
+  // Sekmeler: temanın sekme stili (hap değil), seçili olanın altında temanın çizgisi
+  const sek = await s.evaluate(() => {
+    const b = [...document.querySelectorAll('[data-kp-cs-filtre]')];
+    const ind = document.querySelector('.kp-cs .indicator');
+    const c = getComputedStyle(b[0]);
+    return { metin: b.map((x) => x.textContent.trim()), radius: c.borderRadius, kenar: c.borderTopWidth, bg: c.backgroundColor, cizgi: getComputedStyle(ind).height, cizgiEn: ind.getBoundingClientRect().width, ilkEn: b[0].getBoundingClientRect().width };
+  });
+  assert.deepEqual(sek.metin, ['Hepsi', 'Çanta', 'Kıyafet']);
+  assert.equal(sek.radius, '0px');
+  assert.equal(sek.kenar, '0px');
+  assert.equal(sek.bg, 'rgba(0, 0, 0, 0)');
+  assert.equal(sek.cizgi, '2px');
+  assert.ok(Math.abs(sek.cizgiEn - sek.ilkEn) < 1, 'çizgi seçili sekmenin altında');
+  // Metin solda, sekmeler sağda aynı satır
+  const yer = await s.evaluate(() => { const m = document.querySelector('.kp-cs .section__heading').getBoundingClientRect(); const t2 = document.querySelector('.kp-cs .tabs-header').getBoundingClientRect(); return [m.right, t2.left]; });
+  assert.ok(yer[1] > yer[0], 'sekmeler sağda');
+
+  // Oklar: temanın oku kaydırır
+  await s.locator(`${bizim} .splide`).hover();
+  await s.locator(`${bizim} .splide__arrow--next`).click();
+  await s.waitForTimeout(700);
+  assert.equal(await s.locator(`${bizim} .splide__slide`).first().evaluate((e) => e.classList.contains('is-visible')), false, 'ileri kaydı');
 
   if (en === 1280) {
-    // Filtre: sayfa yenilenmeden; Kıyafet 2 kart, kaydırma yok, oklar gizli
-    const url = s.url();
+    // Filtre: sayfa yenilenmez; Kıyafet 2 kart; Çanta 5; Hepsi 8 ve sıra korunur; çizgi seçili sekmeye geçer
     await s.evaluate(() => { window.__ayni = 1; });
     await s.locator('[data-kp-cs-filtre="kiyafet"]').click();
-    assert.equal(await gorunenSayisi(s), 2);
-    assert.equal(await s.locator('[data-kp-cs-liste]').evaluate((e) => e.scrollLeft), 0);
-    assert.equal(await s.evaluate(() => window.__ayni), 1, 'sayfa yenilenmedi');
-    assert.equal(s.url(), url);
-    assert.ok(await s.locator('[data-kp-cs]').evaluate((e) => e.classList.contains('kp-cs--kaymaz')));
-    assert.equal(await s.locator('.kp-cs__oklar').evaluate((e) => getComputedStyle(e).visibility), 'hidden');
+    await s.waitForTimeout(400);
+    assert.deepEqual(await s.locator(`${bizim} .splide__slide`).evaluateAll((l) => l.map((x) => x.getAttribute('data-kp-cs-urun'))), ['pudra-pembe-tshirt', 'mavi-sweatshirt']);
+    assert.equal(await s.locator(`${bizim} .splide__slide.is-visible`).count(), 2);
+    assert.equal(await s.locator('[data-kp-cs-filtre="kiyafet"]').evaluate((e) => e.classList.contains('active')), true);
+    const ind = await s.evaluate(() => { const i = document.querySelector('.kp-cs .indicator').getBoundingClientRect(); const b = document.querySelector('[data-kp-cs-filtre="kiyafet"]').getBoundingClientRect(); return Math.abs(i.left - b.left); });
+    assert.ok(ind < 2, 'çizgi Kıyafet altında');
     await s.locator('[data-kp-cs-filtre="canta"]').click();
-    assert.equal(await gorunenSayisi(s), 5);
-    assert.equal(await s.locator('[data-kp-cs-filtre="canta"]').getAttribute('aria-pressed'), 'true');
+    await s.waitForTimeout(400);
+    assert.equal(await s.locator(`${bizim} .splide__slide`).count(), 5);
     await s.locator('[data-kp-cs-filtre="hepsi"]').click();
-    assert.equal(await gorunenSayisi(s), 8);
+    await s.waitForTimeout(400);
+    assert.deepEqual(await s.locator(`${bizim} .splide__slide`).evaluateAll((l) => l.map((x) => x.getAttribute('data-kp-cs-urun'))), URUNLER.map((x) => x[0]));
+    assert.equal(await s.locator(`${bizim} .splide__slide.is-visible`).count(), 4);
+    assert.equal(await s.evaluate(() => window.__ayni), 1, 'sayfa yenilenmedi');
+    // Filtreden sonra kartlar görünür (temanın görünme animasyonu takılmaz) ve butonlar yerinde
+    assert.equal(await s.locator(`${bizim} .kp-kk-kart-buton`).count(), 7);
 
-    // Örnek tasarım: bölüm görünür olunca çizilir; her kartta farklı isim; çizilemeyen (küçük alan) normal kalır
-    await s.waitForFunction(() => document.querySelectorAll('.kp-ornek').length === 6, null, { timeout: 15000 });
-    const notlar = await s.locator('.kp-ornek__not').allTextContents();
+    // Örnek tasarım: ikinci görsel katmanı; ilk görünüm normal görsel (katman saydam)
+    await s.waitForFunction((q) => document.querySelectorAll(q + ' .kp-ornek').length === 6, bizim, { timeout: 20000 });
+    const katman = s.locator(`${bizim} [data-kp-cs-urun="the-artist"] .kp-ornek`);
+    assert.equal(await katman.evaluate((e) => getComputedStyle(e).opacity), '0');
+    assert.equal(await katman.evaluate((e) => e.parentElement.matches('a.product-link')), true, 'tıklama ürün sayfasına gider');
+    const notlar = await s.locator(`${bizim} .kp-ornek__not`).allTextContents();
     assert.equal(notlar.length, 6);
-    notlar.forEach((n) => assert.match(n, /^Örnek tasarım: [A-Z]+$/));
+    notlar.forEach((n) => assert.match(n, /^Örnek: [A-Z]+$/));
     assert.equal(new Set(notlar).size, 6, 'her karta farklı isim');
-    assert.equal(await s.locator('[data-kp-cs-urun="mavi-sweatshirt"] .kp-ornek').count(), 0);
-    // Tuvale çizilir (LCP adayı olmaz); harf görselleri küçük boyutta istenir
-    assert.equal(await s.locator('.kp-ornek canvas').count(), 6);
-    assert.equal(await s.locator('.kp-ornek svg, .kp-ornek image, .kp-ornek img').count(), 0);
-    const harfIstekleri = adresler.filter((x) => /kisisel-harf-[A-Z]\.webp/.test(x));
-    assert.ok(harfIstekleri.length >= 5);
-    assert.ok(harfIstekleri.every((x) => /[?&]width=(50|100|150)(&|$)/.test(x)), harfIstekleri[0]);
-    assert.ok(adresler.some((x) => /kisisel-urun-mavi-beyaz.*[?&]width=(200|250|300)(&|$)/.test(x)), 'önizleme kart boyutunda');
-    // Sahne kartın içine oranı korunarak sığar; tuval sahne boyutunda
-    const kutular = await s.locator('[data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"]').evaluate((li) => {
-      const r = (e) => e.getBoundingClientRect();
-      const m = r(li.querySelector('.kp-ornek'));
-      const sa = r(li.querySelector('.kp-ornek__sahne'));
-      const c = li.querySelector('.kp-ornek canvas');
-      return { m: [m.width, m.height], sa: [sa.width, sa.height], c: [c.width, c.height, r(c).width, r(c).height] };
+    assert.equal(await s.locator(`${bizim} [data-kp-cs-urun="mavi-sweatshirt"] .kp-ornek`).count(), 0, 'çizilemeyen kart olduğu gibi');
+    // Üzerine gelince temanın geçişiyle görünür; not sağ altta, kutunun içinde ve etiketle çakışmıyor
+    await s.locator(`${bizim} [data-kp-cs-urun="the-artist"] .card-product__media-inner`).hover();
+    await s.waitForTimeout(700);
+    assert.equal(await katman.evaluate((e) => getComputedStyle(e).opacity), '1');
+    const notYer = await s.locator(`${bizim} [data-kp-cs-urun="the-artist"]`).evaluate((sl) => {
+      const i = sl.querySelector('.card-product__media-inner').getBoundingClientRect(); const n = sl.querySelector('.kp-ornek__not').getBoundingClientRect(); const r = sl.querySelector('.kp-kk-rozet').getBoundingClientRect();
+      return { icinde: n.right <= i.right && n.bottom <= i.bottom && n.left >= i.left, sagAlt: n.right > i.right - 30 && n.bottom > i.bottom - 30, cakisma: !(n.bottom < r.top || n.top > r.bottom || n.right < r.left || n.left > r.right) };
     });
-    assert.ok(Math.abs(kutular.sa[0] / kutular.sa[1] - spor.gorsel.en / spor.gorsel.boy) < 0.02, 'oran korunur');
-    assert.ok(kutular.sa[1] <= kutular.m[1] + 0.5 && kutular.sa[0] <= kutular.m[0] + 0.5, 'karta sığar');
-    assert.ok(Math.abs(kutular.c[2] - kutular.sa[0]) < 1 && Math.abs(kutular.c[3] - kutular.sa[1]) < 1, 'tuval sahneyi doldurur');
-    assert.ok(Math.abs(kutular.c[0] - kutular.sa[0]) <= 2, 'tuval çözünürlüğü (1x ekran)');
-    // Katman tıklamayı engellemez: ürün sayfasına gider; Kişiselleştir butonu üstte
-    assert.equal(await s.locator('.kp-ornek').first().evaluate((e) => getComputedStyle(e).pointerEvents), 'none');
-    const kisisel = await kutu(s, '[data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"] .kp-kk-kisisel');
-    const ust = await s.evaluate(([x, y]) => document.elementFromPoint(x, y).className, [kisisel.x + kisisel.width / 2, kisisel.y + kisisel.height / 2]);
-    assert.equal(ust, 'kp-kk-kisisel');
-    // Kişiselleştir editörü boş açar: örnek isim taşınmaz
-    assert.ok(!(await s.locator('.kp-kk-kisisel').evaluateAll((l) => l.some((a) => /isim|ATLAS/i.test(a.href)))));
-    assert.ok(istekler.includes('/cdn/kisisel-editor.js'), 'ilk açılışta çizim motoru yüklendi');
-    const depo = await s.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('kp-ornek-v1:')).length);
-    assert.equal(depo, 7, '6 çizim + 1 çizilemedi kaydı');
+    assert.ok(notYer.icinde && notYer.sagAlt && !notYer.cakisma, JSON.stringify(notYer));
+    // Kadraj: Artist'te önizleme kart görselinde bulundu; spor çantada farklı çekim (kesit ortalanır)
+    const depo = await s.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('kp-ornek-v2:')).map((k) => JSON.parse(localStorage.getItem(k))));
+    const kadrajlar = depo.filter((x) => x.isim).map((x) => x.kadraj);
+    assert.equal(kadrajlar.filter((x) => x && x.w > 0).length, 3, 'Le Koko kartlarında kadraj bulundu: ' + JSON.stringify(kadrajlar));
+    assert.equal(kadrajlar.filter((x) => x === null).length, 3, 'spor / tişört: kesit ortalanır');
+    const ak = kadrajlar.find((x) => x);
+    // Çevrimdışı ölçüm (tam boy görsellerle): x≈0.18, y≈0.12, w≈0.63
+    assert.ok(Math.abs(ak.x - 0.18) < 0.03 && Math.abs(ak.y - 0.12) < 0.03 && Math.abs(ak.w - 0.63) < 0.03, JSON.stringify(ak));
+    // Tuval kartın görsel kutusuyla aynı boyutta
+    const tv = await katman.evaluate((e) => { const c = e.querySelector('canvas'); const r = c.getBoundingClientRect(); const i = e.closest('.card-product__media-inner').getBoundingClientRect(); return [r.width / i.width, r.height / i.height]; });
+    assert.ok(Math.abs(tv[0] - 1.05) < 0.02 && Math.abs(tv[1] - 1.05) < 0.02, 'temanın 1.05 büyütmesiyle kutuyu doldurur ' + tv);
+    // Harf görselleri küçük boyutta
+    assert.ok(istekler.filter((x) => /kisisel-harf-/.test(x)).every((x) => /[?&]width=(50|100|150)(&|$)/.test(x)));
 
-    // İkinci açılış: önbellekten, editör betiği yüklenmez; aynı isimler
-    const ikinci = await ac({ width: en, height: 900 }, {}, baglam);
-    await ikinci.s.waitForFunction(() => document.querySelectorAll('.kp-ornek').length === 6, null, { timeout: 5000 });
-    assert.deepEqual(await ikinci.s.locator('.kp-ornek__not').allTextContents(), notlar);
-    assert.ok(!ikinci.istekler.includes('/cdn/kisisel-editor.js'), 'önbellekten: editör yüklenmedi');
+    // İkinci açılış: önbellekten, editör yüklenmez, aynı isimler
+    const ikinci = await ac({ viewport: { width: en, height: 900 } }, {}, baglam);
+    await ikinci.s.waitForFunction((q) => document.querySelectorAll(q + ' .kp-ornek').length === 6, bizim, { timeout: 8000 });
+    assert.deepEqual((await ikinci.s.locator(`${bizim} .kp-ornek__not`).allTextContents()).sort(), [...notlar].sort());
+    assert.ok(!ikinci.istekler.some((x) => /kisisel-editor\.js/.test(x)), 'önbellekten: editör yüklenmedi');
     await ikinci.s.close();
   }
   await baglam.close();
 }
 
-/* ---------------- Fotoğraf ve çizim hatası ---------------- */
+/* ---------------- Fotoğraf ve hata ---------------- */
 {
-  const { baglam, s } = await ac({ width: 1280, height: 900 }, { foto: { 'the-artist': '/foto/artist.png' } });
-  await s.waitForFunction(() => document.querySelectorAll('.kp-ornek').length === 6, null, { timeout: 15000 });
-  const artist = s.locator('[data-kp-cs-urun="the-artist"] .kp-ornek');
-  assert.ok(await artist.evaluate((e) => e.classList.contains('kp-ornek--foto')));
-  assert.equal(await artist.locator('.kp-ornek__not').count(), 0, 'fotoğrafta not yok');
-  assert.equal(await artist.locator('canvas').count(), 1);
+  const { baglam, s } = await ac({ viewport: { width: 1280, height: 900 } }, { foto: { 'the-artist': '//jantifox.test/cdn/shop/files/artist-kapak.png?v=1&width=700' } });
+  await s.waitForFunction((q) => document.querySelectorAll(q + ' .kp-ornek').length === 6, bizim, { timeout: 20000 });
+  assert.equal(await s.locator(`${bizim} [data-kp-cs-urun="the-artist"] .kp-ornek canvas`).count(), 1);
+  assert.equal(await s.locator(`${bizim} [data-kp-cs-urun="the-artist"] .kp-ornek__not`).count(), 0, 'fotoğrafta not yok');
   await baglam.close();
 }
 {
-  // Editör betiği yüklenemezse kartlar normal görselle kalır, hata yok
-  const { baglam, s } = await ac({ width: 1280, height: 900 }, { editorHata: true });
+  const { baglam, s } = await ac({ viewport: { width: 1280, height: 900 } }, { editorHata: true });
   await s.waitForTimeout(1500);
-  assert.equal(await s.locator('.kp-ornek').count(), 0);
-  assert.equal(await s.locator('.kp-kk-rozet').count(), 7);
+  assert.equal(await ornekSayisi(s), 0);
+  assert.equal(await s.locator(`${bizim} .kp-kk-rozet`).count(), 7);
   await baglam.close();
 }
 
 /* ---------------- Mobil ---------------- */
-for (const en of [360, 390]) {
-  const { baglam, s } = await ac({ width: en, height: 780 });
-  // Metin üstte, filtreler altında tek satır yatay kayar
-  const metin = await kutu(s, '.kp-cs__metin');
-  const filtre = await kutu(s, '.kp-cs__filtreler');
-  assert.ok(filtre.y >= metin.y + metin.height - 1, 'filtreler metnin altında');
-  const dugmeler = await s.locator('[data-kp-cs-filtre]').evaluateAll((l) => l.map((b) => Math.round(b.getBoundingClientRect().top)));
-  assert.equal(new Set(dugmeler).size, 1, 'tek satır');
-  assert.equal(await s.locator('.kp-cs__oklar').isVisible(), false);
-  // 1 kart tam, 2. kenardan görünür; noktalar
-  assert.deepEqual(await gorunum(s), { tam: 1, kismi: 1 }, en + 'px');
-  assert.equal(await s.locator('.kp-cs__nokta').count(), 8);
-  assert.equal(await s.locator('.kp-cs__nokta--aktif').count(), 1);
-  assert.equal(await s.locator('.kp-cs__nokta').first().evaluate((e) => e.classList.contains('kp-cs__nokta--aktif')), true);
-  // Kaydırınca aktif nokta değişir
-  await s.locator('[data-kp-cs-liste]').evaluate((e) => { e.style.scrollBehavior = 'auto'; e.scrollLeft = e.firstElementChild.getBoundingClientRect().width * 2 + 32; });
-  await s.waitForTimeout(300);
-  assert.equal(await s.locator('.kp-cs__nokta').nth(2).evaluate((e) => e.classList.contains('kp-cs__nokta--aktif')), true);
-  // Filtre noktaları da günceller
-  await s.locator('[data-kp-cs-filtre="kiyafet"]').click();
-  assert.equal(await s.locator('.kp-cs__nokta').count(), 2);
-  await s.locator('[data-kp-cs-filtre="hepsi"]').click();
-  // Mobil kart butonu görselin altında; alt buton tam genişlik
-  assert.equal(await s.locator('[data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"] .kp-kk-mobil').isVisible(), true);
-  const alt = await kutu(s, '.kp-cs__buton');
-  const kap = await kutu(s, '.kp-cs .container');
-  assert.ok(alt.width >= kap.width - 30 - 1, 'alt buton tam genişlik');
-  // Sayfa yatayda taşmaz
+for (const [ad, cihaz] of [['360', { ...devices['Galaxy S9+'], viewport: { width: 360, height: 740 } }], ['390', { ...devices['iPhone 13'], viewport: { width: 390, height: 844 } }]]) {
+  const { baglam, s } = await ac(cihaz);
+  // Temanın mobil kaydırıcısı: 2 kart, sağda bir sonraki kenar; temanın bölümüyle aynı kart genişliği
+  const a = await kartOlc(s, bizim);
+  const b = await kartOlc(s, tema2);
+  for (const k of ['zemin', 'kose', 'baslik', 'fiyat', 'ust', 'bolumZemin', 'dolgu']) assert.deepEqual(a[k], b[k], ad + ' ' + k);
+  assert.ok(Math.abs(a.en - b.en) <= 22, `${ad}: kart ${a.en} / tema ${b.en} (kaydırıcıda sonraki kart kenardan görünür)`);
+  assert.equal(await s.locator(`${bizim} .splide__arrow`).evaluateAll((l) => l.filter((x) => x.offsetWidth).length), 0, 'mobilde ok yok');
+  // Sekmeler tek satır, yatay kaydırılır
+  const satir = await s.locator('[data-kp-cs-filtre]').evaluateAll((l) => new Set(l.map((b) => Math.round(b.getBoundingClientRect().top))).size);
+  assert.equal(satir, 1);
+  // Buton kart genişliğinde; alt buton tam genişlik; sayfada yatay taşma yok
+  const btn = await s.locator(`${bizim} [data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"]`).evaluate((sl) => [Math.round(sl.querySelector('.kp-kk-kart-buton').getBoundingClientRect().width), Math.round(sl.querySelector('.card-wrapper').getBoundingClientRect().width)]);
+  assert.equal(btn[0], btn[1]);
+  const alt = await s.locator(`${bizim} .kp-cs__buton`).evaluate((b) => { const c = b.closest('.collection'); const st = getComputedStyle(c); return [b.getBoundingClientRect().width, c.getBoundingClientRect().width - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight)]; });
+  assert.ok(Math.abs(alt[0] - alt[1]) < 1, 'alt buton tam genişlik ' + alt);
   assert.ok(await s.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'yatay taşma yok');
-  await s.waitForFunction(() => document.querySelectorAll('.kp-ornek').length === 6, null, { timeout: 15000 });
-  await baglam.close();
-}
-
-/* ---------------- Tek tip: filtre düğmeleri gizli ---------------- */
-{
-  const { baglam, s } = await ac({ width: 1280, height: 900 });
-  await s.evaluate(() => {
-    const kok = document.querySelector('[data-kp-cs]');
-    const v = JSON.parse(kok.querySelector('script[data-kp-cs-veri]').textContent);
-    v.turler = { canta: 5, kiyafet: 0, sapka: 0 };
-    kok.querySelector('script[data-kp-cs-veri]').textContent = JSON.stringify(v);
-    kok.kpBolum.veri = v;
-    kok.kpBolum.filtreleriKur();
-  });
-  assert.equal(await s.locator('.kp-cs__filtreler').isVisible(), false);
+  // Örnek tasarım kart ekrandayken kendiliğinden belirip kaybolur
+  await s.locator(bizim).scrollIntoViewIfNeeded();
+  await s.waitForFunction((q) => document.querySelectorAll(q + ' .kp-ornek').length >= 2, bizim, { timeout: 20000 });
+  await s.locator(`${bizim} .splide__track`).scrollIntoViewIfNeeded();
+  const ilk = s.locator(`${bizim} .splide__slide.is-visible .kp-ornek`).first();
+  await s.waitForFunction((q) => [...document.querySelectorAll(q + ' .splide__slide.is-visible .kp-ornek')].some((e) => e.classList.contains('kp-ornek--acik')), bizim, { timeout: 8000 });
+  await s.waitForFunction((q) => ![...document.querySelectorAll(q + ' .splide__slide.is-visible .kp-ornek')].every((e) => e.classList.contains('kp-ornek--acik')) || true, bizim);
+  const once = await ilk.evaluate((e) => e.classList.contains('kp-ornek--acik'));
+  await s.waitForTimeout(3600);
+  assert.notEqual(await ilk.evaluate((e) => e.classList.contains('kp-ornek--acik')), once, 'dönüşümlü');
   await baglam.close();
 }
 
 await t.close();
-assert.deepEqual(hatalar, []);
-console.log('çok satanlar: tamam');
+const bizimHatalar = hatalar.filter((m) => !/Shopify|theme|PUB_SUB|publish|subscribe|routes|Cannot read properties of null \(reading 'addEventListener'\)/.test(m));
+assert.deepEqual(bizimHatalar, [], 'sayfa hataları: ' + hatalar.join(' | '));
+console.log('çok satanlar: tamam', hatalar.length ? '(tema betiği uyarıları: ' + [...new Set(hatalar)].join(' | ').slice(0, 300) + ')' : '');

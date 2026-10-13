@@ -3,7 +3,8 @@
    geldikten (ve tema filtre / sıralama / sayfa değişiminde ızgarayı yeniden çizdikten) sonra işaretlenir.
    Veri: snippets/kisisel-koleksiyon.liquid (#KisiselKoleksiyon) ve kartı kullanan başka bölümler
    (script[data-kp-kk-veri], ör. ana sayfa "Çok satanlar"). Kartlar için ek istek atılmaz.
-   Diğer bölümler için: window.KisiselKartlar.isle(kapsayıcı) kapsayıcıdaki kartları işaretler. */
+   Diğer bölümler için: window.KisiselKartlar.isle(kapsayıcı, { sade: true }) kapsayıcıdaki kartları işaretler;
+   sade kartta görselin üstünde yalnızca etiket, fiyatın altında tam genişlikte "Kişiselleştir" (tema butonu) olur. */
 (function () {
   'use strict';
 
@@ -60,10 +61,11 @@
 
   /* ---------------- Kartlar ---------------- */
 
-  function kartiSusle(sarici, kimlik, u) {
+  function kartiSusle(sarici, kimlik, u, secenek) {
     var medya = sarici.querySelector('.card-product__media');
     if (!medya) return;
     var adres = editorAdresi(u.u);
+    if (secenek && secenek.sade) return sadeKart(sarici, medya, adres, secenek);
     // Sol üst etiket: temanın kendi etiketi (indirim, NEW IN) varsa onun altına iner
     var temaEtiketi = medya.querySelector('.card-new-in-badge, .card__badge .badge');
     var rozet = document.createElement('span');
@@ -88,6 +90,22 @@
     medya.insertAdjacentElement('afterend', mobil);
   }
 
+  // Sade kart (ana sayfa bölümleri): küçük etiket + fiyatın altında temanın butonu
+  function sadeKart(sarici, medya, adres, secenek) {
+    var temaEtiketi = medya.querySelector('.card-new-in-badge, .card__badge .badge');
+    var rozet = document.createElement('span');
+    rozet.className = 'kp-kk-rozet kp-kk-rozet--sade' + (temaEtiketi ? ' kp-kk-rozet--alt' : '');
+    rozet.innerHTML = '<span class="kp-kk-rozet__ikon" aria-hidden="true">✎</span> Kişiselleştirilebilir';
+    medya.appendChild(rozet);
+    var bilgi = sarici.querySelector('.card__information') || sarici.querySelector('.card__content');
+    if (!bilgi) return;
+    var b = document.createElement('a');
+    b.className = 'btn btn-primary kp-kk-kart-buton' + (secenek.renk === 'tema' ? '' : ' kp-kk-kart-buton--kirmizi');
+    b.href = adres;
+    b.textContent = 'Kişiselleştir';
+    bilgi.appendChild(b);
+  }
+
   function bosluk(sarici) {
     var medya = sarici.querySelector('.card-product__media');
     if (!medya) return;
@@ -101,7 +119,7 @@
     return document.getElementById('product-grid');
   }
 
-  function kartlariIsle(kok) {
+  function kartlariIsle(kok, secenek) {
     var g = kok || izgara();
     if (!g) return;
     veriOku();
@@ -116,8 +134,8 @@
         var u = kimlik && URUNLER[kimlik];
         durum = u ? kimlik : '';
         sarici.setAttribute('data-kp-kk', durum);
-        if (u) kartiSusle(sarici, kimlik, u);
-        else bosluk(sarici);
+        if (u) kartiSusle(sarici, kimlik, u, secenek);
+        else if (!(secenek && secenek.sade)) bosluk(sarici);
       }
       li.classList.toggle('kp-kk-acik', !!durum);
       li.setAttribute('data-kp-kk-urun', durum);

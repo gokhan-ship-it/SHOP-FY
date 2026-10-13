@@ -454,6 +454,10 @@
           "sapka"
         ],
         "urun_sayisi": 8,
+        "columns_desktop": 4,
+        "swipe_on_mobile": true,
+        "show_progress_bar": false,
+        "kisisel_buton": "kirmizi",
         "filtreler": true,
         "ornek_tasarim": true,
         "ornek_isimler": "ATLAS, LEYLA, PERA, EGE, MIRO, ADA, ECE",
@@ -461,7 +465,7 @@
         "buton_link": "shopify://collections/tum-urunler",
         "buton_filtreli": true,
         "buton_stili": "primary",
-        "bg_color": "#f4cb64",
+        "bg_color": "",
         "text_color": "",
         "padding_top": 36,
         "padding_bottom": 36
