@@ -31,15 +31,19 @@ for (const kos of KOSULLAR) {
     cdp.on('Network.loadingFinished', (e) => { bayt += e.encodedDataLength; if (tipler[e.requestId] === 'Script') jsBayt += e.encodedDataLength; });
     await s.addInitScript(() => {
       const o = (window.__olc = { lcp: 0, uzun: 0 });
-      new PerformanceObserver((l) => l.getEntries().forEach((e) => { o.lcp = e.startTime; })).observe({ type: 'largest-contentful-paint', buffered: true });
+      new PerformanceObserver((l) => l.getEntries().forEach((e) => { o.lcp = e.startTime; o.lcpOge = e.element ? e.element.tagName + '.' + String(e.element.className && e.element.className.baseVal !== undefined ? e.element.className.baseVal : e.element.className).split(' ')[0] + (e.element.closest && e.element.closest('[data-kp-cs]') ? ' (çok satanlar)' : '') : ''; })).observe({ type: 'largest-contentful-paint', buffered: true });
       new PerformanceObserver((l) => l.getEntries().forEach((e) => { o.uzun += Math.max(0, e.duration - 50); })).observe({ type: 'longtask', buffered: true });
     });
-    await s.goto(URL0, { waitUntil: 'load', timeout: 90000 });
+    try { await s.goto(URL0, { waitUntil: 'load', timeout: 90000 }); } catch (e) { await baglam.close(); i--; continue; }
     await s.waitForTimeout(3000);
     const R = await s.evaluate(() => {
       const n = performance.getEntriesByType('navigation')[0];
-      return { ttfb: Math.round(n.responseStart), dcl: Math.round(n.domContentLoadedEventEnd), load: Math.round(n.loadEventEnd), lcp: Math.round(window.__olc.lcp), tbt: Math.round(window.__olc.uzun), bolum: !!document.querySelector('[data-kp-cs]') };
+      const b = document.querySelector('[data-kp-cs]');
+      return { ttfb: Math.round(n.responseStart), dcl: Math.round(n.domContentLoadedEventEnd), load: Math.round(n.loadEventEnd), lcp: Math.round(window.__olc.lcp), lcpOge: window.__olc.lcpOge, tbt: Math.round(window.__olc.uzun), bolum: !!b, bolumUst: b ? Math.round(b.getBoundingClientRect().top) : null };
     });
+    // Aktarılan bayt: kaydırmadan önce (aşağıdaki bölümlerin tembel yüklenen görselleri karışmasın)
+    R.kb = Math.round(bayt / 1024);
+    R.jsKb = Math.round(jsBayt / 1024);
     if (R.bolum) {
       // Bölüme kaydır, örneklerin çizilmesini bekle
       R.ornek = await s.evaluate(() => new Promise((son) => {
@@ -56,21 +60,24 @@ for (const kos of KOSULLAR) {
       R.ornekAdet = await s.locator('.kp-ornek').count();
       // İkinci açılış: aynı tarayıcı, önbellekten çizim
       await cdp.send('Network.setCacheDisabled', { cacheDisabled: false });
-      await s.reload({ waitUntil: 'load' });
-      R.ornekOnbellek = await s.evaluate(() => new Promise((son) => {
-        const t0 = performance.now();
-        document.querySelector('[data-kp-cs]').scrollIntoView();
-        const bekle = () => {
-          if (document.querySelectorAll('.kp-ornek').length >= 6) return son(Math.round(performance.now() - t0));
-          if (performance.now() - t0 > 20000) return son(null);
-          setTimeout(bekle, 20);
-        };
-        bekle();
-      }));
-      R.editorIkinci = await s.evaluate(() => performance.getEntriesByType('resource').some((e) => /kisisel-editor\.js/.test(e.name)));
+      // İkinci açılış adres yeniden açılarak (ortamın vekil sunucusu mobil görünümde ikinci gezinmeyi zaman zaman kesiyor)
+      try {
+        await s.goto(URL0, { waitUntil: 'load', timeout: 90000 });
+        R.ornekOnbellek = await s.evaluate(() => new Promise((son) => {
+          const t0 = performance.now();
+          document.querySelector('[data-kp-cs]').scrollIntoView();
+          const bekle = () => {
+            if (document.querySelectorAll('.kp-ornek').length >= 6) return son(Math.round(performance.now() - t0));
+            if (performance.now() - t0 > 20000) return son(null);
+            setTimeout(bekle, 20);
+          };
+          bekle();
+        }));
+        R.editorIkinci = await s.evaluate(() => performance.getEntriesByType('resource').some((e) => /kisisel-editor\.js/.test(e.name)));
+      } catch (e) {
+        R.ornekOnbellek = null;
+      }
     }
-    R.kb = Math.round(bayt / 1024);
-    R.jsKb = Math.round(jsBayt / 1024);
     olcumler.push(R);
     await baglam.close();
   }

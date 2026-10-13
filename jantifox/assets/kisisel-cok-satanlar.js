@@ -185,10 +185,13 @@
       });
     };
     if (!eksik.length) return bitir();
-    // Önbellekte olmayan varsa çizim motoru (editör betiği) bir kez yüklenir; boşta çalıştırılır
-    editorYukle(this.kok.getAttribute('data-editor-src'), function (tamam) {
-      if (!tamam) return;
-      (window.requestIdleCallback || setTimeout)(bitir);
+    // Önbellekte olmayan varsa çizim motoru (editör betiği) bir kez yüklenir: sayfa yüklendikten sonra, boşta
+    var src = this.kok.getAttribute('data-editor-src');
+    sayfaBosta(function () {
+      editorYukle(src, function (tamam) {
+        if (!tamam) return;
+        (window.requestIdleCallback || setTimeout)(bitir);
+      });
     });
   };
 
@@ -247,6 +250,12 @@
     };
     on.src = tamAdres(src);
   };
+
+  function sayfaBosta(f) {
+    var bosta = function () { (window.requestIdleCallback || setTimeout)(f, { timeout: 2000 }); };
+    if (document.readyState === 'complete') bosta();
+    else window.addEventListener('load', bosta, { once: true });
+  }
 
   var editorDurum = null;
   var editorBekleyen = [];
