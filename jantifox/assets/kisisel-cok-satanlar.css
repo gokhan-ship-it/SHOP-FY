@@ -105,14 +105,21 @@
   line-height: 1.3;
   letter-spacing: 0.02em;
 }
-/* Dokunmatik ekran: örnek tasarım sabit (otomatik yer değiştirme yok); ilk görünüşte kısa geçiş */
+/* Dokunmatik ekran: örnek tasarım sabit (otomatik yer değiştirme ve belirme yok) */
 .kp-cs .kp-ornek.kp-ornek--acik {
   opacity: 1;
 }
 @media (hover: none) {
   .kp-cs .kp-ornek {
-    transition: opacity 0.3s ease;
+    transition: none;
   }
+}
+
+/* Ekrana girerken hiçbir efekt yok: temanın "kaydırınca belir" sınıfı karta başka yoldan gelse bile etkisiz */
+.kp-cs .scroll-trigger {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 /* Mobil (640 px ve altı): kaydırıcı JS ile sürüklenmez; liste tarayıcının kendi yatay kaydırmasıyla kayar ve kartlara

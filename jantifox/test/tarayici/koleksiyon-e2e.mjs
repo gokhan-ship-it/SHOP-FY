@@ -90,8 +90,11 @@ const gorunur = (s, q) => s.locator(q).evaluateAll((els) => els.map((e) => !!(e.
   assert.deepEqual(await s.locator('#product-grid > li').evaluateAll((l) => l.map((x) => x.getAttribute('data-kp-kk-urun'))), ['kanvas-lacivert-tote-canta', '', 'bej-tshirt', '']);
   assert.equal(await s.locator('.kp-kk-rozet').first().evaluate((e) => [...e.children].filter((c) => c.offsetWidth).map((c) => c.textContent).join('')), '✎ Kişiselleştirilebilir');
   assert.equal(await s.locator('.kp-kk-rozet__ikon').first().evaluate((e) => getComputedStyle(e).color), 'rgb(179, 20, 27)');
-  assert.ok(await s.locator('.kp-kk-rozet').first().evaluate((e) => e.classList.contains('kp-kk-rozet--alt')), 'NEW IN varsa etiket altına iner');
-  assert.ok(!(await s.locator('.kp-kk-rozet').nth(1).evaluate((e) => e.classList.contains('kp-kk-rozet--alt'))));
+  // Etiket her kartta görsel kutusunun sol üstünde aynı yerde (NEW IN olsa da); temanın NEW IN etiketi sağ üste geçer
+  const etiketYeri = await s.locator('.kp-kk-rozet').evaluateAll((l) => l.map((e) => { const m = e.closest('.card-product__media').getBoundingClientRect(); const r = e.getBoundingClientRect(); return [Math.round(r.left - m.left), Math.round(r.top - m.top)]; }));
+  assert.deepEqual(etiketYeri, [[10, 10], [10, 10]], 'etiket yeri ' + JSON.stringify(etiketYeri));
+  const yeni = await s.locator('#product-grid > li').first().evaluate((li) => { const m = li.querySelector('.card-product__media').getBoundingClientRect(); const n = li.querySelector('.card-new-in-badge').getBoundingClientRect(); const r = li.querySelector('.kp-kk-rozet').getBoundingClientRect(); return { sag: Math.round(m.right - n.right), cakisma: !(n.right <= r.left || r.right <= n.left || n.bottom <= r.top || r.bottom <= n.top) }; });
+  assert.deepEqual(yeni, { sag: 10, cakisma: false }, 'NEW IN sağ üstte ' + JSON.stringify(yeni));
   // Butonlar görselin üzerinde, her zaman görünür (hover gerekmez); mobil buton ve boşluk masaüstünde yok
   assert.deepEqual(await gorunur(s, '.kp-kk-eylem'), [true, true]);
   assert.deepEqual(await gorunur(s, '.kp-kk-mobil'), [false, false]);

@@ -28,8 +28,15 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
   pointer-events: none;
 }
-.kp-kk-rozet--alt {
-  top: 4.2rem;
+/* Etiket görsel kutusuna sabit: kutu konumlandırma bağlamı; temanın kendi etiketleri bu kartlarda sağ üstte */
+.kp-kk-isaretli {
+  position: relative;
+}
+.kp-kk-isaretli .card-new-in-badge,
+.kp-kk-isaretli .card-stick-on-badge,
+.kp-kk-isaretli .card__badge {
+  left: auto !important;
+  right: 1rem;
 }
 .kp-kk-rozet__ikon {
   color: #b3141b;
@@ -158,9 +165,6 @@
     left: 0.8rem;
     padding: 0.35rem 0.7rem;
     font-size: 1.1rem;
-  }
-  .kp-kk-rozet--alt {
-    top: 3.6rem;
   }
   .kp-kk-masaustu {
     display: none;

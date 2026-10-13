@@ -66,10 +66,11 @@
     if (!medya) return;
     var adres = editorAdresi(u.u);
     if (secenek && secenek.sade) return sadeKart(sarici, medya, adres, secenek);
-    // Sol üst etiket: temanın kendi etiketi (indirim, NEW IN) varsa onun altına iner
-    var temaEtiketi = medya.querySelector('.card-new-in-badge, .card__badge .badge');
+    // Sol üst etiket: her kartta görsel kutusunun (card-product__media) kendisine sabit; ürün görselinin boyutu, oranı
+    // ve kırpılması etkilemez. Temanın etiketleri (NEW IN, STICK ON, indirim) bu kartlarda sağ üste alınır (CSS).
+    medya.classList.add('kp-kk-isaretli');
     var rozet = document.createElement('span');
-    rozet.className = 'kp-kk-rozet' + (temaEtiketi ? ' kp-kk-rozet--alt' : '');
+    rozet.className = 'kp-kk-rozet';
     rozet.innerHTML = '<span class="kp-kk-rozet__ikon" aria-hidden="true">✎</span>' +
       '<span class="kp-kk-masaustu"> Kişiselleştirilebilir</span><span class="kp-kk-mobil-metin"> Kişiselleştir</span>';
     medya.appendChild(rozet);
@@ -96,7 +97,9 @@
     var rozet = document.createElement('span');
     rozet.className = 'kp-kk-rozet kp-kk-rozet--sade';
     rozet.innerHTML = '<span class="kp-kk-rozet__ikon" aria-hidden="true">✎</span> Kişiselleştirilebilir';
-    (medya.querySelector('.card-product__media-inner') || medya).appendChild(rozet);
+    // Görsel kutusunun kendisine (iç katman ürün görseline göre boyutlanabilir)
+    medya.classList.add('kp-kk-isaretli');
+    medya.appendChild(rozet);
     var bilgi = sarici.querySelector('.card__information') || sarici.querySelector('.card__content');
     if (!bilgi) return;
     var b = document.createElement('a');

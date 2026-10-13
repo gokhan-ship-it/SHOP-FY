@@ -62,7 +62,10 @@
     assign arrows = false
   endif
 -%}
-{%- capture animate_slide_in -%}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}{%- endcapture -%}
+{%- comment -%}
+  Temanın "kaydırınca belir" efekti (scroll-trigger animate--slide-in) bu bölümde kullanılmaz: kartlar, başlık ve alt buton
+  ekrana girerken kaymaz, belirmez, büyümez; sabit durur (kaydırma akıcılığı, 2026-10-13).
+{%- endcomment -%}
 {%- capture carousel_mobile -%}{%- if swipe_on_mobile -%} false {%- else -%} true {%- endif -%}{%- endcapture -%}
 
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
@@ -79,13 +82,13 @@
       <div class="featured-collection-wrap section-header-wrap flex flex-col lg:flex-row lg:items-end gap-x-6 gap-y-4 mb-16">
         <div class="flex-1 flex gap-y-2 flex-col">
           {%- if section.settings.etiket != blank -%}
-            <p class="section__sub-heading sub-heading {{ animate_slide_in }}">{{ section.settings.etiket | escape }}</p>
+            <p class="section__sub-heading sub-heading">{{ section.settings.etiket | escape }}</p>
           {%- endif -%}
           {%- if section.settings.baslik != blank -%}
-            <h2 class="section__heading {{ animate_slide_in }} {{ section.settings.heading_size }}">{{ section.settings.baslik | escape }}</h2>
+            <h2 class="section__heading {{ section.settings.heading_size }}">{{ section.settings.baslik | escape }}</h2>
           {%- endif -%}
           {%- if section.settings.aciklama != blank -%}
-            <div class="section__description rte {{ animate_slide_in }} ">{{ section.settings.aciklama }}</div>
+            <div class="section__description rte ">{{ section.settings.aciklama }}</div>
           {%- endif -%}
         </div>
         {%- if filtre_var -%}
@@ -123,7 +126,7 @@
                 endif
               -%}
               <div class="splide__slide" data-kp-cs-tur="{{ tur }}" data-kp-cs-urun="{{ p.handle | escape }}">
-                <div class="{{ animate_slide_in }} h-full" {% if settings.animations_reveal_on_scroll %} data-cascade style="--animation-order:{{ forloop.index }};" {% endif %}>
+                <div class="h-full">
                   {%- capture product_placeholder -%}product-{% cycle '1', '2', '3', '4', '5', '6' %}{%- endcapture -%}
                   {%- assign kart_gorsel = p.metafields.kisisellestirme.kart_gorseli.value -%}
                   {% render 'card-product', card_product: p, card_image: kart_gorsel, product_placeholder: product_placeholder, section_id: section.id, columns: columns_desktop %}
@@ -169,7 +172,7 @@
           endif
         endif
       -%}
-      <div class="kp-cs__alt {{ animate_slide_in }}">
+      <div class="kp-cs__alt">
         {%- render 'button', button_style: section.settings.buton_stili, button_text: section.settings.buton_metni, button_url: link, button_type: 'link', custom_class: 'kp-cs__buton' -%}
       </div>
     {%- endif -%}

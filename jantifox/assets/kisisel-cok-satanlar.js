@@ -121,9 +121,6 @@
       s.style.removeProperty('margin-right');
       s.style.removeProperty('width');
       self.liste.appendChild(s);
-      // Temanın görünme animasyonu: yeniden eklenen kart görünür kalsın
-      var a = s.querySelector('.scroll-trigger');
-      if (a) a.classList.remove('scroll-trigger--offscreen');
     });
     var sp = this.kaydirici && this.kaydirici.slideInstance;
     // Mobilde kaydırıcı kapalı (tarayıcının kendi kaydırması): yalnızca başa dön. Splide kapanınca da
