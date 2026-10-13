@@ -1,12 +1,13 @@
 {%- comment -%}
   Bir patch ürününü (harf seti, rakam seti veya ikon) editör için JSON nesnesi olarak basar.
   png_en / png_boy / png_sekil: kırpılmış şeffaf PNG'den hesaplanan ölçü ve şekil (varsa editör bunları kullanır).
+  Görsel: önce onizleme_png_kaynakli (PNG kaynaklı kopya; iPhone'a da küçük AVIF/WebP gider), yoksa onizleme_png.
   kontur: PNG'nin opak alanının dış çizgisi (sadeleştirilmiş çokgen); alan, yasaklı bölge ve çakışma denetimi bununla yapılır.
   Kullanım: {% render 'kisisel-veri-patch', p: product %}
 {%- endcomment -%}
 {%- liquid
   assign mf = p.metafields.kisisellestirme
-  assign urun_png = mf.onizleme_png.value
+  assign urun_png = mf.onizleme_png_kaynakli.value | default: mf.onizleme_png.value
   assign urun_png_var = false
   if urun_png != blank
     assign urun_png_var = true
@@ -30,7 +31,7 @@
   "varyantlar": [
     {%- for v in p.variants -%}
       {%- liquid
-        assign v_png = v.metafields.kisisellestirme.onizleme_png.value
+        assign v_png = v.metafields.kisisellestirme.onizleme_png_kaynakli.value | default: v.metafields.kisisellestirme.onizleme_png.value
         assign v_png_var = false
         if v_png != blank
           assign v_png_var = true

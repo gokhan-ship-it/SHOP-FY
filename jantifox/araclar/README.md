@@ -212,7 +212,44 @@ Yeni bir yapıştırılabilir aksesuar geldiğinde aynı adımlar izlenir. Kod d
 4. **Alan çizici**: yukarıdaki "Aksesuar modu" adımları; dış ölçü + Velcro yüzeyi → JSON.
 5. **Shopify alanları** (hepsi `kisisellestirme` namespace'inde):
    - PNG Dosyalar bölümüne yüklenir, ürünün `onizleme_gorseli` alanına bağlanır. Ürün medyasına eklenmez.
+   - Aynı PNG'nin PNG kaynaklı kopyası `onizleme_gorseli_png` alanına bağlanır (aşağıdaki "PNG kaynaklı kopya" adımı).
    - JSON → `harita`.
    - Eş ürün → `es_urun`, iki yönde.
    - Aksesuar kataloğun `aksesuarlar` listesine eklenir.
 6. Her yazma işlemi `docs/degisiklik-kaydi.md` dosyasına eklenir.
+
+## PNG kaynaklı kopya (her yeni patch ve aksesuar için zorunlu adım)
+
+Neden: Shopify CDN, kaynağı şeffaf **WebP** olan görseli iPhone Safari'ye her zaman büyük **PNG** olarak gönderir
+(`format` parametresi yok sayılır). Kaynağı **PNG** olan görsel ise herkese küçük AVIF/WebP olarak gider.
+Editörde 6 harf + 2 ikonlu tasarımda bu fark iPhone'da indirilen görsel boyutunu birkaç MB değiştirir.
+Bu yüzden her patch ve aksesuar görselinin bir PNG kaynaklı kopyası ayrı alana bağlanır. Eski alanlar ve ürün/varyant
+görselleri olduğu gibi kalır; tema yeni alanı tercih eder, yoksa eskisine düşer.
+
+| Görsel | Yeni alan (yalnızca boşsa yazılır) | Eski alan (dokunulmaz) |
+|---|---|---|
+| Harf / rakam (varyant) | varyant `kisisellestirme.onizleme_png_kaynakli` | varyant `kisisellestirme.onizleme_png` |
+| İkon / set patch'i (ürün) | ürün `kisisellestirme.onizleme_png_kaynakli` | ürün `kisisellestirme.onizleme_png` |
+| Aksesuar (ürün) | ürün `kisisellestirme.onizleme_gorseli_png` | ürün `kisisellestirme.onizleme_gorseli` |
+
+Adımlar:
+
+1. Patch'in mevcut şeffaf görselini (`onizleme_png`, genelde `kisisel-*.webp`) ya da aksesuarın işlenmiş PNG'sini
+   kendi boş klasörüne indir.
+2. PNG'ye çevir:
+   ```
+   python3 -I araclar/png-kopya/png-kopya.py <dosyalar> --cikti veri/png/kaynak-png/patch --en-uzun 600
+   python3 -I araclar/png-kopya/png-kopya.py <dosyalar> --cikti veri/png/kaynak-png/aksesuar
+   ```
+   - RGBA PNG yazar, şeffaflık korunur; dosya adı aynı kalır, uzantı `.png` olur.
+   - Patch'lerde en uzun kenar 600 px (editör en fazla 300 px'lik sürümü ister, 2x ekran için yeter).
+     Aksesuarlarda boyut değişmez (editör 600 ve 1000 px ister).
+3. Commit edip push et. `fileCreate` ile Dosyalar bölümüne yükle; kaynak, commit'e sabit ham GitHub adresi
+   (`https://raw.githubusercontent.com/<repo>/<commit>/jantifox/veri/png/kaynak-png/...`). `fileStatus: READY` olana kadar bekle.
+4. Dosya adı → MediaImage kimliği eşlemesini `veri/png/kaynak-png/dosya-idleri.json`'a, sahibini
+   (ürün/varyant kimliği, grup) `veri/png/kaynak-png/patch-kayit.json`'a ekle.
+5. Alan boşsa `metafieldsSet` ile yukarıdaki tablodaki yeni alana bağla. Doluysa üzerine yazma, önce sor.
+   Ürün medyasına eklenmez.
+6. Kontrol: iPhone kullanıcı ajanıyla editörü aç, patch görselinin `image/avif` ya da `image/webp` geldiğini gör
+   (`node test/performans/editor-gorsel-boyut.mjs <tema_id> <ürün handle>`).
+7. Yazma işlemlerini `docs/degisiklik-kaydi.md` dosyasına ekle.
