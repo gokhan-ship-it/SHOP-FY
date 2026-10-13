@@ -2,6 +2,28 @@
 <html class="no-js" lang="{{ request.locale.iso_code }}" dir="{% render 'direction' %}">
   <head>
     <meta charset="utf-8">
+    {%- comment -%}
+      Kişiselleştirme gizli ölçüm modu: yalnızca adreste ?kp_olcum=1 varsa (ya da ölçüm modunda "Kişiselleştir"e basılıp
+      ?kisisellestir=1 ile gelindiyse) açılır. Normal ziyaretçide adres metnine tek bir bakıştan başka bir şey çalışmaz.
+    {%- endcomment -%}
+    <script>
+      (function () {
+        var q = location.search;
+        var acik = /[?&]kp_olcum=1/.test(q);
+        if (!acik && /[?&]kisisellestir=1/.test(q)) { try { acik = !!sessionStorage.getItem('kp_olcum_tik'); } catch (e) {} }
+        if (!acik) return;
+        document.documentElement.classList.add('kp-olcum');
+        try { performance.setResourceTimingBufferSize(3000); } catch (e) {}
+        var kuyruk = [];
+        window.kpOlcum = function (ad) { kuyruk.push([ad, performance.now()]); };
+        window.kpOlcum.kuyruk = kuyruk;
+        window.kpOlcum.editor = /[?&]kisisellestir=1/.test(q);
+        var s = document.createElement('script');
+        s.src = {{ 'kisisel-olcum.js' | asset_url | json }};
+        s.async = true;
+        document.head.appendChild(s);
+      })();
+    </script>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
     <meta name="theme-color" content="{{ settings.settings.body_bg }}">

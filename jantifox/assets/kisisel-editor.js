@@ -10,6 +10,10 @@
 
   if (window.customElements && customElements.get('kisisel-kart')) return;
 
+  // Gizli ölçüm modu (?kp_olcum=1, layout/theme.liquid): yalnızca o moddayken tanımlı; normalde hiçbir şey yapmaz
+  var olc = window.kpOlcum || function () {};
+  olc('editor_kodu');
+
   /* ------------------------------------------------------------------ */
   /* Yardımcılar                                                         */
   /* ------------------------------------------------------------------ */
@@ -7731,8 +7735,10 @@
     var bolum = this.getAttribute('data-section-id');
     var veriEl = document.getElementById('KisiselVeri-' + bolum);
     if (!veriEl) throw new Error('Veri bulunamadı');
+    olc('veri_basladi');
     this.model = new Model(JSON.parse(veriEl.textContent));
     this.yer = new Yerlesim(this.model);
+    olc('veri_hazir');
     this.formId = this.getAttribute('data-form-id');
     this.bolum = bolum;
     this.depoAnahtari = 'kisisel-tasarim-' + this.model.urun.id;
@@ -7742,12 +7748,14 @@
     // Kampanya kuralları arka planda öğrenilir (saklanır); editörde fiyat anında hesaplanır. Editör adresten açılıyorsa
     // önce editör ve önizleme görseli hazırlanır, istek sonra atılır (ağ ve işlemciyi görselle paylaşmasın)
     var kurallar = function () {
+      olc('kampanya_basladi');
       kurallariOgren(self.model).then(function () {
+        olc('kampanya_bitti');
         if (!bosMu(self.tasarim)) {
           self.kartKampanyaAnahtari = null;
           self.guncelle();
         }
-      }, function () {});
+      }, function () { olc('kampanya_bitti'); });
     };
     if (/[?&]kisisellestir=/.test(window.location.search)) this.hazirOlunca = kurallar;
     else kurallar();
@@ -7830,9 +7838,12 @@
     }
     var bilgi = !bosMu(this.tasarim) && this.taslakBilgi;
     this.editor.ac(bilgi && bilgi.arac ? bilgi.arac : bosMu(this.tasarim) ? 'yazi' : 'ikon');
+    olc('editor_cizildi');
     var self = this;
     this.editor.gorselHazir(2500).then(function () {
+      olc('onizleme_gorseli');
       acilisOrtusuKaldir();
+      olc('kullanilabilir');
       if (self.hazirOlunca) {
         var f = self.hazirOlunca;
         self.hazirOlunca = null;

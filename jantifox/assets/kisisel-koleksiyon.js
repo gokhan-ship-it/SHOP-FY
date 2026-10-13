@@ -42,8 +42,10 @@
     }
   }
 
+  // Gizli ölçüm modu (layout/theme.liquid, ?kp_olcum=1): editör adresi de ölçüm modunda açılır
+  var OLCUM = document.documentElement.classList.contains('kp-olcum');
   function editorAdresi(u) {
-    return u + (u.indexOf('?') === -1 ? '?' : '&') + 'kisisellestir=1';
+    return u + (u.indexOf('?') === -1 ? '?' : '&') + 'kisisellestir=1' + (OLCUM ? '&kp_olcum=1' : '');
   }
 
   function depo(yaz) {
@@ -409,7 +411,23 @@
     if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
     a.classList.add('kp-kk-yukleniyor');
     a.setAttribute('aria-busy', 'true');
+    if (OLCUM) olcumTik(e, a);
   });
+
+  // Ölçüm modu: basış anı (dokunma olayının zamanı) ve butonun tepki verdiği ilk kare editör sayfasında okunmak üzere
+  // saklanır (sessionStorage; araya giren yönlendirmelerden sonra da aynı sekmede okunur)
+  function olcumTik(e, a) {
+    var koken = performance.timeOrigin || (performance.timing && performance.timing.navigationStart) || 0;
+    var tik = e.timeStamp > 1e12 ? e.timeStamp : koken + e.timeStamp;
+    if (!(tik > 0)) tik = Date.now();
+    var kayit = { tik: tik, kaynak: location.pathname, hedef: a.href };
+    var yaz = function () { try { sessionStorage.setItem('kp_olcum_tik', JSON.stringify(kayit)); } catch (x) {} };
+    yaz();
+    requestAnimationFrame(function () {
+      kayit.tepki = koken + performance.now();
+      yaz();
+    });
+  }
   window.addEventListener('pageshow', function () {
     document.querySelectorAll('.kp-kk-yukleniyor').forEach(function (a) {
       a.classList.remove('kp-kk-yukleniyor');
