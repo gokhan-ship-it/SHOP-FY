@@ -205,8 +205,11 @@ def denetle(u, bilinen, magaza):
                 # Açılı çekimde görünen genişlik derinliğe yaklaşabilir: alt sınır en küçük boyuttan
                 if not (min(boyutlar) * 0.8 <= en_cm <= max(boyutlar) * 2.5):
                     hatalar.append('Ölçek şüpheli: görsel %.1f cm, ürün %s cm' % (en_cm, ' × '.join(str(b) for b in boyutlar)))
-            elif not (25 <= en_cm <= 130):
-                hatalar.append('Ölçek şüpheli: görsel %.1f cm genişliğe denk geliyor' % en_cm)
+            else:
+                # Ürün ölçüsü yoksa genel aralık: çanta / kıyafet görseli 25–130 cm; şapka önden 15–30 cm (panelle aynı)
+                alt, ust = (15, 30) if 'Şapka' in (g.get('ad') or '') else (25, 130)
+                if not (alt <= en_cm <= ust):
+                    hatalar.append('Ölçek şüpheli: görsel %.1f cm genişliğe denk geliyor (beklenen %d–%d cm)' % (en_cm, alt, ust))
             v = g.get('velcro') or {}
             if v.get('cap_cm') and z0['shape'] == 'circle' and abs(cm - v['cap_cm']) / v['cap_cm'] > 0.1:
                 uyarilar.append('Çap %.1f cm, sitede %s cm' % (cm, v['cap_cm']))
