@@ -13538,7 +13538,37 @@ html.kp-kilit body {
   customElements.define('kisisel-kart', KisiselKart);
 
   // Test ve hata ayıklama için iç fonksiyonlar
+  // Ana sayfa "Çok satanlar" kartları: ürünün önizleme görseli üzerine örnek isim (Cool Alfabe). Sırayla denenir; tüm
+  // harfleri stokta olan, ürünün alanına ve karakter sınırına sığan, kullanilan'da olmayan ilk isim seçilir.
+  // Dönüş: { isim, parcalar: [{ src, x, y, w, h, aci }] } (görselin genişlik / yüksekliğine göre %) ya da null
+  function ornekTasarim(ham, isimler, kullanilan) {
+    var m = new Model(ham);
+    var yer = new Yerlesim(m);
+    var set = m.setler.filter(function (s) { return s.set === 'cool'; })[0] || m.setler[0];
+    if (!set) return null;
+    for (var i = 0; i < isimler.length; i++) {
+      var isim = buyukHarf(String(isimler[i] || ''));
+      if (!isim || (kullanilan && kullanilan.indexOf(isim) !== -1)) continue;
+      var t = { setId: set.id, isim: isim, isimMerkez: null, parcalar: [] };
+      var a = isimAnaliz(m, yer, t);
+      if (!a.sigiyor || a.eksikler.length || a.yoklar.length || a.stokSorunlari.length) continue;
+      var d = duzenle(m, yer, t);
+      var parcalar = d.parcalar.filter(function (p) { return !p.kenar; });
+      if (Object.keys(d.hatalar || {}).length || parcalar.length !== Array.from(isim).length) continue;
+      if (parcalar.some(function (p) { return !(p.varyant && p.varyant.gorsel); })) continue;
+      return {
+        isim: isim,
+        parcalar: parcalar.map(function (p) {
+          var st = parcaStili(m, p);
+          return { src: p.varyant.gorsel, x: parseFloat(st.left), y: parseFloat(st.top), w: parseFloat(st.width), h: parseFloat(st.height), aci: p.aci || 0 };
+        })
+      };
+    }
+    return null;
+  }
+
   window.KisiselEditorIc = {
+    ornekTasarim: ornekTasarim,
     Model: Model,
     satinAlinacak: satinAlinacak,
     karakterSeti: karakterSeti,
