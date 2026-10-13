@@ -216,50 +216,108 @@
     };
   };
 
-  // Düz <img> ile çizilir (SVG <image> isteklerinde CDN sıkıştırılmış biçim yerine PNG döndürüyor).
-  // Görseller kartta çizileceği boyutta istenir (ekran yoğunluğu dahil): iPhone'a CDN bu dosyaları PNG gönderiyor
+  // Tuvale (canvas) çizilir: görseller Image ile iner (CDN sıkıştırılmış biçim verir; SVG <image> isteğine PNG
+  // döndürüyor) ve geç çizilen süs katmanı sayfanın LCP ölçümünü etkilemez (canvas LCP adayı değildir).
+  // Görseller kartta çizileceği boyutta istenir: iPhone'a CDN bu dosyaları PNG gönderiyor
   Bolum.prototype.ciz = function (medya, u, s) {
-    var oran = u.gorsel.en / u.gorsel.boy;
+    var W = u.gorsel.en;
+    var H = u.gorsel.boy;
+    var oran = W / H;
     var m = medya.getBoundingClientRect();
     var mw = m.width || 300;
     var mh = m.height || mw;
-    // Süs katmanı: 2x yoğunluk yeterli (3x ekranda görsel boyutu iki katına çıkar, fark edilmez)
+    // Süs katmanı: 2x yoğunluk yeterli
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var sahneEn = Math.min(0.92 * mw, 0.92 * mh * oran);
     var gerekli = function (css, enAz, enCok) { return Math.max(enAz, Math.min(enCok, Math.ceil((css * dpr) / 50) * 50)); };
-    var urunSrc = kucukGorsel(tamAdres(u.gorsel.url), gerekli(sahneEn, 200, 600));
+    var urun = { src: kucukGorsel(tamAdres(u.gorsel.url), gerekli(sahneEn, 200, 600)) };
     var harfler = s.parcalar.map(function (p) {
-      var don = p.aci ? 'transform:rotate(' + p.aci + 'deg);' : '';
-      var src = kucukGorsel(tamAdres(p.src), gerekli((sahneEn * Math.max(p.w, p.h * (u.gorsel.boy / u.gorsel.en))) / 100, 50, 150));
-      return '<img class="kp-ornek__harf" src="' + kacis(src) + '" alt="" decoding="async" style="left:' + p.x + '%;top:' + p.y + '%;width:' + p.w + '%;height:' + p.h + '%;' + don + '">';
-    }).join('');
-    var kat = document.createElement('div');
-    kat.className = 'kp-ornek';
-    kat.setAttribute('aria-hidden', 'true');
-    kat.innerHTML =
-      '<div class="kp-ornek__sahne" style="--kp-oran:' + oran + ';aspect-ratio:' + u.gorsel.en + ' / ' + u.gorsel.boy + '">' +
-      '<img class="kp-ornek__urun" src="' + kacis(urunSrc) + '" alt="" decoding="async">' + harfler + '</div>' +
-      '<span class="kp-ornek__not">Örnek tasarım: ' + kacis(s.isim) + '</span>';
-    // Ürün görseli yüklenince görünür; yüklenemezse kartın normal görseli kalır
-    var on = new Image();
-    on.onload = function () {
+      return { p: p, src: kucukGorsel(tamAdres(p.src), gerekli((sahneEn * Math.max(p.w, p.h / oran)) / 100, 50, 150)) };
+    });
+    var hepsi = [urun].concat(harfler);
+    var kalan = hepsi.length;
+    var hata = false;
+    var bitti = function () {
+      if (--kalan > 0) return;
+      if (hata) return; // yüklenemeyen görsel: kartın normal görseli kalır
+      var cw = Math.max(1, Math.round(sahneEn * dpr));
+      var ch = Math.max(1, Math.round((sahneEn / oran) * dpr));
+      var tuval = document.createElement('canvas');
+      tuval.width = cw;
+      tuval.height = ch;
+      var c = tuval.getContext('2d');
+      if (!c) return;
+      c.imageSmoothingQuality = 'high';
+      c.drawImage(urun.img, 0, 0, cw, ch);
+      harfler.forEach(function (h) {
+        var x = (h.p.x / 100) * cw;
+        var y = (h.p.y / 100) * ch;
+        var w = (h.p.w / 100) * cw;
+        var hh = (h.p.h / 100) * ch;
+        // Kutuya oranı korunarak sığdırılır (editördeki gibi), merkez etrafında döndürülür
+        var k = Math.min(w / h.img.naturalWidth, hh / h.img.naturalHeight);
+        var iw = h.img.naturalWidth * k;
+        var ih = h.img.naturalHeight * k;
+        c.save();
+        c.translate(x + w / 2, y + hh / 2);
+        if (h.p.aci) c.rotate((h.p.aci * Math.PI) / 180);
+        c.drawImage(h.img, -iw / 2, -ih / 2, iw, ih);
+        c.restore();
+      });
+      var kat = document.createElement('div');
+      kat.className = 'kp-ornek';
+      kat.setAttribute('aria-hidden', 'true');
+      var sahne = document.createElement('div');
+      sahne.className = 'kp-ornek__sahne';
+      sahne.style.setProperty('--kp-oran', String(oran));
+      sahne.style.aspectRatio = W + ' / ' + H;
+      sahne.appendChild(tuval);
+      kat.appendChild(sahne);
+      var not = document.createElement('span');
+      not.className = 'kp-ornek__not';
+      not.textContent = 'Örnek tasarım: ' + s.isim;
+      kat.appendChild(not);
       medya.insertBefore(kat, medya.firstChild && medya.firstChild.nextSibling);
       medya.classList.add('kp-ornek-var');
     };
-    on.src = urunSrc;
+    hepsi.forEach(function (x) {
+      x.img = new Image();
+      x.img.decoding = 'async';
+      x.img.onload = bitti;
+      x.img.onerror = function () { hata = true; bitti(); };
+      x.img.src = x.src;
+    });
   };
 
+  // Gerçek örnek fotoğrafı: kartı doldurur (cover); o da tuvale çizilir
   Bolum.prototype.fotoKoy = function (medya, src) {
+    var m = medya.getBoundingClientRect();
+    var mw = m.width || 300;
+    var mh = m.height || mw;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var on = new Image();
+    on.decoding = 'async';
     on.onload = function () {
+      var cw = Math.max(1, Math.round(mw * dpr));
+      var ch = Math.max(1, Math.round(mh * dpr));
+      var tuval = document.createElement('canvas');
+      tuval.width = cw;
+      tuval.height = ch;
+      var c = tuval.getContext('2d');
+      if (!c) return;
+      var k = Math.max(cw / on.naturalWidth, ch / on.naturalHeight);
+      var iw = on.naturalWidth * k;
+      var ih = on.naturalHeight * k;
+      c.imageSmoothingQuality = 'high';
+      c.drawImage(on, (cw - iw) / 2, (ch - ih) / 2, iw, ih);
       var kat = document.createElement('div');
       kat.className = 'kp-ornek kp-ornek--foto';
       kat.setAttribute('aria-hidden', 'true');
-      kat.innerHTML = '<img src="' + kacis(tamAdres(src)) + '" alt="" loading="lazy" decoding="async">';
+      kat.appendChild(tuval);
       medya.insertBefore(kat, medya.firstChild && medya.firstChild.nextSibling);
       medya.classList.add('kp-ornek-var');
     };
-    on.src = tamAdres(src);
+    on.src = kucukGorsel(tamAdres(src), Math.max(300, Math.min(900, Math.ceil((mw * dpr) / 50) * 50)));
   };
 
   function sayfaBosta(f) {

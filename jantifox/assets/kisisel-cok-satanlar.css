@@ -167,21 +167,15 @@
   width: 92%;
   width: min(92cqw, 92cqh * var(--kp-oran, 1));
 }
-.kp-ornek__urun {
+.kp-ornek__sahne canvas {
   display: block;
   width: 100%;
   height: 100%;
 }
-.kp-ornek__harf {
-  position: absolute;
-  max-width: none;
-  object-fit: contain;
-}
-.kp-ornek--foto img {
+.kp-ornek--foto canvas {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
 .kp-ornek__not {
   position: absolute;
