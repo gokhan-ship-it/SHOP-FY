@@ -17,8 +17,8 @@ const izle = () => {
   document.addEventListener('DOMContentLoaded', () => { o.dcl = Date.now(); });
   new PerformanceObserver((l) => l.getEntries().forEach((e) => { if (e.name === 'first-contentful-paint') o.fcp = performance.timeOrigin + e.startTime; })).observe({ type: 'paint', buffered: true });
   const bak = () => {
-    const yuk = document.querySelector('[data-kp-acilis], .kp-acilis');
-    if (yuk && !o.tepki && yuk.getBoundingClientRect().height > 0) o.tepki = Date.now();
+    // Açılış görünümü (theme.liquid head: html.kp-acilis-bekle) ilk boyamada görünür
+    if (!o.tepki && document.documentElement.classList.contains('kp-acilis-bekle') && o.fcp) o.tepki = o.fcp;
     if (window.KisiselEditorIc && !o.kod) o.kod = Date.now();
     const ed = document.querySelector('.kp-editor');
     if (ed && !ed.hidden && !o.acik) o.acik = Date.now();
@@ -27,7 +27,7 @@ const izle = () => {
     const isim = ed && !ed.hidden && ed.querySelector('[data-kp-isim]');
     if (o.acik && o.gorsel && isim && !o.hazir) {
       const b = isim.getBoundingClientRect();
-      if (b.height && b.bottom <= innerHeight + 1 && !(document.querySelector('[data-kp-acilis]') || {}).offsetParent) o.hazir = Date.now();
+      if (b.height && b.bottom <= innerHeight + 1 && !document.documentElement.classList.contains('kp-acilis-bekle')) o.hazir = Date.now();
     }
     if (!o.hazir) requestAnimationFrame(bak);
   };
@@ -54,24 +54,31 @@ for (const cpu of [1, 4]) {
     const buton = s.locator(`[data-kp-cs] .splide__slide:has(a[href*="/products/${handle}"]) .kp-kk-kart-buton`).first();
     await buton.scrollIntoViewIfNeeded();
     await s.waitForTimeout(800);
+    // Tıklamadan sonraki ilk karede butonda yükleniyor görünümü var mı (zaman sessionStorage'a; aynı sekmede kalır)
+    await s.evaluate(() => document.addEventListener('click', () => requestAnimationFrame(() => {
+      const a = document.querySelector('.kp-kk-yukleniyor[aria-busy="true"]');
+      sessionStorage.setItem('kpTepki', a ? String(Date.now()) : '0');
+    }), true));
     await c.clearCookies();
+    // Çerez silinince önizleme teması da unutulur: buton adresine tema numarası eklenir
+    if (tema) await buton.evaluate((a, t) => { a.href = a.href + '&preview_theme_id=' + t; }, tema);
     const tik = Date.now();
     await buton.click({ noWaitAfter: true });
     // Tıklamadan sonra 300 ms içinde ana sayfada görünür tepki var mı
-    const anaTepki = await s.waitForFunction(() => document.querySelector('.kp-kk-kart-buton--yukleniyor, .kp-kk-kart-buton[aria-busy="true"]'), null, { timeout: 1500 }).then(() => Date.now()).catch(() => null);
+    const anaTepki = null; // sayfa değişirken okunamaz: tıklama anındaki tepki sessionStorage'dan okunur
     await s.waitForFunction(() => window.__olc && window.__olc.hazir, null, { timeout: 60000, polling: 100 }).catch(() => {});
     const o = await s.evaluate(() => {
       const r = performance.getEntriesByType('resource');
       const bul = (k) => r.find((x) => x.name.includes(k));
       const nav = performance.getEntriesByType('navigation')[0];
-      const js = bul('kisisel-editor.js'), css = bul('kisisel-editor.css'), img = r.find((x) => /kisisel-urun-.*\.webp|onizleme/.test(x.name));
+      const js = bul('kisisel-editor.js'), css = bul('kisisel-editor.css'), img = r.find((x) => /kisisel-urun-|kisisel-aksesuar-|onizleme/.test(x.name) && x.initiatorType === 'img');
       const T = performance.timeOrigin;
-      return { ...window.__olc, navBas: T, yanit: nav && T + nav.responseStart, htmlBitti: nav && T + nav.responseEnd,
+      return { ...window.__olc, butonTepki: Number(sessionStorage.getItem('kpTepki')) || null, navBas: T, yanit: nav && T + nav.responseStart, htmlBitti: nav && T + nav.responseEnd,
         jsBitti: js && T + js.responseEnd, jsBoyut: js && js.encodedBodySize, jsOnbellek: js && js.transferSize === 0,
         imgBas: img && T + img.startTime, imgBitti: img && T + img.responseEnd, imgBoyut: img && img.encodedBodySize, imgAd: img && img.name.split('?')[0].split('/').pop() };
     });
     const g = (x) => (x ? Math.round(x - tik) : null);
-    sonuclar.push({ cpu, onbellek: i === 1, anaTepki: g(anaTepki), urunSayfasiYanit: g(o.yanit), fcp: g(o.fcp), tepki: g(o.tepki), dcl: g(o.dcl), editorKoduIndi: g(o.jsBitti), editorKoduCalisti: g(o.kod), editorAcildi: g(o.acik), gorselIndi: g(o.imgBitti), gorselGorundu: g(o.gorsel), kullanilabilir: g(o.hazir), uzunIs: o.uzun, uzunIsMs: Math.round(o.uzunToplam), jsKB: o.jsBoyut && Math.round(o.jsBoyut / 1024), gorselKB: o.imgBoyut && Math.round(o.imgBoyut / 1024), gorsel: o.imgAd, shopYonlendirme: yonlendirme });
+    sonuclar.push({ cpu, onbellek: i === 1, butonTepki: g(o.butonTepki), yanittanSonraKullanilabilir: o.hazir && o.yanit ? Math.round(o.hazir - o.yanit) : null, urunSayfasiYanit: g(o.yanit), fcp: g(o.fcp), tepki: g(o.tepki), dcl: g(o.dcl), editorKoduIndi: g(o.jsBitti), editorKoduCalisti: g(o.kod), editorAcildi: g(o.acik), gorselIndi: g(o.imgBitti), gorselGorundu: g(o.gorsel), kullanilabilir: g(o.hazir), uzunIs: o.uzun, uzunIsMs: Math.round(o.uzunToplam), jsKB: o.jsBoyut && Math.round(o.jsBoyut / 1024), gorselKB: o.imgBoyut && Math.round(o.imgBoyut / 1024), gorsel: o.imgAd, shopYonlendirme: yonlendirme });
     await c.close();
   }
 }

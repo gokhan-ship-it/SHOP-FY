@@ -3412,7 +3412,7 @@
       if (this.donusOdagi && this.donusOdagi.focus) this.donusOdagi.focus();
       return;
     }
-    document.documentElement.classList.remove('kp-kilit');
+    document.documentElement.classList.remove('kp-kilit', 'kp-acilis-arka');
     document.body.style.top = '';
     window.scrollTo(0, this.kaydirmaY || 0);
     if (this.donusOdagi && this.donusOdagi.focus) this.donusOdagi.focus();
@@ -7843,11 +7843,14 @@
 
   // Ürün sayfası ?kisisellestir=1 ile açılınca kisisel-kart.liquid ilk boyamada beyaz bir açılış örtüsü gösterir
   // (önizleme yeri yükleniyor görünümünde). Editör ve önizleme görseli hazır olunca kalkar.
+  // Editörün arkasındaki ürün sayfası editör kapanana kadar gizli kalır (kp-acilis-arka): açılışta bütün sayfanın
+  // boyanması (4 kat yavaş işlemcide ~0,6 s) editörü geciktirmez; sayfa editör kapanınca görünür.
   function acilisOrtusuKaldir() {
     var k = document.documentElement;
     if (!k.classList.contains('kp-acilis-bekle')) return;
-    k.classList.add('kp-acilis-bitti');
-    setTimeout(function () { k.classList.remove('kp-acilis-bekle', 'kp-acilis-bitti'); }, 220);
+    var editorAcik = !!document.querySelector('.kp-editor:not([hidden])');
+    if (editorAcik) k.classList.add('kp-acilis-arka');
+    k.classList.remove('kp-acilis-bekle');
   }
 
   // Kayıtlı tasarımı okur, stoğu biten ya da artık olmayan patch'leri ayıklar, kartı günceller
@@ -8199,6 +8202,7 @@
 
   // "Sepete git": sepet çekmecesini güncel içerikle açar; çekmece yoksa sepet sayfasına gider
   KisiselKart.prototype.sepetiAc = function () {
+    document.documentElement.classList.remove('kp-acilis-arka'); // sepet çekmecesi sayfanın içinde: görünür olmalı
     var cizim = document.querySelector('cart-drawer');
     var rotalar = window.routes || {};
     if (!cizim || typeof cizim.renderContents !== 'function') {
