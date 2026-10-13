@@ -107,7 +107,8 @@
     if (tik && tik.tepki) ekle('Buton tepkisi (ilk kare)', tik.tepki);
     if (tik) ekle('Sayfa isteği başladı', koken);
     if (n) {
-      var yon = n.redirectCount ? n.redirectCount + ' adet' : 'yok';
+      // Başka alan adına giden yönlendirmeleri (ör. shop.app) tarayıcı saymaz; yalnızca araya giren süre görünür
+      var yon = n.redirectCount ? n.redirectCount + ' adet' : n.fetchStart > 100 ? 'sayı gizli, başka alan adı olabilir' : 'yok';
       ekle('Yönlendirmeler bitti (' + yon + ')', koken + n.fetchStart);
       ekle('HTML ilk bayt', koken + n.responseStart);
       ekle('HTML indi' + (n.transferSize ? ' (' + kb(n.transferSize) + ', açık ' + kb(n.decodedBodySize) + ')' : ''), koken + n.responseEnd);
