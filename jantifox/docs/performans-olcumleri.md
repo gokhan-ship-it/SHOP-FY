@@ -176,3 +176,37 @@ uzun karelerde bizim betiğin payı ~15 ms. Kalan 50 ms'lik işler ve kare kayı
 betiklerinden (vendor-*.js, web pixel'leri, temanın görünme animasyonları). Bu ortamda (Chromium) kare hızı 60'a ulaşmadı;
 iPhone Safari'de büyük PNG'lerin çözülmesi ve tuval çizimi ana iş parçacığında olduğu için kazancın orada daha büyük olması
 beklenir (gerçek cihazda ölçülmedi).
+
+## 2026-10-13: Çok satanlar giriş animasyonları
+
+iPhone 13 profili, kopya tema, `test/performans/cok-satanlar-kaydirma.mjs` (sayfanın üstünden bölüme parmakla kaydırma,
+kaydırıcıda sürükleme). "İlk": önbelleksiz ilk ziyaret, "tekrar": aynı sayfanın ikinci yüklenişi. Önce → sonra.
+
+| CPU | Ziyaret | FPS | 33 ms'den uzun kare | En uzun kare (ms) | 50 ms+ iş (adet, toplam ms) |
+|---|---|---|---|---|---|
+| 1× | ilk | 55 → 60 | 4 → 0 | 183 → 17 | 1 (119) → 0 |
+| 1× | tekrar | 55 → 60 | 4 → 1 | 250 → 33 | 2 (417) → 0 |
+| 4× | ilk | 53 → 58 | 17 → 9 | 217 → 33 | 1 (55) → 0 |
+| 4× | tekrar | 51 → 58 | 29 → 11 | 183 → 50 | 0 → 1 (53) |
+
+Kategori sayfası `/collections/all` (aynı tema efekti 12 kartta; yalnızca ölçüldü, değiştirilmedi;
+`test/performans/kategori-kaydirma.mjs`, efektli / efektsiz):
+
+| CPU | FPS | 33 ms'den uzun kare | En uzun kare (ms) | 50 ms+ iş (ms) |
+|---|---|---|---|---|
+| 1× | 59 / 59 | — | 117 / 100 | ~100 / ~100 (1 adet) |
+| 4× | 58 / 58 | 6–7 / 5–6 | 133–167 / 100–117 | 114–150 / 98–99 |
+
+## 2026-10-13: Patch görselleri PNG kaynaklı
+
+iPhone 13 kullanıcı ajanı, kopya tema, Bej Tişört editörü, "atlase" (6 harf) + 2 ikon;
+`node test/performans/editor-gorsel-boyut.mjs 207022653726 bej-tshirt`. İndirilen görsel boyutu (aktarılan bayt).
+
+| Grup | Önce (WebP kaynak → iPhone'a PNG) | Sonra (PNG kaynak → AVIF / WebP) |
+|---|---|---|
+| Harf (8 dosya) | 425 KB, PNG | 89 KB, AVIF |
+| İkon (74 dosya: panel küçük resimleri + eklenen 2) | 5309 KB, PNG | 1042 KB, 68 AVIF + 6 WebP |
+| Ürün önizlemesi | 23 KB, WebP | 23 KB, WebP |
+| **Kişiselleştirme görselleri toplam** | **5757 KB** | **1154 KB (−80 %)** |
+| Tema / ürün fotoğrafları (değişmedi) | 1329 KB | 1329 KB |
+| Sayfadaki bütün görseller | 7086 KB | 2483 KB |
