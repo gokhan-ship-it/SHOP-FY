@@ -50,7 +50,9 @@ for (const tur of ['ilk', 'tekrar']) {
   }
   await s.waitForTimeout(400);
   const k = await s.evaluate(() => { const r = document.querySelector('[data-kp-cs] .splide__track').getBoundingClientRect(); return { x: r.left + r.width * 0.8, y: r.top + r.height * 0.35 }; });
-  const indeks0 = await s.evaluate(() => { const sp = document.querySelector('[data-kp-cs] splide-carousel'); return sp && sp.slideInstance ? sp.slideInstance.index : null; });
+  // Kaydırıcı konumu: Splide açıksa slayt sırası, kapalıysa (mobil yerel kaydırma) listenin kaydırma miktarı (px)
+  const konum = () => s.evaluate(() => { const l = document.querySelector('[data-kp-cs] .splide__list'); const sp = document.querySelector('[data-kp-cs] splide-carousel'); return getComputedStyle(l).overflowX === 'auto' ? 'px ' + Math.round(l.scrollLeft) : sp && sp.slideInstance ? 'slayt ' + sp.slideInstance.index : null; });
+  const indeks0 = await konum();
   // Parmakla sürükleme: dokunma başlangıcı, ~16 ms arayla 14 hareket (240 px sola), bırakma
   for (let i = 0; i < 3; i++) {
     const x0 = Math.round(k.x), y0 = Math.round(k.y);
@@ -62,7 +64,7 @@ for (const tur of ['ilk', 'tekrar']) {
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     await s.waitForTimeout(600);
   }
-  const indeks1 = await s.evaluate(() => { const sp = document.querySelector('[data-kp-cs] splide-carousel'); return sp && sp.slideInstance ? sp.slideInstance.index : null; });
+  const indeks1 = await konum();
   await cdp.send('Input.synthesizeScrollGesture', { x: 190, y: 560, yDistance: -700, speed: 1500, gestureSourceType: 'touch' }).catch(() => {});
   await s.waitForTimeout(800);
   const ornek = await s.evaluate(() => document.querySelectorAll('[data-kp-cs] .kp-ornek').length);

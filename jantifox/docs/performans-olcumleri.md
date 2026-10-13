@@ -125,3 +125,54 @@ Saf hesap (Node, yavaşlatmasız, 20 tekrar ortalaması):
 - sıralı aday listesi bir kez hesaplanıyor.
 
 Kapasite hesabı 300 ms'den 15 ms'ye indi; sonuç aynı (8 harf). Yer aramada da, parçanın kutusu hiçbir uygun alanın kutusuna sığmayan adaylar baştan eleniyor (iki alanlı üründe ortak kutudaki boşluk).
+
+## 2026-10-13: editör açılışı ve Çok satanlar kaydırma
+
+Ortam: Playwright Chromium, iPhone 13 profili (390 × 664, iPhone Safari kimliği), CPU normal ve 4 kat yavaş. "Önce" canlı
+temada, "sonra" kopya temada (207022653726, önizleme). Önizleme sayfaları Shopify'ın sayfa önbelleğinden gelmediği için
+ilk yanıt 0,4–1,9 s (canlıda 0,2–0,3 s); karşılaştırma bu yüzden "sayfa yanıtından sonra" süreyle de verildi.
+Ana sayfa → ürün geçişinde Shopify'ın shop.app yönlendirmesi bu ortamda engelli: ölçümde çerezler silinir (gerçek
+telefonda bu yönlendirme ayrıca bir gidiş-dönüş ekler).
+
+### Editör açılış düzeni (her ürün `?kisisellestir=1`, 4 s sonra)
+
+| Ürün | Önce (mobil) | Sonra (mobil) | Önce (masaüstü) | Sonra (masaüstü) |
+|---|---|---|---|---|
+| Mavi Beyaz Spor Çanta | 316 × 654 (%98), yazı alanı ekran dışı, 1,16× | 316 × 299 (%45), yazı alanı görünür, alana 2,1× | 324 × 670, 1,16× | 779 × 670, alana 2,0× |
+| Pembe Kırmızı Spor Çanta | 316 × 427 (%64) | 316 × 299 (%45) | 495 × 670 | 779 × 670 |
+| 5 sırt çantası | 316 × 365–390 (%55–59), yakınlaşma yok (1,0×) | 316 × 299 (%45), üst panele yakın | 542–580 × 670, 1,0× | 779 × 670, üst panele yakın |
+| Tişört, sweatshirt, tote | %38–48 | %38–45 (değişmedi) | değişmedi | sweatshirt / tote pencere tam genişlikte |
+| Kalem kutuları, şapkalar | %26–40, alan görselin ~%80–95'i (1,0×) | aynı | aynı | aynı |
+
+Sonra: 23 üründe de önizleme ekranın en fazla %45'i, yazı alanı ilk ekranda, görsel PNG kaynaklı kopyadan.
+
+### "Kişiselleştir" basışından editörün kullanılabilir olmasına (Mavi Beyaz Spor Çanta, ms)
+
+| Ölçüm | Önce CPU 1× boş / dolu önbellek | Sonra CPU 1× boş / dolu | Önce CPU 4× boş / dolu | Sonra CPU 4× boş / dolu |
+|---|---|---|---|---|
+| Butonda tepki | yok | 47 / 53 | yok | 109 / 123 |
+| Ürün sayfası yanıtı | 294 / 212 | 860 / 378 (önizleme) | 168 / 175 | 980 / 409 (önizleme) |
+| İlk görünür tepki (açılış görünümü) | yok (ürün sayfası görünür) | 1215 / 748 | yok | 1357 / 922 |
+| Editör kodu çalıştı | 2042 / 731 | 1428 / 877 | 3123 / 2393 | 2266 / 1581 |
+| Önizleme görseli (iPhone'a) | 1190 KB PNG | 149 KB | 1190 KB | 149 KB |
+| Kullanılabilir (yazı alanı görünür, görsel çizildi) | hiç (yazı alanı ekran dışı) | 1705 / 1151 | hiç | 2492 / 1852 |
+| Sayfa yanıtından sonra kullanılabilir | — | 845 / 773 | — (açılışa kadar 2955 / 2218) | 1512 / 1443 |
+
+Canlıdaki yanıt süresiyle (~0,2 s) tahmini toplam: CPU 1× ~1,0 s, CPU 4× ~1,7 s.
+
+### Çok satanlar kaydırma (iPhone 13; sayfanın üstünden bölüme parmakla, kaydırıcıda 3 sürükleme, aşağı devam)
+
+| Ölçüm | Önce CPU 4× | Sonra CPU 4× | Önce CPU 1× | Sonra CPU 1× |
+|---|---|---|---|---|
+| Kare / saniye | 52–54 | 50–52 | 58 | 55–56 |
+| 33 ms'den uzun kare | 10–17 | 20–30 | 2–3 | 4–5 |
+| En uzun kare | 300–600 ms | 183–200 ms | 150–167 ms | 183–200 ms |
+| 50 ms'den uzun iş (toplam) | 3–4 (504–850 ms) | 0–1 (0–65 ms) | 2 (237–263 ms) | 1–2 (135–234 ms) |
+| Örnek tasarım çizilen kart | 7 / 8 | 8 / 8 | 7 / 8 | 8 / 8 |
+| Kişiselleştirme görselleri (iPhone'a) | 1468 KB | 422 KB | 1468 KB | 422 KB |
+
+İz özeti (4×): görünürlük gözlemcileri 747–771 → 432–471 ms, katman aktarımı 1,2 → 0,95–1,07 s (kare başına ~1,4 ms),
+uzun karelerde bizim betiğin payı ~15 ms. Kalan 50 ms'lik işler ve kare kayıpları iki durumda da aynı olan Shopify / tema
+betiklerinden (vendor-*.js, web pixel'leri, temanın görünme animasyonları). Bu ortamda (Chromium) kare hızı 60'a ulaşmadı;
+iPhone Safari'de büyük PNG'lerin çözülmesi ve tuval çizimi ana iş parçacığında olduğu için kazancın orada daha büyük olması
+beklenir (gerçek cihazda ölçülmedi).
