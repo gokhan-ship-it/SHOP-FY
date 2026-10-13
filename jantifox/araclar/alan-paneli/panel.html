@@ -398,7 +398,11 @@
         // Açılı çekimde görünen genişlik derinliğe yaklaşabilir: alt sınır en küçük boyuttan
         var alt = Math.min.apply(null, boyutlar) * 0.8, ust = Math.max.apply(null, boyutlar) * 2.5;
         if (enCm < alt || enCm > ust) r.hatalar.push('Ölçek şüpheli: görsel ' + yuvarla(enCm) + ' cm genişliğe denk geliyor, ürün ' + boyutlar.join(' × ') + ' cm.');
-      } else if (enCm < 25 || enCm > 130) r.hatalar.push('Ölçek şüpheli: görsel ' + yuvarla(enCm) + ' cm genişliğe denk geliyor.');
+      } else {
+        // Ürün ölçüsü yoksa genel aralık: çanta / kıyafet görseli 25–130 cm; şapka önden 15–30 cm (siperlik dahil ~20 cm)
+        var aralik = /Şapka/.test(g.ad) ? [15, 30] : [25, 130];
+        if (enCm < aralik[0] || enCm > aralik[1]) r.hatalar.push('Ölçek şüpheli: görsel ' + yuvarla(enCm) + ' cm genişliğe denk geliyor (beklenen ' + aralik[0] + '–' + aralik[1] + ' cm).');
+      }
       o.tumu.slice(1).forEach(function (x) {
         var f = Math.abs(x.pxCm - o.pxCm) / o.pxCm;
         if (f > 0.03) r.uyarilar.push('"' + x.sekil.ad + '" alanının girilen ölçüsü ölçekle %' + Math.round(f * 100) + ' çelişiyor.');
