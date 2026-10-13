@@ -2765,14 +2765,26 @@
       ? '<div class="kp-gorunum" style="aspect-ratio:' + g.en + ' / ' + g.boy + '">' + sahneHtml + '</div>'
       : sahneHtml;
     this.gorunum = this.kok.querySelector('.kp-gorunum');
+    this.boyutGozlemci = null;
+    this.boyutIzle();
     this.sahne = this.kok.querySelector('.kp-sahne');
+    // Ürün görseli gelene kadar pencerede hafif yükleniyor görünümü
+    var urunImg = this.sahne.querySelector('.kp-sahne__urun');
+    if (this.gorunum && urunImg && !(urunImg.complete && urunImg.naturalWidth)) {
+      var gor = this.gorunum;
+      gor.classList.add('kp-gorunum--yukleniyor');
+      var bitti = function () { gor.classList.remove('kp-gorunum--yukleniyor'); };
+      urunImg.addEventListener('load', bitti, { once: true });
+      urunImg.addEventListener('error', bitti, { once: true });
+    }
     this.katman = this.kok.querySelector('.kp-sahne__parcalar');
     this.secimEl = this.kok.querySelector('.kp-cerceve');
   };
 
   // Yakın görünüm ölçeği ve kaydırması (pencerenin yüzdesi olarak): takılabilir alan(lar) ~%80.
   // alt: pencerenin altında örtülü kısım (0–1, kenar şeridi); alan kalan bölgeye ortalanır.
-  function yakinGorunum(m, alt) {
+  // Görselle aynı oranlı kutular (kart ve sepet önizlemesi): bütün alanlar kutunun ~%80'ini kaplar
+  function yakinGorunumOran(m, alt) {
     alt = alt || 0;
     var olcek = 1;
     var sol = 0;
@@ -2798,23 +2810,84 @@
     return { olcek: olcek, sol: sol, ust: ust };
   }
 
-  // Yakın görünüm: takılabilir alan(lar) pencere genişliğinin ~%80'ini kaplar.
+  // Görünüm penceresi (W × H px) içinde sahnenin (ürün görseli, oranı r = en / boy) yeri.
+  // Pencerenin oranı görselden farklı olabilir (mobilde önizleme ekran yüksekliğiyle sınırlı): tüm ürün pencereye sığar ve
+  // ortalanır; yakın görünümde takılabilir alan pencerenin ~%80'ini kaplar. Birden çok alan varsa en büyüğüne yakınlaşılır
+  // (yazı otomatik olarak önce oraya yerleşir; diğerleri "Tüm ürünü gör" ile görünür).
+  // Dönüş: sahnenin genişliği (pencere genişliğinin oranı), sol ve üst (pencere genişliği / yüksekliğine göre %).
+  function yakinGorunum(m, alt, W, H, yakin) {
+    alt = alt || 0;
+    var r = m.gorsel.en / m.gorsel.boy;
+    var S0 = Math.min(W, H * r); // tüm ürün pencereye sığar
+    var S = S0;
+    var cx = 0.5;
+    var cy = 0.5;
+    if (yakin && m.alanlar.length) {
+      var alanlar = m.alanlar.slice();
+      if (alanlar.length > 1) {
+        alanlar.sort(function (p, q) { var a = kutu(p.sekil), b = kutu(q.sekil); return b.w * b.h - a.w * a.h; });
+        alanlar = alanlar.slice(0, 1);
+      }
+      var x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+      alanlar.forEach(function (a) {
+        var k = kutu(a.sekil);
+        x1 = Math.min(x1, k.x);
+        y1 = Math.min(y1, k.y);
+        x2 = Math.max(x2, k.x + k.w);
+        y2 = Math.max(y2, k.y + k.h);
+      });
+      var dx = (x2 - x1) / m.Wcm;
+      var dy = (y2 - y1) / m.Hcm;
+      S = Math.max(S0, Math.min((0.8 * W) / dx, (0.8 * H * (1 - alt) * r) / dy));
+      cx = (x1 + x2) / 2 / m.Wcm;
+      cy = (y1 + y2) / 2 / m.Hcm;
+    }
+    var Hs = S / r;
+    // Alan merkezi pencerenin (örtülü alt kısım hariç) ortasına; görsel pencereden büyükse kenar boşluk bırakmaz,
+    // küçükse ortalanır
+    var sol = S > W ? Math.min(0, Math.max(W - S, W / 2 - cx * S)) : (W - S) / 2;
+    var ust = Hs > H ? Math.min(0, Math.max(H - Hs, (H * (1 - alt)) / 2 - cy * Hs)) : (H - Hs) / 2;
+    return { olcek: S / S0, genislik: (S / W) * 100, sol: (sol / W) * 100, ust: (ust / H) * 100 };
+  }
+
   Sahne.prototype.gorunumAyarla = function (yakin) {
     if (!this.gorunum) return;
-    var yukseklik = this.gorunum.getBoundingClientRect().height;
-    var alt = this.altBosluk && yukseklik ? Math.min(0.4, this.altBosluk / yukseklik) : 0;
-    var y = yakin ? yakinGorunum(this.m, alt) : { olcek: 1, sol: 0, ust: 0 };
-    var olcek = y.olcek;
-    var sol = y.sol;
-    var ust = y.ust;
-    this.yakin = !!yakin && olcek > 1;
-    if (yakin) this.yakinlasabilir = olcek > 1.01;
-    this.sahne.style.width = olcek * 100 + '%';
-    this.sahne.style.left = sol + '%';
-    this.sahne.style.top = ust + '%';
+    var g = this.gorunum.getBoundingClientRect();
+    this.istenenYakin = !!yakin;
+    if (!g.width || !g.height) {
+      // Pencere henüz yerleşmedi (editör gizli): boyut gelince ResizeObserver yeniden hesaplar
+      this.yakin = !!yakin;
+      return;
+    }
+    var alt = this.altBosluk ? Math.min(0.4, this.altBosluk / g.height) : 0;
+    var y = yakinGorunum(this.m, alt, g.width, g.height, yakin);
+    this.yakin = !!yakin && y.olcek > 1.01;
+    if (yakin) this.yakinlasabilir = y.olcek > 1.01;
+    this.sahne.style.width = y.genislik + '%';
+    this.sahne.style.left = y.sol + '%';
+    this.sahne.style.top = y.ust + '%';
+    this.boyut = g.width + 'x' + g.height;
     var img = this.sahne.querySelector('.kp-sahne__urun');
-    var genislik = this.gorunum.getBoundingClientRect().width;
-    if (img && genislik) img.sizes = Math.ceil(genislik * olcek) + 'px';
+    if (img) img.sizes = Math.ceil((g.width * y.genislik) / 100) + 'px';
+  };
+
+  // Pencerenin boyutu değişince (küçülen önizleme, klavye, ekran döndürme) yer yeniden hesaplanır: pencere oranı
+  // görselden farklı olabildiği için yüzdeler boyuta bağlıdır
+  Sahne.prototype.boyutIzle = function () {
+    if (!this.gorunum || !window.ResizeObserver || this.boyutGozlemci) return;
+    var self = this;
+    var bekliyor = false;
+    this.boyutGozlemci = new ResizeObserver(function () {
+      if (bekliyor) return;
+      bekliyor = true;
+      requestAnimationFrame(function () {
+        bekliyor = false;
+        var g = self.gorunum.getBoundingClientRect();
+        if (!g.width || !g.height || g.width + 'x' + g.height === self.boyut) return;
+        self.gorunumAyarla(self.istenenYakin);
+      });
+    });
+    this.boyutGozlemci.observe(this.gorunum);
   };
 
   // Parça, döndürülmemiş ölçüsüyle merkezine yerleşir; açı CSS ile verilir
@@ -3248,7 +3321,8 @@
       document.body.style.top = -this.kaydirmaY + 'px';
     }
     this.el.hidden = false;
-    this.sahne.gorunumAyarla(!(secenek && secenek.yakin === false));
+    // Açılışta her zaman takılabilir alana yakın (kayıtlı görünüm tercihi açılışta kullanılmaz)
+    this.sahne.gorunumAyarla(true);
     this.adimaGit(adim || 'yazi', true);
     this.yenile();
     var self = this;
@@ -4711,6 +4785,26 @@
   };
 
   /* ---------------- Yenileme ---------------- */
+
+  // Önizleme görseli yüklenip çözülünce (en geç ms sonra) tamamlanır
+  Editor.prototype.gorselHazir = function (ms) {
+    var img = this.el && this.el.querySelector('.kp-sahne__urun');
+    return new Promise(function (bitir) {
+      if (!img) return bitir();
+      var sure = setTimeout(bitir, ms || 2500);
+      var tamam = function () {
+        clearTimeout(sure);
+        bitir();
+      };
+      var coz = function () {
+        if (img.decode) img.decode().then(tamam, tamam);
+        else tamam();
+      };
+      if (img.complete && img.naturalWidth) return coz();
+      img.addEventListener('load', coz, { once: true });
+      img.addEventListener('error', tamam, { once: true });
+    });
+  };
 
   Editor.prototype.yenile = function () {
     if (!this.el || this.el.hidden) return;
@@ -6903,7 +6997,7 @@
   function miniSahneKur(kok, m, yer) {
     kok.style.aspectRatio = m.gorsel.en + ' / ' + m.gorsel.boy;
     var sahne = new Sahne(m, yer, kok, { etkilesimli: false });
-    var y = yakinGorunum(m);
+    var y = yakinGorunumOran(m);
     sahne.sahne.style.position = 'absolute';
     sahne.sahne.style.width = y.olcek * 100 + '%';
     sahne.sahne.style.left = y.sol + '%';
@@ -6954,7 +7048,7 @@
         z: Date.now(),
         g: m.gorsel.kucuk,
         o: m.gorsel.en / m.gorsel.boy,
-        y: yakinGorunum(m),
+        y: yakinGorunumOran(m),
         p: parcalar.filter(function (p) { return !p.kenar; }).reduce(function (l, p) { return l.concat(p.tip === 'aksesuar' ? aksesuarDunyaParcalari(m, p) : [p]); }, []).map(function (p) {
           var st = parcaStili(m, p);
           return { u: p.varyant && p.varyant.gorsel, l: st.left, t: st.top, w: st.width, h: st.height, r: st.transform, d: p.sekil.t === 'circle', j: !!(p.varyant && !p.varyant.png) };
@@ -7628,6 +7722,7 @@
     } catch (e) {
       // Herhangi bir hata: kart gizli kalır, sayfa bugünkü gibi çalışır
       this.hidden = true;
+      acilisOrtusuKaldir();
       if (window.console) console.warn('[kisisel] başlatılamadı:', e);
     }
   };
@@ -7644,13 +7739,18 @@
     this.editor = new Editor(this);
 
     var self = this;
-    // Kampanya kuralları sayfa açılırken arka planda öğrenilir (saklanır); editörde fiyat anında hesaplanır
-    kurallariOgren(this.model).then(function () {
-      if (!bosMu(self.tasarim)) {
-        self.kartKampanyaAnahtari = null;
-        self.guncelle();
-      }
-    }, function () {});
+    // Kampanya kuralları arka planda öğrenilir (saklanır); editörde fiyat anında hesaplanır. Editör adresten açılıyorsa
+    // önce editör ve önizleme görseli hazırlanır, istek sonra atılır (ağ ve işlemciyi görselle paylaşmasın)
+    var kurallar = function () {
+      kurallariOgren(self.model).then(function () {
+        if (!bosMu(self.tasarim)) {
+          self.kartKampanyaAnahtari = null;
+          self.guncelle();
+        }
+      }, function () {});
+    };
+    if (/[?&]kisisellestir=/.test(window.location.search)) this.hazirOlunca = kurallar;
+    else kurallar();
     // "Kişiselleştirmeye başla" ve taslakta "Devam et": kaldığı araç ve yakınlaştırmayla açılır
     this.querySelectorAll('[data-kisisel-ac]').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -7684,13 +7784,19 @@
       if (sil) return self.sepettenSil(parseInt(sil.getAttribute('data-kisisel-sepet-sil'), 10));
     });
     // Sepet her değiştiğinde kart durumu yeniden belirlenir
-    try {
-      if (typeof subscribe === 'function' && typeof PUB_SUB_EVENTS !== 'undefined') {
-        subscribe(PUB_SUB_EVENTS.cartUpdate, function () { self.sepetOku(); });
+    // Editör artık kart sayfaya gelir gelmez başlıyor (async); temanın pubsub'ı daha yüklenmemiş olabilir
+    var abone = function () {
+      try {
+        if (typeof subscribe === 'function' && typeof PUB_SUB_EVENTS !== 'undefined') {
+          subscribe(PUB_SUB_EVENTS.cartUpdate, function () { self.sepetOku(); });
+          return true;
+        }
+      } catch (e) {
+        /* tema pubsub yoksa */
       }
-    } catch (e) {
-      /* tema pubsub yoksa */
-    }
+      return false;
+    };
+    if (!abone() && document.readyState === 'loading') document.addEventListener('DOMContentLoaded', abone, { once: true });
     document.addEventListener('kisisel:sepet-degisti', function () { self.sepetOku(); });
     window.addEventListener('pageshow', function () { self.sepetOku(); });
     window.addEventListener('resize', function () { self.butonlariGuncelle(); });
@@ -7723,8 +7829,26 @@
       /* yoksay */
     }
     var bilgi = !bosMu(this.tasarim) && this.taslakBilgi;
-    this.editor.ac(bilgi && bilgi.arac ? bilgi.arac : bosMu(this.tasarim) ? 'yazi' : 'ikon', bilgi ? { yakin: bilgi.yakin } : null);
+    this.editor.ac(bilgi && bilgi.arac ? bilgi.arac : bosMu(this.tasarim) ? 'yazi' : 'ikon');
+    var self = this;
+    this.editor.gorselHazir(2500).then(function () {
+      acilisOrtusuKaldir();
+      if (self.hazirOlunca) {
+        var f = self.hazirOlunca;
+        self.hazirOlunca = null;
+        (window.requestIdleCallback || setTimeout)(f, { timeout: 1500 });
+      }
+    });
   };
+
+  // Ürün sayfası ?kisisellestir=1 ile açılınca kisisel-kart.liquid ilk boyamada beyaz bir açılış örtüsü gösterir
+  // (önizleme yeri yükleniyor görünümünde). Editör ve önizleme görseli hazır olunca kalkar.
+  function acilisOrtusuKaldir() {
+    var k = document.documentElement;
+    if (!k.classList.contains('kp-acilis-bekle')) return;
+    k.classList.add('kp-acilis-bitti');
+    setTimeout(function () { k.classList.remove('kp-acilis-bekle', 'kp-acilis-bitti'); }, 220);
+  }
 
   // Kayıtlı tasarımı okur, stoğu biten ya da artık olmayan patch'leri ayıklar, kartı günceller
   KisiselKart.prototype.kayitOku = function () {
@@ -8628,7 +8752,16 @@
       .catch(function () {});
   };
 
-  customElements.define('kisisel-kart', KisiselKart);
+  // Betik async yüklenir: kart (ve içindeki düğmeler) ayrıştırılmadan tanımlanırsa yarım kartla başlar. Kartın hemen
+  // arkasındaki işaret (kisisel-kart.liquid: data-kisisel-kart-son) görülünce ya da sayfa ayrıştırılınca tanımlanır.
+  function kartiTanimla() {
+    if (!customElements.get('kisisel-kart')) customElements.define('kisisel-kart', KisiselKart);
+  }
+  if (typeof document === 'undefined' || document.readyState !== 'loading' || document.querySelector('[data-kisisel-kart-son]')) kartiTanimla();
+  else {
+    document.addEventListener('kisisel:kart-son', kartiTanimla, { once: true });
+    document.addEventListener('DOMContentLoaded', kartiTanimla, { once: true });
+  }
 
   // Test ve hata ayıklama için iç fonksiyonlar
   // Ana sayfa "Çok satanlar" kartları: ürünün önizleme görseli üzerine örnek isim (Cool Alfabe). Sırayla denenir; tüm

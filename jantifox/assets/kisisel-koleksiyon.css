@@ -190,65 +190,43 @@
   }
 }
 
-/* Filtre düğmesi */
+/* Filtre düğmesi: temanın kendi buton sınıfları (btn btn-outline / btn btn-primary) — yükseklik, kenarlık, köşe ve yazı
+   temanın "Filtreler ve sıralama" butonuyla aynı. Burada yalnızca içerik hizası ve dar ekran sığdırması. */
 .kp-kk-filtre {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  flex: none;
-  min-height: 4rem;
-  padding: 0 1.4rem;
-  border: 1px solid #d0d0d0;
-  border-radius: 999px;
-  background: #fff;
-  color: #111;
-  font: inherit;
-  font-size: 1.3rem;
-  font-weight: 600;
-  line-height: 1.2;
+  justify-content: center;
+  gap: 0.6rem;
   white-space: nowrap;
   cursor: pointer;
 }
-.kp-kk-filtre > span {
-  color: #b3141b;
+.kp-kk-filtre__ikon {
+  font-size: 0.85em;
+  line-height: 1;
 }
-.kp-kk-filtre:hover {
-  border-color: #111;
+/* Metin tek satıra sığmıyorsa (JS ölçer): yalnızca bu düğmede yan boşluk ve harf aralığı azalır */
+.kp-kk-filtre.kp-kk-filtre--sik {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  letter-spacing: 0;
 }
-.kp-kk-filtre[aria-pressed='true'] {
-  border-color: #111;
-  background: #111;
-  color: #fff;
-}
-.kp-kk-filtre[aria-pressed='true'] > span {
-  color: #fff;
-}
+/* Masaüstü: sıralama kutusunun solunda; yüksekliği JS sıralama kutusundan alır */
 .facet-filters.sorting .kp-kk-filtre--masaustu {
+  flex: none;
+  min-height: 0;
   margin-left: auto;
+  padding-top: 0;
+  padding-bottom: 0;
 }
-
-/* Mobil: "Filtrele ve sırala" ile yan yana, satır yatay kaydırılır */
-@media screen and (max-width: 1023px) {
-  .kp-kk-satir {
-    flex-wrap: nowrap !important;
-    justify-content: flex-start !important;
-    gap: 0.8rem;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .kp-kk-satir::-webkit-scrollbar {
-    display: none;
-  }
-  .kp-kk-satir > * {
-    flex: none !important;
-  }
-  .kp-kk-satir > drawer-button {
-    width: auto !important;
-  }
+/* Mobil: "Filtreler ve sıralama" satırının altında, kendi satırında, tam genişlikte */
+.kp-kk-filtre-satir {
+  width: 100%;
+}
+.kp-kk-filtre--mobil {
+  width: 100%;
 }
 @media screen and (min-width: 1024px) {
-  .kp-kk-filtre--mobil {
+  .kp-kk-filtre-satir {
     display: none;
   }
 }
@@ -315,4 +293,30 @@
 }
 .kp-kk-bildirim__baglanti:hover {
   color: #fff;
+}
+
+/* "Kişiselleştir" basılınca: ürün sayfası ve editör gelene kadar butonda dönen gösterge (yalnızca transform) */
+.kp-kk-yukleniyor {
+  position: relative;
+  pointer-events: none;
+}
+.kp-kk-yukleniyor::after {
+  content: '';
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-left: 0.8rem;
+  flex: none;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .kp-kk-yukleniyor::after {
+    animation: kp-kk-don 0.7s linear infinite;
+  }
+}
+@keyframes kp-kk-don {
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -18,6 +18,11 @@
 -%}
 {%- if kisisel_aktif -%}
   {{ 'kisisel-editor.css' | asset_url | stylesheet_tag }}
+  {%- comment -%}
+    Editör betiği erken ve async yüklenir; kart ayrıştırılınca (aşağıdaki data-kisisel-kart-son) başlar, sayfanın geri
+    kalanını beklemez. "Kişiselleştir" ile gelindiyse açılış görünümü layout/theme.liquid'in head'inden gelir.
+  {%- endcomment -%}
+  <script src="{{ 'kisisel-editor.js' | asset_url }}" async></script>
   {%- render 'kisisel-veri', product: product, katalog: katalog, section_id: section.id -%}
 
   <kisisel-kart
@@ -93,6 +98,5 @@
       <span data-kisisel-sepete-yazi>Tasarımımı sepete ekle</span>
     </button>
   </kisisel-kart>
-
-  <script src="{{ 'kisisel-editor.js' | asset_url }}" defer="defer"></script>
+  <script data-kisisel-kart-son>document.dispatchEvent(new Event('kisisel:kart-son'));</script>
 {%- endif -%}

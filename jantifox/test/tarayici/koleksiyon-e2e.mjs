@@ -107,7 +107,9 @@ const gorunur = (s, q) => s.locator(q).evaluateAll((els) => els.map((e) => !!(e.
 
   // Filtre düğmesi sıralamanın yanında
   const filtre = s.locator('.facet-filters.sorting [data-kp-kk-filtre]');
-  assert.equal((await filtre.textContent()).trim(), '✎ Sadece kişiselleştirilebilenler');
+  assert.equal((await filtre.textContent()).replace(/\s+/g, ' ').trim(), '✎Sadece kişiselleştirilebilenler');
+  // Temanın kendi buton sınıfları: kapalıyken çizgili
+  assert.deepEqual(await filtre.evaluate((e) => [e.classList.contains('btn'), e.classList.contains('btn-outline'), e.classList.contains('btn-primary')]), [true, true, false]);
   assert.equal(await filtre.evaluate((e) => e.nextElementSibling.className), 'facet-filters__field');
   assert.deepEqual(await gorunur(s, '.kp-kk-filtre--mobil'), [false]);
 
@@ -138,7 +140,8 @@ const gorunur = (s, q) => s.locator(q).evaluateAll((els) => els.map((e) => !!(e.
   // Filtre: yalnızca açık ürünler; başka sayfadaki The Gamer şablondan eklenir; sayfa numaraları gizli; koyu zemin
   await filtre.click();
   assert.equal(await s.locator('.facet-filters.sorting [data-kp-kk-filtre]').getAttribute('aria-pressed'), 'true');
-  assert.equal(await s.locator('.facet-filters.sorting [data-kp-kk-filtre]').evaluate((e) => getComputedStyle(e).backgroundColor), 'rgb(17, 17, 17)');
+  // Açıkken dolu (temanın btn-primary'si)
+  assert.deepEqual(await s.locator('.facet-filters.sorting [data-kp-kk-filtre]').evaluate((e) => [e.classList.contains('btn-outline'), e.classList.contains('btn-primary')]), [false, true]);
   const gorunenler = () => s.locator('#product-grid > li').evaluateAll((l) => l.filter((x) => x.offsetHeight).map((x) => x.getAttribute('data-kp-kk-urun')));
   assert.deepEqual(await gorunenler(), ['kanvas-lacivert-tote-canta', 'bej-tshirt', 'the-gamer']);
   assert.equal(await s.locator('#product-grid > li[data-kp-kk-ek] .kp-kk-rozet').count(), 1, 'eklenen kart da işaretlendi');
@@ -182,15 +185,17 @@ const gorunur = (s, q) => s.locator(q).evaluateAll((els) => els.map((e) => !!(e.
   const adlar = await s.locator('#product-grid > li .card__heading').evaluateAll((l) => l.map((x) => Math.round(x.getBoundingClientRect().top)));
   assert.equal(adlar[0], adlar[1]);
   assert.equal(adlar[2], adlar[3]);
-  // Filtre düğmesi "Filtrele ve sırala" yanında, satır yatay kaydırılabilir; masaüstü düğmesi gizli
+  // Filtre düğmesi "Filtrele ve sırala"nın altında, kendi satırında, tam genişlikte; metin kesilmiyor; masaüstü düğmesi gizli
   const mobilFiltre = s.locator('.kp-kk-filtre--mobil');
   assert.deepEqual(await gorunur(s, '.kp-kk-filtre--mobil'), [true]);
   assert.deepEqual(await gorunur(s, '.kp-kk-filtre--masaustu'), [false]);
-  const satir = await s.locator('.kp-kk-satir').evaluate((e) => ({ tasma: getComputedStyle(e).overflowX, sar: getComputedStyle(e).flexWrap }));
-  assert.deepEqual(satir, { tasma: 'auto', sar: 'nowrap' });
   const db = await s.locator('drawer-button').boundingBox();
   const fb = await mobilFiltre.boundingBox();
-  assert.ok(Math.abs(db.y - fb.y) < 6, 'yan yana');
+  const sb = await s.locator('drawer-button').evaluate((e) => { const r = e.parentElement.getBoundingClientRect(); return { x: r.left, w: r.width }; });
+  assert.ok(fb.y >= db.y + db.height - 1, 'altında');
+  assert.ok(Math.abs(fb.x - sb.x) < 1 && Math.abs(fb.width - sb.w) < 1, 'tam genişlik');
+  assert.ok(fb.x + fb.width <= 390, 'ekrandan taşmıyor');
+  assert.equal(await mobilFiltre.evaluate((e) => e.scrollWidth <= e.clientWidth + 1), true, 'metin kesilmiyor');
   await mobilFiltre.tap();
   assert.equal(await mobilFiltre.getAttribute('aria-pressed'), 'true');
   assert.equal(await s.locator('#product-grid > li:visible').count(), 3);

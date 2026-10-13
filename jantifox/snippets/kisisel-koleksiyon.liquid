@@ -18,7 +18,7 @@
   assign ilk = true
 -%}
 {%- if adaylar != blank and katalog != blank and collection -%}
-  <script type="application/json" id="KisiselKoleksiyon">
+  <script type="application/json" id="KisiselKoleksiyon" data-kp-editor-js="{{ 'kisisel-editor.js' | asset_url }}" data-kp-editor-css="{{ 'kisisel-editor.css' | asset_url }}">
     {"urunler":{
     {%- for p in adaylar -%}
       {%- liquid

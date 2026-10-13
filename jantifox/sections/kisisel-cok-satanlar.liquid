@@ -6,7 +6,8 @@
   olan tipler. Kişiselleştirmesi açık kartlarda (ürün sayfasındaki kartla aynı koşul: patch-notice etiketi,
   kisisellestirme.aktif = true, harita) sol üstte "✎ Kişiselleştirilebilir" etiketi ve fiyatın altında "Kişiselleştir"
   butonu (kisisel-koleksiyon.js, sade kart). Örnek tasarım temanın ikinci görsel katmanı (product-secondary-image)
-  olarak çizilir: masaüstünde üzerine gelince, mobilde ekrandayken birkaç saniyede bir (kisisel-cok-satanlar.js).
+  olarak çizilir: masaüstünde üzerine gelince, mobilde sabit (kisisel-cok-satanlar.js). Mobilde (640 px ve altı)
+  kaydırıcı JS ile sürüklenmez: Splide kapanır, liste tarayıcının kendi yatay kaydırmasıyla (scroll-snap) kayar.
 {%- endcomment -%}
 {%- liquid
   assign katalog = shop.metaobjects.kisisellestirme_katalog.ana
@@ -69,7 +70,7 @@
 {{ 'kisisel-koleksiyon.css' | asset_url | stylesheet_tag }}
 {{ 'kisisel-cok-satanlar.css' | asset_url | stylesheet_tag }}
 
-<div class="section-featured-collection kp-cs section-padding section-bg isolate overflow-hidden lg:overflow-visible" {% render 'section-properties' %} data-kp-cs data-editor-src="{{ 'kisisel-editor.js' | asset_url }}" data-ornek="{{ section.settings.ornek_tasarim }}" data-buton="{{ section.settings.kisisel_buton }}">
+<div class="section-featured-collection kp-cs{% if swipe_on_mobile %} kp-cs--kaydir{% endif %} section-padding section-bg isolate overflow-hidden lg:overflow-visible" {% render 'section-properties' %} data-kp-cs data-editor-src="{{ 'kisisel-editor.js' | asset_url }}" data-kp-editor-js="{{ 'kisisel-editor.js' | asset_url }}" data-kp-editor-css="{{ 'kisisel-editor.css' | asset_url }}" data-ornek="{{ section.settings.ornek_tasarim }}" data-buton="{{ section.settings.kisisel_buton }}">
   <div class="collection {{ section.settings.section_width }}" id="collection-{{ section.id }}" data-id="{{ section.id }}" style="--column-product:{{ columns_desktop }};--column-product-mobile:2;--column-gap:3rem;">
     {%- if filtre_var -%}<tabs-component class="tabs-component kp-cs__sekmeler">{%- endif -%}
 
@@ -107,7 +108,7 @@
     <splide-carousel>
       <div id="featured-collection-{{ section.id }}"
           class="splide-slider splide featured-collection-slider"
-          data-splide='{"type":"slide", "speed":500, "perPage":{{ columns_desktop }},"lazyLoad": "nearby","preloadPages":1, "perMove": 1,"waitForTransition": false,"rewind":false,"updateOnMove":true,"pagination":false,"arrows":{{ arrows }},"autoplay":false,"pauseOnHover":true,"pauseOnFocus":true, "gap": "3rem", "destroy": false,"breakpoints":{"640": {"destroy":{{ carousel_mobile }},"perPage":2, "arrows":false, "gap": "2rem", "padding":{"right":"2rem"}, "perMove": 1, "speed":1200 }}}'
+          data-splide='{"type":"slide", "speed":500, "perPage":{{ columns_desktop }},"lazyLoad": "nearby","preloadPages":1, "perMove": 1,"waitForTransition": false,"rewind":false,"updateOnMove":true,"pagination":false,"arrows":{{ arrows }},"autoplay":false,"pauseOnHover":true,"pauseOnFocus":true, "gap": "3rem", "destroy": false,"breakpoints":{"640": {"destroy":true,"perPage":2, "arrows":false, "gap": "2rem", "padding":{"right":"2rem"}, "perMove": 1, "speed":1200 }}}'
           aria-label="{{ section.settings.baslik | default: 'Çok satanlar' | escape }}"
           data-kp-cs-slider>
         <div class="splide__track mb:splide-right-overflow">
@@ -198,7 +199,7 @@
         {%- unless katalog != blank and p.tags contains 'patch-notice' and p.metafields.kisisellestirme.aktif.value == true and p.metafields.kisisellestirme.harita.value != blank -%}{%- continue -%}{%- endunless -%}
         {%- liquid
           assign foto = p.metafields.kisisellestirme.ornek_gorsel.value
-          assign onizleme = p.metafields.kisisellestirme.onizleme_gorseli.value | default: p.featured_media
+          assign onizleme = p.metafields.kisisellestirme.onizleme_gorseli_png.value | default: p.metafields.kisisellestirme.onizleme_gorseli.value | default: p.featured_media
           assign onizleme = onizleme.preview_image | default: onizleme
           assign kapak = p.metafields.kisisellestirme.kart_gorseli.value | default: p.featured_media
           assign kapak = kapak.preview_image | default: kapak

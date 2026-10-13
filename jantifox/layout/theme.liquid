@@ -62,6 +62,33 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <link rel="stylesheet" href="{{ 'component-predictive-search.css' | asset_url }}" media="print" onload="this.media='all'" >
     {%- endif -%}
 
+    {%- comment -%}
+      Kişiselleştirme: "Kişiselleştir" ile gelindiyse (?kisisellestir=1) ilk boyamadan itibaren sayfa yerine editörün
+      açılış görünümü (önizleme yeri + "Tasarım ekranı hazırlanıyor…"). Editör ve önizleme görseli hazır olunca
+      kisisel-editor.js sınıfı kaldırır; JS yüklenemezse 8 saniye sonra kendiliğinden kalkar. Yalnızca transform / opacity.
+    {%- endcomment -%}
+    {%- if request.page_type == 'product' -%}
+      <script>
+        if (/[?&]kisisellestir=1/.test(location.search)) {
+          document.documentElement.classList.add('kp-acilis-bekle');
+          setTimeout(function () { document.documentElement.classList.remove('kp-acilis-bekle'); }, 8000);
+          // Üründe kişiselleştirme yoksa (kart yok) beklemeden kalkar
+          document.addEventListener('DOMContentLoaded', function () {
+            if (!document.querySelector('kisisel-kart')) document.documentElement.classList.remove('kp-acilis-bekle');
+          });
+        }
+      </script>
+      <style>
+        .kp-acilis-bekle body { visibility: hidden; overflow: hidden; }
+        .kp-acilis-bekle::before { content: ''; position: fixed; z-index: 2147483000; left: 12px; right: 12px; top: 12px; height: 45vh; height: 45dvh; max-width: 860px; margin: 0 auto; border-radius: 8px; background: #efefef; }
+        .kp-acilis-bekle::after { content: 'Tasarım ekranı hazırlanıyor…'; position: fixed; z-index: 2147483000; left: 0; right: 0; top: calc(45vh + 32px); top: calc(45dvh + 32px); text-align: center; font: 14px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #6b6b6b; }
+        @media (prefers-reduced-motion: no-preference) { .kp-acilis-bekle::before { animation: kp-acilis-nabiz 1.1s ease-in-out infinite alternate; } }
+        @keyframes kp-acilis-nabiz { from { opacity: 1; } to { opacity: 0.55; } }
+        @media (min-width: 1024px) { .kp-acilis-bekle::before { height: calc(100vh - 230px); } .kp-acilis-bekle::after { top: calc(100vh - 190px); } }
+        .kp-acilis-bekle.kp-acilis-bitti body { visibility: visible; }
+        .kp-acilis-bitti::before, .kp-acilis-bitti::after { opacity: 0; transition: opacity 0.2s ease; }
+      </style>
+    {%- endif -%}
   </head>
 
   <body class="template-{{ template | replace: '.', '-' | handle }} type-anim-{{ settings.animations_style }}">

@@ -87,7 +87,8 @@
 }
 
 /* Örnek tasarım: temanın ikinci görsel katmanı (product-secondary-image) içinde tuval */
-.kp-cs .kp-ornek canvas {
+.kp-cs .kp-ornek canvas,
+.kp-cs .kp-ornek img {
   display: block;
   width: 100%;
   height: 100%;
@@ -104,13 +105,44 @@
   line-height: 1.3;
   letter-spacing: 0.02em;
 }
-/* Mobil: kart ekrandayken normal görselle yumuşakça yer değiştirir */
+/* Dokunmatik ekran: örnek tasarım sabit (otomatik yer değiştirme yok); ilk görünüşte kısa geçiş */
 .kp-cs .kp-ornek.kp-ornek--acik {
   opacity: 1;
 }
 @media (hover: none) {
   .kp-cs .kp-ornek {
-    transition: opacity 0.8s ease-in-out;
+    transition: opacity 0.3s ease;
+  }
+}
+
+/* Mobil (640 px ve altı): kaydırıcı JS ile sürüklenmez; liste tarayıcının kendi yatay kaydırmasıyla kayar ve kartlara
+   oturur (Splide bu genişlikte kapalı, bkz. data-splide). Satırda 2 kart, sağda bir sonraki kartın ucu görünür. */
+@media screen and (max-width: 640px) {
+  .kp-cs--kaydir .splide__track {
+    overflow: visible;
+  }
+  .kp-cs--kaydir .splide__list {
+    display: flex !important;
+    gap: 1.6rem;
+    margin: 0;
+    padding: 0 2rem 0 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    transform: none !important;
+  }
+  .kp-cs--kaydir .splide__list::-webkit-scrollbar {
+    display: none;
+  }
+  .kp-cs--kaydir .splide__slide {
+    flex: 0 0 calc((100% - 2rem - 1.6rem) / 2);
+    width: auto !important;
+    margin: 0 !important;
+    scroll-snap-align: start;
   }
 }
 

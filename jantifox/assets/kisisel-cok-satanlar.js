@@ -3,17 +3,33 @@
    - Kişiselleştirmesi açık kartlarda etiket ve "Kişiselleştir" butonu (kisisel-koleksiyon.js, sade kart).
    - Filtre sekmeleri: temanın kaydırıcısında slaytlar listeden çıkarılır / geri eklenir (sayfa yenilenmez).
    - Örnek tasarım: temanın ikinci görsel katmanı (product-secondary-image) olarak tuvale çizilir; masaüstünde
-     üzerine gelince temanın geçişiyle görünür, mobilde kart ekrandayken birkaç saniyede bir normal görselle yer
-     değiştirir. Ürünün kisisellestirme.ornek_gorsel fotoğrafı varsa o; yoksa editörün yerleşim motoru
+     üzerine gelince temanın geçişiyle görünür, dokunmatik ekranda sabit görünür. Ürünün kisisellestirme.ornek_gorsel fotoğrafı varsa o; yoksa editörün yerleşim motoru
      (KisiselEditorIc.ornekTasarim) ürünün önizleme görseline Cool Alfabe ile örnek isim yerleştirir.
      Kadraj: önizleme kesiti kart görselinde bulunursa isim kart görselinin üstüne tam yerine çizilir; bulunamazsa
-     (farklı çekim) ürün kesiti kart zemininde ortalanır. Sonuçlar tarayıcıda saklanır; çizim motoru (editör betiği)
-     yalnızca saklanmamış ürün varsa, sayfa yüklendikten sonra boşta yüklenir. Hata olursa kart olduğu gibi kalır. */
+     (farklı çekim) ürün kesiti kart zemininde ortalanır. Yerleşim sonuçları ve çizilmiş örnekler (JPEG) tarayıcıda
+     saklanır; çizim motoru (editör betiği) yalnızca saklanmamış ürün varsa, sayfa yüklendikten sonra boşta yüklenir.
+     Hesap ve çizim kart kart, kaydırma dururken yapılır. Hata olursa kart olduğu gibi kalır. */
 (function () {
   'use strict';
 
-  var ONBELLEK = 'kp-ornek-v2:';
-  var DONGU_MS = 3200;
+  // v3: isim yedekleri eklendi; eski "sığmadı" sonuçları yeniden hesaplanır
+  var ONBELLEK = 'kp-ornek-v3:';
+  var CIZIM = 'kp-ornek-cizim-v1:';
+  // Listedeki isimlerin hiçbiri alana sığmazsa (şapka gibi küçük ön panel) denenecek kısa isimler
+  var YEDEK_ISIMLER = ['ADA', 'ELA', 'NIL', 'ALI'];
+
+  // Kaydırma sürerken örnek tasarım hesaplanmaz / çizilmez; parmak ya da sayfa durunca devam edilir
+  var sonHareket = 0;
+  ['scroll', 'touchmove', 'wheel'].forEach(function (olay) {
+    window.addEventListener(olay, function () { sonHareket = Date.now(); }, { passive: true, capture: true });
+  });
+  function kaydirmaBitince(f) {
+    var bekle = function () {
+      if (Date.now() - sonHareket < 250) return setTimeout(bekle, 150);
+      (window.requestIdleCallback || setTimeout)(f, { timeout: 1000 });
+    };
+    bekle();
+  }
 
   // Shopify CDN görsel adresinde genişliği değiştirir
   function kucukGorsel(u, en) {
@@ -70,7 +86,10 @@
     }
     // Filtre için slaytların asıl sırası
     this.slaytlar = Array.prototype.slice.call(this.liste.children);
-    if (window.KisiselKartlar) window.KisiselKartlar.isle(this.liste, { sade: true, renk: kok.getAttribute('data-buton') });
+    if (window.KisiselKartlar) {
+      window.KisiselKartlar.isle(this.liste, { sade: true, renk: kok.getAttribute('data-buton') });
+      if (window.KisiselKartlar.onYuklemeIzle) window.KisiselKartlar.onYuklemeIzle();
+    }
     this.olaylar();
     if (kok.getAttribute('data-ornek') !== 'false') this.ornekIzle();
   }
@@ -103,6 +122,11 @@
       if (a) a.classList.remove('scroll-trigger--offscreen');
     });
     var sp = this.kaydirici && this.kaydirici.slideInstance;
+    // Mobilde kaydırıcı kapalı (tarayıcının kendi kaydırması): yalnızca başa dön
+    if (!this.kok.querySelector('.splide.is-initialized')) {
+      this.liste.scrollLeft = 0;
+      sp = null;
+    }
     if (sp) {
       try {
         sp.refresh();
@@ -151,29 +175,38 @@
     });
     if (!isler.length) return;
     var eksik = isler.filter(function (x) { return !x.sonuc; });
-    var bitir = function () {
-      var kullanilan = [];
-      isler.forEach(function (x) {
-        if (!x.sonuc) {
-          try {
-            x.sonuc = window.KisiselEditorIc.ornekTasarim(self.ham(x.u), x.sirali, kullanilan) || { yok: true };
-          } catch (e) {
-            x.sonuc = { yok: true };
-          }
-          depoYaz(x.anahtar, x.sonuc);
-        }
-        if (x.sonuc.isim) kullanilan.push(x.sonuc.isim);
-        if (!x.sonuc.yok) self.ciz(x);
-      });
+    var kullanilan = [];
+    var sira = isler.slice();
+    // Kartlar tek tek, her biri ayrı bir boş anda ve kaydırma dururken: uzun tek bir iş kaydırmayı dondurmaz
+    var adim = function () {
+      var x = sira.shift();
+      if (!x) return;
+      if (!x.sonuc) {
+        x.sonuc = self.hesapla(x, kullanilan);
+        depoYaz(x.anahtar, x.sonuc);
+      }
+      if (x.sonuc.isim) kullanilan.push(x.sonuc.isim);
+      if (!x.sonuc.yok) self.ciz(x);
+      if (sira.length) kaydirmaBitince(adim);
     };
-    // Görseller ve (gerekirse) çizim motoru sayfa yüklendikten sonra, boşta
     sayfaBosta(function () {
-      if (!eksik.length) return bitir();
+      if (!eksik.length) return kaydirmaBitince(adim);
       editorYukle(self.kok.getAttribute('data-editor-src'), function (tamam) {
-        if (!tamam) return;
-        (window.requestIdleCallback || setTimeout)(bitir);
+        if (tamam) kaydirmaBitince(adim);
       });
     });
+  };
+
+  // Önce kullanılmamış isimler; hiçbiri sığmazsa listeden sığan bir isim tekrar kullanılabilir; o da yoksa kısa yedekler
+  Bolum.prototype.hesapla = function (x, kullanilan) {
+    var ic = window.KisiselEditorIc;
+    if (!ic) return { yok: true };
+    try {
+      var ham = this.ham(x.u);
+      return ic.ornekTasarim(ham, x.sirali, kullanilan) || ic.ornekTasarim(ham, x.sirali, []) || ic.ornekTasarim(ham, YEDEK_ISIMLER, []) || { yok: true };
+    } catch (e) {
+      return { yok: true };
+    }
   };
 
   // Editörün beklediği veri biçimi (yalnızca örnek yazı için gerekenler)
@@ -276,6 +309,17 @@
     var cw = Math.round(W * dpr);
     var ch = Math.round(H * dpr);
     var gerekli = function (css, enAz, enCok) { return Math.max(enAz, Math.min(enCok, Math.ceil(css / 50) * 50)); };
+    // Daha önce çizilmiş örnek (aynı tasarım ve boyut): görsel indirme ve tuval çizimi yok
+    var cizimAnahtari = CIZIM + is.anahtar.slice(ONBELLEK.length) + ':' + cw + 'x' + ch;
+    var hazir = cizimOku(cizimAnahtari);
+    if (hazir) {
+      var resim = new Image(cw, ch);
+      resim.decoding = 'async';
+      resim.alt = '';
+      resim.onload = function () { self.katmanKoy(ic, resim, s.isim); };
+      resim.src = hazir;
+      return;
+    }
     var onzSrc = kucukGorsel(tamAdres(u.gorsel.url), gerekli(Math.max(cw, ch), 200, 600));
     var kapakSrc = u.kapak ? kucukGorsel(tamAdres(u.kapak.url), gerekli(Math.max(cw, ch), 200, 600)) : null;
 
@@ -317,6 +361,11 @@
       var son = function () {
         if (--kalan > 0) return;
         if (hata) return;
+        // Tuvale çizim kaydırma dururken
+        if (Date.now() - sonHareket < 250) {
+          kalan = 1;
+          return kaydirmaBitince(son);
+        }
         harfler.forEach(function (h) {
           var k2 = Math.min(h.w / h.img.naturalWidth, h.h / h.img.naturalHeight);
           var iw = h.img.naturalWidth * k2;
@@ -327,6 +376,7 @@
           g.drawImage(h.img, -iw / 2, -ih / 2, iw, ih);
           g.restore();
         });
+        cizimYaz(cizimAnahtari, c);
         self.katmanKoy(ic, c, s.isim);
       };
       if (!kalan) return;
@@ -366,10 +416,11 @@
       not.textContent = 'Örnek: ' + isim;
       kat.appendChild(not);
     }
+    // Dokunmatik ekranda (üzerine gelme yok) örnek tasarım sabit görünür; otomatik yer değiştirme yok
+    if (dokunmatik) kat.classList.add('kp-ornek--acik');
     var bag = ic.querySelector('a.product-link') || ic;
     bag.appendChild(kat);
     ic.classList.add('kp-ornek-var');
-    this.donguIzle(ic, kat);
   };
 
   // Gerçek örnek fotoğrafı: kutuyu doldurur (cover)
@@ -391,30 +442,30 @@
     });
   };
 
-  // Dokunmatik ekranda (üzerine gelme yok): kart ekrandayken örnek tasarım birkaç saniyede bir yer değiştirir
   var dokunmatik = window.matchMedia && window.matchMedia('(hover: none)').matches;
-  var azHareket = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  Bolum.prototype.donguIzle = function (ic, kat) {
-    if (!dokunmatik || azHareket || !('IntersectionObserver' in window)) return;
-    var zamanlayici = null;
-    var sira = this.slaytlar.indexOf(ic.closest('.splide__slide'));
-    var g = new IntersectionObserver(function (girdiler) {
-      var gorunur = girdiler.some(function (x) { return x.isIntersecting; });
-      if (gorunur && !zamanlayici) {
-        // Kartlar aynı anda değil, sırayla
-        var gecikme = (Math.max(0, sira) % 2) * (DONGU_MS / 2);
-        zamanlayici = setTimeout(function adim() {
-          kat.classList.toggle('kp-ornek--acik');
-          zamanlayici = setTimeout(adim, DONGU_MS);
-        }, DONGU_MS / 2 + gecikme);
-      } else if (!gorunur && zamanlayici) {
-        clearTimeout(zamanlayici);
-        zamanlayici = null;
-        kat.classList.remove('kp-ornek--acik');
-      }
-    }, { threshold: 0.6 });
-    g.observe(ic);
-  };
+
+  // Çizilmiş örneklerin JPEG kopyası (localStorage, en yeni 16): sonraki ziyarette yeniden indirme / çizim yok
+  var CIZIM_LISTE = 'kp-ornek-cizim-liste';
+  function cizimOku(k) {
+    try {
+      return window.localStorage.getItem(k);
+    } catch (e) {
+      return null;
+    }
+  }
+  function cizimYaz(k, c) {
+    try {
+      var veri = c.toDataURL('image/jpeg', 0.85);
+      if (veri.length > 200000) return;
+      var liste = JSON.parse(window.localStorage.getItem(CIZIM_LISTE) || '[]').filter(function (x) { return x !== k; });
+      liste.unshift(k);
+      liste.slice(16).forEach(function (x) { window.localStorage.removeItem(x); });
+      window.localStorage.setItem(k, veri);
+      window.localStorage.setItem(CIZIM_LISTE, JSON.stringify(liste.slice(0, 16)));
+    } catch (e) {
+      /* dolu, kapalı ya da tuval okunamıyor: her ziyarette çizilir */
+    }
+  }
 
   function sayfaBosta(f) {
     var bosta = function () { (window.requestIdleCallback || setTimeout)(f, { timeout: 2000 }); };

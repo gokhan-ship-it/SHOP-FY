@@ -1,5 +1,5 @@
 /* Kategori / koleksiyon sayfası: kişiselleştirilebilen ürün kartlarına etiket, "Kişiselleştir" ve sepet butonu,
-   sıralamanın yanına "Sadece kişiselleştirilebilenler" filtresi. Temanın kart dosyasına dokunmaz; kartlar sayfa
+   sıralamanın yanına (mobilde "Filtreler ve sıralama"nın altına) "Sadece kişiselleştirilebilenler" filtresi. Temanın kart dosyasına dokunmaz; kartlar sayfa
    geldikten (ve tema filtre / sıralama / sayfa değişiminde ızgarayı yeniden çizdikten) sonra işaretlenir.
    Veri: snippets/kisisel-koleksiyon.liquid (#KisiselKoleksiyon) ve kartı kullanan başka bölümler
    (script[data-kp-kk-veri], ör. ana sayfa "Çok satanlar"). Kartlar için ek istek atılmaz.
@@ -146,34 +146,59 @@
 
   /* ---------------- Filtre ---------------- */
 
+  // Temanın kendi buton sınıfları: kapalıyken çizgili (btn-outline), açıkken dolu (btn-primary); solunda küçük ✎
   function filtreDugmesi(ek) {
     var b = document.createElement('button');
     b.type = 'button';
-    b.className = 'kp-kk-filtre' + (ek ? ' ' + ek : '');
+    b.className = 'btn btn-outline kp-kk-filtre' + (ek ? ' ' + ek : '');
     b.setAttribute('data-kp-kk-filtre', '');
-    b.setAttribute('aria-pressed', filtreAcik ? 'true' : 'false');
-    b.innerHTML = '<span aria-hidden="true">✎</span> Sadece kişiselleştirilebilenler';
+    b.innerHTML = '<span class="kp-kk-filtre__ikon" aria-hidden="true">✎</span><span class="kp-kk-filtre__yazi">Sadece kişiselleştirilebilenler</span>';
+    dugmeDurumu(b);
     return b;
   }
 
+  function dugmeDurumu(b) {
+    b.setAttribute('aria-pressed', filtreAcik ? 'true' : 'false');
+    b.classList.toggle('btn-outline', !filtreAcik);
+    b.classList.toggle('btn-primary', filtreAcik);
+  }
+
+  // Metin tek satıra sığmazsa (dar ekran) yalnızca o düğmede yan boşluk ve harf aralığı azalır; metin kısalmaz
+  function sigdir(b) {
+    if (!b.offsetWidth) return;
+    b.classList.remove('kp-kk-filtre--sik');
+    if (b.scrollWidth > b.clientWidth + 1) b.classList.add('kp-kk-filtre--sik');
+  }
+
   function dugmeleriYerlestir() {
-    // Masaüstü (dikey filtre düzeni): sıralama seçiminin yanında. Tema ızgarayı yeniden çizince yeniden eklenir.
+    // Masaüstü (dikey filtre düzeni): sıralama seçiminin yanında, yüksekliği sıralama kutusuyla aynı.
+    // Tema ızgarayı yeniden çizince yeniden eklenir.
     document.querySelectorAll('#ProductGridContainer .facet-filters.sorting').forEach(function (s) {
-      if (s.querySelector('[data-kp-kk-filtre]')) return;
       var alan = s.querySelector('.facet-filters__field');
-      var b = filtreDugmesi('kp-kk-filtre--masaustu');
-      if (alan) alan.insertAdjacentElement('beforebegin', b);
-      else s.appendChild(b);
+      var b = s.querySelector('[data-kp-kk-filtre]');
+      if (!b) {
+        b = filtreDugmesi('kp-kk-filtre--masaustu');
+        if (alan) alan.insertAdjacentElement('beforebegin', b);
+        else s.appendChild(b);
+      }
+      var secim = alan && alan.querySelector('select');
+      if (secim && secim.offsetHeight) b.style.height = secim.offsetHeight + 'px';
     });
-    // Mobil: "Filtrele ve sırala" düğmesinin yanında; satır yatay kaydırılabilir
+    // Mobil: "Filtreler ve sıralama" satırının altında, kendi satırında, tam genişlikte
     document.querySelectorAll('drawer-button.drawer-filter').forEach(function (d) {
       var satir = d.parentElement;
-      if (!satir || satir.querySelector('[data-kp-kk-filtre]')) return;
-      satir.classList.add('kp-kk-satir');
-      d.insertAdjacentElement('afterend', filtreDugmesi('kp-kk-filtre--mobil'));
+      if (!satir) return;
+      var sonraki = satir.nextElementSibling;
+      if (sonraki && sonraki.hasAttribute('data-kp-kk-filtre-satir')) return;
+      var kutu = document.createElement('div');
+      kutu.className = 'kp-kk-filtre-satir';
+      kutu.setAttribute('data-kp-kk-filtre-satir', '');
+      kutu.appendChild(filtreDugmesi('kp-kk-filtre--mobil'));
+      satir.insertAdjacentElement('afterend', kutu);
     });
     document.querySelectorAll('[data-kp-kk-filtre]').forEach(function (b) {
-      b.setAttribute('aria-pressed', filtreAcik ? 'true' : 'false');
+      dugmeDurumu(b);
+      sigdir(b);
     });
   }
 
@@ -369,6 +394,70 @@
     if (e.key === 'Escape') secimiKapat();
   });
 
+  /* ---------------- "Kişiselleştir" basışı: anında tepki ve önceden yükleme ---------------- */
+
+  // Basınca buton hemen "yükleniyor" olur (ürün sayfası ve editör gelene kadar); geri tuşuyla dönülünce eski haline döner
+  function editorLinki(e) {
+    var a = e.target.closest && e.target.closest('a[href*="kisisellestir=1"]');
+    return a && !a.closest('.kp-editor') ? a : null;
+  }
+  document.addEventListener('click', function (e) {
+    var a = editorLinki(e);
+    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+    a.classList.add('kp-kk-yukleniyor');
+    a.setAttribute('aria-busy', 'true');
+  });
+  window.addEventListener('pageshow', function () {
+    document.querySelectorAll('.kp-kk-yukleniyor').forEach(function (a) {
+      a.classList.remove('kp-kk-yukleniyor');
+      a.removeAttribute('aria-busy');
+    });
+  });
+
+  // Editörün kodu ve stili: kişiselleştirilebilir kart ilk kez ekrana gelince boşta önceden indirilir (tarayıcı
+  // önbelleğine). Ürün sayfası: parmak / fare butona değince (Safari belge önceden yüklemeyi desteklemez; orada yalnızca
+  // editör dosyaları kazanılır).
+  var onYuklenen = {};
+  function onYukle(url, tur) {
+    if (!url || onYuklenen[url]) return;
+    onYuklenen[url] = true;
+    var l = document.createElement('link');
+    if (l.relList && l.relList.supports && l.relList.supports('prefetch')) {
+      l.rel = 'prefetch';
+      l.href = url;
+      if (tur) l.as = tur;
+      document.head.appendChild(l);
+    } else if (tur && window.fetch) {
+      fetch(url, { credentials: 'same-origin' }).catch(function () {});
+    }
+  }
+  function editorDosyalari() {
+    var k = document.querySelector('[data-kp-editor-js]');
+    if (!k) return;
+    var bos = window.requestIdleCallback || function (f) { return setTimeout(f, 1); };
+    bos(function () {
+      onYukle(k.getAttribute('data-kp-editor-css'), 'style');
+      onYukle(k.getAttribute('data-kp-editor-js'), 'script');
+    });
+  }
+  function onYuklemeIzle() {
+    var ilk = document.querySelector('.kp-kk-kart-buton, .kp-kk-kisisel, .kp-kk-mobil');
+    if (!ilk) return;
+    if (!('IntersectionObserver' in window)) return editorDosyalari();
+    var g = new IntersectionObserver(function (x) {
+      if (!x.some(function (y) { return y.isIntersecting; })) return;
+      g.disconnect();
+      editorDosyalari();
+    }, { rootMargin: '200px 0px' });
+    document.querySelectorAll('.kp-kk-kart-buton, .kp-kk-kisisel, .kp-kk-mobil').forEach(function (b) { g.observe(b); });
+  }
+  ['touchstart', 'mouseover'].forEach(function (olay) {
+    document.addEventListener(olay, function (e) {
+      var a = editorLinki(e);
+      if (a) onYukle(a.href, 'document');
+    }, { passive: true });
+  });
+
   /* ---------------- Başlat ---------------- */
 
   var bekleyen = false;
@@ -407,9 +496,16 @@
   function baslat() {
     hepsi();
     izle();
+    onYuklemeIzle();
+    // Ekran genişliği değişince düğmenin sığması yeniden ölçülür
+    var bekle = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(bekle);
+      bekle = setTimeout(dugmeleriYerlestir, 150);
+    });
   }
 
-  window.KisiselKartlar = { isle: kartlariIsle, urunler: URUNLER, editorAdresi: editorAdresi };
+  window.KisiselKartlar = { isle: kartlariIsle, urunler: URUNLER, editorAdresi: editorAdresi, onYuklemeIzle: onYuklemeIzle };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', baslat);
   else baslat();

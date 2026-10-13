@@ -8,7 +8,11 @@
 {%- endcomment -%}
 {%- liquid
   assign harita = product.metafields.kisisellestirme.harita.value
-  assign onizleme = product.metafields.kisisellestirme.onizleme_gorseli.value
+  comment
+    PNG kaynaklı kopya (onizleme_gorseli_png) varsa o: Shopify saydam WebP kaynakları iPhone'a büyük PNG olarak
+    gönderiyor (ör. 1,2 MB), PNG kaynaklar herkese küçük WebP / AVIF gider (ör. 150 KB). Boyutları aynıdır.
+  endcomment
+  assign onizleme = product.metafields.kisisellestirme.onizleme_gorseli_png.value | default: product.metafields.kisisellestirme.onizleme_gorseli.value
   if onizleme == blank
     assign onizleme = product.featured_media
   endif
@@ -71,7 +75,7 @@
     {%- endcomment -%}
     {%- assign ilk_aks = true -%}
     {%- for p in katalog.aksesuarlar.value -%}
-      {%- assign a_gorsel = p.metafields.kisisellestirme.onizleme_gorseli.value -%}
+      {%- assign a_gorsel = p.metafields.kisisellestirme.onizleme_gorseli_png.value | default: p.metafields.kisisellestirme.onizleme_gorseli.value -%}
       {%- assign a_harita = p.metafields.kisisellestirme.harita.value -%}
       {%- if p.available and a_gorsel != blank and a_harita != blank -%}
         {%- assign a_gorsel = a_gorsel.preview_image | default: a_gorsel -%}

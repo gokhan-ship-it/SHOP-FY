@@ -4793,3 +4793,78 @@ html.kp-kilit body {
     display: none;
   }
 }
+
+/* ==========================================================================
+   Önizleme penceresi görselin oranından bağımsız (2026-10-13)
+   Önceden mobilde önizleme kutusu satırı doldurmak için büyüyor (flex-grow), yüksekliği görselin oranından geliyordu:
+   dikey uzun görselli üründe (Mavi Beyaz Çizgili Spor Çanta) önizleme ekranın %98'ini kaplıyor, yazı alanı ve paneller
+   görünmüyordu. Artık pencere tam genişlikte, yüksekliği ekranla sınırlı (mobil ~%45, klavye açıkken ~%22); görsel bu
+   pencereye sığdırılır ya da takılabilir alana yakınlaşılır (editor.js: yakinGorunum, ResizeObserver).
+   ========================================================================== */
+.kp-editor:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme__ic {
+  flex: 1 1 auto;
+  width: calc(100% - 62px);
+}
+.kp-editor:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-gorunum {
+  max-height: 45vh;
+  max-height: 45dvh;
+}
+.kp-editor--klavye:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme__ic {
+  width: calc(100% - 48px);
+}
+.kp-editor--klavye:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-gorunum {
+  max-height: 22vh;
+  max-height: 22dvh;
+}
+.kp-editor--kucuk:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme__ic {
+  flex: 0 1 auto;
+  width: min(calc(100% - 48px), 220px);
+}
+.kp-editor--kucuk:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-gorunum {
+  max-height: 140px;
+}
+@media (min-width: 1024px) {
+  .kp-editor:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme__ic,
+  .kp-editor--klavye:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme__ic,
+  .kp-editor--kucuk:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme__ic {
+    flex: 0 1 auto;
+    width: min(calc(100% - 94px), 860px);
+  }
+  .kp-editor:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-gorunum,
+  .kp-editor--klavye:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-gorunum,
+  .kp-editor--kucuk:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-gorunum {
+    max-height: calc(100vh - 230px);
+  }
+  .kp-editor:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme .kp-satir,
+  .kp-editor:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme .kp-kenar {
+    width: min(100%, 954px);
+  }
+}
+
+/* Önizleme penceresi görsel gelene kadar */
+.kp-gorunum--yukleniyor {
+  background: #f2f2f2;
+}
+.kp-gorunum--yukleniyor .kp-sahne {
+  opacity: 0;
+}
+/* Yükleniyor ışıltısı: yalnızca transform (kompozitörde çalışır) */
+.kp-gorunum--yukleniyor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.65) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .kp-gorunum--yukleniyor::after {
+    animation: kp-isilti 1.2s ease-in-out infinite;
+  }
+}
+@keyframes kp-isilti {
+  to {
+    transform: translateX(100%);
+  }
+}
