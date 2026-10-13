@@ -1,0 +1,12 @@
+# liste-kontrol.py girdisi için (Admin API, salt okunur). Sonuç "urunler" biçimine çevrilir:
+# id, handle, baslik = title, durum = status, etiketler = tags, aktif = aktif.value, harita_var = harita != null
+{
+  shop { metafield(namespace: "kisisellestirme", key: "acik_urunler") { value } }
+  products(first: 100, query: "tag:patch-notice") {
+    nodes {
+      id handle title status tags
+      aktif: metafield(namespace: "kisisellestirme", key: "aktif") { value }
+      harita: metafield(namespace: "kisisellestirme", key: "harita") { id }
+    }
+  }
+}

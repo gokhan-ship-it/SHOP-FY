@@ -38,11 +38,13 @@
 
 ## Mağazaya yazma (dışa aktarılan dosya geldikten sonra)
 
-1. Mağazadaki mevcut değerler okunur: ilgili ürünlerin `kisisellestirme` alanları → `magaza.json` (`{handle: {anahtar: değer}}`).
+1. Mağazadaki mevcut değerler okunur: ilgili ürünlerin `kisisellestirme` alanları → `magaza.json` (`{handle: {anahtar: değer}}`);
+   kategori aday listesi ve ürünlerin `aktif` durumu `araclar/alan-paneli/liste-sorgu.graphql` ile → `liste.json`
+   (biçim: `veri/urunler/liste/magaza-durum-20261013.json`).
 2. Denetim, hiçbir şey yazmaz:
 
    ```
-   python3 -I araclar/alan-paneli/dogrula.py alan-paneli-....json --magaza magaza.json
+   python3 -I araclar/alan-paneli/dogrula.py alan-paneli-....json --magaza magaza.json --liste liste.json
    ```
 
    Kontrol edilenler:
@@ -51,12 +53,26 @@
    - İlk alanda ölçü var mı; ölçek akla yatkın mı (görselin cm genişliği ürün ölçüsüyle uyumlu mu); örnek harf her alana sığıyor mu.
    - Patch tipi ve izinler eksik mi; ölçü tahmini mi.
    - Mevcut değerlerle çakışma var mı (dolu bir alanın üzerine yazılacaksa ayrıca belirtilir).
+   - `plan.json`'da "patch alanı yok" olan ürün panelde Hazır gelirse hata (ör. Kalem Kutusu Sarı'lar).
+   - **Kategori aday listesi** (`shop.metafields.kisisellestirme.acik_urunler`): açılan ürün eklenir, kapatılan çıkarılır;
+     yeni değer planın `acik_urunler` bölümünde. `--liste` verilmezse "LİSTE ADIMI EKSİK" yazar; yazmadan önce `--liste`
+     ile yeniden çalıştırılır. Kategori sayfaları ürünleri yalnızca bu listeden okur.
 
    Sorunsuzsa `-plan.json` yazma planını çıkarır.
 3. Sorun listesi kullanıcıya gösterilir. Onaydan sonra hepsi tek seferde yazılır:
    - Yeni görseller: `fileCreate` (kaynak: depodaki PNG'nin commit'e sabit ham GitHub adresi) → MediaImage → `kisisellestirme.onizleme_gorseli`. Ürün medyasına eklenmez.
    - `metafieldsSet` (25'erli): `harita`, `metin_karakter_siniri`, `aktif`.
    - Atlanan ürünlere `aktif = false`.
+   - Aynı `metafieldsSet` içinde planın `acik_urunler.metafield` değeri (mağaza sahibi `gid://shopify/Shop/...`).
+4. Yazdıktan sonra kontrol: `liste-sorgu.graphql` yeniden okunur ve
+
+   ```
+   python3 -I araclar/alan-paneli/liste-kontrol.py liste.json
+   ```
+
+   kişiselleştirmesi açık ürünlerle listeyi karşılaştırır (kartın koşuluyla aynı: `patch-notice` etiketi + `aktif = true` +
+   harita). Fark varsa eksik / fazla ürünleri ve önerilen listeyi yazar, çıkış kodu 1. Panelden bağımsız olarak, bir ürünün
+   `aktif` değeri elle değiştirildiğinde de çalıştırılır.
    - Her yazma `docs/degisiklik-kaydi.md` dosyasına eklenir.
 
 Çokgen alan ve yasaklı bölge haritada şöyle yazılır:

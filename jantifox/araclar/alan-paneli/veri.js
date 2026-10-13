@@ -1452,7 +1452,7 @@ window.PANEL_VERI = {
    "urunId": 15869129818398,
    "baslik": "Yapıştırılabilir Kalem Kutusu Kırmızı - LE KOKO COLLECTIF-",
    "grup": 11,
-   "not": "Çantaya takılan aksesuar da bu üründür: mevcut haritası (Velcro yüzeyi + logo yasaklı) çanta editörünün aksesuar adımında kullanılıyor. Panelde değiştirirsen aksesuar tasarımı da aynı alanı kullanır.",
+   "not": "Çantaya takılan aksesuar da bu üründür: mevcut haritası (Velcro yüzeyi + logo yasaklı) çanta editörünün aksesuar adımında kullanılıyor. Panelde değiştirirsen aksesuar tasarımı da aynı alanı kullanır. Kişiselleştirme 2026-10-13 açıldı (mağazadaki görsel ve harita aynen).",
    "png": {
     "dosya": "veri/aksesuar/duz/kalem-kutusu-kirmizi-on.png",
     "en": 1200,
@@ -1551,14 +1551,14 @@ window.PANEL_VERI = {
      "aksesuar": false
     }
    },
-   "durum": "cizilecek"
+   "durum": "hazir"
   },
   {
    "handle": "yapistirilabilir-kalem-kutusu-x-le-koko-collectif-copy",
    "urunId": 15869133226270,
    "baslik": "Yapıştırılabilir Kalem Kutusu Sarı - LE KOKO COLLECTIF-",
    "grup": 11,
-   "not": "Rozet: PATCH ALANI YOKTUR (yalnızca arkasında cırt alanı var). Görsel perspektifi düzeltilmiş ön yüz (Kırmızı ve Turuncu ile aynı yöntem). Önde patch alanı yoksa 'Bu üründe kişiselleştirme olmasın' seç.",
+   "not": "Atlandı (kullanıcı kararı 2026-10-13): bu üründe patch alanı yok. Kişiselleştirme kapalı kalır; mağazadaki görseline ve alanlarına yazılmaz.",
    "png": {
     "dosya": "veri/aksesuar/duz/kalem-kutusu-sari-on.png",
     "en": 1200,
@@ -1575,7 +1575,7 @@ window.PANEL_VERI = {
    "onDolguKaynak": "",
    "ayar": {
     "metinSiniri": null,
-    "kapali": false,
+    "kapali": true,
     "izinler": {
      "harf": true,
      "rakam": true,
@@ -1584,14 +1584,14 @@ window.PANEL_VERI = {
      "aksesuar": false
     }
    },
-   "durum": "cizilecek"
+   "durum": "atlandi"
   },
   {
    "handle": "yapistirilabilir-kalem-kutusu-x-le-koko-collectif-copy-1",
    "urunId": 15869138829598,
    "baslik": "Yapıştırılabilir Kalem Kutusu Turuncu - LE KOKO COLLECTIF-",
    "grup": 11,
-   "not": "Çantaya takılan aksesuar da bu üründür: mevcut haritası (Velcro yüzeyi + logo ve D halkası yasaklı) çanta editörünün aksesuar adımında kullanılıyor.",
+   "not": "Çantaya takılan aksesuar da bu üründür: mevcut haritası (Velcro yüzeyi + logo ve D halkası yasaklı) çanta editörünün aksesuar adımında kullanılıyor. Kişiselleştirme 2026-10-13 açıldı (mağazadaki görsel ve harita aynen).",
    "png": {
     "dosya": "veri/aksesuar/duz/kalem-kutusu-turuncu-on.png",
     "en": 1200,
@@ -1707,7 +1707,7 @@ window.PANEL_VERI = {
      "aksesuar": false
     }
    },
-   "durum": "cizilecek"
+   "durum": "hazir"
   },
   {
    "handle": "cok-amacli-mini-canta-kirmizi-beyaz-zikzak",

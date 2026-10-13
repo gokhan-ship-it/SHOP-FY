@@ -1,10 +1,15 @@
 """Alan panelinin dışa aktardığı JSON'u mağazaya yazmadan önce denetler ve yazma planı çıkarır.
 
 Kullanım (jantifox/ klasöründen):
-    python3 -I araclar/alan-paneli/dogrula.py <alan-paneli-....json> [--magaza magaza.json] [--plan yazma-plani.json]
+    python3 -I araclar/alan-paneli/dogrula.py <alan-paneli-....json> [--magaza magaza.json] [--liste liste.json] [--plan yazma-plani.json]
 
 --magaza: ürünlerin mağazadaki kisisellestirme alanları, {handle: {anahtar: değer}} (yazmadan hemen önce okunur).
           Verilirse mevcut değerlerle çakışmalar listelenir; mevcut bir değerin üzerine yazmak ayrıca onay ister.
+--liste:  mağazanın kategori aday listesi ve ürünlerin "aktif" durumu, liste-kontrol.py'nin girdisiyle aynı biçim
+          ({"acik_urunler": [gid, ...], "urunler": [{"id": gid, "handle": ..., "aktif": ..., ...}]}).
+          Verilirse planda shop.metafields.kisisellestirme.acik_urunler'in yeni değeri de çıkar (açılan ürün eklenir,
+          kapatılan çıkarılır). Verilmezse plan "liste adımı eksik" diye işaretlenir; mağazaya yazmadan önce --liste ile
+          yeniden çalıştırılmalı (kategori sayfaları ürünleri bu listeden okur).
 --plan:   yazma planının kaydedileceği dosya (varsayılan: dışa aktarılan dosyanın yanında, -plan.json).
 
 Hiçbir şey yazmaz. Hata varsa çıkış kodu 1.
@@ -149,6 +154,10 @@ def denetle(u, bilinen, magaza):
     mevcut = (magaza or {}).get(h, {})
     alanlar = []
 
+    if plan_u.get('durum') == 'patch_alani_yok' and u.get('durum') != 'atlandi':
+        hatalar.append('Bu üründe patch alanı yok (plan.json: patch_alani_yok); panelde "Atlandı" olmalı')
+        return hatalar, uyarilar, catisma, None
+
     if u.get('durum') == 'atlandi':
         alanlar.append(('aktif', 'boolean', 'false'))
         if mevcut.get('aktif') not in (None, 'false', False):
@@ -260,15 +269,39 @@ def denetle(u, bilinen, magaza):
     return hatalar, uyarilar, catisma, {'png': png_yukle, 'alanlar': alanlar}
 
 
+def liste_guncelle(liste, plan):
+    """Kategori aday listesinin (acik_urunler) yazmadan sonraki hali. Ürünün son aktif değeri: planda yazılıyorsa o,
+    yoksa mağazadaki. Listede olup artık aktif olmayan çıkar, aktif olup listede olmayan eklenir (sıra korunur)."""
+    if liste is None:
+        return None
+    onceki = list(liste.get('acik_urunler') or [])
+    aktif = {x['id']: str(x.get('aktif')).lower() == 'true' for x in liste.get('urunler') or []}
+    for p in plan:
+        for m in p['metafields']:
+            if m['key'] == 'aktif':
+                aktif[p['owner']] = m['value'] == 'true'
+    yeni = [g for g in onceki if aktif.get(g, True)]
+    for g, a in aktif.items():
+        if a and g not in yeni:
+            yeni.append(g)
+    return {'onceki': onceki, 'yeni': yeni, 'eklenen': [g for g in yeni if g not in onceki],
+            'cikan': [g for g in onceki if g not in yeni],
+            'metafield': {'namespace': 'kisisellestirme', 'key': 'acik_urunler', 'type': 'list.product_reference',
+                          'value': json.dumps(yeni)}}
+
+
 def main(argv):
     if not argv or argv[0].startswith('-'):
         sys.exit(__doc__)
     giris = argv[0]
-    magaza, plan_yolu = None, os.path.splitext(giris)[0] + '-plan.json'
+    magaza, liste, plan_yolu = None, None, os.path.splitext(giris)[0] + '-plan.json'
     i = 1
     while i < len(argv):
         if argv[i] == '--magaza':
             magaza = json.load(open(argv[i + 1], encoding='utf-8'))
+            i += 2
+        elif argv[i] == '--liste':
+            liste = json.load(open(argv[i + 1], encoding='utf-8'))
             i += 2
         elif argv[i] == '--plan':
             plan_yolu = argv[i + 1]
@@ -312,7 +345,14 @@ def main(argv):
     if toplam_hata:
         print('%d hata var; yazma planı çıkarılmadı.' % toplam_hata)
         return 1
-    json.dump({'kaynak': os.path.basename(giris), 'urunler': plan}, open(plan_yolu, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    liste_plani = liste_guncelle(liste, plan)
+    if liste_plani is None:
+        print('LİSTE ADIMI EKSİK: --liste verilmedi. Yazmadan önce --liste ile yeniden çalıştır; kategori sayfası aday listesi '
+              '(acik_urunler) güncellenmezse açılan ürünler kategori sayfalarında kişiselleştirilebilir görünmez.')
+    else:
+        print('acik_urunler: %d → %d ürün (eklenecek %d, çıkarılacak %d)' % (
+            len(liste_plani['onceki']), len(liste_plani['yeni']), len(liste_plani['eklenen']), len(liste_plani['cikan'])))
+    json.dump({'kaynak': os.path.basename(giris), 'urunler': plan, 'acik_urunler': liste_plani}, open(plan_yolu, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     print('Yazma planı: ' + plan_yolu)
     return 0
 
