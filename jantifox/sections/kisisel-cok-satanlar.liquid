@@ -1,0 +1,173 @@
+{%- comment -%}
+  Ana sayfa "Çok satanlar": seçilen ürünler (tema düzenleyicisinde, seçilen sırayla) yatay kayan kartlarda.
+  Kartlar temanın kendi card-product snippet'i; kişiselleştirmesi açık olanlara kategori sayfasındaki bileşen
+  (kisisel-koleksiyon.js: "✎ Kişiselleştirilebilir", "Kişiselleştir", sepet butonu) eklenir.
+  Kişiselleştirme açık sayılması: ürün sayfasındaki kartla aynı koşul (patch-notice etiketi, kisisellestirme.aktif = true,
+  harita). Kapalı ürün normal kart olarak görünür; açılınca etiket ve buton kendiliğinden gelir.
+  Örnek tasarım: kisisellestirme.ornek_gorsel (fotoğraf) varsa o; yoksa editörün çizim motoru önizleme görseli üzerine
+  örnek isim yerleştirir (kisisel-cok-satanlar.js; görüntü alanına girince, önbellekli). Bütün veri sayfayla gelir.
+{%- endcomment -%}
+{%- liquid
+  assign katalog = shop.metaobjects.kisisellestirme_katalog.ana
+  assign urunler = section.settings.urunler
+  assign adet = section.settings.urun_sayisi
+  assign cool = nil
+  for s in katalog.harf_setleri.value
+    if s.metafields.kisisellestirme.set.value == 'cool'
+      assign cool = s
+      break
+    endif
+  endfor
+  assign tur_canta = 0
+  assign tur_kiyafet = 0
+  assign tur_sapka = 0
+-%}
+{{ 'kisisel-koleksiyon.css' | asset_url | stylesheet_tag }}
+{{ 'kisisel-cok-satanlar.css' | asset_url | stylesheet_tag }}
+
+<div class="kp-cs section-padding section-bg isolate" {% render 'section-properties' %} data-kp-cs data-editor-src="{{ 'kisisel-editor.js' | asset_url }}" data-ornek="{{ section.settings.ornek_tasarim }}">
+  <div class="{{ section.settings.section_width }}">
+    <div class="kp-cs__ust">
+      <div class="kp-cs__metin">
+        {%- if section.settings.etiket != blank -%}<p class="section__sub-heading sub-heading">{{ section.settings.etiket | escape }}</p>{%- endif -%}
+        {%- if section.settings.baslik != blank -%}<h2 class="section__heading {{ section.settings.heading_size }}">{{ section.settings.baslik | escape }}</h2>{%- endif -%}
+        {%- if section.settings.aciklama != blank -%}<div class="section__description rte">{{ section.settings.aciklama }}</div>{%- endif -%}
+      </div>
+      <div class="kp-cs__kontrol">
+        {%- if section.settings.filtreler -%}
+          <div class="kp-cs__filtreler" role="group" aria-label="Ürün tipi" data-kp-cs-filtreler></div>
+        {%- endif -%}
+        <div class="kp-cs__oklar">
+          <button type="button" class="kp-cs__ok kp-cs__ok--geri" data-kp-cs-ok="-1" aria-label="Önceki">{% render 'icon-arrow-right' %}</button>
+          <button type="button" class="kp-cs__ok" data-kp-cs-ok="1" aria-label="Sonraki">{% render 'icon-arrow-right' %}</button>
+        </div>
+      </div>
+    </div>
+
+    <ul class="kp-cs__liste" data-kp-cs-liste role="list">
+      {%- for p in urunler limit: adet -%}
+        {%- liquid
+          assign tur = 'canta'
+          if p.tags contains 'kıyafet'
+            assign tur = 'kiyafet'
+          elsif p.tags contains 'şapka' or p.tags contains 'hat'
+            assign tur = 'sapka'
+          endif
+          assign acik = false
+          if katalog != blank and p.tags contains 'patch-notice' and p.metafields.kisisellestirme.aktif.value == true and p.metafields.kisisellestirme.harita.value != blank
+            assign acik = true
+            case tur
+              when 'canta'
+                assign tur_canta = tur_canta | plus: 1
+              when 'kiyafet'
+                assign tur_kiyafet = tur_kiyafet | plus: 1
+              when 'sapka'
+                assign tur_sapka = tur_sapka | plus: 1
+            endcase
+          endif
+        -%}
+        <li class="kp-cs__oge grid__item" data-kp-cs-tur="{{ tur }}" data-kp-cs-urun="{{ p.handle | escape }}">
+          {%- render 'card-product', card_product: p, section_id: section.id, product_placeholder: 'product-1' -%}
+        </li>
+      {%- else -%}
+        <li class="kp-cs__oge grid__item">{%- render 'card-product', product_placeholder: 'product-1' -%}</li>
+      {%- endfor -%}
+    </ul>
+    <div class="kp-cs__noktalar" data-kp-cs-noktalar aria-hidden="true"></div>
+
+    {%- if section.settings.buton_metni != blank -%}
+      {%- liquid
+        assign link = section.settings.buton_link | default: routes.all_products_collection_url
+        if section.settings.buton_filtreli and link contains '/collections/'
+          if link contains '?'
+            assign link = link | append: '&kisisel=1'
+          else
+            assign link = link | append: '?kisisel=1'
+          endif
+        endif
+      -%}
+      <div class="kp-cs__alt">
+        {%- render 'button', button_style: section.settings.buton_stili, button_text: section.settings.buton_metni, button_url: link, button_type: 'link', custom_class: 'kp-cs__buton' -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} Kart bileşeni (kisisel-koleksiyon.js) ve örnek tasarım verisi; sayfayla gelir {%- endcomment -%}
+  <script type="application/json" data-kp-kk-veri>
+    {"urunler":{
+    {%- assign ilk = true -%}
+    {%- for p in urunler limit: adet -%}
+      {%- unless katalog != blank and p.tags contains 'patch-notice' and p.metafields.kisisellestirme.aktif.value == true and p.metafields.kisisellestirme.harita.value != blank -%}{%- continue -%}{%- endunless -%}
+      {%- unless ilk %},{% endunless -%}{%- assign ilk = false -%}
+      {{- p.handle | json }}:{"u":{{ p.url | json }},"b":{{ p.title | json }},"v":[
+      {%- for v in p.variants -%}{%- unless forloop.first %},{% endunless -%}{"id":{{ v.id }},"t":{{ v.title | json }},"a":{{ v.available }}}{%- endfor -%}
+      ]}
+    {%- endfor -%}
+    }}
+  </script>
+  <script type="application/json" data-kp-cs-veri>
+    {
+      "turler": {"canta": {{ tur_canta }}, "kiyafet": {{ tur_kiyafet }}, "sapka": {{ tur_sapka }}},
+      "isimler": {{ section.settings.ornek_isimler | default: 'ATLAS, LEYLA, PERA, EGE, MIRO, ADA, ECE' | split: ',' | json }},
+      "ayarlar": {{ katalog.ayarlar.value | json }},
+      "set": {%- if cool and section.settings.ornek_tasarim -%}{%- render 'kisisel-veri-patch', p: cool -%}{%- else -%}null{%- endif -%},
+      "urunler": {
+      {%- assign ilk = true -%}
+      {%- for p in urunler limit: adet -%}
+        {%- unless katalog != blank and p.tags contains 'patch-notice' and p.metafields.kisisellestirme.aktif.value == true and p.metafields.kisisellestirme.harita.value != blank -%}{%- continue -%}{%- endunless -%}
+        {%- liquid
+          assign foto = p.metafields.kisisellestirme.ornek_gorsel.value
+          assign onizleme = p.metafields.kisisellestirme.onizleme_gorseli.value | default: p.featured_media
+          assign onizleme = onizleme.preview_image | default: onizleme
+        -%}
+        {%- unless ilk %},{% endunless -%}{%- assign ilk = false -%}
+        {{- p.handle | json }}:{
+          "id": {{ p.id }},
+          "foto": {%- if foto != blank -%}{{ foto.preview_image | default: foto | image_url: width: 900 | json }}{%- else -%}null{%- endif -%},
+          "metin_siniri": {{ p.metafields.kisisellestirme.metin_karakter_siniri.value | json }},
+          "gorsel": {"en": {{ onizleme.width | default: 1000 }}, "boy": {{ onizleme.height | default: 1000 }}, "url": {{ onizleme | image_url: width: 900 | json }}},
+          "harita": {{ p.metafields.kisisellestirme.harita.value | json }}
+        }
+      {%- endfor -%}
+      }
+    }
+  </script>
+  <script src="{{ 'kisisel-koleksiyon.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'kisisel-cok-satanlar.js' | asset_url }}" defer="defer"></script>
+</div>
+
+{% schema %}
+{
+  "name": "Çok satanlar (kişisel)",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": { "groups": ["header", "footer", "aside"] },
+  "settings": [
+    { "type": "select", "id": "section_width", "label": "Genişlik", "default": "container",
+      "options": [{ "value": "container", "label": "Kutu" }, { "value": "container-fluid", "label": "Geniş" }, { "value": "w-full", "label": "Tam genişlik" }] },
+    { "type": "text", "id": "etiket", "label": "Üst küçük etiket", "default": "ÇOK SATANLAR" },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "En sevilenler, sana özel" },
+    { "type": "select", "id": "heading_size", "label": "Başlık boyutu", "default": "h2",
+      "options": [{ "value": "h1", "label": "Başlık 1" }, { "value": "h2", "label": "Başlık 2" }, { "value": "h3", "label": "Başlık 3" }, { "value": "h4", "label": "Başlık 4" }] },
+    { "type": "richtext", "id": "aciklama", "label": "Açıklama", "default": "<p>Adını yaz, patch'ini seç, sadece sana ait olsun.</p>" },
+    { "type": "header", "content": "Ürünler" },
+    { "type": "product_list", "id": "urunler", "label": "Ürünler (gösterilme sırası)", "limit": 24, "info": "Kartlar burada seçilen sırayla gösterilir. Kişiselleştirmesi kapalı ürün normal kart olarak görünür." },
+    { "type": "range", "id": "urun_sayisi", "label": "Gösterilecek ürün sayısı", "min": 4, "max": 24, "step": 1, "default": 8 },
+    { "type": "checkbox", "id": "filtreler", "label": "Filtre düğmeleri (Hepsi, Çanta, Kıyafet, Şapka)", "default": true, "info": "İçinde kişiselleştirilebilir ürün olmayan tipin düğmesi görünmez." },
+    { "type": "checkbox", "id": "ornek_tasarim", "label": "Kartlarda örnek tasarım göster", "default": true, "info": "Ürünün kisisellestirme.ornek_gorsel fotoğrafı varsa o; yoksa önizleme görseli üzerine örnek isim çizilir." },
+    { "type": "text", "id": "ornek_isimler", "label": "Örnek isimler", "default": "ATLAS, LEYLA, PERA, EGE, MIRO, ADA, ECE", "info": "Virgülle ayır. Türkçe karakter kullanma; her karta sığan farklı bir isim düşer." },
+    { "type": "header", "content": "Alt buton" },
+    { "type": "text", "id": "buton_metni", "label": "Buton metni", "default": "Tüm kişiselleştirilebilir ürünler →" },
+    { "type": "url", "id": "buton_link", "label": "Buton linki" },
+    { "type": "checkbox", "id": "buton_filtreli", "label": "Kategoride \"Sadece kişiselleştirilebilenler\" açık gitsin", "default": true },
+    { "type": "select", "id": "buton_stili", "label": "Buton stili", "default": "primary",
+      "options": [{ "value": "primary", "label": "Dolu" }, { "value": "outline", "label": "Çizgili" }, { "value": "secondary", "label": "İkincil" }] },
+    { "type": "header", "content": "Renkler ve boşluk" },
+    { "type": "color", "id": "bg_color", "label": "Arka plan", "default": "#f4cb64" },
+    { "type": "color", "id": "text_color", "label": "Metin" },
+    { "type": "range", "id": "padding_top", "label": "Üst boşluk", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 36 },
+    { "type": "range", "id": "padding_bottom", "label": "Alt boşluk", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 36 }
+  ],
+  "presets": [{ "name": "Çok satanlar (kişisel)" }]
+}
+{% endschema %}

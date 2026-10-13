@@ -1,0 +1,133 @@
+{
+  "etiket": "once",
+  "zaman": "2026-10-13T09:50:28.566Z",
+  "N": 5,
+  "kosullar": {
+    "masaustu": {
+      "ortanca": {
+        "ttfb": 575,
+        "dcl": 1556,
+        "load": 2160,
+        "lcp": 1364,
+        "tbt": 160,
+        "kb": 17702,
+        "jsKb": 328
+      },
+      "tum": [
+        {
+          "ttfb": 654,
+          "dcl": 1798,
+          "load": 2430,
+          "lcp": 1568,
+          "tbt": 162,
+          "bolum": false,
+          "kb": 17702,
+          "jsKb": 328
+        },
+        {
+          "ttfb": 575,
+          "dcl": 1961,
+          "load": 2541,
+          "lcp": 1700,
+          "tbt": 161,
+          "bolum": false,
+          "kb": 17695,
+          "jsKb": 328
+        },
+        {
+          "ttfb": 560,
+          "dcl": 1403,
+          "load": 2096,
+          "lcp": 1296,
+          "tbt": 160,
+          "bolum": false,
+          "kb": 17798,
+          "jsKb": 329
+        },
+        {
+          "ttfb": 667,
+          "dcl": 1556,
+          "load": 2160,
+          "lcp": 1364,
+          "tbt": 121,
+          "bolum": false,
+          "kb": 17698,
+          "jsKb": 328
+        },
+        {
+          "ttfb": 448,
+          "dcl": 1334,
+          "load": 1952,
+          "lcp": 1276,
+          "tbt": 133,
+          "bolum": false,
+          "kb": 17742,
+          "jsKb": 328
+        }
+      ]
+    },
+    "iphone13": {
+      "ortanca": {
+        "ttfb": 663,
+        "dcl": 1769,
+        "load": 2452,
+        "lcp": 1652,
+        "tbt": 132,
+        "kb": 3380,
+        "jsKb": 330
+      },
+      "tum": [
+        {
+          "ttfb": 663,
+          "dcl": 2091,
+          "load": 2704,
+          "lcp": 1848,
+          "tbt": 177,
+          "bolum": false,
+          "kb": 2589,
+          "jsKb": 329
+        },
+        {
+          "ttfb": 629,
+          "dcl": 1584,
+          "load": 2117,
+          "lcp": 1460,
+          "tbt": 107,
+          "bolum": false,
+          "kb": 3373,
+          "jsKb": 329
+        },
+        {
+          "ttfb": 909,
+          "dcl": 2096,
+          "load": 2707,
+          "lcp": 1896,
+          "tbt": 132,
+          "bolum": false,
+          "kb": 3380,
+          "jsKb": 331
+        },
+        {
+          "ttfb": 617,
+          "dcl": 1769,
+          "load": 2452,
+          "lcp": 1556,
+          "tbt": 127,
+          "bolum": false,
+          "kb": 3385,
+          "jsKb": 330
+        },
+        {
+          "ttfb": 670,
+          "dcl": 1740,
+          "load": 2363,
+          "lcp": 1652,
+          "tbt": 178,
+          "bolum": false,
+          "kb": 3385,
+          "jsKb": 331
+        }
+      ]
+    }
+  }
+}

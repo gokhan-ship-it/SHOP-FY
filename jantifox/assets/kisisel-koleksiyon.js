@@ -1,18 +1,27 @@
 /* Kategori / koleksiyon sayfası: kişiselleştirilebilen ürün kartlarına etiket, "Kişiselleştir" ve sepet butonu,
    sıralamanın yanına "Sadece kişiselleştirilebilenler" filtresi. Temanın kart dosyasına dokunmaz; kartlar sayfa
    geldikten (ve tema filtre / sıralama / sayfa değişiminde ızgarayı yeniden çizdikten) sonra işaretlenir.
-   Veri: snippets/kisisel-koleksiyon.liquid (#KisiselKoleksiyon). Kartlar için ek istek atılmaz. */
+   Veri: snippets/kisisel-koleksiyon.liquid (#KisiselKoleksiyon) ve kartı kullanan başka bölümler
+   (script[data-kp-kk-veri], ör. ana sayfa "Çok satanlar"). Kartlar için ek istek atılmaz.
+   Diğer bölümler için: window.KisiselKartlar.isle(kapsayıcı) kapsayıcıdaki kartları işaretler. */
 (function () {
   'use strict';
 
-  var veriEl = document.getElementById('KisiselKoleksiyon');
-  if (!veriEl) return;
-  var URUNLER;
-  try {
-    URUNLER = JSON.parse(veriEl.textContent).urunler || {};
-  } catch (e) {
-    return;
+  if (window.KisiselKartlar) return;
+  var URUNLER = {};
+  function veriOku() {
+    document.querySelectorAll('#KisiselKoleksiyon, script[data-kp-kk-veri]').forEach(function (el) {
+      if (el.hasAttribute('data-kp-kk-okundu')) return;
+      el.setAttribute('data-kp-kk-okundu', '');
+      try {
+        var u = JSON.parse(el.textContent).urunler || {};
+        Object.keys(u).forEach(function (k) { URUNLER[k] = u[k]; });
+      } catch (e) {
+        /* bozuk veri: o bölüm kart işaretlemez */
+      }
+    });
   }
+  veriOku();
   var FILTRE_ANAHTARI = 'kp-kk-filtre:' + window.location.pathname;
   var SEPET_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M6 7h12l-1.2 12.1a1 1 0 0 1-1 .9H8.2a1 1 0 0 1-1-.9L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 9V6a3 3 0 0 1 6 0v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
 
@@ -92,9 +101,10 @@
     return document.getElementById('product-grid');
   }
 
-  function kartlariIsle() {
-    var g = izgara();
+  function kartlariIsle(kok) {
+    var g = kok || izgara();
     if (!g) return;
+    veriOku();
     var herhangi = false;
     Array.prototype.forEach.call(g.children, function (li) {
       var sarici = li.querySelector('.card-wrapper');
@@ -380,6 +390,8 @@
     hepsi();
     izle();
   }
+
+  window.KisiselKartlar = { isle: kartlariIsle, urunler: URUNLER, editorAdresi: editorAdresi };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', baslat);
   else baslat();

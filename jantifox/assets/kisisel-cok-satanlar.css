@@ -1,0 +1,251 @@
+/* Ana sayfa "Çok satanlar" (sections/kisisel-cok-satanlar.liquid). Fontlar, başlık ve buton stilleri temanın
+   kendi sınıflarından gelir (section__sub-heading, section__heading, btn); burada yalnızca yerleşim var.
+   Renk: bölüm arka planı/metni temanın section-properties değişkenleri; kart bileşeni kisisel-koleksiyon.css.
+   Mobil: 749px ve altı. */
+
+.kp-cs *,
+.kp-cs *::before,
+.kp-cs *::after {
+  box-sizing: border-box;
+}
+
+/* Üst: solda metin, sağda filtreler ve oklar */
+.kp-cs__ust {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2.4rem;
+  margin-bottom: 3rem;
+}
+.kp-cs__metin {
+  min-width: 0;
+  max-width: 60rem;
+}
+.kp-cs__metin > * {
+  margin-top: 0;
+}
+.kp-cs__metin > *:last-child {
+  margin-bottom: 0;
+}
+.kp-cs__metin .section__sub-heading {
+  margin-bottom: 0.8rem;
+}
+.kp-cs__metin .section__heading {
+  margin-bottom: 1.2rem;
+}
+.kp-cs__kontrol {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2.4rem;
+}
+.kp-cs__filtreler {
+  display: flex;
+  gap: 0.8rem;
+}
+.kp-cs__filtreler[hidden] {
+  display: none;
+}
+.kp-cs__oklar {
+  display: flex;
+  gap: 0.8rem;
+}
+.kp-cs__ok {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.8rem;
+  height: 4.8rem;
+  padding: 0;
+  border: 2px solid currentColor;
+  border-radius: 0;
+  background: transparent;
+  color: rgb(var(--color-foreground));
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+.kp-cs__ok svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+.kp-cs__ok--geri svg {
+  transform: rotate(180deg);
+}
+.kp-cs__ok:hover:not([disabled]) {
+  background: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+}
+.kp-cs__ok[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+.kp-cs__ok:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.kp-cs--kaymaz .kp-cs__oklar {
+  visibility: hidden;
+}
+
+/* Kartlar: yatay kayar; masaüstünde 4 kart tam, 5. kart kenardan görünür */
+.kp-cs__liste {
+  --kp-cs-bosluk: 3rem;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 3 * var(--kp-cs-bosluk)) / 4.3);
+  column-gap: var(--kp-cs-bosluk);
+  margin: 0;
+  padding: 0 0 0.4rem;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.kp-cs__liste::-webkit-scrollbar {
+  display: none;
+}
+.kp-cs__oge {
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  scroll-snap-align: start;
+}
+.kp-cs__oge[hidden] {
+  display: none;
+}
+
+/* Sayfa noktaları: yalnızca mobilde */
+.kp-cs__noktalar {
+  display: none;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: 1.6rem;
+}
+.kp-cs__nokta {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: rgb(var(--color-foreground));
+  opacity: 0.25;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.kp-cs__nokta--aktif {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.kp-cs__alt {
+  display: flex;
+  justify-content: center;
+  margin-top: 4rem;
+}
+
+/* Örnek tasarım: kartın görselinin üstünde; tıklama alttaki ürün bağlantısına geçer */
+.kp-ornek {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  overflow: hidden;
+  background: #fff;
+  pointer-events: none;
+  animation: kp-ornek-gel 0.3s ease;
+}
+/* Önizleme görseli yalnızca ürünü kapsar: kartın oranına kenar boşluğuyla sığdırılır */
+.kp-ornek__sahne {
+  padding: 4%;
+}
+.kp-ornek__sahne,
+.kp-ornek--foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.kp-ornek--foto img {
+  object-fit: cover;
+}
+.kp-ornek__not {
+  position: absolute;
+  right: 0.8rem;
+  bottom: 0.8rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  color: #202223;
+  font-size: 1.1rem;
+  line-height: 1.3;
+  opacity: 0.85;
+}
+/* Masaüstünde "Kişiselleştir" butonu görselin alt kısmında: not butonun üstünde durur */
+@media screen and (min-width: 750px) {
+  .card-product__media:has(.kp-kk-eylem) .kp-ornek__not {
+    bottom: 6.2rem;
+  }
+}
+@keyframes kp-ornek-gel {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media screen and (max-width: 749px) {
+  .kp-cs__ust {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.6rem;
+    margin-bottom: 2rem;
+  }
+  .kp-cs__kontrol {
+    display: block;
+    min-width: 0;
+  }
+  .kp-cs__oklar {
+    display: none;
+  }
+  /* Filtreler yatay kayan tek satır; kenara kadar uzanır */
+  .kp-cs__filtreler {
+    margin: 0 -1.5rem;
+    padding: 0 1.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .kp-cs__filtreler::-webkit-scrollbar {
+    display: none;
+  }
+  /* 1 kart tam, 2. kart kenardan görünür */
+  .kp-cs__liste {
+    --kp-cs-bosluk: 1.6rem;
+    grid-auto-columns: 80%;
+  }
+  .kp-cs__noktalar {
+    display: flex;
+  }
+  .kp-cs--kaymaz .kp-cs__noktalar {
+    display: none;
+  }
+  .kp-cs__alt {
+    margin-top: 2.4rem;
+  }
+  .kp-cs__alt .btn,
+  .kp-cs__alt a {
+    width: 100%;
+  }
+}
+
+/* Orta genişlik (tablet): 3 kart + kenar */
+@media screen and (min-width: 750px) and (max-width: 989px) {
+  .kp-cs__ust {
+    flex-wrap: wrap;
+  }
+  .kp-cs__liste {
+    grid-auto-columns: calc((100% - 2 * var(--kp-cs-bosluk)) / 3.3);
+  }
+}

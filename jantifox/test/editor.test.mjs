@@ -1350,3 +1350,27 @@ test('tek alanlı üründe yazı eskisi gibi: bölme yok, seçim seçenekleri yo
   const konum = ic.tasarimKonumu(m, ic.duzenle(m, y, t).parcalar, t);
   assert.ok(konum.p.every((x) => x.z === undefined));
 });
+
+test('örnek tasarım (ana sayfa çok satanlar): Cool Alfabe ile sığan ilk isim, kullanılanlar atlanır', () => {
+  const ham = JSON.parse(readFileSync(new URL('./kisisel-veri-spor.json', import.meta.url), 'utf8'));
+  const isimler = ['ATLAS', 'LEYLA', 'PERA', 'EGE', 'MIRO', 'ADA', 'ECE'];
+  const a = duz(ic.ornekTasarim(ham, isimler, []));
+  assert.equal(a.isim, 'ATLAS');
+  assert.equal(a.parcalar.length, 5);
+  const cool = ham.setler.find((s) => s.set === 'cool');
+  const gorseller = new Set(cool.varyantlar.map((v) => v.gorsel));
+  a.parcalar.forEach((p) => {
+    assert.ok(gorseller.has(p.src), 'Cool Alfabe görseli');
+    assert.ok(p.x >= 0 && p.y >= 0 && p.x + p.w <= 100 && p.y + p.h <= 100, 'görselin içinde');
+  });
+  // Aynı bölümde ikinci karta farklı isim düşer
+  const b = duz(ic.ornekTasarim(ham, isimler, ['ATLAS']));
+  assert.ok(b && b.isim !== 'ATLAS');
+  // Karakter sınırı aşılırsa o isim atlanır
+  const sinirli = JSON.parse(JSON.stringify(ham));
+  sinirli.urun.metin_siniri = 3;
+  const c = duz(ic.ornekTasarim(sinirli, isimler, []));
+  assert.ok(c && Array.from(c.isim).length <= 3);
+  // Hiçbiri olmazsa null
+  assert.equal(ic.ornekTasarim(ham, ['ÇĞŞ'], []), null);
+});

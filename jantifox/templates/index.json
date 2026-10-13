@@ -435,6 +435,38 @@
         "padding_bottom": 24
       }
     },
+    "kisisel_cok_satanlar": {
+      "type": "kisisel-cok-satanlar",
+      "settings": {
+        "section_width": "container",
+        "etiket": "ÇOK SATANLAR",
+        "baslik": "En sevilenler, sana özel",
+        "heading_size": "h2",
+        "aciklama": "<p>Adını yaz, patch'ini seç, sadece sana ait olsun.</p>",
+        "urunler": [
+          "mavi-beyaz-cizgili-spor-canta",
+          "pembe-kirmizi-cizgili-spor-canta",
+          "the-artist-sirt-cantasi-jantifox-x-le-koko-collectif-copy",
+          "the-performer-sirt-cantasi-jantifox-x-le-koko-collectif",
+          "the-adventurer-sirt-cantasi-jantifox-x-le-koko-collectif",
+          "pudra-pembe-tshirt",
+          "mavi-sweatshirt",
+          "sapka"
+        ],
+        "urun_sayisi": 8,
+        "filtreler": true,
+        "ornek_tasarim": true,
+        "ornek_isimler": "ATLAS, LEYLA, PERA, EGE, MIRO, ADA, ECE",
+        "buton_metni": "Tüm kişiselleştirilebilir ürünler →",
+        "buton_link": "shopify://collections/tum-urunler",
+        "buton_filtreli": true,
+        "buton_stili": "primary",
+        "bg_color": "#f4cb64",
+        "text_color": "",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
     "blocks_Mt3JtH": {
       "type": "_blocks",
       "blocks": {
@@ -1551,6 +1583,7 @@
     "divider_WAXTxj",
     "featured_product_eytwN6",
     "rich_text_XC7JKY",
+    "kisisel_cok_satanlar",
     "blocks_Mt3JtH",
     "gallery_grid_YkKhD3",
     "divider_KCgnAT",
