@@ -24,7 +24,10 @@
   assign sale_badge_type = settings.card_sale_badge_type
   assign image_aspect_ratio = settings.card_image_size
   assign card_color_type = settings.card_color_type
-  assign featured_media = card_product.featured_media
+  comment
+    card_image: isteğe bağlı kart görseli (ana sayfa Çok satanlar: kisisellestirme.kart_gorseli). Verilmezse ürünün ana görseli.
+  endcomment
+  assign featured_media = card_image | default: card_product.featured_media
   assign card_show_video = settings.card_show_video
   if featured_media.media_type != 'image'
 		assign featured_media = featured_media.preview_image

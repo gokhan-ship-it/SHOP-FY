@@ -24,7 +24,7 @@ const URUNLER = [
   ['mavi-beyaz-cizgili-spor-canta', 'Mavi Beyaz Çizgili Spor Çanta', 'canta', true, 'spor'],
   ['pembe-kirmizi-cizgili-spor-canta', 'Pembe Kırmızı Çizgili Spor Çanta', 'canta', true, 'spor'],
   ['the-artist', 'The Artist Sırt Çantası -LE KOKO COLLECTIF-', 'canta', true, 'artist', true],
-  ['the-performer', 'The Performer Sırt Çantası', 'canta', true, 'artist', true],
+  ['the-performer', 'The Performer Sırt Çantası -LE KOKO COLLECTIF- Özel Seri Çok Uzun Ürün Adı Denemesi', 'canta', true, 'artist', true],
   ['the-adventurer', 'The Adventurer Mini Sırt Çantası', 'canta', true, 'artist', true],
   ['pudra-pembe-tshirt', 'Pudra Pembe Tshirt', 'kiyafet', true, 'spor'],
   ['mavi-sweatshirt', 'Mavi Sweatshirt', 'kiyafet', true, 'kucuk'],
@@ -87,7 +87,7 @@ function bolumHtml({ foto = null, filtre = true } = {}) {
   <div class="collection container" id="collection-kp" style="--column-product:4;--column-product-mobile:2;--column-gap:3rem;">
     ${filtre ? '<tabs-component class="tabs-component kp-cs__sekmeler">' : ''}
     <div class="featured-collection-wrap section-header-wrap flex flex-col lg:flex-row lg:items-end gap-x-6 gap-y-4 mb-16">
-      <div class="flex-1 flex gap-y-2 flex-col"><p class="section__sub-heading sub-heading">ÇOK SATANLAR</p><h2 class="section__heading h2">En sevilenler, sana özel</h2><div class="section__description rte"><p>Adını yaz, patch'ini seç, sadece sana ait olsun.</p></div></div>
+      <div class="flex-1 flex gap-y-2 flex-col"><p class="section__sub-heading sub-heading">ÇOK SATANLAR</p><h2 class="section__heading h2">İstediğin ürünü hemen kişiselleştir</h2><div class="section__description rte"><p>İster yazı yaz, ister patch seç, istersen ikisini karıştır.</p></div></div>
       ${sekmeler}
     </div>
     ${filtre ? '<div class="tabs-content">' : ''}
@@ -172,6 +172,36 @@ const kartOlc = (s, kapsam) => s.evaluate((q) => {
     kapsayici: Math.round(k.querySelector('.collection').getBoundingClientRect().width)
   };
 }, kapsam);
+// Bütün görünen kartlarda: etiket görsel kutusunun sol üst köşesinde aynı mesafede; "NEW IN" etiketiyle çakışmaz;
+// "Kişiselleştir" butonlarının alt kenarı aynı hizada (kartın en altında); ürün adı en fazla iki satır
+async function hizaKontrol(s, ad) {
+  const r = await s.evaluate((q) => {
+    // Kaydırıcıda görünen kartlar (dışarıdakileri temanın görünme animasyonu henüz 2rem aşağıda bekletir)
+    const sl = [...document.querySelectorAll(q + ' .splide__slide.is-visible')];
+    return sl.map((x) => {
+      const ic = x.querySelector('.card-product__media-inner').getBoundingClientRect();
+      const rz = x.querySelector('.kp-kk-rozet');
+      const ni = x.querySelector('.card-new-in-badge');
+      const b = x.querySelector('.kp-kk-kart-buton');
+      const kart = x.querySelector('.card-wrapper').getBoundingClientRect();
+      const h = x.querySelector('.card__heading a');
+      const satir = Math.round(h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight));
+      const rr = rz && rz.getBoundingClientRect();
+      const nr = ni && ni.getBoundingClientRect();
+      return { urun: x.getAttribute('data-kp-cs-urun'), rozet: rr && [Math.round(rr.left - ic.left), Math.round(rr.top - ic.top)], cakisma: !!(rr && nr && !(rr.right <= nr.left || nr.right <= rr.left || rr.bottom <= nr.top || nr.bottom <= rr.top)), butonAlt: b && Math.round(b.getBoundingClientRect().bottom), kartAlt: Math.round(kart.bottom), satir, kisaltildi: h.scrollHeight > h.clientHeight + 1 };
+    });
+  }, bizim);
+  const rozetler = r.filter((x) => x.rozet);
+  assert.ok(rozetler.length >= 1, ad + ' etiket var');
+  rozetler.forEach((x) => assert.deepEqual(x.rozet, rozetler[0].rozet, ad + ' etiket hizası ' + JSON.stringify(rozetler.map((y) => y.rozet))));
+  assert.ok(Math.abs(rozetler[0].rozet[0] - rozetler[0].rozet[1]) <= 1 && rozetler[0].rozet[0] <= 12, ad + ' etiket sol üst köşede');
+  r.forEach((x) => assert.ok(!x.cakisma, ad + ' NEW IN ile çakışma: ' + x.urun));
+  const butonlar = r.filter((x) => x.butonAlt);
+  butonlar.forEach((x) => assert.equal(x.butonAlt, butonlar[0].butonAlt, ad + ' buton hizası ' + JSON.stringify(butonlar.map((y) => [y.urun, y.butonAlt]))));
+  butonlar.forEach((x) => assert.ok(Math.abs(x.butonAlt - x.kartAlt) <= 1, ad + ' buton kartın en altında'));
+  r.forEach((x) => assert.ok(x.satir <= 2, ad + ' ad en fazla iki satır: ' + x.urun + ' ' + x.satir));
+  return r;
+}
 const ornekSayisi = (s) => s.locator(`${bizim} .product-secondary-image.kp-ornek`).count();
 
 /* ---------------- Masaüstü ---------------- */
@@ -197,20 +227,19 @@ for (const en of [1280, 1440, 1920]) {
   assert.equal(rozet.metin, '✎ Kişiselleştirilebilir');
   assert.equal(rozet.golge, 'none');
   assert.ok(rozet.h <= 22 && parseFloat(rozet.fs) <= 11.5, JSON.stringify(rozet));
-  // NEW IN etiketi olan kartta etiket altına iner, çakışmaz
-  const ust = await s.locator(`${bizim} [data-kp-cs-urun="the-artist"]`).evaluate((sl) => { const a = sl.querySelector('.card-new-in-badge').getBoundingClientRect(); const b = sl.querySelector('.kp-kk-rozet').getBoundingClientRect(); return [a.bottom, b.top]; });
-  assert.ok(ust[1] >= ust[0], 'etiketler çakışmaz');
+  await hizaKontrol(s, en + 'px');
   // "Kişiselleştir": fiyatın altında, tam genişlik, temanın butonu (köşeli, aynı yükseklik)
   const btn = await s.locator(`${bizim} [data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"]`).evaluate((sl) => {
     const b = sl.querySelector('.kp-kk-kart-buton'); const p = sl.querySelector('.price'); const k = sl.querySelector('.card-wrapper');
     const rb = b.getBoundingClientRect(); const c = getComputedStyle(b);
     return { alt: rb.top >= p.getBoundingClientRect().bottom, en: Math.round(rb.width), kart: Math.round(k.getBoundingClientRect().width), h: Math.round(rb.height), kose: c.borderRadius, sinif: b.className, href: b.getAttribute('href'), bg: c.backgroundColor };
   });
-  const temaBtn = await s.locator(`${bizim} .kp-cs__buton`).evaluate((b) => ({ h: Math.round(b.getBoundingClientRect().height), kose: getComputedStyle(b).borderRadius }));
+  // Butonlar: 44 px, kart görselleriyle aynı yuvarlaklık, yarı kalın, normal harf aralığı, büyük harf yok
+  const bStil = await s.evaluate((q) => [document.querySelector(q + ' .kp-kk-kart-buton'), document.querySelector(q + ' .kp-cs__buton')].map((b) => { const c = getComputedStyle(b); return [Math.round(b.getBoundingClientRect().height), c.borderRadius, c.fontWeight, c.letterSpacing, c.textTransform]; }), bizim);
+  const gorselKose = a.kose;
+  bStil.forEach((x) => assert.deepEqual(x, [44, gorselKose, '500', 'normal', 'none'], JSON.stringify(bStil)));
   assert.ok(btn.alt, 'fiyatın altında');
   assert.equal(btn.en, btn.kart, 'tam genişlik');
-  assert.equal(btn.h, temaBtn.h, 'tema butonuyla aynı yükseklik');
-  assert.equal(btn.kose, temaBtn.kose);
   assert.match(btn.sinif, /\bbtn btn-primary\b/);
   assert.equal(btn.bg, 'rgb(179, 20, 27)');
   assert.equal(btn.href, '/products/mavi-beyaz-cizgili-spor-canta?kisisellestir=1');
@@ -240,6 +269,8 @@ for (const en of [1280, 1440, 1920]) {
   assert.equal(await s.locator(`${bizim} .splide__slide`).first().evaluate((e) => e.classList.contains('is-visible')), false, 'ileri kaydı');
 
   if (en === 1280) {
+    const uzun = await s.locator(`${bizim} [data-kp-cs-urun="the-performer"] .card__heading a`).evaluate((h) => ({ kisa: h.scrollHeight > h.clientHeight + 1, satir: Math.round(h.clientHeight / parseFloat(getComputedStyle(h).lineHeight)) }));
+    assert.deepEqual(uzun, { kisa: true, satir: 2 }, 'uzun ad iki satırda kısaltılır');
     // Filtre: sayfa yenilenmez; Kıyafet 2 kart; Çanta 5; Hepsi 8 ve sıra korunur; çizgi seçili sekmeye geçer
     await s.evaluate(() => { window.__ayni = 1; });
     await s.locator('[data-kp-cs-filtre="kiyafet"]').click();
@@ -332,6 +363,15 @@ for (const [ad, cihaz] of [['360', { ...devices['Galaxy S9+'], viewport: { width
   const satir = await s.locator('[data-kp-cs-filtre]').evaluateAll((l) => new Set(l.map((b) => Math.round(b.getBoundingClientRect().top))).size);
   assert.equal(satir, 1);
   // Buton kart genişliğinde; alt buton tam genişlik; sayfada yatay taşma yok
+  await s.locator(bizim).scrollIntoViewIfNeeded();
+  await hizaKontrol(s, ad + 'px');
+  // Kaydırıp NEW IN etiketli kartlara gelince de hiza aynı
+  await s.locator(`${bizim} .splide__list`).evaluate(() => {});
+  const sp = await s.evaluate((q) => { const c = document.querySelector(q + ' splide-carousel'); c.slideInstance.go(2); return true; }, bizim);
+  await s.waitForTimeout(1500);
+  await hizaKontrol(s, ad + 'px (kaydırılmış)');
+  await s.evaluate((q) => document.querySelector(q + ' splide-carousel').slideInstance.go(0), bizim);
+  await s.waitForTimeout(1500);
   const btn = await s.locator(`${bizim} [data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"]`).evaluate((sl) => [Math.round(sl.querySelector('.kp-kk-kart-buton').getBoundingClientRect().width), Math.round(sl.querySelector('.card-wrapper').getBoundingClientRect().width)]);
   assert.equal(btn[0], btn[1]);
   const alt = await s.locator(`${bizim} .kp-cs__buton`).evaluate((b) => { const c = b.closest('.collection'); const st = getComputedStyle(c); return [b.getBoundingClientRect().width, c.getBoundingClientRect().width - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight)]; });

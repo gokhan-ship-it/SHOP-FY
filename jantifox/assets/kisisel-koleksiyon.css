@@ -58,7 +58,7 @@
   min-height: 4.2rem;
   padding: 0 1.6rem;
   border: 1px solid #b3141b;
-  border-radius: 999px;
+  border-radius: var(--media-radius, 10px);
   background: #b3141b;
   color: #fff;
   font-size: 1.4rem;

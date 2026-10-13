@@ -91,12 +91,12 @@
   }
 
   // Sade kart (ana sayfa bölümleri): küçük etiket + fiyatın altında temanın butonu
+  // Etiket görsel kutusunun (card-product__media-inner) sol üst köşesinde, her kartta aynı yerde
   function sadeKart(sarici, medya, adres, secenek) {
-    var temaEtiketi = medya.querySelector('.card-new-in-badge, .card__badge .badge');
     var rozet = document.createElement('span');
-    rozet.className = 'kp-kk-rozet kp-kk-rozet--sade' + (temaEtiketi ? ' kp-kk-rozet--alt' : '');
+    rozet.className = 'kp-kk-rozet kp-kk-rozet--sade';
     rozet.innerHTML = '<span class="kp-kk-rozet__ikon" aria-hidden="true">✎</span> Kişiselleştirilebilir';
-    medya.appendChild(rozet);
+    (medya.querySelector('.card-product__media-inner') || medya).appendChild(rozet);
     var bilgi = sarici.querySelector('.card__information') || sarici.querySelector('.card__content');
     if (!bilgi) return;
     var b = document.createElement('a');

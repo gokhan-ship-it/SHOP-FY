@@ -6,7 +6,32 @@
   margin-top: 0;
 }
 
-/* "✎ Kişiselleştirilebilir": küçük ve sade, temanın etiket ölçüsünde */
+/* Kartlar eşit yükseklikte: ad ve fiyat üstte, "Kişiselleştir" kartın en altında (bütün kartlarda aynı hiza) */
+.kp-cs .splide__slide > div,
+.kp-cs .card-wrapper {
+  height: 100%;
+}
+.kp-cs .card-product {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.kp-cs .card__content,
+.kp-cs .card__information {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+/* Ürün adı en fazla iki satır, uzunsa üç nokta */
+.kp-cs .card__heading a {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* "✎ Kişiselleştirilebilir": küçük ve sade; görsel kutusunun sol üst köşesinde, her kartta aynı yerde */
 .kp-cs .kp-kk-rozet--sade {
   top: 1rem;
   left: 1rem;
@@ -20,19 +45,37 @@
   letter-spacing: 0.02em;
   box-shadow: none;
 }
-.kp-cs .kp-kk-rozet--sade.kp-kk-rozet--alt {
-  top: 3.4rem;
-}
 .kp-cs .kp-kk-rozet--sade .kp-kk-rozet__ikon {
   color: inherit;
   font-weight: 500;
 }
+/* Temanın "NEW IN" etiketi bu bölümde sağ üstte (sol üst köşe Kişiselleştirilebilir etiketinin) */
+.kp-cs .card-new-in-badge {
+  left: auto;
+  right: 1rem;
+}
 
-/* "Kişiselleştir": temanın butonu, fiyatın altında tam genişlik */
+/* Butonlar: kart görselleriyle aynı yuvarlaklık, 44 px, yarı kalın, normal harf aralığı */
+.kp-cs .kp-kk-kart-buton,
+.kp-cs .kp-cs__buton {
+  height: 44px;
+  min-height: 44px;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  border-radius: var(--media-radius, 10px);
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+}
+/* "Kişiselleştir": fiyatın altında boşluk, butonu kartın dibine iter */
 .kp-cs .kp-kk-kart-buton {
   display: flex;
   width: 100%;
-  margin-top: 1.2rem;
+  margin-top: auto;
+}
+.kp-cs .card-information {
+  margin-bottom: 1.2rem;
 }
 .kp-cs .kp-kk-kart-buton--kirmizi {
   --btn-solid-bg: 179 20 27;
