@@ -83,7 +83,7 @@ function bolumHtml({ foto = null, filtre = true } = {}) {
   const sekmeler = filtre ? `<div><div class="tab-scrollable flex justify-center mt-6"><div class="tabs-header gap-x-16 flex relative font-heading" role="tablist" aria-label="Ürün tipi">
     <button class="tab-button active" role="tab" aria-selected="true" data-tab="kp-cs-hepsi" data-kp-cs-filtre="hepsi" tabindex="0">Hepsi</button><button class="tab-button" role="tab" aria-selected="false" data-tab="kp-cs-canta" data-kp-cs-filtre="canta" tabindex="-1">Çanta</button><button class="tab-button" role="tab" aria-selected="false" data-tab="kp-cs-kiyafet" data-kp-cs-filtre="kiyafet" tabindex="-1">Kıyafet</button>
     <div class="indicator"></div></div></div></div>` : '';
-  return `<section class="shopify-section section" id="cok-satanlar"><div class="section-featured-collection kp-cs section-padding section-bg isolate overflow-hidden lg:overflow-visible" style="--section-padding-top: 36px; --section-padding-bottom: 36px;" data-kp-cs data-editor-src="/cdn/kisisel-editor.js" data-ornek="true" data-buton="kirmizi">
+  return `<section class="shopify-section section" id="cok-satanlar"><div class="section-featured-collection kp-cs kp-cs--kaydir section-padding section-bg isolate overflow-hidden lg:overflow-visible" style="--section-padding-top: 36px; --section-padding-bottom: 36px;" data-kp-cs data-editor-src="/cdn/kisisel-editor.js" data-ornek="true" data-buton="kirmizi">
   <div class="collection container" id="collection-kp" style="--column-product:4;--column-product-mobile:2;--column-gap:3rem;">
     ${filtre ? '<tabs-component class="tabs-component kp-cs__sekmeler">' : ''}
     <div class="featured-collection-wrap section-header-wrap flex flex-col lg:flex-row lg:items-end gap-x-6 gap-y-4 mb-16">
@@ -91,7 +91,7 @@ function bolumHtml({ foto = null, filtre = true } = {}) {
       ${sekmeler}
     </div>
     ${filtre ? '<div class="tabs-content">' : ''}
-    <splide-carousel><div id="featured-collection-kp" class="splide-slider splide featured-collection-slider" data-splide='{"type":"slide", "speed":500, "perPage":4,"lazyLoad": "nearby","preloadPages":1, "perMove": 1,"waitForTransition": false,"rewind":false,"updateOnMove":true,"pagination":false,"arrows":true,"autoplay":false,"pauseOnHover":true,"pauseOnFocus":true, "gap": "3rem", "destroy": false,"breakpoints":{"640": {"destroy":false,"perPage":2, "arrows":false, "gap": "2rem", "padding":{"right":"2rem"}, "perMove": 1, "speed":1200 }}}' data-kp-cs-slider>
+    <splide-carousel><div id="featured-collection-kp" class="splide-slider splide featured-collection-slider" data-splide='{"type":"slide", "speed":500, "perPage":4,"lazyLoad": "nearby","preloadPages":1, "perMove": 1,"waitForTransition": false,"rewind":false,"updateOnMove":true,"pagination":false,"arrows":true,"autoplay":false,"pauseOnHover":true,"pauseOnFocus":true, "gap": "3rem", "destroy": false,"breakpoints":{"640": {"destroy":true,"perPage":2, "arrows":false, "gap": "2rem", "padding":{"right":"2rem"}, "perMove": 1, "speed":1200 }}}' data-kp-cs-slider>
       <div class="splide__track mb:splide-right-overflow"><div class="splide__list" data-kp-cs-liste>${slaytlar}</div></div>
       <div class="splide__arrows splide__arrows--ltr no-js-hidden"><button class="splide__arrow splide__arrow--prev " type="button" aria-label="Önceki"><svg viewBox="0 0 10 10"><path d="M1 5h8"/></svg></button><button class="splide__arrow splide__arrow--next " type="button" aria-label="Sonraki"><svg viewBox="0 0 10 10"><path d="M1 5h8"/></svg></button></div>
     </div></splide-carousel>
@@ -149,6 +149,7 @@ async function ac(cihaz, secenek = {}, baglam) {
     return r.fulfill({ contentType: 'text/html; charset=utf-8', body: html });
   });
   await s.goto('https://jantifox.test/');
+  // Mobilde (640 px ve altı) kaydırıcı kapalı, liste tarayıcının kendi kaydırmasıyla kayar
   await s.waitForFunction(() => document.querySelector('[data-kp-cs]').kpBolum && document.querySelector('[data-kp-cs] .splide.is-initialized'));
   return { baglam, s, istekler };
 }
@@ -176,8 +177,9 @@ const kartOlc = (s, kapsam) => s.evaluate((q) => {
 // "Kişiselleştir" butonlarının alt kenarı aynı hizada (kartın en altında); ürün adı en fazla iki satır
 async function hizaKontrol(s, ad) {
   const r = await s.evaluate((q) => {
-    // Kaydırıcıda görünen kartlar (dışarıdakileri temanın görünme animasyonu henüz 2rem aşağıda bekletir)
-    const sl = [...document.querySelectorAll(q + ' .splide__slide.is-visible')];
+    // Ekranda tamamen görünen kartlar (dışarıdakileri temanın görünme animasyonu henüz 2rem aşağıda bekletir)
+    const kaydirici = innerWidth > 640;
+    const sl = kaydirici ? [...document.querySelectorAll(q + ' .splide__slide.is-visible')] : [...document.querySelectorAll(q + ' .splide__slide')].filter((x) => { const r = x.getBoundingClientRect(); return r.width > 0 && r.left >= -1 && r.right <= innerWidth + 1; });
     return sl.map((x) => {
       const ic = x.querySelector('.card-product__media-inner').getBoundingClientRect();
       const rz = x.querySelector('.kp-kk-rozet');
@@ -311,7 +313,7 @@ for (const en of [1280, 1440, 1920]) {
     });
     assert.ok(notYer.icinde && notYer.sagAlt && !notYer.cakisma, JSON.stringify(notYer));
     // Kadraj: Artist'te önizleme kart görselinde bulundu; spor çantada farklı çekim (kesit ortalanır)
-    const depo = await s.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('kp-ornek-v2:')).map((k) => JSON.parse(localStorage.getItem(k))));
+    const depo = await s.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('kp-ornek-v3:')).map((k) => JSON.parse(localStorage.getItem(k))));
     const kadrajlar = depo.filter((x) => x.isim).map((x) => x.kadraj);
     assert.equal(kadrajlar.filter((x) => x && x.w > 0).length, 3, 'Le Koko kartlarında kadraj bulundu: ' + JSON.stringify(kadrajlar));
     assert.equal(kadrajlar.filter((x) => x === null).length, 3, 'spor / tişört: kesit ortalanır');
@@ -365,28 +367,29 @@ for (const [ad, cihaz] of [['360', { ...devices['Galaxy S9+'], viewport: { width
   // Buton kart genişliğinde; alt buton tam genişlik; sayfada yatay taşma yok
   await s.locator(bizim).scrollIntoViewIfNeeded();
   await hizaKontrol(s, ad + 'px');
+  // Kaydırıcı JS ile değil, tarayıcının kendi yatay kaydırmasıyla (scroll-snap) kayar
+  const yerel = await s.evaluate((q) => { const l = document.querySelector(q + ' .splide__list'); const st = getComputedStyle(l); return [st.overflowX, st.scrollSnapType.split(' ')[0], st.transform, document.querySelectorAll(q + ' .splide__slide.is-visible').length]; }, bizim);
+  assert.deepEqual(yerel, ['auto', 'x', 'none', 0], ad + ' yerel kaydırma (Splide kapalı)');
   // Kaydırıp NEW IN etiketli kartlara gelince de hiza aynı
-  await s.locator(`${bizim} .splide__list`).evaluate(() => {});
-  const sp = await s.evaluate((q) => { const c = document.querySelector(q + ' splide-carousel'); c.slideInstance.go(2); return true; }, bizim);
+  await s.evaluate((q) => { const l = document.querySelector(q + ' .splide__list'); const sl = l.querySelectorAll('.splide__slide'); l.scrollLeft = sl[2].offsetLeft - sl[0].offsetLeft; }, bizim);
   await s.waitForTimeout(1500);
   await hizaKontrol(s, ad + 'px (kaydırılmış)');
-  await s.evaluate((q) => document.querySelector(q + ' splide-carousel').slideInstance.go(0), bizim);
+  await s.evaluate((q) => { document.querySelector(q + ' .splide__list').scrollLeft = 0; }, bizim);
   await s.waitForTimeout(1500);
   const btn = await s.locator(`${bizim} [data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"]`).evaluate((sl) => [Math.round(sl.querySelector('.kp-kk-kart-buton').getBoundingClientRect().width), Math.round(sl.querySelector('.card-wrapper').getBoundingClientRect().width)]);
   assert.equal(btn[0], btn[1]);
   const alt = await s.locator(`${bizim} .kp-cs__buton`).evaluate((b) => { const c = b.closest('.collection'); const st = getComputedStyle(c); return [b.getBoundingClientRect().width, c.getBoundingClientRect().width - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight)]; });
   assert.ok(Math.abs(alt[0] - alt[1]) < 1, 'alt buton tam genişlik ' + alt);
   assert.ok(await s.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'yatay taşma yok');
-  // Örnek tasarım kart ekrandayken kendiliğinden belirip kaybolur
+  // Dokunmatik ekranda örnek tasarım sabit görünür (otomatik yer değiştirme yok)
   await s.locator(bizim).scrollIntoViewIfNeeded();
   await s.waitForFunction((q) => document.querySelectorAll(q + ' .kp-ornek').length >= 2, bizim, { timeout: 20000 });
-  await s.locator(`${bizim} .splide__track`).scrollIntoViewIfNeeded();
-  const ilk = s.locator(`${bizim} .splide__slide.is-visible .kp-ornek`).first();
-  await s.waitForFunction((q) => [...document.querySelectorAll(q + ' .splide__slide.is-visible .kp-ornek')].some((e) => e.classList.contains('kp-ornek--acik')), bizim, { timeout: 8000 });
-  await s.waitForFunction((q) => ![...document.querySelectorAll(q + ' .splide__slide.is-visible .kp-ornek')].every((e) => e.classList.contains('kp-ornek--acik')) || true, bizim);
-  const once = await ilk.evaluate((e) => e.classList.contains('kp-ornek--acik'));
+  const acik = () => s.locator(`${bizim} .kp-ornek`).evaluateAll((l) => l.map((e) => e.classList.contains('kp-ornek--acik') && getComputedStyle(e).opacity === '1'));
+  await s.waitForTimeout(400);
+  const once = await acik();
+  assert.ok(once.length >= 2 && once.every(Boolean), ad + ' sabit görünür ' + once);
   await s.waitForTimeout(3600);
-  assert.notEqual(await ilk.evaluate((e) => e.classList.contains('kp-ornek--acik')), once, 'dönüşümlü');
+  assert.deepEqual(await acik(), once, ad + ' yer değiştirmiyor');
   await baglam.close();
 }
 

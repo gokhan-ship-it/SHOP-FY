@@ -73,6 +73,10 @@
     return c;
   }
 
+  function yerelKaydirma(kok) {
+    return kok.classList.contains('kp-cs--kaydir') && !!window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
+  }
+
   /* ---------------- Bölüm ---------------- */
 
   function Bolum(kok) {
@@ -122,8 +126,9 @@
       if (a) a.classList.remove('scroll-trigger--offscreen');
     });
     var sp = this.kaydirici && this.kaydirici.slideInstance;
-    // Mobilde kaydırıcı kapalı (tarayıcının kendi kaydırması): yalnızca başa dön
-    if (!this.kok.querySelector('.splide.is-initialized')) {
+    // Mobilde kaydırıcı kapalı (tarayıcının kendi kaydırması): yalnızca başa dön. Splide kapanınca da
+    // is-initialized sınıfını bıraktığı için ekran genişliğine bakılır (bölüm ayarı: data-splide 640 px'te destroy)
+    if (yerelKaydirma(this.kok)) {
       this.liste.scrollLeft = 0;
       sp = null;
     }
