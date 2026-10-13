@@ -29,9 +29,9 @@ const ekran = async (x, y) => s.evaluate(([x, y]) => {
 const surukle = async (a, b) => { await s.mouse.move(...a); await s.mouse.down(); await s.mouse.move((a[0] + b[0]) / 2, (a[1] + b[1]) / 2); await s.mouse.move(...b); await s.mouse.up(); };
 const sec = async (h) => { await s.evaluate((h) => AlanPaneli.urunSec(h), h); };
 
-// 1. Başlangıç: 3 hazır (tote, iki kalem kutusu), 10 atlandı; ilk çizilecek ürün açık, daire önceden çizili
-assert.equal(await s.textContent('#ilerleme'), '3 / 21 hazır');
-assert.match(await s.textContent('#ilerleme-alt'), /18 çizilecek · 10 atlandı/);
+// 1. Başlangıç: 3 hazır (tote, iki kalem kutusu), 10 atlandı (40 ürün); ilk çizilecek ürün açık, daire önceden çizili
+assert.equal(await s.textContent('#ilerleme'), '3 / 30 hazır');
+assert.match(await s.textContent('#ilerleme-alt'), /24 çizilecek · 10 atlandı · 3 görsel yok/);
 assert.equal(await aktif(), 'bej-tshirt');
 let d = await D('bej-tshirt');
 assert.equal(d.sekiller.length, 1);
@@ -43,7 +43,7 @@ assert.equal(await s.locator('[data-ornek]').count(), 1, 'örnek harf görünür
 // 2. Ctrl+S: Hazır
 await s.keyboard.press('Control+s');
 assert.equal((await D('bej-tshirt')).durum, 'hazir');
-assert.equal(await s.textContent('#ilerleme'), '4 / 21 hazır');
+assert.equal(await s.textContent('#ilerleme'), '4 / 30 hazır');
 
 // 3. Grubun tüm renklerine uygula: tişörtler aynı oranda → Hazır, kontrol işareti yok
 await s.fill('#metin-siniri', '7');

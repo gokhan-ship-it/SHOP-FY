@@ -389,7 +389,9 @@
     if (o) {
       var lw = sayi($('#ornek-en').value) || 5.5, lh = sayi($('#ornek-boy').value) || 6;
       alanlar.forEach(function (s) {
-        if (!harfSigar(s, o, lw, lh)) r.hatalar.push('"' + s.ad + '" alanına ' + lw + ' × ' + lh + ' cm harf sığmıyor (' + yuvarla(s.w / o.pxCm) + ' × ' + yuvarla(s.h / o.pxCm) + ' cm). Ölçek yanlış olabilir.');
+        // Yalnızca harf ya da rakama izin verilen alanda (ör. 5 cm Velcro'lu mini çantada alan yalnızca ikon olabilir)
+        var yaziAlani = s.tipler.indexOf('letter') !== -1 || s.tipler.indexOf('number') !== -1;
+        if (yaziAlani && !harfSigar(s, o, lw, lh)) r.hatalar.push('"' + s.ad + '" alanına ' + lw + ' × ' + lh + ' cm harf sığmıyor (' + yuvarla(s.w / o.pxCm) + ' × ' + yuvarla(s.h / o.pxCm) + ' cm). Ölçek yanlış olabilir.');
       });
       var enCm = u.png.en / o.pxCm;
       var uo = g.urun_olcu;

@@ -155,6 +155,21 @@ window.PANEL_VERI = {
    },
    "not": "Stick-on (yapıştırılabilir) kalem kutuları. Kırmızı ve Turuncu'nun görseli ve alanı mağazada hazır (perspektifi düzeltilmiş ön yüz); kontrol edip kaydetmen yeterli.",
    "cokluAlan": false
+  },
+  {
+   "ad": "Çok Amaçlı Mini Çanta (G24 × Y16 × D10)",
+   "velcro": {
+    "sekil": "daire",
+    "cap_cm": 5,
+    "kaynak": "ürün açıklaması: ön yüzde 5 cm çapında Velcro"
+   },
+   "urun_olcu": {
+    "en_cm": 24,
+    "boy_cm": 16,
+    "derinlik_cm": 10
+   },
+   "not": "patch-notice etiketi yok (bu yüzden ilk listeye girmemişti). Velcro 5 cm: bir harf (5,5 × 6 cm) sığmaz; alanı Velcro kadar çizersen yalnız İkon bırak, ya da patch'in taşabileceği alanı çiz ve Velcro ölçüsünü ona göre gir.",
+   "cokluAlan": false
   }
  ],
  "urunler": [
@@ -1693,6 +1708,168 @@ window.PANEL_VERI = {
     }
    },
    "durum": "cizilecek"
+  },
+  {
+   "handle": "cok-amacli-mini-canta-kirmizi-beyaz-zikzak",
+   "urunId": 10088650473758,
+   "baslik": "Çok Amaçlı Mini Çanta / Kırmızı Beyaz Zikzak",
+   "grup": 12,
+   "not": "",
+   "png": {
+    "dosya": "veri/urunler/png/cok-amacli-mini-canta-kirmizi-beyaz-zikzak.png",
+    "en": 1113,
+    "boy": 597
+   },
+   "gorsel": "gorseller/cok-amacli-mini-canta-kirmizi-beyaz-zikzak.webp",
+   "mevcut": null,
+   "sekiller": [],
+   "cizgi": null,
+   "onDolguKaynak": "",
+   "ayar": {
+    "metinSiniri": null,
+    "kapali": false,
+    "izinler": {
+     "harf": true,
+     "rakam": true,
+     "ikon": true,
+     "set": true,
+     "aksesuar": false
+    }
+   },
+   "durum": "cizilecek"
+  },
+  {
+   "handle": "cok-amacli-mini-canta-kirmizi-puantiyeli-1",
+   "urunId": 10088652046622,
+   "baslik": "Çok Amaçlı Mini Çanta / Kırmızı Puantiyeli",
+   "grup": 12,
+   "not": "",
+   "png": {
+    "dosya": "veri/urunler/png/cok-amacli-mini-canta-kirmizi-puantiyeli-1.png",
+    "en": 1075,
+    "boy": 599
+   },
+   "gorsel": "gorseller/cok-amacli-mini-canta-kirmizi-puantiyeli-1.webp",
+   "mevcut": null,
+   "sekiller": [],
+   "cizgi": null,
+   "onDolguKaynak": "",
+   "ayar": {
+    "metinSiniri": null,
+    "kapali": false,
+    "izinler": {
+     "harf": true,
+     "rakam": true,
+     "ikon": true,
+     "set": true,
+     "aksesuar": false
+    }
+   },
+   "durum": "cizilecek"
+  },
+  {
+   "handle": "cok-amacli-mini-canta-kirmizi-puantiyeli",
+   "urunId": 10088650047774,
+   "baslik": "Çok Amaçlı Mini Çanta / Mavi Beyaz Çizgili",
+   "grup": 12,
+   "not": "Beyaz çizgiler arka planla aynı renk: boşluk doldurma (70 px) ve alt kenar tamamlama yapıldı.",
+   "png": {
+    "dosya": "veri/urunler/png/cok-amacli-mini-canta-kirmizi-puantiyeli.png",
+    "en": 1060,
+    "boy": 694
+   },
+   "gorsel": "gorseller/cok-amacli-mini-canta-kirmizi-puantiyeli.webp",
+   "mevcut": null,
+   "sekiller": [],
+   "cizgi": null,
+   "onDolguKaynak": "",
+   "ayar": {
+    "metinSiniri": null,
+    "kapali": false,
+    "izinler": {
+     "harf": true,
+     "rakam": true,
+     "ikon": true,
+     "set": true,
+     "aksesuar": false
+    }
+   },
+   "durum": "cizilecek"
+  },
+  {
+   "handle": "cok-amacli-mini-canta-kucuk-puantiyeli",
+   "urunId": 15779978314014,
+   "baslik": "Çok Amaçlı Mini Çanta / Pembe Kırmızı Puantiyeli",
+   "grup": 12,
+   "not": "Ön yüzündeki tek görsel patch takılı çekilmiş; boş Velcro'lu ön görsel gelince eklenir.",
+   "png": null,
+   "gorsel": null,
+   "mevcut": null,
+   "sekiller": [],
+   "cizgi": null,
+   "onDolguKaynak": "",
+   "ayar": {
+    "metinSiniri": null,
+    "kapali": false,
+    "izinler": {
+     "harf": true,
+     "rakam": true,
+     "ikon": true,
+     "set": true,
+     "aksesuar": false
+    }
+   },
+   "durum": "gorsel_yok"
+  },
+  {
+   "handle": "cok-amacli-mini-canta-yesil-pembe-cizgili",
+   "urunId": 15779978510622,
+   "baslik": "Çok Amaçlı Mini Çanta / Yeşil Pembe Çizgili",
+   "grup": 12,
+   "not": "Ön yüzündeki tek görsel patch takılı çekilmiş; boş Velcro'lu ön görsel gelince eklenir.",
+   "png": null,
+   "gorsel": null,
+   "mevcut": null,
+   "sekiller": [],
+   "cizgi": null,
+   "onDolguKaynak": "",
+   "ayar": {
+    "metinSiniri": null,
+    "kapali": false,
+    "izinler": {
+     "harf": true,
+     "rakam": true,
+     "ikon": true,
+     "set": true,
+     "aksesuar": false
+    }
+   },
+   "durum": "gorsel_yok"
+  },
+  {
+   "handle": "cok-amacli-mini-canta-sari-cizgili",
+   "urunId": 15779978608926,
+   "baslik": "Çok Amaçlı Mini Çanta / Sarı Çizgili",
+   "grup": 12,
+   "not": "Ön yüzündeki tek görsel patch takılı çekilmiş; boş Velcro'lu ön görsel gelince eklenir.",
+   "png": null,
+   "gorsel": null,
+   "mevcut": null,
+   "sekiller": [],
+   "cizgi": null,
+   "onDolguKaynak": "",
+   "ayar": {
+    "metinSiniri": null,
+    "kapali": false,
+    "izinler": {
+     "harf": true,
+     "rakam": true,
+     "ikon": true,
+     "set": true,
+     "aksesuar": false
+    }
+   },
+   "durum": "gorsel_yok"
   }
  ]
 };
