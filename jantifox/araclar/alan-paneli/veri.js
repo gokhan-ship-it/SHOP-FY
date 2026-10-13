@@ -139,6 +139,22 @@ window.PANEL_VERI = {
    },
    "not": "Rozet: PATCH ALANI YOKTUR. Öneri: \"kişiselleştirme olmasın\".",
    "cokluAlan": false
+  },
+  {
+   "ad": "Yapıştırılabilir Kalem Kutusu (G22 × Y12 × D5)",
+   "velcro": {
+    "sekil": "yuvarlak köşeli dikdörtgen",
+    "genislik_cm": 20.87,
+    "kose_cm": 2,
+    "kaynak": "aksesuar haritası"
+   },
+   "urun_olcu": {
+    "en_cm": 22,
+    "boy_cm": 12,
+    "derinlik_cm": 5
+   },
+   "not": "Stick-on (yapıştırılabilir) kalem kutuları. Kırmızı ve Turuncu'nun görseli ve alanı mağazada hazır (perspektifi düzeltilmiş ön yüz); kontrol edip kaydetmen yeterli.",
+   "cokluAlan": false
   }
  ],
  "urunler": [
@@ -1415,6 +1431,268 @@ window.PANEL_VERI = {
     }
    },
    "durum": "atlandi"
+  },
+  {
+   "handle": "yapistirilabilir-kalem-kutusu-x-le-koko-collectif",
+   "urunId": 15869129818398,
+   "baslik": "Yapıştırılabilir Kalem Kutusu Kırmızı - LE KOKO COLLECTIF-",
+   "grup": 11,
+   "not": "Çantaya takılan aksesuar da bu üründür: mevcut haritası (Velcro yüzeyi + logo yasaklı) çanta editörünün aksesuar adımında kullanılıyor. Panelde değiştirirsen aksesuar tasarımı da aynı alanı kullanır.",
+   "png": {
+    "dosya": "veri/aksesuar/duz/kalem-kutusu-kirmizi-on.png",
+    "en": 1200,
+    "boy": 655
+   },
+   "gorsel": "gorseller/yapistirilabilir-kalem-kutusu-x-le-koko-collectif.webp",
+   "mevcut": {
+    "onizleme_gorseli": "gid://shopify/MediaImage/72591192785182",
+    "harita": {
+     "surum": 2,
+     "tip": "aksesuar",
+     "kalibre": true,
+     "gorsel": {
+      "en": 1200,
+      "boy": 655
+     },
+     "dis": {
+      "shape": "rect",
+      "x": 0,
+      "y": 0,
+      "w": 100,
+      "h": 100,
+      "en_cm": 22,
+      "boy_cm": 12,
+      "kose_cm": 3.3
+     },
+     "zones": [
+      {
+       "id": "velcro-yuzeyi",
+       "ad": "Velcro yüzeyi",
+       "shape": "rect",
+       "x": 2.556,
+       "y": 3.999,
+       "w": 94.851,
+       "h": 92.907,
+       "kose_cm": 2,
+       "allowed_types": [
+        "letter",
+        "number",
+        "icon"
+       ],
+       "genislik_cm": 20.87
+      }
+     ],
+     "forbidden": [
+      {
+       "ad": "Bölge 1",
+       "shape": "ellipse",
+       "x": 72.626,
+       "y": 53.946,
+       "w": 14.377,
+       "h": 27.443
+      }
+     ]
+    },
+    "not": "Aksesuar haritası (tip: aksesuar, dış ölçü 22 × 12). Mağazaya yazarken tip ve dis korunur."
+   },
+   "sekiller": [
+    {
+     "tur": "alan",
+     "ad": "Velcro yüzeyi",
+     "shape": "rect",
+     "x": 30.67,
+     "y": 26.19,
+     "w": 1138.21,
+     "h": 608.54,
+     "tipler": [
+      "letter",
+      "number",
+      "icon"
+     ],
+     "olcuCm": 20.87,
+     "olcuYon": "genislik",
+     "koseCm": 2
+    },
+    {
+     "tur": "yasak",
+     "ad": "Bölge 1",
+     "shape": "ellipse",
+     "x": 871.51,
+     "y": 353.35,
+     "w": 172.52,
+     "h": 179.75
+    }
+   ],
+   "cizgi": null,
+   "onDolguKaynak": "",
+   "ayar": {
+    "metinSiniri": null,
+    "kapali": false,
+    "izinler": {
+     "harf": true,
+     "rakam": true,
+     "ikon": true,
+     "set": true,
+     "aksesuar": false
+    }
+   },
+   "durum": "cizilecek"
+  },
+  {
+   "handle": "yapistirilabilir-kalem-kutusu-x-le-koko-collectif-copy",
+   "urunId": 15869133226270,
+   "baslik": "Yapıştırılabilir Kalem Kutusu Sarı - LE KOKO COLLECTIF-",
+   "grup": 11,
+   "not": "Rozet: PATCH ALANI YOKTUR (yalnızca arkasında cırt alanı var). Önde patch alanı yoksa 'Bu üründe kişiselleştirme olmasın' seç. Görsel açılı çekim (düzeltilmemiş aksesuar görseli).",
+   "png": {
+    "dosya": "veri/aksesuar/png/kisisel-aksesuar-kalem-kutusu-sari.png",
+    "en": 1000,
+    "boy": 493
+   },
+   "gorsel": "gorseller/yapistirilabilir-kalem-kutusu-x-le-koko-collectif-copy.webp",
+   "mevcut": {
+    "onizleme_gorseli": "gid://shopify/MediaImage/72590847017246",
+    "harita": null,
+    "not": "Haritası yok; aksesuar görseli (1000 × 493, açılı)."
+   },
+   "sekiller": [],
+   "cizgi": null,
+   "onDolguKaynak": "",
+   "ayar": {
+    "metinSiniri": null,
+    "kapali": false,
+    "izinler": {
+     "harf": true,
+     "rakam": true,
+     "ikon": true,
+     "set": true,
+     "aksesuar": false
+    }
+   },
+   "durum": "cizilecek"
+  },
+  {
+   "handle": "yapistirilabilir-kalem-kutusu-x-le-koko-collectif-copy-1",
+   "urunId": 15869138829598,
+   "baslik": "Yapıştırılabilir Kalem Kutusu Turuncu - LE KOKO COLLECTIF-",
+   "grup": 11,
+   "not": "Çantaya takılan aksesuar da bu üründür: mevcut haritası (Velcro yüzeyi + logo ve D halkası yasaklı) çanta editörünün aksesuar adımında kullanılıyor.",
+   "png": {
+    "dosya": "veri/aksesuar/duz/kalem-kutusu-turuncu-on.png",
+    "en": 1200,
+    "boy": 655
+   },
+   "gorsel": "gorseller/yapistirilabilir-kalem-kutusu-x-le-koko-collectif-copy-1.webp",
+   "mevcut": {
+    "onizleme_gorseli": "gid://shopify/MediaImage/72591192817950",
+    "harita": {
+     "surum": 2,
+     "tip": "aksesuar",
+     "kalibre": true,
+     "gorsel": {
+      "en": 1200,
+      "boy": 655
+     },
+     "dis": {
+      "shape": "rect",
+      "x": 0,
+      "y": 0,
+      "w": 100,
+      "h": 100,
+      "en_cm": 22,
+      "boy_cm": 12,
+      "kose_cm": 3.3
+     },
+     "zones": [
+      {
+       "id": "velcro-yuzeyi",
+       "ad": "Velcro yüzeyi",
+       "shape": "rect",
+       "x": 2.556,
+       "y": 3.999,
+       "w": 94.851,
+       "h": 92.907,
+       "kose_cm": 2,
+       "allowed_types": [
+        "letter",
+        "number",
+        "icon"
+       ],
+       "genislik_cm": 20.87
+      }
+     ],
+     "forbidden": [
+      {
+       "ad": "Bölge 1",
+       "shape": "ellipse",
+       "x": 74.501,
+       "y": 53.87,
+       "w": 14.377,
+       "h": 27.443
+      },
+      {
+       "ad": "D halkası",
+       "shape": "rect",
+       "x": 93.833,
+       "y": 66.565,
+       "w": 6.167,
+       "h": 14.198
+      }
+     ]
+    },
+    "not": "Aksesuar haritası (tip: aksesuar, dış ölçü 22 × 12). Mağazaya yazarken tip ve dis korunur."
+   },
+   "sekiller": [
+    {
+     "tur": "alan",
+     "ad": "Velcro yüzeyi",
+     "shape": "rect",
+     "x": 30.67,
+     "y": 26.19,
+     "w": 1138.21,
+     "h": 608.54,
+     "tipler": [
+      "letter",
+      "number",
+      "icon"
+     ],
+     "olcuCm": 20.87,
+     "olcuYon": "genislik",
+     "koseCm": 2
+    },
+    {
+     "tur": "yasak",
+     "ad": "Bölge 1",
+     "shape": "ellipse",
+     "x": 894.01,
+     "y": 352.85,
+     "w": 172.52,
+     "h": 179.75
+    },
+    {
+     "tur": "yasak",
+     "ad": "D halkası",
+     "shape": "rect",
+     "x": 1126.0,
+     "y": 436.0,
+     "w": 74.0,
+     "h": 93.0
+    }
+   ],
+   "cizgi": null,
+   "onDolguKaynak": "",
+   "ayar": {
+    "metinSiniri": null,
+    "kapali": false,
+    "izinler": {
+     "harf": true,
+     "rakam": true,
+     "ikon": true,
+     "set": true,
+     "aksesuar": false
+    }
+   },
+   "durum": "cizilecek"
   }
  ]
 };

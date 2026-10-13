@@ -143,5 +143,122 @@
    ]
   },
   "not": "Velcro'suz ürünün kendi alanlarında yapıştırılabilir sürümün (15869138829598) görseli ve haritası zaten var (2026-10-08). Eksik olan yalnızca aktif."
+ },
+ "yapistirilabilir-kalem-kutusu-x-le-koko-collectif": {
+  "onizleme_gorseli": "gid://shopify/MediaImage/72591192785182",
+  "gorsel_yerel": "../aksesuar/duz/kalem-kutusu-kirmizi-on.png",
+  "harita": {
+   "surum": 2,
+   "tip": "aksesuar",
+   "kalibre": true,
+   "gorsel": {
+    "en": 1200,
+    "boy": 655
+   },
+   "dis": {
+    "shape": "rect",
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 100,
+    "en_cm": 22,
+    "boy_cm": 12,
+    "kose_cm": 3.3
+   },
+   "zones": [
+    {
+     "id": "velcro-yuzeyi",
+     "ad": "Velcro yüzeyi",
+     "shape": "rect",
+     "x": 2.556,
+     "y": 3.999,
+     "w": 94.851,
+     "h": 92.907,
+     "kose_cm": 2,
+     "allowed_types": [
+      "letter",
+      "number",
+      "icon"
+     ],
+     "genislik_cm": 20.87
+    }
+   ],
+   "forbidden": [
+    {
+     "ad": "Bölge 1",
+     "shape": "ellipse",
+     "x": 72.626,
+     "y": 53.946,
+     "w": 14.377,
+     "h": 27.443
+    }
+   ]
+  },
+  "not": "Aksesuar haritası (tip: aksesuar, dış ölçü 22 × 12). Mağazaya yazarken tip ve dis korunur."
+ },
+ "yapistirilabilir-kalem-kutusu-x-le-koko-collectif-copy-1": {
+  "onizleme_gorseli": "gid://shopify/MediaImage/72591192817950",
+  "gorsel_yerel": "../aksesuar/duz/kalem-kutusu-turuncu-on.png",
+  "harita": {
+   "surum": 2,
+   "tip": "aksesuar",
+   "kalibre": true,
+   "gorsel": {
+    "en": 1200,
+    "boy": 655
+   },
+   "dis": {
+    "shape": "rect",
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 100,
+    "en_cm": 22,
+    "boy_cm": 12,
+    "kose_cm": 3.3
+   },
+   "zones": [
+    {
+     "id": "velcro-yuzeyi",
+     "ad": "Velcro yüzeyi",
+     "shape": "rect",
+     "x": 2.556,
+     "y": 3.999,
+     "w": 94.851,
+     "h": 92.907,
+     "kose_cm": 2,
+     "allowed_types": [
+      "letter",
+      "number",
+      "icon"
+     ],
+     "genislik_cm": 20.87
+    }
+   ],
+   "forbidden": [
+    {
+     "ad": "Bölge 1",
+     "shape": "ellipse",
+     "x": 74.501,
+     "y": 53.87,
+     "w": 14.377,
+     "h": 27.443
+    },
+    {
+     "ad": "D halkası",
+     "shape": "rect",
+     "x": 93.833,
+     "y": 66.565,
+     "w": 6.167,
+     "h": 14.198
+    }
+   ]
+  },
+  "not": "Aksesuar haritası (tip: aksesuar, dış ölçü 22 × 12). Mağazaya yazarken tip ve dis korunur."
+ },
+ "yapistirilabilir-kalem-kutusu-x-le-koko-collectif-copy": {
+  "onizleme_gorseli": "gid://shopify/MediaImage/72590847017246",
+  "gorsel_yerel": "../aksesuar/png/kisisel-aksesuar-kalem-kutusu-sari.png",
+  "not": "Haritası yok; aksesuar görseli (1000 × 493, açılı)."
  }
 }
