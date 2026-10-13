@@ -22,6 +22,8 @@
   window.kpOlcum = function (ad) { isle(ad, performance.now()); };
   window.kpOlcum.editor = editorSayfasi;
   (on.kuyruk || []).forEach(function (x) { isle(x[0], x[1]); });
+  var kareler = on.kareler || [];
+  window.kpOlcum.kareler = kareler;
 
   // Basış kaydı: yalnızca editör sayfasında ve son 2 dakika içindeyse; bir kez okunur (yenileyince yeniden sayılmaz)
   var tik = null;
@@ -106,6 +108,9 @@
 
     if (tik && tik.tepki) ekle('Buton tepkisi (ilk kare)', tik.tepki);
     if (tik) ekle('Sayfa isteği başladı', koken);
+    var boya = performance.getEntriesByType ? performance.getEntriesByType('paint') : [];
+    var fp = boya.filter(function (p) { return p.name === 'first-paint'; })[0];
+    var fcp = boya.filter(function (p) { return p.name === 'first-contentful-paint'; })[0];
     if (n) {
       // Başka alan adına giden yönlendirmeleri (ör. shop.app) tarayıcı saymaz; yalnızca araya giren süre görünür
       var yon = n.redirectCount ? n.redirectCount + ' adet' : n.fetchStart > 100 ? 'sayı gizli, başka alan adı olabilir' : 'yok';
@@ -115,6 +120,9 @@
       ekle('HTML ayrıştırıldı', n.domInteractive ? koken + n.domInteractive : null);
       ekle('DOMContentLoaded', n.domContentLoadedEventEnd ? koken + n.domContentLoadedEventEnd : null);
     }
+    ekle('Sayfanın ilk karesi (tarayıcı kare döngüsü)', kareler.length ? koken + kareler[0] : null);
+    if (fp) ekle('İlk çizim (first-paint)', koken + fp.startTime);
+    ekle('İlk içerik çizimi (first-contentful-paint)' + (boya.length ? '' : ' — tarayıcı vermiyor'), fcp ? koken + fcp.startTime : null);
     if (editorSayfasi) {
       var css = bul(/\/kisisel-editor\.css/)[0];
       var js = bul(/\/kisisel-editor\.js/)[0];
@@ -165,8 +173,26 @@
     });
     var k = isaretler.kullanilabilir;
     ust.push('');
+    // Kare akışındaki en uzun boşluk (ekranın donduğu süre)
+    var enUzun = null;
+    for (var i = 1; i < kareler.length; i++) {
+      var b = kareler[i] - kareler[i - 1];
+      if (!enUzun || b > enUzun.b) enUzun = { b: b, bas: kareler[i - 1], son: kareler[i] };
+    }
+    if (enUzun) ust.push('En uzun kare boşluğu: ' + yaz(enUzun.b / 1000) + ' (' + yaz(sn(koken + enUzun.bas)) + ' → ' + yaz(sn(koken + enUzun.son)) + ')');
     if (k != null) ust.push('Kullanılabilir ana kadar: ' + toplamYaz(toplam(k)));
     ust.push('Şu ana kadar: ' + toplamYaz(toplam(null)));
+    var gec = kaynaklar().filter(function (r) { return !/kisisel-olcum\.js/.test(r.name); })
+      .sort(function (a, b) { return b.responseEnd - a.responseEnd; }).slice(0, 8);
+    if (gec.length) {
+      ust.push('En geç bitenler:');
+      gec.forEach(function (r) {
+        var u;
+        try { u = new URL(r.name); } catch (e) { u = { host: '', pathname: r.name }; }
+        var ad = (u.pathname.split('/').pop() || u.pathname).slice(0, 34);
+        ust.push('  ' + yaz(sn(koken + r.responseEnd)) + '  ' + (u.host === location.host ? '' : u.host + ' ') + ad + '  (' + yaz((r.responseEnd - r.startTime) / 1000) + ')');
+      });
+    }
     var buyuk = kaynaklar().filter(function (r) { return r.transferSize > 0 && !/kisisel-olcum\.js/.test(r.name); })
       .sort(function (a, b) { return b.transferSize - a.transferSize; }).slice(0, 6);
     if (buyuk.length) {

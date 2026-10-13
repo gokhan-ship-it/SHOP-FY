@@ -2747,7 +2747,9 @@
     var srcset = kacis(g.kucuk) + ' 750w, ' + kacis(g.buyuk) + ' 1200w' + (g.dev ? ', ' + kacis(g.dev) + ' 1800w' : '');
     var sahneHtml =
       '<div class="kp-sahne' + (this.etkilesimli ? ' kp-sahne--etkilesimli' : '') + (this.etkilesimli && cokAlan ? ' kp-sahne--cok-alan' : '') + '" style="aspect-ratio:' + g.en + ' / ' + g.boy + '">' +
-      '<img class="kp-sahne__urun" src="' + kacis(g.kucuk) + '" srcset="' + srcset + '" sizes="(min-width: 990px) 600px, 100vw" alt="' + kacis(m.urun.baslik) + '" draggable="false" decoding="async">' +
+      // Kaynak, gösterilecek boyut belli olunca verilir (gorselKaynagi): önce tahmini, sonra gerçek boyutla iki ayrı
+      // genişlik indirilmesin
+      '<img class="kp-sahne__urun" data-src="' + kacis(g.kucuk) + '" data-srcset="' + srcset + '" alt="' + kacis(m.urun.baslik) + '" draggable="false" decoding="async">' +
       (this.etkilesimli
         ? '<svg class="kp-sahne__alanlar" viewBox="0 0 ' + m.Wcm + ' ' + m.Hcm + '" preserveAspectRatio="none" aria-hidden="true">' + yasakSvg + alanSvg + '</svg>' + etiketHtml
         : '') +
@@ -2774,6 +2776,8 @@
     this.sahne = this.kok.querySelector('.kp-sahne');
     // Ürün görseli gelene kadar pencerede hafif yükleniyor görünümü
     var urunImg = this.sahne.querySelector('.kp-sahne__urun');
+    // Ölçülecek pencere yoksa (küçük önizlemeler) kaynak hemen, varsa ilk yerleşimde gerçek boyutla verilir
+    if (urunImg && !this.gorunum) gorselKaynagi(urunImg, '(min-width: 990px) 600px, 100vw');
     if (this.gorunum && urunImg && !(urunImg.complete && urunImg.naturalWidth)) {
       var gor = this.gorunum;
       gor.classList.add('kp-gorunum--yukleniyor');
@@ -2872,8 +2876,19 @@
     this.sahne.style.top = y.ust + '%';
     this.boyut = g.width + 'x' + g.height;
     var img = this.sahne.querySelector('.kp-sahne__urun');
-    if (img) img.sizes = Math.ceil((g.width * y.genislik) / 100) + 'px';
+    if (img) gorselKaynagi(img, Math.ceil((g.width * y.genislik) / 100) + 'px');
   };
+
+  // Sahnedeki ürün görseline boyut (sizes) ve ilk seferde kaynağını verir
+  function gorselKaynagi(img, sizes) {
+    img.sizes = sizes;
+    var set = img.getAttribute('data-srcset');
+    if (!set) return;
+    img.srcset = set;
+    img.src = img.getAttribute('data-src');
+    img.removeAttribute('data-srcset');
+    img.removeAttribute('data-src');
+  }
 
   // Pencerenin boyutu değişince (küçülen önizleme, klavye, ekran döndürme) yer yeniden hesaplanır: pencere oranı
   // görselden farklı olabildiği için yüzdeler boyuta bağlıdır
@@ -7854,7 +7869,8 @@
 
   // Ürün sayfası ?kisisellestir=1 ile açılınca kisisel-kart.liquid ilk boyamada beyaz bir açılış örtüsü gösterir
   // (önizleme yeri yükleniyor görünümünde). Editör ve önizleme görseli hazır olunca kalkar.
-  // Editörün arkasındaki ürün sayfası editör kapanana kadar gizli kalır (kp-acilis-arka): açılışta bütün sayfanın
+  // kp-acilis-arka artık sayfayı gizlemiyor (layout/theme.liquid; Safari gizli sayfayı load'a kadar boyamıyordu); editör opak
+  // ve tam ekran olduğu için arkadaki sayfa zaten görünmez. Eski not: açılışta bütün sayfanın
   // boyanması (4 kat yavaş işlemcide ~0,6 s) editörü geciktirmez; sayfa editör kapanınca görünür.
   function acilisOrtusuKaldir() {
     var k = document.documentElement;
