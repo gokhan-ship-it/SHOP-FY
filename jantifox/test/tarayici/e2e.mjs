@@ -78,7 +78,7 @@ assert.equal(await sayfa.locator('[data-kp-gorunum]').textContent(), 'Alana yak�
 await sayfa.screenshot({ path: cikti + '01b-tum-canta.png' });
 await sayfa.locator('[data-kp-gorunum]').tap();
 await sayfa.waitForTimeout(400);
-assert.equal(await sayfa.locator('[data-kp-gorunum]').textContent(), 'Tüm çantayı gör');
+assert.equal(await sayfa.locator('[data-kp-gorunum]').textContent(), 'Tüm ürünü gör');
 
 // ELİF yaz → İ uyarısı
 const girdi = sayfa.locator('#kp-isim');

@@ -3084,7 +3084,7 @@
       '<button type="button" class="kp-gecmis__dugme" data-kp-geri-al aria-label="Geri al" title="Geri al" disabled><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 14L4 9l5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
       '<button type="button" class="kp-gecmis__dugme" data-kp-yinele aria-label="Yinele" title="Yinele" disabled><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 14l5-5-5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
       '</div>' +
-      '<button type="button" class="kp-onizleme__dugme kp-onizleme__dugme--gorunum" data-kp-gorunum aria-pressed="false">Tüm çantayı gör</button>' +
+      '<button type="button" class="kp-onizleme__dugme kp-onizleme__dugme--gorunum" data-kp-gorunum aria-pressed="false">Tüm ürünü gör</button>' +
       '<span class="kp-aci" data-kp-aci aria-hidden="true" hidden></span>' +
       '<div class="kp-balon" data-kp-balon role="group" hidden></div>' +
       // Önizlemenin alt kısmında havada: uyarı kutusu
@@ -3298,7 +3298,7 @@
     this.kart.taslakSil(yedek, bilgi);
   };
 
-  // Özet: "Tasarımı büyük gör" (tam ekran, yalnızca görüntüleme; tüm çanta)
+  // Özet: "Tasarımı büyük gör" (tam ekran, yalnızca görüntüleme; tüm ürün)
   Editor.prototype.buyukGor = function (ac) {
     var kat = this.el && this.el.querySelector('[data-kp-buyuk]');
     if (!kat) return;
@@ -5273,7 +5273,7 @@
     }
     var gorunum = this.el.querySelector('[data-kp-gorunum]');
     gorunum.hidden = !this.sahne.yakinlasabilir;
-    gorunum.textContent = this.sahne.yakin ? 'Tüm çantayı gör' : 'Alana yakınlaş';
+    gorunum.textContent = this.sahne.yakin ? 'Tüm ürünü gör' : 'Alana yakınlaş';
     gorunum.setAttribute('aria-pressed', this.sahne.yakin ? 'false' : 'true');
   };
 

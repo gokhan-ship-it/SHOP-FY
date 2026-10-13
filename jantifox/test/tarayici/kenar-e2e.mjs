@@ -47,7 +47,7 @@ assert.equal(await s.locator('[data-kp-geri-al]').isDisabled(), true);
 assert.equal(await s.locator('[data-kp-yinele]').isDisabled(), true);
 const [gr, gv] = await s.evaluate(() => ['[data-kp-geri-al]', '[data-kp-gorunum]'].map((q) => document.querySelector(q).getBoundingClientRect()).map((r) => [r.left, r.top]));
 const sahneSol = await s.evaluate(() => document.querySelector('.kp-gorunum').getBoundingClientRect().left);
-assert.ok(gr[0] - sahneSol < 20 && gv[0] > gr[0], 'geri al sol üstte, Tüm çantayı gör sağda');
+assert.ok(gr[0] - sahneSol < 20 && gv[0] > gr[0], 'geri al sol üstte, Tüm ürünü gör sağda');
 assert.equal(await gorunur('[data-kp-kenar]'), false, 'kenar boşken görünmez');
 assert.equal(await kenarSayisi(), 0);
 assert.equal((await metin('[data-kp-etiketler]').catch(() => '')), '', 'boşken eklenenler yazısı yok');

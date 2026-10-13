@@ -38,18 +38,18 @@ await s.locator('#kp-isim').fill('ece');
 await s.locator('#kp-isim').blur();
 const tam = await yukseklik();
 assert.ok(tam > 180, 'tam boy: ' + tam);
-assert.equal(await gorunur('[data-kp-gorunum]'), true, 'Tüm çantayı gör görünür');
+assert.equal(await gorunur('[data-kp-gorunum]'), true, 'Tüm ürünü gör görünür');
 
 // 1) Yazı adımında küçülmez
 await kaydir(200);
 assert.equal(await kucuk(), false, 'Yazı adımında küçülmez');
 
-// 2) İkon listesi kaydırılınca küçülür: ~140 px, Tüm çantayı gör gizli, geri al/yinele küçük, sağ altta Büyüt
+// 2) İkon listesi kaydırılınca küçülür: ~140 px, Tüm ürünü gör gizli, geri al/yinele küçük, sağ altta Büyüt
 await s.locator(ed + ' [data-kp-adim="ikon"]').click();
 await kaydir(120);
 assert.equal(await kucuk(), true, 'ikon listesi kayınca küçülür');
 assert.ok(Math.abs((await yukseklik()) - 140) <= 2, 'yaklaşık 140 px: ' + (await yukseklik()));
-assert.equal(await gorunur('[data-kp-gorunum]'), false, 'Tüm çantayı gör gizli');
+assert.equal(await gorunur('[data-kp-gorunum]'), false, 'Tüm ürünü gör gizli');
 // Eklenenler satırı küçük önizlemenin de hemen altında
 const [icK, satirK] = await s.evaluate((q) => [' .kp-onizleme__ic', ' .kp-satir'].map((x) => document.querySelector(q + x).getBoundingClientRect()).map((r) => ({ t: r.top, b: r.bottom, h: r.height })), ed);
 assert.ok(satirK.h > 30 && satirK.t >= icK.b && satirK.t - icK.b < 12, 'satır önizlemenin hemen altında: ' + JSON.stringify([icK, satirK]));
