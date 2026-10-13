@@ -216,18 +216,28 @@
     };
   };
 
-  // Düz <img> ile çizilir (SVG <image> isteklerinde CDN sıkıştırılmış biçim yerine PNG döndürüyor)
+  // Düz <img> ile çizilir (SVG <image> isteklerinde CDN sıkıştırılmış biçim yerine PNG döndürüyor).
+  // Görseller kartta çizileceği boyutta istenir (ekran yoğunluğu dahil): iPhone'a CDN bu dosyaları PNG gönderiyor
   Bolum.prototype.ciz = function (medya, u, s) {
+    var oran = u.gorsel.en / u.gorsel.boy;
+    var m = medya.getBoundingClientRect();
+    var mw = m.width || 300;
+    var mh = m.height || mw;
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var sahneEn = Math.min(0.92 * mw, 0.92 * mh * oran);
+    var gerekli = function (css, enAz, enCok) { return Math.max(enAz, Math.min(enCok, Math.ceil((css * dpr) / 50) * 50)); };
+    var urunSrc = kucukGorsel(tamAdres(u.gorsel.url), gerekli(sahneEn, 200, 600));
     var harfler = s.parcalar.map(function (p) {
       var don = p.aci ? 'transform:rotate(' + p.aci + 'deg);' : '';
-      return '<img class="kp-ornek__harf" src="' + kacis(kucukGorsel(tamAdres(p.src), 150)) + '" alt="" decoding="async" style="left:' + p.x + '%;top:' + p.y + '%;width:' + p.w + '%;height:' + p.h + '%;' + don + '">';
+      var src = kucukGorsel(tamAdres(p.src), gerekli((sahneEn * Math.max(p.w, p.h * (u.gorsel.boy / u.gorsel.en))) / 100, 50, 150));
+      return '<img class="kp-ornek__harf" src="' + kacis(src) + '" alt="" decoding="async" style="left:' + p.x + '%;top:' + p.y + '%;width:' + p.w + '%;height:' + p.h + '%;' + don + '">';
     }).join('');
     var kat = document.createElement('div');
     kat.className = 'kp-ornek';
     kat.setAttribute('aria-hidden', 'true');
     kat.innerHTML =
-      '<div class="kp-ornek__sahne" style="--kp-oran:' + (u.gorsel.en / u.gorsel.boy) + ';aspect-ratio:' + u.gorsel.en + ' / ' + u.gorsel.boy + '">' +
-      '<img class="kp-ornek__urun" src="' + kacis(tamAdres(u.gorsel.url)) + '" alt="" decoding="async">' + harfler + '</div>' +
+      '<div class="kp-ornek__sahne" style="--kp-oran:' + oran + ';aspect-ratio:' + u.gorsel.en + ' / ' + u.gorsel.boy + '">' +
+      '<img class="kp-ornek__urun" src="' + kacis(urunSrc) + '" alt="" decoding="async">' + harfler + '</div>' +
       '<span class="kp-ornek__not">Örnek tasarım: ' + kacis(s.isim) + '</span>';
     // Ürün görseli yüklenince görünür; yüklenemezse kartın normal görseli kalır
     var on = new Image();
@@ -235,7 +245,7 @@
       medya.insertBefore(kat, medya.firstChild && medya.firstChild.nextSibling);
       medya.classList.add('kp-ornek-var');
     };
-    on.src = tamAdres(u.gorsel.url);
+    on.src = urunSrc;
   };
 
   Bolum.prototype.fotoKoy = function (medya, src) {

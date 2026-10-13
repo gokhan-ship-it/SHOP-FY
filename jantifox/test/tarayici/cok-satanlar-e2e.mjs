@@ -207,7 +207,7 @@ for (const en of [1280, 1440, 1920]) {
     const harfler = await s.locator('[data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"] .kp-ornek img.kp-ornek__harf').evaluateAll((l) => l.map((x) => x.getAttribute('src')));
     const ilkIsim = notlar[0].split(': ')[1];
     assert.equal(harfler.length, ilkIsim.length);
-    assert.ok(harfler.every((h) => /kisisel-harf-[A-Z]\.webp\?.*width=150/.test(h)), harfler[0]);
+    assert.ok(harfler.every((h) => /kisisel-harf-[A-Z]\.webp\?.*width=(50|100|150)\b/.test(h)), harfler[0]);
     assert.equal(await s.locator('.kp-ornek svg, .kp-ornek image').count(), 0);
     // Sahne kartın içine oranı korunarak sığar; harfler sahnenin içinde
     const kutular = await s.locator('[data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"]').evaluate((li) => {
