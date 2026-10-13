@@ -203,11 +203,22 @@ for (const en of [1280, 1440, 1920]) {
     notlar.forEach((n) => assert.match(n, /^Örnek tasarım: [A-Z]+$/));
     assert.equal(new Set(notlar).size, 6, 'her karta farklı isim');
     assert.equal(await s.locator('[data-kp-cs-urun="mavi-sweatshirt"] .kp-ornek').count(), 0);
-    // Harfler SVG içinde, Cool Alfabe görselleriyle
-    const harfler = await s.locator('[data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"] .kp-ornek image').evaluateAll((l) => l.map((x) => x.getAttribute('href')));
+    // Harfler düz <img> (CDN sıkıştırılmış biçim versin), Cool Alfabe görselleri küçük boyutta
+    const harfler = await s.locator('[data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"] .kp-ornek img.kp-ornek__harf').evaluateAll((l) => l.map((x) => x.getAttribute('src')));
     const ilkIsim = notlar[0].split(': ')[1];
-    assert.equal(harfler.length, 1 + ilkIsim.length);
-    assert.ok(harfler.slice(1).every((h) => /kisisel-harf-[A-Z]\.webp/.test(h)));
+    assert.equal(harfler.length, ilkIsim.length);
+    assert.ok(harfler.every((h) => /kisisel-harf-[A-Z]\.webp\?.*width=150/.test(h)), harfler[0]);
+    assert.equal(await s.locator('.kp-ornek svg, .kp-ornek image').count(), 0);
+    // Sahne kartın içine oranı korunarak sığar; harfler sahnenin içinde
+    const kutular = await s.locator('[data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"]').evaluate((li) => {
+      const r = (e) => e.getBoundingClientRect();
+      const m = r(li.querySelector('.kp-ornek'));
+      const sa = r(li.querySelector('.kp-ornek__sahne'));
+      return { m: [m.width, m.height], sa: [sa.left - m.left, sa.top - m.top, sa.width, sa.height], harf: [...li.querySelectorAll('.kp-ornek__harf')].map((h) => { const q = r(h); return [q.left - sa.left, q.top - sa.top, q.width, q.height]; }) };
+    });
+    assert.ok(Math.abs(kutular.sa[2] / kutular.sa[3] - spor.gorsel.en / spor.gorsel.boy) < 0.02, 'oran korunur');
+    assert.ok(kutular.sa[3] <= kutular.m[1] + 0.5 && kutular.sa[2] <= kutular.m[0] + 0.5, 'karta sığar');
+    kutular.harf.forEach((h) => assert.ok(h[0] >= 0 && h[1] >= 0 && h[0] + h[2] <= kutular.sa[2] + 0.5 && h[1] + h[3] <= kutular.sa[3] + 0.5, 'harf sahnede'));
     // Katman tıklamayı engellemez: ürün sayfasına gider; Kişiselleştir butonu üstte
     assert.equal(await s.locator('.kp-ornek').first().evaluate((e) => getComputedStyle(e).pointerEvents), 'none');
     const kisisel = await kutu(s, '[data-kp-cs-urun="mavi-beyaz-cizgili-spor-canta"] .kp-kk-kisisel');

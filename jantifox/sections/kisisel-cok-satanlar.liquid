@@ -123,9 +123,9 @@
         {%- unless ilk %},{% endunless -%}{%- assign ilk = false -%}
         {{- p.handle | json }}:{
           "id": {{ p.id }},
-          "foto": {%- if foto != blank -%}{{ foto.preview_image | default: foto | image_url: width: 900 | json }}{%- else -%}null{%- endif -%},
+          "foto": {%- if foto != blank -%}{{ foto.preview_image | default: foto | image_url: width: 700 | json }}{%- else -%}null{%- endif -%},
           "metin_siniri": {{ p.metafields.kisisellestirme.metin_karakter_siniri.value | json }},
-          "gorsel": {"en": {{ onizleme.width | default: 1000 }}, "boy": {{ onizleme.height | default: 1000 }}, "url": {{ onizleme | image_url: width: 900 | json }}},
+          "gorsel": {"en": {{ onizleme.width | default: 1000 }}, "boy": {{ onizleme.height | default: 1000 }}, "url": {{ onizleme | image_url: width: 600 | json }}},
           "harita": {{ p.metafields.kisisellestirme.harita.value | json }}
         }
       {%- endfor -%}

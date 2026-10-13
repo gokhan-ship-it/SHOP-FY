@@ -16,6 +16,11 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+  // Shopify CDN görsel adresinde genişliği değiştirir (harfler kartta küçük görünür)
+  function kucukGorsel(u, en) {
+    if (!/[?&]width=\d+/.test(u)) return u;
+    return u.replace(/([?&]width=)\d+/, '$1' + en);
+  }
   function tamAdres(u) {
     return u && u.indexOf('//') === 0 ? 'https:' + u : u;
   }
@@ -211,23 +216,18 @@
     };
   };
 
+  // Düz <img> ile çizilir (SVG <image> isteklerinde CDN sıkıştırılmış biçim yerine PNG döndürüyor)
   Bolum.prototype.ciz = function (medya, u, s) {
-    var W = u.gorsel.en;
-    var H = u.gorsel.boy;
-    var parcalar = s.parcalar.map(function (p) {
-      var x = (p.x / 100) * W;
-      var y = (p.y / 100) * H;
-      var w = (p.w / 100) * W;
-      var h = (p.h / 100) * H;
-      var don = p.aci ? ' transform="rotate(' + p.aci + ' ' + (x + w / 2) + ' ' + (y + h / 2) + ')"' : '';
-      return '<image href="' + kacis(tamAdres(p.src)) + '" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" preserveAspectRatio="xMidYMid meet"' + don + '/>';
+    var harfler = s.parcalar.map(function (p) {
+      var don = p.aci ? 'transform:rotate(' + p.aci + 'deg);' : '';
+      return '<img class="kp-ornek__harf" src="' + kacis(kucukGorsel(tamAdres(p.src), 150)) + '" alt="" decoding="async" style="left:' + p.x + '%;top:' + p.y + '%;width:' + p.w + '%;height:' + p.h + '%;' + don + '">';
     }).join('');
     var kat = document.createElement('div');
     kat.className = 'kp-ornek';
     kat.setAttribute('aria-hidden', 'true');
     kat.innerHTML =
-      '<svg class="kp-ornek__sahne" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">' +
-      '<image href="' + kacis(tamAdres(u.gorsel.url)) + '" x="0" y="0" width="' + W + '" height="' + H + '"/>' + parcalar + '</svg>' +
+      '<div class="kp-ornek__sahne" style="--kp-oran:' + (u.gorsel.en / u.gorsel.boy) + ';aspect-ratio:' + u.gorsel.en + ' / ' + u.gorsel.boy + '">' +
+      '<img class="kp-ornek__urun" src="' + kacis(tamAdres(u.gorsel.url)) + '" alt="" decoding="async">' + harfler + '</div>' +
       '<span class="kp-ornek__not">Örnek tasarım: ' + kacis(s.isim) + '</span>';
     // Ürün görseli yüklenince görünür; yüklenemezse kartın normal görseli kalır
     var on = new Image();
