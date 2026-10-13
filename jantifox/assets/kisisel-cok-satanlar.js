@@ -223,7 +223,8 @@
     var m = medya.getBoundingClientRect();
     var mw = m.width || 300;
     var mh = m.height || mw;
-    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    // Süs katmanı: 2x yoğunluk yeterli (3x ekranda görsel boyutu iki katına çıkar, fark edilmez)
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var sahneEn = Math.min(0.92 * mw, 0.92 * mh * oran);
     var gerekli = function (css, enAz, enCok) { return Math.max(enAz, Math.min(enCok, Math.ceil((css * dpr) / 50) * 50)); };
     var urunSrc = kucukGorsel(tamAdres(u.gorsel.url), gerekli(sahneEn, 200, 600));
