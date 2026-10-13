@@ -52,7 +52,8 @@
           Kişiselleştirmeye başla
         </button>
         <div class="kisisel-kart__alt">
-          <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>Her patch 330 TL</span>
+          {%- assign kp_patch_fiyat = katalog.harf_setleri.value.first.selected_or_first_available_variant.price -%}
+          <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>{% if kp_patch_fiyat %}Her patch {{ kp_patch_fiyat | divided_by: 100 }} TL{% endif %}</span>
           <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
         </div>
       </div>
