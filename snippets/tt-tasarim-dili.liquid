@@ -205,4 +205,674 @@ html:not(#ttd):not(#ttd-2) body :is(.gh-etiket, .gh-bilgi, .as-etiket, .tt-veri-
   font-size: var(--ttd-f-kucuk);
   line-height: 1.4;
 }
+
+/* ==========================================================================
+   ADIM 3 — Renk kuralları
+   - Apple mavisi (#0071E3 ailesi) kalkar: açık zeminde --ttd-murekkep,
+     koyu zeminde (mürekkep görünmeyeceği için) --ttd-koyu-metin.
+   - Leica kırmızısı (--ttd-vurgu) bu adımda yalnızca puan yıldızlarında;
+     koyu bölümdeki ana butonlar Adım 4'te.
+   - KORUNAN: background-clip:text gradient yazılar (.gh-vurgu, .ay-vurgu,
+     .as-bas-vurgu, .cb-bas-vurgu, .cb-ipucu) ve adım rozetleri (.ay-no) —
+     hiçbir renk kuralı bu seçicilere uygulanmaz.
+   - KORUNAN: indirim yeşili #1A7F37 / #EDF7F0 (tt_serit_*, tt-fb-serit,
+     tt-kol-serit, tt-kart-yeni/etiket, taksit modalı rozeti).
+   - KORUNAN: mozaik ve apple-slayt görsel karartma gradient'leri.
+   ========================================================================== */
+
+/* --- Tema geneli (Concept rgb üçlüleri) */
+:root {
+  --color-base-text: 17 17 17;
+  --color-base-button: 17 17 17;
+  --color-base-button-gradient: #111111;
+  --color-keyboard-focus: 17 17 17;
+  --color-price: 17 17 17;
+  --color-sale-price: 17 17 17;
+  --color-sale-tag: 17 17 17;
+  --color-rating: 226 6 18;
+  --color-placeholder: 242 242 242;
+  --color-drawer-text: 17 17 17;
+  --color-drawer-button: 17 17 17;
+  --color-drawer-button-background: 17 17 17;
+  --color-drawer-button-gradient: #111111;
+  --color-drawer-overlay: 17 17 17;
+}
+/* Concept açık section'lar: ön plan mürekkep */
+html:not(#ttd):not(#ttd-2) body :is([id$="__header"], [id$="__main-product"], [id$="__product-recommendations"], [id*="__featured_collection"],
+  [id$="__recently-viewed"], [id$="__main"], [id$="__cart-drawer"], [id$="__search-drawer"]).shopify-section {
+  --color-foreground: 17 17 17;
+}
+/* Concept koyu section'lar (bülten, SSS): zemin --ttd-koyu */
+html:not(#ttd):not(#ttd-2) body :is([id*="__newsletter"], [id$="__faq"]).shopify-section {
+  --color-background: 17 17 17;
+  --color-foreground: 245 245 247;
+  --color-button-text: 17 17 17;
+}
+
+/* --- Puan yıldızları: Leica kırmızısı */
+html:not(#ttd):not(#ttd-2) body .hv-stars svg,
+html:not(#ttd):not(#ttd-2) body .hv-kanit-yildiz svg,
+html:not(#ttd):not(#ttd-2) body .tt-proof .tt-stars svg {
+  fill: var(--ttd-vurgu);
+}
+html:not(#ttd):not(#ttd-2) body .gh-yildizlar,
+html:not(#ttd):not(#ttd-2) body :is(.tt-proof-stars, .tt-proof-star, .rating-star, .ugc-gallery-stars) {
+  color: var(--ttd-vurgu);
+}
+
+/* --- tt_baslik (koyu cam başlık barı ve hamburger menü) */
+html:not(#ttd):not(#ttd-2) body [data-tth-kok] {
+  background: rgba(17, 17, 17, 0.72);
+  border-bottom-color: var(--ttd-koyu-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body [class*="tth-sayi-"] {
+  background: var(--ttd-koyu-metin);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [data-tth-menu] {
+  background: var(--ttd-koyu);
+}
+html:not(#ttd):not(#ttd-2) body [data-tth-menu] li + li {
+  border-top-color: var(--ttd-koyu-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body [data-tth-menu] [class*="tth-alt-"] a {
+  color: var(--ttd-koyu-soluk);
+}
+
+/* --- hero-video-kapsul (ana sayfa açık, koleksiyon koyu varyant) */
+html:not(#ttd):not(#ttd-2) body .hv-root {
+  background: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body .hv-title,
+html:not(#ttd):not(#ttd-2) body .hv-stat {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .hv-body,
+html:not(#ttd):not(#ttd-2) body .hv-ph {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .hv-ticker {
+  background: var(--ttd-koyu-kart);
+  border-color: var(--ttd-koyu-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .hv-tk,
+html:not(#ttd):not(#ttd-2) body .hv-tk[data-efekt="vurgu"],
+html:not(#ttd):not(#ttd-2) body .hv-vurgu {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body .hv-tk-cizgi {
+  background: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .hv-log,
+html:not(#ttd):not(#ttd-2) body .hv-kanit {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .hv-media {
+  background: var(--ttd-koyu-kart);
+}
+/* koyu varyant (koleksiyon): ticker'lı "hv-yeni" düzeni koyu zemin kullanır */
+html:not(#ttd):not(#ttd-2) body .hv-root:has(.hv-yeni) {
+  background: var(--ttd-koyu);
+}
+html:not(#ttd):not(#ttd-2) body .hv-root:has(.hv-yeni) :is(.hv-title, .hv-stat) {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body .hv-root:has(.hv-yeni) :is(.hv-body, .hv-ph) {
+  color: var(--ttd-koyu-soluk);
+}
+
+/* --- tt-cok-satanlar (ürün rafı) */
+html:not(#ttd):not(#ttd-2) body .tt-cs {
+  --tt-cs-rozet: var(--ttd-murekkep);
+  --tt-cs-vurgu: var(--ttd-murekkep);
+  --tt-cs-etiket: var(--ttd-soluk);
+  --tt-cs-fiyat: var(--ttd-murekkep);
+  --tt-cs-eski: var(--ttd-soluk);
+  --tt-cs-ayrac: var(--ttd-cizgi);
+  --tt-cs-kenar: var(--ttd-cizgi);
+  --tt-cs-koyu: var(--ttd-murekkep);
+  --tt-cs-gri: var(--ttd-soluk);
+  background: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body .tt-cs-gorsel {
+  background: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body .tt-cs-noktalar i {
+  background: var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .tt-cs-noktalar i[data-cs-aktif] {
+  background: var(--ttd-murekkep);
+}
+
+/* --- tt-catal-karsilastirma (koyu bölüm) */
+html:not(#ttd):not(#ttd-2) body :is([class^="tt-catal-template--"], [class^="tt-catal-sections--"]) {
+  --tt-catal-bg: var(--ttd-koyu);
+  --tt-catal-surface: var(--ttd-koyu-kart);
+  --tt-catal-media: var(--ttd-koyu);
+  --tt-catal-line: var(--ttd-koyu-cizgi);
+  --tt-catal-pill-bg: var(--ttd-koyu-cizgi);
+  --tt-catal-text: var(--ttd-koyu-metin);
+  --tt-catal-muted: var(--ttd-koyu-soluk);
+  --tt-catal-name: var(--ttd-koyu-metin);
+  --tt-catal-cta: var(--ttd-koyu-metin);
+}
+
+/* --- hediye-omru (açık bölüm, liste satırları) */
+html:not(#ttd):not(#ttd-2) body .ho-root {
+  background: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body :is(.ho-head, .ho-okuma, .ho-ad, .ho-final) {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is(.ho-alt, .ho-ipucu, .ho-eksen span, .ho-durum) {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .ho-slider::-webkit-slider-runnable-track {
+  background: var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .ho-slider::-moz-range-track {
+  background: var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .ho-slider::-webkit-slider-thumb {
+  background: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .ho-slider::-moz-range-thumb {
+  background: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .ho-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .ho-slider:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .ho-media {
+  background: var(--ttd-yumusak);
+}
+/* kapsül satırı: mavi/kırmızı parlama kalkar, çerçeve ve çubuk mürekkep */
+html:not(#ttd):not(#ttd-2) body .ho-row.is-kapsul .ho-media {
+  box-shadow: 0 0 0 1.5px var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .ho-bar {
+  background: var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .ho-bar-fill,
+html:not(#ttd):not(#ttd-2) body .ho-row.is-kapsul .ho-bar-fill {
+  background: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .ho-row.is-kapsul .ho-durum {
+  color: var(--ttd-murekkep);
+  font-weight: 500;
+}
+/* "solup biten" hediyeler: kırmızı yerine soluk (kırmızı yalnızca yıldız ve tek ana buton) */
+html:not(#ttd):not(#ttd-2) body .ho-row.is-bitti .ho-bar-fill {
+  background: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .ho-row.is-bitti .ho-durum {
+  color: var(--ttd-soluk);
+}
+
+/* --- video-slider-kapsul (koyu bölüm) */
+html:not(#ttd):not(#ttd-2) body .vs-root {
+  background: var(--ttd-koyu);
+}
+html:not(#ttd):not(#ttd-2) body .vs-head {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body :is(.vs-alt, .vs-card-text, .vs-ph) {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .vs-stage {
+  background: var(--ttd-koyu-kart);
+}
+html:not(#ttd):not(#ttd-2) body .vs-card {
+  background: var(--ttd-koyu-kart);
+}
+html:not(#ttd):not(#ttd-2) body .vs-card-title {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body :is(.vs-card:hover, .vs-card.is-on) .vs-card-title {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body .vs-card::before {
+  background: var(--ttd-koyu-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .vs-fill {
+  background: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body .vs-dot {
+  background: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .vs-dot.is-on {
+  background: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body .vs-toggle {
+  background: var(--ttd-kart);
+  color: var(--ttd-murekkep);
+}
+@media (min-width: 990px) {
+  /* masaüstünde kartlar zeminsiz liste düzenindedir */
+  html:not(#ttd):not(#ttd-2) body .vs-card {
+    background: transparent;
+  }
+}
+
+/* --- mozaik-kartlar (açık bölüm) */
+html:not(#ttd):not(#ttd-2) body :is(.mk-head, .mk-alinti, .mk-isim, .mk-pop-baslik) {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is(.mk-metin, .mk-rol, .mk-pop-alt, .mk-pop-bos) {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .mk-medya {
+  background: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body .mk-yorum {
+  background: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body .mk-kapat {
+  background: var(--ttd-yumusak);
+  color: var(--ttd-murekkep);
+}
+/* doğrulanmış alıcı rozeti: mavi daire mürekkep */
+html:not(#ttd):not(#ttd-2) body .mk-rozet svg circle {
+  fill: var(--ttd-murekkep);
+}
+
+/* --- adim-yigin (koyu bölüm). .ay-vurgu ve .ay-no gradient'leri korunur.
+   .ay-kart / .ay-kmetin renkleri section ayarlarından satır içi style="" ile
+   geldiği için yalnızca burada !important zorunlu. */
+html:not(#ttd):not(#ttd-2) body :is(.ay-root, .ay-ust) {
+  background: var(--ttd-koyu);
+}
+html:not(#ttd):not(#ttd-2) body .ay-kart {
+  background: var(--ttd-koyu) !important;
+  --ay-panel: var(--ttd-koyu) !important;
+}
+html:not(#ttd):not(#ttd-2) body .ay-kmetin {
+  color: var(--ttd-koyu-soluk) !important;
+}
+html:not(#ttd):not(#ttd-2) body :is(.ay-etiket, .ay-alt) {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .ay-bas {
+  color: var(--ttd-koyu-metin);
+}
+
+/* --- couple-bulusma (açık). --cb-aksan / --cb-degrade (couple kimliği) korunur */
+html:not(#ttd):not(#ttd-2) body .cb-kok {
+  --cb-zemin: var(--ttd-yumusak);
+  --cb-yuzey: var(--ttd-kart);
+  --cb-kenar: var(--ttd-cizgi);
+  --cb-ikincil: var(--ttd-soluk);
+  --cb-metin: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is(.cb-bas-alt, .cb-sonuc-alt) {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .cb-kilit {
+  background: rgba(242, 242, 242, 0.98);
+}
+
+/* --- apple-slayt (couple sayfasında koyu bölüm; zemini tt-couple katmanından
+   siyah geliyordu). .as-bas-vurgu gradient'i ve .as-perde karartması korunur */
+html:not(#ttd):not(#ttd-2) body .as-kok {
+  background: var(--ttd-koyu);
+}
+html:not(#ttd):not(#ttd-2) body .as-bas {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body :is(.as-etiket, .as-alt) {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .as-kart {
+  background: var(--ttd-koyu-kart);
+}
+html:not(#ttd):not(#ttd-2) body .as-ok {
+  background: var(--ttd-kart);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .as-nokta {
+  background: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .as-nokta.is-etkin {
+  background: var(--ttd-koyu-metin);
+}
+
+/* --- tt-veri (koyu bölüm) */
+html:not(#ttd):not(#ttd-2) body .tt-veri {
+  background: var(--ttd-koyu);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-veri-baslik, .tt-veri-oran) {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-veri-ust, .tt-veri-alt, .tt-veri-etiket, .tt-veri-cumle, .tt-veri-dipnot) {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .tt-veri-satir,
+html:not(#ttd):not(#ttd-2) body .tt-veri-satir:last-child {
+  border-color: var(--ttd-koyu-cizgi);
+}
+
+/* --- ai_gen_block_8237de9 / 33582c8 karşılaştırma (couple ve event: koyu;
+   hediye sayfasındaki örnek açık zeminli) */
+html:not(#ttd):not(#ttd-2) body [class*="ai-comparison-"]:not([class*="ai-comparison-button"]) {
+  border-color: var(--ttd-koyu-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body :is([id*="__blocks_HATjRq"], [id*="__blocks_BHFjY3"]) [class^="ai-comparison"]:not([class*="-button"]):not([class*="-title"]):not([class*="-category"]):not([class*="-subtitle"]):not([class*="-feature"]):not([class*="-product"]) {
+  background-color: var(--ttd-koyu);
+}
+html:not(#ttd):not(#ttd-2) body :is([id*="__blocks_HATjRq"], [id*="__blocks_BHFjY3"]) :is([class*="ai-comparison-category"], [class*="ai-comparison-subtitle"]) {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body :is([id*="__blocks_HATjRq"], [id*="__blocks_BHFjY3"]) :is([class*="ai-comparison-title"], [class*="ai-comparison-product-title"], [class*="ai-comparison-feature-title"]) {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body :is([id*="__blocks_HATjRq"], [id*="__blocks_BHFjY3"]) :is([class*="ai-comparison-product-image-wrapper"], [class*="ai-comparison-product-image-placeholder"], [class*="ai-comparison-feature-card"]) {
+  background-color: var(--ttd-koyu-kart);
+}
+html:not(#ttd):not(#ttd-2) body [id*="__blocks_wKUYJT"] [class^="ai-comparison"]:not([class*="-button"]):not([class*="-title"]):not([class*="-category"]):not([class*="-subtitle"]):not([class*="-feature"]):not([class*="-product"]) {
+  background-color: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body [id*="__blocks_wKUYJT"] :is([class*="ai-comparison-category"], [class*="ai-comparison-subtitle"]) {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body [id*="__blocks_wKUYJT"] :is([class*="ai-comparison-title"], [class*="ai-comparison-product-title"], [class*="ai-comparison-feature-title"]) {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [id*="__blocks_wKUYJT"] [class*="ai-comparison-feature-card"] {
+  background-color: var(--ttd-kart);
+  border-color: var(--ttd-cizgi);
+}
+
+/* --- avantaj-kartlari (koyu bölüm). İkon renkleri section ayarından satır
+   içi style="" ile geldiği için !important zorunlu. */
+html:not(#ttd):not(#ttd-2) body .ak-kok {
+  background: var(--ttd-koyu);
+}
+html:not(#ttd):not(#ttd-2) body :is(.ak-bas, .ak-kart-bas, .ak-pop-bas, .ak-pop-etiket) {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body :is(.ak-ust-bag, .ak-pop-bag) {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body :is(.ak-kart-metin, .ak-pop-metin, .ak-pop-metin strong, .ak-pop-metin b) {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body :is(.ak-kart, .ak-pencere) {
+  background: var(--ttd-koyu-kart);
+}
+html:not(#ttd):not(#ttd-2) body .ak-ikon {
+  color: var(--ttd-koyu-metin) !important;
+}
+
+/* --- Event: ai-hero (bej zemin yumuşak griye), nasıl çalışır, ttn-hiw.
+   Kök öğeler "ai-hero-<kod>" sınıflıdır; alt öğe adları dışlanarak seçilir. */
+html:not(#ttd):not(#ttd-2) body [class^="ai-hero-"]:not([class*="-container-"]):not([class*="-badge-"]):not([class*="-heading-"]):not([class*="-description-"]):not([class*="-image"]) {
+  background-color: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body [class^="ai-hero-badge-"] {
+  background-color: var(--ttd-kart);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is([class^="ai-hero-heading-"], [class^="ai-hero-description-"]) {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [class^="ai-how-it-works-"]:not([class*="-container-"]):not([class*="-heading-"]):not([class*="-carousel"]):not([class*="-cards-"]):not([class*="-card-"]):not([class*="-nav-"]):not([class*="-pagination-"]):not([class*="-dot-"]):not([class*="-badge-"]) {
+  background-color: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body [class^="ai-how-it-works-card-"]:not([class*="-card-title-"]):not([class*="-card-description-"]):not([class*="-card-image"]) {
+  background-color: var(--ttd-kart);
+}
+html:not(#ttd):not(#ttd-2) body :is([class^="ai-how-it-works-heading-"], [class^="ai-how-it-works-badge-"], [class^="ai-how-it-works-card-title-"]) {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [class^="ai-how-it-works-card-description-"] {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body [class^="ai-how-it-works-nav-button-"] svg {
+  stroke: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [class^="ai-how-it-works-dot-"] {
+  background-color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [class*="ttn-hiw-container"] {
+  background-color: var(--ttd-koyu);
+}
+html:not(#ttd):not(#ttd-2) body :is([class*="ttn-hiw-heading"], [class*="ttn-hiw-title"]) {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body :is([class*="ttn-hiw-subheading"], [class*="ttn-hiw-text"]) {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body [class*="ttn-hiw-card"] {
+  background-color: var(--ttd-koyu-kart);
+}
+html:not(#ttd):not(#ttd-2) body [class*="ttn-hiw-step-number"] {
+  background-color: var(--ttd-kart);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [class*="ttn-hiw-dot"] {
+  background-color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body [class*="ttn-hiw-dot"].active {
+  background-color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body [class*="ai-apple-text__content"] {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body [class*="ai-apple-text__content"] :is(strong, b, h4 b, h5 b, h6 b) {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [class*="ai-category-card-placeholder"] {
+  background-color: var(--ttd-yumusak);
+}
+
+/* --- Ürün sayfası */
+html:not(#ttd):not(#ttd-2) body .tt-fb-serit.tt-fb-serit-bilgi,
+html:not(#ttd):not(#ttd-2) body .tt-kol-serit.tt-kol-bilgi {
+  background: var(--ttd-yumusak);
+  border-color: var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-fb-serit-bilgi .tt-fb-serit-metin, .tt-kol-bilgi .tt-kol-metin, .tt-fb-satir) {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-fb-serit-bilgi .tt-fb-serit-saat, .tt-kol-bilgi .tt-kol-saat, .tt-fb-silik, .tt-fb-ayrac) {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .tt-fb-satir.tt-fb-s3 {
+  background: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body [data-tt-tk] {
+  --tk-metin: var(--ttd-murekkep);
+  --tk-ikincil: var(--ttd-soluk);
+  --tk-silik: var(--ttd-soluk);
+  --tk-cizgi: var(--ttd-cizgi);
+  --tk-kapat: var(--ttd-yumusak);
+  --tk-odak: var(--ttd-murekkep);
+  --tk-bilgi-zemin: var(--ttd-yumusak);
+  --tk-bilgi-cizgi: var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body [class*="dcb-"]:is([class^="dcb-template--"], [class^="dcb-sections--"]) {
+  background: var(--ttd-sayfa);
+  border-color: var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body :is([class*="dcb-brandlab-"], [class*="dcb-midtext-"], [class*="dcb-text-"], [class*="dcb-pop-title-"], [class*="dcb-midico-"]) {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [class*="dcb-brand-"] {
+  fill: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [class*="dcb-btn-"] {
+  background: var(--ttd-yumusak);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [class*="dcb-pop-body-"] {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body [class*="dcb-pop-body-"] strong {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is([class*="fh-"][class*="-features"]:not([class*="fh-heading-"]):not([class*="fh-title-"]):not([class*="fh-text-"]):not([class*="fh-item"]):not([class*="fh-icon"]):not([class*="fh-grid"]):not([class*="fh-list"]),
+  [class*="ac-"][class*="-accordion"]:not([class*="ac-heading-"]):not([class*="ac-item-"]):not([class*="ac-summary-"]):not([class*="ac-icon-"]):not([class*="ac-body-"]):not([class*="ac-list"])) {
+  background: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body :is([class*="fh-heading-"], [class*="fh-title-"], [class*="ac-heading-"], [class*="ac-summary-"], [class*="ac-icon-"]) {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is([class*="fh-text-"], [class*="ac-body-"]) {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body [id*="__ugc_galeri"].shopify-section {
+  background-color: var(--ttd-koyu);
+}
+html:not(#ttd):not(#ttd-2) body :is([class*="ugc-gallery-rating-number-"], [class*="ugc-gallery-rating-text-"], [class*="ugc-gallery-caption-"]) {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body [class*="ugc-gallery-heading-"] {
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body [class*="ugc-gallery-play-"] {
+  background: var(--ttd-koyu-kart);
+}
+/* urun-alt-cta: ürün sayfasında gri zeminli (koleksiyonda beyaz kalır) */
+html:not(#ttd):not(#ttd-2) body.template-product :is([class^="uac-template--"], [class^="uac-sections--"]) {
+  background: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body [class*="uac-etiket-"],
+html:not(#ttd):not(#ttd-2) body [class*="uac-metin-"] {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body [class*="uac-baslik-"],
+html:not(#ttd):not(#ttd-2) body [class*="uac-bag-"],
+html:not(#ttd):not(#ttd-2) body [class*="uac-bagyazi-"] {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body [class*="uac-ok-"],
+html:not(#ttd):not(#ttd-2) body [class*="uac-ok-"] path {
+  stroke: var(--ttd-murekkep);
+}
+
+/* --- Koleksiyon: tt-secim-kartlari ve tt-uk kartları.
+   --tt-sc-yesil işlevsel indirim göstergelerinde (slot, tasarruf, kod) korunur;
+   seçim, rozet, sayaç ve ilerlemede mürekkebe döner. */
+html:not(#ttd):not(#ttd-2) body .tt-sc {
+  --tt-sc-koyu: var(--ttd-murekkep);
+  --tt-sc-kenar: var(--ttd-cizgi);
+  --tt-sc-gri: var(--ttd-soluk);
+  --tt-sc-gri-koyu: var(--ttd-koyu-soluk);
+  --tt-sc-cizgi: var(--ttd-cizgi);
+  --tt-sc-ayrac-koyu: var(--ttd-koyu-cizgi);
+  --tt-sc-halka-yesil: var(--ttd-soluk);
+  --tt-sc-yesil-acik: var(--ttd-koyu-soluk);
+  --tt-sc-kutu-zemin: var(--ttd-yumusak);
+  --tt-sc-kutu-yazi: var(--ttd-murekkep);
+  --tt-sc-kutu-zemin-koyu: var(--ttd-koyu-kart);
+  --tt-sc-kutu-yazi-koyu: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body .tt-sc-set-bant .tt-sc-bant-ikon {
+  color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .tt-sc-set-sayac {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .tt-sc-ilerleme i[data-sc-dolu] {
+  background: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .tt-sc-ilerleme i {
+  background: var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .tt-sc-nasil-etiket {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-sc-nasil-ac-ikon, .tt-sc-nasil-no) {
+  background: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .tt-sc-kart[aria-checked=true] .tt-sc-nasil-ac {
+  background: var(--ttd-koyu-kart);
+  border-color: var(--ttd-koyu-kart);
+}
+html:not(#ttd):not(#ttd-2) body .tt-sc-kart[aria-checked=true] .tt-sc-nasil-ac-ikon {
+  background: var(--ttd-koyu-metin);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .tt-uk {
+  --tt-uk-koyu: var(--ttd-murekkep);
+  --tt-uk-gri: var(--ttd-soluk);
+  --tt-uk-soluk: var(--ttd-soluk);
+  --tt-uk-zemin: var(--ttd-yumusak);
+  --tt-uk-nokta: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body [data-sc-secili] .tt-uk::after {
+  box-shadow: inset 0 0 0 1.5px var(--ttd-murekkep);
+}
+
+/* --- Çark (ttn-cark): nane yeşili kalkar, ikon siyah-beyaz. JS ve çerez mantığına dokunulmaz */
+html:not(#ttd):not(#ttd-2) body .ttn-cark {
+  --ttn-kart-zemin: var(--ttd-kart);
+  --ttn-vurgu: var(--ttd-soluk);
+  --ttn-koyu: var(--ttd-murekkep);
+  --ttn-alt-yazi: var(--ttd-soluk);
+  --ttn-halka: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body .ttn-cark-dilimler path:is([data-ttn-dilim="0"], [data-ttn-dilim="2"], [data-ttn-dilim="4"], [data-ttn-dilim="6"]) {
+  fill: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .ttn-cark-dilimler path:is([data-ttn-dilim="1"], [data-ttn-dilim="3"], [data-ttn-dilim="5"], [data-ttn-dilim="7"]) {
+  fill: #FFFFFF;
+}
+html:not(#ttd):not(#ttd-2) body .ttn-cark-dilimler path[data-ttn-kazanan] {
+  fill: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .ttn-cark-yazilar g[data-ttn-kazanan] {
+  fill: #FFFFFF;
+}
+html:not(#ttd):not(#ttd-2) body .ttn-cark-ibre {
+  border-top-color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .ttn-cark-kupon-ikon {
+  background: var(--ttd-murekkep);
+  color: #FFFFFF;
+}
+html:not(#ttd):not(#ttd-2) body .ttn-cark-bar {
+  --ttn-bar-zemin: var(--ttd-koyu);
+  --ttn-bar-yazi: var(--ttd-koyu-metin);
+  --ttn-bar-vurgu: var(--ttd-koyu-metin);
+  background: var(--ttd-koyu);
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body .ttn-cark-bar-sayac {
+  color: var(--ttd-koyu-metin);
+}
+
+/* --- "Nasıl çalışır?" paneli: yeşil tonlar nötre döner */
+html:not(#ttd):not(#ttd-2) body .tt-nc {
+  --tt-nc-zemin: var(--ttd-koyu);
+  --tt-nc-cerceve: var(--ttd-koyu-cizgi);
+  --tt-nc-yazi: var(--ttd-koyu-metin);
+  --tt-nc-baslik-renk: var(--ttd-murekkep);
+  --tt-nc-alt-renk: var(--ttd-soluk);
+  --tt-nc-etiket-renk: var(--ttd-murekkep);
+  --tt-nc-etiket-zemin: var(--ttd-yumusak);
+  --tt-nc-halka-1: var(--ttd-murekkep);
+  --tt-nc-halka-2: var(--ttd-soluk);
+  --tt-nc-ikon-renk: var(--ttd-murekkep);
+  --tt-nc-ikon-zemin: var(--ttd-yumusak);
+  --tt-nc-kapat-zemin: var(--ttd-yumusak);
+  --tt-nc-kart-kenar: var(--ttd-cizgi);
+  --tt-nc-kart-zemin: var(--ttd-kart);
+  --tt-nc-ok-zemin: var(--ttd-yumusak);
+  --tt-nc-panel-zemin: var(--ttd-yumusak);
+  --tt-nc-tutamac: var(--ttd-cizgi);
+}
+
+/* --- tt-couple / tt-tekli renk token'ları */
+html:not(#ttd):not(#ttd-2) body #MainContent.tt-couple-page,
+html:not(#ttd):not(#ttd-2) body #MainContent.tt-tekli-page {
+  --tt-c-ink: var(--ttd-murekkep);
+  --tt-c-ink-2: var(--ttd-soluk);
+  --tt-c-ink-3: var(--ttd-soluk);
+  --tt-c-ink-dark: var(--ttd-koyu-metin);
+  --tt-c-ink-2-dark: var(--ttd-koyu-soluk);
+  --tt-c-ink-3-dark: var(--ttd-koyu-soluk);
+}
 </style>
