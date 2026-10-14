@@ -11,7 +11,7 @@ const s = await c.newPage();
 const PATCH = /kisisel-(harf|rakam|ikon|piramit|aksesuar)/;
 await s.goto('https://jantifox.com/products/' + handle + '?kisisellestir=1&kp_olcum=1' + onizleme, { waitUntil: 'domcontentloaded', timeout: 90000 });
 await s.waitForSelector('.kp-editor:not([hidden]) #kp-isim', { timeout: 60000 });
-await s.waitForTimeout(8000);
+await s.waitForTimeout(Number(process.env.BEKLE || 8000));
 const ozet = (liste) => {
   const g = {};
   liste.forEach((r) => {
