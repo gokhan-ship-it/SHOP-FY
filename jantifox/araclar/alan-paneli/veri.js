@@ -1714,11 +1714,11 @@ window.PANEL_VERI = {
    "urunId": 10088650473758,
    "baslik": "Çok Amaçlı Mini Çanta / Kırmızı Beyaz Zikzak",
    "grup": 12,
-   "not": "",
+   "not": "Ön yüz açılı fotoğraftan düzleştirildi (veri/urunler/duz/mini-canta-duzelt.py): 5 cm Velcro dairesi yuvarlak olacak şekilde, ölçek daireden (ön yüz yaklaşık 22 × 12 cm).",
    "png": {
-    "dosya": "veri/urunler/png/cok-amacli-mini-canta-kirmizi-beyaz-zikzak.png",
-    "en": 1113,
-    "boy": 597
+    "dosya": "veri/urunler/png/cok-amacli-mini-canta-kirmizi-beyaz-zikzak-on.png",
+    "en": 1228,
+    "boy": 670
    },
    "gorsel": "gorseller/cok-amacli-mini-canta-kirmizi-beyaz-zikzak.webp",
    "mevcut": null,
