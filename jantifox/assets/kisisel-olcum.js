@@ -17,6 +17,7 @@
   function isle(ad, t) {
     if (!(ad in isaretler)) isaretler[ad] = t;
     if (ad === 'kullanilabilir') ilkKare();
+    if (ad === 'gorsel_paneli') panelIzle(t);
     planla();
   }
   window.kpOlcum = function (ad) { isle(ad, performance.now()); };
@@ -43,6 +44,42 @@
     requestAnimationFrame(function () {
       setTimeout(function () { isle('ilk_kare', performance.now()); }, 0);
     });
+  }
+
+  // Görsel paneli açılınca: panelde ekranda görünen küçük resimlerin hepsi yüklenip çözülene kadar 50 ms'de bir bakılır
+  var panelSonuc = null;
+  function gorunurMu(el) {
+    var r = el.getBoundingClientRect();
+    if (!r.width || !r.height || r.bottom <= 0 || r.top >= innerHeight || r.right <= 0 || r.left >= innerWidth) return false;
+    var e = el.parentElement;
+    while (e && e !== document.body) {
+      var st = getComputedStyle(e);
+      if (st.display === 'none') return false;
+      if (/(auto|scroll|hidden)/.test(st.overflowX + st.overflowY)) {
+        var k = e.getBoundingClientRect();
+        if (r.bottom <= k.top || r.top >= k.bottom || r.right <= k.left || r.left >= k.right) return false;
+      }
+      e = e.parentElement;
+    }
+    return true;
+  }
+  function panelIzle(t0) {
+    var bas = Date.now();
+    var bak = function () {
+      var panel = document.querySelector('.kp-editor:not(.kp-editor--alt) [data-kp-panel="ikon"]');
+      var gor = panel ? Array.prototype.filter.call(panel.querySelectorAll('img'), gorunurMu) : [];
+      var hazir = gor.filter(function (i) { return i.complete && i.naturalWidth > 0; });
+      if (gor.length && hazir.length === gor.length) {
+        panelSonuc = { t: performance.now(), adet: gor.length, bas: t0 };
+        return planla();
+      }
+      if (Date.now() - bas > 20000) {
+        panelSonuc = { t: null, adet: gor.length, hazir: hazir.length, bas: t0 };
+        return planla();
+      }
+      setTimeout(bak, 50);
+    };
+    setTimeout(bak, 0);
   }
 
   /* ---------------- Ölçümleri topla ---------------- */
@@ -143,6 +180,8 @@
       ekle('İlk 10 patch görseli (' + patch.length + ' indi)', patch.length >= 10 ? patch[9] : null);
       ekle('Editör kullanılabilir', isaret('kullanilabilir'));
       ekle('İlk kare boyandı / dokunmaya hazır', isaret('ilk_kare'));
+      ekle('Görsel paneli açıldı', isaret('gorsel_paneli'));
+      if (panelSonuc && panelSonuc.t) ekle('Görsel paneli: ekrandaki ' + panelSonuc.adet + ' görsel hazır', koken + panelSonuc.t);
       ekle('Kampanya hesabı başladı', isaret('kampanya_basladi'));
       ekle('Kampanya hesabı bitti', isaret('kampanya_bitti'));
     }
@@ -173,6 +212,16 @@
     });
     var k = isaretler.kullanilabilir;
     ust.push('');
+    if (panelSonuc) {
+      var panelIstek = kaynaklar().filter(function (r) { return /\/kisisel-(harf|rakam|ikon|piramit|aksesuar)/.test(r.name) && r.startTime >= panelSonuc.bas - 20; });
+      var onIsitilan = kaynaklar().filter(function (r) { return /\/kisisel-ikon/.test(r.name) && r.startTime < panelSonuc.bas - 20; }).length;
+      ust.push(panelSonuc.t
+        ? 'Görsel paneli açıldı → ekrandaki görseller hazır: ' + yaz((panelSonuc.t - panelSonuc.bas) / 1000) + ' (' + panelSonuc.adet + ' görsel)'
+        : 'Görsel paneli: 20 s içinde ekrandaki görseller hazır olmadı (' + panelSonuc.hazir + '/' + panelSonuc.adet + ')');
+      ust.push('  panel açılınca indirilen patch görseli: ' + panelIstek.length + (onIsitilan ? ' · önceden indirilen ikon görseli: ' + onIsitilan : ''));
+    } else if (editorSayfasi) {
+      ust.push('Görsel paneli henüz açılmadı (ölçmek için Görsel aracına bas).');
+    }
     // Kare akışındaki en uzun boşluk (ekranın donduğu süre)
     var enUzun = null;
     for (var i = 1; i < kareler.length; i++) {

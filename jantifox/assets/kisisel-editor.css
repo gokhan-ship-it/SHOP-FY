@@ -1528,6 +1528,11 @@ html.kp-kilit body {
   aspect-ratio: 1;
   object-fit: contain;
 }
+/* Panel küçük resmi henüz yüklenmedi (ekrana gelince yüklenir): yeri açık gri */
+.kp-editor img[data-kp-src] {
+  background: #f2f2f2;
+  border-radius: 6px;
+}
 .kp-secim:disabled {
   opacity: 0.45;
   cursor: not-allowed;

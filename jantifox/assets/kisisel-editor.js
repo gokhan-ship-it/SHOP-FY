@@ -2681,6 +2681,24 @@
     var srcset = GORSEL_GENISLIKLERI.map(function (w) { return url.replace(GENISLIK_DESENI, '$1width=' + w) + ' ' + w + 'w'; }).join(', ');
     return 'src="' + kacis(url) + '" srcset="' + kacis(srcset) + '" sizes="' + Math.ceil(cssPx) + 'px"';
   }
+  // Panel küçük resimleri (Görsel ve Aksesuar panelleri): kaynak yalnızca resim panelde ekrana gelince (ya da hemen
+  // gelecekken) verilir (tembelIzle); boyut seçiminde ekran piksel oranı en fazla 2 sayılır (3x ekranda da 2x dosya:
+  // 68 px kart için 220 yerine 150 px'lik görsel)
+  function panelGorseli(url, cssPx) {
+    if (!url) return '';
+    var oran = Math.min(window.devicePixelRatio || 1, 2) / (window.devicePixelRatio || 1);
+    if (!cssPx || !GENISLIK_DESENI.test(url)) return 'data-kp-src="' + kacis(url) + '"';
+    var srcset = GORSEL_GENISLIKLERI.map(function (w) { return url.replace(GENISLIK_DESENI, '$1width=' + w) + ' ' + w + 'w'; }).join(', ');
+    return 'data-kp-src="' + kacis(url) + '" data-kp-srcset="' + kacis(srcset) + '" sizes="' + Math.ceil(cssPx * oran) + 'px"';
+  }
+  function panelGorseliAc(img) {
+    var set = img.getAttribute('data-kp-srcset');
+    if (set) img.srcset = set;
+    img.src = img.getAttribute('data-kp-src');
+    img.removeAttribute('data-kp-srcset');
+    img.removeAttribute('data-kp-src');
+  }
+
   // Önizlemedeki patch'in ekrandaki genişliği (8 px'e yuvarlanır ki küçük oynamalar öğeyi değiştirmesin)
   function parcaGenisligi(sahneGen, oran) {
     return Math.max(8, Math.ceil((sahneGen * oran) / 8) * 8);
@@ -3322,6 +3340,13 @@
   // secenek.tasarim + secenek.grup: sepetteki bir tasarımı düzenleme modu (Özet'te "Sepeti güncelle")
   Editor.prototype.ac = function (adim, secenek) {
     this.kur();
+    // Görsel panelinin ilk ekranı, editör açıldıktan biraz sonra boşta önceden indirilir
+    if (!this.alt && !this.onIsitma) {
+      var oi = this;
+      this.onIsitma = setTimeout(function () {
+        (window.requestIdleCallback || setTimeout)(function () { oi.gorselOnIsit(); }, { timeout: 2000 });
+      }, 2000);
+    }
     this.duzenlenen = (secenek && secenek.grup) || null;
     if (!this.alt) this.el.querySelector('[data-kp-baslik]').textContent = this.duzenlenen ? 'Sepetteki tasarımı düzenle' : 'Tasarımını oluştur';
     this.t = kopyala((secenek && secenek.tasarim) || this.kart.tasarim || bosTasarim(this.m));
@@ -3818,6 +3843,10 @@
 
   Editor.prototype.panelGoster = function () {
     var adim = this.adim;
+    if (adim === 'ikon' && !this.gorselPaneliAcildi) {
+      this.gorselPaneliAcildi = true;
+      olc('gorsel_paneli');
+    }
     this.el.querySelectorAll('[data-kp-panel]').forEach(function (p) {
       p.hidden = p.getAttribute('data-kp-panel') !== adim;
     });
@@ -4084,11 +4113,61 @@
     var v = i.varyant;
     var tukendi = !v.satilabilir || v.stok === 0;
     return '<button type="button" class="kp-secim kp-secim--ikon" data-kp-ikon="' + i.id + '" title="' + kacis(i.ad) + '"' + (tukendi ? ' disabled' : '') + '>' +
-      (v.gorsel ? '<img ' + gorselKaynak(v.gorsel, 68) + ' alt="" loading="lazy">' : '') +
+      (v.gorsel ? '<img ' + panelGorseli(v.gorsel, 68) + ' alt="">' : '') +
       '<span class="kp-secim__ad">' + kacis(i.ad) + '</span>' +
       (tukendi ? '<span class="kp-secim__rozet kp-secim__rozet--tukendi">Tükendi</span>' : '') +
       '</button>';
   }
+
+  // Panel küçük resimleri ekrana gelince yüklenir. Kaydırma kutusu (.kp-kaydir) kök; dikeyde 160 px önceden.
+  // Yatay kayan sıralarda (kategori satırları) sıra ekrana gelince, sıranın görünen kısmı ve bir kart genişliği
+  // ötesi yüklenir; kaydırdıkça devamı. Aynı anda yalnızca ekrandakiler indirilir.
+  Editor.prototype.tembelIzle = function (kap, anahtar) {
+    this.tembel = this.tembel || {};
+    var eski = this.tembel[anahtar];
+    if (eski) eski.forEach(function (g) { g.disconnect(); });
+    var gorseller = kap.querySelectorAll('img[data-kp-src]');
+    if (!gorseller.length) return;
+    if (!('IntersectionObserver' in window)) {
+      gorseller.forEach(panelGorseliAc);
+      return;
+    }
+    var kok = kap.closest('.kp-kaydir');
+    var liste = [];
+    this.tembel[anahtar] = liste;
+    var ac = function (girdiler, g) {
+      girdiler.forEach(function (x) {
+        if (!x.isIntersecting) return;
+        g.unobserve(x.target);
+        if (x.target.tagName === 'IMG') return panelGorseliAc(x.target);
+        // Yatay sıra ekrana geldi: sıranın kendi görünümüne göre izlenir
+        var sg = new IntersectionObserver(ac, { root: x.target, rootMargin: '0px 90px' });
+        liste.push(sg);
+        x.target.querySelectorAll('img[data-kp-src]').forEach(function (i) { sg.observe(i); });
+      });
+    };
+    var dikey = new IntersectionObserver(ac, { root: kok, rootMargin: '160px 0px' });
+    liste.push(dikey);
+    var siralar = kap.querySelectorAll('.kp-gorsel-sira');
+    siralar.forEach(function (sr) { dikey.observe(sr); });
+    gorseller.forEach(function (i) { if (!i.closest('.kp-gorsel-sira')) dikey.observe(i); });
+  };
+
+  // Editör hazır olduktan sonra boşta: Görsel paneli ilk açıldığında ekranda olacak küçük resimler (hazır setler ve ilk
+  // iki kategori satırının başı) önceden indirilir; panel açılınca hemen görünür. Panel zaten açıldıysa bir şey yapmaz.
+  Editor.prototype.gorselOnIsit = function () {
+    if (this.gorselPaneliAcildi || !this.el) return;
+    if (navigator.connection && navigator.connection.saveData) return;
+    var kap = this.el.querySelector('[data-kp-gorsel-icerik]');
+    if (!kap) return;
+    var siralar = kap.querySelectorAll('.kp-gorsel-sira');
+    for (var i = 0; i < Math.min(3, siralar.length); i++) {
+      // Hazır setler sırası: ilk 3 set (her biri birkaç küçük resim); kategori sıraları: ilk 5 kart
+      var kartlar = siralar[i].querySelectorAll('.kp-secim');
+      var n = Math.min(kartlar.length, siralar[i].classList.contains('kp-gorsel-sira--set') ? 3 : 5);
+      for (var k = 0; k < n; k++) kartlar[k].querySelectorAll('img[data-kp-src]').forEach(panelGorseliAc);
+    }
+  };
 
   // Görsel paneli: arama kutusu, altında "Tek patch 330 TL"; kategoriler alt alta bölümler (ilk "Hazır setler · indirimli"),
   // her bölümde yatay kayan tek sıra kart ve "Tümü →" (4 sütunlu ızgara, "← Kategori" ile geri)
@@ -4163,7 +4242,12 @@
           '</div></section>';
       }).join('');
     }
-    if (kap.innerHTML !== html) kap.innerHTML = html;
+    // Karşılaştırma son yazılan HTML ile: yüklenen görsellerin öznitelikleri değiştiği için innerHTML artık farklıdır
+    if (this.ikonHtml !== html || !kap.firstChild) {
+      kap.innerHTML = html;
+      this.ikonHtml = html;
+      this.tembelIzle(kap, 'ikon');
+    }
     this.ikonDurumGuncelle();
   };
 
@@ -4190,7 +4274,7 @@
         return (
           // Yatay kart: solda görsel, sağda ad ve renk, fiyat, not ve butonlar
           '<div class="kp-secim kp-secim--aksesuar">' +
-          '<img src="' + kacis(a.gorsel.kucuk) + '" alt="" loading="lazy">' +
+          '<img ' + panelGorseli(a.gorsel.kucuk) + ' alt="">' +
           '<span class="kp-aks-kart__bilgi">' +
           '<span class="kp-aks-kart__ust"><span class="kp-aks-kart__adlar"><span class="kp-secim__ad">' + kacis(a.model) + '</span>' +
           (a.renk ? ' <span class="kp-aks-kart__renk">' + kacis(a.renk) + '</span>' : '') + '</span>' +
@@ -4211,6 +4295,7 @@
     panel.innerHTML =
       '<h3 id="kp-p-aksesuar" class="kp-gizli" tabindex="-1">Aksesuar ekle</h3>' +
       '<div class="kp-izgara kp-izgara--aksesuar">' + kartlar + '</div>';
+    this.tembelIzle(panel, 'aksesuar');
   };
 
   // Aksesuar kartı: "Tasarla" tasarım ekranını açar; "Düz ekle" ve "Ekle" doğrudan çantaya yerleştirir
@@ -4401,7 +4486,7 @@
     return (
       '<button type="button" class="kp-secim kp-secim--set" data-kp-hazir-set="' + s.id + '" data-sira="' + sira + '" title="' + kacis(s.ad) + ' seti">' +
       '<span class="kp-set-kart__onizleme" aria-hidden="true">' +
-      s.patchler.map(function (p) { return p.varyant.gorsel ? '<img ' + gorselKaynak(p.varyant.gorsel, 34) + ' alt="" loading="lazy">' : ''; }).join('') +
+      s.patchler.map(function (p) { return p.varyant.gorsel ? '<img ' + panelGorseli(p.varyant.gorsel, 34) + ' alt="">' : ''; }).join('') +
       '</span>' +
       '<span class="kp-secim__ad">' + kacis(s.ad) + '</span>' +
       '<span class="kp-set-kart__fiyat">' + s.patchler.length + ' patch · <span class="kp-set-kart__tutar">' + paraBicimle(s.fiyat) + '</span>' +
