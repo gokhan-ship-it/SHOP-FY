@@ -51,4 +51,158 @@
   --ttd-btn-yuk-buyuk: 52px;
   --ttd-btn-pad: 24px;
 }
+
+/* ==========================================================================
+   ADIM 2 — Tipografi
+   Tek aile Inter; yalnızca 400 ve 500 (tema Inter n4/n5'i zaten yüklüyor).
+   Ölçek 390px'te mobil, 1440px'te masaüstü değerine akışkan geçer.
+   ui-monospace (couple-bulusma, taksit-tablosu) bilinçli öğe: dokunulmaz.
+   ========================================================================== */
+
+/* --- Tema geneli: başlık ağırlığı 500 (type_header_font inter_n7 görünürde 500) */
+:root {
+  --font-heading-weight: 500;
+  --font-navigation-weight: 500;
+  --font-button-weight: 500;
+  --font-product-weight: 500;
+}
+
+/* --- tt-couple / tt-tekli token katmanı: 600 kalkar, ölçek yeni sisteme eşitlenir */
+html:not(#ttd):not(#ttd-2) body #MainContent.tt-couple-page,
+html:not(#ttd):not(#ttd-2) body #MainContent.tt-tekli-page {
+  --tt-f-h1-size: var(--ttd-f-h1);
+  --tt-f-h1-w: 500;
+  --tt-f-h1-lh: 1.1;
+  --tt-f-h1-ls: -0.035em;
+  --tt-f-h2-size: var(--ttd-f-h2);
+  --tt-f-h2-w: 500;
+  --tt-f-h2-lh: 1.15;
+  --tt-f-h2-ls: -0.03em;
+  --tt-f-h3-size: var(--ttd-f-h3);
+  --tt-f-h3-w: 500;
+  --tt-f-h3-lh: 1.25;
+  --tt-f-h3-ls: -0.015em;
+  --tt-f-body-size: var(--ttd-f-govde);
+  --tt-f-body-w: 400;
+  --tt-f-body-lh: 1.5;
+  --tt-f-body-lg-size: var(--ttd-f-govde);
+  --tt-f-body-lg-w: 500;
+  --tt-f-body-lg-lh: 1.5;
+  --tt-f-body-sm-size: 15px;
+  --tt-f-body-sm-w: 400;
+  --tt-f-eyebrow-size: var(--ttd-f-kucuk);
+  --tt-f-eyebrow-w: 500;
+  --tt-f-eyebrow-lh: 1.4;
+  --tt-f-eyebrow-ls: 0;
+  --tt-f-caption-size: var(--ttd-f-kucuk);
+  --tt-f-caption-lh: 1.4;
+}
+
+/* --- Ağırlık: başlıklar, kalın metinler ve 600/700 kullanan tüm özel sınıflar 500 */
+html:not(#ttd):not(#ttd-2) body :is(h1, h2, h3, h4, h5, h6, b, strong, dt, th, legend, .heading,
+  .hv-title, .hv-stat, .hv-tk,
+  .gh-bas, .gh-vurgu, .gh-puan, .gh-celenk-yazi, .gh-puan *,
+  .ay-vurgu, .ay-kbas, .ay-etiket, .ay-bas-metin,
+  .cb-bas-yazi, .cb-bas-satir, .cb-kim-ad, .cb-sonuc-bas, .cb-buton,
+  .as-bas, .as-kart-bas, .as-etiket,
+  .tt-veri-baslik, .tt-veri-oran, .tt-veri-etiket,
+  .ak-bas, .ak-kart-bas, .ak-pop-bas, .ak-pop-etiket,
+  .ho-head, .ho-okuma, .ho-ad, .ho-ipucu, .ho-durum, .ho-final,
+  .vs-head, .vs-card-title, .vs-cta,
+  .mk-head, .mk-ust, .mk-isim, .mk-isim *, .mk-pop-baslik, .mk-secim-baslik, .mk-cta,
+  .tt-cs-baslik, .tt-cs-rozet, .tt-cs-sira, .tt-cs-sira *,
+  .tth-sayi, .tth-menu a,
+  [class*="tth-cta-"], [class*="tth-btn-"], [class*="tth-sayi-"], [class*="tth-menu-"] a,
+  [class*="tt-catal-title-"], [class*="tt-catal-pill-"], [class*="tt-catal-name-"],
+  [class*="ai-comparison-title"], [class*="ai-comparison-category"], [class*="ai-comparison-product-title"],
+  [class*="ttn-hiw-heading"], [class*="ttn-hiw-title"], [class*="ttn-hiw-step-number"],
+  [class*="ai-how-it-works-heading"], [class*="ai-how-it-works-card-title"], [class*="ai-how-it-works-badge"],
+  [class*="ai-hero-heading"], [class*="ai-category-card-title"],
+  [class*="fh-title-"], [class*="fh-heading-"] :is(b, strong), [class*="ac-heading-"] :is(b, strong),
+  [class*="dcb-pop-title-"], [class*="ugc-gallery-heading-"], [class*="ugc-gallery-rating-number-"],
+  .tt-tk-baslik, .tt-tk-fiyat b, .tt-tk-ind-etiket, .tt-tk-tutar, .tt-tk-uyari, .tt-tk-sayac,
+  .tt-fb-serit-metin, .tt-fb-buyuk, .tt-kol-metin, .tt-kart-yeni,
+  .ttn-cark-tutar, .ttn-cark-gobek, .ttn-cark-kupon-baslik, .ttn-cark-kupon-kod, .ttn-cark-kupon-sayac, .ttn-cark-bar-sayac,
+  .tt-sc-varyant-yeni, .tt-proof-score, .tt-proof-users, .ai-apple-text__content :is(b, strong, h4, h5, h6)) {
+  font-weight: 500;
+}
+
+/* --- Aile: tt-veri'deki -apple-system / SF Pro yığını Inter'e döner */
+html:not(#ttd):not(#ttd-2) body .tt-veri,
+html:not(#ttd):not(#ttd-2) body .tt-veri * {
+  font-family: var(--ttd-f-aile);
+}
+
+/* --- Büyük harf yok: buton, etiket ve başlıkların hiçbiri uppercase değil */
+html:not(#ttd):not(#ttd-2) body *,
+html:not(#ttd):not(#ttd-2) body *::before,
+html:not(#ttd):not(#ttd-2) body *::after {
+  text-transform: none;
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-cs-ust, .tt-cs-etiket, .tt-uk-tip, .ay-etiket, .as-etiket, .tt-veri-ust, .tt-veri-etiket,
+  [class*="ai-comparison-category"], [class*="ai-how-it-works-badge"], [class*="uac-etiket-"],
+  .tt-sc-nasil-etiket, .vs-cta, .mk-cta, .caption.uppercase) {
+  letter-spacing: 0;
+}
+
+/* --- H1: sayfa hero başlıkları — 34 / 64, lh 1.1, -0.035em */
+html:not(#ttd):not(#ttd-2) body :is(.hv-title, .gh-bas, [class*="ai-hero-heading"]) {
+  font-size: var(--ttd-f-h1);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+html:not(#ttd):not(#ttd-2) body .gh-vurgu {
+  font-size: 1em;
+}
+/* guclu-header başlığı mobilde tek satıra sığsın diye nowrap + min(33px, 6vw)
+   kullanıyordu; 34px ölçekte satırların dengeli kırılmasına izin verilir. */
+html:not(#ttd):not(#ttd-2) body :is(.gh-bas, .gh-vurgu) {
+  white-space: normal;
+  text-wrap: balance;
+}
+
+/* --- H2: bölüm başlıkları — 28 / 48, lh 1.15, -0.03em */
+html:not(#ttd):not(#ttd-2) body :is(.tt-cs-baslik, [class*="tt-catal-title-"], .ho-head, .vs-head, .mk-head,
+  .ay-bas-metin, .ay-vurgu, .cb-bas-yazi, .as-bas, .tt-veri-baslik, [class*="ai-comparison-title"],
+  .ak-bas, [class*="ttn-hiw-heading"], [class*="ai-how-it-works-heading"], .tt-sc .tt-sc-baslik,
+  [class*="uac-baslik-"], [class*="ugc-gallery-heading-"], .title-wrapper .heading,
+  .product__title h1) {
+  font-size: var(--ttd-f-h2);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+/* --- H3: kart başlıkları — 20 / 24, lh 1.25, -0.015em */
+html:not(#ttd):not(#ttd-2) body :is(.vs-card-title, .vs-card.is-on .vs-card-title, .mk-ust, .as-kart-bas, .ay-kbas, .ak-kart-bas,
+  [class*="ai-comparison-product-title"], [class*="ttn-hiw-title"], [class*="ai-how-it-works-card-title"],
+  [class*="tt-catal-name-"], .cb-sonuc-bas, [class*="ai-category-card-title"], .tt-sc-ad,
+  .mk-pop-baslik, .ak-pop-bas, [class*="dcb-pop-title-"], .tt-tk-baslik) {
+  font-size: var(--ttd-f-h3);
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+/* --- Gövde: bölüm alt başlıkları — 17 / 19, lh 1.5 */
+html:not(#ttd):not(#ttd-2) body :is(.hv-body, .gh-alt, .ho-alt, .vs-alt, .mk-metin, .ay-alt, .cb-bas-alt, .as-alt, .tt-veri-alt,
+  [class*="ai-comparison-subtitle"], [class*="ttn-hiw-subheading"], [class*="ai-hero-description"],
+  [class*="tt-catal-sub-"], [class*="uac-metin-"], .tt-cs-alt) {
+  font-size: var(--ttd-f-govde);
+  line-height: 1.5;
+  font-weight: 400;
+}
+/* Kart metinleri: gövde ölçeğinin alt değeri (17px) */
+html:not(#ttd):not(#ttd-2) body :is(.vs-card-text, .ay-kmetin, .ak-kart-metin, .as-kart-alt, [class*="ttn-hiw-text"],
+  [class*="ai-how-it-works-card-description"], .tt-veri-cumle) {
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/* --- Küçük metin ve etiketler — 13px, lh 1.4 */
+html:not(#ttd):not(#ttd-2) body :is(.gh-etiket, .gh-bilgi, .as-etiket, .tt-veri-ust, .tt-veri-etiket, .tt-veri-dipnot,
+  [class*="ai-comparison-category"], .ay-etiket, .tt-cs-ust, .tt-cs-etiket, .tt-uk-tip,
+  [class*="ai-how-it-works-badge"], [class*="tt-catal-pill-"], [class*="tt-catal-q-"], .hv-stat,
+  .ho-eksen span, [class*="uac-etiket-"], .tt-sc-ust) {
+  font-size: var(--ttd-f-kucuk);
+  line-height: 1.4;
+}
 </style>
