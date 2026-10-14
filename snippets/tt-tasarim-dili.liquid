@@ -206,6 +206,12 @@ html:not(#ttd):not(#ttd-2) body :is(.gh-etiket, .gh-bilgi, .as-etiket, .tt-veri-
   line-height: 1.4;
 }
 
+/* Ürün kartı üst etiketi 13px'te kesilmesin: satır kaydırmaya izin verilir */
+html:not(#ttd):not(#ttd-2) body .tt-cs-ust {
+  white-space: normal;
+  text-overflow: clip;
+}
+
 /* ==========================================================================
    ADIM 3 — Renk kuralları
    - Apple mavisi (#0071E3 ailesi) kalkar: açık zeminde --ttd-murekkep,
@@ -807,12 +813,14 @@ html:not(#ttd):not(#ttd-2) body [data-sc-secili] .tt-uk::after {
 }
 
 /* --- Çark (ttn-cark): nane yeşili kalkar, ikon siyah-beyaz. JS ve çerez mantığına dokunulmaz */
+/* Çark renk değişkenleri section ayarından satır içi style="" ile geldiği için
+   bu 5 değişkende !important zorunlu. */
 html:not(#ttd):not(#ttd-2) body .ttn-cark {
-  --ttn-kart-zemin: var(--ttd-kart);
-  --ttn-vurgu: var(--ttd-soluk);
-  --ttn-koyu: var(--ttd-murekkep);
-  --ttn-alt-yazi: var(--ttd-soluk);
-  --ttn-halka: var(--ttd-yumusak);
+  --ttn-kart-zemin: var(--ttd-kart) !important;
+  --ttn-vurgu: var(--ttd-soluk) !important;
+  --ttn-koyu: var(--ttd-murekkep) !important;
+  --ttn-alt-yazi: var(--ttd-soluk) !important;
+  --ttn-halka: var(--ttd-yumusak) !important;
 }
 html:not(#ttd):not(#ttd-2) body .ttn-cark-dilimler path:is([data-ttn-dilim="0"], [data-ttn-dilim="2"], [data-ttn-dilim="4"], [data-ttn-dilim="6"]) {
   fill: var(--ttd-murekkep);
@@ -874,5 +882,205 @@ html:not(#ttd):not(#ttd-2) body #MainContent.tt-tekli-page {
   --tt-c-ink-dark: var(--ttd-koyu-metin);
   --tt-c-ink-2-dark: var(--ttd-koyu-soluk);
   --tt-c-ink-3-dark: var(--ttd-koyu-soluk);
+}
+
+/* ==========================================================================
+   ADIM 4 — Butonlar ve çipler
+   13 farklı ölçülmüş buton stili iki stile iner:
+     ANA     : 48px (ürün "Sepete ekle" ve yapışkan sepet barı 52px), yatay 24px,
+               köşe 999px, Inter 500 16px, büyük harf yok.
+               Açık zeminde --ttd-murekkep / beyaz; koyu zeminde --ttd-vurgu / beyaz.
+     İKİNCİL : aynı ölçüler, şeffaf zemin, 1px kenarlık.
+               Açık zeminde kenarlık+yazı --ttd-murekkep; koyu zeminde --ttd-koyu-metin.
+     METİN LİNKİ: Inter 500 16px, --ttd-murekkep, sonunda "→" (mevcut ok ikonu korunur).
+   Bilinçli istisnalar: .tt-fb-link 36px (küçük ikincil); başlık barındaki
+   .tth-cta 40px (bar 52/56px yüksekliğinde, 48px sığmıyor).
+   ========================================================================== */
+
+/* --- Ortak ölçü: tüm ana ve ikincil butonlar */
+html:not(#ttd):not(#ttd-2) body :is(.button.button--primary:not(.self-button), .button.button--secondary:not(.button--close):not([is="next-button"]):not([is="previous-button"]),
+  .gh-dugme, .gh-cam, [class*="tt-catal-btn-"], .mk-cta, .vs-cta,
+  [id*="__blocks_"] [class*="ai-comparison-button-"], .ttn-cark-dugme, .tt-nc-dugme,
+  .tt-sc-cubuk-dugme, .tt-sc-nasil-onay) {
+  min-height: var(--ttd-btn-yuk);
+  padding: 0 var(--ttd-btn-pad);
+  border-radius: var(--ttd-r-hap);
+  font-family: var(--ttd-f-aile);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+/* Ürün sayfası "Sepete ekle" ve yapışkan sepet barı: 52px */
+html:not(#ttd):not(#ttd-2) body :is(.product-form__submit, product-sticky-form .button.button--primary, .product-sticky-form__card .button.button--primary) {
+  min-height: var(--ttd-btn-yuk-buyuk);
+}
+
+/* --- ANA / açık zemin */
+html:not(#ttd):not(#ttd-2) body :is(.button.button--primary:not(.self-button), .gh-dugme:not(.is-ikincil), .mk-cta,
+  [id*="__blocks_wKUYJT"] [class*="ai-btn-hediye"], .tt-sc-cubuk-dugme, .tt-sc-nasil-onay),
+html:not(#ttd):not(#ttd-2) body :is(.gh-dugme:not(.is-ikincil), .mk-cta, .tt-sc-cubuk-dugme):hover {
+  background: var(--ttd-murekkep);
+  border: 1px solid var(--ttd-murekkep);
+  color: #FFFFFF;
+  box-shadow: none;
+}
+
+/* --- ANA / koyu zemin: Leica kırmızısı (bölüm başına tek ana buton) */
+html:not(#ttd):not(#ttd-2) body :is([class*="tt-catal-btn-"][href*="couple"], :is([class^="tth-cta-template--"], [class^="tth-cta-sections--"]), :is([class^="tth-btn-template--"], [class^="tth-btn-sections--"]).is-dolu,
+  :is([id*="__blocks_HATjRq"], [id*="__blocks_BHFjY3"]) [class*="ai-btn-couple"], .vs-cta),
+html:not(#ttd):not(#ttd-2) body :is([class*="tt-catal-btn-"][href*="couple"], :is([class^="tth-cta-template--"], [class^="tth-cta-sections--"]), :is([class^="tth-btn-template--"], [class^="tth-btn-sections--"]).is-dolu,
+  :is([id*="__blocks_HATjRq"], [id*="__blocks_BHFjY3"]) [class*="ai-btn-couple"], .vs-cta):hover {
+  background: var(--ttd-vurgu);
+  border: 1px solid var(--ttd-vurgu);
+  color: #FFFFFF;
+}
+
+/* --- İKİNCİL / açık zemin */
+html:not(#ttd):not(#ttd-2) body :is(.button.button--secondary:not(.button--close):not([is="next-button"]):not([is="previous-button"]):not(.quick-view__button), .gh-dugme.is-ikincil,
+  [id*="__blocks_wKUYJT"] [class*="ai-btn-couple"], .ttn-cark-dugme),
+html:not(#ttd):not(#ttd-2) body :is(.gh-dugme.is-ikincil, [id*="__blocks_wKUYJT"] [class*="ai-btn-couple"], .ttn-cark-dugme):hover {
+  background: transparent;
+  border: 1px solid var(--ttd-murekkep);
+  color: var(--ttd-murekkep);
+}
+/* Görsel üstündeki "Hızlı Bakış": okunabilirlik için beyaz zemin korunur, ölçü/renk sisteme uyar */
+html:not(#ttd):not(#ttd-2) body .quick-view__button {
+  background: var(--ttd-kart);
+  border: 1px solid var(--ttd-murekkep);
+  color: var(--ttd-murekkep);
+}
+/* guclu-header "Ürünü Öğren" cam butonu: blur/cam zemini kalır, renk ve ölçü sisteme uyar */
+html:not(#ttd):not(#ttd-2) body .gh-cam {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--ttd-murekkep);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .gh-cam::before {
+  border-color: var(--ttd-murekkep);
+}
+
+/* --- İKİNCİL / koyu zemin */
+html:not(#ttd):not(#ttd-2) body :is([class*="tt-catal-btn-"][href*="hediye"], :is([class^="tth-btn-template--"], [class^="tth-btn-sections--"]).is-cizgi,
+  :is([id*="__blocks_HATjRq"], [id*="__blocks_BHFjY3"]) [class*="ai-btn-hediye"]),
+html:not(#ttd):not(#ttd-2) body :is([class*="tt-catal-btn-"][href*="hediye"],
+  :is([id*="__blocks_HATjRq"], [id*="__blocks_BHFjY3"]) [class*="ai-btn-hediye"]):hover {
+  background: transparent;
+  border: 1px solid var(--ttd-koyu-metin);
+  color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body :is([class^="tth-btn-template--"], [class^="tth-btn-sections--"]).is-cizgi:hover {
+  background: var(--ttd-koyu-metin);
+  border-color: var(--ttd-koyu-metin);
+  color: var(--ttd-murekkep);
+}
+
+/* --- Başlık barı "Satın Al" (.tth-cta): koyu barda ana buton, 40px (bar 52/56px) */
+html:not(#ttd):not(#ttd-2) body :is(:is([class^="tth-cta-template--"], [class^="tth-cta-sections--"]), :is([class^="tth-btn-template--"], [class^="tth-btn-sections--"])) {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: var(--ttd-r-hap);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* --- "Nasıl çalışır?" yüzen butonu: koyu ana (zemin --ttd-koyu, kenarlık --ttd-koyu-cizgi) */
+html:not(#ttd):not(#ttd-2) body .tt-nc-dugme {
+  background: var(--ttd-koyu);
+  border: 1px solid var(--ttd-koyu-cizgi);
+  color: #FFFFFF;
+  padding: 0 var(--ttd-btn-pad) 0 8px;
+}
+
+/* --- Ürün "Taksit tablosu" linki: küçük ikincil (36px) */
+html:not(#ttd):not(#ttd-2) body .tt-fb-link {
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: var(--ttd-r-hap);
+  background: transparent;
+  border: 1px solid var(--ttd-murekkep);
+  color: var(--ttd-murekkep);
+  font-size: 14px;
+  font-weight: 500;
+}
+html:not(#ttd):not(#ttd-2) body .tt-fb-s3 .tt-fb-link,
+html:not(#ttd):not(#ttd-2) body .tt-fb-s2 .tt-fb-link {
+  color: var(--ttd-murekkep);
+}
+/* Cihaz uyumluluğu butonu: küçük ikincil */
+html:not(#ttd):not(#ttd-2) body [class*="dcb-btn-"] {
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: var(--ttd-r-hap);
+  background: transparent;
+  border: 1px solid var(--ttd-murekkep);
+  color: var(--ttd-murekkep);
+  font-size: 14px;
+}
+
+/* --- Bülten gönder: açık daire, koyu ok */
+html:not(#ttd):not(#ttd-2) body .button.self-button {
+  background: var(--ttd-koyu-metin);
+  border-color: var(--ttd-koyu-metin);
+  color: var(--ttd-murekkep);
+  border-radius: var(--ttd-r-hap);
+}
+html:not(#ttd):not(#ttd-2) body .button.self-button svg {
+  color: var(--ttd-murekkep);
+  stroke: var(--ttd-murekkep);
+}
+
+/* --- Kart "+" (sepete ekle) butonu: hap köşe */
+html:not(#ttd):not(#ttd-2) body .tt-uk-dugme {
+  border-radius: var(--ttd-r-hap);
+}
+
+/* --- Metin linkleri: Inter 500 16px, mürekkep (koyu zeminde açık metin) */
+html:not(#ttd):not(#ttd-2) body :is([class*="uac-bag-"], [class*="uac-bagyazi-"]) {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is(.ak-ust-bag, .ak-pop-bag) {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ttd-koyu-metin);
+}
+
+/* --- Çipler (.tt-cs-cip, .tt-sc-cip): 36px, 0 16px, 999px, 14px, kenarlıksız */
+html:not(#ttd):not(#ttd-2) body :is(.tt-cs-cip, .tt-sc-cip) {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--ttd-r-hap);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+/* pasif: yumuşak zemin üstünde beyaz (tt-cok-satanlar), beyaz zemin üstünde yumuşak (tt-secim-kartlari) */
+html:not(#ttd):not(#ttd-2) body .tt-cs-cip {
+  background: var(--ttd-kart);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .tt-sc-cip {
+  background: var(--ttd-yumusak);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-cs-cip, .tt-sc-cip)[aria-checked="true"] {
+  background: var(--ttd-murekkep);
+  color: #FFFFFF;
+}
+
+/* --- tt-couple / tt-tekli katmanındaki buton token'ları bu sisteme eşitlenir */
+html:not(#ttd):not(#ttd-2) body #MainContent.tt-couple-page,
+html:not(#ttd):not(#ttd-2) body #MainContent.tt-tekli-page {
+  --tt-btn-font: 16px;
+  --tt-btn-weight: 500;
+  --tt-btn-pad-y: 14px;
+  --tt-btn-pad-x: 24px;
+  --tt-btn-radius: 999px;
+  --tt-btn-gap: 8px;
 }
 </style>
