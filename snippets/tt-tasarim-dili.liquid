@@ -861,25 +861,68 @@ html:not(#ttd):not(#ttd-2) body .ttn-cark-bar-sayac {
   color: var(--ttd-koyu-metin);
 }
 
-/* --- "Nasıl çalışır?" paneli: yeşil tonlar nötre döner */
-html:not(#ttd):not(#ttd-2) body .tt-nc {
-  --tt-nc-zemin: var(--ttd-koyu);
-  --tt-nc-cerceve: var(--ttd-koyu-cizgi);
-  --tt-nc-yazi: var(--ttd-koyu-metin);
-  --tt-nc-baslik-renk: var(--ttd-murekkep);
-  --tt-nc-alt-renk: var(--ttd-soluk);
-  --tt-nc-etiket-renk: var(--ttd-murekkep);
-  --tt-nc-etiket-zemin: var(--ttd-yumusak);
-  --tt-nc-halka-1: var(--ttd-murekkep);
-  --tt-nc-halka-2: var(--ttd-soluk);
-  --tt-nc-ikon-renk: var(--ttd-murekkep);
-  --tt-nc-ikon-zemin: var(--ttd-yumusak);
-  --tt-nc-kapat-zemin: var(--ttd-yumusak);
-  --tt-nc-kart-kenar: var(--ttd-cizgi);
-  --tt-nc-kart-zemin: var(--ttd-kart);
-  --tt-nc-ok-zemin: var(--ttd-yumusak);
-  --tt-nc-panel-zemin: var(--ttd-yumusak);
-  --tt-nc-tutamac: var(--ttd-cizgi);
+/* --- "Nasıl çalışır?" paneli: yeşil tonlar nötre döner.
+   Panelin --tt-nc-* değişkenleri section ayarından satır içi style="" ile
+   geldiği için değişken ezilemez; renkler !important kullanmadan doğrudan
+   öğelere yazılır (iki ID'lik önek assets/tt-nasil-calisir.css'i geçer). */
+html:not(#ttd):not(#ttd-2) body .tt-nc-dugme {
+  border-color: var(--ttd-koyu-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .tt-nc-dugme:focus-visible {
+  outline-color: var(--ttd-koyu-metin);
+}
+html:not(#ttd):not(#ttd-2) body .tt-nc-dugme-ikon {
+  background: var(--ttd-koyu-metin);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .tt-nc-dugme-ikon::after {
+  border-color: var(--ttd-koyu-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .tt-nc-panel {
+  background: var(--ttd-yumusak);
+}
+html:not(#ttd):not(#ttd-2) body .tt-nc-tut {
+  background: var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body .tt-nc-etiket {
+  background: var(--ttd-kart);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-nc-baslik, .tt-nc-kart-bas) {
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-nc-altbaslik, .tt-nc-kart-alt) {
+  color: var(--ttd-soluk);
+}
+html:not(#ttd):not(#ttd-2) body .tt-nc-kapat {
+  background: var(--ttd-kart);
+  color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body .tt-nc-kart {
+  background: var(--ttd-kart);
+  border-color: var(--ttd-kart);
+  border-radius: var(--ttd-r-kucuk);
+}
+html:not(#ttd):not(#ttd-2) body .tt-nc-kart:hover {
+  border-color: var(--ttd-cizgi);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-nc-kart, .tt-nc-kapat):focus-visible {
+  outline-color: var(--ttd-murekkep);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-nc-kart-ikon, .tt-nc-kart-ok) {
+  background: var(--ttd-yumusak);
+  color: var(--ttd-murekkep);
+}
+/* Karşılaştırma katmanı koyu: "devam" butonu ikincil (bölümün ana butonu Couple CTA'sı) */
+html:not(#ttd):not(#ttd-2) body .tt-nc-fark-devam {
+  min-height: var(--ttd-btn-yuk);
+  padding: 0 var(--ttd-btn-pad);
+  border: 1px solid var(--ttd-koyu-metin);
+  border-radius: var(--ttd-r-hap);
+  background: transparent;
+  color: var(--ttd-koyu-metin);
+  font-size: 16px;
+  font-weight: 500;
 }
 
 /* --- tt-couple / tt-tekli renk token'ları */
