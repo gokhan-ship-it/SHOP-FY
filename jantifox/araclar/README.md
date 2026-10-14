@@ -64,6 +64,12 @@
    - `metafieldsSet` (25'erli): `harita`, `metin_karakter_siniri`, `aktif`.
    - Atlanan ürünlere `aktif = false`.
    - Aynı `metafieldsSet` içinde planın `acik_urunler.metafield` değeri (mağaza sahibi `gid://shopify/Shop/...`).
+   - Açılan ürünler **"Kendin Tasarla"** koleksiyonuna (`kendin-tasarla`, elle sıralı) da eklenir: `collectionAddProductsV2`,
+     sonra kendi grubunun sonuna taşınır (Admin > Koleksiyonlar > Kendin Tasarla ya da `collectionReorderProducts`).
+     Grup sırası: çantalar, kıyafetler, şapkalar, kalem kutuları, patch setleri, tek patch'ler (harf, rakam, ikon).
+     Ana sayfadaki "Tüm kişiselleştirilebilir ürünler →" butonu bu koleksiyona gider; site menüsünde yoktur.
+     dogrula.py yazma planında açılan ürün varsa bunu hatırlatır. Kataloğa yeni patch ya da hazır set eklenince de
+     aynı koleksiyonun "patch setleri" / "tek patch'ler" grubuna eklenir.
 4. Yazdıktan sonra kontrol: `liste-sorgu.graphql` yeniden okunur ve
 
    ```
@@ -73,6 +79,10 @@
    kişiselleştirmesi açık ürünlerle listeyi karşılaştırır (kartın koşuluyla aynı: `patch-notice` etiketi + `aktif = true` +
    harita). Fark varsa eksik / fazla ürünleri ve önerilen listeyi yazar, çıkış kodu 1. Panelden bağımsız olarak, bir ürünün
    `aktif` değeri elle değiştirildiğinde de çalıştırılır.
+   Girdide `kendin_tasarla` (koleksiyondaki ürünler) ve `katalog_patchler` (katalogdaki harf / rakam / ikon ürünleri ve hazır
+   setler) varsa — ikisi de `liste-sorgu.graphql`'den gelir — kişiselleştirmesi açık her ürünün ve satıştaki her katalog
+   patch'inin "Kendin Tasarla" koleksiyonunda olduğunu da denetler; eksikleri gireceği grupla yazar (çıkış kodu 1).
+   Örnek girdi: `veri/urunler/liste/magaza-durum-20261014.json`.
    - Her yazma `docs/degisiklik-kaydi.md` dosyasına eklenir.
 
 Çokgen alan ve yasaklı bölge haritada şöyle yazılır:

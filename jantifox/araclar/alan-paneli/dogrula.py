@@ -352,6 +352,9 @@ def main(argv):
     else:
         print('acik_urunler: %d → %d ürün (eklenecek %d, çıkarılacak %d)' % (
             len(liste_plani['onceki']), len(liste_plani['yeni']), len(liste_plani['eklenen']), len(liste_plani['cikan'])))
+        if liste_plani['eklenen']:
+            print('KOLEKSİYON: açılan %d ürün "Kendin Tasarla" koleksiyonuna (kendin-tasarla) da eklenmeli ve kendi grubuna '
+                  '(çanta, kıyafet, şapka, kalem kutusu) sıralanmalı; yazdıktan sonra liste-kontrol.py ile denetle.' % len(liste_plani['eklenen']))
     json.dump({'kaynak': os.path.basename(giris), 'urunler': plan, 'acik_urunler': liste_plani}, open(plan_yolu, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     print('Yazma planı: ' + plan_yolu)
     return 0

@@ -2,6 +2,12 @@
 # id, handle, baslik = title, durum = status, etiketler = tags, aktif = aktif.value, harita_var = harita != null
 {
   shop { metafield(namespace: "kisisellestirme", key: "acik_urunler") { value } }
+  # "Kendin Tasarla" koleksiyonu → kendin_tasarla: [id]
+  kendinTasarla: collectionByHandle(handle: "kendin-tasarla") { products(first: 250) { nodes { id } } }
+  # Katalogdaki patch ürünleri → katalog_patchler: [{id, baslik = title, durum = status, etiketler = tags}]
+  katalog: metaobjectByHandle(handle: {type: "kisisellestirme_katalog", handle: "ana"}) {
+    fields { key references(first: 250) { nodes { ... on Product { id title status tags } } } }
+  }
   products(first: 100, query: "tag:patch-notice") {
     nodes {
       id handle title status tags

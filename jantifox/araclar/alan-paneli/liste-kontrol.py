@@ -10,6 +10,12 @@ magaza-durum.json, liste-sorgu.graphql sorgusunun sonucundan üretilir:
                   "aktif": "true" | "false" | null, "harita_var": true | false}, ...]}
 
 Kartın koşuluyla aynı: patch-notice etiketi + aktif = true + harita. Fark varsa listeler, çıkış kodu 1.
+
+İsteğe bağlı "Kendin Tasarla" koleksiyonu denetimi (ana sayfadaki "Tüm kişiselleştirilebilir ürünler →" butonunun
+sayfası): girdide "kendin_tasarla" (koleksiyondaki ürün gid'leri) ve "katalog_patchler" (katalogdaki harf / rakam /
+ikon ürünleri ve hazır setler: [{"id", "baslik", "durum", "etiketler"}]) varsa, kişiselleştirmesi açık her ürünün ve
+satıştaki her katalog patch'inin koleksiyonda olduğu denetlenir; eksikler grubuyla birlikte yazılır (koleksiyon elle
+sıralı: çantalar, kıyafetler, şapkalar, kalem kutuları, patch setleri, tek patch'ler).
 Hiçbir şey yazmaz.
 """
 import json
@@ -39,12 +45,49 @@ def main(argv):
         print('  FAZLA (listede ama kapalı; kart koşulu zaten eler): %s (%s)' % (ad(g), neden))
     for g in yarim:
         print('  UYARI: aktif = true ama kart koşulu sağlanmıyor (patch-notice etiketi ya da harita yok): %s' % ad(g))
+    sonuc = 0
     if eksik or fazla:
         yeni = [g for g in liste if g not in fazla] + eksik
         print('Önerilen yeni liste (%d ürün):' % len(yeni))
         print(json.dumps(yeni))
+        sonuc = 1
+    else:
+        print('Liste güncel.')
+    if koleksiyon_denetle(d, urunler, acik_mi) != 0:
+        sonuc = 1
+    return sonuc
+
+
+def grup(u, patch=False):
+    etiket = [t.lower() for t in (u.get('etiketler') or [])]
+    if patch:
+        return 'patch seti' if 'patch-set' in etiket else 'tek patch'
+    if 'kıyafet' in etiket:
+        return 'kıyafet'
+    if 'şapka' in etiket or 'hat' in etiket:
+        return 'şapka'
+    if 'kalem' in (u.get('handle') or '') or 'kalem' in (u.get('baslik') or '').lower():
+        return 'kalem kutusu'
+    return 'çanta'
+
+
+def koleksiyon_denetle(d, urunler, acik_mi):
+    if 'kendin_tasarla' not in d:
+        print('Not: "kendin_tasarla" verilmedi; Kendin Tasarla koleksiyonu denetlenmedi.')
+        return 0
+    kol = set(d.get('kendin_tasarla') or [])
+    patchler = [p for p in d.get('katalog_patchler') or [] if p.get('durum', 'ACTIVE') == 'ACTIVE']
+    eksik = [(u, grup(u)) for g, u in urunler.items() if acik_mi(u) and g not in kol]
+    eksik += [(p, grup(p, True)) for p in patchler if p['id'] not in kol]
+    print('Kendin Tasarla koleksiyonu: %d ürün; açık ürün %d, katalog patch %d' % (
+        len(kol), sum(1 for u in urunler.values() if acik_mi(u)), len(patchler)))
+    for u, gr in eksik:
+        print('  KOLEKSİYONDA YOK: %s → "%s" grubuna ekle' % (u.get('baslik') or u.get('handle') or u['id'], gr))
+    if eksik:
+        print('Eklemek için: collectionAddProductsV2 (kendin-tasarla), sonra koleksiyonda grubunun sonuna taşı '
+              '(Shopify Admin > Koleksiyonlar > Kendin Tasarla, ya da collectionReorderProducts).')
         return 1
-    print('Liste güncel.')
+    print('Kendin Tasarla koleksiyonu güncel.')
     return 0
 
 
