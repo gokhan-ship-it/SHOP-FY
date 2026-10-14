@@ -238,3 +238,17 @@ Bulgular:
 - Önizleme görseli iki kez indiriliyor (ilk `sizes=100vw`, yerleşimden sonra yeni `sizes` → farklı genişlik): 2 × 150–160 KB.
 - shop.app yönlendirmesi Safari'de yok (yönlendirme "yok", istek 0,04–0,22 s'de başlıyor).
 - Safari çoğu dosyanın boyutunu vermiyor; bayt toplamları alt sınırdır.
+
+## 2026-10-14: Görsel paneli (patch küçük resimleri)
+
+`test/performans/patch-gorsel.mjs`, iPhone 13 profili, panel aşamasında telefon benzeri ağ (9 Mbps, 60 ms) ve 4× CPU
+(`YAVAS=1`). "Hazır": panelde ekranda görünen bütün küçük resimler yüklenmiş ve çözülmüş.
+
+| | Panel açıldı → ekrandaki görseller hazır | Panel açılınca indirilen |
+|---|---|---|
+| Önce (canlı tema) | 1,05–1,07 s (10 görsel) | 74 görsel, 1063 KB (51 × 220 px, 23 × 150 px) |
+| Sonra, editör açıldıktan 8 s sonra (ön ısıtma bitmiş) | 0,32–0,33 s | 0 (22 görsel, ~140 KB önceden indirildi) |
+| Sonra, editör açıldıktan 1 s sonra (ön ısıtma yok) | 0,65–0,75 s | 17–22 görsel, 110–140 KB |
+
+Gerçek iPhone'daki 10,98 s ("İlk 10 patch görseli", 48 indi) editörün açılışından itibaren sayılıyordu ve müşterinin
+panele bastığı anı da içeriyordu; ölçüm kutusuna ayrıca panel açılış anından itibaren süre eklendi.
