@@ -1083,4 +1083,125 @@ html:not(#ttd):not(#ttd-2) body #MainContent.tt-tekli-page {
   --tt-btn-radius: 999px;
   --tt-btn-gap: 8px;
 }
+
+/* ==========================================================================
+   ADIM 5 — Kartlar, rozetler ve bölüm ritmi
+   Kartlar kenarlıksız, 20px köşe. Yumuşak zemin üstünde --ttd-kart (beyaz),
+   beyaz zemin üstünde --ttd-yumusak. Liste öğeleri 16px, görsel içi 12px.
+   Bölüm üst/alt boşluğu mobilde 96px, masaüstünde 160px; mobil kenar 16px.
+   ========================================================================== */
+
+/* --- Tema geneli köşe token'ları (Concept ürün kartları, bloklar) */
+:root {
+  --rounded-card: 20px;
+  --rounded-block: 20px;
+}
+
+/* --- Kartlar: yumuşak zemin üstünde beyaz */
+html:not(#ttd):not(#ttd-2) body :is(.tt-cs-kart, .ho-row, .ttn-cark-ic, .cb-bildirim, [class^="ai-how-it-works-card-"]:not([class*="-card-title-"]):not([class*="-card-description-"]):not([class*="-card-image"]),
+  [class*="ac-item-"], [id*="__blocks_wKUYJT"] [class*="ai-comparison-feature-card"]) {
+  background: var(--ttd-kart);
+  border: 0;
+}
+/* --- Kartlar: beyaz zemin üstünde yumuşak */
+html:not(#ttd):not(#ttd-2) body :is(.tt-uk, .tt-sc-kart:not([aria-checked="true"]), .tt-sc-set, .mk-yorum, .tt-tk-grup) {
+  background: var(--ttd-yumusak);
+  border: 0;
+}
+html:not(#ttd):not(#ttd-2) body .tt-sc-kart:not([aria-checked="true"]) {
+  box-shadow: none;
+}
+html:not(#ttd):not(#ttd-2) body .tt-uk-gorsel {
+  background: var(--ttd-yumusak);
+}
+/* --- Kartlar: koyu bölümde */
+html:not(#ttd):not(#ttd-2) body :is([class*="tt-catal-card-"], .as-kart, .vs-card, [class*="ttn-hiw-card"]:not([class*="-card-"]),
+  :is([id*="__blocks_HATjRq"], [id*="__blocks_BHFjY3"]) [class*="ai-comparison-feature-card"], .ak-kart) {
+  background: var(--ttd-koyu-kart);
+  border: 0;
+  box-shadow: none;
+}
+@media (min-width: 990px) {
+  /* video-slider masaüstünde kartlar zeminsiz liste düzenindedir */
+  html:not(#ttd):not(#ttd-2) body .vs-card {
+    background: transparent;
+  }
+}
+
+/* --- Köşe: kart 20px */
+html:not(#ttd):not(#ttd-2) body :is(.tt-cs-kart, .tt-uk, .tt-sc-kart, .tt-sc-set, [class*="tt-catal-card-"], .mk-kart, .mk-pop, .as-kart,
+  .vs-card, .vs-stage, [class*="ttn-hiw-card"]:not([class*="-card-"]),
+  [class^="ai-how-it-works-card-"]:not([class*="-card-title-"]):not([class*="-card-description-"]):not([class*="-card-image"]),
+  [class*="ai-comparison-product-image-wrapper"], [class*="ai-category-card"]:not([class*="-card-"]),
+  .hv-media, .ttn-cark-ic, .ak-pencere, .ak-pencere-ic, [class*="ai-hero-image"]) {
+  border-radius: var(--ttd-r-kart);
+}
+/* --- Köşe: küçük kart ve liste öğesi 16px */
+html:not(#ttd):not(#ttd-2) body :is(.ho-row, .ak-kart, [class*="ai-comparison-feature-card"], [class*="ac-item-"], .tt-tk-grup, .tt-tk-indirim,
+  .tt-fb-satir.tt-fb-s3, .cb-bildirim, .tt-sc-slot, .tt-sc-satir--kutu) {
+  border-radius: var(--ttd-r-kucuk);
+}
+/* --- Köşe: görsel içi 12px */
+html:not(#ttd):not(#ttd-2) body :is(.ho-media, [class*="tt-catal-media-"], [class*="ai-comparison-product-image"]:not([class*="-wrapper"]), .cb-tile,
+  [class*="ttn-hiw-image-wrapper"], [class*="ai-how-it-works-card-image"], .tt-sc-nasil-gorsel) {
+  border-radius: var(--ttd-r-gorsel);
+}
+html:not(#ttd):not(#ttd-2) body .cb-tile {
+  border: 0;
+}
+html:not(#ttd):not(#ttd-2) body [class*="tt-catal-media-"] {
+  border: 0;
+}
+
+/* --- Rozetler: 11px, Inter 500, 999px.
+   Birincil ("2'li set", "Kadın", kampanya) mürekkep zemin beyaz yazı;
+   ikincil ("#1 çok satan", etiket) beyaz zemin mürekkep yazı. */
+html:not(#ttd):not(#ttd-2) body :is(.tt-cs-rozet, .tt-uk-rozet--kampanya, .tt-sc-rozet) {
+  background: var(--ttd-murekkep);
+  color: #FFFFFF;
+  border: 0;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--ttd-r-hap);
+}
+html:not(#ttd):not(#ttd-2) body :is(.tt-cs-sira, .tt-uk-rozet--etiket) {
+  background: var(--ttd-kart);
+  color: var(--ttd-murekkep);
+  border: 0;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--ttd-r-hap);
+}
+
+/* --- Bölüm ritmi: üst/alt boşluk 96px (mobil) → 160px (masaüstü) */
+html:not(#ttd):not(#ttd-2) body :is(.hv-root, .tt-cs, [class^="tt-catal-template--"], [class^="tt-catal-sections--"], .ho-root, .vs-root, .mk-root,
+  .ay-root, .cb-kok, .as-kok, .tt-veri, .ak-kok,
+  [class^="ai-comparison-"]:not([class*="-category"]):not([class*="-title"]):not([class*="-subtitle"]):not([class*="-product"]):not([class*="-feature"]):not([class*="-button"]):not([class*="-header"]):not([class*="-grid"]):not([class*="-column"]):not([class*="-container"]):not([class*="-list"]):not([class*="-image"]),
+  [class*="ttn-hiw-container"],
+  [class^="ai-how-it-works-"]:not([class*="-container-"]):not([class*="-heading-"]):not([class*="-carousel"]):not([class*="-cards-"]):not([class*="-card-"]):not([class*="-nav-"]):not([class*="-pagination-"]):not([class*="-dot-"]):not([class*="-badge-"]),
+  [class^="ai-hero-"]:not([class*="-container-"]):not([class*="-badge-"]):not([class*="-heading-"]):not([class*="-description-"]):not([class*="-image"]),
+  [class^="ai-category-section"], [class^="ai-apple-text"]:not([class*="__"]),
+  [class^="uac-template--"], [class^="uac-sections--"]) {
+  padding-top: var(--ttd-bolum);
+  padding-bottom: var(--ttd-bolum);
+}
+/* Concept section'ları kendi --section-padding değişkenleriyle çalışır */
+html:not(#ttd):not(#ttd-2) body :is([id*="__newsletter"], [id$="__faq"], [id*="__featured_collection"], [id$="__product-recommendations"],
+  [id$="__recently-viewed"], [id*="__ugc_galeri"]).shopify-section {
+  --section-padding-top: var(--ttd-bolum);
+  --section-padding-bottom: var(--ttd-bolum);
+}
+
+/* --- Mobil kenar boşluğu 16px */
+@media (max-width: 749px) {
+  html:not(#ttd):not(#ttd-2) body :is(.hv-inner, .ho-inner, .vs-inner, .mk-inner, .ay-ust, .cb-ic, .as-ust, .as-serit, .as-ilerleme,
+    .tt-veri, .ak-ust, .ak-serit, .ak-oklar, .tt-cs-ic, [class*="tt-catal-inner-"], [class*="ttn-hiw-wrapper"],
+    [class^="ai-how-it-works-heading-"], [class^="ai-how-it-works-cards-"], [class^="ai-how-it-works-pagination-"],
+    [class^="ai-hero-"]:not([class*="-container-"]):not([class*="-badge-"]):not([class*="-heading-"]):not([class*="-description-"]):not([class*="-image"]),
+    [class*="ai-apple-text__container"], [class^="uac-template--"], [class^="uac-sections--"],
+    .gh-ic, .gh-cam-sar, [data-tth-kok]) {
+    padding-left: var(--ttd-kenar);
+    padding-right: var(--ttd-kenar);
+  }
+}
 </style>
