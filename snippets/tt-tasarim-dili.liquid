@@ -1,0 +1,54 @@
+{%- comment -%}
+  tt-tasarim-dili — Redesign 2026-10 tasarim dili katmani (yalnizca CSS).
+  layout/theme.liquid icinde </head> oncesinde tek satirla cagrilir.
+  Geri almak icin o render satirini silmek yeterlidir.
+  Liquid mantigina, JS'e, class/id/data- ozniteliklerine dokunmaz.
+{%- endcomment -%}
+<style id="tt-tasarim-dili">
+/* ==========================================================================
+   ADIM 1 — Tasarım token'ları (Leica paleti)
+   Kural: transition, transform, animation, opacity, position, top/left/right/
+   bottom, display, visibility, z-index, overflow bu dosyada HİÇ kullanılmaz.
+   Kurallardaki önek  html:not(#ttd):not(#ttd-2) body  iki ID değerinde
+   özgüllük sağlar; section stillerindeki tek ID'li kuralları !important
+   olmadan ezer. Hiçbir öğenin id'si değişmez (#ttd diye bir öğe yoktur).
+   ========================================================================== */
+:root {
+  /* Renkler */
+  --ttd-sayfa: #FFFFFF;
+  --ttd-yumusak: #F2F2F2;
+  --ttd-kart: #FFFFFF;
+  --ttd-murekkep: #111111;
+  --ttd-soluk: #6B6B6B;
+  --ttd-cizgi: #E5E5E5;
+  --ttd-vurgu: #E20612;
+  --ttd-koyu: #111111;
+  --ttd-koyu-kart: #1E1E1E;
+  --ttd-koyu-cizgi: #2E2E2E;
+  --ttd-koyu-soluk: #A8A8A8;
+  --ttd-koyu-metin: #F5F5F7;
+
+  /* Köşeler */
+  --ttd-r-kart: 20px;
+  --ttd-r-kucuk: 16px;
+  --ttd-r-gorsel: 12px;
+  --ttd-r-hap: 999px;
+
+  /* Boşluk: 390px'te mobil, 1440px'te masaüstü değerine akışkan geçiş */
+  --ttd-bolum: clamp(96px, calc(72.23px + 6.095vw), 160px);
+  --ttd-kenar: 16px;
+
+  /* Tipografi ölçeği (mobil 390px → masaüstü 1440px) */
+  --ttd-f-aile: Inter, sans-serif;
+  --ttd-f-h1: clamp(34px, calc(22.86px + 2.857vw), 64px);
+  --ttd-f-h2: clamp(28px, calc(20.57px + 1.905vw), 48px);
+  --ttd-f-h3: clamp(20px, calc(18.51px + 0.381vw), 24px);
+  --ttd-f-govde: clamp(17px, calc(16.26px + 0.1905vw), 19px);
+  --ttd-f-kucuk: 13px;
+
+  /* Butonlar */
+  --ttd-btn-yuk: 48px;
+  --ttd-btn-yuk-buyuk: 52px;
+  --ttd-btn-pad: 24px;
+}
+</style>
