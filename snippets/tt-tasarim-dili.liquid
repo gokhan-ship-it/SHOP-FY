@@ -301,10 +301,14 @@ html:not(#ttd):not(#ttd-2) body .hv-ticker {
   background: var(--ttd-koyu-kart);
   border-color: var(--ttd-koyu-cizgi);
 }
-html:not(#ttd):not(#ttd-2) body .hv-tk,
+html:not(#ttd):not(#ttd-2) body .hv-tk {
+  color: var(--ttd-koyu-metin);
+}
+/* Vurgu kelimesi ("sadece", "Kapsül kalır") hediye yeşili ailesinden kalır:
+   tek renk olsaydı vurgu tamamen kaybolurdu (Leica kırmızısı burada kullanılamaz). */
 html:not(#ttd):not(#ttd-2) body .hv-tk[data-efekt="vurgu"],
 html:not(#ttd):not(#ttd-2) body .hv-vurgu {
-  color: var(--ttd-koyu-metin);
+  color: #9FD4BD;
 }
 html:not(#ttd):not(#ttd-2) body .hv-tk-cizgi {
   background: var(--ttd-koyu-soluk);
@@ -897,8 +901,10 @@ html:not(#ttd):not(#ttd-2) body #MainContent.tt-tekli-page {
    .tth-cta 40px (bar 52/56px yüksekliğinde, 48px sığmıyor).
    ========================================================================== */
 
-/* --- Ortak ölçü: tüm ana ve ikincil butonlar */
-html:not(#ttd):not(#ttd-2) body :is(.button.button--primary:not(.self-button), .button.button--secondary:not(.button--close):not([is="next-button"]):not([is="previous-button"]),
+/* --- Ortak ölçü: tüm ana ve ikincil butonlar
+   Ürün kartı görselindeki ikon butonları (hızlı bakış / hızlı ekle, aria-controls="Quickview-…")
+   sabit genişlikli ve dolgusuzdur: ölçü dışında tutulur, yoksa ikon 0px'e sıkışır. */
+html:not(#ttd):not(#ttd-2) body :is(.button.button--primary:not(.self-button):not([aria-controls^="Quickview"]), .button.button--secondary:not(.button--close):not([is="next-button"]):not([is="previous-button"]):not([aria-controls^="Quickview"]),
   .gh-dugme, .gh-cam, [class*="tt-catal-btn-"], .mk-cta, .vs-cta,
   [id*="__blocks_"] [class*="ai-comparison-button-"], .ttn-cark-dugme, .tt-nc-dugme,
   .tt-sc-cubuk-dugme, .tt-sc-nasil-onay) {
@@ -996,7 +1002,7 @@ html:not(#ttd):not(#ttd-2) body .tt-nc-dugme {
 /* --- Ürün "Taksit tablosu" linki: küçük ikincil (36px) */
 html:not(#ttd):not(#ttd-2) body .tt-fb-link {
   min-height: 36px;
-  padding: 0 16px;
+  padding: 0 12px;
   border-radius: var(--ttd-r-hap);
   background: transparent;
   border: 1px solid var(--ttd-murekkep);
