@@ -1,0 +1,352 @@
+{%- capture direction -%}{% render 'direction' %}{%- endcapture -%}
+<!doctype html>
+<html class="no-js{% if request.design_mode %} shopify-design-mode{% endif %}" lang="{{ request.locale.iso_code }}" dir="{{ direction }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="{{ settings.color_button_background }}">
+    <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+    {%- comment %}theme-check-disable RemoteAsset{% endcomment %}
+    <link rel="dns-prefetch" href="https://ajax.googleapis.com">
+    <link rel="dns-prefetch" href="https://maps.googleapis.com">
+    <link rel="dns-prefetch" href="https://maps.gstatic.com">
+    {%- comment %}theme-check-enable RemoteAsset{% endcomment %}
+
+    {%- if settings.favicon != blank -%}
+      <link rel="shortcut icon" href="{{ settings.favicon | image_url: width: 32, height: 32 }}" type="image/png" />
+    {%- endif -%}
+
+    <title>
+      {{- page_title -}}
+      {%- if current_tags -%}
+        {%- assign meta_tags = current_tags | join: ', ' %} &ndash; {{ 'general.meta.tags' | t: tags: meta_tags -}}
+      {%- endif -%}
+      {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif -%}
+      {%- if request.page_type == 'password' -%}
+        {{- shop.name -}}
+      {%- else -%}
+        {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+      {%- endif -%}
+    </title>
+
+    {%- if page_description -%}
+      <meta name="description" content="{{ page_description | escape }}">
+    {%- endif -%}
+
+    {%- liquid
+      render 'social-meta-tags'
+
+      render 'css-variables'
+      echo 'theme.css' | asset_url | stylesheet_tag: preload: true
+
+      if direction == 'rtl'
+        echo 'rtl.css' | asset_url | stylesheet_tag: preload: true
+      endif
+    -%}
+
+    <link rel="stylesheet" href="{{ 'apps.css' | asset_url }}" media="print" fetchpriority="low" onload="this.media='all'">
+    <link rel="stylesheet" href="{{ 'custom-tt.css' | asset_url }}">
+
+    {%- comment -%}
+      Couple sayfasi tasarim token katmani. Sablon kapisi disinda hicbir
+      sayfa bu dosyayi yuklemiyor. Sarmalayici sinif asagida <main>
+      uzerinde; body'de degil, cunku taksit modali kendini body altina
+      tasiyor ve tokenlarin ona miras kalmamasi gerekiyor.
+    {%- endcomment -%}
+    {%- comment -%}
+      URUN SAYFASI KAPISI -- asagida uc yerde kullaniliyor (CSS
+      katmani, urun cubugu, <main> sinifi).
+
+      product.zaman-kapsulu* sablonlarinin yaninda product.couple da
+      giriyor: o sablon yalnizca ?view=couple ile aciliyor (Couple
+      modundaki kart linkleri) ve galeri disinda normal urun
+      sayfasiyla ayni gorunmeli. Onceden bu sablon kapinin disinda
+      kaldigi icin beyaz Concept header'iyla ve stilsiz hap/avantaj
+      alanlariyla aciliyordu.
+    {%- endcomment -%}
+    {%- liquid
+      assign tt_urun_sayfa = false
+      if template.name == 'product'
+        if template.suffix contains 'zaman-kapsulu' or template.suffix == 'couple'
+          assign tt_urun_sayfa = true
+        endif
+      endif
+    -%}
+
+    {%- if template.suffix == 'couple-daha-fazla-bilgial' -%}
+      {%- render 'tt-couple' -%}
+      {%- comment -%}
+        Ayni katmanin devami. Ayri dosya olmasinin tek sebebi
+        tt-couple.liquid'in buyumesi; kapsam ayni, hemen ardindan
+        geldigi icin kaynak sirasi da dogru kaliyor.
+      {%- endcomment -%}
+      {%- render 'tt-couple-izgara' -%}
+      {%- render 'tt-couple-eksen' -%}
+      {%- render 'tt-couple-banka' -%}
+      {%- render 'tt-aln-mavi' -%}
+      {%- comment -%}
+        Yapiskan cubuktaki "Urunleri Gor" dugmesi ikiye bolunmesin,
+        dogrudan couple koleksiyonuna gitsin. Gerekce dosyanin icinde.
+      {%- endcomment -%}
+      {%- render 'tt-couple-cubuk' -%}
+    {%- elsif template.suffix == 'hediye-daha-fazla-bilgial' -%}
+      {%- comment -%}
+        Ayni katmanin tekli (hediye) surumu: yalnizca olcu tarafi --
+        tipografik olcek, dikey ritim, kenar boslugu, buton metrigi.
+        Couple sayfasina ozel RENK kurallari (siyah kart slayti, mavi
+        CTA) alinmadi.
+
+        Alttaki uc dosya couple'la ayni; kapsam sinifi parametreden
+        geliyor. Sonuncusu tekliye ozel: video slaytinin surukleme
+        davranisi ve mozaik isik kutusu.
+      {%- endcomment -%}
+      {%- render 'tt-tekli' -%}
+      {%- render 'tt-couple-izgara', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-couple-eksen', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-couple-banka', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-aln-mavi', kok: '.tt-tekli-page' -%}
+      {%- render 'tt-tekli-gorunum' -%}
+    {%- elsif tt_urun_sayfa -%}
+      {%- comment -%}
+        Urun sayfasinda katmanin YALNIZCA avantaj kartlari parcasi:
+        mobilde 2x2 izgara ve "Odeme kolayliklari" penceresindeki
+        taksit kartlari. Sayfanin tipografi/ritim katmani (tt-tekli)
+        bilerek alinmadi -- urun sayfasinin kendi olculeri var.
+
+        Sonuncusu "Boyutlar" ve "Taksit tablosu" baglantilarini hap
+        bicimine cevirip dokunma hedefini 44px'e cikariyor.
+
+        "contains" kullaniliyor ki hem product.zaman-kapsulu hem de
+        product.zaman-kapsulu-couple sablonlari ayni katmani alsin.
+        template.name kontrolu, ayni son eki tasiyan baska bir sayfa
+        turu olusursa yanlislikla eslesmesin diye.
+      {%- endcomment -%}
+      {%- render 'tt-couple-izgara', kok: '.tt-urun-page' -%}
+      {%- render 'tt-couple-banka', kok: '.tt-urun-page' -%}
+      {%- render 'tt-urun-hap' -%}
+    {%- elsif template.name == 'collection' and template.suffix == 'couple-urunler' -%}
+      {%- comment -%}
+        Couple koleksiyon sayfasina ozel yerel duzeltmeler. Su an tek
+        is: ekranin altinda yuzen "Filtrele ve sirala" dugmesini
+        gizlemek -- izgaranin ustunde zaten bir filtre dugmesi var.
+        Ayrinti dosyanin icinde.
+      {%- endcomment -%}
+      {%- render 'tt-couple-koleksiyon' -%}
+    {%- endif -%}
+
+    {%- comment -%}
+      Butun koleksiyon sayfalari. Yukaridaki zincir if/elsif oldugu
+      icin ayri bir blok: couple-urunler zaten ilk dalda eslesiyor,
+      ama bu kural onda da gecerli olmali.
+
+      Cok secenekli urunlerde karttaki sepet butonu hizli gorunum
+      yerine urun sayfasini acsin. Gerekce dosyanin icinde.
+    {%- endcomment -%}
+    {%- if template.name == 'collection' -%}
+      {%- render 'tt-koleksiyon-kart' -%}
+    {%- endif -%}
+
+    {{ content_for_header }}
+
+    {%- comment -%}
+      PARA BICIMI JS'E ORNEKLENEREK VERILIYOR.
+
+      tt-sepet-toplam.js sepetin ara toplaminda indirim oncesi tutari ustu
+      cizili gosteriyor. O tutari Shopify /cart.js'ten KURUS olarak
+      veriyor, bicimli metin olarak degil. Bicimi kodun icinde tahmin
+      etmek yerine (virgul mu nokta mi, para birimi basta mi sonda mi)
+      Shopify'in KENDI ciktisi ornek olarak veriliyor: JS ornegi cozup
+      ayni kurali uyguluyor ve cozdugu kurali ornege geri uygulayip
+      dogruluyor. Uymazsa hicbir sey cizilmiyor.
+
+      Boylece magazanin para birimi ya da bicim ayari degisirse ornek de
+      kendiliginden degisir; JS'te elle guncellenecek bir sey kalmaz.
+      Kosul, sepet sablonlarinin kullandigi kosulun AYNISI.
+    {%- endcomment -%}
+    {%- capture tt_para_ornek -%}
+      {%- if settings.currency_code_enabled -%}
+        {{- 123456789 | money_with_currency -}}
+      {%- else -%}
+        {{- 123456789 | money -}}
+      {%- endif -%}
+    {%- endcapture -%}
+    <script>window.ttParaOrnek = { k: 123456789, s: {{ tt_para_ornek | strip | json }} };</script>
+
+    <script src="{{ 'vendor.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'custom-tt.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'tt-sepet-toplam.js' | asset_url }}" defer="defer"></script>
+
+    {%- if settings.enable_tab_attention -%}
+      <script src="{{ 'tab-attention.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
+
+    {%- if request.page_type contains 'customers/' -%}
+      <script src="{{ 'shopify_common.js' | shopify_asset_url }}" defer="defer"></script>
+    {%- endif -%}
+
+    {%- render 'js-variables' -%}
+  </head>
+
+  <body class="template-{{ template | replace: '.', ' ' | truncatewords: 1, '' | handle }}{% if request.path == '/challenge' %} template-challange{% endif %}" data-rounded-button="{{ settings.rounded_button }}" data-rounded-input="{{ settings.rounded_input }}" data-rounded-block="{{ settings.rounded_block }}" data-rounded-card="{{ settings.rounded_card }}" data-button-hover="{{ settings.buttons_hover }}"{% if settings.enable_page_transition %} data-page-transition{% endif %}{% if settings.enable_lazy_image %} data-lazy-image{% endif %}{% unless settings.show_modal_close_button %} data-modal-swipe-only{% endunless %} data-title-animation data-page-rendering>
+    <a class="sr-only skip-link" href="#MainContent">{{ 'general.accessibility.skip_to_content' | t }}</a>
+
+    {%- liquid
+      if settings.enable_page_transition
+        render 'loading-bar'
+      endif
+
+      render 'mouse-cursor'
+
+      sections 'header-group'
+      sections 'overlay-group'
+    -%}
+
+    {%- comment -%}
+      CARKIN SAYFA BASINA BIR KEZ YUKLENEN PARCASI
+      (sections/ttn-cark.json -> sections/ttn-cark-genel.liquid)
+
+      Uc isi var: yapilandirma dugumu [data-ttn-veri], alttaki sabit
+      bar ve carkin CSS + JS yuklemesi. Her sayfada gerekli, cunku
+      kazandiktan sonra sayacin devam etmesi ve kuponun sepete yeniden
+      uygulanmasi carkin kartini tasimayan sayfalarda da surmeli.
+
+      SIRASI ONEMLI -- page-container'dan ONCE olmali.
+      Cark kartinin bolumu (sections/ttn-spin-wheel.liquid) daha ilk
+      boyamadan once calisan SENKRON bir script tasiyor ve
+      [data-ttn-veri] dugumunu ariyor:
+
+          var v = document.querySelector('[data-ttn-veri]');
+          if (!v) { k.hidden = true; return; }
+
+      Dugum sablon bolumlerinden SONRA basilsa kart kendini gizler.
+      assets/ttn-cark.js de ayni dugum yoksa hemen return ediyor.
+      Yani bu satir asagi kayarsa cark sessizce kaybolur.
+
+      Bolum grubu olmasinin sebebi tt-anasayfa-cubuk ile ayni:
+      duzenleyicide normal bir bolum gibi gorunuyor ve ayarlanabiliyor,
+      ama dosya bizim -- tema guncellemesi uzerine yazamiyor.
+    {%- endcomment -%}
+    {% sections 'ttn-cark' %}
+
+    {%- comment -%}
+      ANASAYFA URUN CUBUGU
+
+      Couple koleksiyon sayfasindaki yapiskan urun cubugunun
+      (apple-local-nav) birebir aynisi, yalnizca anasayfada. Ayarlar
+      templates/collection.couple-urunler.json icindeki degerlerden
+      kopyalandi; bolum grubu dosyasi sections/tt-anasayfa-cubuk.json.
+
+      Neden bolum grubu: cubugu dogrudan templates/index.json'a yazmak
+      icin o dosyanin tamamini gondermek gerekiyor. index.json otomatik
+      uretiliyor ve 100 KB'in uzerinde; tema duzenleyicide es zamanli
+      yapilan degisikliklerin uzerine yazma riski var. Bolum grubu ayni
+      sonucu veriyor, duzenleyicide de normal bir bolum gibi gorunuyor
+      ve duzenlenebiliyor.
+
+      Anasayfa header'i icin ayrica bir sey yapilmadi: bolumun kendi
+      CSS'i header_modu aciktayken mod_gizle_secici'yi
+      ([id$='__header']) gizliyor.
+    {%- endcomment -%}
+    {%- if template.name == 'index' -%}
+      {% sections 'tt-anasayfa-cubuk' %}
+    {%- endif -%}
+
+    {%- comment -%}
+      URUN SAYFASI CUBUGU
+
+      Ayni gerekce, ayri bir sebeple: urun sablonlari (product.zaman-
+      kapsulu ve product.zaman-kapsulu-couple) 25 bolumle Shopify'in
+      JSON sablon sinirina dayanmis durumda. 26. bolum eklenen dosya
+      sessizce reddediliyor -- userError donmuyor, upsert bos liste ile
+      "basarili" gorunuyor. Bu yuzden cubuk sablonun icine degil, bolum
+      grubu olarak yukleniyor; grup bu sinira dahil degil.
+
+      Iki ayri grup var cunku dugmenin gidecegi yer farkli: tekli urun
+      hediye sayfasina, couple urun couple sayfasina.
+
+      Sablondaki eski apple-local-nav kapatildi; onun yerini bu aliyor.
+    {%- endcomment -%}
+    {%- if template.name == 'product' and template.suffix == 'zaman-kapsulu-couple' -%}
+      {% sections 'tt-couple-urun' %}
+    {%- elsif tt_urun_sayfa -%}
+      {% sections 'tt-urun-cubuk' %}
+    {%- endif -%}
+
+    <div class="page-container" id="PageContainer">
+      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% elsif tt_urun_sayfa %} tt-urun-page{% endif %}" id="MainContent" role="main">
+        {{ content_for_layout }}
+      </main>
+
+      <footer class="footer-group block w-full" is="footer-group">
+        {%- sections 'footer-group' -%}
+      </footer>
+    </div>
+
+    <ul hidden>
+      <li id="a11y-refresh-page-message">{{ 'general.accessibility.refresh_page' | t }}</li>
+      <li id="a11y-new-window-message">{{ 'general.accessibility.link_messages.new_window' | t }}</li>
+    </ul>
+
+    {%- if request.design_mode == false and settings.preload_links -%}
+      <script src="{{ 'instant-page.js' | asset_url }}" type="module" fetchpriority="low" defer="defer"></script>
+    {%- endif -%}
+    {%- comment -%}
+      Header'daki sepet ikonu cekmeceyi acsin. Sablondan bagimsiz,
+      butun sayfalarda gecerli; ayrintili gerekce dosyanin icinde.
+    {%- endcomment -%}
+    {%- render 'tt-sepet-cekmece' -%}
+    {%- comment -%}
+      tt-kupon-cubugu BU TEMADA CAGRILMIYOR.
+
+      O snippet yalnizca WHEELIO uygulamasinin kendi seridini
+      ([id*="wlo"]) header'in altina tasimak icin vardi. Bu taslakta
+      Wheelio app embed'i kapali ve yerini temaya gomulu cark aldi;
+      serit artik ttn-cark-genel'den geliyor. Dosya silinmeyi bekliyor.
+      Canli temada (Wheelio hala acik) cagri duruyor.
+    {%- endcomment -%}
+    {%- render 'tt-yapilandirma' -%}
+    {%- comment -%}
+      Indirim seridi bazi koleksiyonlarda sayfaya gore kayik
+      duruyordu; cizildikten sonra olcup ekrana gore ortaliyor.
+      tt-yapilandirma'dan SONRA cagriliyor -- seridi o basiyor.
+    {%- endcomment -%}
+    {%- render 'tt-serit-ortala' -%}
+    {%- comment -%}
+      "NASIL CALISIR?" BUTONU
+
+      Sablona degil buraya bagli: tek seferde butun sablonlari
+      kapsiyor ve sablon JSON'larina dokunulmuyor -- urun sablonlari
+      zaten 25 bolumle Shopify'in sinirina dayanmis durumda. Buton
+      ile panel position: fixed oldugu icin sayfadaki SIRASI
+      gorunumu etkilemiyor.
+
+      BOLUM GRUBU, statik "section" cagrisi DEGIL. Once statik cagri
+      kullanildi; o haliyle bolum tema duzenleyicinin bolum
+      listesinde HIC gorunmuyor, dolayisiyla ayarlarina
+      erisilemiyordu. tt-urun-cubuk / tt-anasayfa-cubuk ile ayni
+      cozum: grup, duzenleyicide normal bir bolum gibi cikiyor ve
+      duzenlenebiliyor.
+
+      BURADA SABLON KOSULU YOK. Onceki surumde template.name ==
+      'product' kosulu vardi; o zaman grup duzenleyicide yalnizca
+      urun sayfasi onizlenirken listede cikiyordu ve gorunurlugu
+      degistirmek her seferinde kod degisikligi demekti. Artik
+      hangi sayfa turlerinde cizilecegini bolumun kendi
+      "Hangi sayfalarda" ayarlari kararlastiriyor; kosul secili
+      degilse bolum CSS'ini bile yuklemiyor.
+
+      Kapatmak icin bolumun kendi "Butonu goster" ayari var.
+    {%- endcomment -%}
+    {% sections 'tt-nasil-calisir-grup' %}
+    {%- comment -%}
+      HAMBURGER MENU (sections/tt-menu.liquid, ayarlar sections/tt-menu-grup.json)
+      Her sayfada tek bilesen; TT Baslik'in ve temanin header'inin
+      hamburger ikonlari bunu aciyor. Icerik bolum ayarlarindan geliyor.
+    {%- endcomment -%}
+    {% sections 'tt-menu-grup' %}
+  </body>
+</html>

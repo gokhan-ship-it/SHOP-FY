@@ -1,0 +1,44 @@
+{
+  "type": "custom.tt_menu",
+  "name": "Hamburger Menü",
+  "sections": {
+    "tt_menu": {
+      "type": "tt-menu",
+      "settings": {
+        "aktif": true,
+        "logo": "shopify://shop_images/beyazlogo_9fa2a926-6b56-4ae6-808d-220f37a4f807.png",
+        "logo_yuk": 22,
+        "menu_etiket": "Menü",
+        "nav_etiket": "Ana menü",
+        "kapat_etiket": "Menüyü kapat",
+        "urun_etiket": "ÜRÜNLER",
+        "satir_1_metin": "Kadın",
+        "satir_1_bag": "/collections/zaman-kapsulu-kolyeler",
+        "satir_1_rozet": "",
+        "satir_2_metin": "Erkek",
+        "satir_2_bag": "/collections/zaman-kapsulu-bileklik",
+        "satir_2_rozet": "",
+        "satir_3_metin": "Couple",
+        "satir_3_bag": "/collections/couple-urunler",
+        "satir_3_rozet": "İkincisi yarı fiyatına",
+        "nasil_etiket": "NASIL ÇALIŞIR?",
+        "kart_1_baslik": "Single",
+        "kart_1_aciklama": "Belirlediğin tarihte açılır.",
+        "kart_1_bag": "/pages/hediye-daha-fazla-bilgi-al",
+        "kart_2_baslik": "Couple",
+        "kart_2_aciklama": "Buluşunca açılır.",
+        "kart_2_bag": "/pages/couple-daha-fazla-bilgi-al",
+        "alt_1_metin": "Etkinlik",
+        "alt_1_bag": "/pages/event-daha-fazla-bilgi-al",
+        "alt_2_metin": "İletişim",
+        "alt_2_bag": "/pages/iletisimsayfasi",
+        "destek_metni": "Hafta içi 10.00–18.00",
+        "destek_tel_metni": "0216 606 14 15",
+        "destek_tel": "+902166061415"
+      }
+    }
+  },
+  "order": [
+    "tt_menu"
+  ]
+}
