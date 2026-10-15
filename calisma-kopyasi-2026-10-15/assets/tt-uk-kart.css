@@ -64,8 +64,11 @@
 .tt-uk-gorsel {
   position: relative;
   /* Oran BASTAN sabit: gorsel yuklenirken yerlesim kaymiyor.
-     Temanin product_image_ratio ayari "square". */
-  aspect-ratio: 1 / 1;
+     4:5 -- katalogdaki packshot ve model fotograflarinin orani
+     (1856x2304). Kare kartta bu fotograflarin alti ve ustu
+     kirpiliyordu. Gorseller object-fit: cover ile tam oturuyor;
+     img'nin width/height nitelikleri de 800x1000 (snippet). */
+  aspect-ratio: 4 / 5;
   background: var(--tt-uk-zemin);
 }
 .tt-uk-serit {
@@ -344,19 +347,3 @@
   .tt-uk-dugme:active { transform: none; }
   .tt-uk-serit { scroll-behavior: auto; }
 }
-
-/* ------------------------------------------------------------------
-   COUPLE GORSEL SERIDI
-   Ikizi (custom.couple_urun) yeni sablonda olan kartlarda ikinci bir
-   serit var. Varsayilan: gizli. Bolum Couple modundayken
-   (assets/tt-secim-kartlari.js kokune data-sc-aktif-mod="couple"
-   yaziyor) tekli serit ve noktalari gizleniyor, couple seridi ve
-   noktalari gorunuyor. Gizli seridin gorselleri yer tutucu oldugu
-   icin Single modunda hicbiri indirilmiyor.
-   ------------------------------------------------------------------ */
-.tt-uk-serit--couple,
-.tt-uk-noktalar--couple { display: none; }
-[data-sc-aktif-mod="couple"] .tt-uk[data-uk-couple] .tt-uk-serit--single,
-[data-sc-aktif-mod="couple"] .tt-uk[data-uk-couple] .tt-uk-noktalar--single { display: none; }
-[data-sc-aktif-mod="couple"] .tt-uk[data-uk-couple] .tt-uk-serit--couple { display: flex; }
-[data-sc-aktif-mod="couple"] .tt-uk[data-uk-couple] .tt-uk-noktalar--couple { display: flex; }

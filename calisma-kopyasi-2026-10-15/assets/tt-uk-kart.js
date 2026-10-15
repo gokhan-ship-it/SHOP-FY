@@ -24,25 +24,9 @@
     serit.setAttribute('data-uk-kurulu', '');
 
     var kart = serit.closest('.tt-uk');
-    /* Couple seridi (data-uk-couple-serit): ikiz urunun gorselleri.
-       Kendi noktalari var; tekli seridin noktalari ise "couple"
-       degeri TASIMAYAN [data-uk-noktalar]. */
-    var couple = serit.hasAttribute('data-uk-couple-serit');
-    var noktaKap = kart ? kart.querySelector(couple
-      ? '[data-uk-noktalar="couple"]'
-      : '[data-uk-noktalar]:not([data-uk-noktalar="couple"])') : null;
+    var noktaKap = kart ? kart.querySelector('[data-uk-noktalar]') : null;
     var noktalar = noktaKap ? noktaKap.querySelectorAll('i') : [];
     var tek = serit.hasAttribute('data-uk-tek');
-    /* Couple seridinin gorselleri yalnizca bolum Couple modundayken
-       iniyor; Single modunda gizli serit hicbir istek acmiyor. */
-    /* Bolum koku [data-tt-sc]; modu (data-sc-aktif-mod) bolumun kendi
-       JS'i yaziyor. Bu dosya ondan once calismis olabilir: nitelik
-       henuz yoksa "Couple degil" sayiliyor ve degisim izleniyor. */
-    var modKok = couple ? serit.closest('[data-tt-sc]') : null;
-    function izinli() {
-      if (!couple) return true;
-      return !!modKok && modKok.getAttribute('data-sc-aktif-mod') === 'couple';
-    }
 
     /* Nokta PENCERESI: gosterge en fazla bu kadar nokta ciziyor,
        digerleri gizleniyor. Nitelik yoksa pencere yok ve butun
@@ -62,12 +46,7 @@
        geliyor ama indirilmeyen fotograf da indirilmiyor. */
     var bekleyen = serit.querySelectorAll('img[data-uk-src]');
     var acikSayi = 0;
-    /* Tekli seritte ilk kare markupta yuklu; couple seridinde ilk kare
-       de bekliyor. "Kac kare hazir" hesabi bu kadar kayiyor. */
-    var ILK = couple ? 1 : 0;
     function gorselleriAc(adet) {
-      if (!izinli()) return;
-      if (adet != null) adet += ILK;
       if (adet == null || adet > bekleyen.length) adet = bekleyen.length;
       for (; acikSayi < adet; acikSayi++) {
         var im = bekleyen[acikSayi];
@@ -86,26 +65,15 @@
       /* Kart gorus alanina yaklasinca yukleniyor; dokunma/odak da
          hemen aciyor. IntersectionObserver yoksa gecikme birakilmiyor
          -- bos kare gostermektense erken indirmek yeglenir. */
-      var gorunur = false;
       if (window.IntersectionObserver && kart) {
         var g = new IntersectionObserver(function (girisler) {
           for (var i = 0; i < girisler.length; i++) {
-            gorunur = girisler[i].isIntersecting;
-            /* Couple seridi Single modundayken bekliyor: gozlemci
-               kapanmiyor, mod Couple'a gecince asagidaki dinleyici
-               (ya da bir sonraki gorunme) aciyor. */
-            if (gorunur && izinli()) { gorselleriAc(ILERI); g.disconnect(); }
+            if (girisler[i].isIntersecting) { gorselleriAc(ILERI); g.disconnect(); }
           }
         }, { rootMargin: '200px 0px' });
         g.observe(kart);
       } else {
-        gorunur = true;
         gorselleriAc(ILERI);
-      }
-      if (couple && modKok && window.MutationObserver) {
-        new MutationObserver(function () {
-          if (gorunur && izinli()) gorselleriAc(ILERI);
-        }).observe(modKok, { attributes: true, attributeFilter: ['data-sc-aktif-mod'] });
       }
       /* Dinleyiciler olayi ARGUMAN olarak gecirmesin: gorselleriAc bir
          sayi bekliyor, Event gelirse "hepsini ac" demek olurdu. */
