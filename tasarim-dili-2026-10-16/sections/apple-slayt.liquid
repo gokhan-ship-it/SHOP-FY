@@ -1,0 +1,1255 @@
+{%- liquid
+  assign s = section.settings
+  assign sid = section.id
+
+  comment
+    Kartlar blok olarak geliyor: editorde eklenip cikarilabilsin,
+    surukleyip sirasi degistirilebilsin diye. Sabit "kart_1..kart_5"
+    alanlari yerine blok kullanmanin sebebi bu.
+  endcomment
+  assign kartlar = section.blocks | where: 'type', 'kart'
+
+  comment
+    Perde (scrim) yogunlugu: yazi kartin uzerinde durdugu icin gorselin
+    ne oldugundan bagimsiz okunabilir olmali. Duz siyah bir katman
+    yerine asagi dogru koyulasan bir degrade kullaniyoruz.
+  endcomment
+  assign perde_a = s.perde_guc | divided_by: 100.0
+  assign perde_renk = s.perde_renk | color_modify: 'alpha', perde_a
+  assign perde_orta = s.perde_guc | times: 0.45 | divided_by: 100.0
+  assign perde_renk_orta = s.perde_renk | color_modify: 'alpha', perde_orta
+
+  assign oran_m = '4 / 5'
+  case s.oran_m
+    when 'kare'
+      assign oran_m = '1 / 1'
+    when 'uzun'
+      assign oran_m = '3 / 4'
+    when 'genis'
+      assign oran_m = '4 / 3'
+  endcase
+  assign oran_d = '4 / 5'
+  case s.oran_d
+    when 'kare'
+      assign oran_d = '1 / 1'
+    when 'uzun'
+      assign oran_d = '3 / 4'
+    when 'genis'
+      assign oran_d = '4 / 3'
+  endcase
+
+  comment
+    aspect-ratio yedegi icin padding yuzdesi. "4 / 5" -> %125.
+  endcomment
+  assign yedek_m = 125
+  case s.oran_m
+    when 'kare'
+      assign yedek_m = 100
+    when 'uzun'
+      assign yedek_m = 133
+    when 'genis'
+      assign yedek_m = 75
+  endcase
+
+  comment
+    Basligin icindeki bir bolumu degradeli gostermek icin: ayardaki
+    metin basligin icinde geciyorsa o parca bir span'e sariliyor.
+    Ayar bos birakilirsa baslik oldugu gibi basiliyor -- yani bu
+    ozellik opt-in, varsayilan cikti hic degismiyor.
+  endcomment
+  assign bas_html = s.baslik
+  if s.bas_vurgu != blank and s.baslik contains s.bas_vurgu
+    assign vurgu_sar = '<span class="as-bas-vurgu">' | append: s.bas_vurgu | append: '</span>'
+    assign bas_html = s.baslik | replace: s.bas_vurgu, vurgu_sar
+    assign vurgu_var = true
+  endif
+-%}
+
+<style>
+  #shopify-section-{{ sid }} .as-kok {
+    background: {{ s.zemin }};
+    padding: {{ s.p_ust_m }}px 0 {{ s.p_alt_m }}px;
+    /* Bolum kenardan kenara; ic bosluk kartlarin kendisinde. */
+    overflow: hidden;
+  }
+
+  #shopify-section-{{ sid }} .as-ust {
+    max-width: {{ s.metin_gen }}px;
+    margin: 0 auto {{ s.bas_bosluk_m }}px;
+    padding: 0 {{ s.kenar_m }}px;
+    text-align: {% if s.hiza == 'sol' %}left{% else %}center{% endif %};
+  }
+
+  #shopify-section-{{ sid }} .as-etiket {
+    margin: 0 0 8px;
+    font-size: {{ s.etiket_boyut }}px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: {{ s.alt_renk }};
+  }
+
+  #shopify-section-{{ sid }} .as-bas {
+    margin: 0;
+    font-family: var(--font-heading-family);
+    font-size: {{ s.bas_m }}px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    color: {{ s.bas_renk }};
+    text-wrap: balance;
+  }
+{%- if vurgu_var %}
+
+  /* Basligin vurgulanan parcasi. Degrade yazinin kendisine
+     background-clip: text ile uygulaniyor.
+     - box-decoration-break: clone -> parca iki satira boluneceginde
+       her satir degradenin tamamini gosteriyor; "slice" birakilsaydi
+       ikinci satira degradenin yalnizca son dilimi dusuyordu.
+     - Destegi olmayan tarayicida asagidaki duz renk yerinde kaliyor,
+       yani yazi hicbir kosulda kaybolmuyor. */
+  #shopify-section-{{ sid }} .as-bas-vurgu {
+    color: {{ s.vurgu_duz }};
+  }
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    #shopify-section-{{ sid }} .as-bas-vurgu {
+      background-image: linear-gradient({{ s.vurgu_aci }}deg, {{ s.vurgu_1 }} 0%, {{ s.vurgu_2 }} 50%, {{ s.vurgu_3 }} 100%);
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+{%- endif %}
+
+  #shopify-section-{{ sid }} .as-alt {
+    margin: 10px 0 0;
+    font-size: {{ s.alt_m }}px;
+    line-height: 1.5;
+    color: {{ s.alt_renk }};
+    text-wrap: balance;
+  }
+
+  /* --- serit --- */
+  #shopify-section-{{ sid }} .as-sarmal { position: relative; }
+
+  #shopify-section-{{ sid }} .as-serit {
+    display: flex;
+    gap: {{ s.ara_m }}px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    /* Kartlar basligin kenariyla ayni cizgide dursun; snap noktasi da
+       bu bosluga gore hesaplansin -- yoksa tarayici ilk karti kabin
+       kenarina yapistirip seridi sola cekiyor. */
+    padding: 0 {{ s.kenar_m }}px {{ s.alt_bosluk }}px;
+    scroll-padding-left: {{ s.kenar_m }}px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  #shopify-section-{{ sid }} .as-serit::-webkit-scrollbar { display: none; }
+
+  #shopify-section-{{ sid }} .as-kart {
+    flex: 0 0 {{ s.kart_gen_m }}%;
+    max-width: 460px;
+    scroll-snap-align: start;
+    position: relative;
+    margin: 0;
+    border-radius: {{ s.kose }}px;
+    overflow: hidden;
+    background: {{ s.kart_zemin }};
+    isolation: isolate;
+  }
+
+  /* Kart bir baglantiysa da ayni kutu; alti cizili yazi olmasin. */
+  #shopify-section-{{ sid }} .as-kart a.as-yuzey {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* aspect-ratio yedegi: destegi olmayan tarayicida padding yuzdesi */
+  #shopify-section-{{ sid }} .as-medya {
+    position: relative;
+    width: 100%;
+    padding-top: {{ yedek_m }}%;
+  }
+  @supports (aspect-ratio: 1 / 1) {
+    #shopify-section-{{ sid }} .as-medya {
+      aspect-ratio: {{ oran_m }};
+      padding-top: 0;
+    }
+  }
+
+  #shopify-section-{{ sid }} .as-gorsel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    /* Buyume transform ile: dusuk donanimli telefonda akici kalsin. */
+    transform: scale(1);
+    transition: transform {{ s.hover_sure }}ms cubic-bezier(.33, 1, .68, 1);
+  }
+  #shopify-section-{{ sid }} .as-gorsel-m { display: block; }
+  #shopify-section-{{ sid }} .as-gorsel-d { display: none; }
+
+  {%- if s.hover_ac %}
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ sid }} .as-kart:hover .as-gorsel {
+      transform: scale({{ s.hover_olcek | divided_by: 100.0 }});
+    }
+  }
+  {%- endif %}
+
+  /* Perde: gorsel ne olursa olsun yazi okunur kalsin. */
+  #shopify-section-{{ sid }} .as-perde {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 40%;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      {{ s.perde_renk | color_modify: 'alpha', 0 }} 0%,
+      {{ perde_renk_orta }} 55%,
+      {{ perde_renk }} 100%
+    );
+  }
+
+  #shopify-section-{{ sid }} .as-yazi {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: {{ s.yazi_bosluk }}px;
+  }
+
+  #shopify-section-{{ sid }} .as-kart-bas {
+    margin: 0;
+    font-family: var(--font-heading-family);
+    font-size: {{ s.kart_bas_m }}px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.8px;
+    color: {{ s.kart_bas_renk }};
+    text-wrap: balance;
+  }
+
+  #shopify-section-{{ sid }} .as-kart-alt {
+    margin: 6px 0 0;
+    font-size: {{ s.kart_alt_m }}px;
+    line-height: 1.4;
+    color: {{ s.kart_alt_renk }};
+  }
+
+  /* Serit sonuna nefes payi: son kart kenara yapismasin. */
+  #shopify-section-{{ sid }} .as-kuyruk {
+    flex: 0 0 1px;
+    align-self: stretch;
+  }
+
+  /* --- oklar --- */
+  #shopify-section-{{ sid }} .as-ok {
+    display: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    width: {{ s.ok_cap }}px;
+    height: {{ s.ok_cap }}px;
+    border-radius: 999px;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    background: {{ s.ok_zemin }};
+    color: {{ s.ok_renk }};
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .16);
+    transition: opacity 200ms ease, transform 200ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #shopify-section-{{ sid }} .as-ok svg {
+    width: 45%;
+    height: 45%;
+    display: block;
+  }
+  /* Oklar gutter'in icinde durur, kartin uzerine tam binmez. */
+  #shopify-section-{{ sid }} .as-ok-sol { left: {{ s.ok_kenar }}px; }
+  #shopify-section-{{ sid }} .as-ok-sag { right: {{ s.ok_kenar }}px; }
+  /* Uca gelince pasif: gorunur kalir ama tiklanmaz -- Apple boyle yapiyor. */
+  #shopify-section-{{ sid }} .as-ok[disabled] {
+    opacity: .32;
+    cursor: default;
+    pointer-events: none;
+  }
+  #shopify-section-{{ sid }} .as-ok:focus-visible {
+    outline: 2px solid {{ s.bas_renk }};
+    outline-offset: 2px;
+  }
+
+  /* --- ilerleme --- */
+  #shopify-section-{{ sid }} .as-ilerleme {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: {{ s.nokta_ara }}px;
+    margin-top: {{ s.ilerleme_bosluk }}px;
+    padding: 0 {{ s.kenar_m }}px;
+  }
+  #shopify-section-{{ sid }} .as-ilerleme[hidden] { display: none; }
+
+  #shopify-section-{{ sid }} .as-nokta {
+    width: {{ s.nokta_cap }}px;
+    height: {{ s.nokta_cap }}px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: {{ s.nokta_pasif }};
+    cursor: pointer;
+    transition: width 260ms cubic-bezier(.33, 1, .68, 1), background-color 260ms ease;
+  }
+  #shopify-section-{{ sid }} .as-nokta.is-etkin {
+    background: {{ s.nokta_aktif }};
+    {%- if s.nokta_hap %}
+    width: {{ s.nokta_cap | times: 3 }}px;
+    {%- endif %}
+  }
+  #shopify-section-{{ sid }} .as-nokta:focus-visible {
+    outline: 2px solid {{ s.nokta_aktif }};
+    outline-offset: 3px;
+  }
+
+  /* --- masaustu --- */
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .as-kok {
+      padding: {{ s.p_ust_d }}px 0 {{ s.p_alt_d }}px;
+    }
+    #shopify-section-{{ sid }} .as-ust {
+      margin-bottom: {{ s.bas_bosluk_d }}px;
+      padding: 0 {{ s.kenar_d }}px;
+    }
+    #shopify-section-{{ sid }} .as-bas { font-size: {{ s.bas_d }}px; }
+    #shopify-section-{{ sid }} .as-alt { font-size: {{ s.alt_d }}px; }
+    #shopify-section-{{ sid }} .as-serit {
+      gap: {{ s.ara_d }}px;
+      padding-left: {{ s.kenar_d }}px;
+      padding-right: {{ s.kenar_d }}px;
+      scroll-padding-left: {{ s.kenar_d }}px;
+    }
+    #shopify-section-{{ sid }} .as-kart {
+      flex-basis: {{ s.kart_gen_d }}px;
+      max-width: none;
+    }
+    @supports (aspect-ratio: 1 / 1) {
+      #shopify-section-{{ sid }} .as-medya { aspect-ratio: {{ oran_d }}; }
+    }
+    #shopify-section-{{ sid }} .as-gorsel-m { display: none; }
+    #shopify-section-{{ sid }} .as-gorsel-d { display: block; }
+    #shopify-section-{{ sid }} .as-kart-bas { font-size: {{ s.kart_bas_d }}px; }
+    #shopify-section-{{ sid }} .as-kart-alt { font-size: {{ s.kart_alt_d }}px; }
+    {%- if s.ok_goster %}
+    #shopify-section-{{ sid }} .as-ok { display: flex; }
+    {%- endif %}
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .as-gorsel,
+    #shopify-section-{{ sid }} .as-nokta,
+    #shopify-section-{{ sid }} .as-ok { transition: none; }
+    #shopify-section-{{ sid }} .as-kart:hover .as-gorsel { transform: none; }
+  }
+</style>
+
+<div class="as-kok" data-as-kok>
+  {%- if s.etiket != blank or s.baslik != blank or s.alt_metin != blank -%}
+    <div class="as-ust">
+      {%- if s.etiket != blank -%}<p class="as-etiket">{{ s.etiket }}</p>{%- endif -%}
+      {%- if s.baslik != blank -%}<h2 class="as-bas">{{ bas_html }}</h2>{%- endif -%}
+      {%- if s.alt_metin != blank -%}<p class="as-alt">{{ s.alt_metin }}</p>{%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="as-sarmal">
+    <div class="as-serit" data-as-serit tabindex="0" role="group" aria-label="{{ s.serit_etiket | escape }}">
+      {%- for blok in kartlar -%}
+        {%- assign k = blok.settings -%}
+        {%- assign gm = k.gorsel_m | default: k.gorsel_d -%}
+        {%- assign gd = k.gorsel_d | default: k.gorsel_m -%}
+        <article class="as-kart" data-as-kart {{ blok.shopify_attributes }}>
+          {%- if k.bag != blank -%}<a class="as-yuzey" href="{{ k.bag }}">{%- endif -%}
+          <div class="as-medya">
+            {%- if gm != blank -%}
+              <img
+                class="as-gorsel as-gorsel-m"
+                src="{{ gm | image_url: width: 900 }}"
+                alt="{{ k.baslik | escape }}"
+                width="{{ gm.width }}"
+                height="{{ gm.height }}"
+                loading="lazy"
+                decoding="async"
+              >
+            {%- endif -%}
+            {%- if gd != blank -%}
+              <img
+                class="as-gorsel as-gorsel-d"
+                src="{{ gd | image_url: width: 1200 }}"
+                alt="{{ k.baslik | escape }}"
+                width="{{ gd.width }}"
+                height="{{ gd.height }}"
+                loading="lazy"
+                decoding="async"
+              >
+            {%- endif -%}
+            <span class="as-perde" aria-hidden="true"></span>
+            <div class="as-yazi">
+              {%- if k.baslik != blank -%}
+                <h3 class="as-kart-bas">{{ k.baslik }}</h3>
+              {%- endif -%}
+              {%- if k.alt != blank -%}
+                <p class="as-kart-alt">{{ k.alt }}</p>
+              {%- endif -%}
+            </div>
+          </div>
+          {%- if k.bag != blank -%}</a>{%- endif -%}
+        </article>
+      {%- endfor -%}
+      <span class="as-kuyruk" aria-hidden="true"></span>
+    </div>
+
+    {%- if s.ok_goster -%}
+      <button type="button" class="as-ok as-ok-sol" data-as-ok="-1" aria-label="{{ s.ok_geri_etiket | escape }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7"></path>
+        </svg>
+      </button>
+      <button type="button" class="as-ok as-ok-sag" data-as-ok="1" aria-label="{{ s.ok_ileri_etiket | escape }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    {%- endif -%}
+  </div>
+
+  {%- if s.nokta_goster and kartlar.size > 1 -%}
+    <div class="as-ilerleme" data-as-noktalar>
+      {%- for blok in kartlar -%}
+        <button
+          type="button"
+          class="as-nokta{% if forloop.first %} is-etkin{% endif %}"
+          data-as-nokta="{{ forloop.index0 }}"
+          aria-label="{{ forloop.index }}. karta git"
+        ></button>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</div>
+
+<script>
+  (function () {
+    var kok = document.querySelector('#shopify-section-{{ sid }} [data-as-kok]');
+    if (!kok || kok.asKurulu) return;
+    kok.asKurulu = true;
+
+    var serit = kok.querySelector('[data-as-serit]');
+    var kartlar = kok.querySelectorAll('[data-as-kart]');
+    var oklar = kok.querySelectorAll('[data-as-ok]');
+    var noktaKap = kok.querySelector('[data-as-noktalar]');
+    var noktalar = noktaKap ? noktaKap.querySelectorAll('[data-as-nokta]') : [];
+    if (!serit || !kartlar.length) return;
+
+    var azHareket = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function kaydir(x) {
+      if (serit.scrollTo) {
+        serit.scrollTo({ left: x, behavior: azHareket ? 'auto' : 'smooth' });
+      } else {
+        serit.scrollLeft = x;
+      }
+    }
+
+    // Ekranda tam duran ilk kartin sirasi. Kart genisligi degisken
+    // olabildigi icin bolme yapmiyoruz: her kartin gercek konumuna
+    // bakiyoruz. Boylece mobil/masaustu ve farkli kart genislikleri
+    // ayni kodla dogru calisiyor.
+    function etkinSira() {
+      var x = serit.scrollLeft;
+      var en = 0;
+      var enFark = Infinity;
+      for (var i = 0; i < kartlar.length; i++) {
+        var fark = Math.abs(kartlar[i].offsetLeft - serit.offsetLeft - x);
+        if (fark < enFark) { enFark = fark; en = i; }
+      }
+      return en;
+    }
+
+    // Seridin sonuna gelindiginde sol kenara gelebilen en son kartin
+    // sirasi. Bunun otesindeki kartlar hicbir zaman basa gelemez;
+    // oklar ve noktalar icin gercek sinir bu.
+    function sonUlasilir() {
+      var son = serit.scrollWidth - serit.clientWidth;
+      var e = 0;
+      for (var i = 0; i < kartlar.length; i++) {
+        if (kartlar[i].offsetLeft - serit.offsetLeft <= son + 1) e = i;
+      }
+      return e;
+    }
+
+    function tazele() {
+      var son = serit.scrollWidth - serit.clientWidth;
+      var kaydirilir = son > 2;
+
+      for (var i = 0; i < oklar.length; i++) {
+        var yon = parseInt(oklar[i].getAttribute('data-as-ok'), 10);
+        var bitti = yon < 0 ? serit.scrollLeft <= 1 : serit.scrollLeft >= son - 1;
+        oklar[i].disabled = !kaydirilir || bitti;
+      }
+
+      if (noktaKap) {
+        // Kaydirilamiyorsa noktalar islevsiz kalir; gizliyoruz.
+        noktaKap.hidden = !kaydirilir;
+        var sinir = sonUlasilir();
+        var e = Math.min(etkinSira(), sinir);
+        for (var j = 0; j < noktalar.length; j++) {
+          // Seridin sonuna gelindiginde son kartlar sol kenara hicbir
+          // zaman gelemez: o noktalar tiklansa bile etkin olamazdi.
+          // Ulasilamayan noktalari gizliyoruz -- boylece her gorunen
+          // nokta gercekten bir duraga karsilik geliyor.
+          noktalar[j].hidden = j > sinir;
+          noktalar[j].classList.toggle('is-etkin', j === e);
+        }
+      }
+    }
+
+    for (var i = 0; i < oklar.length; i++) {
+      (function (dugme) {
+        dugme.addEventListener('click', function () {
+          var yon = parseInt(dugme.getAttribute('data-as-ok'), 10);
+          var sinir = sonUlasilir();
+          var e = Math.min(etkinSira(), sinir) + yon;
+          if (e < 0) e = 0;
+          if (e > sinir) e = sinir;
+          kaydir(kartlar[e].offsetLeft - serit.offsetLeft);
+        });
+      })(oklar[i]);
+    }
+
+    for (var j = 0; j < noktalar.length; j++) {
+      (function (nokta) {
+        nokta.addEventListener('click', function () {
+          var e = parseInt(nokta.getAttribute('data-as-nokta'), 10);
+          kaydir(kartlar[e].offsetLeft - serit.offsetLeft);
+        });
+      })(noktalar[j]);
+    }
+
+    // Klavye: serit odaklanabilir, sag/sol ok bir kart kaydiriyor.
+    serit.addEventListener('keydown', function (e) {
+      var yon = 0;
+      if (e.key === 'ArrowRight') yon = 1;
+      else if (e.key === 'ArrowLeft') yon = -1;
+      else return;
+      e.preventDefault();
+      var sinir = sonUlasilir();
+      var hedef = Math.min(etkinSira(), sinir) + yon;
+      if (hedef < 0) hedef = 0;
+      if (hedef > sinir) hedef = sinir;
+      kaydir(kartlar[hedef].offsetLeft - serit.offsetLeft);
+    });
+
+    var bekleyen = null;
+    serit.addEventListener('scroll', function () {
+      if (bekleyen) return;
+      bekleyen = window.requestAnimationFrame(function () {
+        bekleyen = null;
+        tazele();
+      });
+    }, { passive: true });
+
+    window.addEventListener('resize', tazele);
+    tazele();
+    // Gorseller gec yuklenirse serit genisligi degisir.
+    window.setTimeout(tazele, 600);
+
+    document.addEventListener('shopify:section:unload', function (e) {
+      if (!e.detail || e.detail.sectionId !== '{{ sid }}') return;
+      window.removeEventListener('resize', tazele);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Apple Kart Slaytı",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Başlık"
+    },
+    {
+      "type": "text",
+      "id": "etiket",
+      "label": "Üst etiket",
+      "default": "Couple Zaman Kapsülü"
+    },
+    {
+      "type": "text",
+      "id": "baslik",
+      "label": "Başlık",
+      "default": "Bir ilişkinin en güzel alışkanlığı olabilir."
+    },
+    {
+      "type": "text",
+      "id": "bas_vurgu",
+      "label": "Başlıkta degradeli gösterilecek bölüm",
+      "info": "Başlığın içinden birebir bir parça yazın; yalnızca o parça degradeli olur. Boş bırakılırsa başlık tek renk kalır.",
+      "default": "en güzel alışkanlığı"
+    },
+    {
+      "type": "color",
+      "id": "vurgu_1",
+      "label": "Degrade — 1. renk",
+      "default": "#8a8a85"
+    },
+    {
+      "type": "color",
+      "id": "vurgu_2",
+      "label": "Degrade — 2. renk",
+      "default": "#8a8a85"
+    },
+    {
+      "type": "color",
+      "id": "vurgu_3",
+      "label": "Degrade — 3. renk",
+      "default": "#8a8a85"
+    },
+    {
+      "type": "range",
+      "id": "vurgu_aci",
+      "label": "Degrade açısı",
+      "unit": "°",
+      "min": 0,
+      "max": 360,
+      "step": 5,
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "vurgu_duz",
+      "label": "Degradeyi desteklemeyen tarayıcıda renk",
+      "default": "#8a8a85"
+    },
+    {
+      "type": "text",
+      "id": "alt_metin",
+      "label": "Açıklama",
+      "default": "Couple Kapsülünüz olması için 5 neden."
+    },
+    {
+      "type": "select",
+      "id": "hiza",
+      "label": "Başlık hizası",
+      "default": "orta",
+      "options": [
+        {
+          "value": "orta",
+          "label": "Ortalı"
+        },
+        {
+          "value": "sol",
+          "label": "Sola dayalı"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "etiket_boyut",
+      "label": "Üst etiket boyutu",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "bas_m",
+      "label": "Başlık (mobil)",
+      "min": 20,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "bas_d",
+      "label": "Başlık (masaüstü)",
+      "min": 24,
+      "max": 72,
+      "step": 1,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "select",
+      "id": "bas_kalinlik",
+      "label": "Başlık kalınlığı",
+      "default": "600",
+      "options": [
+        {
+          "value": "500",
+          "label": "Orta"
+        },
+        {
+          "value": "600",
+          "label": "Yarı kalın"
+        },
+        {
+          "value": "700",
+          "label": "Kalın"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "alt_m",
+      "label": "Açıklama (mobil)",
+      "min": 13,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 17
+    },
+    {
+      "type": "range",
+      "id": "alt_d",
+      "label": "Açıklama (masaüstü)",
+      "min": 13,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 19
+    },
+    {
+      "type": "range",
+      "id": "metin_gen",
+      "label": "Başlık bloğu genişliği",
+      "min": 480,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "default": 720
+    },
+    {
+      "type": "range",
+      "id": "bas_bosluk_m",
+      "label": "Başlık altı boşluk (mobil)",
+      "min": 8,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "bas_bosluk_d",
+      "label": "Başlık altı boşluk (masaüstü)",
+      "min": 8,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Kartlar"
+    },
+    {
+      "type": "range",
+      "id": "kart_gen_m",
+      "label": "Kart genişliği (mobil)",
+      "info": "Ekran genişliğinin yüzdesi. 80 civarı bir sonraki kartı köşeden gösterir.",
+      "min": 60,
+      "max": 100,
+      "step": 2,
+      "unit": "%",
+      "default": 82
+    },
+    {
+      "type": "range",
+      "id": "kart_gen_d",
+      "label": "Kart genişliği (masaüstü)",
+      "min": 240,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "default": 380
+    },
+    {
+      "type": "select",
+      "id": "oran_m",
+      "label": "Kart oranı (mobil)",
+      "default": "dortbes",
+      "options": [
+        {
+          "value": "genis",
+          "label": "4:3 — geniş"
+        },
+        {
+          "value": "kare",
+          "label": "1:1 — kare"
+        },
+        {
+          "value": "dortbes",
+          "label": "4:5"
+        },
+        {
+          "value": "uzun",
+          "label": "3:4 — uzun"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "oran_d",
+      "label": "Kart oranı (masaüstü)",
+      "default": "dortbes",
+      "options": [
+        {
+          "value": "genis",
+          "label": "4:3 — geniş"
+        },
+        {
+          "value": "kare",
+          "label": "1:1 — kare"
+        },
+        {
+          "value": "dortbes",
+          "label": "4:5"
+        },
+        {
+          "value": "uzun",
+          "label": "3:4 — uzun"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "kose",
+      "label": "Kart köşe yarıçapı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "ara_m",
+      "label": "Kartlar arası (mobil)",
+      "min": 6,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "ara_d",
+      "label": "Kartlar arası (masaüstü)",
+      "min": 6,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "yazi_bosluk",
+      "label": "Kart yazısı iç boşluğu",
+      "min": 12,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "kart_bas_m",
+      "label": "Kart başlığı (mobil)",
+      "min": 14,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 21
+    },
+    {
+      "type": "range",
+      "id": "kart_bas_d",
+      "label": "Kart başlığı (masaüstü)",
+      "min": 14,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "kart_alt_m",
+      "label": "Kart açıklaması (mobil)",
+      "min": 11,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "kart_alt_d",
+      "label": "Kart açıklaması (masaüstü)",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "hover_ac",
+      "label": "Üzerine gelince görsel büyüsün",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "hover_olcek",
+      "label": "Büyüme oranı",
+      "min": 100,
+      "max": 112,
+      "step": 1,
+      "unit": "%",
+      "default": 104
+    },
+    {
+      "type": "range",
+      "id": "hover_sure",
+      "label": "Büyüme süresi",
+      "min": 200,
+      "max": 1200,
+      "step": 50,
+      "unit": "ms",
+      "default": 600
+    },
+    {
+      "type": "header",
+      "content": "Renkler"
+    },
+    {
+      "type": "color",
+      "id": "zemin",
+      "label": "Bölüm zemini",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "color",
+      "id": "bas_renk",
+      "label": "Başlık rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "alt_renk",
+      "label": "Açıklama ve etiket",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "color",
+      "id": "kart_zemin",
+      "label": "Kart zemini",
+      "info": "Görsel yüklenene kadar görünen renk.",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "kart_bas_renk",
+      "label": "Kart başlığı",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "kart_alt_renk",
+      "label": "Kart açıklaması",
+      "default": "#a3a39e"
+    },
+    {
+      "type": "color",
+      "id": "perde_renk",
+      "label": "Kart perdesi",
+      "info": "Yazının altındaki karartma. Görsel ne olursa olsun yazı okunur kalsın diye.",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "perde_guc",
+      "label": "Perde yoğunluğu",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 70
+    },
+    {
+      "type": "header",
+      "content": "Oklar ve noktalar"
+    },
+    {
+      "type": "checkbox",
+      "id": "ok_goster",
+      "label": "Masaüstünde ok düğmeleri",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "ok_cap",
+      "label": "Ok çapı",
+      "min": 32,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "ok_kenar",
+      "label": "Okların kenardan uzaklığı",
+      "info": "Küçük değer okları kartların dışına, gutter'a taşır.",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "ok_zemin",
+      "label": "Ok zemini",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "ok_renk",
+      "label": "Ok rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "text",
+      "id": "ok_geri_etiket",
+      "label": "Ok erişilebilirlik metni (geri)",
+      "default": "Önceki kart"
+    },
+    {
+      "type": "text",
+      "id": "ok_ileri_etiket",
+      "label": "Ok erişilebilirlik metni (ileri)",
+      "default": "Sonraki kart"
+    },
+    {
+      "type": "text",
+      "id": "serit_etiket",
+      "label": "Slider erişilebilirlik metni",
+      "default": "Kartlar"
+    },
+    {
+      "type": "checkbox",
+      "id": "nokta_goster",
+      "label": "Noktaları göster",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "nokta_hap",
+      "label": "Etkin nokta hap şeklinde uzasın",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "nokta_cap",
+      "label": "Nokta boyutu",
+      "min": 4,
+      "max": 14,
+      "step": 1,
+      "unit": "px",
+      "default": 7
+    },
+    {
+      "type": "range",
+      "id": "nokta_ara",
+      "label": "Noktalar arası",
+      "min": 4,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "color",
+      "id": "nokta_aktif",
+      "label": "Etkin nokta",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "nokta_pasif",
+      "label": "Pasif nokta",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "range",
+      "id": "ilerleme_bosluk",
+      "label": "Noktaların üst boşluğu",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "header",
+      "content": "Ölçüler"
+    },
+    {
+      "type": "range",
+      "id": "kenar_m",
+      "label": "Yan boşluk (mobil)",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "kenar_d",
+      "label": "Yan boşluk (masaüstü)",
+      "min": 8,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "alt_bosluk",
+      "label": "Şerit alt boşluğu",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "p_ust_m",
+      "label": "Üst boşluk (mobil)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "p_alt_m",
+      "label": "Alt boşluk (mobil)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "p_ust_d",
+      "label": "Üst boşluk (masaüstü)",
+      "min": 0,
+      "max": 240,
+      "step": 4,
+      "unit": "px",
+      "default": 88
+    },
+    {
+      "type": "range",
+      "id": "p_alt_d",
+      "label": "Alt boşluk (masaüstü)",
+      "min": 0,
+      "max": 240,
+      "step": 4,
+      "unit": "px",
+      "default": 88
+    }
+  ],
+  "blocks": [
+    {
+      "type": "kart",
+      "name": "Kart",
+      "settings": [
+        {
+          "type": "text",
+          "id": "baslik",
+          "label": "Başlık",
+          "default": "Kart başlığı"
+        },
+        {
+          "type": "text",
+          "id": "alt",
+          "label": "Açıklama",
+          "default": "Kısa bir açıklama."
+        },
+        {
+          "type": "image_picker",
+          "id": "gorsel_d",
+          "label": "Görsel (masaüstü)"
+        },
+        {
+          "type": "image_picker",
+          "id": "gorsel_m",
+          "label": "Görsel (mobil)",
+          "info": "Boş bırakılırsa masaüstü görseli kullanılır."
+        },
+        {
+          "type": "url",
+          "id": "bag",
+          "label": "Bağlantı (opsiyonel)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Apple Kart Slaytı",
+      "blocks": [
+        {
+          "type": "kart"
+        },
+        {
+          "type": "kart"
+        },
+        {
+          "type": "kart"
+        },
+        {
+          "type": "kart"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,1437 @@
+{% doc %}
+  @prompt
+    Create a custom Shopify homepage section called “Highlight Cards Slider”.
+    
+    The goal is to create a premium Apple inspired horizontal card slider, similar to a product highlights section. Do not copy Apple branding, Apple products, Apple icons, Apple text, or exact Apple design. Only use the same clean, premium, modern interaction style.
+    
+    Main concept:
+    Create a dark premium horizontal slider made of large rounded cards. Each card should show one product highlight. The user can swipe horizontally on mobile and drag or use arrows on desktop. When the active card changes, the card content should animate with a delayed entrance effect.
+    
+    Section layout:
+    Use a dark background for the whole section.
+    At the top, add a small product or collection label area.
+    Below it, add a large section heading.
+    Under the heading, place a horizontal slider with large rounded cards.
+    At the bottom, add slider dots, a progress indicator and optional play or pause button.
+    
+    Card design:
+    Each slide card should be large, rounded and premium.
+    The card background should be black, dark gray or a customizable color.
+    Each card should contain:
+    1. Image area
+    2. Heading text
+    3. Short description text
+    4. Optional small label
+    5. Optional button or link
+    
+    The image can be positioned at the bottom, center, left, right or used as a background depending on the slide settings.
+    The image should be large and visually dominant.
+    The card should not look crowded.
+    Use strong visual hierarchy, large spacing and clean typography.
+    
+    Delayed text animation:
+    This is very important.
+    When a card becomes active, the text elements should not appear all at once.
+    The text should appear with a staggered delay:
+    Small label appears first
+    Heading appears after a short delay
+    Description appears after the heading
+    Button appears last
+    
+    Use smooth fade in and slight upward movement.
+    The animation should feel premium, soft and natural.
+    When the user slides to the next card, reset the animation and replay it for the new active card.
+    Inactive cards should keep their content visible or slightly faded, but the active card must clearly feel animated.
+    
+    Slider behavior:
+    On mobile:
+    Show one main card at a time.
+    Allow horizontal swipe.
+    Show part of the next card on the right side to indicate that the slider is scrollable.
+    Use smooth snapping.
+    Dots should appear below the slider.
+    
+    On desktop:
+    Show one large active card and a partial preview of the next card.
+    Allow mouse drag and arrow navigation.
+    The slider should feel smooth and premium.
+    Do not make it a basic static grid.
+    
+    Controls:
+    Add dot indicators under the slider.
+    Add left and right arrows on desktop.
+    Add an optional play or pause button.
+    Add autoplay as an optional setting, disabled by default.
+    When autoplay is enabled, slides should change smoothly.
+    
+    Responsive image settings:
+    Each slide should have separate image upload fields:
+    Desktop image
+    Mobile image
+    
+    Use the desktop image on desktop screens.
+    Use the mobile image on mobile screens.
+    If the mobile image is missing, fallback to the desktop image.
+    If the desktop image is missing, fallback to the mobile image.
+    
+    Section settings needed:
+    Section label
+    Section heading
+    Section background color
+    Card background color
+    Text color
+    Accent color
+    Enable autoplay
+    Autoplay speed
+    Show arrows
+    Show dots
+    Show play pause button
+    Card border radius
+    Top padding
+    Bottom padding
+    
+    Block settings for each slide:
+    Small label
+    Heading
+    Description
+    Desktop image
+    Mobile image
+    Image position
+    Button label
+    Button link
+    Card background color
+    Text color
+    
+    Design style:
+    Premium
+    Minimal
+    Modern
+    Dark theme
+    Large rounded cards
+    Smooth animation
+    Clean typography
+    Strong product focus
+    Mobile first
+    High end e commerce feeling
+    
+    Important layout rules:
+    The slider must not be a full width hero banner.
+    It must be a horizontal highlight card carousel.
+    The active card should be large.
+    The next card should be partially visible.
+    The text animation must be delayed and staggered when sliding.
+    The section must work perfectly on Shopify mobile and desktop.
+    Use clean Liquid, CSS and JavaScript suitable for a Shopify theme section., Fix the play and pause button functionality.
+    
+    The play button is currently only visual and passive. It must become a real interactive control for the slider autoplay.
+    
+    Required behavior:
+    
+    When the play button is clicked:
+    Autoplay should start.
+    The slider should automatically move to the next slide based on the autoplay speed setting.
+    The button icon should change from play to pause.
+    The button state should become active.
+    
+    When the pause button is clicked:
+    Autoplay should stop immediately.
+    The button icon should change back from pause to play.
+    The button state should become inactive.
+    
+    Autoplay logic:
+    Use the existing autoplay speed setting from the Shopify editor.
+    If autoplay speed is set to 5, the slide should change every 5 seconds.
+    The autoplay interval must reset after every manual interaction.
+    When the user clicks a dot, uses arrows, swipes, or drags the slider, the autoplay timer should restart from zero.
+    
+    Slider sync:
+    When autoplay moves to the next slide, the active card must update correctly.
+    The active dot must update correctly.
+    The delayed text animation must replay on the new active slide.
+    The slider should loop back to the first slide after the last slide.
+    
+    Play pause button design:
+    Keep the button as a small premium circular control next to the dot pagination.
+    The icon must clearly show play when autoplay is stopped.
+    The icon must clearly show pause when autoplay is running.
+    Add a subtle active state when autoplay is running.
+    The button should be clickable on both mobile and desktop.
+    
+    Important technical requirements:
+    Add a real JavaScript click event listener to the play pause button.
+    Do not make the button decorative only.
+    Do not use a disabled button.
+    Do not reload the page when clicked.
+    Use button type button.
+    Add proper aria label:
+    Play slider
+    Pause slider
+    
+    Autoplay setting behavior:
+    If Enable autoplay is turned on in the Shopify editor, autoplay should start automatically when the section loads.
+    If Enable autoplay is turned off, autoplay should stay stopped until the user clicks the play button.
+    The play pause button should still work even when default autoplay is disabled.
+    
+    Visibility:
+    If Show play pause button is enabled, display the button.
+    If Show play pause button is disabled, hide the button completely.
+    
+    Mobile behavior:
+    The play pause button must be easy to tap.
+    It should not overlap the card.
+    It should stay aligned with the pagination dots.
+    It must work with touch devices.
+    
+    Final goal:
+    The play pause button must actively control the slider autoplay, update its icon and state correctly, stay synced with dots and slides, and work smoothly on Shopify mobile and desktop.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-highlight-slider-{{ ai_gen_id }} {
+    display: block;
+    background-color: {{ block.settings.section_bg_color }};
+    padding: {{ block.settings.padding_top }}px 0 {{ block.settings.padding_bottom }}px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .ai-highlight-slider__container-{{ ai_gen_id }} {
+    max-width: {{ settings.page_width }}px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .ai-highlight-slider__header-{{ ai_gen_id }} {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .ai-highlight-slider__label-{{ ai_gen_id }} {
+    font-size: 14px;
+    font-weight: 500;
+    color: {{ block.settings.accent_color }};
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .ai-highlight-slider__heading-{{ ai_gen_id }} {
+    font-size: 48px;
+    font-weight: 700;
+    color: {{ block.settings.text_color }};
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
+
+  .ai-highlight-slider__track-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    margin-bottom: 40px;
+  }
+
+  .ai-highlight-slider__track-{{ ai_gen_id }} {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+    padding: 20px 0;
+  }
+
+  .ai-highlight-slider__track-{{ ai_gen_id }}::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ai-highlight-slider__track-{{ ai_gen_id }}.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+  }
+
+  .ai-highlight-slider__card-{{ ai_gen_id }} {
+    flex: 0 0 calc(100% - 60px);
+    scroll-snap-align: center;
+    background-color: {{ block.settings.card_bg_color }};
+    border-radius: {{ block.settings.card_border_radius }}px;
+    overflow: hidden;
+    position: relative;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-highlight-slider__card-{{ ai_gen_id }}.inactive {
+    opacity: 0.5;
+  }
+
+  .ai-highlight-slider__card-content-{{ ai_gen_id }} {
+    padding: 60px 40px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .ai-highlight-slider__card-label-{{ ai_gen_id }} {
+    font-size: 12px;
+    font-weight: 600;
+    color: {{ block.settings.accent_color }};
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .ai-highlight-slider__card-{{ ai_gen_id }}.active .ai-highlight-slider__card-label-{{ ai_gen_id }} {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.1s;
+  }
+
+  .ai-highlight-slider__card-heading-{{ ai_gen_id }} {
+    font-size: 36px;
+    font-weight: 700;
+    color: {{ block.settings.text_color }};
+    margin: 0 0 20px;
+    letter-spacing: -1px;
+    line-height: 1.2;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .ai-highlight-slider__card-{{ ai_gen_id }}.active .ai-highlight-slider__card-heading-{{ ai_gen_id }} {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.2s;
+  }
+
+  .ai-highlight-slider__card-description-{{ ai_gen_id }} {
+    font-size: 16px;
+    line-height: 1.6;
+    color: {{ block.settings.text_color }};
+    margin-bottom: 30px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .ai-highlight-slider__card-{{ ai_gen_id }}.active .ai-highlight-slider__card-description-{{ ai_gen_id }} {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.3s;
+  }
+
+  .ai-highlight-slider__card-button-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 32px;
+    background-color: {{ block.settings.accent_color }};
+    color: {{ block.settings.card_button_text_color | default: '#0a0a0a' }};
+    text-decoration: none;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .ai-highlight-slider__card-{{ ai_gen_id }}.active .ai-highlight-slider__card-button-{{ ai_gen_id }} {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.4s;
+  }
+
+  .ai-highlight-slider__card-button-{{ ai_gen_id }}:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-highlight-slider__card-image-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+  }
+
+  .ai-highlight-slider__card-image-{{ ai_gen_id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-highlight-slider__card-image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-highlight-slider__card-image-placeholder-{{ ai_gen_id }} svg {
+    width: 80px;
+    height: 80px;
+    opacity: 0.3;
+  }
+
+  .ai-highlight-slider__card-{{ ai_gen_id }}[data-image-position="background"] .ai-highlight-slider__card-image-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .ai-highlight-slider__card-{{ ai_gen_id }}[data-image-position="background"] .ai-highlight-slider__card-image-{{ ai_gen_id }}::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+  }
+
+  .ai-highlight-slider__controls-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .ai-highlight-slider__dots-{{ ai_gen_id }} {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .ai-highlight-slider__dot-{{ ai_gen_id }} {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: {{ block.settings.text_color }};
+    opacity: 0.3;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    padding: 0;
+  }
+
+  .ai-highlight-slider__dot-{{ ai_gen_id }}.active {
+    opacity: 1;
+    width: 24px;
+    border-radius: 4px;
+  }
+
+  .ai-highlight-slider__progress-{{ ai_gen_id }} {
+    width: 100px;
+    height: 2px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ai-highlight-slider__progress-bar-{{ ai_gen_id }} {
+    height: 100%;
+    background-color: {{ block.settings.accent_color }};
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .ai-highlight-slider__arrows-{{ ai_gen_id }} {
+    display: none;
+    gap: 12px;
+  }
+
+  .ai-highlight-slider__arrow-{{ ai_gen_id }} {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: {{ block.settings.text_color }};
+  }
+
+  .ai-highlight-slider__arrow-{{ ai_gen_id }}:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+
+  .ai-highlight-slider__arrow-{{ ai_gen_id }}:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .ai-highlight-slider__arrow-{{ ai_gen_id }}:disabled:hover {
+    transform: none;
+  }
+
+  .ai-highlight-slider__arrow-{{ ai_gen_id }} svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .ai-highlight-slider__play-pause-{{ ai_gen_id }} {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: {{ block.settings.text_color }};
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .ai-highlight-slider__play-pause-{{ ai_gen_id }}:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+
+  .ai-highlight-slider__play-pause-{{ ai_gen_id }}.is-playing {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: {{ block.settings.accent_color }};
+  }
+
+  .ai-highlight-slider__play-pause-{{ ai_gen_id }} svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .ai-highlight-slider__heading-{{ ai_gen_id }} {
+      font-size: 64px;
+    }
+
+    .ai-highlight-slider__card-{{ ai_gen_id }} {
+      flex: 0 0 calc(70% - 20px);
+      min-height: 600px;
+    }
+
+    .ai-highlight-slider__card-content-{{ ai_gen_id }} {
+      padding: 80px 60px;
+    }
+
+    .ai-highlight-slider__card-heading-{{ ai_gen_id }} {
+      font-size: 48px;
+    }
+
+    .ai-highlight-slider__card-description-{{ ai_gen_id }} {
+      font-size: 18px;
+      max-width: 500px;
+    }
+
+    .ai-highlight-slider__card-image-{{ ai_gen_id }} {
+      height: 400px;
+    }
+
+    .ai-highlight-slider__arrows-{{ ai_gen_id }} {
+      display: flex;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-highlight-slider__heading-{{ ai_gen_id }} {
+      font-size: 32px;
+    }
+
+    .ai-highlight-slider__card-heading-{{ ai_gen_id }} {
+      font-size: 28px;
+    }
+
+    .ai-highlight-slider__card-content-{{ ai_gen_id }} {
+      padding: 40px 30px;
+    }
+  }
+
+  {%- comment -%}
+    Dolu yuzeylerde degrade (istege bagli). Varsayilan kapali: bu blok
+    baska sablonlarda da kullaniliyor, kapaliyken cikti aynen eskisi gibi.
+    Stil blogunun en sonunda duruyor ki yukaridaki background-color
+    tanimlarini ezebilsin.
+  {%- endcomment -%}
+  {% if block.settings.accent_degrade %}
+    {%- capture vurgu_deg -%}
+linear-gradient({{ block.settings.accent_aci }}deg, {{ block.settings.accent_d1 }} 0%, {{ block.settings.accent_d2 }} 50%, {{ block.settings.accent_d3 }} 100%)
+    {%- endcapture -%}
+  .ai-highlight-slider__card-button-{{ ai_gen_id }},
+  .ai-highlight-slider__progress-bar-{{ ai_gen_id }} {
+    background-image: {{ vurgu_deg }};
+    background-size: 100% 100%;
+  }
+  {% endif %}
+{% endstyle %}
+
+<highlight-cards-slider-{{ ai_gen_id }}
+  class="ai-highlight-slider-{{ ai_gen_id }}"
+  data-autoplay="{{ block.settings.enable_autoplay }}"
+  data-autoplay-speed="{{ block.settings.autoplay_speed }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-highlight-slider__container-{{ ai_gen_id }}">
+    {% if block.settings.section_label != blank or block.settings.section_heading != blank %}
+      <div class="ai-highlight-slider__header-{{ ai_gen_id }}">
+        {% if block.settings.section_label != blank %}
+          <div class="ai-highlight-slider__label-{{ ai_gen_id }}">{{ block.settings.section_label }}</div>
+        {% endif %}
+        {% if block.settings.section_heading != blank %}
+          <h2 class="ai-highlight-slider__heading-{{ ai_gen_id }}">{{ block.settings.section_heading }}</h2>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="ai-highlight-slider__track-wrapper-{{ ai_gen_id }}">
+      <div class="ai-highlight-slider__track-{{ ai_gen_id }}" data-slider-track>
+        {% for i in (1..3) %}
+          {% liquid
+            assign label_key = 'slide_' | append: i | append: '_label'
+            assign heading_key = 'slide_' | append: i | append: '_heading'
+            assign description_key = 'slide_' | append: i | append: '_description'
+            assign desktop_image_key = 'slide_' | append: i | append: '_desktop_image'
+            assign mobile_image_key = 'slide_' | append: i | append: '_mobile_image'
+            assign image_position_key = 'slide_' | append: i | append: '_image_position'
+            assign button_label_key = 'slide_' | append: i | append: '_button_label'
+            assign button_link_key = 'slide_' | append: i | append: '_button_link'
+            assign card_bg_key = 'slide_' | append: i | append: '_card_bg'
+            assign text_color_key = 'slide_' | append: i | append: '_text_color'
+
+            assign slide_label = block.settings[label_key]
+            assign slide_heading = block.settings[heading_key]
+            assign slide_description = block.settings[description_key]
+            assign desktop_image = block.settings[desktop_image_key]
+            assign mobile_image = block.settings[mobile_image_key]
+            assign image_position = block.settings[image_position_key]
+            assign button_label = block.settings[button_label_key]
+            assign button_link = block.settings[button_link_key]
+            assign card_bg = block.settings[card_bg_key]
+            assign text_color = block.settings[text_color_key]
+
+            assign display_image = desktop_image
+            
+            if mobile_image != blank
+              assign mobile_display_image = mobile_image
+            else
+              assign mobile_display_image = desktop_image
+            endif
+            
+            if desktop_image == blank and mobile_image != blank
+              assign display_image = mobile_image
+            endif
+          %}
+          
+          <div 
+            class="ai-highlight-slider__card-{{ ai_gen_id }}" 
+            data-slide
+            data-image-position="{{ image_position }}"
+            style="
+              {% if card_bg != blank %}
+                background-color: {{ card_bg }};
+              {% endif %}
+            "
+          >
+            {% if image_position == 'top' or image_position == 'background' %}
+              <div class="ai-highlight-slider__card-image-{{ ai_gen_id }}">
+                {% if display_image != blank %}
+                  <picture>
+                    {% if mobile_display_image != blank %}
+                      <source media="(max-width: 749px)" srcset="{{ mobile_display_image | image_url: width: 800 }}">
+                    {% endif %}
+                    <img
+                      src="{{ display_image | image_url: width: 1200 }}"
+                      alt="{{ display_image.alt | escape }}"
+                      loading="lazy"
+                      width="{{ display_image.width }}"
+                      height="{{ display_image.height }}"
+                    >
+                  </picture>
+                {% else %}
+                  <div class="ai-highlight-slider__card-image-placeholder-{{ ai_gen_id }}">
+                    {{ 'image' | placeholder_svg_tag }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+
+            <div 
+              class="ai-highlight-slider__card-content-{{ ai_gen_id }}"
+              style="
+                {% if text_color != blank %}
+                  color: {{ text_color }};
+                {% endif %}
+              "
+            >
+              {% if slide_label != blank %}
+                <div 
+                  class="ai-highlight-slider__card-label-{{ ai_gen_id }}"
+                  style="
+                    {% if text_color != blank %}
+                      color: {{ text_color }};
+                    {% endif %}
+                  "
+                >
+                  {{ slide_label }}
+                </div>
+              {% endif %}
+
+              {% if slide_heading != blank %}
+                <h3 
+                  class="ai-highlight-slider__card-heading-{{ ai_gen_id }}"
+                  style="
+                    {% if text_color != blank %}
+                      color: {{ text_color }};
+                    {% endif %}
+                  "
+                >
+                  {{ slide_heading }}
+                </h3>
+              {% endif %}
+
+              {% if slide_description != blank %}
+                <div 
+                  class="ai-highlight-slider__card-description-{{ ai_gen_id }}"
+                  style="
+                    {% if text_color != blank %}
+                      color: {{ text_color }};
+                    {% endif %}
+                  "
+                >
+                  {{ slide_description }}
+                </div>
+              {% endif %}
+
+              {% if button_label != blank and button_link != blank %}
+                <a 
+                  href="{{ button_link }}" 
+                  class="ai-highlight-slider__card-button-{{ ai_gen_id }}"
+                >
+                  {{ button_label }}
+                </a>
+              {% endif %}
+            </div>
+
+            {% if image_position == 'bottom' %}
+              <div class="ai-highlight-slider__card-image-{{ ai_gen_id }}">
+                {% if display_image != blank %}
+                  <picture>
+                    {% if mobile_display_image != blank %}
+                      <source media="(max-width: 749px)" srcset="{{ mobile_display_image | image_url: width: 800 }}">
+                    {% endif %}
+                    <img
+                      src="{{ display_image | image_url: width: 1200 }}"
+                      alt="{{ display_image.alt | escape }}"
+                      loading="lazy"
+                      width="{{ display_image.width }}"
+                      height="{{ display_image.height }}"
+                    >
+                  </picture>
+                {% else %}
+                  <div class="ai-highlight-slider__card-image-placeholder-{{ ai_gen_id }}">
+                    {{ 'image' | placeholder_svg_tag }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if block.settings.show_arrows %}
+        <div class="ai-highlight-slider__arrows-{{ ai_gen_id }}">
+          <button type="button" class="ai-highlight-slider__arrow-{{ ai_gen_id }}" data-arrow-prev aria-label="Previous slide">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button type="button" class="ai-highlight-slider__arrow-{{ ai_gen_id }}" data-arrow-next aria-label="Next slide">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="ai-highlight-slider__controls-{{ ai_gen_id }}">
+      {% if block.settings.show_dots %}
+        <div class="ai-highlight-slider__dots-{{ ai_gen_id }}" data-dots></div>
+      {% endif %}
+
+      <div class="ai-highlight-slider__progress-{{ ai_gen_id }}">
+        <div class="ai-highlight-slider__progress-bar-{{ ai_gen_id }}" data-progress-bar></div>
+      </div>
+
+      {% if block.settings.show_play_pause %}
+        <button type="button" class="ai-highlight-slider__play-pause-{{ ai_gen_id }}" data-play-pause>
+          <svg data-play-icon xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          <svg data-pause-icon style="display: none;" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+          </svg>
+        </button>
+      {% endif %}
+    </div>
+  </div>
+</highlight-cards-slider-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class HighlightCardsSlider{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.track = this.querySelector('[data-slider-track]');
+        this.slides = Array.from(this.querySelectorAll('[data-slide]'));
+        this.dotsContainer = this.querySelector('[data-dots]');
+        this.progressBar = this.querySelector('[data-progress-bar]');
+        this.prevButton = this.querySelector('[data-arrow-prev]');
+        this.nextButton = this.querySelector('[data-arrow-next]');
+        this.playPauseButton = this.querySelector('[data-play-pause]');
+        this.playIcon = this.querySelector('[data-play-icon]');
+        this.pauseIcon = this.querySelector('[data-pause-icon]');
+        
+        this.currentIndex = 0;
+        this.isDragging = false;
+        this.startX = 0;
+        this.scrollLeft = 0;
+        this.autoplayEnabled = this.dataset.autoplay === 'true';
+        this.autoplaySpeed = parseInt(this.dataset.autoplaySpeed) * 1000;
+        this.autoplayInterval = null;
+        this.isPlaying = false;
+      }
+
+      connectedCallback() {
+        this.init();
+      }
+
+      init() {
+        this.createDots();
+        this.updateActiveSlide();
+        this.setupEventListeners();
+        
+        if (this.autoplayEnabled) {
+          this.startAutoplay();
+        }
+      }
+
+      createDots() {
+        if (!this.dotsContainer) return;
+        
+        this.slides.forEach((slide, index) => {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.classList.add('ai-highlight-slider__dot-{{ ai_gen_id }}');
+          dot.setAttribute('aria-label', 'Go to slide ' + (index + 1));
+          dot.addEventListener('click', () => this.handleDotClick(index));
+          this.dotsContainer.appendChild(dot);
+        });
+      }
+
+      setupEventListeners() {
+        this.track.addEventListener('scroll', () => this.handleScroll());
+        
+        this.track.addEventListener('mousedown', (e) => this.startDragging(e));
+        this.track.addEventListener('mousemove', (e) => this.drag(e));
+        this.track.addEventListener('mouseup', () => this.stopDragging());
+        this.track.addEventListener('mouseleave', () => this.stopDragging());
+        
+        this.track.addEventListener('touchstart', (e) => this.startDragging(e), { passive: true });
+        this.track.addEventListener('touchmove', (e) => this.drag(e), { passive: true });
+        this.track.addEventListener('touchend', () => this.stopDragging());
+
+        if (this.prevButton) {
+          this.prevButton.addEventListener('click', () => this.handleArrowClick('prev'));
+        }
+        
+        if (this.nextButton) {
+          this.nextButton.addEventListener('click', () => this.handleArrowClick('next'));
+        }
+
+        if (this.playPauseButton) {
+          this.playPauseButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.togglePlayPause();
+          });
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (!entry.isIntersecting && this.isPlaying) {
+              this.pauseAutoplay();
+            }
+          });
+        });
+        observer.observe(this);
+      }
+
+      startDragging(e) {
+        this.isDragging = true;
+        this.track.classList.add('is-dragging');
+        this.startX = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX;
+        this.scrollLeft = this.track.scrollLeft;
+        
+        if (this.isPlaying) {
+          this.resetAutoplay();
+        }
+      }
+
+      drag(e) {
+        if (!this.isDragging) return;
+        e.preventDefault();
+        const x = e.type === 'mousemove' ? e.pageX : e.touches[0].pageX;
+        const walk = (x - this.startX) * 2;
+        this.track.scrollLeft = this.scrollLeft - walk;
+      }
+
+      stopDragging() {
+        this.isDragging = false;
+        this.track.classList.remove('is-dragging');
+      }
+
+      handleScroll() {
+        const scrollPosition = this.track.scrollLeft;
+        const slideWidth = this.slides[0].offsetWidth + 20;
+        const newIndex = Math.round(scrollPosition / slideWidth);
+        
+        if (newIndex !== this.currentIndex) {
+          this.currentIndex = newIndex;
+          this.updateActiveSlide();
+        }
+        
+        this.updateProgress();
+      }
+
+      updateActiveSlide() {
+        this.slides.forEach((slide, index) => {
+          if (index === this.currentIndex) {
+            slide.classList.add('active');
+            slide.classList.remove('inactive');
+          } else {
+            slide.classList.remove('active');
+            slide.classList.add('inactive');
+          }
+        });
+
+        if (this.dotsContainer) {
+          const dots = this.dotsContainer.querySelectorAll('.ai-highlight-slider__dot-{{ ai_gen_id }}');
+          dots.forEach((dot, index) => {
+            if (index === this.currentIndex) {
+              dot.classList.add('active');
+            } else {
+              dot.classList.remove('active');
+            }
+          });
+        }
+
+        if (this.prevButton) {
+          this.prevButton.disabled = this.currentIndex === 0;
+        }
+        
+        if (this.nextButton) {
+          this.nextButton.disabled = this.currentIndex === this.slides.length - 1;
+        }
+      }
+
+      updateProgress() {
+        const maxScroll = this.track.scrollWidth - this.track.clientWidth;
+        const progress = (this.track.scrollLeft / maxScroll) * 100;
+        if (this.progressBar) {
+          this.progressBar.style.width = progress + '%';
+        }
+      }
+
+      goToSlide(index) {
+        const slideWidth = this.slides[0].offsetWidth + 20;
+        this.track.scrollTo({
+          left: slideWidth * index,
+          behavior: 'smooth'
+        });
+      }
+
+      handleDotClick(index) {
+        this.goToSlide(index);
+        if (this.isPlaying) {
+          this.resetAutoplay();
+        }
+      }
+
+      handleArrowClick(direction) {
+        if (direction === 'prev') {
+          this.prev();
+        } else {
+          this.next();
+        }
+        if (this.isPlaying) {
+          this.resetAutoplay();
+        }
+      }
+
+      prev() {
+        if (this.currentIndex > 0) {
+          this.goToSlide(this.currentIndex - 1);
+        }
+      }
+
+      next() {
+        if (this.currentIndex < this.slides.length - 1) {
+          this.goToSlide(this.currentIndex + 1);
+        } else {
+          this.goToSlide(0);
+        }
+      }
+
+      startAutoplay() {
+        this.isPlaying = true;
+        this.updatePlayPauseButton();
+        
+        this.autoplayInterval = setInterval(() => {
+          this.next();
+        }, this.autoplaySpeed);
+      }
+
+      pauseAutoplay() {
+        this.isPlaying = false;
+        this.updatePlayPauseButton();
+        
+        if (this.autoplayInterval) {
+          clearInterval(this.autoplayInterval);
+          this.autoplayInterval = null;
+        }
+      }
+
+      resetAutoplay() {
+        this.pauseAutoplay();
+        this.startAutoplay();
+      }
+
+      togglePlayPause() {
+        if (this.isPlaying) {
+          this.pauseAutoplay();
+        } else {
+          this.startAutoplay();
+        }
+      }
+
+      updatePlayPauseButton() {
+        if (!this.playPauseButton || !this.playIcon || !this.pauseIcon) return;
+        
+        if (this.isPlaying) {
+          this.playIcon.style.display = 'none';
+          this.pauseIcon.style.display = 'block';
+          this.playPauseButton.classList.add('is-playing');
+          this.playPauseButton.setAttribute('aria-label', 'Pause slider');
+        } else {
+          this.playIcon.style.display = 'block';
+          this.pauseIcon.style.display = 'none';
+          this.playPauseButton.classList.remove('is-playing');
+          this.playPauseButton.setAttribute('aria-label', 'Play slider');
+        }
+      }
+
+      disconnectedCallback() {
+        if (this.autoplayInterval) {
+          clearInterval(this.autoplayInterval);
+        }
+      }
+    }
+
+    customElements.define('highlight-cards-slider-{{ ai_gen_id }}', HighlightCardsSlider{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Highlight cards slider",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section header"
+    },
+    {
+      "type": "text",
+      "id": "section_label",
+      "label": "Label",
+      "default": "New Collection"
+    },
+    {
+      "type": "text",
+      "id": "section_heading",
+      "label": "Heading",
+      "default": "Premium Highlights"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "section_bg_color",
+      "label": "Section background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card background",
+      "default": "#141414"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "checkbox",
+      "id": "accent_degrade",
+      "label": "Düğme ve ilerleme çubuğunda degrade",
+      "info": "Açıkken düğme ve ilerleme çubuğu düz vurgu rengi yerine aşağıdaki degradeyi kullanır. Etiket yazıları ve kenarlıklar vurgu rengiyle kalır.",
+      "default": false
+    },
+    { "type": "color", "id": "accent_d1", "label": "Degrade rengi 1", "default": "#ffffff" },
+    { "type": "color", "id": "accent_d2", "label": "Degrade rengi 2", "default": "#ffffff" },
+    { "type": "color", "id": "accent_d3", "label": "Degrade rengi 3", "default": "#ffffff" },
+    {
+      "type": "range",
+      "id": "accent_aci",
+      "label": "Degrade açısı",
+      "min": 0,
+      "max": 360,
+      "step": 5,
+      "unit": "°",
+      "default": 135
+    },
+    {
+      "type": "color",
+      "id": "card_button_text_color",
+      "label": "Card button text color",
+      "info": "Vurgu rengi açık bir tona ayarlandığında düğme yazısını koyulaştırmak için.",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "header",
+      "content": "Slider controls"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_play_pause",
+      "label": "Show play/pause button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Enable autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Card border radius",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Slide 1"
+    },
+    {
+      "type": "text",
+      "id": "slide_1_label",
+      "label": "Label",
+      "default": "New"
+    },
+    {
+      "type": "text",
+      "id": "slide_1_heading",
+      "label": "Heading",
+      "default": "Premium Product"
+    },
+    {
+      "type": "textarea",
+      "id": "slide_1_description",
+      "label": "Description",
+      "default": "Experience the perfect blend of style and functionality with our latest collection."
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_1_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_1_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "select",
+      "id": "slide_1_image_position",
+      "label": "Image position",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "background",
+          "label": "Background"
+        }
+      ],
+      "default": "bottom"
+    },
+    {
+      "type": "text",
+      "id": "slide_1_button_label",
+      "label": "Button label",
+      "default": "Shop now"
+    },
+    {
+      "type": "url",
+      "id": "slide_1_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "color",
+      "id": "slide_1_card_bg",
+      "label": "Card background override"
+    },
+    {
+      "type": "color",
+      "id": "slide_1_text_color",
+      "label": "Text color override"
+    },
+    {
+      "type": "header",
+      "content": "Slide 2"
+    },
+    {
+      "type": "text",
+      "id": "slide_2_label",
+      "label": "Label",
+      "default": "Featured"
+    },
+    {
+      "type": "text",
+      "id": "slide_2_heading",
+      "label": "Heading",
+      "default": "Exclusive Design"
+    },
+    {
+      "type": "textarea",
+      "id": "slide_2_description",
+      "label": "Description",
+      "default": "Discover unique pieces that elevate your everyday style."
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_2_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_2_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "select",
+      "id": "slide_2_image_position",
+      "label": "Image position",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "background",
+          "label": "Background"
+        }
+      ],
+      "default": "bottom"
+    },
+    {
+      "type": "text",
+      "id": "slide_2_button_label",
+      "label": "Button label",
+      "default": "Explore"
+    },
+    {
+      "type": "url",
+      "id": "slide_2_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "color",
+      "id": "slide_2_card_bg",
+      "label": "Card background override"
+    },
+    {
+      "type": "color",
+      "id": "slide_2_text_color",
+      "label": "Text color override"
+    },
+    {
+      "type": "header",
+      "content": "Slide 3"
+    },
+    {
+      "type": "text",
+      "id": "slide_3_label",
+      "label": "Label",
+      "default": "Limited"
+    },
+    {
+      "type": "text",
+      "id": "slide_3_heading",
+      "label": "Heading",
+      "default": "Special Edition"
+    },
+    {
+      "type": "textarea",
+      "id": "slide_3_description",
+      "label": "Description",
+      "default": "Limited quantities available. Get yours before they're gone."
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_3_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_3_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "select",
+      "id": "slide_3_image_position",
+      "label": "Image position",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "background",
+          "label": "Background"
+        }
+      ],
+      "default": "bottom"
+    },
+    {
+      "type": "text",
+      "id": "slide_3_button_label",
+      "label": "Button label",
+      "default": "Learn more"
+    },
+    {
+      "type": "url",
+      "id": "slide_3_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "color",
+      "id": "slide_3_card_bg",
+      "label": "Card background override"
+    },
+    {
+      "type": "color",
+      "id": "slide_3_text_color",
+      "label": "Text color override"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Highlight cards slider"
+    }
+  ]
+}
+{% endschema %}

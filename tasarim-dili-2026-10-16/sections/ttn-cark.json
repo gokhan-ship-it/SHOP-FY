@@ -1,0 +1,34 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "custom.ttn_cark",
+  "name": "Çark – genel",
+  "sections": {
+    "ttn_cark_genel": {
+      "type": "ttn-cark-genel",
+      "name": "Çark – genel ayarlar",
+      "settings": {
+        "aktif": true,
+        "kod": "K7QX4M9TR",
+        "sure_dk": 30,
+        "bar_metin": "[tutar] indirim aktif",
+        "bar_zemin": "#0A0A0A",
+        "bar_yazi": "#FFFFFF",
+        "bar_vurgu": "#D6FF00",
+        "kaydir_secici": "#ShopifyChat, .shopify-chat, [class*='mobile-dock'], .tt-sc-cubuk",
+        "kol_gizle": true,
+        "duyuru": "[tutar] indirim kazandın, sepetine eklendi."
+      }
+    }
+  },
+  "order": [
+    "ttn_cark_genel"
+  ]
+}

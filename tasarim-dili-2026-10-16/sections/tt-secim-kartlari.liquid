@@ -1,0 +1,2419 @@
+{%- doc -%}
+  SINGLE / COUPLE SECIM KARTLARI + COUPLE SET OLUSTURUCU  (.tt-sc-*)
+
+  Musteri once deneyimi seciyor (Single / Couple), sonra Kadin/Erkek
+  filtresiyle urununu buluyor. Couple secerse ayni sayfada iki urunluk
+  bir set kuruyor ve ikisi TEK istekte sepete gidiyor.
+
+  ------------------------------------------------------------------
+  INDIRIME VE SEPETE DOKUNULMUYOR
+
+  Magazada "Ikinci Uründe %50 Indirim" adinda OTOMATIK bir Shopify
+  BXGY indirimi var (1 al / 1'ini %50 indirimli al). Kapsami bu
+  sayfalarin koleksiyonlarini iceriyor, yani indirim SEPET
+  SEVIYESINDE kendiliginden isliyor. Bu bolum yalnizca iki uygun
+  urunu sepete koyuyor; ne yeni bir fiyat hesabi kuruyor ne de
+  indirim mantigina karisiyor.
+
+  Cubuktaki tutar bir TAHMIN: pahali urun tam, ucuz urun yarim.
+  Shopify de BXGY'de indirimi ucuz olana uyguluyor, yani beklenen
+  sonuc ayni. Yine de "gercek" tutar sepetin kendisi; bu yuzden
+  tahmini kapatip yerine yalnizca teklif metnini gosteren bir ayar
+  var (tutar_goster).
+
+  ------------------------------------------------------------------
+  LINE ITEM PROPERTY EKLENMIYOR -- BILEREK
+
+  Urun sayfasindaki couple akisi (assets/tt-tekli-secim.js) sepete
+  duz bir items dizisi gonderiyor, hicbir property tasimiyor. Bu
+  bolum de aynisini yapiyor ki siparis ve uretim tarafinda iki akis
+  arasinda fark olmasin. Sete ortak bir anahtar istenirse IKI YERE
+  BIRDEN eklenmeli.
+
+  ------------------------------------------------------------------
+  CINSIYET SINYALI = KOLEKSIYON UYELIGI
+
+  Katalogda cinsiyet metafield'i YOK, etiketler tutarsiz ve cogu bos,
+  productType bos, vendor cinsiyet degil urun tipi. Bugun dogru olan
+  tek sinyal koleksiyon uyeligi. Iki koleksiyonda birden olan urun
+  ("Klasik Zaman Kapsulu") bir kez basiliyor, "ikisi" isaretiyle her
+  iki filtrede de gorunuyor.
+
+  ------------------------------------------------------------------
+  URUNLER ONCEDEN BASILIYOR, SECTION RENDER API KULLANILMIYOR
+
+  Mod degisince sayfa yenilenmemeli. Iki koleksiyon toplam ~30 urun;
+  hepsini bir kez basip JS ile gostermek/gizlemek, her mod degisiminde
+  ag istegi atmaktan hem hizli hem de cevrimdisi kirilmaya kapali.
+  Her karo hangi moda ve hangi cinsiyete ait oldugunu kendi uzerinde
+  tasiyor.
+
+  Urun kartlari artik bu is icin yazilan snippets/tt-uk-kart.liquid
+  ile basiliyor: Single ve Couple modunda AYNI kart ve kartin olcusu
+  mod degisince degismiyor. Temanin snippets/product-card.liquid ve
+  sections/main-collection.liquid dosyalarina DOKUNULMUYOR; magazanin
+  geri kalan sayfalarinda oldugu gibi duruyorlar.
+
+  @param {string} [baslik] - Bolum basligi
+  @param {string} [ust_yazi] - Baslik ustundeki kucuk yazi
+
+  @example
+  {% section 'tt-secim-kartlari' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign s = section.settings
+  assign sid = section.id
+
+  comment
+    FILTRENIN ACILIS DEGERI
+    Burada hesaplaniyor cunku hem bolumun CSS'i (markuptan ONCE
+    basiliyor) hem de cip satiri ayni degeri okuyor. Taninmayan deger
+    "tumu" sayiliyor: ayar bir gun baska bir sey tutarsa sayfa
+    bozulmak yerine eski davranisina donuyor.
+  endcomment
+  assign vk = s.varsayilan_kime | default: 'tumu'
+  unless vk == 'kadin' or vk == 'erkek'
+    assign vk = 'tumu'
+  endunless
+
+  comment
+    MOD KILIDI
+    Tek deneyimli sayfalarda (orn. couple koleksiyonu) Single/Couple
+    secimi anlamsiz, hatta yaniltici. Kilitliyse secim kartlari hic
+    basilmiyor ve mod bastan sabit. Taninmayan deger = kilit yok.
+  endcomment
+  assign kilit = s.mod_kilit
+  unless kilit == 'couple' or kilit == 'single'
+    assign kilit = ''
+  endunless
+
+  comment
+    Kilit varsa acilis modu da odur; yoksa ayardaki varsayilan.
+  endcomment
+  assign acilis_mod = s.varsayilan_mod
+  if kilit != blank
+    assign acilis_mod = kilit
+  endif
+
+  assign tekil_kol = collection
+
+  comment
+    "Nasil calisir?" karti (izgarada) ve penceresi. nk_n: kartin
+    gorunen listedeki sirasi (1 = ilk hucre). nk_esik: kartin
+    ONUNDE kac urun duracagi.
+  endcomment
+  assign nk_acik = s.nk_goster
+  assign nk_n = s.nk_sira | default: 4 | at_least: 1 | round
+  assign nk_esik = nk_n | minus: 1
+  assign kadin_kol = collections[s.kadin_koleksiyon]
+  assign erkek_kol = collections[s.erkek_koleksiyon]
+
+  comment
+    Uyelik kumeleri virgulle SARILMIS id dizisi. Sarmalama sart: duz
+    "contains" ile "123" aramasi "1234"un icinde de eslesirdi.
+  endcomment
+  assign kadin_ids = ','
+  for p in kadin_kol.products
+    assign kadin_ids = kadin_ids | append: p.id | append: ','
+  endfor
+  assign erkek_ids = ','
+  for p in erkek_kol.products
+    assign erkek_ids = erkek_ids | append: p.id | append: ','
+  endfor
+  assign tekil_ids = ','
+  for p in tekil_kol.products
+    assign tekil_ids = tekil_ids | append: p.id | append: ','
+  endfor
+
+  comment
+    KAYNAKLAR BIRLESTIRILMIYOR, UC AYRI DONGUDE BASILIYOR
+
+    Onceki surumde "kadin_kol.products | concat: tekil_kol.products"
+    vardi ve vitrinde kadin grubu HIC basilmadi: Single modunda tek
+    gorunen urun, erkek dongusunden gelen ve iki koleksiyonda birden
+    olan "Klasik Zaman Kapsulu" idi. concat bir DIZI bekliyor;
+    collection.products bir dizi degil, tembel degerlendirilen bir
+    urun listesi ve filtre sessizce bos donuyor.
+
+    Bu yuzden birlestirme yok: her kaynak kendi dongusunde basiliyor,
+    tekillestirme ortak "gorulen" dizesiyle yapiliyor. Siralama
+    ONEMLI -- "Tumu" gorunumunde once Kadin grubu, sonra Erkek grubu
+    geliyor ve grup basliklari bu siraya guveniyor.
+  endcomment
+
+  comment
+    PARA BICIMI -- ornek dize temanin money filtresinden DEGIL,
+    tt-para'dan aliniyor. Bu magazanin money_format'i Ingilizce
+    gruplama uretiyor ("12,345.67TL"); karolardaki fiyatlar ise
+    tt-para ile Turkce cikiyor ("12.345,67 TL"). Ikisi ayni ekranda
+    yan yana duruyordu. Tek kaynak tt-para: bicim degisirse
+    kartlarda da cubukta da birlikte degisiyor.
+
+    12345.67 secildi cunku butun basamaklari farkli -- JS ayiraclarin
+    yerini tek anlamli okuyabiliyor. tt-para bir sebeple gelmezse
+    ornek elle yaziliyor; JS'in kendi yedegi de zaten Turkce.
+  endcomment
+  capture para_ornek
+    render 'tt-para', kurus: 1234567
+  endcapture
+  assign para_ornek = para_ornek | strip
+  unless para_ornek contains ','
+    assign para_ornek = '12.345,67 TL'
+  endunless
+
+  comment
+    KAMPANYALI COUPLE SETLER -- KAYNAK VE BIR ON SORU
+
+    Koleksiyon ve "blok cizilecek mi" burada, cunku bolumun CSS'i
+    markuptan ONCE basiliyor ve kurallardan biri listenin icerigine
+    bakiyor: listede HIC ustu cizili fiyat var mi?
+
+    Dar kartta "2.898 TL  3.399 TL" tek satira sigmiyor; cizili fiyati
+    OLAN kartlarda satir ikiye cikip ana fiyati yukari itiyor, olmayan
+    kartlarda itmiyordu -- seritte ana fiyatlar birbirini tutmuyordu.
+    Yer ayirma kurali bu yuzden var, ama yalnizca gercekten cizili
+    fiyat varken basiliyor; yoksa hicbir kartta sarma olmaz ve bos
+    yer ayirmak kartlari gereksiz uzatirdi.
+  endcomment
+  assign setler_kol = collections[s.setler_koleksiyon]
+  assign setler_var = false
+  if s.setler_goster and setler_kol.products.size > 0
+    assign setler_var = true
+  endif
+
+  assign setler_cizili = false
+  if setler_var
+    for sp in setler_kol.products limit: s.setler_adet
+      assign sv = sp.selected_or_first_available_variant
+      if sv.compare_at_price > sv.price
+        assign setler_cizili = true
+        break
+      endif
+    endfor
+  endif
+-%}
+
+{%- comment -%}
+  JS'in ihtiyac duydugu butun metinler tek bir JSON'da. Ayri ayri
+  data-* niteligi yerine tek paket: metin eklendiginde yalnizca bu
+  blok ve schema degisiyor, DOM sozlesmesi sabit kaliyor.
+{%- endcomment -%}
+{%- capture metin_json -%}
+{
+  "sayacEki": {{ s.sayac_eki | json }},
+  "setSayac": {{ s.set_sayac | json }},
+  "setHazir": {{ s.set_hazir | json }},
+  "slot1Ust": {{ s.slot1_ust | json }},
+  "slot1AltBos": {{ s.slot1_alt_bos | json }},
+  "slot2Ust": {{ s.slot2_ust | json }},
+  "slot2AltBos": {{ s.slot2_alt_bos | json }},
+  "slot2AltDolu": {{ s.slot2_alt_dolu | json }},
+  "kartEkle": {{ s.kart_ekle | json }},
+  "kartSecili": {{ s.kart_secili | json }},
+  "ukEklendi": {{ s.uk_eklendi | json }},
+  "ukAriaSepet": {{ s.uk_aria_sepet | json }},
+  "ukAriaSetEkle": {{ s.uk_aria_set_ekle | json }},
+  "ukAriaSetCikar": {{ s.uk_aria_set_cikar | json }},
+  "durum2": {{ s.durum_2 | json }},
+  "durum1": {{ s.durum_1 | json }},
+  "durum0": {{ s.durum_0 | json }},
+  "durumDolu": {{ s.durum_dolu | json }},
+  "dugmeEksik": {{ s.dugme_eksik | json }},
+  "dugmeTam": {{ s.dugme_tam | json }},
+  "uyari": {{ s.uyari_metin | json }},
+  "hata": {{ s.hata_metin | json }},
+  "tutarYerine": {{ s.tutar_yerine | json }},
+  "cubukEtiketTam": {{ s.cubuk_etiket_tam | json }},
+  "cubukEtiketIndirim": {{ s.cubuk_etiket_indirim | json }},
+  "cubukTasarruf": {{ s.cubuk_tasarruf | json }},
+  "cubukAraToplam": {{ s.cubuk_ara_toplam | json }},
+  "cubukKod": {{ s.cubuk_kod | json }},
+  "varyantBaslik": {{ s.varyant_baslik | json }},
+  "kadin": {{ s.kime_kadin | json }},
+  "erkek": {{ s.kime_erkek | json }}
+}
+{%- endcapture -%}
+
+{%- if s.aktif -%}
+  {{ 'tt-secim-kartlari.css' | asset_url | stylesheet_tag }}
+  {{ 'tt-uk-kart.css' | asset_url | stylesheet_tag }}
+
+  {%- comment -%}
+    BASLIK GORUNUMU + KART DUGMESININ KALKMASI
+
+    Bu kurallar ortak varlik dosyasinda DEGIL, burada: ikisi de bolum
+    ayarindan besleniyor ve yalnizca bu bolumu ilgilendiriyor.
+    #shopify-section-... ile kapsamlaniyor, yani ozgullugu varlik
+    dosyasindaki .tt-sc .tt-sc-baslik kuralindan yuksek -- kim once
+    yuklenirse yuklensin bu kazaniyor, sira oyununa gerek yok.
+
+    Olculer sayfanin basindaki hero basligindan alindi
+    (sections/hero-video-kapsul.liquid): 28 / 36 / 44 px, 700,
+    satir yuksekligi 1.15, harf araligi -0.02em. Yazi tipi iki
+    bolumde de temadan miras; hicbiri kendi font-family'sini
+    tanimlamiyor, "ayni font" bundan geliyor.
+  {%- endcomment -%}
+  <style>
+    #shopify-section-{{ sid }} .tt-sc-bas { text-align: {{ s.bas_hiza }}; }
+    #shopify-section-{{ sid }} .tt-sc-baslik {
+      font-family: var(--font-heading-family);
+      font-size: {{ s.bas_boyut_m }}px;
+      font-weight: {{ s.bas_kalinlik }};
+      line-height: 1.15;
+      letter-spacing: {% if s.bas_boyut_m >= 28 %}-1px{% elsif s.bas_boyut_m >= 20 %}-0.8px{% else %}-0.3px{% endif %};
+      text-wrap: balance;
+    }
+    @media (min-width: 750px) {
+      #shopify-section-{{ sid }} .tt-sc-baslik { font-size: {{ s.bas_boyut_t }}px; }
+    }
+    @media (min-width: 1024px) {
+      #shopify-section-{{ sid }} .tt-sc-baslik { font-size: {{ s.bas_boyut_d }}px; }
+    }
+    {%- unless s.nasil_goster -%}
+    {%- comment -%}
+      Dugme yokken kartlar BES satir. Subgrid zinciri satir sayisina
+      gore kuruluyor: hem kapsayicinin sablonu hem kartin span'i
+      kuculmeli, yoksa altta bos bir 6. satir kalir.
+
+      @supports icinde, cunku subgrid desteklemeyen tarayicida
+      (Safari 15 ve oncesi) varlik dosyasi kartlari flex'e dusuruyor
+      ve orada satir sayisinin bir anlami yok -- bu kurallar o
+      yedegi bozmamali.
+    {%- endcomment -%}
+    @supports (grid-template-rows: subgrid) {
+      #shopify-section-{{ sid }} .tt-sc-kartlar { grid-template-rows: repeat(5, auto); }
+      #shopify-section-{{ sid }} .tt-sc-kart { grid-row: span 5; }
+    }
+    {%- endunless -%}
+
+    {%- comment -%}
+      KAMPANYALI COUPLE SETLER
+
+      Kurallar ortak varlik dosyasinda DEGIL burada, cunku sutun
+      sayilari ve gorunurluk bolum ayarindan geliyor ve blok yalnizca
+      bu bolumde var.
+
+      GORUNURLUK SAF CSS: kok oge Couple'a gecince
+      assets/tt-secim-kartlari.js zaten data-sc-aktif-mod="couple"
+      yaziyor (ciz(), :184). O niteligi okumak JS'e tek satir
+      eklemekten daha saglam -- blok JS'in bilmedigi bir sey.
+
+      Baslangic hali "display: none": nitelik ilk ciz() calisana kadar
+      yok. Ayni sey "Setini olustur" kutusunda da boyle (markupta
+      hidden) -- iki blok da ayni anda, titremesiz gorunuyor.
+    {%- endcomment -%}
+    {%- comment -%}
+      Kart renkleri degisken olarak burada toplaniyor: hepsi ayardan
+      geliyor ve asagidaki kurallar tek tek ayara bakmak yerine
+      degiskeni okuyor. Tema editorunden bir rengi degistirmek, o rengi
+      kullanan butun satirlari birden degistiriyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setler {
+      display: none;
+      margin-top: 20px;
+      --tt-sc-set-rozet: {{ s.setler_rozet_zemin }};
+      --tt-sc-set-ind-kenar: {{ s.setler_ind_kenar }};
+      --tt-sc-set-vurgu: {{ s.setler_vurgu }};
+      --tt-sc-set-etiket: {{ s.setler_etiket_renk }};
+      --tt-sc-set-fiyat: {{ s.setler_fiyat_renk }};
+      --tt-sc-set-eski: {{ s.setler_eski_renk }};
+      --tt-sc-set-ayrac: {{ s.setler_ayrac_renk }};
+      --tt-sc-set-kod: {{ s.setler_kod_renk }};
+      --tt-sc-set-oran: {{ s.setler_gorsel_oran | default: '3 / 4' }};
+      --tt-sc-set-fiyat-px: 19px;
+      --tt-sc-set-eski-px: 12px;
+    }
+    {%- comment -%}
+      MASAUSTUNDE AYRI ORAN
+
+      Masaustunde kart cok daha genis oldugu icin ayni dikey oran
+      kartin tamamini asiri uzatiyor. Bu ayar BOS birakilinca hicbir
+      sey degismiyor -- degisken mobildekiyle ayni kaliyor; yalnizca
+      bir oran secilince masaustunde ustune yaziliyor.
+    {%- endcomment -%}
+    {%- if s.setler_gorsel_oran_d != blank -%}
+      @media (min-width: 1024px) {
+        #shopify-section-{{ sid }} .tt-sc-setler {
+          --tt-sc-set-oran: {{ s.setler_gorsel_oran_d }};
+        }
+      }
+    {%- endif -%}
+    #shopify-section-{{ sid }} .tt-sc[data-sc-aktif-mod="couple"] .tt-sc-setler { display: block; }
+    #shopify-section-{{ sid }} .tt-sc-setler-bas { display: grid; gap: 2px; margin-bottom: 12px; }
+    #shopify-section-{{ sid }} .tt-sc-setler-baslik {
+      margin: 0;
+      font-family: var(--font-heading-family);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.3px;
+      color: var(--tt-sc-koyu);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-alt {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--tt-sc-gri);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-izgara {
+      display: grid;
+      gap: 8px;
+      align-items: stretch;
+    }
+    {%- if s.setler_kaydir -%}
+    {%- comment -%}
+      KAYAN SERIT
+
+      Tasiyici hala grid; yalnizca akis sutuna cevriliyor ve kutu
+      yatayda kayiyor. Kart sayisi degisse de markup ayni kaliyor,
+      JS'e kaydirma kodu yazilmiyor -- tarayicinin kendi kaydirmasi
+      ve scroll-snap'i dokunmatikte her zaman daha akici.
+
+      Kart genisligi: gorunecek kart sayisi (ayar) kadar bolunuyor,
+      sonra "goz ucu" kadar kisaltiliyor ki bir sonraki kartin
+      kenari gorunsun -- serit oldugunu anlatan sey bu. Kisaltma
+      olmasaydi son kart tam kenara otururdu ve kutu kaydirilabilir
+      gorunmezdi.
+
+      overflow-x kart kutusunda, sayfada degil: yatay sayfa
+      kaydirmasi acilmiyor.
+    {%- endcomment -%}
+    {%- assign setler_ara_m = s.setler_sutun_m | minus: 1 | times: 8 -%}
+    {%- assign setler_ara_d = s.setler_sutun_d | minus: 1 | times: 8 -%}
+    #shopify-section-{{ sid }} .tt-sc-setler-izgara {
+      grid-auto-flow: column;
+      grid-template-columns: none;
+      grid-auto-columns: calc((100% - {{ setler_ara_m }}px - {{ s.setler_goz }}px) / {{ s.setler_sutun_m }});
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scroll-padding-inline-start: 0;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-izgara::-webkit-scrollbar { display: none; }
+    #shopify-section-{{ sid }} .tt-sc-setkart { scroll-snap-align: start; }
+    @media (min-width: 1024px) {
+      #shopify-section-{{ sid }} .tt-sc-setler-izgara {
+        grid-auto-columns: calc((100% - {{ setler_ara_d }}px - {{ s.setler_goz }}px) / {{ s.setler_sutun_d }});
+      }
+    }
+    {%- else -%}
+    #shopify-section-{{ sid }} .tt-sc-setler-izgara {
+      grid-template-columns: repeat({{ s.setler_sutun_m }}, minmax(0, 1fr));
+    }
+    @media (min-width: 1024px) {
+      #shopify-section-{{ sid }} .tt-sc-setler-izgara {
+        grid-template-columns: repeat({{ s.setler_sutun_d }}, minmax(0, 1fr));
+      }
+    }
+    {%- endif -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--tt-sc-kenar);
+      border-radius: 14px;
+      background: #fff;
+      color: inherit;
+      text-decoration: none;
+      transition: border-color 160ms ease;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart:hover { border-color: var(--tt-sc-halka-yesil); }
+    #shopify-section-{{ sid }} .tt-sc-setkart:focus-visible {
+      outline: 2px solid var(--tt-sc-yesil);
+      outline-offset: 2px;
+    }
+    {%- comment -%}
+      Gorsel alani, serit, kareler ve noktalar KOLEKSIYON KARTININ
+      siniflarini kullaniyor (.tt-uk-gorsel / -serit / -kare / -img /
+      -noktalar). Burada o kurallarin kopyasi YOK: assets/tt-uk-kart.css
+      zaten bu bolumde yukleniyor ve tek kaynak kalmasi, iki kart
+      turunun ileride ayrisma ihtimalini bastan kapatiyor.
+
+      TEK ISTISNA asagidaki kural. tt-uk-kart.css gorsel alanina
+      "aspect-ratio: 1/1" veriyor, ama KOLEKSIYON kartinda o alan
+      height:100% olan bir kartin icinde ve tasan kisim overflow:hidden
+      ile kirpiliyor. Set kartinin boyle sabit bir yuksekligi yok:
+      .tt-sc-setkart bir sutun flex kutusu, gorsel alani da onun flex
+      ogesi, ve flex ogesinin "min-height: auto" otomatik en kucuk
+      olcusu ICERIGIN boyu. Katalogdaki gorseller dikey (1500x2000,
+      1792x2400, Luna'nin yasam karelerinde 1536x2752), dolayisiyla
+      gorselin kendi boyu 1/1 oranini eziyordu.
+
+      Gorunen sonuc bir sicrama idi: serideki 2. kareden itibaren
+      gorseller TEMBEL iniyor ve inene kadar yerlerinde 600x600 kare
+      bir yer tutucu duruyor. Kullanici Luna kartinda kaydirinca
+      gercek gorsel iniyor, oran 1.333'ten 1.792'ye atliyor ve butun
+      kart birden uzuyordu.
+
+      min-height: 0 otomatik en kucuk olcuyu kapatiyor, flex: 0 0 auto
+      da alani esnemez yapiyor; boylece oran NE OLURSA OLSUN hem ilk
+      boyamada hem gorsel indikten sonra ayni kaliyor. Oran artik
+      ayardan geliyor (--tt-sc-set-oran); object-fit: cover zaten
+      tt-uk-kart.css'te, yani tasan kisim kirpiliyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart > .tt-uk-gorsel {
+      flex: 0 0 auto;
+      min-height: 0;
+      aspect-ratio: var(--tt-sc-set-oran, 3 / 4);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-rozet {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 2;
+      padding: 3px 7px;
+      border-radius: 999px;
+      {%- comment -%}
+        Ink + beyaz: Couple modunda "Ikincisi yari fiyatina" ve "%50"
+        lime rozetleriyle ayni ekranda birden cok "2'li set" rozeti
+        duruyor; neon en fazla 1-2 ogede kalsin diye bu rozet koyu.
+      {%- endcomment -%}
+      background: #0A0A0A;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    {%- comment -%}
+      Indirim rozeti SAG USTTE ve ters kontrastta: sol ustteki koyu
+      rozetle ayni gorunumde olsalardi iki ayri bilgi tek bir sey gibi
+      okunurdu. Beyaz zemin + ince cerceve, gorselin uzerinde de
+      okunakli kaliyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-ind {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 2;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--tt-sc-set-ind-kenar);
+      background: #fff;
+      color: var(--tt-sc-set-vurgu);
+      font-size: 10.5px;
+      font-weight: 500;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    {%- comment -%}
+      "Tukendi" SAG USTTE: sol altta nokta gostergesi var, alta
+      yaslansaydi uzerine binerdi.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-tukendi {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 2;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(10, 10, 10, 0.86);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+    }
+    {%- comment -%}
+      FIYAT SATIRLARI BUTUN KARTLARDA AYNI HIZADA.
+
+      Urun adlari iki ve uc satir arasinda degisiyor; adin altina sabit
+      bir bosluk koymak hizayi tutturmuyordu. Iki onlem birlikte:
+      ad alanina iki satirlik taban yukseklik, fiyat blogunu da
+      "margin-top: auto" ile kartin ALTINA yasla. Kartlar zaten esit
+      boyda (izgara ogesi stretch) oldugu icin fiyatlar da esit
+      hizada bitiyor -- ad kac satir olursa olsun.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-metin {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      gap: 0;
+      padding: 10px 10px 12px;
+    }
+    {%- comment -%}
+      ADIN USTUNDEKI ETIKET.
+
+      Rengi "2'li set" rozetinin zemin rengiyle AYNI degiskenden
+      geliyor (--tt-sc-set-rozet): tema editorunden o rengi
+      degistiren, ikisini birden degistiriyor.
+
+      Buyuk harfe cevirmeyi CSS yapiyor, Liquid degil -- ayara
+      girilen metin okunabilir kaliyor ve Turkce harf eslemesi
+      ogedeki lang="tr" sayesinde dogru calisiyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-ust {
+      margin-bottom: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--tt-sc-set-rozet);
+    }
+    {%- comment -%}
+      AD ALANI EN FAZLA IKI SATIR -- ama IKI SATIRLIK YER AYIRMIYOR.
+
+      Burada once "min-height: 2.6em" vardi, yani ad tek satir olsa
+      bile iki satirlik yer tutuluyordu. Adlar kisaldiktan sonra
+      (artik "Astor + Chloe" yaziyor) o ikinci satir hicbir kartta
+      dolmuyor ve bos satir, ad ile fiyat arasinda duran bir bosluga
+      donusuyordu -- 375 px'de olculdu: 17 px.
+
+      Kaldirmak hizayi BOZMUYOR, cunku fiyatlari hizalayan sey o
+      taban yukseklik degil: kartlar izgara ogesi olarak esit boyda
+      ve fiyat blogu "margin-top: auto" ile kartin altina yasli
+      (bkz. .tt-sc-setkart-fiyatlar). Ad kac satir olursa olsun
+      fiyatlar ayni cizgide bitiyor.
+
+      line-clamp DURUYOR: cok uzun bir ad uc satira tasip karti
+      uzatmasin. 360 px'de "Luna + Infinity Charm" gercekten iki
+      satira dusuyor; orada kartlar o kartin boyuna gore esitleniyor
+      ve digerlerinde ayni 17 px bosluk kaliyor -- yani 360 px'de
+      durum eskisiyle ayni, daha genis ekranlarda bosluk kapaniyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-ad {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.3;
+      color: var(--tt-sc-koyu);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyatlar {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: auto;
+    }
+    {%- comment -%}
+      Fiyat satiri "price" sinifini da tasiyor (cark katmani onu
+      ariyor). Temanin .price kurallarini ezmek icin ek bir numaraya
+      gerek yok: #shopify-section-... kapsami zaten ozgullukte onde.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyat {
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+    }
+    {%- comment -%}
+      display: flex, hidden niteligini eziyor. Kural olmadan cark
+      katmani blogu "gizledigi" halde ekranda kaliyordu.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyat[hidden] { display: none; }
+    {%- comment -%}
+      Indirimli satir kendi renginde: ayni kutuda ayni puntoda ama
+      baska bir renkte duran rakam, "bu normal fiyat degil" bilgisini
+      metin okunmadan veriyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyat--kod .tt-sc-setkart-etiket,
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyat--kod .tt-sc-setkart-satis {
+      color: var(--tt-sc-set-kod);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-etiket {
+      margin-top: 10px;
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      color: var(--tt-sc-set-etiket);
+    }
+    {%- comment -%}
+      Odenecek tutar ile ustu cizili fiyat AYNI SATIRDA ve taban
+      cizgisinde hizali: karsilastirmanin neyle yapildigi ancak yan
+      yana dururken okunuyor. Dar kartta alta kayarsa diye wrap acik.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-satir {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      align-content: start;
+      column-gap: 6px;
+      row-gap: 2px;
+      margin-top: 4px;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-satis {
+      font-size: var(--tt-sc-set-fiyat-px);
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--tt-sc-set-fiyat);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-eski {
+      font-size: var(--tt-sc-set-eski-px);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--tt-sc-set-eski);
+      text-decoration: line-through;
+    }
+    {%- if setler_cizili -%}
+    {%- comment -%}
+      DAR KARTTA FIYAT SATIRI IKI SATIRLIK YER AYIRIYOR.
+
+      360 px'de kart ~144 px kaliyor ve "2.898 TL  3.399 TL" tek satira
+      sigmiyor; cizili fiyat alta kayinca O KARTIN ana fiyati bir satir
+      yukarida kaliyor, cizili fiyati olmayan kartlarda kalmiyordu --
+      seritte ana fiyatlar birbirini tutmuyordu.
+
+      Olcu karta bagli, ekrana degil (ayni ekranda 1 veya 2 kart
+      gorunebiliyor), o yuzden medya sorgusu degil KONTEYNER sorgusu.
+      Kural yalnizca listede gercekten cizili fiyat varsa basiliyor --
+      yoksa hicbir kartta sarma olmaz ve bos yer ayirmanin anlami
+      kalmaz.
+
+      Yukseklik iki satir kutusu + aradaki bosluk olarak yaziliyor;
+      punto degiskenden geldigi icin punto degisince kendiliginden
+      guncelleniyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart { container-type: inline-size; }
+    @container (max-width: 152px) {
+      #shopify-section-{{ sid }} .tt-sc-setkart-satir {
+        min-height: calc(var(--tt-sc-set-fiyat-px) * 1.2 + var(--tt-sc-set-eski-px) * 1.2 + 2px);
+      }
+    }
+    {%- endif -%}
+    {%- comment -%}
+      Kisi basi satiri kesik cizginin ALTINDA: cizgi, bunun ayri bir
+      okuma oldugunu -- ustteki tutarin bir parcasi degil, ondan
+      turetilmis bir bilgi oldugunu -- tek basina anlatiyor.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-kisi {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--tt-sc-set-ayrac);
+      font-size: 11px;
+      line-height: 1.25;
+      color: var(--tt-sc-set-vurgu);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setkart-kisi-ikon {
+      flex: 0 0 auto;
+      width: 13px;
+      height: 13px;
+    }
+
+    {%- comment -%}
+      SERIT GEZINTI CUBUGU
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setler-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-nav[hidden] { display: none; }
+    #shopify-section-{{ sid }} .tt-sc-setler-ok {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid var(--tt-sc-kenar);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--tt-sc-koyu);
+      cursor: pointer;
+      transition: border-color 160ms ease, opacity 160ms ease;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-ok:hover:not(:disabled) {
+      border-color: var(--tt-sc-halka-yesil);
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-ok:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-ok svg { width: 16px; height: 16px; }
+    #shopify-section-{{ sid }} .tt-sc-setler-nokta {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-nokta i {
+      display: block;
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--tt-sc-kenar);
+      transition: width 160ms ease, background-color 160ms ease;
+    }
+    #shopify-section-{{ sid }} .tt-sc-setler-nokta i[data-sc-aktif] {
+      width: 16px;
+      background: var(--tt-sc-yesil);
+    }
+    {%- comment -%}
+      SET OLUSTURUCUNUN USTUNDEKI BASLIK
+
+      Hazir setlerden sonra gelen "kendin kur" bolumunu acikca
+      baslatiyor: musteri serit bitince dogrudan koyu kural bandina
+      giriyordu ve iki alanin ayri seyler oldugu yalnizca kutunun
+      kenarindan anlasiliyordu.
+
+      Gorunurluk SAF CSS, tipki hazir setler blogunda oldugu gibi:
+      kok oge Couple'a gecince assets/tt-secim-kartlari.js zaten
+      data-sc-aktif-mod="couple" yaziyor. Boylece baslik, altindaki
+      kutuyla ayni anda geliyor ve JS'e tek satir eklenmiyor.
+
+      Olculer hazir setler basligiyla AYNI (18/13 px): ikisi de ayni
+      seviyede, birbirini izleyen iki alt bolum -- biri otekinden
+      buyuk gorunurse sayfada olmayan bir hiyerarsi uydurulmus olur.
+
+      Baslik varken kutunun kendi 20px ust boslugu 8px'e iniyor:
+      baslik ile anlattigi kutu birbirine yakin dursun, ustteki
+      seritten ise acikca ayrilsin.
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-set-ust {
+      display: none;
+      gap: 2px;
+      margin-top: 20px;
+    }
+    #shopify-section-{{ sid }} .tt-sc[data-sc-aktif-mod="couple"] .tt-sc-set-ust { display: grid; }
+    #shopify-section-{{ sid }} .tt-sc-set-ust + .tt-sc-set { margin-top: 8px; }
+    #shopify-section-{{ sid }} .tt-sc-set-ust-baslik {
+      margin: 0;
+      font-family: var(--font-heading-family);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.3px;
+      color: var(--tt-sc-koyu);
+    }
+    #shopify-section-{{ sid }} .tt-sc-set-ust-alt {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--tt-sc-gri);
+    }
+
+    {%- if vk != 'tumu' -%}
+    {%- comment -%}
+      ILK BOYAMA -- FILTRE ACILIS DEGERI
+
+      Karolarin gorunurlugunu JS belirliyor ama script "defer" ile
+      yukleniyor; tarayici ondan once bir kare boyayabiliyor. Acilista
+      "Erkek" seciliyken o karede butun karolar gorunup hemen
+      kayboluyordu. Asagidaki kural yalnizca [data-sc-ilk] dururken
+      gecerli; JS ilk cizimi bitirince nitelik kalkiyor ve gorunurlugu
+      tamamen dongu yonetiyor.
+
+      Esleme karoUygun() ile ayni: secilen cinsiyet ya da "ikisi".
+    {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc[data-sc-ilk] .tt-sc-karo:not([data-sc-kime="{{ vk }}"]):not([data-sc-kime="ikisi"]) {
+      display: none;
+    }
+    {%- endif -%}
+
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ sid }} .tt-sc-setler-ok,
+      #shopify-section-{{ sid }} .tt-sc-setler-nokta i { transition: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ sid }} .tt-sc-setkart { transition: none; }
+    }
+  </style>
+
+  <div class="tt-sc" data-tt-sc
+       data-sc-varsayilan="{{ acilis_mod }}"
+       {%- if kilit != blank %} data-sc-kilit="{{ kilit }}"{% endif -%}
+       {%- comment -%}
+         Filtrenin acilis degeri. data-sc-ilk yalnizca ILK BOYAMA icin:
+         JS ilk cizimi bitirince kaldiriyor, boylece acilista yanlis
+         karolar bir an gorunmuyor ama filtre degisince CSS yolu
+         kapaniyor (bkz. yukaridaki ILK BOYAMA kurallari ve
+         assets/tt-secim-kartlari.js > ciz sonu).
+       {%- endcomment -%}
+       data-sc-varsayilan-kime="{{ vk }}"
+       data-sc-nk-sira="{{ nk_n }}"
+       data-sc-sayfa="{{ collection.handle | escape }}"
+       {%- if vk != 'tumu' %} data-sc-ilk{% endif -%}
+       data-sc-para-ornek="{{ para_ornek | escape }}"
+       data-sc-tutar-goster="{{ s.tutar_goster }}"
+       data-sc-gizle-secici="{{ s.gizle_secici | escape }}"
+       data-sc-tekil-izgara="{{ s.tekil_izgara }}"
+       data-sc-tema-izgara="{{ s.tema_izgara_secici | escape }}"
+       data-sc-tukendi-sona="{{ s.uk_tukendi_sona }}"
+       {%- comment -%}
+         CARK INDIRIMI AYNI KAYNAKTAN OKUNUYOR.
+         Koleksiyon kartlarindaki "indirim kodu ile" blogu
+         (snippets/tt-kart-taksit.liquid) tutari settings.tt_indirim_tutar
+         ayarindan aliyor. Cubuk da AYNI ayari okuyor: ikisi ayri yerden
+         beslenseydi bir gun biri 500, digeri baska bir sey yazardi.
+         Katman kapaliyken 0 gonderiliyor ve cubuk kod satirini hic
+         acmiyor.
+       {%- endcomment -%}
+       data-sc-kod-kurus="{% if settings.tt_indirim_aktif %}{{ settings.tt_indirim_tutar | times: 100 | round }}{% else %}0{% endif %}"
+       data-sc-metin="{{ metin_json | strip | escape }}"
+       style="
+         --tt-sc-zemin: {{ s.zemin }};
+         --tt-sc-koyu: {{ s.koyu }};
+         --tt-sc-yesil: {{ s.yesil }};
+         --tt-sc-halka-yesil: {{ s.halka_yesil }};
+         --tt-sc-yesil-acik: {{ s.yesil_acik }};
+         --tt-sc-yesil-zemin: {{ s.yesil_zemin }};
+         --tt-sc-kenar: {{ s.kenar }};
+         --tt-sc-gri: {{ s.gri }};
+         --tt-sc-gri-koyu: {{ s.gri_koyu }};
+         --tt-sc-ayrac-koyu: {{ s.ayrac_koyu }};
+         --tt-sc-uyari: {{ s.uyari }};
+         --tt-sc-genislik: {{ s.genislik }}px;
+         --tt-sc-sutun-m: {{ s.urun_sutun_m }};
+         --tt-sc-sutun-d: {{ s.urun_sutun_d }};
+       ">
+    <div class="tt-sc-ic">
+
+      {%- comment -%} --- Baslik --- {%- endcomment -%}
+      {%- assign ust = s.ust_yazi | default: tekil_kol.title -%}
+      {%- if ust != blank or s.baslik != blank -%}
+        <div class="tt-sc-bas">
+          {%- if ust != blank -%}<span class="tt-sc-ust">{{ ust }}</span>{%- endif -%}
+          {%- if s.baslik != blank -%}<h2 class="tt-sc-baslik">{{ s.baslik }}</h2>{%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- comment -%}
+        SECIM KARTLARI
+
+        Kartlar .tt-sc-kartlar'in DOGRUDAN cocugu: araya sarmalayici
+        koyulsaydi subgrid zinciri kirilir, iki kartin satirlari
+        hizasini kaybederdi.
+
+        Kart bes satir: baslik, acilma sekli, ayirici, urun sayisi,
+        yukleme kutusu. "Acilma sekli" once basligin USTUNDE 12px gri
+        duruyordu, yani karttaki en silik yaziydi; urunun en onemli
+        farkini anlattigi icin basligin altina alinip 14px medium ve
+        kartin ana yazi rengine cevrildi.
+
+        Son satir (yukleme bilgisi) vurgulu bir kutu: "Sadece sen
+        yuklersin" ile "Ikiniz de yuklersiniz" arasindaki fark, Single
+        ile Couple arasindaki farkin ta kendisi. Kutu kendi grid
+        satirini dolduruyor, yani metinlerden biri iki satira kirilsa
+        bile iki kartta ayni boyda kaliyor.
+      {%- endcomment -%}
+      {%- comment -%}
+        KARTLARIN ERISILEBILIR ADI ARTIK ACIKCA YAZILIYOR.
+
+        Once icerikten turetiliyordu ve istenen sira da buna gore
+        kurulmustu. Karta "Nasil calisir?" dugmesi eklenince o dugmenin
+        metni de adin sonuna takiliyordu: ekran okuyucu radio'yu
+        "... Sadece sen yuklersin, Nasil calisir?" diye okuyordu.
+
+        aria-label ayni sirayi AYNI AYARLARDAN kuruyor -- deger
+        kopyalanmiyor, yalnizca dizilis sabitleniyor -- ve dugmeyi
+        disarida birakiyor. Rozet yine en sonda.
+      {%- endcomment -%}
+      {%- capture single_etiket -%}
+        {{ s.single_ad }}. {{ s.single_ust }}. {{ s.single_adet }}. {{ s.single_yukleme }}
+      {%- endcapture -%}
+      {%- capture couple_etiket -%}
+        {{ s.couple_ad }}. {{ s.couple_ust }}. {{ s.couple_adet }}. {{ s.couple_yukleme }}
+        {%- if s.couple_rozet != blank %}. {{ s.couple_rozet }}{% endif -%}
+      {%- endcapture -%}
+      {%- comment -%}
+        MOD SECIMI KILITLIYSE KARTLAR HIC BASILMIYOR.
+
+        Couple koleksiyonu gibi tek deneyimli bir sayfada "Single"
+        secenegi yanlis yere goturuyor. Kilit ayarda: kartlar
+        basilmiyor, mod bastan sabit ve ?mod= parametresi de
+        yoksayiliyor (assets/tt-secim-kartlari.js). Geri kalan her sey
+        -- filtre cipleri, izgara, set kutusu, yapiskan cubuk --
+        oldugu gibi calisiyor.
+      {%- endcomment -%}
+      {%- if kilit == blank -%}
+      <div class="tt-sc-kartlar" role="radiogroup" aria-label="{{ s.baslik | default: 'Deneyim' | escape }}">
+        {%- comment -%} Single {%- endcomment -%}
+        <div class="tt-sc-kart" role="radio" tabindex="0" aria-checked="true" data-sc-mod="single"
+             aria-label="{{ single_etiket | strip | escape }}">
+          <span class="tt-sc-radyo" aria-hidden="true"></span>
+          <span class="tt-sc-ad">{{ s.single_ad }}</span>
+          <span class="tt-sc-acilma">
+            {%- render 'tt-sc-ikon', ad: 'takvim' -%}
+            <span class="tt-sc-acilma-metin">{{ s.single_ust }}</span>
+          </span>
+          <span class="tt-sc-ayrac" aria-hidden="true"></span>
+          <span class="tt-sc-satir">
+            <span class="tt-sc-halkalar" aria-hidden="true"><i></i></span>
+            <span class="tt-sc-satir-metin">{{ s.single_adet }}</span>
+          </span>
+          <span class="tt-sc-satir tt-sc-satir--kutu">
+            {%- render 'tt-sc-ikon', ad: 'kisi' -%}
+            <span class="tt-sc-satir-metin">{{ s.single_yukleme }}</span>
+          </span>
+          {%- comment -%}
+            "Nasil calisir?" -- kartin ALTINCI satiri.
+
+            Neden kart flex yapilmadi: kartlar subgrid ve iki kartin
+            satirlari birbirine kilitli (bkz. yukaridaki not). Flex'e
+            cevirmek o zinciri kirardi. Bunun yerine .tt-sc-kartlar'a
+            6. satir eklendi; dugme iki kartta da ayni satirda, yani
+            hizalanmasi YAKLASIK degil GARANTI -- Single'in "Belirledigin
+            tarihte acilir" metni iki satira dusse bile.
+
+            Dugme radio'nun ICINDE: gorsel istek boyle. Odaklanabilir
+            bir ogenin role="radio" icinde olmasi ARIA'ya tam uygun
+            degil; karsiliginda dugme kartin icinde duruyor. Kart
+            secimini tetiklememesi icin JS hem click hem keydown
+            yayilimini durduruyor.
+
+            AYARDAN KAPATILABILIYOR ve varsayilani KAPALI: ayni bilgi
+            artik sayfanin sol altindaki sabit "Nasil calisir?"
+            butonundan (sections/tt-nasil-calisir.liquid) veriliyor,
+            kartlarin icinde ikinci kez durmasina gerek yok.
+          {%- endcomment -%}
+          {%- if s.nasil_goster -%}
+          <button type="button" class="tt-sc-nasil-ac" data-sc-nasil-ac="single"
+                  aria-haspopup="dialog" aria-label="{{ s.nasil_single_baslik | default: s.nasil_dugme | escape }}">
+            <span class="tt-sc-nasil-ac-ikon" aria-hidden="true">
+              {%- render 'tt-sc-ikon', ad: 'kum-saati' -%}
+            </span>
+            <span class="tt-sc-nasil-ac-yazi">{{ s.nasil_dugme }}</span>
+            <span class="tt-sc-nasil-ac-ok" aria-hidden="true">
+              {%- render 'tt-sc-ikon', ad: 'chevron' -%}
+            </span>
+          </button>
+          {%- endif -%}
+        </div>
+
+        {%- comment -%} Couple {%- endcomment -%}
+        <div class="tt-sc-kart" role="radio" tabindex="-1" aria-checked="false" data-sc-mod="couple"
+             aria-label="{{ couple_etiket | strip | escape }}">
+          <span class="tt-sc-radyo" aria-hidden="true"></span>
+          <span class="tt-sc-ad">{{ s.couple_ad }}</span>
+          <span class="tt-sc-acilma">
+            {%- render 'tt-sc-ikon', ad: 'kilit-acik' -%}
+            <span class="tt-sc-acilma-metin">{{ s.couple_ust }}</span>
+          </span>
+          <span class="tt-sc-ayrac" aria-hidden="true"></span>
+          <span class="tt-sc-satir">
+            <span class="tt-sc-halkalar tt-sc-halkalar--cift" aria-hidden="true"><i></i><i></i></span>
+            <span class="tt-sc-satir-metin">{{ s.couple_adet }}</span>
+          </span>
+          <span class="tt-sc-satir tt-sc-satir--kutu">
+            {%- render 'tt-sc-ikon', ad: 'kisiler' -%}
+            <span class="tt-sc-satir-metin">{{ s.couple_yukleme }}</span>
+          </span>
+          {%- comment -%}
+            Rozet kartin SONUNDA: mutlak konumlandirildigi icin yerlesimi
+            etkilemiyor, ama radio'nun erisilebilir adi icerikten
+            turedigi icin DOM sirasi okunma sirasi demek. Basta dururken
+            ekran okuyucu once "Ikincisi yari fiyatina" diyordu; istenen
+            sira baslik, acilma sekli, urun sayisi, yukleme bilgisi.
+          {%- endcomment -%}
+          {%- if s.couple_rozet != blank -%}
+            <span class="tt-sc-rozet">{{ s.couple_rozet }}</span>
+          {%- endif -%}
+          {%- comment -%}
+            Single kartindaki dugmenin esi; gerekce orada.
+            Rozetten SONRA geliyor, cunku rozet mutlak konumlu ve
+            okunma sirasinda en sona birakilmis durumda -- dugme de
+            kartin son ogesi, dolayisiyla iki kartta DOM sirasi ayni.
+          {%- endcomment -%}
+          {%- if s.nasil_goster -%}
+          <button type="button" class="tt-sc-nasil-ac" data-sc-nasil-ac="couple"
+                  aria-haspopup="dialog" aria-label="{{ s.nasil_couple_baslik | default: s.nasil_dugme | escape }}">
+            <span class="tt-sc-nasil-ac-ikon" aria-hidden="true">
+              {%- render 'tt-sc-ikon', ad: 'kalp' -%}
+            </span>
+            <span class="tt-sc-nasil-ac-yazi">{{ s.nasil_dugme }}</span>
+            <span class="tt-sc-nasil-ac-ok" aria-hidden="true">
+              {%- render 'tt-sc-ikon', ad: 'chevron' -%}
+            </span>
+          </button>
+          {%- endif -%}
+        </div>
+      </div>
+      {%- endif -%}
+
+      {%- comment -%}
+        CARK KARTI -- KARTLARIN HEMEN ALTINDA
+
+        Kart burada, markupun icinde duruyor; eskiden ayri bir bolumdu
+        ve acilista bir CSS secicisinin ardina TASINIYORDU. Tasima
+        kalkti: ilk boyamada dogru yerde, ziplama yok, secici yanlis
+        girilince kaybolma riski yok.
+
+        NEDEN TAM BURASI: set kutusunun ve filtre satirinin USTUNDE.
+        Couple'dan Single'a gecen musteri carki cevirmemisse karti
+        yerinde goruyor -- iki modda da ayni yerde durdugu icin mod
+        degisimi karti gozden kacirtmiyor.
+
+        Kartin markupu snippets/ttn-cark-kart.liquid'de; ayni snippet
+        sections/ttn-spin-wheel.liquid tarafindan da basiliyor.
+        Davranis, kod, sure ve alttaki bar bu bolumde DEGIL --
+        assets/ttn-cark.js ve sections/ttn-cark-genel.liquid'de.
+      {%- endcomment -%}
+      {%- if s.cark_goster -%}
+        {%- render 'ttn-cark-kart',
+            sid: sid,
+            kompakt_baslik: s.cark_kompakt_baslik,
+            kompakt_alt: s.cark_kompakt_alt,
+            kompakt_dugme: s.cark_kompakt_dugme,
+            vazgec: s.cark_vazgec,
+            cevir_dugme: s.cark_cevir_dugme,
+            cark_not: s.cark_not,
+            dilimler: s.cark_dilimler,
+            birim: s.cark_birim,
+            dilim_renkleri: s.cark_dilim_renkleri,
+            kupon_baslik: s.cark_kupon_baslik,
+            kupon_onay: s.cark_kupon_onay,
+            kart_zemin: s.cark_kart_zemin,
+            vurgu: s.cark_vurgu,
+            koyu: s.cark_koyu,
+            alt_yazi: s.cark_alt_yazi,
+            halka: s.cark_halka,
+            genislik: s.cark_genislik,
+            ust_bosluk: s.cark_ust_bosluk,
+            alt_bosluk: s.cark_alt_bosluk
+        -%}
+      {%- endif -%}
+
+      {%- comment -%}
+        KAMPANYALI COUPLE SETLER  (.tt-sc-setler)
+
+        Hazir ikili setler. Couple'i secen musteri once bunlari
+        goruyor, begenmezse hemen altinda kendi setini kuruyor --
+        kolay yol once.
+
+        YENI BIR FIYAT HESABI YOK. Tutarlar urunun kendi price /
+        compare_at_price alanlarindan, bicimlendirme temanin money
+        filtresinden; snippets/tt-uk-kart.liquid'deki satirin
+        AYNISI. Rozet orani da ayni korumayi tasiyor: compare_at
+        fiyattan kucuk girilmis urunlerde (katalogda uc tane var)
+        oran negatif cikardi, o yuzden oran > 0 sarti duruyor.
+
+        SEPETE DOKUNMUYOR: kart duz bir baglanti, urun sayfasini
+        aciyor. Set mantigi, indirim ve sepet akisi oldugu gibi
+        kaliyor.
+
+        KAYNAK bir koleksiyon handle'i (ayar). "collection" turu
+        ayar default kabul etmiyor, bu yuzden mevcut
+        kadin_koleksiyon / erkek_koleksiyon ayarlariyla ayni
+        desen: text + handle. Siralama koleksiyonun kendi
+        siralamasi (MANUAL), yani sirayi Shopify'dan degistiriyorsun.
+      {%- endcomment -%}
+      {%- comment -%}
+        setler_kol / setler_var / setler_cizili dosyanin basindaki
+        liquid blogunda hesaplaniyor: CSS kurallari buradan ONCE
+        basiliyor ve biri (yer ayirma) setler_cizili'ye bakiyor.
+      {%- endcomment -%}
+      {%- if setler_var -%}
+        <div class="tt-sc-setler">
+          {%- if s.setler_baslik != blank or s.setler_alt != blank -%}
+            <div class="tt-sc-setler-bas">
+              {%- if s.setler_baslik != blank -%}
+                <h3 class="tt-sc-setler-baslik">{{ s.setler_baslik }}</h3>
+              {%- endif -%}
+              {%- if s.setler_alt != blank -%}
+                <p class="tt-sc-setler-alt">{{ s.setler_alt }}</p>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+
+          <div class="tt-sc-setler-izgara">
+            {%- for sp in setler_kol.products limit: s.setler_adet -%}
+              {%- liquid
+                assign sv = sp.selected_or_first_available_variant
+
+                comment
+                  KART BASLIGI -- IKI KADEMELI, HEPSI EKRAN SEVIYESINDE.
+
+                  SHOPIFY'DAKI URUN BASLIGI HIC DEGISMIYOR: burasi
+                  yalnizca KARTTA yazani belirliyor. Urun sayfasi,
+                  arama, site haritasi ve SEO oldugu gibi kaliyor.
+
+                  1) Urunun "custom.card_title" metafield'i doluysa
+                     AYNEN o yaziliyor. Kurali bozan tek bir urun
+                     cikinca Liquid'e istisna eklemek yerine
+                     yoneticiden o alan dolduruluyor.
+
+                  2) Bos ise basliktan ekran icin fazla olan kisimlar
+                     kirpiliyor: once eski fiyat kalintisi
+                     (" Kisi/2279"), sonra her kartta tekrar eden tur
+                     adi ("Couple Zaman Kapsulu"). O bilgi artik adin
+                     USTUNDEKI etikette duruyor; ayni seyi iki kez
+                     yazmanin anlami yok.
+
+                  Kirpma sonucu BOS kalirsa (baslik bastan sona o
+                  ifadeden ibaretse) tam baslik geri geliyor: kart
+                  adsiz kalmaktansa uzun ad yazsin.
+                endcomment
+                assign sad = sp.metafields.custom.card_title | default: '' | strip
+                if sad == blank
+                  assign sad = sp.title
+                  if s.setler_ad_temizle
+                    assign sad = sad | split: ' Kişi/' | first | strip
+                  endif
+                  if s.setler_ad_cikar != blank
+                    assign sad_kisa = sad | remove: s.setler_ad_cikar | strip
+                    if sad_kisa != blank
+                      assign sad = sad_kisa
+                    endif
+                  endif
+                endif
+
+                comment
+                  Alt metni de TEMIZLENMIS adi kullaniyor: ekran
+                  okuyucuya "... Kapsulu Kisi/2279" diye okutmanin
+                  anlami yok.
+                endcomment
+                assign salt = sp.featured_media.alt | default: sad
+
+                comment
+                  ROZET BIR INDIRIM ROZETI DEGIL, ICERIK ETIKETI.
+
+                  Once indirim orani yaziyordu. Oran bu listede
+                  yaniltici: setin "indirimi" zaten iki urun bir
+                  arada olmasindan geliyor, ustune bir de yuzde
+                  yazmak ayni seyi iki kez sayiyor gibi duruyordu --
+                  ve Noir + Chloe'de karsilastirma fiyati yalnizca
+                  1 TL buyuk oldugu icin oran 0 cikip rozet hic
+                  basilmiyordu.
+
+                  Artik tek is yapiyor: musterinin bilmesi gereken
+                  seyi soyluyor, "bu kart tek urun degil". Metin
+                  ayardan geliyor, hesap yok, her kartta ayni.
+                endcomment
+                assign srozet = s.setler_rozet
+
+                comment
+                  FIYAT KAYNAGI: SECILI/ILK UYGUN VARYANT.
+
+                  Cok varyantli tek urun var (Luna + Aurora: celik /
+                  gumus). Onceki surum price_min alip "...'dan" yaziyordu;
+                  artik varyantin kendi fiyati yaziliyor, cunku urun
+                  sayfasi acildiginda da ayni varyant secili geliyor --
+                  karttaki rakamla sayfadaki rakam birbirini tutuyor.
+                endcomment
+                assign sfiyat = sv.price
+                assign skarsi = sv.compare_at_price
+
+                assign sind = 0
+                if skarsi > sfiyat
+                  assign sind = skarsi | minus: sfiyat
+                endif
+
+                comment
+                  INDIRIM ROZETI ESIGI.
+
+                  Katalogda karsilastirma fiyati satis fiyatindan
+                  yalnizca 1 TL buyuk girilmis urunler var (Noir +
+                  Chloe: 3.398 / 3.399). Esiksiz bir rozet orada
+                  "1 TL indirim" yazardi -- rakam dogru olsa bile
+                  musteriye indirim diye sunulmasi yanlis olurdu.
+                  Esik ayardan geliyor, varsayilani %5.
+
+                  Tam sayi aritmetigi: sind >= sfiyat * esik / 100.
+                endcomment
+                assign sind_goster = false
+                if sp.available and sind > 0 and s.setler_ind_rozet != blank
+                  assign sesik = sfiyat | times: s.setler_ind_esik | divided_by: 100
+                  if sind >= sesik
+                    assign sind_goster = true
+                  endif
+                endif
+
+                comment
+                  KISI BASI TUREV BIR RAKAM: set iki urun iceriyor.
+                  Fiyatlar kurus cinsinden tam sayi oldugu icin bolme
+                  yuvarlama uretmiyor; tek sayida TL'de yarim kurus
+                  degil, yarim TL cikiyor (3.499 -> 1.749,50) ve
+                  bicimleyici onu oldugu gibi yaziyor.
+                endcomment
+                assign skisi_kurus = sfiyat | divided_by: 2
+
+                comment
+                  BICIM TEK YERDEN: snippets/tt-para.liquid.
+                  "sade" yalnizca sifir kurusu dusuruyor, yani
+                  "2.898 TL" ama "1.749,50 TL". Temanin money filtresi
+                  bu magazada Ingilizce gruplama uretiyor
+                  ("2,898.00TL"), o yuzden burada kullanilmiyor.
+                endcomment
+                capture s_fiyat_m
+                  render 'tt-para', kurus: sfiyat, sade: true
+                endcapture
+                assign s_fiyat_m = s_fiyat_m | strip
+
+                capture s_karsi_m
+                  render 'tt-para', kurus: skarsi, sade: true
+                endcapture
+                assign s_karsi_m = s_karsi_m | strip
+
+                capture s_kisi_m
+                  render 'tt-para', kurus: skisi_kurus, sade: true
+                endcapture
+                assign s_kisi_m = s_kisi_m | strip
+
+                capture s_ind_m
+                  render 'tt-para', kurus: sind, sade: true
+                endcapture
+                assign s_ind_m = s_ind_m | strip
+
+                comment
+                  CARK KODU GECERLIYKEN GOSTERILECEK TUTARLAR.
+
+                  Kaynak snippets/tt-kart-taksit.liquid ile AYNI:
+                  settings.tt_indirim_aktif + settings.tt_indirim_tutar,
+                  ayni korumalar (urun satista, tutar > 0 ve urun
+                  fiyatindan KUCUK). Koleksiyon kartlari, taksit modali
+                  ve yapiskan cubuk da ayni ayardan besleniyor.
+
+                  Tabanin sfiyat olmasi onemli: kartta yazan tutar bu,
+                  dolayisiyla indirimli satir da onunla hesaplaniyor ve
+                  ustu cizili rakam karttaki normal fiyatin ta kendisi
+                  oluyor.
+                endcomment
+                assign skod_goster = false
+                if sp.available and settings.tt_indirim_aktif
+                  assign skod_ind = settings.tt_indirim_tutar | times: 100 | round
+                  if skod_ind > 0 and skod_ind < sfiyat
+                    assign skod_goster = true
+                    assign skod_net = sfiyat | minus: skod_ind
+                    assign skod_kisi = skod_net | divided_by: 2
+                  endif
+                endif
+
+                if skod_goster
+                  capture s_kod_m
+                    render 'tt-para', kurus: skod_net, sade: true
+                  endcapture
+                  assign s_kod_m = s_kod_m | strip
+
+                  capture s_kod_kisi_m
+                    render 'tt-para', kurus: skod_kisi, sade: true
+                  endcapture
+                  assign s_kod_kisi_m = s_kod_kisi_m | strip
+                endif
+              -%}
+
+              {%- comment -%}
+                KART KOKU .tt-uk SINIFINI DA TASIYOR.
+
+                Galeri davranisi assets/tt-uk-kart.js'te ve o dosya
+                nokta gostergesini ararken serit.closest('.tt-uk')
+                diyor; gorselleri geciktirip yukleyen gozlemci de ayni
+                koke bakiyor. Sinifi eklemek, o dosyayi hic degistirmeden
+                koleksiyon kartlarindaki galerinin AYNISINI veriyor --
+                ikinci bir galeri kodu yazmaya gerek kalmiyor.
+
+                .tt-uk kuralari zaten bu kartin kurdugunun ayni
+                (position: relative, flex sutun, overflow hidden, ayni
+                kose yaricapi); ustune yazdigimiz her sey
+                #shopify-section-... kapsaminda oldugu icin
+                ozgullukte onde. ::after cercevesi [data-sc-secili]
+                olmadan saydam, yani burada gorunmuyor.
+
+                Kareler <a> ILE SARILMIYOR: kartin kendisi zaten bir
+                baglanti, ic ice <a> gecersiz olurdu. Gorsele basmak
+                yine karti aciyor; kaydirma ile dokunmayi tt-uk-kart.js
+                ayiriyor.
+              {%- endcomment -%}
+              {%- comment -%}
+                Basilan KARE SAYISI: medya sayisi ile ayarin kucugu.
+                Nokta penceresi buna bakiyor -- pencere yalnizca
+                gercekten sigmayacak kadar cok kare varsa aciliyor,
+                yoksa gosterge eskisi gibi butun noktalari gosteriyor.
+              {%- endcomment -%}
+              {%- assign sgorseller = sp.media | where: 'media_type', 'image' -%}
+              {%- assign skare = sgorseller.size -%}
+              {%- if skare > s.setler_gorsel_sayisi -%}
+                {%- assign skare = s.setler_gorsel_sayisi -%}
+              {%- endif -%}
+              <a class="tt-sc-setkart tt-uk" href="{{ sp.url }}">
+                <span class="tt-uk-gorsel">
+                  {%- if sgorseller.size > 0 -%}
+                    <span class="tt-uk-serit" data-uk-serit{% if sgorseller.size < 2 %} data-uk-tek{% endif %}>
+                      {%- for sm in sgorseller limit: s.setler_gorsel_sayisi -%}
+                        <span class="tt-uk-kare">
+                          {%- if forloop.first -%}
+                            {{ sm | image_url: width: 600 | image_tag:
+                                 loading: 'lazy',
+                                 width: 600,
+                                 height: 600,
+                                 sizes: '(min-width: 1024px) 320px, 45vw',
+                                 widths: '200,300,400,600',
+                                 alt: salt,
+                                 class: 'tt-uk-img',
+                                 draggable: 'false' }}
+                          {%- else -%}
+                            {%- comment -%}
+                              Ilk kareden sonrakiler ancak kart gorus
+                              alanina yaklasinca iniyor: serit altinci
+                              sete kadar uzayabiliyor ve hepsini bastan
+                              indirmek ilk boyamayi gereksiz yere
+                              agirlastirirdi. Acma isini tt-uk-kart.js
+                              yapiyor (data-uk-src / data-uk-srcset).
+                            {%- endcomment -%}
+                            <img class="tt-uk-img" draggable="false" alt="{{ salt | escape }}"
+                                 width="600" height="600" loading="lazy" decoding="async"
+                                 data-uk-src="{{ sm | image_url: width: 600 }}"
+                                 data-uk-srcset="{{ sm | image_url: width: 200 }} 200w, {{ sm | image_url: width: 300 }} 300w, {{ sm | image_url: width: 400 }} 400w, {{ sm | image_url: width: 600 }} 600w"
+                                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3C/svg%3E">
+                          {%- endif -%}
+                        </span>
+                      {%- endfor -%}
+                    </span>
+                    {%- if sgorseller.size > 1 -%}
+                      {%- comment -%}
+                        Nokta sayisi KARE SAYISI kadar; gorunen nokta
+                        sayisini pencere sinirliyor (assets/tt-uk-kart.css).
+                        Noktalari pencere kadar basmak daha kolay olurdu
+                        ama o zaman gosterge kac fotograf oldugunu
+                        bilmezdi: kaydirma orani buradaki tam sayiya
+                        dayaniyor.
+                      {%- endcomment -%}
+                      {%- assign spen = false -%}
+                      {%- if skare > s.setler_nokta_pencere -%}
+                        {%- assign spen = true -%}
+                        {%- assign spen_son = s.setler_nokta_pencere | minus: 1 -%}
+                      {%- endif -%}
+                      <span class="tt-uk-noktalar" data-uk-noktalar aria-hidden="true"
+                            {%- if spen %} data-uk-pencere="{{ s.setler_nokta_pencere }}"{% endif -%}>
+                        {%- for sm in sgorseller limit: s.setler_gorsel_sayisi -%}
+                          {%- comment -%}
+                            ILK PENCERE LIQUID'DE: JS yalnizca kaydirma
+                            olayinda calisiyor, bu yuzden baslangic
+                            halini o cizseydi ilk boyamada yedi nokta
+                            gorunup sonra uce dusuyor olurdu. Markup
+                            dogru halle geliyor, JS yalnizca devrali-
+                            yor -- JS hic calismasa bile gosterge
+                            dogru.
+                          {%- endcomment -%}
+                          <i
+                            {%- if forloop.first %} data-uk-aktif{% endif -%}
+                            {%- if spen -%}
+                              {%- if forloop.index0 > spen_son %} data-uk-disarda{% endif -%}
+                              {%- if forloop.index0 == spen_son %} data-uk-uc{% endif -%}
+                            {%- endif -%}
+                          ></i>
+                        {%- endfor -%}
+                      </span>
+                    {%- endif -%}
+                  {%- endif -%}
+                  {%- if srozet != blank -%}
+                    <span class="tt-sc-setkart-rozet">{{ srozet }}</span>
+                  {%- endif -%}
+                  {%- comment -%}
+                    SAG UST KOSE TEK ISGALCI: ya indirim rozeti ya
+                    "Tukendi". Tukenen uronde indirim rozeti zaten
+                    anlamsiz (alinamayan bir seyin indirimi), bu yuzden
+                    ikisi ayni kosulun iki dali -- ust uste binmeleri
+                    yapisal olarak imkansiz.
+                  {%- endcomment -%}
+                  {%- if sp.available -%}
+                    {%- if sind_goster -%}
+                      <span class="tt-sc-setkart-ind">{{ s.setler_ind_rozet | replace: '[tutar]', s_ind_m }}</span>
+                    {%- endif -%}
+                  {%- else -%}
+                    <span class="tt-sc-setkart-tukendi">{{ s.uk_tukendi }}</span>
+                  {%- endif -%}
+                </span>
+
+                <span class="tt-sc-setkart-metin">
+                  {%- comment -%}
+                    URUN ADININ USTUNDEKI ETIKET.
+
+                    Baslikta artik yazmayan tur adini ("Couple Zaman
+                    Kapsulu") burasi soyluyor: bilgi kaybolmuyor,
+                    yalnizca her kartta tekrar eden kisim ADIN DISINA
+                    cikip daha kucuk bir satira tasiniyor.
+
+                    lang="tr" SART: buyuk harfe cevirme CSS'te
+                    (text-transform) yapiliyor ve tarayici harf
+                    esleme kurallarini ogeye gore seciyor. lang
+                    olmadan "Kapsulu"nun i'si "I" olurdu; lang="tr"
+                    ile dogru bicimde "İ" cikiyor.
+                  {%- endcomment -%}
+                  {%- if s.setler_etiket_ust != blank -%}
+                    <span class="tt-sc-setkart-ust" lang="tr">{{ s.setler_etiket_ust }}</span>
+                  {%- endif -%}
+                  <span class="tt-sc-setkart-ad">{{ sad }}</span>
+
+                  {%- comment -%}
+                    FIYAT SATIRI + CARK INDIRIM BLOGU
+
+                    Blok ile fiyat satiri KARDES olmak zorunda ve fiyat
+                    satiri "price" sinifini tasimak zorunda:
+                    assets/taksit-tablosu.js kodu gecerliyken blogu
+                    aciyor ve AYNI EBEVEYNDEKI .price ogesini gizliyor
+                    (kolCiz(), :905). Bu iki kosul eksikti, hazir set
+                    kartlarinda cark indirimi hic gorunmuyordu.
+
+                    Tutari snippet Liquid'de settings.tt_indirim_tutar'dan
+                    hesapliyor -- koleksiyon kartlariyla, taksit modaliyla
+                    ve yapiskan cubukla ayni tek kaynak. Burada yeni bir
+                    indirim hesabi yok; yalnizca mevcut katmanin aradigi
+                    yapi kuruluyor.
+                  {%- endcomment -%}
+                  <span class="tt-sc-setkart-fiyatlar">
+                    <span class="price tt-sc-setkart-fiyat">
+                      {%- comment -%}
+                        SIRA: kucuk etiket -> SET FIYATI -> kisi basi.
+
+                        Onceki surumde en buyuk rakam kisi basi tutardi
+                        ve ustu cizili fiyat onun altinda duruyordu;
+                        musteri seti o fiyata aliyor saniyor, cizili
+                        rakamin neyle karsilastirildigi da anlasilmiyordu.
+                        Artik ekranin en buyuk rakami ODENECEK tutar,
+                        cizili fiyat onun hemen yaninda -- karsilastirma
+                        ayni satirda oldugu icin kendi kendini anlatiyor.
+                        Kisi basi tutar kesik cizginin altinda, ikincil.
+                      {%- endcomment -%}
+                      {%- if s.setler_set_etiket != blank -%}
+                        <span class="tt-sc-setkart-etiket">{{ s.setler_set_etiket }}</span>
+                      {%- endif -%}
+                      <span class="tt-sc-setkart-satir">
+                        <span class="tt-sc-setkart-satis">{{ s_fiyat_m }}</span>
+                        {%- if skarsi > sfiyat -%}
+                          <s class="tt-sc-setkart-eski">{{ s_karsi_m }}</s>
+                        {%- endif -%}
+                      </span>
+                      {%- if s.setler_kisi_goster and s.setler_kisi_etiket != blank -%}
+                        <span class="tt-sc-setkart-kisi">
+                          {%- render 'tt-sc-ikon', ad: 'kisiler', sinif: 'tt-sc-setkart-kisi-ikon' -%}
+                          <span>{{ s.setler_kisi_etiket | replace: '[tutar]', s_kisi_m }}</span>
+                        </span>
+                      {%- endif -%}
+                    </span>
+                    {%- comment -%}
+                      INDIRIMLI DURUM -- KARTIN KENDI BLOGU
+
+                      Burada paylasilan snippets/tt-kart-taksit.liquid
+                      KULLANILMIYOR, cunku o blok tek satirlik bir
+                      fiyat basiyor; kod gecerliyken katman ustteki
+                      .price satirinin TAMAMINI gizledigi icin kisi
+                      basi satiri da onunla birlikte kayboluyordu.
+                      Musterinin gordugu rakam duserken "kisi basi"
+                      bilgisinin ekrandan silinmesi, tam da indirimi
+                      en somut anlatacak yeri bosa dusuruyordu.
+
+                      Blok katmanin SOZLESMESINI aynen tasiyor:
+                      [data-tt-kart-fb] + data-tt-kart-fiyat ve ayni
+                      ebeveynde .price. taksit-tablosu.js kolCiz()
+                      (:896-906) bunu kendi blogu gibi acip kapatiyor;
+                      sure dolunca da ayni yoldan geri aliniyor.
+                      Tutar snippet'le AYNI ayardan hesaplaniyor,
+                      ikinci bir indirim kaynagi yok.
+
+                      [hidden] ACIKCA GIZLIYOR: .tt-sc-setkart-fiyat
+                      display: flex tasidigi icin hidden niteligi tek
+                      basina yetmiyordu.
+                    {%- endcomment -%}
+                    {%- if skod_goster -%}
+                      {%- comment -%}
+                        "price" sinifi BU blokta YOK, bilerek: kolCiz()
+                        gizlenecek satiri b.parentNode.querySelector('.price')
+                        ile buluyor. Sarmalayicida tek bir .price kalmasi,
+                        blogun bir gun kendini gizlemesi ihtimalini
+                        bastan kapatiyor.
+                      {%- endcomment -%}
+                      <span class="tt-sc-setkart-fiyat tt-sc-setkart-fiyat--kod"
+                            data-tt-kart-fb data-tt-kart-fiyat="{{ sfiyat }}" hidden>
+                        {%- if s.setler_kod_etiket != blank -%}
+                          <span class="tt-sc-setkart-etiket">{{ s.setler_kod_etiket }}</span>
+                        {%- endif -%}
+                        <span class="tt-sc-setkart-satir">
+                          <span class="tt-sc-setkart-satis">{{ s_kod_m }}</span>
+                          <s class="tt-sc-setkart-eski">{{ s_fiyat_m }}</s>
+                        </span>
+                        {%- if s.setler_kisi_goster and s.setler_kisi_etiket != blank -%}
+                          <span class="tt-sc-setkart-kisi">
+                            {%- render 'tt-sc-ikon', ad: 'kisiler', sinif: 'tt-sc-setkart-kisi-ikon' -%}
+                            <span>{{ s.setler_kisi_etiket | replace: '[tutar]', s_kod_kisi_m }}</span>
+                          </span>
+                        {%- endif -%}
+                      </span>
+                    {%- endif -%}
+                  </span>
+                </span>
+              </a>
+            {%- endfor -%}
+          </div>
+
+          {%- comment -%}
+            SERIT GEZINTISI -- OKLAR + NOKTALAR
+
+            Serit tek basina yeterli degildi: kartin icindeki galeri de
+            yatayda kayiyor ve overscroll-behavior: contain yuzunden
+            gorselin uzerinden yapilan kaydirma SERIDE GECMIYOR. Yani
+            gorsel alanindan seridi surukleyemiyorsun. Oklar bu yuzden
+            susleme degil, tek guvenilir gezinme yolu.
+
+            Noktalar ayrica "sagda daha var" bilgisini veriyor; serit
+            kaydirilamayacak kadar kisaysa (kartlar zaten sigiyorsa)
+            cubugun tamami gizleniyor. Gizleme JS'te, cunku karar
+            olcuye bagli; ilk hal GIZLI, yani sigan listede cubuk bir
+            an gorunup kaybolmuyor.
+
+            Noktalar Liquid'de basiliyor, JS uretmiyor: sayi bastan
+            belli ve markup tek yerde kaliyor.
+          {%- endcomment -%}
+          {%- if s.setler_nav_goster -%}
+            <div class="tt-sc-setler-nav" data-sc-setler-nav hidden>
+              <button type="button" class="tt-sc-setler-ok" data-sc-setler-ok="-1"
+                      aria-label="{{ s.setler_onceki | escape }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                  <path d="M14.5 5.5 8 12l6.5 6.5"/>
+                </svg>
+              </button>
+              <span class="tt-sc-setler-nokta" data-sc-setler-nokta aria-hidden="true">
+                {%- for sp in setler_kol.products limit: s.setler_adet -%}
+                  <i{% if forloop.first %} data-sc-aktif{% endif %}></i>
+                {%- endfor -%}
+              </span>
+              <button type="button" class="tt-sc-setler-ok" data-sc-setler-ok="1"
+                      aria-label="{{ s.setler_sonraki | escape }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                  <path d="M9.5 5.5 16 12l-6.5 6.5"/>
+                </svg>
+              </button>
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- comment -%}
+        SET OLUSTURUCU
+        Yalnizca Couple modunda gorunuyor. Slotlar bos/dolu iki halde;
+        dolu slot urun adini ve Kadin/Erkek bilgisini tasiyor.
+
+        SIRALAMA: kutunun en ustunde kural bandi duruyor -- "sepete 2
+        urun eklenmesi gerekiyor" bilgisi eskiden en altta kucuk gri bir
+        nottu, yani en onemli kural en silik yerdeydi. Ikinci vurgu 2.
+        slotta: bos haliyle bile yesil, cunku musteriyi doldurmaya
+        cagiran sey indirimin ta kendisi.
+
+        IKONLAR: bos ve dolu ikonlarin IKISI de basiliyor, hangisinin
+        gorunecegini CSS seciyor. JS ikon uretmiyor -- boylece markup
+        tek yerde kaliyor ve XSS yuzeyi acilmiyor.
+      {%- endcomment -%}
+      {%- comment -%}
+        Baslik kutunun DISINDA, cunku .tt-sc-set cerceveli ve
+        overflow: hidden olan bir kart; icine girse kartin bir
+        parcasiymis gibi okunurdu. Kutuyla ayni anda gorunmesini
+        yukaridaki CSS sagliyor (bkz. .tt-sc-set-ust).
+      {%- endcomment -%}
+      {%- if s.set_ust_baslik != blank or s.set_ust_alt != blank -%}
+        <div class="tt-sc-set-ust">
+          {%- if s.set_ust_baslik != blank -%}
+            <h3 class="tt-sc-set-ust-baslik">{{ s.set_ust_baslik }}</h3>
+          {%- endif -%}
+          {%- if s.set_ust_alt != blank -%}
+            <p class="tt-sc-set-ust-alt">{{ s.set_ust_alt }}</p>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="tt-sc-set" data-sc-set hidden>
+        {%- if s.set_bant_ust != blank or s.set_bant_alt != blank -%}
+          <div class="tt-sc-set-bant">
+            {%- render 'tt-sc-ikon', ad: 'bilgi', sinif: 'tt-sc-bant-ikon' -%}
+            <span class="tt-sc-set-bant-metin">
+              {%- if s.set_bant_ust != blank -%}
+                <span class="tt-sc-set-bant-ana">{{ s.set_bant_ust }}</span>
+              {%- endif -%}
+              {%- if s.set_bant_alt != blank -%}
+                <span class="tt-sc-set-bant-alt">{{ s.set_bant_alt }}</span>
+              {%- endif -%}
+            </span>
+          </div>
+        {%- endif -%}
+
+        <div class="tt-sc-set-ic">
+          <div class="tt-sc-set-bas">
+            <span class="tt-sc-set-baslik">{{ s.set_baslik }}</span>
+            <span class="tt-sc-set-sayac" data-sc-set-sayac aria-live="polite"></span>
+          </div>
+
+          {%- comment -%}
+            Ilerleme cubugu DEKORATIF: ayni bilgi sayacta yaziyor ve
+            sayac aria-live. Ekran okuyucuya iki kez soyletmemek icin
+            aria-hidden.
+          {%- endcomment -%}
+          <div class="tt-sc-ilerleme" aria-hidden="true">
+            <i data-sc-ilerleme="0"></i>
+            <i data-sc-ilerleme="1"></i>
+          </div>
+
+          <div class="tt-sc-slotlar">
+            <button type="button" class="tt-sc-slot" data-sc-slot="0">
+              <span class="tt-sc-slot-ust">
+                {%- render 'tt-sc-ikon', ad: 'arti', sinif: 'tt-sc-slot-ikon tt-sc-slot-ikon--bos' -%}
+                {%- render 'tt-sc-ikon', ad: 'tik', sinif: 'tt-sc-slot-ikon tt-sc-slot-ikon--dolu' -%}
+                <span class="tt-sc-slot-ad" data-sc-slot-ust>{{ s.slot1_ust }}</span>
+              </span>
+              <span class="tt-sc-slot-alt" data-sc-slot-alt>{{ s.slot1_alt_bos }}</span>
+            </button>
+
+            <button type="button" class="tt-sc-slot tt-sc-slot--indirim" data-sc-slot="1">
+              <span class="tt-sc-slot-ust">
+                {%- render 'tt-sc-ikon', ad: 'arti', sinif: 'tt-sc-slot-ikon tt-sc-slot-ikon--bos' -%}
+                {%- render 'tt-sc-ikon', ad: 'tik', sinif: 'tt-sc-slot-ikon tt-sc-slot-ikon--dolu' -%}
+                <span class="tt-sc-slot-ad" data-sc-slot-ust>{{ s.slot2_ust }}</span>
+              </span>
+              <span class="tt-sc-slot-alt" data-sc-slot-alt>{{ s.slot2_alt_bos }}</span>
+              {%- if s.slot2_rozet != blank -%}
+                <span class="tt-sc-slot-rozet">{{ s.slot2_rozet }}</span>
+              {%- endif -%}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {%- comment -%}
+        FILTRE SATIRI -- SET KUTUSUNUN ALTINDA
+
+        Couple modunda sira: kartlar -> set kutusu -> filtre -> izgara.
+        Musteri once setin ne oldugunu ve kaci sectigini goruyor, sonra
+        listeyi suzuyor; filtre setle izgara arasinda, yani etkiledigi
+        seyin hemen ustunde duruyor.
+
+        Single modunda set kutusu gizli oldugu icin filtre yine
+        kartlarin hemen altinda cikiyor -- o gorunumde hicbir sey
+        degismiyor. Bu yuzden JS'e ya da CSS order'ina gerek yok,
+        DOM sirasi tek basina yetiyor.
+      {%- endcomment -%}
+      <div class="tt-sc-filtre" data-sc-filtre>
+        <div class="tt-sc-cipler" role="radiogroup" aria-label="{{ s.kime_etiket | escape }}">
+          {%- comment -%}
+            Secili cip ILK BOYAMADA dogru: JS'i beklemeden, acilis
+            degeri neyse o isaretli basiliyor.
+
+            Dizi YUKARIDA assign ediliyor: Shopify Liquid "for" etiketinin
+            kaynak ifadesinde filtre kabul etmiyor (… in 'a,b' | split).
+          {%- endcomment -%}
+          {%- assign cip_ler = 'tumu,kadin,erkek' | split: ',' -%}
+          {%- for c in cip_ler -%}
+            {%- if c == 'tumu' -%}{%- assign c_ad = s.kime_tumu -%}
+            {%- elsif c == 'kadin' -%}{%- assign c_ad = s.kime_kadin -%}
+            {%- else -%}{%- assign c_ad = s.kime_erkek -%}{%- endif -%}
+            {%- if c == vk -%}{%- assign c_sec = 'true' -%}{%- assign c_tab = '0' -%}
+            {%- else -%}{%- assign c_sec = 'false' -%}{%- assign c_tab = '-1' -%}{%- endif -%}
+            <button type="button" class="tt-sc-cip" role="radio" data-sc-cip="{{ c }}" aria-checked="{{ c_sec }}" tabindex="{{ c_tab }}">{{ c_ad }}</button>
+          {%- endfor -%}
+        </div>
+        <span class="tt-sc-sayac" data-sc-sayac aria-live="polite"></span>
+      </div>
+
+      {%- comment -%}
+        URUN IZGARASI
+        Once Kadin grubu, sonra Erkek grubu. Grup baslikari izgaranin
+        tam genisligini kapliyor ve yalnizca "Tumu" secildiginde
+        gorunuyor.
+
+        NEDEN TEMANIN IZGARASI DEGIL
+
+        Kadin/Erkek filtresinin IKI MODDA DA calismasi isteniyor.
+        Temanin izgarasi (main-collection) yalnizca sayfanin KENDI
+        koleksiyonunu basiyor, yani kadin sayfasinda erkek urununu
+        gosteremez -- o izgarayla filtre Single modunda kacinilmaz
+        bicimde bos kalirdi. Bu yuzden liste iki modda da bu bolumun.
+
+        Ayardan (tekil_izgara = tema) Single modu temanin izgarasina
+        birakilabilir: o zaman sayfanin kendi filtreleri ve siralamasi
+        korunur ama Kadin/Erkek cipleri Single modunda gizlenir.
+
+        Hangi ayarda olursa olsun temanin izgarasini BU BOLUM yonetiyor;
+        kullanicidan main-collection'i kapatmasi beklenmiyor.
+      {%- endcomment -%}
+      <div class="tt-sc-izgara" data-sc-izgara>
+
+        <h3 class="tt-sc-grup" data-sc-grup="kadin" hidden>
+          <span>{{ s.kime_kadin }}</span><span class="tt-sc-grup-sayi" data-sc-grup-sayi></span>
+        </h3>
+
+        {%- comment -%}
+          "sira" izgaradaki sira numarasi: ilk dort kartin ilk gorseli
+          eager ve yuksek oncelikli yukleniyor, gerisi lazy. Uc dongu
+          boyunca artiyor ki sayim gercek izgara sirasiyla ayni olsun.
+        {%- endcomment -%}
+        {%- assign gorulen = ',' -%}
+        {%- assign sira = 0 -%}
+
+        {%- comment -%}
+          "NASIL CALISIR?" KARTI -- ILK BOYAMADAKI YERI
+          Kart gorunen listenin nk_n. hucresi (varsayilan 4: 3. urunden
+          sonra). JS her cizimde yerini yeniden kuruyor (filtre, mod,
+          tukenenlerin sona alinmasi); burada ilk boyama icin ayni hesap
+          yapiliyor ki sayfa acilirken kart yer degistirip izgarayi
+          kaydirmasin.
+
+          "Gorunur" sayimi karoUygun() ile ayni, tek fark: filtre bir
+          cinsiyete ayarliyken "ikisi" karolar sayilmiyor, cunku JS onlari
+          listenin sonuna aliyor. "Tumu"de kart yalnizca ILK grubun
+          (Kadin) icinde; o grup kisaysa grubun sonunda duruyor.
+          Hic gorunur urun yoksa kart gizli basiliyor -- filtre degisince
+          JS aciyor.
+        {%- endcomment -%}
+        {%- liquid
+          assign nk_say = 0
+          assign nk_bitti = false
+          if nk_acik and nk_esik == 0
+            render 'tt-sc-nk-kart', s: s, sid: sid
+            assign nk_bitti = true
+          endif
+        -%}
+        {%- for p in kadin_kol.products -%}
+          {%- assign ara = ',' | append: p.id | append: ',' -%}
+          {%- unless gorulen contains ara -%}
+            {%- assign gorulen = gorulen | append: p.id | append: ',' -%}
+            {%- liquid
+              assign kime = ''
+              if kadin_ids contains ara
+                assign kime = 'kadin'
+              endif
+              if erkek_ids contains ara
+                if kime == 'kadin'
+                  assign kime = 'ikisi'
+                else
+                  assign kime = 'erkek'
+                endif
+              endif
+              assign tekil = '0'
+              if tekil_ids contains ara
+                assign tekil = '1'
+              endif
+            -%}
+            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: tekil, grup: 'kadin', s: s, sira: sira -%}
+            {%- assign sira = sira | plus: 1 -%}
+            {%- liquid
+              if nk_acik and nk_bitti == false
+                assign nk_gor = true
+                if acilis_mod == 'couple' and kime == ''
+                  assign nk_gor = false
+                endif
+                if vk != 'tumu' and kime != vk
+                  assign nk_gor = false
+                endif
+                if nk_gor
+                  assign nk_say = nk_say | plus: 1
+                  if nk_say == nk_esik
+                    render 'tt-sc-nk-kart', s: s, sid: sid
+                    assign nk_bitti = true
+                  endif
+                endif
+              endif
+            -%}
+          {%- endunless -%}
+        {%- endfor -%}
+
+        {%- comment -%}
+          Sayfanin KENDI koleksiyonunda olup iki couple koleksiyonunda
+          da bulunmayan urunler. Kadin grubuna yaziliyorlar; cinsiyet
+          isareti bos kalir, yani Kadin/Erkek cipleri onlari suzmez ama
+          "Tumu" ve Single modunda gorunurler.
+        {%- endcomment -%}
+        {%- for p in tekil_kol.products -%}
+          {%- assign ara = ',' | append: p.id | append: ',' -%}
+          {%- unless gorulen contains ara -%}
+            {%- assign gorulen = gorulen | append: p.id | append: ',' -%}
+            {%- liquid
+              assign kime = ''
+              if erkek_ids contains ara
+                assign kime = 'erkek'
+              endif
+            -%}
+            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: '1', grup: 'kadin', s: s, sira: sira -%}
+            {%- assign sira = sira | plus: 1 -%}
+            {%- liquid
+              if nk_acik and nk_bitti == false
+                assign nk_gor = true
+                if acilis_mod == 'couple' and kime == ''
+                  assign nk_gor = false
+                endif
+                if vk != 'tumu' and kime != vk
+                  assign nk_gor = false
+                endif
+                if nk_gor
+                  assign nk_say = nk_say | plus: 1
+                  if nk_say == nk_esik
+                    render 'tt-sc-nk-kart', s: s, sid: sid
+                    assign nk_bitti = true
+                  endif
+                endif
+              endif
+            -%}
+          {%- endunless -%}
+        {%- endfor -%}
+
+        {%- liquid
+          if nk_acik and nk_bitti == false and vk == 'tumu' and nk_say > 0
+            render 'tt-sc-nk-kart', s: s, sid: sid
+            assign nk_bitti = true
+          endif
+        -%}
+
+        <h3 class="tt-sc-grup" data-sc-grup="erkek" hidden>
+          <span>{{ s.kime_erkek }}</span><span class="tt-sc-grup-sayi" data-sc-grup-sayi></span>
+        </h3>
+
+        {%- for p in erkek_kol.products -%}
+          {%- assign ara = ',' | append: p.id | append: ',' -%}
+          {%- unless gorulen contains ara -%}
+            {%- assign gorulen = gorulen | append: p.id | append: ',' -%}
+            {%- liquid
+              assign kime = 'erkek'
+              assign tekil = '0'
+              if tekil_ids contains ara
+                assign tekil = '1'
+              endif
+            -%}
+            {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: tekil, grup: 'erkek', s: s, sira: sira -%}
+            {%- assign sira = sira | plus: 1 -%}
+            {%- liquid
+              if nk_acik and nk_bitti == false
+                assign nk_gor = true
+                if acilis_mod == 'couple' and kime == ''
+                  assign nk_gor = false
+                endif
+                if vk != 'tumu' and kime != vk
+                  assign nk_gor = false
+                endif
+                if nk_gor
+                  assign nk_say = nk_say | plus: 1
+                  if nk_say == nk_esik
+                    render 'tt-sc-nk-kart', s: s, sid: sid
+                    assign nk_bitti = true
+                  endif
+                endif
+              endif
+            -%}
+          {%- endunless -%}
+        {%- endfor -%}
+        {%- liquid
+          if nk_acik and nk_bitti == false
+            if nk_say > 0
+              render 'tt-sc-nk-kart', s: s, sid: sid
+            else
+              render 'tt-sc-nk-kart', s: s, sid: sid, gizli: true
+            endif
+          endif
+        -%}
+      </div>
+
+      <p class="tt-sc-bos" data-sc-bos hidden>{{ s.bos_metin }}</p>
+    </div>
+
+    {%- comment -%}
+      YAPISKAN SEPET CUBUGU
+      Yalnizca Couple modunda. Buton HICBIR ZAMAN disabled degil:
+      eksik secimle basilirsa altinda uyari cikiyor, yeni urun
+      secilince uyari kalkiyor. Devre disi bir buton, neden
+      calismadigini soylemedigi icin daha kotu.
+    {%- endcomment -%}
+    <div class="tt-sc-cubuk" data-sc-cubuk hidden role="region" aria-label="{{ s.set_baslik | escape }}">
+      {%- comment -%}
+        aria-live: secim degisince ekran okuyucu guncel kirilimi,
+        tasarrufu ve toplami okuyor. Cubugun disinda kalan hicbir sey
+        canli degil, yani gereksiz duyuru olmuyor.
+      {%- endcomment -%}
+      <div class="tt-sc-cubuk-ic" aria-live="polite">
+
+        {%- comment -%}
+          KIRILIM -- yalnizca IKI urun seciliyken aciliyor.
+          Tek urunde yarim bir kirilim gostermek kafa karistirici
+          olurdu; sifir ve bir uronde kapali kaliyor.
+
+          Acilma/kapanma grid-template-rows 0fr->1fr ile: hidden
+          nitelikle gecis yapilamiyor, yukseklik de onceden bilinmiyor.
+        {%- endcomment -%}
+        <div class="tt-sc-kirilim" data-sc-kirilim>
+          <div class="tt-sc-kirilim-ic">
+            {%- for i in (0..1) -%}
+              <div class="tt-sc-kir" data-sc-kir="{{ i }}">
+                <span class="tt-sc-kir-sol">
+                  <span class="tt-sc-kir-ad" data-sc-kir-ad></span>
+                  <span class="tt-sc-kir-etiket" data-sc-kir-etiket></span>
+                </span>
+                <span class="tt-sc-kir-sag">
+                  {%- comment -%}
+                    Ustu cizili fiyat <s> icinde; gorsel gizli metin
+                    ekran okuyucuya bunun ESKI fiyat oldugunu soyluyor,
+                    cunku yalnizca cizgi sesli okunmuyor.
+                  {%- endcomment -%}
+                  <s class="tt-sc-kir-eski" data-sc-kir-eski hidden>
+                    <span class="sr-only">{{ s.cubuk_eski_fiyat }}</span>
+                    <span data-sc-kir-eski-tutar></span>
+                  </s>
+                  <span class="tt-sc-kir-fiyat" data-sc-kir-fiyat></span>
+                </span>
+              </div>
+            {%- endfor -%}
+            <div class="tt-sc-kir-ayrac" aria-hidden="true"></div>
+
+            {%- comment -%}
+              CARK KODU SATIRLARI
+              Yalnizca gecerli bir kod varken aciliyor. Kod sepet
+              duzeyinde iniyor, yani iki urunun satir fiyatlarini
+              degistirmiyor; bu yuzden kirilimin ALTINDA ayri bir
+              satir olarak duruyor, urun satirlarina karismiyor.
+              Boylece musteri toplamin nereden geldigini goruyor.
+            {%- endcomment -%}
+            <div class="tt-sc-kir tt-sc-kir--ara" data-sc-ara hidden>
+              <span class="tt-sc-kir-sol">
+                <span class="tt-sc-kir-ad">{{ s.cubuk_ara_toplam }}</span>
+              </span>
+              <span class="tt-sc-kir-sag">
+                <span class="tt-sc-kir-fiyat" data-sc-ara-tutar></span>
+              </span>
+            </div>
+            <div class="tt-sc-kir tt-sc-kir--kod" data-sc-kod hidden>
+              <span class="tt-sc-kir-sol">
+                <span class="tt-sc-kir-ad">{{ s.cubuk_kod }}</span>
+              </span>
+              <span class="tt-sc-kir-sag">
+                <span class="tt-sc-kir-fiyat" data-sc-kod-tutar></span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tt-sc-cubuk-ust">
+          <span class="tt-sc-cubuk-durum" data-sc-durum></span>
+          <span class="tt-sc-tasarruf" data-sc-tasarruf hidden>
+            {%- render 'tt-sc-ikon', ad: 'etiket', sinif: 'tt-sc-tasarruf-ikon' -%}
+            <span data-sc-tasarruf-metin></span>
+          </span>
+          <span class="tt-sc-toplam" data-sc-toplam hidden>
+            <span class="tt-sc-toplam-etiket">{{ s.cubuk_toplam }}</span>
+            <span class="tt-sc-cubuk-tutar" data-sc-tutar></span>
+          </span>
+        </div>
+
+        <button type="button" class="tt-sc-cubuk-dugme" data-sc-ekle-sepet>
+          {%- render 'tt-sc-ikon', ad: 'canta', sinif: 'tt-sc-dugme-ikon' -%}
+          <span data-sc-dugme-metin>{{ s.dugme_eksik }}</span>
+        </button>
+        <p class="tt-sc-cubuk-uyari" data-sc-uyari hidden></p>
+      </div>
+    </div>
+
+    {%- comment -%}
+      VARYANT SECICI
+      Katalogdaki 30 urunun 9'unda birden fazla varyant var ve fiyat
+      farki 1.100 TL'ye kadar cikiyor (Aurora 2.699 / 3.799). Ilk
+      varyanti varsaymak yanlis fiyat gostermek olurdu; cok varyantli
+      urunde "Sete ekle" once bunu aciyor.
+    {%- endcomment -%}
+    <dialog class="tt-sc-varyant" data-sc-varyant aria-labelledby="ttScVaryantBas-{{ sid }}">
+      <div class="tt-sc-varyant-ic">
+        <div class="tt-sc-varyant-bas">
+          <h3 class="tt-sc-varyant-baslik" id="ttScVaryantBas-{{ sid }}" data-sc-varyant-baslik></h3>
+          <button type="button" class="tt-sc-varyant-kapat" data-sc-varyant-kapat
+                  aria-label="{{ s.kapat_etiket | escape }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          </button>
+        </div>
+        <div class="tt-sc-varyant-liste" data-sc-varyant-liste role="list"></div>
+      </div>
+    </dialog>
+
+    {%- comment -%}
+      "NASIL CALISIR?" KARTININ PENCERELERI (izgaradaki kart acar)
+      Kilitli sayfada yalnizca o modun penceresi basiliyor: couple-urunler
+      sayfasinda Single penceresini acacak bir kart hic gorunmuyor.
+    {%- endcomment -%}
+    {%- if nk_acik -%}
+      {%- unless kilit == 'couple' -%}{%- render 'tt-sc-nk-pencere', s: s, sid: sid, mod: 'single' -%}{%- endunless -%}
+      {%- unless kilit == 'single' -%}{%- render 'tt-sc-nk-pencere', s: s, sid: sid, mod: 'couple' -%}{%- endunless -%}
+    {%- endif -%}
+
+    {%- comment -%}
+      "NASIL CALISIR?" POP-UP'LARI
+      Iki kez ayni snippet; icerik tamamen ayardan geliyor. Kartlardan
+      sonra basiliyorlar ama konumlari onemsiz: native <dialog>
+      showModal() ile ust katmana tasiniyor.
+
+      Dugme kapaliysa bunlari acacak bir sey kalmiyor, o yuzden hic
+      basilmiyorlar -- sayfada olu markup birakmanin anlami yok.
+    {%- endcomment -%}
+    {%- if s.nasil_goster -%}
+    {%- render 'tt-sc-nasil',
+          sid: sid, mod: 'single',
+          etiket: s.nasil_single_etiket, baslik: s.nasil_single_baslik,
+          gorsel: s.nasil_single_gorsel,
+          a1b: s.nasil_single_a1_bas, a1m: s.nasil_single_a1_metin,
+          a2b: s.nasil_single_a2_bas, a2m: s.nasil_single_a2_metin,
+          a3b: s.nasil_single_a3_bas, a3m: s.nasil_single_a3_metin,
+          onay: s.nasil_single_onay, kapat: s.kapat_etiket -%}
+    {%- render 'tt-sc-nasil',
+          sid: sid, mod: 'couple',
+          etiket: s.nasil_couple_etiket, baslik: s.nasil_couple_baslik,
+          gorsel: s.nasil_couple_gorsel,
+          a1b: s.nasil_couple_a1_bas, a1m: s.nasil_couple_a1_metin,
+          a2b: s.nasil_couple_a2_bas, a2m: s.nasil_couple_a2_metin,
+          a3b: s.nasil_couple_a3_bas, a3m: s.nasil_couple_a3_metin,
+          onay: s.nasil_couple_onay, kapat: s.kapat_etiket -%}
+    {%- endif -%}
+  </div>
+
+  <script src="{{ 'tt-uk-kart.js' | asset_url }}" defer></script>
+  <script src="{{ 'tt-secim-kartlari.js' | asset_url }}" defer></script>
+  {%- if s.setler_goster and s.setler_nav_goster -%}
+    <script src="{{ 'tt-sc-setler.js' | asset_url }}" defer></script>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Single / Couple Seçimi",
+  "tag": "section",
+  "class": "tt-secim-kartlari-section",
+  "settings": [
+    { "type": "checkbox", "id": "aktif", "label": "Bölümü göster", "default": true },
+
+    { "type": "header", "content": "Başlık" },
+    { "type": "text", "id": "ust_yazi", "label": "Üst küçük yazı", "info": "Boş bırakılırsa koleksiyonun adı kullanılır." },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Zaman kapsülünü seç" },
+    { "type": "paragraph", "content": "Varsayılan ölçüler sayfanın başındaki hero başlığıyla aynı (28 / 36 / 44 px, kalın). Yazı tipi ikisinde de temadan geliyor. Hero'nun ölçüsünü değiştirirseniz burayı da elle eşitlemeniz gerekir." },
+    { "type": "select", "id": "bas_hiza", "label": "Hizalama", "default": "center",
+      "options": [
+        { "value": "center", "label": "Ortada" },
+        { "value": "left", "label": "Solda" }
+      ] },
+    { "type": "select", "id": "bas_kalinlik", "label": "Kalınlık", "default": "700",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" }
+      ] },
+    { "type": "range", "id": "bas_boyut_m", "label": "Boyut – mobil", "min": 16, "max": 48, "step": 1, "unit": "px", "default": 28 },
+    { "type": "range", "id": "bas_boyut_t", "label": "Boyut – tablet", "min": 16, "max": 64, "step": 1, "unit": "px", "default": 36,
+      "info": "750 px ve üzeri." },
+    { "type": "range", "id": "bas_boyut_d", "label": "Boyut – masaüstü", "min": 16, "max": 72, "step": 1, "unit": "px", "default": 44,
+      "info": "1024 px ve üzeri." },
+
+    { "type": "header", "content": "Single kartı" },
+    { "type": "text", "id": "single_ust", "label": "Açılma şekli metni", "default": "Belirlediğin tarihte açılır" },
+    { "type": "text", "id": "single_ad", "label": "Başlık", "default": "Single" },
+    { "type": "text", "id": "single_adet", "label": "Ürün sayısı satırı", "default": "1 ürün" },
+    { "type": "text", "id": "single_yukleme", "label": "Yükleme satırı (vurgulu kutu)", "default": "Sadece sen yüklersin" },
+
+    { "type": "header", "content": "Couple kartı" },
+    { "type": "text", "id": "couple_rozet", "label": "Rozet metni", "default": "İkincisi yarı fiyatına",
+      "info": "Boş bırakılırsa rozet çıkmaz." },
+    { "type": "text", "id": "couple_ust", "label": "Açılma şekli metni", "default": "Buluşunca açılır" },
+    { "type": "text", "id": "couple_ad", "label": "Başlık", "default": "Couple" },
+    { "type": "text", "id": "couple_adet", "label": "Ürün sayısı satırı", "default": "2 ürün" },
+    { "type": "text", "id": "couple_yukleme", "label": "Yükleme satırı (vurgulu kutu)", "default": "İkiniz de yüklersiniz" },
+
+    { "type": "header", "content": "\"Nasıl çalışır?\" butonu" },
+    { "type": "paragraph", "content": "Her iki kartın da en altında çıkan buton. Aynı bilgi sayfanın sol altındaki sabit \"Nasıl çalışır?\" butonundan da veriliyor, bu yüzden varsayılanı kapalı. Açarsanız aşağıdaki iki pop-up da geri gelir." },
+    { "type": "checkbox", "id": "nasil_goster", "label": "Kartların içinde göster", "default": false },
+    { "type": "text", "id": "nasil_dugme", "label": "Buton metni", "default": "Nasıl çalışır?" },
+
+    { "type": "header", "content": "Single – Nasıl çalışır? pop-up'ı" },
+    { "type": "text", "id": "nasil_single_etiket", "label": "Üst küçük etiket", "default": "Single" },
+    { "type": "text", "id": "nasil_single_baslik", "label": "Başlık", "default": "Single nasıl çalışır?" },
+    { "type": "text", "id": "nasil_single_a1_bas", "label": "1. adım – başlık", "default": "Kapsülünü seç" },
+    { "type": "textarea", "id": "nasil_single_a1_metin", "label": "1. adım – açıklama", "default": "Beğendiğin zaman kapsülünü seç ve sepete ekle." },
+    { "type": "text", "id": "nasil_single_a2_bas", "label": "2. adım – başlık", "default": "İçeriğini yükle" },
+    { "type": "textarea", "id": "nasil_single_a2_metin", "label": "2. adım – açıklama", "default": "Fotoğraf, video ve mesajlarını yalnızca sen yüklersin." },
+    { "type": "text", "id": "nasil_single_a3_bas", "label": "3. adım – başlık", "default": "Tarihi belirle" },
+    { "type": "textarea", "id": "nasil_single_a3_metin", "label": "3. adım – açıklama", "default": "Belirlediğin tarihte kapsül açılır ve içerik ortaya çıkar." },
+    { "type": "image_picker", "id": "nasil_single_gorsel", "label": "Görsel",
+      "info": "Boş bırakılırsa yerine boş bir alan çıkar." },
+    { "type": "text", "id": "nasil_single_onay", "label": "Alttaki buton metni", "default": "Anladım, Single'ı seç",
+      "info": "Boş bırakılırsa buton çıkmaz." },
+
+    { "type": "header", "content": "Couple – Nasıl çalışır? pop-up'ı" },
+    { "type": "text", "id": "nasil_couple_etiket", "label": "Üst küçük etiket", "default": "Couple" },
+    { "type": "text", "id": "nasil_couple_baslik", "label": "Başlık", "default": "Couple nasıl çalışır?" },
+    { "type": "text", "id": "nasil_couple_a1_bas", "label": "1. adım – başlık", "default": "İkili setini kur" },
+    { "type": "textarea", "id": "nasil_couple_a1_metin", "label": "1. adım – açıklama", "default": "İki kapsül seç; ikincisi yarı fiyatına gelir." },
+    { "type": "text", "id": "nasil_couple_a2_bas", "label": "2. adım – başlık", "default": "İkiniz de yükleyin" },
+    { "type": "textarea", "id": "nasil_couple_a2_metin", "label": "2. adım – açıklama", "default": "Her ikiniz de kendi fotoğraf, video ve mesajlarınızı yüklersiniz." },
+    { "type": "text", "id": "nasil_couple_a3_bas", "label": "3. adım – başlık", "default": "Buluşunca açılın" },
+    { "type": "textarea", "id": "nasil_couple_a3_metin", "label": "3. adım – açıklama", "default": "Kapsüller yan yana geldiğinde açılır ve içerikler birleşir." },
+    { "type": "image_picker", "id": "nasil_couple_gorsel", "label": "Görsel",
+      "info": "Boş bırakılırsa yerine boş bir alan çıkar." },
+    { "type": "text", "id": "nasil_couple_onay", "label": "Alttaki buton metni", "default": "Anladım, Couple'ı seç",
+      "info": "Boş bırakılırsa buton çıkmaz." },
+
+    { "type": "header", "content": "Açılışta seçili" },
+    { "type": "select", "id": "varsayilan_mod", "label": "Açılışta seçili deneyim",
+      "options": [ { "value": "single", "label": "Single" }, { "value": "couple", "label": "Couple" } ],
+      "default": "single",
+      "info": "Adres satırında ?mod=couple varsa o kazanır." },
+    { "type": "select", "id": "mod_kilit", "label": "Deneyim seçimini kilitle",
+      "options": [ { "value": "yok", "label": "Kilitleme (Single + Couple)" }, { "value": "couple", "label": "Yalnızca Couple" }, { "value": "single", "label": "Yalnızca Single" } ],
+      "default": "yok",
+      "info": "Tek deneyimli sayfalarda kullanın (ör. Couple koleksiyonu). Kilitliyken Single/Couple kartları hiç çıkmaz, mod baştan sabittir ve adres satırındaki ?mod= yoksayılır." },
+    { "type": "select", "id": "varsayilan_kime", "label": "Açılışta seçili filtre",
+      "options": [ { "value": "tumu", "label": "Tümü" }, { "value": "kadin", "label": "Kadın" }, { "value": "erkek", "label": "Erkek" } ],
+      "default": "tumu",
+      "info": "Kadın/Erkek filtresinin açılış değeri. Erkek koleksiyonu sayfasında \"Erkek\" seçilirse ziyaretçi doğrudan aradığı listeyle karşılaşır. Couple'a geçince filtre geçici olarak Tümü'ye dönüyor, Single'a dönünce bu değer geri geliyor." },
+
+    { "type": "header", "content": "Ürün kaynağı" },
+    { "type": "paragraph", "content": "Kadın/Erkek ayrımı koleksiyon üyeliğine göre yapılıyor; katalogda cinsiyet alanı yok. Yeni ürün eklerken doğru koleksiyona da eklemeyi unutmayın." },
+    { "type": "text", "id": "kadin_koleksiyon", "label": "Couple – kadın koleksiyonu (handle)", "default": "zaman-kapsulu-kolyeler" },
+    { "type": "text", "id": "erkek_koleksiyon", "label": "Couple – erkek koleksiyonu (handle)", "default": "zaman-kapsulu-bileklik" },
+    { "type": "select", "id": "tekil_izgara", "label": "Single modunda ürün ızgarası", "default": "kendi",
+      "options": [
+        { "value": "kendi", "label": "Bu bölümün ızgarası — Kadın/Erkek filtresi çalışır" },
+        { "value": "tema", "label": "Temanın kendi ızgarası — filtre Single'da kapanır" }
+      ],
+      "info": "Kadın/Erkek filtresinin Single modunda da çalışması için bu bölümün ızgarası gerekiyor: temanın ızgarası yalnızca sayfanın kendi koleksiyonunu basar, karşı cinsiyeti gösteremez. \"Temanın kendi ızgarası\" seçilirse Single modunda sayfanın kendi filtreleri ve sıralaması korunur ama Kadın/Erkek çipleri o modda gizlenir. Temanın Ürün ızgarası bölümünü elle kapatmayın; bu bölüm gerektiğinde kendisi gizliyor." },
+    { "type": "text", "id": "tema_izgara_secici", "label": "Temanın ızgara bölümü (CSS seçici)",
+      "default": "#shopify-section-main-collection",
+      "info": "Bu bölüm listeyi devraldığında gizlenen öğe. Şablondaki bölüm kimliği değişirse burayı güncelleyin." },
+
+    { "type": "header", "content": "Filtre satırı" },
+    { "type": "paragraph", "content": "Couple modunda filtre satırı \"Setini oluştur\" kutusunun altında, ürün ızgarasının hemen üstünde çıkıyor. Single modunda kutu gizli olduğu için kartların altında kalıyor." },
+    { "type": "text", "id": "kime_etiket", "label": "Filtre grubu adı (ekran okuyucu)", "default": "Kime alıyorsun?" },
+    { "type": "text", "id": "kime_tumu", "label": "Tümü", "default": "Tümü" },
+    { "type": "text", "id": "kime_kadin", "label": "Kadın", "default": "Kadın" },
+    { "type": "text", "id": "kime_erkek", "label": "Erkek", "default": "Erkek" },
+    { "type": "text", "id": "sayac_eki", "label": "Sayaç eki", "default": "ürün" },
+    { "type": "text", "id": "bos_metin", "label": "Sonuç boşsa", "default": "Bu seçimle eşleşen ürün kalmadı." },
+
+    { "type": "header", "content": "Kampanyalı Couple Setler" },
+    { "type": "paragraph", "content": "Hazır ikili setler, \"Setini oluştur\" kutusunun hemen ÜSTÜNDE ve yalnızca Couple modunda çıkar. Kartlar yan yana kayan bir şerit halinde dizilir. Karta tıklayınca ürün sayfası açılır; sepete veya indirime dokunmaz. Sıra, aşağıda yazdığınız koleksiyonun kendi sırasıdır — sırayı değiştirmek için Shopify'da koleksiyonu düzenleyin." },
+    { "type": "checkbox", "id": "setler_goster", "label": "Hazır setleri göster", "default": true },
+    { "type": "text", "id": "setler_koleksiyon", "label": "Set koleksiyonu (handle)", "default": "kampanyali-couple-setler",
+      "info": "Koleksiyon boşsa veya bulunamazsa blok hiç çıkmaz." },
+    { "type": "text", "id": "setler_baslik", "label": "Başlık", "default": "Kampanyalı Couple Setler" },
+    { "type": "text", "id": "setler_alt", "label": "Alt satır", "default": "İkili setler, tek fiyat. Seçmekle uğraşmadan." },
+    { "type": "range", "id": "setler_adet", "label": "En fazla set", "min": 2, "max": 12, "step": 1, "default": 6 },
+    { "type": "checkbox", "id": "setler_kaydir", "label": "Yan yana kayan şerit", "default": true,
+      "info": "Kapatırsanız kartlar alt alta ızgara olarak dizilir." },
+    { "type": "select", "id": "setler_sutun_m", "label": "Görünen kart — telefon", "default": "2",
+      "options": [ { "value": "1", "label": "1 kart" }, { "value": "2", "label": "2 kart" } ],
+      "info": "range olarak yazılamıyor: Shopify aralık ayarında en az 3 adım istiyor." },
+    { "type": "range", "id": "setler_sutun_d", "label": "Görünen kart — masaüstü", "min": 2, "max": 5, "step": 1, "default": 3 },
+    { "type": "range", "id": "setler_goz", "label": "Göz ucu", "min": 0, "max": 48, "step": 2, "unit": "px", "default": 18,
+      "info": "Sonraki kartın kenarından görünen pay. Şeridin kaydırılabildiğini bu anlatıyor. Yalnızca şerit açıkken geçerli." },
+    { "type": "checkbox", "id": "setler_nav_goster", "label": "Şeridin altına ok ve nokta koy", "default": true,
+      "info": "Kartın içindeki görsel galerisi de yanlara kayıyor; görselin üstünden yapılan kaydırma şeride geçmediği için şeridi okla çevirmek gerekiyor. Kapatmanız önerilmez. Kartlar zaten sıraya sığıyorsa çubuk kendiliğinden çıkmaz." },
+    { "type": "text", "id": "setler_onceki", "label": "Geri oku (ekran okuyucu)", "default": "Önceki setler" },
+    { "type": "text", "id": "setler_sonraki", "label": "İleri oku (ekran okuyucu)", "default": "Sonraki setler" },
+    { "type": "range", "id": "setler_gorsel_sayisi", "label": "Kart başına görsel sayısı", "min": 1, "max": 10, "step": 1, "default": 10,
+      "info": "Kartın içinde parmakla kaydırılabilen galeri. Ürünün Shopify'daki medya sırasını takip eder. Varsayılan 10, yani katalogdaki ürünlerin BÜTÜN fotoğrafları geçilebiliyor; fotoğraflar hepsi birden değil, kaydırdıkça iniyor." },
+    { "type": "range", "id": "setler_nokta_pencere", "label": "Görünen nokta sayısı", "min": 2, "max": 6, "step": 1, "default": 3,
+      "info": "Görselin üstündeki gösterge en fazla bu kadar nokta gösterir; fotoğraf sayısı bundan fazlaysa noktalar kaymaya başlar, çoğalmaz. Fotoğraf sayısı bu değerin altındaysa hepsi görünür." },
+    { "type": "select", "id": "setler_gorsel_oran_d", "label": "Görsel alanının oranı — masaüstü", "default": "",
+      "info": "Masaüstünde kart çok daha geniş olduğu için aynı dikey oran kartı aşırı uzatabilir. \"Mobille aynı\" seçiliyken hiçbir şey değişmez.",
+      "options": [
+        { "value": "", "label": "Mobille aynı" },
+        { "value": "1 / 1", "label": "Kare (1:1)" },
+        { "value": "4 / 5", "label": "Hafif dikey (4:5)" },
+        { "value": "3 / 4", "label": "Dikey (3:4)" }
+      ] },
+    { "type": "select", "id": "setler_gorsel_oran", "label": "Görsel alanının oranı — mobil", "default": "3 / 4",
+      "info": "Bütün kartlarda ve galerinin bütün karelerinde aynı yükseklik. Taşan kısım ortadan kırpılır; farklı boyda ürün fotoğrafları kartı uzatıp kısaltamaz.",
+      "options": [
+        { "value": "1 / 1", "label": "Kare (1:1) — koleksiyon kartlarıyla aynı" },
+        { "value": "4 / 5", "label": "Hafif dikey (4:5)" },
+        { "value": "3 / 4", "label": "Dikey (3:4) — katalogdaki çoğu fotoğrafın oranı" }
+      ] },
+
+    { "type": "paragraph", "content": "Karttaki en büyük rakam, müşterinin ÖDEYECEĞİ set fiyatıdır; üstü çizili karşılaştırma fiyatı onun hemen yanında durur. Kişi başı tutar set fiyatının yarısıdır ve kesik çizginin altında, ikincil bilgi olarak çıkar. Tüm tutarlar üründen okunur, hiçbiri elle yazılmaz." },
+    { "type": "text", "id": "setler_set_etiket", "label": "Fiyatın üstündeki küçük etiket", "default": "SET FİYATI · 2 ÜRÜN",
+      "info": "Rakamın neyin fiyatı olduğunu söyler. Boş bırakırsanız çıkmaz." },
+    { "type": "checkbox", "id": "setler_kisi_goster", "label": "Kişi başı satırını göster", "default": true },
+    { "type": "text", "id": "setler_kisi_etiket", "label": "Kişi başı satırı", "default": "Kişi başı [tutar]",
+      "info": "[tutar] set fiyatının yarısıyla değişir. Çark kodu geçerliyken indirimli fiyatın yarısına döner. Boş bırakırsanız satır hiç çıkmaz." },
+    { "type": "text", "id": "setler_kod_etiket", "label": "Çark kodu geçerliyken küçük etiket", "default": "İNDİRİM KODU İLE",
+      "info": "Kod geçerliyken kartın fiyat alanı bu satırla birlikte indirimli tutara ve indirimli kişi başı tutara geçer; süre dolunca kendiliğinden geri döner. Tutar Tema ayarları → \"İndirim tutarı\" değerinden gelir — koleksiyon kartlarıyla aynı kaynak." },
+    { "type": "color", "id": "setler_kod_renk", "label": "Çark kodu geçerliyken fiyat rengi", "default": "#0A0A0A" },
+    { "type": "text", "id": "setler_rozet", "label": "Sol üst rozet", "default": "2'li set",
+      "info": "Her kartta aynı yazar, hesap yapmaz. Boş bırakırsanız rozet hiç çıkmaz." },
+    { "type": "text", "id": "setler_ind_rozet", "label": "Sağ üst indirim rozeti",
+      "info": "VARSAYILAN OLARAK KAPALI: boş olduğu için rozet hiç çıkmaz. Setin indirimi zaten üstü çizili fiyattan okunuyordu, köşedeki ikinci rozet aynı şeyi tekrar söylüyordu. Geri isterseniz \"[tutar] indirim\" yazın; [tutar] = karşılaştırma fiyatı − satış fiyatı. Tükenmiş üründe yine çıkmaz." },
+    { "type": "range", "id": "setler_ind_esik", "label": "İndirim rozeti eşiği", "min": 0, "max": 25, "step": 1, "unit": "%", "default": 5,
+      "info": "İndirim, satış fiyatının en az bu kadarı değilse rozet çıkmaz. Katalogda karşılaştırma fiyatı satış fiyatından 1 TL fazla girilmiş ürünler var; eşik olmasaydı orada \"1 TL indirim\" yazardı." },
+    { "type": "text", "id": "setler_etiket_ust", "label": "Ürün adının üstündeki etiket", "default": "Couple Zaman Kapsülü",
+      "info": "Kartta ürün adının hemen üstünde, küçük ve büyük harfle çıkar. Büyük harfe çevirmeyi tema yapar — buraya normal yazın. Rengi \"Sol üst rozet zemini\" ayarıyla aynıdır. Boş bırakırsanız etiket hiç çıkmaz." },
+    { "type": "text", "id": "setler_ad_cikar", "label": "Üründen kırpılacak ifade", "default": "Couple Zaman Kapsülü",
+      "info": "Kartta gösterilen ÜRÜN ADINDAN silinir; \"Astor + Chloe Couple Zaman Kapsülü\" kartta \"Astor + Chloe\" olur. Aynı bilgi zaten üstteki etikette durduğu için ikinci kez yazılmıyor. Shopify'daki ürün başlığına ve SEO'ya DOKUNMAZ, yalnızca bu karttaki görüntüyü kırpar. Bir üründe sonuç yanlış çıkarsa o ürüne \"Kart başlığı (vitrin)\" metafield'ini yazın; dolu olduğunda burası hiç çalışmaz." },
+    { "type": "checkbox", "id": "setler_ad_temizle", "label": "Üründeki \"Kişi/...\" ekini gizle", "default": true,
+      "info": "Dört set ürününün adında eski fiyat kalıntısı var (\"... Kapsülü Kişi/2279\"). Bu ayar yalnızca vitrinde gösterilen başlığı kırpar, fiyatlara dokunmaz. Kalıcı çözüm ürünleri yönetimden yeniden adlandırmak." },
+    { "type": "color", "id": "setler_rozet_zemin", "label": "Sol üst rozet zemini", "default": "#0A0A0A" },
+    { "type": "color", "id": "setler_vurgu", "label": "İndirim rozeti ve kişi başı yazısı", "default": "#0A0A0A" },
+    { "type": "color", "id": "setler_ind_kenar", "label": "İndirim rozeti çerçevesi", "default": "#D2D2CD" },
+    { "type": "color", "id": "setler_etiket_renk", "label": "Fiyat üstü küçük etiket", "default": "#5C5C57" },
+    { "type": "color", "id": "setler_fiyat_renk", "label": "Set fiyatı", "default": "#0A0A0A" },
+    { "type": "color", "id": "setler_eski_renk", "label": "Üstü çizili fiyat", "default": "#5C5C57" },
+    { "type": "color", "id": "setler_ayrac_renk", "label": "Kesik çizgi", "default": "#D2D2CD" },
+
+    { "type": "header", "content": "Setini oluştur kutusu" },
+    { "type": "paragraph", "content": "Bu kutu yalnızca Couple modunda, hazır setlerin altında çıkar. Aşağıdaki üst başlık kutunun dışında, onun hemen üstünde durur." },
+    { "type": "text", "id": "set_ust_baslik", "label": "Üst başlık",
+      "default": "Kendi setini oluşturmak ister misin?",
+      "info": "Kutunun üstündeki başlık. Boş bırakılırsa başlık çıkmaz." },
+    { "type": "text", "id": "set_ust_alt", "label": "Üst başlık — alt satır",
+      "default": "İstediğin iki ürünü seçerek kendi setini oluşturabilirsin.",
+      "info": "Başlığın altındaki açıklama. Boş bırakılırsa çıkmaz." },
+    { "type": "text", "id": "set_bant_ust", "label": "Kural bandı — ana satır",
+      "default": "Biri senin, biri onun için iki ürün ekle",
+      "info": "Kutunun en üstündeki koyu bant. Boş bırakılırsa bant çıkmaz." },
+    { "type": "text", "id": "set_bant_alt", "label": "Kural bandı — alt satır",
+      "default": "Couple set için sepette 2 ürün olmalı." },
+    { "type": "text", "id": "set_baslik", "label": "Başlık", "default": "Setini oluştur" },
+    { "type": "text", "id": "set_hazir", "label": "Sayaç: iki ürün de seçilmişken", "default": "Set hazır" },
+    { "type": "text", "id": "set_sayac", "label": "Sayaç metni", "default": "[n]/2 seçildi",
+      "info": "[n] seçili ürün sayısıyla değişir." },
+    { "type": "text", "id": "slot1_ust", "label": "1. slot üst yazı", "default": "1. ürün" },
+    { "type": "text", "id": "slot1_alt_bos", "label": "1. slot alt yazı (boşken)", "default": "Tam fiyat",
+      "info": "Slot dolunca yerine ürünün Kadın/Erkek bilgisi yazılıyor." },
+    { "type": "text", "id": "slot2_ust", "label": "2. slot üst yazı", "default": "2. ürün" },
+    { "type": "text", "id": "slot2_alt_bos", "label": "2. slot alt yazı (boşken)", "default": "Sepette %50 indirimli" },
+    { "type": "text", "id": "slot2_alt_dolu", "label": "2. slot alt yazı (doluyken)", "default": "Sepette yarı fiyatına" },
+    { "type": "text", "id": "slot2_rozet", "label": "2. slot rozeti", "default": "%50",
+      "info": "Slotun sağ üst köşesindeki yeşil etiket. Boş bırakılırsa çıkmaz." },
+
+    { "type": "header", "content": "Ürün kartı" },
+    { "type": "paragraph", "content": "Single ve Couple modunda aynı kart kullanılıyor. Köşedeki buton Single'da ürünü sepete, Couple'da sete ekliyor; kartın boyu iki modda da aynı." },
+    { "type": "range", "id": "uk_gorsel_sayisi", "label": "Kart başına görsel sayısı",
+      "min": 1, "max": 5, "step": 1, "default": 3,
+      "info": "Ürünün Shopify'daki medya sırasını takip eder. Önerilen sıra: ürün, üstünde, çip ekranı." },
+    { "type": "text", "id": "uk_rozet_onek", "label": "Rozet tag öneki", "default": "rozet:",
+      "info": "Ürüne \"rozet:Yeni\" tag'i eklerseniz kartta \"Yeni\" rozeti çıkar. Şu an katalogda bu önekle tag yok." },
+    { "type": "text", "id": "uk_kampanya", "label": "Kampanya rozeti metni", "default": "%[indirim] indirim",
+      "info": "Yalnızca karşılaştırma fiyatı satış fiyatından BÜYÜKSE çıkar. [indirim] yuvarlanmış yüzdeyle değişir." },
+    { "type": "text", "id": "uk_tukendi", "label": "\"Tükendi\" metni", "default": "Tükendi" },
+    { "type": "checkbox", "id": "uk_tukendi_sona", "label": "Tükenenleri sona sırala", "default": true,
+      "info": "Her grubun (Kadın / Erkek) kendi içinde sona alınır; grup başlıkları bozulmaz." },
+    { "type": "text", "id": "uk_baslangic", "label": "Varyant fiyatları farklıysa", "default": "[FIYAT]'dan",
+      "info": "[FIYAT] en düşük varyant fiyatıyla değişir." },
+    { "type": "text", "id": "uk_eklendi", "label": "Sepete eklendi duyurusu (ekran okuyucu)", "default": "Ürün sepete eklendi." },
+    { "type": "text", "id": "uk_aria_sepet", "label": "Buton etiketi — Single (ekran okuyucu)", "default": "[ad] sepete ekle" },
+    { "type": "text", "id": "uk_aria_set_ekle", "label": "Buton etiketi — Couple, seçili değil", "default": "[ad] sete ekle" },
+    { "type": "text", "id": "uk_aria_set_cikar", "label": "Buton etiketi — Couple, seçili", "default": "[ad] setten çıkar" },
+
+    { "type": "header", "content": "Nasıl çalışır kartı" },
+    { "type": "paragraph", "content": "Ürün ızgarasında tek bir hücre. Single modunda Single, Couple modunda Couple içeriğini gösterir; dokununca alttan açılan anlatım penceresini açar. Ürün sayısına dahil değildir." },
+    { "type": "checkbox", "id": "nk_goster", "label": "Nasıl çalışır kartını göster", "default": true },
+    { "type": "number", "id": "nk_sira", "label": "Kartın sırası", "default": 4,
+      "info": "Görünen listedeki hücre numarası. 4 = üçüncü üründen sonra. Listede daha az ürün varsa kart listenin sonunda durur. \"Tümü\" seçiliyken ilk grubun içinde kalır." },
+    { "type": "text", "id": "nk_s_bas1", "label": "Single – başlık 1. satır", "default": "Single",
+      "info": "Kartta ve pencerede aynı başlık. Ekran okuyucu adı iki satırın birleşimidir." },
+    { "type": "text", "id": "nk_s_bas2", "label": "Single – başlık 2. satır", "default": "nasıl çalışır?" },
+    { "type": "textarea", "id": "nk_s_adimlar", "label": "Single – karttaki adımlar", "default": "Anılarını yükle.\nAçılacağı günü seç.\nO gün açılsın.",
+      "info": "Her satır bir adım. Numaralar (01, 02...) otomatik." },
+    { "type": "text", "id": "nk_c_bas1", "label": "Couple – başlık 1. satır", "default": "Couple" },
+    { "type": "text", "id": "nk_c_bas2", "label": "Couple – başlık 2. satır", "default": "nasıl çalışır?" },
+    { "type": "textarea", "id": "nk_c_adimlar", "label": "Couple – karttaki adımlar", "default": "Yükleyin.\nBekleyin.\nBuluşun.\nAçın.",
+      "info": "Her satır bir adım." },
+    { "type": "text", "id": "nk_alt", "label": "Kartın alt satırı", "default": "4 adımda gör" },
+
+    { "type": "header", "content": "Nasıl çalışır penceresi – Single" },
+    { "type": "textarea", "id": "np_s_adimlar", "label": "Adımlar", "default": "Anılarını yükle. | Fotoğraf, video, ses ve not.\nAçılacağı günü seç. | O güne kadar kilitli kalır.\nHediye et. | Belirlediğin tarihe kadar geri sayımı görür.\nO gün açılsın. | Gün gelince çipi telefonuna okutarak kapsülü açar.",
+      "info": "Her satır bir adım: Başlık | Açıklama. 3. adımın altında geri sayım kutusu, 4. adım vurgulu (yeşil)." },
+    { "type": "textarea", "id": "np_s_sayac", "label": "Geri sayım kutusu", "default": "214 | gün\n06 | saat\n32 | dakika\n18 | saniye",
+      "info": "Her satır bir sütun: Sayı | Birim. Statik metin, sayaç çalışmaz." },
+    { "type": "text", "id": "np_s_etiket", "label": "Bölüm etiketi", "default": "HEDİYE ETTİKTEN SONRA DA" },
+    { "type": "textarea", "id": "np_s_kutular", "label": "Kutular", "default": "Uzaktan yükle. | Hediyeyi verdikten sonra bile anı ekle.\nTekrar kullan. | Açılınca yeni bir tarih için yeniden kilitle.\nSınırsız yükle. | Fotoğraf, video, ses ve not.\nSüresiz garanti. | Çip bozulursa ücretsiz değiştiriyoruz.",
+      "info": "Dört satır: Başlık | Açıklama. İkonlar sırayla sabit (bulut, kilit, sonsuzluk, kalkan)." },
+
+    { "type": "header", "content": "Nasıl çalışır penceresi – Couple" },
+    { "type": "textarea", "id": "np_c_adimlar", "label": "Adımlar", "default": "İki ürün seçin. | İkisi birbirine bağlanır ve ortak bir kapsül oluşur.\nİkiniz de anı yükleyin. | Biri yüklediğinde diğerine bildirim gider ama yeni anılar gizli kalır.\nBuluşunca açılır. | Yan yana geldiğinizde yeni anılar açılır ve ortak galerinize eklenir.\nDöngü yeniden başlar. | Açılan anılar galeride kalır; yeni yüklenenler bir sonraki buluşmanıza kadar gizli kalır.",
+      "info": "Her satır bir adım: Başlık | Açıklama. 3. adım vurgulu (yeşil) ve altında rozet." },
+    { "type": "text", "id": "np_c_rozet", "label": "3. adımın rozeti", "default": "48 yeni anı galerinize eklendi" },
+    { "type": "text", "id": "np_c_etiket", "label": "Bölüm etiketi", "default": "İLİŞKİNİN EN GÜZEL ALIŞKANLIĞI" },
+    { "type": "textarea", "id": "np_c_kutular", "label": "Kutular", "default": "Bir gelecek inşa edin. | Bir buluşma rutini haline getirin.\nOtomatik kilitlenir. | Her buluşmada kullanabilirsiniz.\nSadece ikiniz görebilirsiniz. | Tüm içerikler şifrelenir ve üçüncü kişilerin erişimine karşı korunur.\nKaybolsa da güvende. | Kapsülünüz kaybolursa içerikleriniz silinmez.",
+      "info": "Dört satır: Başlık | Açıklama. İkonlar sırayla sabit (takvim, halkalar, kilit, kalkan)." },
+
+    { "type": "header", "content": "Nasıl çalışır penceresi – ortak" },
+    { "type": "text", "id": "np_anladim", "label": "Alttaki buton", "default": "Anladım" },
+    { "type": "text", "id": "np_kapat", "label": "Kapat butonu (ekran okuyucu)", "default": "Kapat" },
+    { "type": "text", "id": "kart_ekle", "label": "Sete ekle (ekran okuyucu)", "default": "Sete ekle" },
+    { "type": "text", "id": "kart_secili", "label": "Setinde (ekran okuyucu)", "default": "Setinde" },
+
+    { "type": "header", "content": "Yapışkan çubuk" },
+    { "type": "paragraph", "content": "İki ürün seçiliyken çubukta fiyat kırılımı çıkıyor. Tutarlar yalnızca sepet BOŞKEN gösteriliyor: sepette zaten ürün varsa Shopify \"ikinci üründe %50\" eşleşmesini başka bir kaleme kurabileceği için rakamlar gizlenip yerine aşağıdaki \"2 ürün seçilmişken\" metni yazılıyor. Geçerli bir çark kodu varsa kırılıma \"Ara toplam\" ve \"Çark indirimi\" satırları ekleniyor; kodun süresi dolunca satırlar kendiliğinden kalkıyor." },
+    { "type": "text", "id": "cubuk_etiket_tam", "label": "Kırılım — tam fiyatlı ürün etiketi", "default": "1. ürün" },
+    { "type": "text", "id": "cubuk_etiket_indirim", "label": "Kırılım — indirimli ürün etiketi", "default": "%50" },
+    { "type": "text", "id": "cubuk_eski_fiyat", "label": "Üstü çizili fiyat (ekran okuyucu)", "default": "Eski fiyat" },
+    { "type": "text", "id": "cubuk_toplam", "label": "\"Toplam\" etiketi", "default": "Toplam" },
+    { "type": "text", "id": "cubuk_tasarruf", "label": "Tasarruf rozeti", "default": "[tutar] tasarruf",
+      "info": "[tutar] hesaplanan tasarrufla değişir. Çark kodu geçerliyken kodun tutarı da bu tasarrufa dahil edilir." },
+    { "type": "text", "id": "cubuk_ara_toplam", "label": "\"Ara toplam\" satırı", "default": "Ara toplam",
+      "info": "Yalnızca geçerli bir çark kodu varken çıkar." },
+    { "type": "text", "id": "cubuk_kod", "label": "Çark indirimi satırı", "default": "Çark indirimi",
+      "info": "Tutarı tema ayarlarındaki \"İndirim tutarı\" değerinden okunuyor — koleksiyon kartlarındaki indirimli fiyatla aynı kaynak." },
+    { "type": "text", "id": "durum_2", "label": "Hiç ürün seçilmemişken", "default": "2 ürün daha seç" },
+    { "type": "text", "id": "durum_1", "label": "1 ürün seçilmişken", "default": "1 ürün daha seç" },
+    { "type": "text", "id": "durum_0", "label": "2 ürün seçilmişken (tutar kapalıyken)", "default": "2 ürün, ikincisi yarı fiyatına",
+      "info": "Yalnızca aşağıdaki \"Çubukta toplam tutarı göster\" kapalıyken çıkar." },
+    { "type": "text", "id": "durum_dolu", "label": "2 ürün seçiliyken, sepette başka ürün varken", "default": "İndirimli toplam sepette görünür",
+      "info": "Sepette başka ürün varken indirimin hangi ürüne düşeceğine Shopify sepette karar veriyor; çubuk bu yüzden rakam yazmıyor. Boş bırakırsanız üstteki metin çıkar." },
+    { "type": "text", "id": "dugme_eksik", "label": "Buton – eksik seçim", "default": "Sepete ekle ([n]/2)",
+      "info": "[n] seçili ürün sayısıyla değişir." },
+    { "type": "text", "id": "dugme_tam", "label": "Buton – 2 ürün seçiliyken", "default": "2 ürünü sepete ekle" },
+    { "type": "text", "id": "uyari_metin", "label": "Eksik seçimle basılırsa", "default": "Sete bir ürün daha seç." },
+    { "type": "text", "id": "hata_metin", "label": "Sepete eklenemezse", "default": "Sepete eklenemedi. Ürünlerden biri tükenmiş olabilir." },
+    { "type": "checkbox", "id": "tutar_goster", "label": "Çubukta toplam tutarı göster", "default": true,
+      "info": "Tutar bir tahmindir: pahalı ürün tam, ucuz ürün yarı fiyat. Gerçek tutarı Shopify sepette hesaplar. Kapatırsanız tutar yerine teklif metni çıkar." },
+    { "type": "text", "id": "tutar_yerine", "label": "Tutar kapalıyken yazılacak", "default": "İkincisi yarı fiyatına",
+      "info": "Artık kullanılmıyor: tutar gösterilemediğinde çubukta yukarıdaki \"2 ürün seçilmişken\" metni çıkıyor. Ayar, mevcut içeriği kaybolmasın diye duruyor." },
+    { "type": "text", "id": "gizle_secici", "label": "Couple modunda gizlenecek öğeler (CSS seçici)",
+      "default": "facet-sticky.facet-sticky",
+      "info": "Yapışkan çubukla çakışan öğeler. Virgülle ayırın." },
+
+    { "type": "header", "content": "Varyant seçici" },
+    { "type": "text", "id": "varyant_baslik", "label": "Başlık", "default": "Seçenek seç" },
+    { "type": "text", "id": "kapat_etiket", "label": "Kapat (ekran okuyucu)", "default": "Kapat" },
+
+    { "type": "header", "content": "Görünüm" },
+    { "type": "range", "id": "genislik", "label": "En fazla genişlik", "min": 800, "max": 1600, "step": 20, "unit": "px", "default": 1200 },
+    { "type": "select", "id": "urun_sutun_m", "label": "Ürün sütunu — telefon", "default": "2",
+      "options": [ { "value": "1", "label": "1 sütun" }, { "value": "2", "label": "2 sütun" } ],
+      "info": "range olarak yazılamıyor: Shopify aralık ayarında en az 3 adım istiyor." },
+    { "type": "range", "id": "urun_sutun_d", "label": "Ürün sütunu — masaüstü", "min": 2, "max": 5, "step": 1, "default": 4 },
+
+    { "type": "header", "content": "Renkler" },
+    { "type": "color", "id": "zemin", "label": "Bölüm zemini", "default": "#ffffff" },
+    { "type": "color", "id": "koyu", "label": "Seçili kart / koyu yüzey", "default": "#0a0a0a" },
+    { "type": "color", "id": "kenar", "label": "Kenarlık", "default": "#d2d2cd" },
+    { "type": "color", "id": "gri", "label": "Gri yazı — beyaz kartta", "default": "#5c5c57" },
+    { "type": "color", "id": "gri_koyu", "label": "Gri yazı — seçili kartta", "default": "#a3a39e" },
+    { "type": "color", "id": "ayrac_koyu", "label": "Ayırıcı — seçili kartta", "default": "#262624" },
+    { "type": "color", "id": "yesil", "label": "Yeşil (rozet, buton, sayaç)", "default": "#0a0a0a" },
+    { "type": "color", "id": "halka_yesil", "label": "Yeşil halka — beyaz kartta", "default": "#0a0a0a" },
+    { "type": "color", "id": "yesil_acik", "label": "Yeşil halka — seçili kartta", "default": "#ffffff" },
+    { "type": "color", "id": "yesil_zemin", "label": "Dolu slot zemini", "default": "#f4f4f4" },
+    { "type": "color", "id": "uyari", "label": "Uyarı yazısı", "default": "#b42318" },
+
+    { "type": "header", "content": "Çark" },
+    { "type": "paragraph", "content": "Çark kartı Single/Couple kartlarının hemen altında, ürün seçtiren kutunun ve Kadın/Erkek filtresinin üstünde çıkar. Çalışması için ayrıca \"Çark – genel ayarlar\" bölümünde (sol listede en altta) \"Çarkı göster\" açık ve bir indirim kodu girilmiş olmalı. İndirim tutarı Tema ayarları → \"İndirim tutarı\" alanından geliyor." },
+    { "type": "checkbox", "id": "cark_goster", "label": "Çarkı göster", "default": false },
+    { "type": "text", "id": "cark_kompakt_baslik", "label": "Kart başlığı", "default": "Çarkı çevir, indirimini kazan" },
+    { "type": "text", "id": "cark_kompakt_alt", "label": "Kart alt satırı", "default": "Herkes kazanır" },
+    { "type": "text", "id": "cark_kompakt_dugme", "label": "Kart butonu", "default": "Çevir" },
+    { "type": "text", "id": "cark_vazgec", "label": "Vazgeçme linki", "default": "İstemiyorum" },
+    { "type": "text", "id": "cark_cevir_dugme", "label": "Çevirme butonu", "default": "Çarkı çevir" },
+    { "type": "text", "id": "cark_not", "label": "Butonun altındaki not", "default": "Kupon 30 dakika geçerli, sepete otomatik eklenir" },
+    { "type": "text", "id": "cark_dilimler", "label": "Dilim tutarları", "info": "Sekiz dilim, virgülle. Kazanılan tutarı yazan dilimlerden birinde duruyor.", "default": "500,1000,500,750,500,750,500,1000" },
+    { "type": "text", "id": "cark_birim", "label": "Dilim birimi", "default": "TL" },
+    { "type": "text", "id": "cark_dilim_renkleri", "label": "Dilim renkleri", "info": "Sekiz renk, virgülle.", "default": "#D6FF00,#FFFFFF,#8A8A85,#141414,#D6FF00,#FFFFFF,#8A8A85,#141414" },
+    { "type": "text", "id": "cark_kupon_baslik", "label": "Kupon başlığı", "info": "[tutar] kazanılan tutarla değişir.", "default": "[tutar] kazandın" },
+    { "type": "text", "id": "cark_kupon_onay", "label": "Kupon onay satırı", "default": "✓ Sepetine eklendi" },
+    { "type": "color", "id": "cark_kart_zemin", "label": "Kart zemini", "default": "#0A0A0A" },
+    { "type": "color", "id": "cark_vurgu", "label": "Vurgu rengi", "default": "#D6FF00" },
+    { "type": "color", "id": "cark_koyu", "label": "Koyu renk", "default": "#0A0A0A" },
+    { "type": "color", "id": "cark_alt_yazi", "label": "Alt yazı rengi", "default": "#A3A39E" },
+    { "type": "color", "id": "cark_halka", "label": "Çark çerçevesi ve göbeği", "default": "#FFFFFF" },
+    { "type": "range", "id": "cark_genislik", "label": "Çark en fazla genişlik", "min": 320, "max": 900, "step": 20, "unit": "px", "default": 520 },
+    { "type": "range", "id": "cark_ust_bosluk", "label": "Çark üst boşluk", "min": 0, "max": 64, "step": 4, "unit": "px", "default": 16 },
+    { "type": "range", "id": "cark_alt_bosluk", "label": "Çark alt boşluk", "min": 0, "max": 64, "step": 4, "unit": "px", "default": 16 }
+  ],
+  "presets": [
+    { "name": "Single / Couple Seçimi" }
+  ],
+  "enabled_on": { "templates": ["collection"] }
+}
+{% endschema %}

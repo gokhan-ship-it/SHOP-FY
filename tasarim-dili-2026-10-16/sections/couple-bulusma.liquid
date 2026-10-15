@@ -1,0 +1,2431 @@
+{%- comment -%}
+  Couple Bulusma - etkilesimli "iki kolye bulusunca kilitler acilir" bolumu.
+
+  Akis:
+    Durum 0  Kilitli kareler gridin ustunde, bildirim karti duser, slider aktif.
+    Durum 1  Kullanici surukler, kolyeler ortada bulusur -> kilitler sirayla
+             acilir, sonuc yazilir, 1.2 sn sonra slider yerini butona birakir.
+    Durum 2  Butona basilir -> acilan kareler gridde KALIR, yeni kilitli kareler
+             tek tek ustune eklenir, yeni bildirim duser, buton tekrar slider olur.
+    Durum 3  Son bulusmadan sonra buton "Bastan oynat" olur.
+    Durum 4  Bastan oynat -> her sey Durum 0'a doner.
+
+  Her "bulusma" blogu bir tur. Blok sayisi kadar tur oynanir; bu yuzden
+  ozellikle dort duruma sabitlenmedi, N bulusma ile calisir.
+
+  JS calismazsa: eski fotograflar ve ilk bulusmanin kareleri gorunur kalir,
+  slider hareket etmez ama sayfa bozulmaz.
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+
+  assign eskiler = section.blocks | where: 'type', 'eski_foto'
+  assign turlar = section.blocks | where: 'type', 'bulusma'
+
+  comment
+    Shopify renk secicisine rgba varsayilani vermek yerine duz renk +
+    saydamlik yuzdesi aliyoruz; boylece editorde iki ayri, anlasilir
+    kontrol oluyor ve varsayilan degerler her tema surumunde gecerli.
+  endcomment
+  assign a_kilit = s.kilit_saydam | divided_by: 100.0
+  assign c_kilit = s.kilit_renk | color_modify: 'alpha', a_kilit
+  assign a_kilit_b = s.kilit_blur_saydam | divided_by: 100.0
+  assign c_kilit_b = s.kilit_renk | color_modify: 'alpha', a_kilit_b
+  assign a_serit = s.serit_saydam | divided_by: 100.0
+  assign c_serit = s.serit_renk | color_modify: 'alpha', a_serit
+-%}
+
+<style>
+  #shopify-section-{{ sid }} .cb-kok {
+    --cb-aksan: {{ s.aksan }};
+    --cb-zemin: {{ s.zemin }};
+    --cb-yuzey: {{ s.yuzey }};
+    --cb-kenar: {{ s.kenar }};
+    --cb-ikincil: {{ s.ikincil }};
+    --cb-metin: {{ s.metin }};
+    --cb-bosluk: {{ s.tile_ara }}px;
+    /* Baslik ve dugme ayni degradeyi paylasiyor */
+    --cb-degrade: linear-gradient({{ s.vurgu_aci }}deg, {{ s.vurgu_1 }} 0%, {{ s.vurgu_2 }} 52%, {{ s.vurgu_3 }} 100%);
+
+    background: var(--cb-zemin);
+    color: var(--cb-metin);
+    padding: {{ s.p_ust_m }}px 0 {{ s.p_alt_m }}px;
+    /* Sayfa beyaz, bolum koyu bir blok: kenarlari yumusatiyoruz */
+    border-radius: {{ s.kose }}px;
+  }
+  #shopify-section-{{ sid }} .cb-kok * { box-sizing: border-box; }
+
+  #shopify-section-{{ sid }} .cb-ic {
+    max-width: {{ s.genislik }}px;
+    margin: 0 auto;
+    padding: 0 {{ s.kenar_m }}px;
+  }
+
+  /* --- baslik --- */
+  #shopify-section-{{ sid }} .cb-bas {
+    margin-bottom: 14px;
+    text-align: {% if s.bas_hiza == 'sol' %}left{% else %}center{% endif %};
+  }
+  #shopify-section-{{ sid }} .cb-bas-satir { display: block; }
+  /* Ikinci satir degradeli. background-clip: text ile yazinin kendisine
+     uygulaniyor; satir yuksekligi 1'de alt kuyruklar kirpildigi icin
+     1.2 + kucuk bir alt bosluk veriliyor. */
+  #shopify-section-{{ sid }} .cb-bas-vurgu {
+    display: block;
+    /* Marka dili: iki satirli basligin ikinci kismi duz #8A8A85 (degrade yok). */
+    color: #8A8A85;
+    -webkit-text-fill-color: #8A8A85;
+    line-height: 1.2;
+    padding-bottom: 0.06em;
+    {%- if s.degrade_isima %}
+    /* Cok hafif isima: degrade agir agir ileri geri suzuluyor.
+       "alternate" oldugu icin donuste sicrama olmuyor. */
+    animation: cb-isik-{{ sid }} {{ s.isima_sure }}s ease-in-out infinite alternate;
+    {%- endif %}
+  }
+  @keyframes cb-isik-{{ sid }} {
+    from { background-position: 0% 0%; }
+    to { background-position: 100% 100%; }
+  }
+  #shopify-section-{{ sid }} .cb-bas-yazi {
+    margin: 0;
+    font-family: var(--font-heading-family);
+    font-size: {{ s.bas_boyut_m }}px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    color: var(--cb-metin);
+    text-wrap: balance;
+  }
+  #shopify-section-{{ sid }} .cb-bas-alt {
+    margin: 8px 0 0;
+    font-size: {{ s.alt_boyut_m }}px;
+    line-height: 1.6;
+    color: {{ s.alt_renk }};
+    text-wrap: balance;
+  }
+
+  /* --- bildirim karti --- */
+  #shopify-section-{{ sid }} .cb-bildirim {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: {{ s.bildirim_dikey }}px {{ s.bildirim_yatay }}px;
+    border-radius: 14px;
+    background: {{ s.yuzey2 }};
+    border: 0.5px solid var(--cb-kenar);
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translate3d(0, -14px, 0);
+  }
+  #shopify-section-{{ sid }} .cb-bildirim.is-girdi {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+      opacity 500ms cubic-bezier(.33, 1, .68, 1),
+      transform 500ms cubic-bezier(.33, 1, .68, 1);
+  }
+  #shopify-section-{{ sid }} .cb-bildirim-avatar {
+    width: {{ s.bildirim_avatar }}px;
+    height: {{ s.bildirim_avatar }}px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--cb-kenar);
+  }
+  #shopify-section-{{ sid }} .cb-bildirim-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #shopify-section-{{ sid }} .cb-bildirim-yazi {
+    min-width: 0;
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: {{ s.bildirim_boyut }}px;
+    line-height: 1.3;
+    color: var(--cb-metin);
+  }
+  #shopify-section-{{ sid }} .cb-bildirim-zaman {
+    flex: 0 0 auto;
+    font-size: 11.5px;
+    color: var(--cb-ikincil);
+    font-family: var(--font-body-family);
+  }
+
+  /* --- durum satiri --- */
+  /* Yazi + kilit ikonu yan yana: ikon yazinin son harfine hizali dursun
+     diye satir bir flex kutusu. min-height, satir bosken de yerini
+     korusun ki kilitler acilinca sayfa zipramasin. */
+  #shopify-section-{{ sid }} .cb-durum {
+    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-body-family);
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--cb-ikincil);
+    min-height: 1.4em;
+  }
+  #shopify-section-{{ sid }} .cb-durum-kilit {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 auto;
+    color: var(--cb-ikincil);
+  }
+
+  /* --- grid --- */
+  /* Grid'in kendisi degil, sarmalayici kirpiyor: boylece max-height
+     degistiginde tile'lar yeniden akmiyor, sadece gorunur alan degisiyor. */
+  #shopify-section-{{ sid }} .cb-grid-kap {
+    position: relative;
+    overflow: hidden;
+    transition: max-height 320ms cubic-bezier(.33, 1, .68, 1);
+  }
+  #shopify-section-{{ sid }} .cb-grid {
+    display: grid;
+    grid-template-columns: repeat({{ s.sutun_m }}, minmax(0, 1fr));
+    gap: var(--cb-bosluk);
+    /* "Tek ekran" kipinde JS gridi daraltabiliyor; daralinca ortada dursun */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  /* Alta dogru yumusak soluklasma: kirpilan eski kareler sert kesilmesin */
+  #shopify-section-{{ sid }} .cb-grid-kap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 64px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 240ms ease;
+    background: linear-gradient(to bottom, transparent, var(--cb-zemin));
+  }
+  #shopify-section-{{ sid }} .cb-grid-kap.is-kirpik::after { opacity: 1; }
+
+  /* --- tile --- */
+  #shopify-section-{{ sid }} .cb-tile {
+    position: relative;
+    overflow: hidden;
+    border-radius: 9px;
+    background: var(--cb-yuzey);
+    border: 0.5px solid var(--cb-kenar);
+  }
+  /* aspect-ratio yedegi: eski tarayicilarda padding yuzdesi */
+  #shopify-section-{{ sid }} .cb-tile::before {
+    content: '';
+    display: block;
+    padding-top: 133.333%;
+  }
+  @supports (aspect-ratio: 3 / 4) {
+    #shopify-section-{{ sid }} .cb-tile { aspect-ratio: 3 / 4; }
+    #shopify-section-{{ sid }} .cb-tile::before { display: none; }
+  }
+  #shopify-section-{{ sid }} .cb-foto {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Kilit katmani: backdrop-filter YOK, duz koyu ortu.
+     Ucuz telefonlarda cok sayida blur'lu kare kasmaya yol aciyor. */
+  #shopify-section-{{ sid }} .cb-kilit {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: {{ c_kilit }};
+    opacity: 1;
+    transition: opacity {{ s.acilma_sure }}ms cubic-bezier(.33, 1, .68, 1);
+  }
+  #shopify-section-{{ sid }} .cb-tile.is-acik .cb-kilit {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #shopify-section-{{ sid }} .cb-kilit svg {
+    width: 22px;
+    height: 22px;
+    color: var(--cb-metin);
+    opacity: .85;
+  }
+  {%- if s.kilit_blur %}
+  /* Blur yalnizca destekleyen tarayicida; digerlerinde duz ortu kaliyor. */
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    #shopify-section-{{ sid }} .cb-kilit {
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      background: {{ c_kilit_b }};
+    }
+  }
+  {%- endif %}
+
+  /* Alt bilgi seridi: kilitliyken de gorunur. Gradient degil, duz katman. */
+  #shopify-section-{{ sid }} .cb-kim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 7px;
+    background: {{ c_serit }};
+  }
+  #shopify-section-{{ sid }} .cb-kim-avatar {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--cb-kenar);
+  }
+  #shopify-section-{{ sid }} .cb-kim-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #shopify-section-{{ sid }} .cb-kim-yazi {
+    min-width: 0;
+    line-height: 1.2;
+  }
+  #shopify-section-{{ sid }} .cb-kim-ad {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--cb-metin);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #shopify-section-{{ sid }} .cb-kim-tarih {
+    display: block;
+    font-family: var(--font-body-family);
+    font-size: 9.5px;
+    color: var(--cb-ikincil);
+  }
+
+  /* Yeni kare eklenme animasyonu: sadece transform + opacity */
+  #shopify-section-{{ sid }} .cb-tile.is-yeni {
+    opacity: 0;
+    transform: scale(.92);
+  }
+  #shopify-section-{{ sid }} .cb-tile.is-yeni.is-yerlesti {
+    opacity: 1;
+    transform: scale(1);
+    transition:
+      opacity 320ms cubic-bezier(.33, 1, .68, 1),
+      transform 320ms cubic-bezier(.33, 1, .68, 1);
+  }
+
+  /* --- alt alan --- */
+  /* Slider gridin ustunde duruyor: sayfanin dibinde kalmasin diye. */
+  #shopify-section-{{ sid }} .cb-alt { margin: 0 0 12px; }
+  /* Sonuc metni slider ile grid arasinda; bos oldugunda yer kaplamasin */
+  #shopify-section-{{ sid }} .cb-sonuc:empty { display: none; }
+
+  /* Ipucu degradeli: yazinin kendisine background-clip ile uyguluyoruz.
+     inline-block, kutu yaziya sarilsin diye -- tam genislikte olsaydi
+     degradenin sadece cok dar bir dilimi harflere denk gelirdi.
+     Destegi olmayan tarayicida duz --cb-ikincil rengiyle kaliyor. */
+  #shopify-section-{{ sid }} .cb-ipucu {
+    display: inline-block;
+    margin: 0 0 8px;
+    font-family: var(--font-body-family);
+    font-size: 11.5px;
+    color: var(--cb-ikincil);
+    animation: cb-yanip-{{ sid }} 2.4s ease-in-out infinite;
+  }
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    #shopify-section-{{ sid }} .cb-ipucu {
+      background-image: var(--cb-degrade);
+      background-size: 160% 160%;
+      background-position: 20% 50%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.4;
+      padding-bottom: 0.08em;
+    }
+  }
+  /* Degradeli hali koyu kirmizi tonlar icerdigi icin sonme alt siniri
+     .45'ten .62'ye cekildi; yoksa yaziyi kaybediyoruz. */
+  @keyframes cb-yanip-{{ sid }} {
+    0%, 100% { opacity: .62; }
+    50% { opacity: 1; }
+  }
+  #shopify-section-{{ sid }} .cb-ipucu[hidden] { display: none; }
+
+  /* --- slider --- */
+  #shopify-section-{{ sid }} .cb-slot { position: relative; }
+
+  #shopify-section-{{ sid }} .cb-slider {
+    position: relative;
+    height: 52px;
+    border-radius: 99px;
+    background: var(--cb-yuzey);
+    border: 0.5px solid var(--cb-kenar);
+    overflow: hidden;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    cursor: grab;
+  }
+  /* Slider bir surukleme yuzeyi: icindeki hicbir sey tarayicinin kendi
+     kaydirma / metin secme / gorsel surukleme davranisini tetiklemesin.
+     touch-action kalitimsal olmadigi icin cocuklara ayrica veriliyor. */
+  #shopify-section-{{ sid }} .cb-slider,
+  #shopify-section-{{ sid }} .cb-slider * {
+    touch-action: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+  }
+  /* Kolyenin icindeki gorsel/ikon olaylari yutmasin: hedef her zaman
+     kolyenin kendisi olsun. Gorsel <img> oldugunda tarayici kendi
+     "resmi surukle" davranisini baslatiyordu ve slider hic hareket
+     etmiyordu -- asil sorun buydu. */
+  #shopify-section-{{ sid }} .cb-kolye img,
+  #shopify-section-{{ sid }} .cb-kolye svg,
+  #shopify-section-{{ sid }} .cb-parla {
+    pointer-events: none;
+  }
+  #shopify-section-{{ sid }} .cb-slider.is-suruk { cursor: grabbing; }
+  /* Taban: her tarayicida calisan duz odak halkasi */
+  #shopify-section-{{ sid }} .cb-slider:focus-visible {
+    outline: 2px solid var(--cb-aksan);
+    outline-offset: 2px;
+  }
+  #shopify-section-{{ sid }} .cb-slider[hidden] { display: none; }
+
+  /* Bulusma halkasi: pistin kenarina oturan degradeli cerceve.
+     Slider overflow:hidden oldugu icin halka disariya degil ice ciziliyor.
+     Degradeyi cerceveye cevirmek icin iki katmanli maske kullaniliyor
+     (dolu kutu eksi ic kutu = sadece kenar). Desteklemeyen tarayicida
+     yukaridaki duz outline gecerli kaliyor, hicbir sey kaybolmuyor. */
+  @supports ((-webkit-mask-composite: xor) or (mask-composite: exclude)) {
+    #shopify-section-{{ sid }} .cb-slider::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      border-radius: 99px;
+      padding: 2px;
+      background-image: var(--cb-degrade);
+      background-size: 160% 160%;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 200ms ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+    #shopify-section-{{ sid }} .cb-slider:focus-visible { outline: none; }
+    #shopify-section-{{ sid }} .cb-slider:focus-visible::before,
+    #shopify-section-{{ sid }} .cb-slider.is-bulustu::before { opacity: 1; }
+  }
+
+  #shopify-section-{{ sid }} .cb-kolye {
+    position: absolute;
+    top: 6px;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: {{ s.kolye_zemin }};
+    border: 0.5px solid var(--cb-kenar);
+    color: var(--cb-metin);
+    will-change: transform;
+  }
+  #shopify-section-{{ sid }} .cb-kolye svg { width: 20px; height: 20px; }
+  /* Gercek urun fotografi konursa daireyi tamamen dolduruyor */
+  #shopify-section-{{ sid }} .cb-kolye img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 999px;
+    display: block;
+  }
+  /* Urun fotografli kolye: fotografin etrafinda ince bir halka.
+     Kalinlik varsayilan 0 -- yani bu bolumu kullanan diger sablonlarin
+     gorunumu degismiyor. box-sizing: border-box oldugu icin kenarlik
+     dairenin capini buyutmuyor, iceriden yiyor. */
+  #shopify-section-{{ sid }} .cb-kolye.is-gorselli {
+    padding: 0;
+    overflow: hidden;
+    border: {{ s.kolye_kenar }}px solid {{ s.kolye_kenar_renk }};
+    background: var(--cb-yuzey);
+  }
+  #shopify-section-{{ sid }} .cb-sol { left: 6px; }
+  #shopify-section-{{ sid }} .cb-sag { right: 6px; }
+  #shopify-section-{{ sid }} .cb-kolye.is-yumusak {
+    transition: transform 260ms cubic-bezier(.33, 1, .68, 1);
+  }
+  #shopify-section-{{ sid }} .cb-slider.is-bulustu .cb-kolye {
+    background: var(--cb-aksan);
+    color: {{ s.zemin }};
+    border-color: var(--cb-aksan);
+    transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease, transform 260ms cubic-bezier(.33, 1, .68, 1);
+  }
+
+  /* Bulusma halkasi: ortadan yayilan degradeli parlama.
+     Genislik degil, transform ile buyuyor (ucuz telefonlarda akici kalsin).
+     Renk artik aksan degil, basliktaki kirmizi degradenin aynisi. */
+  #shopify-section-{{ sid }} .cb-parla {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 150px;
+    height: 150px;
+    margin: -75px 0 0 -75px;
+    border-radius: 999px;
+    background-color: {{ s.vurgu_1 }};
+    background-image: var(--cb-degrade);
+    background-size: 100% 100%;
+    opacity: 0;
+    transform: scale(0);
+    pointer-events: none;
+  }
+  #shopify-section-{{ sid }} .cb-parla.is-patla {
+    animation: cb-parla-{{ sid }} 450ms cubic-bezier(.33, 1, .68, 1) forwards;
+  }
+  /* Kirmizi, limon yesiline gore cok daha koyu: baslangic opakligi
+     ayardan geliyor ki halka koyu zeminde kaybolmasin. */
+  @keyframes cb-parla-{{ sid }} {
+    0% { transform: scale(0); opacity: {{ s.halka_guc | divided_by: 100.0 }}; }
+    100% { transform: scale(1); opacity: 0; }
+  }
+
+  /* --- buton --- */
+  #shopify-section-{{ sid }} .cb-buton {
+    position: relative;
+    overflow: hidden;
+    display: block;
+    width: 100%;
+    height: 52px;
+    border-radius: 99px;
+    border: 1px solid transparent;
+    background-color: {{ s.vurgu_2 }};
+    background-image: var(--cb-degrade);
+    background-size: 160% 160%;
+    color: {{ s.dugme_yazi }};
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 220ms ease, transform 220ms ease, filter 220ms ease;
+  }
+  #shopify-section-{{ sid }} .cb-buton[hidden] { display: none; }
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ sid }} .cb-buton:hover { filter: brightness(1.12); }
+  }
+  {%- if s.dugme_parla %}
+  /* Uzerinden gecen isik seridi. Dugme overflow:hidden oldugu icin
+     serit hapin disina tasmiyor; transform ile kayiyor, genislik
+     animasyonu yok. */
+  #shopify-section-{{ sid }} .cb-buton::after {
+    content: '';
+    position: absolute;
+    left: -60%;
+    top: -60%;
+    width: 45%;
+    height: 220%;
+    pointer-events: none;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, {{ s.parla_guc | divided_by: 100.0 }}) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: translate3d(0, 0, 0) rotate(18deg);
+    animation: cb-serit-{{ sid }} {{ s.parla_ara }}s ease-in-out infinite;
+  }
+  @keyframes cb-serit-{{ sid }} {
+    0% { transform: translate3d(0, 0, 0) rotate(18deg); }
+    18% { transform: translate3d(380%, 0, 0) rotate(18deg); }
+    100% { transform: translate3d(380%, 0, 0) rotate(18deg); }
+  }
+  {%- endif %}
+  /* "Bastan oynat": ici bos, kenarlikli */
+  #shopify-section-{{ sid }} .cb-buton.is-bos {
+    background-color: transparent;
+    background-image: none;
+    border-color: {{ s.vurgu_1 }};
+    color: {{ s.vurgu_1 }};
+  }
+  #shopify-section-{{ sid }} .cb-buton.is-bos::after { display: none; }
+  #shopify-section-{{ sid }} .cb-buton:active { transform: scale(.985); }
+  #shopify-section-{{ sid }} .cb-buton:focus-visible {
+    outline: 2px solid var(--cb-aksan);
+    outline-offset: 2px;
+  }
+
+  /* --- sonuc --- */
+  #shopify-section-{{ sid }} .cb-sonuc {
+    margin-top: 10px;
+    min-height: 1px;
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  #shopify-section-{{ sid }} .cb-sonuc.is-acik {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+      opacity 380ms cubic-bezier(.33, 1, .68, 1),
+      transform 380ms cubic-bezier(.33, 1, .68, 1);
+  }
+  #shopify-section-{{ sid }} .cb-sonuc-bas {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: {% if s.sonuc_hiza == 'sol' %}flex-start{% else %}center{% endif %};
+    gap: 10px;
+    font-size: {{ s.sonuc_boyut_m }}px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--cb-metin);
+  }
+  /* "Buluştunuz" rozeti: sonucun basinda, kalp ikonu atiyor */
+  #shopify-section-{{ sid }} .cb-rozet {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--cb-yuzey);
+    border: 0.5px solid var(--cb-kenar);
+    font-family: var(--font-body-family);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: .02em;
+    color: var(--cb-metin);
+  }
+  #shopify-section-{{ sid }} .cb-kalp {
+    width: 13px;
+    height: 13px;
+    flex: 0 0 auto;
+    color: {{ s.kalp_renk }};
+    transform-origin: center;
+    animation: cb-kalp-{{ sid }} 1.5s ease-in-out infinite;
+  }
+  @keyframes cb-kalp-{{ sid }} {
+    0%, 32%, 100% { transform: scale(1); }
+    12% { transform: scale(1.24); }
+    22% { transform: scale(1.04); }
+    28% { transform: scale(1.16); }
+  }
+  #shopify-section-{{ sid }} .cb-sonuc-alt {
+    margin: 6px 0 0;
+    text-align: {% if s.sonuc_hiza == 'sol' %}left{% else %}center{% endif %};
+    font-family: var(--font-body-family);
+    font-size: 11.5px;
+    line-height: 1.5;
+    /* Ikincil griden ayri bir renk: bu satirin okunur olmasi isteniyor */
+    color: {{ s.sonuc_alt_renk }};
+  }
+
+  /* --- masaustu --- */
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .cb-kok {
+      padding: {{ s.p_ust_d }}px 0 {{ s.p_alt_d }}px;
+    }
+    #shopify-section-{{ sid }} .cb-ic { padding: 0 {{ s.kenar_d }}px; }
+    /* Masaustunde fotograf duvari metin sutunundan genis olabiliyor */
+    #shopify-section-{{ sid }} .cb-ic-genis { max-width: {{ s.grid_genislik_d }}px; }
+    #shopify-section-{{ sid }} .cb-grid {
+      grid-template-columns: repeat({{ s.sutun_d }}, minmax(0, 1fr));
+    }
+    #shopify-section-{{ sid }} .cb-sonuc-bas { font-size: {{ s.sonuc_boyut_d }}px; }
+    #shopify-section-{{ sid }} .cb-bas-yazi { font-size: {{ s.bas_boyut_d }}px; }
+    #shopify-section-{{ sid }} .cb-bas-alt { font-size: {{ s.alt_boyut_d }}px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .cb-bildirim.is-girdi,
+    #shopify-section-{{ sid }} .cb-tile.is-yeni.is-yerlesti,
+    #shopify-section-{{ sid }} .cb-sonuc.is-acik,
+    #shopify-section-{{ sid }} .cb-kilit,
+    #shopify-section-{{ sid }} .cb-kolye.is-yumusak,
+    #shopify-section-{{ sid }} .cb-grid-kap {
+      transition-duration: 1ms !important;
+    }
+    #shopify-section-{{ sid }} .cb-ipucu { animation: none; opacity: .8; }
+    #shopify-section-{{ sid }} .cb-parla.is-patla { animation-duration: 1ms; }
+    #shopify-section-{{ sid }} .cb-kalp { animation: none; }
+    #shopify-section-{{ sid }} .cb-bas-vurgu { animation: none; }
+    #shopify-section-{{ sid }} .cb-buton::after { display: none; }
+  }
+</style>
+
+<div
+  class="cb-kok"
+  id="cb-{{ sid }}"
+  data-cb-kok
+  data-cb-c-oto="{% if s.oto_oynat %}1{% else %}0{% endif %}"
+  data-cb-c-gecikme="{{ s.acilma_gecikme }}"
+  data-cb-c-ekleme="{{ s.ekleme_gecikme }}"
+  data-cb-c-buton-gecikme="{{ s.buton_gecikme }}"
+  data-cb-c-donus-gecikme="{{ s.donus_gecikme }}"
+  data-cb-c-max="{{ s.max_satir }}"
+  data-cb-c-tek-ekran="{% if s.tek_ekran %}1{% else %}0{% endif %}"
+  data-cb-c-ekran-pay="{{ s.ekran_pay }}"
+  data-cb-c-en-dar="{{ s.en_dar }}"
+  data-cb-c-ipucu="{{ s.ipucu | escape }}"
+  data-cb-c-buton="{{ s.buton_metni | escape }}"
+  data-cb-c-bastan="{{ s.bastan_metni | escape }}"
+  data-cb-c-durum-kilit="{{ s.durum_bicim | escape }}"
+  data-cb-c-durum-acik="{{ s.durum_acik_bicim | escape }}"
+  data-cb-c-durum-acik-goster="{% if s.durum_acik_goster %}1{% else %}0{% endif %}"
+  data-cb-c-sonuc="{{ s.sonuc_bicim | escape }}"
+  data-cb-c-sonuc-alt="{{ s.sonuc_alt_bicim | escape }}"
+>
+  <div class="cb-ic">
+
+    {%- if s.baslik != blank or s.baslik_2 != blank or s.baslik_vurgu != blank or s.alt_metin != blank -%}
+      <div class="cb-bas">
+        {%- if s.baslik != blank or s.baslik_2 != blank or s.baslik_vurgu != blank -%}
+          <h2 class="cb-bas-yazi">
+            {%- if s.baslik != blank -%}<span class="cb-bas-satir">{{ s.baslik }}</span>{%- endif -%}
+            {%- if s.baslik_2 != blank -%}<span class="cb-bas-satir">{{ s.baslik_2 }}</span>{%- endif -%}
+            {%- if s.baslik_vurgu != blank -%}<span class="cb-bas-vurgu">{{ s.baslik_vurgu }}</span>{%- endif -%}
+          </h2>
+        {%- endif -%}
+        {%- if s.alt_metin != blank -%}
+          <p class="cb-bas-alt">{{ s.alt_metin }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="cb-bildirim" data-cb-bildirim role="status" aria-live="polite">
+      <span class="cb-bildirim-avatar" data-cb-bildirim-avatar aria-hidden="true"></span>
+      <p class="cb-bildirim-yazi" data-cb-bildirim-yazi></p>
+      <span class="cb-bildirim-zaman" data-cb-bildirim-zaman></span>
+    </div>
+
+    <p class="cb-durum">
+      <span data-cb-durum></span>
+      <svg class="cb-durum-kilit" data-cb-durum-kilit viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4.5" y="10.5" width="15" height="10" rx="2.5"></rect>
+        <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>
+      </svg>
+    </p>
+
+    <div class="cb-alt">
+      <p class="cb-ipucu" data-cb-ipucu>{{ s.ipucu }}</p>
+
+      <div class="cb-slot" data-cb-slot>
+        <div
+          class="cb-slider"
+          data-cb-slider
+          role="slider"
+          tabindex="0"
+          aria-label="{{ s.slider_etiket | escape }}"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          aria-valuetext="0%"
+        >
+          <span class="cb-parla" data-cb-parla aria-hidden="true"></span>
+          <span class="cb-kolye cb-sol{% if s.kolye_sol_gorsel != blank %} is-gorselli{% endif %}" data-cb-sol aria-hidden="true">
+            {%- if s.kolye_sol_gorsel != blank -%}
+              <img src="{{ s.kolye_sol_gorsel | image_url: width: 120 }}" alt="" width="40" height="40" loading="lazy" draggable="false">
+            {%- else -%}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                <path d="M5 5c2.5 4 5 6 7 6s4.5-2 7-6"></path>
+                <path d="M12 11.5l2.6 3.4-2.6 4-2.6-4z"></path>
+              </svg>
+            {%- endif -%}
+          </span>
+          <span class="cb-kolye cb-sag{% if s.kolye_sag_gorsel != blank %} is-gorselli{% endif %}" data-cb-sag aria-hidden="true">
+            {%- if s.kolye_sag_gorsel != blank -%}
+              <img src="{{ s.kolye_sag_gorsel | image_url: width: 120 }}" alt="" width="40" height="40" loading="lazy" draggable="false">
+            {%- else -%}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                <path d="M5 5c2.5 4 5 6 7 6s4.5-2 7-6"></path>
+                <path d="M12 11.5l2.6 3.4-2.6 4-2.6-4z"></path>
+              </svg>
+            {%- endif -%}
+          </span>
+        </div>
+
+        <button type="button" class="cb-buton" data-cb-buton hidden></button>
+      </div>
+
+      <div class="cb-sonuc" data-cb-sonuc role="status" aria-live="polite">
+        <p class="cb-sonuc-bas">
+          <span class="cb-rozet">
+            <svg class="cb-kalp" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 20.3l-1.5-1.35C5.4 14.35 2 11.28 2 7.5 2 4.9 4.02 3 6.5 3c1.54 0 3.04.74 3.98 1.94h1.04C12.46 3.74 13.96 3 15.5 3 17.98 3 20 4.9 20 7.5c0 3.78-3.4 6.85-8.5 11.45L12 20.3z"></path>
+            </svg>
+            <span>{{ s.rozet_metni }}</span>
+          </span>
+          <span class="cb-sonuc-no" data-cb-sonuc-bas></span>
+        </p>
+        <p class="cb-sonuc-alt" data-cb-sonuc-alt></p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cb-ic cb-ic-genis">
+    <div class="cb-grid-kap" data-cb-kap>
+      <div class="cb-grid" data-cb-grid>
+        {%- for blok in eskiler -%}
+          {%- assign f = blok.settings.foto -%}
+          <div class="cb-tile is-acik" {{ blok.shopify_attributes }}>
+            {%- if f != blank -%}
+              <img
+                class="cb-foto"
+                src="{{ f | image_url: width: 600 }}"
+                alt=""
+                width="{{ f.width }}"
+                height="{{ f.height }}"
+                loading="lazy"
+              >
+            {%- endif -%}
+            <span class="cb-kilit" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4.5" y="10.5" width="15" height="10" rx="2.5"></rect>
+                <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>
+              </svg>
+            </span>
+            <span class="cb-kim">
+              <span class="cb-kim-avatar">
+                {%- if blok.settings.profil != blank -%}
+                  <img src="{{ blok.settings.profil | image_url: width: 60 }}" alt="" width="20" height="20" loading="lazy">
+                {%- endif -%}
+              </span>
+              <span class="cb-kim-yazi">
+                <span class="cb-kim-ad">{{ blok.settings.ad }}</span>
+                <span class="cb-kim-tarih">{{ blok.settings.tarih }}</span>
+              </span>
+            </span>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+
+  </div>
+
+  {%- comment -%} Her bulusma bir sablon; JS icindeki kareleri kopyalayip gride ekliyor. {%- endcomment -%}
+  {%- for blok in turlar -%}
+    {%- assign ilk_profil = blok.settings.profil_1 -%}
+    <template
+      data-cb-tur
+      data-no="{{ blok.settings.bulusma_no | escape }}"
+      data-toplam="{{ blok.settings.toplam | escape }}"
+      data-bildirim="{{ blok.settings.bildirim | escape }}"
+      data-zaman="{{ blok.settings.bildirim_zaman | escape }}"
+      data-avatar="{% if ilk_profil != blank %}{{ ilk_profil | image_url: width: 80 }}{% endif %}"
+    >
+      {%- for i in (1..6) -%}
+        {%- assign fk = 'foto_' | append: i -%}
+        {%- assign f = blok.settings[fk] -%}
+        {%- if f != blank -%}
+          {%- assign adk = 'ad_' | append: i -%}
+          {%- assign pk = 'profil_' | append: i -%}
+          {%- assign tk = 'tarih_' | append: i -%}
+          {%- assign p = blok.settings[pk] -%}
+          <div class="cb-tile">
+            <img
+              class="cb-foto"
+              src="{{ f | image_url: width: 600 }}"
+              alt=""
+              width="{{ f.width }}"
+              height="{{ f.height }}"
+              loading="lazy"
+            >
+            <span class="cb-kilit" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4.5" y="10.5" width="15" height="10" rx="2.5"></rect>
+                <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>
+              </svg>
+            </span>
+            <span class="cb-kim">
+              <span class="cb-kim-avatar">
+                {%- if p != blank -%}
+                  <img src="{{ p | image_url: width: 60 }}" alt="" width="20" height="20" loading="lazy">
+                {%- endif -%}
+              </span>
+              <span class="cb-kim-yazi">
+                <span class="cb-kim-ad">{{ blok.settings[adk] }}</span>
+                <span class="cb-kim-tarih">{{ blok.settings[tk] }}</span>
+              </span>
+            </span>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </template>
+  {%- endfor -%}
+</div>
+
+<script>
+  (function () {
+    var kok = document.getElementById('cb-{{ sid }}');
+    if (!kok || kok.cbKurulu) return;
+    kok.cbKurulu = true;
+
+    var grid = kok.querySelector('[data-cb-grid]');
+    var kap = kok.querySelector('[data-cb-kap]');
+    var slider = kok.querySelector('[data-cb-slider]');
+    var sol = kok.querySelector('[data-cb-sol]');
+    var sag = kok.querySelector('[data-cb-sag]');
+    var parla = kok.querySelector('[data-cb-parla]');
+    var buton = kok.querySelector('[data-cb-buton]');
+    var ipucu = kok.querySelector('[data-cb-ipucu]');
+    var durumEl = kok.querySelector('[data-cb-durum]');
+    var durumKilit = kok.querySelector('[data-cb-durum-kilit]');
+    var bildirim = kok.querySelector('[data-cb-bildirim]');
+    var bildirimYazi = kok.querySelector('[data-cb-bildirim-yazi]');
+    var bildirimZaman = kok.querySelector('[data-cb-bildirim-zaman]');
+    var bildirimAvatar = kok.querySelector('[data-cb-bildirim-avatar]');
+    var sonuc = kok.querySelector('[data-cb-sonuc]');
+    var sonucBas = kok.querySelector('[data-cb-sonuc-bas]');
+    var sonucAlt = kok.querySelector('[data-cb-sonuc-alt]');
+    var turlar = kok.querySelectorAll('[data-cb-tur]');
+    if (!grid || !slider || !buton || !turlar.length) return;
+
+    var azHareket = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function say(ad, yedek) {
+      var v = parseInt(kok.getAttribute(ad), 10);
+      return isNaN(v) ? yedek : v;
+    }
+    var gecikme = azHareket ? 0 : say('data-cb-c-gecikme', 110);
+    var eklemeAra = azHareket ? 0 : say('data-cb-c-ekleme', 250);
+    var butonGecikme = azHareket ? 200 : say('data-cb-c-buton-gecikme', 1200);
+    var donusGecikme = azHareket ? 0 : say('data-cb-c-donus-gecikme', 400);
+    var maxSatir = say('data-cb-c-max', 4);
+    var tekEkran = kok.getAttribute('data-cb-c-tek-ekran') === '1';
+    var ekranPay = say('data-cb-c-ekran-pay', 96);
+    var enDar = say('data-cb-c-en-dar', 65);
+    var metinIpucu = kok.getAttribute('data-cb-c-ipucu') || '';
+    var metinButon = kok.getAttribute('data-cb-c-buton') || '';
+    var metinBastan = kok.getAttribute('data-cb-c-bastan') || '';
+    var bicimDurum = kok.getAttribute('data-cb-c-durum-kilit') || '';
+    var bicimDurumAcik = kok.getAttribute('data-cb-c-durum-acik') || '';
+    // Acildiktan sonra durum satiri varsayilan olarak bosaltiliyor:
+    // sonuc alaninda zaten "Bulustunuz" rozeti ve buluşma numarasi var.
+    var durumAcikGoster = kok.getAttribute('data-cb-c-durum-acik-goster') === '1';
+    var bicimSonuc = kok.getAttribute('data-cb-c-sonuc') || '';
+    var bicimSonucAlt = kok.getAttribute('data-cb-c-sonuc-alt') || '';
+
+    var tur = 0;          // su an oynanan bulusma
+    var kilitli = [];     // gridde bekleyen kilitli kareler
+    var mesgul = false;   // animasyon suruyor mu
+    var bitti = false;    // butun bulusmalar oynandi mi
+    var zamanlar = [];    // temizlenecek setTimeout kimlikleri
+
+    function bekle(f, ms) {
+      var t = window.setTimeout(f, ms);
+      zamanlar.push(t);
+      return t;
+    }
+    function zamanlariTemizle() {
+      for (var i = 0; i < zamanlar.length; i++) window.clearTimeout(zamanlar[i]);
+      zamanlar = [];
+    }
+
+    // Durum satiri. Kilit ikonu yalnizca "kilitli" durumunda gorunuyor;
+    // satir bosaldiginda ikon da gitsin, yoksa tek basina asili kaliyor.
+    function durumYaz(metin, kilitliMi) {
+      if (!durumEl) return;
+      durumEl.textContent = metin;
+      if (durumKilit) durumKilit.style.display = (metin && kilitliMi) ? '' : 'none';
+    }
+
+    function bicimle(kalip, d) {
+      return String(kalip)
+        .replace(/\{no\}/g, d.no)
+        .replace(/\{yeni\}/g, d.yeni)
+        .replace(/\{toplam\}/g, d.toplam)
+        .replace(/\{kilit\}/g, d.kilit);
+    }
+
+    /* --- grid --- */
+
+    // En yeni kareler her zaman en ustte: prepend.
+    function kareleriEkle(sablon, hemen) {
+      var kopya = sablon.content.cloneNode(true);
+      var yeni = [];
+      var cocuklar = kopya.querySelectorAll('.cb-tile');
+      for (var i = 0; i < cocuklar.length; i++) yeni.push(cocuklar[i]);
+      // Ters sirada ekliyoruz ki sablondaki sira gridde korunsun
+      for (var j = yeni.length - 1; j >= 0; j--) {
+        var t = yeni[j];
+        t.setAttribute('data-cb-eklenen', '');
+        if (!hemen) t.classList.add('is-yeni');
+        grid.insertBefore(t, grid.firstChild);
+      }
+      if (!hemen) {
+        // "tik tik tik": her kare 250ms arayla yerine otursun
+        yeni.forEach(function (t, k) {
+          bekle(function () {
+            t.classList.add('is-yerlesti');
+          }, 20 + k * eklemeAra);
+        });
+      }
+      kilitli = yeni.slice();
+      kirpmayiTazele();
+      return yeni;
+    }
+
+    /* --- tek ekrana sigdirma --- */
+    /* Bolumun grid disinda kalan yuksekligi (baslik, bildirim, durum,
+       slider, sonuc + bolum ic bosluklari). Sonuc alani dolduğunda birkac
+       piksel buyudugu icin olcumu "dolu" haliyle yapiyoruz: yoksa bulusma
+       bitince bolum ekrandan tasiyor. Olcum pahali degil ama her kare
+       cagrilmasin diye onbellekleniyor; olculer degisince sifirlaniyor. */
+    var disiOnbellek = null;
+
+    function disiOlc() {
+      if (!kap) return 0;
+      var eskiBas = sonucBas ? sonucBas.textContent : '';
+      var eskiAlt = sonucAlt ? sonucAlt.textContent : '';
+      var doldurdu = false;
+      if (turlar.length && sonucBas && sonucAlt && !eskiBas && !eskiAlt) {
+        var d0 = turVerisi(0);
+        sonucBas.textContent = bicimle(bicimSonuc, d0);
+        sonucAlt.textContent = bicimle(bicimSonucAlt, d0);
+        doldurdu = true;
+      }
+      var kokY = kok.getBoundingClientRect().height;
+      var kapY = kap.getBoundingClientRect().height;
+      if (doldurdu) {
+        sonucBas.textContent = eskiBas;
+        sonucAlt.textContent = eskiAlt;
+      }
+      if (!kokY) return 0;
+      return Math.max(0, kokY - kapY);
+    }
+
+    function disiAl() {
+      if (disiOnbellek === null) disiOnbellek = disiOlc();
+      return disiOnbellek;
+    }
+
+    // Grid max-height: satir yuksekligini gercek tile'dan olcup yaziyoruz.
+    //
+    // ONEMLI: "Tek ekran" ayari ASLA fotograf gizlemez. Gorunen satir
+    // sayisini belirleyen tek sey "Gridde gorunecek en fazla satir"
+    // (max_satir) ayaridir. Tek ekran acikken bolumu sigdirmak icin
+    // yapilan tek sey gridi daraltmak, yani kareleri kucultmek; satir
+    // sayisina dokunulmuyor. Sigdirmak icin gereken daralma sinirdan
+    // fazlaysa sigdirmaktan vazgeciyoruz -- fotograflari gostermek
+    // sigdirmaktan onemli.
+    function kirpmayiTazele() {
+      if (!kap) return;
+      var ilk = grid.querySelector('.cb-tile');
+      if (!ilk) {
+        kap.style.maxHeight = '';
+        grid.style.maxWidth = '';
+        kap.classList.remove('is-kirpik');
+        return;
+      }
+      // Sutun sayisi mobil ve masaustunde farkli; CSS'in hesapladigi
+      // gercek sutun sayisini okuyoruz ki satir matematigi her iki
+      // durumda da dogru olsun.
+      var sutunStil = window.getComputedStyle(grid).gridTemplateColumns;
+      var sutun = sutunStil ? sutunStil.split(' ').filter(Boolean).length : 0;
+      if (!sutun || sutunStil.indexOf('repeat') === 0) sutun = 3;
+      var satir = Math.ceil(grid.children.length / sutun);
+      var satirHedefi = Math.min(satir, maxSatir);
+
+      if (tekEkran) {
+        var ekran = ekranYuksekligi();
+        var tamGen = kap.getBoundingClientRect().width;
+        var stil0 = window.getComputedStyle(grid);
+        var ara0 = parseFloat(stil0.rowGap || stil0.gridRowGap) || 0;
+        var disi = disiAl();
+        if (ekran && tamGen && disi) {
+          var bos = Math.max(0, ekran * (ekranPay / 100) - disi);
+          // Gorunen butun satirlarin sigmasi icin bir kare ne kadar yuksek
+          // olabilir, ve o yukseklik icin grid ne kadar genis olabilir?
+          var gerekH = (bos - (satirHedefi - 1) * ara0) / satirHedefi;
+          var gerekGen = sutun * (gerekH * 3 / 4) + (sutun - 1) * ara0;
+          var enAzGen = tamGen * (enDar / 100);
+          if (gerekGen >= tamGen) {
+            grid.style.maxWidth = '';
+          } else if (gerekGen >= enAzGen) {
+            grid.style.maxWidth = Math.floor(gerekGen) + 'px';
+          } else {
+            // Bu kadar daraltmak kareleri pul gibi birakirdi: sigdirmaktan
+            // vazgecip tam genislikte biraktik, bolum ekrandan uzun olacak.
+            grid.style.maxWidth = '';
+          }
+        } else {
+          grid.style.maxWidth = '';
+        }
+      } else {
+        grid.style.maxWidth = '';
+      }
+
+      var stil = window.getComputedStyle(grid);
+      var ara = parseFloat(stil.rowGap || stil.gridRowGap) || 0;
+      // Satir yuksekligini tek bir kareden getBoundingClientRect ile
+      // olcmek YANLIS: yeni eklenen kareler is-yeni sinifiyla
+      // transform: scale(.92) tasiyor ve rect donusumu de hesaba katiyor.
+      // Boyle olcunce max-height %8 eksik cikiyor ve son satir yarim
+      // kirpiliyordu. Gridin kendi yerlesim yuksekligi (offsetHeight)
+      // donusumden etkilenmez; satir yuksekligini oradan cikariyoruz.
+      var gridY = grid.offsetHeight;
+      if (!gridY || !satir) return;
+      var satirY = (gridY - (satir - 1) * ara) / satir;
+      var enFazla = satirHedefi * satirY + (satirHedefi - 1) * ara;
+      kap.style.maxHeight = Math.ceil(enFazla) + 'px';
+      kap.classList.toggle('is-kirpik', satir > satirHedefi);
+    }
+
+    /* Mobil tarayicilarda sayfa kaydirilirken adres cubugu acilip
+       kapandigi icin gorunur yukseklik surekli birkac yuz piksel
+       oynuyor. Her oynamada gridi yeniden hesaplarsak kareler
+       kaydirma sirasinda buyuyup kuculur. Bu yuzden: genislik
+       degismediyse ve yukseklik farki %15'in altindaysa dokunmuyoruz.
+       Yon degistirmede genislik degistigi icin hesap yine yapiliyor. */
+    var sonGen = 0;
+    var sonYuk = 0;
+
+    function ekranYuksekligi() {
+      return (window.visualViewport && window.visualViewport.height)
+        || window.innerHeight || 0;
+    }
+
+    function olculerDegisti() {
+      var g = window.innerWidth || 0;
+      var y = ekranYuksekligi();
+      if (sonGen && g === sonGen && sonYuk && Math.abs(y - sonYuk) / sonYuk < 0.15) return;
+      sonGen = g;
+      sonYuk = y;
+      disiOnbellek = null;
+      kirpmayiTazele();
+    }
+    window.addEventListener('resize', olculerDegisti);
+    window.addEventListener('orientationchange', olculerDegisti);
+    if (window.visualViewport && window.visualViewport.addEventListener) {
+      window.visualViewport.addEventListener('resize', olculerDegisti);
+    }
+
+    function kilitleriAc(kareler, bitince) {
+      var kalan = kareler.length;
+      if (!kalan) { if (bitince) bitince(); return; }
+      kareler.forEach(function (t, i) {
+        bekle(function () {
+          t.classList.add('is-acik');
+          kalan--;
+          if (!kalan && bitince) bekle(bitince, azHareket ? 0 : 260);
+        }, i * gecikme);
+      });
+    }
+
+    /* --- bildirim --- */
+
+    function bildirimGoster(d) {
+      if (!bildirim) return;
+      bildirim.classList.remove('is-girdi');
+      bildirimYazi.textContent = d.bildirim;
+      bildirimZaman.textContent = d.zaman;
+      bildirimAvatar.innerHTML = '';
+      if (d.avatar) {
+        var im = document.createElement('img');
+        im.src = d.avatar;
+        im.alt = '';
+        im.width = {{ s.bildirim_avatar }};
+        im.height = {{ s.bildirim_avatar }};
+        bildirimAvatar.appendChild(im);
+      }
+      // Sinifi bir kare sonra ekliyoruz ki gecis yeniden calissin
+      if (window.requestAnimationFrame) {
+        window.requestAnimationFrame(function () {
+          window.requestAnimationFrame(function () { bildirim.classList.add('is-girdi'); });
+        });
+      } else {
+        bildirim.classList.add('is-girdi');
+      }
+    }
+
+    function turVerisi(i) {
+      var t = turlar[i];
+      var adet = t.content.querySelectorAll('.cb-tile').length;
+      return {
+        el: t,
+        no: t.getAttribute('data-no') || '',
+        toplam: t.getAttribute('data-toplam') || '',
+        bildirim: t.getAttribute('data-bildirim') || '',
+        zaman: t.getAttribute('data-zaman') || '',
+        avatar: t.getAttribute('data-avatar') || '',
+        yeni: adet,
+        kilit: adet
+      };
+    }
+
+    /* --- slider --- */
+
+    var p = 0;            // 0..1
+    var maxT = 0;         // her kolyenin gidecegi mesafe
+    var suruyor = false;
+    var basX = 0;
+    var basP = 0;
+    var kilitliSlider = false;
+
+    function mesafeOlc() {
+      var g = slider.getBoundingClientRect().width;
+      // sol kolye 6px'ten, sag kolye sagdan 6px'ten baslar; 40px capinda
+      maxT = Math.max(0, (g - 12 - 80) / 2);
+    }
+
+    function ciz(yumusak) {
+      if (!maxT) mesafeOlc();
+      sol.classList.toggle('is-yumusak', !!yumusak);
+      sag.classList.toggle('is-yumusak', !!yumusak);
+      var d = Math.round(p * maxT);
+      sol.style.transform = 'translate3d(' + d + 'px,0,0)';
+      sag.style.transform = 'translate3d(' + (-d) + 'px,0,0)';
+      var yuzde = Math.round(p * 100);
+      slider.setAttribute('aria-valuenow', yuzde);
+      slider.setAttribute('aria-valuetext', yuzde + '%');
+    }
+
+    function ayarla(yeni, yumusak) {
+      p = Math.min(1, Math.max(0, yeni));
+      ciz(yumusak);
+    }
+
+    function bulustu() {
+      if (kilitliSlider) return;
+      kilitliSlider = true;
+      slider.classList.add('is-bulustu');
+      slider.setAttribute('aria-disabled', 'true');
+      if (parla) {
+        parla.classList.remove('is-patla');
+        // reflow: animasyon yeniden bassin
+        void parla.offsetWidth;
+        parla.classList.add('is-patla');
+      }
+      if (ipucu) ipucu.hidden = true;
+      turuAc();
+    }
+
+    function sliderSifirla() {
+      kilitliSlider = false;
+      slider.classList.remove('is-bulustu');
+      slider.removeAttribute('aria-disabled');
+      slider.hidden = false;
+      buton.hidden = true;
+      if (ipucu) { ipucu.hidden = false; ipucu.textContent = metinIpucu; }
+      ayarla(0, false);
+    }
+
+    function birak() {
+      if (!suruyor) return;
+      suruyor = false;
+      slider.classList.remove('is-suruk');
+      if (p >= 0.92) { ayarla(1, true); bulustu(); }
+      else { ayarla(0, true); }
+    }
+
+    function noktaBasla(x) {
+      if (kilitliSlider || mesgul) return;
+      mesafeOlc();
+      suruyor = true;
+      basX = x;
+      basP = p;
+      slider.classList.add('is-suruk');
+    }
+    function noktaHareket(x) {
+      if (!suruyor || !maxT) return;
+      ayarla(basP + (x - basX) / maxT, false);
+    }
+
+    // Tarayicinin kendi surukleme ve secim davranislarini kapat.
+    // pointer-events: none zaten <img>'yi hedef olmaktan cikariyor; bunlar
+    // uzun basma menusu, metin secimi gibi kalan yollari da kapatiyor.
+    slider.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    slider.addEventListener('selectstart', function (e) { e.preventDefault(); });
+    slider.addEventListener('contextmenu', function (e) {
+      if (suruyor) e.preventDefault();
+    });
+
+    if (window.PointerEvent) {
+      slider.addEventListener('pointerdown', function (e) {
+        if (kilitliSlider || mesgul) return;
+        // Varsayilani engellemek gorsel suruklemeyi ve metin secimini
+        // kesin olarak durduruyor; odaklanmayi kaybetmemek icin elle
+        // odakliyoruz (sayfa zipramasin diye preventScroll ile).
+        if (e.cancelable) e.preventDefault();
+        try { slider.focus({ preventScroll: true }); } catch (err) { slider.focus(); }
+        noktaBasla(e.clientX);
+        if (slider.setPointerCapture) {
+          try { slider.setPointerCapture(e.pointerId); } catch (err) {}
+        }
+      });
+      slider.addEventListener('pointermove', function (e) {
+        if (!suruyor) return;
+        e.preventDefault();
+        noktaHareket(e.clientX);
+      });
+      slider.addEventListener('pointerup', birak);
+      slider.addEventListener('pointercancel', birak);
+    } else {
+      // Eski tarayici yedegi
+      slider.addEventListener('touchstart', function (e) {
+        var t = e.touches[0];
+        if (!t) return;
+        if (e.cancelable) e.preventDefault();
+        noktaBasla(t.clientX);
+      }, { passive: false });
+      slider.addEventListener('touchmove', function (e) {
+        var t = e.touches[0];
+        if (!t || !suruyor) return;
+        e.preventDefault();
+        noktaHareket(t.clientX);
+      }, { passive: false });
+      slider.addEventListener('touchend', birak);
+      slider.addEventListener('touchcancel', birak);
+      slider.addEventListener('mousedown', function (e) { noktaBasla(e.clientX); });
+      document.addEventListener('mousemove', function (e) { noktaHareket(e.clientX); });
+      document.addEventListener('mouseup', birak);
+    }
+
+    // Klavye
+    slider.addEventListener('keydown', function (e) {
+      if (kilitliSlider || mesgul) return;
+      var k = e.key;
+      if (k === 'ArrowRight' || k === 'ArrowUp') { ayarla(p + 0.1, true); e.preventDefault(); }
+      else if (k === 'ArrowLeft' || k === 'ArrowDown') { ayarla(p - 0.1, true); e.preventDefault(); }
+      else if (k === 'Home') { ayarla(0, true); e.preventDefault(); }
+      else if (k === 'End' || k === 'Enter' || k === ' ') { ayarla(1, true); bulustu(); e.preventDefault(); }
+      else return;
+      if (p >= 1) bulustu();
+    });
+
+    window.addEventListener('resize', function () { mesafeOlc(); ciz(false); });
+
+    /* --- durum makinesi --- */
+
+    function turuAc() {
+      mesgul = true;
+      var d = turVerisi(tur);
+      kilitleriAc(kilitli, function () {
+        kilitli = [];
+        durumYaz(durumAcikGoster ? bicimle(bicimDurumAcik, d) : '', false);
+        sonucBas.textContent = bicimle(bicimSonuc, d);
+        sonucAlt.textContent = bicimle(bicimSonucAlt, d);
+        sonuc.classList.add('is-acik');
+
+        bekle(function () {
+          mesgul = false;
+          slider.hidden = true;
+          if (ipucu) ipucu.hidden = true;
+          buton.hidden = false;
+          bitti = (tur >= turlar.length - 1);
+          buton.textContent = bitti ? metinBastan : metinButon;
+          buton.classList.toggle('is-bos', bitti);
+        }, butonGecikme);
+      });
+    }
+
+    function sonrakiTur() {
+      tur++;
+      var d = turVerisi(tur);
+      mesgul = true;
+      sonuc.classList.remove('is-acik');
+      kareleriEkle(d.el, false);
+      durumYaz(bicimle(bicimDurum, d), true);
+      bildirimGoster(d);
+      // Slider'i karelerin hepsi yerine oturana kadar bekletmiyoruz:
+      // 6 kare x ekleme gecikmesi kadar beklemek dugmeye bastiktan
+      // sonra slider'i gec getiriyordu. Kareler akmaya devam ederken
+      // slider geri geliyor.
+      bekle(function () {
+        mesgul = false;
+        sliderSifirla();
+      }, donusGecikme);
+    }
+
+    function bastanBasla(oynat) {
+      zamanlariTemizle();
+      mesgul = false;
+      bitti = false;
+      tur = 0;
+      // JS'in ekledigi kareleri sil, "eski_foto" kareleri kalsin
+      var eklenenler = grid.querySelectorAll('[data-cb-eklenen]');
+      for (var i = 0; i < eklenenler.length; i++) {
+        eklenenler[i].parentNode.removeChild(eklenenler[i]);
+      }
+      sonuc.classList.remove('is-acik');
+      sonucBas.textContent = '';
+      sonucAlt.textContent = '';
+
+      var d = turVerisi(0);
+      kareleriEkle(d.el, true);
+      durumYaz(bicimle(bicimDurum, d), true);
+      bildirimGoster(d);
+      sliderSifirla();
+      if (oynat) otoOynat();
+    }
+
+    buton.addEventListener('click', function () {
+      if (mesgul) return;
+      if (bitti) { bastanBasla(false); return; }
+      sonrakiTur();
+    });
+
+    /* --- mobilde bir kereye mahsus otomatik gosterim --- */
+    /* Bolum ekrana girince slider kendiliginden soldan saga gidip bulusur,
+       sonra durum sifirlanir ve ziyaretci kendi dener. */
+
+    var otoBitti = false;
+    function otoOynat() {
+      if (otoBitti || azHareket) return;
+      if (kok.getAttribute('data-cb-c-oto') !== '1') return;
+      otoBitti = true;
+      var adim = 0;
+      var toplam = 26;
+      // Gosterim sirasinda ziyaretci mudahale ederse hemen birak: yoksa
+      // gosterimin sonundaki "basa don" adimi kullanicinin bulusturdugu
+      // slideri geri alabiliyor.
+      function kesildiMi() { return suruyor || kilitliSlider || mesgul; }
+      (function ilerle() {
+        if (kesildiMi()) return;
+        adim++;
+        ayarla(adim / toplam, false);
+        if (adim < toplam) { bekle(ilerle, 26); return; }
+        bekle(function () {
+          if (kesildiMi()) return;
+          slider.classList.add('is-bulustu');
+          if (parla) { parla.classList.remove('is-patla'); void parla.offsetWidth; parla.classList.add('is-patla'); }
+          bekle(function () {
+            if (kesildiMi()) return;
+            // Gosterim bitti: her sey basa donsun, kullanici kendi denesin
+            slider.classList.remove('is-bulustu');
+            ayarla(0, true);
+          }, 700);
+        }, 120);
+      })();
+    }
+
+    if ('IntersectionObserver' in window) {
+      var goz = new IntersectionObserver(function (girisler) {
+        for (var i = 0; i < girisler.length; i++) {
+          if (girisler[i].isIntersecting) {
+            goz.disconnect();
+            bekle(otoOynat, 400);
+          }
+        }
+      }, { threshold: 0.35 });
+      goz.observe(kok);
+      kok.cbGoz = goz;
+    }
+
+    /* --- baslangic --- */
+    bastanBasla(false);
+    mesafeOlc();
+    ciz(false);
+    // Gorseller gec yuklenirse satir yuksekligi degisir
+    window.setTimeout(kirpmayiTazele, 600);
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(kirpmayiTazele);
+    }
+
+    /* --- tema editoru --- */
+    document.addEventListener('shopify:section:unload', function (e) {
+      if (!e.detail || e.detail.sectionId !== '{{ sid }}') return;
+      zamanlariTemizle();
+      if (kok.cbGoz) { kok.cbGoz.disconnect(); kok.cbGoz = null; }
+      window.removeEventListener('resize', olculerDegisti);
+      window.removeEventListener('orientationchange', olculerDegisti);
+      if (window.visualViewport && window.visualViewport.removeEventListener) {
+        window.visualViewport.removeEventListener('resize', olculerDegisti);
+      }
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Couple Buluşma",
+  "tag": "section",
+  "class": "couple-bulusma-section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "oto_oynat",
+      "label": "Bölüm ekrana girince bir kez otomatik oynat",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Slider"
+    },
+    {
+      "type": "image_picker",
+      "id": "kolye_sol_gorsel",
+      "label": "Sol ürün fotoğrafı",
+      "info": "Boş bırakılırsa kolye ikonu kullanılır."
+    },
+    {
+      "type": "image_picker",
+      "id": "kolye_sag_gorsel",
+      "label": "Sağ ürün fotoğrafı"
+    },
+    {
+      "type": "range",
+      "id": "kolye_kenar",
+      "label": "Ürün fotoğrafı kenarlığı",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "kolye_kenar_renk",
+      "label": "Ürün fotoğrafı kenarlık rengi",
+      "default": "#262624"
+    },
+    {
+      "type": "header",
+      "content": "Başlık"
+    },
+    {
+      "type": "text",
+      "id": "baslik",
+      "label": "Başlık — 1. satır",
+      "default": "Ürünleri Birbirine Yaklaştır"
+    },
+    {
+      "type": "text",
+      "id": "baslik_2",
+      "label": "Başlık — 2. satır",
+      "default": "Couple Zaman Kapsülü'nü"
+    },
+    {
+      "type": "text",
+      "id": "baslik_vurgu",
+      "label": "Başlık — 3. satır (degradeli)",
+      "default": "5 Saniyede Deneyimle."
+    },
+    {
+      "type": "text",
+      "id": "alt_metin",
+      "label": "Açıklama",
+      "default": "Ürünleri birbirine yaklaştır ve nasıl çalıştığını gör."
+    },
+    {
+      "type": "select",
+      "id": "bas_hiza",
+      "label": "Başlık hizası",
+      "default": "orta",
+      "options": [
+        {
+          "value": "orta",
+          "label": "Ortalı"
+        },
+        {
+          "value": "sol",
+          "label": "Sola dayalı"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Bu degrade hem başlığın 2. satırında hem de \"Bir sonraki buluşmaya geç\" düğmesinde kullanılır."
+    },
+    {
+      "type": "color",
+      "id": "vurgu_1",
+      "label": "Degrade rengi 1 (açık kırmızı)",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "vurgu_2",
+      "label": "Degrade rengi 2 (kırmızı)",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "vurgu_3",
+      "label": "Degrade rengi 3 (koyu bordo)",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "vurgu_aci",
+      "label": "Degrade açısı",
+      "min": 0,
+      "max": 360,
+      "step": 5,
+      "unit": "°",
+      "default": 135
+    },
+    {
+      "type": "checkbox",
+      "id": "degrade_isima",
+      "label": "Başlıkta hafif ışıma",
+      "info": "Degrade çok yavaş ileri geri süzülür.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "isima_sure",
+      "label": "Işıma süresi",
+      "min": 3,
+      "max": 20,
+      "step": 1,
+      "unit": "sn",
+      "default": 9
+    },
+    {
+      "type": "range",
+      "id": "bas_boyut_m",
+      "label": "Başlık boyutu (mobil)",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "bas_boyut_d",
+      "label": "Başlık boyutu (masaüstü)",
+      "min": 16,
+      "max": 56,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "alt_boyut_m",
+      "label": "Açıklama boyutu (mobil)",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "alt_boyut_d",
+      "label": "Açıklama boyutu (masaüstü)",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "color",
+      "id": "alt_renk",
+      "label": "Açıklama rengi",
+      "info": "Gövde metni; ikincil griden daha açık olması okunurluğu artırır.",
+      "default": "#a3a39e"
+    },
+    {
+      "type": "header",
+      "content": "Düğme"
+    },
+    {
+      "type": "paragraph",
+      "content": "\"Bir sonraki buluşmaya geç\" düğmesi başlıktaki degradeyi kullanır."
+    },
+    {
+      "type": "color",
+      "id": "dugme_yazi",
+      "label": "Düğme yazı rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "checkbox",
+      "id": "dugme_parla",
+      "label": "Düğmede parlayan şerit",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "parla_ara",
+      "label": "Parlama aralığı",
+      "min": 2,
+      "max": 15,
+      "step": 1,
+      "unit": "sn",
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "parla_guc",
+      "label": "Parlama gücü",
+      "min": 5,
+      "max": 60,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Metinler"
+    },
+    {
+      "type": "text",
+      "id": "rozet_metni",
+      "label": "Sonuç rozeti",
+      "default": "Buluştunuz"
+    },
+    {
+      "type": "color",
+      "id": "kalp_renk",
+      "label": "Kalp ikonu rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "text",
+      "id": "ipucu",
+      "label": "Slider ipucu",
+      "default": "Buluşmak için kaydırın →"
+    },
+    {
+      "type": "text",
+      "id": "slider_etiket",
+      "label": "Slider erişilebilirlik etiketi",
+      "default": "Kolyeleri buluşturmak için kaydırın"
+    },
+    {
+      "type": "text",
+      "id": "buton_metni",
+      "label": "Sonraki buluşma düğmesi",
+      "default": "Bir Sonraki Buluşmaya Geç"
+    },
+    {
+      "type": "text",
+      "id": "bastan_metni",
+      "label": "Baştan oynat düğmesi",
+      "default": "Baştan oynat"
+    },
+    {
+      "type": "text",
+      "id": "durum_bicim",
+      "label": "Durum satırı (kilitliyken)",
+      "info": "{kilit} kilitli anı sayısı, {toplam} toplam, {no} buluşma numarası.",
+      "default": "{kilit} Yeni Anı Buluşmanızı Bekliyor. Kilitli"
+    },
+    {
+      "type": "checkbox",
+      "id": "durum_acik_goster",
+      "label": "Açıldıktan sonra durum satırı yazsın",
+      "info": "Kapalıyken kilitler açılınca satır boşalır; sonuç alanındaki rozet zaten durumu anlatıyor.",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "durum_acik_bicim",
+      "label": "Durum satırı (açıldıktan sonra)",
+      "default": "hepsi açıldı · toplam {toplam} anı"
+    },
+    {
+      "type": "text",
+      "id": "sonuc_bicim",
+      "label": "Sonuç başlığı",
+      "info": "{no} buluşma numarası.",
+      "default": "{no}. Buluşmanız."
+    },
+    {
+      "type": "text",
+      "id": "sonuc_alt_bicim",
+      "label": "Sonuç alt satırı",
+      "info": "{yeni} bu turda açılan anı sayısı, {toplam} toplam.",
+      "default": "{yeni} Yeni Anı Kapsülünüze Eklendi. Toplam {toplam}"
+    },
+    {
+      "type": "select",
+      "id": "sonuc_hiza",
+      "label": "Sonuç alanı hizası",
+      "info": "\"Buluştunuz\" rozeti, buluşma numarası ve alt satır.",
+      "default": "orta",
+      "options": [
+        {
+          "value": "orta",
+          "label": "Ortalı"
+        },
+        {
+          "value": "sol",
+          "label": "Sola dayalı"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "sonuc_alt_renk",
+      "label": "Sonuç alt satırı rengi",
+      "info": "Diğer mono satırlardan bağımsız; daha okunur olsun diye açık.",
+      "default": "#a3a39e"
+    },
+    {
+      "type": "header",
+      "content": "Bildirim kartı"
+    },
+    {
+      "type": "range",
+      "id": "bildirim_dikey",
+      "label": "Dikey iç boşluk",
+      "min": 2,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 7
+    },
+    {
+      "type": "range",
+      "id": "bildirim_yatay",
+      "label": "Yatay iç boşluk",
+      "min": 6,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "bildirim_avatar",
+      "label": "Avatar boyutu",
+      "min": 18,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "range",
+      "id": "bildirim_boyut",
+      "label": "Bildirim yazı boyutu",
+      "min": 11,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "header",
+      "content": "Renkler"
+    },
+    {
+      "type": "color",
+      "id": "aksan",
+      "label": "Aksan rengi",
+      "info": "Odak halkaları ve buluşma anındaki vurgu.",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "halka_guc",
+      "label": "Buluşma halkası yoğunluğu",
+      "info": "Kolyeler buluşunca ortadan yayılan degradeli halka.",
+      "min": 5,
+      "max": 60,
+      "step": 5,
+      "unit": "%",
+      "default": 35
+    },
+    {
+      "type": "color",
+      "id": "zemin",
+      "label": "Bölüm zemini",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "yuzey",
+      "label": "Kart yüzeyi",
+      "default": "#141414"
+    },
+    {
+      "type": "color",
+      "id": "yuzey2",
+      "label": "Bildirim kartı yüzeyi",
+      "default": "#141414"
+    },
+    {
+      "type": "color",
+      "id": "kolye_zemin",
+      "label": "Kolye dairesi zemini",
+      "default": "#141414"
+    },
+    {
+      "type": "color",
+      "id": "kenar",
+      "label": "Kenarlık",
+      "default": "#262624"
+    },
+    {
+      "type": "color",
+      "id": "metin",
+      "label": "Metin",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "ikincil",
+      "label": "İkincil metin (mono satırlar)",
+      "default": "#a3a39e"
+    },
+    {
+      "type": "color",
+      "id": "kilit_renk",
+      "label": "Kilit örtüsü rengi",
+      "info": "Bulanıklık yerine kullanılan düz koyu katman.",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "kilit_saydam",
+      "label": "Kilit örtüsü yoğunluğu",
+      "min": 40,
+      "max": 100,
+      "step": 2,
+      "unit": "%",
+      "default": 88
+    },
+    {
+      "type": "color",
+      "id": "serit_renk",
+      "label": "Alt bilgi şeridi rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "serit_saydam",
+      "label": "Alt bilgi şeridi yoğunluğu",
+      "min": 40,
+      "max": 100,
+      "step": 2,
+      "unit": "%",
+      "default": 82
+    },
+    {
+      "type": "header",
+      "content": "Bulanıklık"
+    },
+    {
+      "type": "checkbox",
+      "id": "kilit_blur",
+      "label": "Destekleyen tarayıcılarda bulanıklık ekle",
+      "info": "Kapalı tutmanız önerilir: çok sayıda bulanık kare düşük donanımlı telefonlarda kasmaya yol açıyor. Açıkken desteklemeyen tarayıcılarda düz örtüye düşer.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "kilit_blur_saydam",
+      "label": "Bulanıklıkla birlikte örtü yoğunluğu",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 55
+    },
+    {
+      "type": "header",
+      "content": "Tek ekrana sığdır"
+    },
+    {
+      "type": "checkbox",
+      "id": "tek_ekran",
+      "label": "Bölüm tek ekranda görünsün",
+      "info": "Açıkken kareler ekrana sığacak kadar küçültülür. Satır sayısına dokunmaz — kaç satır görüneceğini yalnızca \"Gridde görünecek en fazla satır\" belirler.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "ekran_pay",
+      "label": "Kullanılacak ekran payı",
+      "info": "Ekran yüksekliğinin yüzde kaçı. Düşürürsen üstte ve altta pay bırakır.",
+      "min": 70,
+      "max": 100,
+      "step": 2,
+      "unit": "%",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "en_dar",
+      "label": "Grid en fazla ne kadar daralsın",
+      "info": "Sığdırmak için kareler küçültülür. Bu oranın altına inmek gerekiyorsa sığdırmaktan vazgeçilir; fotoğraflar asla gizlenmez.",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 65
+    },
+    {
+      "type": "header",
+      "content": "Ölçüler"
+    },
+    {
+      "type": "range",
+      "id": "genislik",
+      "label": "En fazla genişlik",
+      "min": 400,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "default": 640
+    },
+    {
+      "type": "range",
+      "id": "kose",
+      "label": "Bölüm köşe yarıçapı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "sutun_m",
+      "label": "Yan yana fotoğraf (mobil)",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "sutun_d",
+      "label": "Yan yana fotoğraf (masaüstü)",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "grid_genislik_d",
+      "label": "Fotoğraf duvarı genişliği (masaüstü)",
+      "info": "Metin sütunundan geniş olabilir; ortalanır.",
+      "min": 600,
+      "max": 1400,
+      "step": 20,
+      "unit": "px",
+      "default": 900
+    },
+    {
+      "type": "range",
+      "id": "tile_ara",
+      "label": "Kareler arası boşluk",
+      "min": 2,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "max_satir",
+      "label": "Gridde görünecek en fazla satır",
+      "info": "Daha eskiler alttan kırpılır.",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "unit": "sat",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "kenar_m",
+      "label": "Yan boşluk (mobil)",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "kenar_d",
+      "label": "Yan boşluk (masaüstü)",
+      "min": 8,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "p_ust_m",
+      "label": "Üst boşluk (mobil)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "p_alt_m",
+      "label": "Alt boşluk (mobil)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "p_ust_d",
+      "label": "Üst boşluk (masaüstü)",
+      "min": 0,
+      "max": 240,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "p_alt_d",
+      "label": "Alt boşluk (masaüstü)",
+      "min": 0,
+      "max": 240,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "sonuc_boyut_m",
+      "label": "Sonuç başlığı (mobil)",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "sonuc_boyut_d",
+      "label": "Sonuç başlığı (masaüstü)",
+      "min": 16,
+      "max": 56,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Zamanlama"
+    },
+    {
+      "type": "range",
+      "id": "acilma_gecikme",
+      "label": "Kilitler arası gecikme",
+      "min": 0,
+      "max": 400,
+      "step": 10,
+      "unit": "ms",
+      "default": 110
+    },
+    {
+      "type": "range",
+      "id": "ekleme_gecikme",
+      "label": "Yeni kareler arası gecikme",
+      "min": 0,
+      "max": 600,
+      "step": 10,
+      "unit": "ms",
+      "default": 250
+    },
+    {
+      "type": "range",
+      "id": "buton_gecikme",
+      "label": "Slider düğmeye dönüşme gecikmesi",
+      "min": 200,
+      "max": 3000,
+      "step": 100,
+      "unit": "ms",
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "donus_gecikme",
+      "label": "Düğmeden slider'a dönüş gecikmesi",
+      "info": "Düğmeye bastıktan sonra slider'ın geri gelmesi. Kareler akmaya devam eder.",
+      "min": 0,
+      "max": 1500,
+      "step": 50,
+      "unit": "ms",
+      "default": 400
+    },
+    {
+      "type": "range",
+      "id": "acilma_sure",
+      "label": "Kilit açılma süresi",
+      "min": 100,
+      "max": 900,
+      "step": 20,
+      "unit": "ms",
+      "default": 420
+    }
+  ],
+  "blocks": [
+    {
+      "type": "eski_foto",
+      "name": "Eski fotoğraf",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Başlangıçta gridde açık olarak duran eski anılar."
+        },
+        {
+          "type": "image_picker",
+          "id": "foto",
+          "label": "Fotoğraf"
+        },
+        {
+          "type": "text",
+          "id": "ad",
+          "label": "Yükleyen",
+          "default": "Pınar"
+        },
+        {
+          "type": "image_picker",
+          "id": "profil",
+          "label": "Profil fotoğrafı"
+        },
+        {
+          "type": "text",
+          "id": "tarih",
+          "label": "Tarih",
+          "default": "01.08.2026"
+        }
+      ]
+    },
+    {
+      "type": "bulusma",
+      "name": "Buluşma",
+      "settings": [
+        {
+          "type": "text",
+          "id": "bulusma_no",
+          "label": "Buluşma numarası",
+          "default": "12"
+        },
+        {
+          "type": "text",
+          "id": "toplam",
+          "label": "Toplam anı sayısı",
+          "default": "47"
+        },
+        {
+          "type": "text",
+          "id": "bildirim",
+          "label": "Bildirim metni",
+          "default": "Pınar 3 yeni anı yükledi"
+        },
+        {
+          "type": "text",
+          "id": "bildirim_zaman",
+          "label": "Bildirim zamanı",
+          "default": "2 saat önce"
+        },
+        {
+          "type": "header",
+          "content": "1. fotoğraf"
+        },
+        {
+          "type": "image_picker",
+          "id": "foto_1",
+          "label": "Fotoğraf"
+        },
+        {
+          "type": "text",
+          "id": "ad_1",
+          "label": "Yükleyen",
+          "default": "Pınar"
+        },
+        {
+          "type": "image_picker",
+          "id": "profil_1",
+          "label": "Profil fotoğrafı"
+        },
+        {
+          "type": "text",
+          "id": "tarih_1",
+          "label": "Tarih",
+          "default": "09.08.2026"
+        },
+        {
+          "type": "header",
+          "content": "2. fotoğraf"
+        },
+        {
+          "type": "image_picker",
+          "id": "foto_2",
+          "label": "Fotoğraf"
+        },
+        {
+          "type": "text",
+          "id": "ad_2",
+          "label": "Yükleyen",
+          "default": "Cem"
+        },
+        {
+          "type": "image_picker",
+          "id": "profil_2",
+          "label": "Profil fotoğrafı"
+        },
+        {
+          "type": "text",
+          "id": "tarih_2",
+          "label": "Tarih",
+          "default": "08.08.2026"
+        },
+        {
+          "type": "header",
+          "content": "3. fotoğraf"
+        },
+        {
+          "type": "image_picker",
+          "id": "foto_3",
+          "label": "Fotoğraf"
+        },
+        {
+          "type": "text",
+          "id": "ad_3",
+          "label": "Yükleyen",
+          "default": "Pınar"
+        },
+        {
+          "type": "image_picker",
+          "id": "profil_3",
+          "label": "Profil fotoğrafı"
+        },
+        {
+          "type": "text",
+          "id": "tarih_3",
+          "label": "Tarih",
+          "default": "07.08.2026"
+        },
+        {
+          "type": "header",
+          "content": "4. fotoğraf"
+        },
+        {
+          "type": "image_picker",
+          "id": "foto_4",
+          "label": "Fotoğraf"
+        },
+        {
+          "type": "text",
+          "id": "ad_4",
+          "label": "Yükleyen"
+        },
+        {
+          "type": "image_picker",
+          "id": "profil_4",
+          "label": "Profil fotoğrafı"
+        },
+        {
+          "type": "text",
+          "id": "tarih_4",
+          "label": "Tarih"
+        },
+        {
+          "type": "header",
+          "content": "5. fotoğraf"
+        },
+        {
+          "type": "image_picker",
+          "id": "foto_5",
+          "label": "Fotoğraf"
+        },
+        {
+          "type": "text",
+          "id": "ad_5",
+          "label": "Yükleyen"
+        },
+        {
+          "type": "image_picker",
+          "id": "profil_5",
+          "label": "Profil fotoğrafı"
+        },
+        {
+          "type": "text",
+          "id": "tarih_5",
+          "label": "Tarih"
+        },
+        {
+          "type": "header",
+          "content": "6. fotoğraf"
+        },
+        {
+          "type": "image_picker",
+          "id": "foto_6",
+          "label": "Fotoğraf"
+        },
+        {
+          "type": "text",
+          "id": "ad_6",
+          "label": "Yükleyen"
+        },
+        {
+          "type": "image_picker",
+          "id": "profil_6",
+          "label": "Profil fotoğrafı"
+        },
+        {
+          "type": "text",
+          "id": "tarih_6",
+          "label": "Tarih"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Couple Buluşma",
+      "blocks": [
+        {
+          "type": "bulusma"
+        },
+        {
+          "type": "bulusma",
+          "settings": {
+            "bulusma_no": "13",
+            "toplam": "51",
+            "bildirim": "Cem 4 yeni anı yükledi"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,1922 @@
+{%- comment -%}
+  Adim Yigini - kaydirdikca ust uste binen adim panelleri.
+
+  Calisma mantigi: her panel position: sticky ile ekranin tepesine
+  yapisir. Bir sonraki panel akista onun ustunden gecerek gelir ve
+  oncekini orter. Tamami CSS; hic JavaScript yok, bu yuzden yavas
+  baglantida veya JS calismadiginda paneller alt alta duz olarak
+  gorunur - icerik hicbir kosulda kaybolmaz.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign sid = section.id
+  assign adimlar = section.blocks
+
+  assign hiza_css = 'center'
+  if s.hiza == 'sol'
+    assign hiza_css = 'left'
+  endif
+
+  comment
+    Renk katmani. Apple paletinde asagidaki degerler kazanir; "Ozel
+    renkler"e alinca editordeki renk secicileri geri devreye girer.
+    Boylece degisiklik tek ayarla geri alinabilir.
+  endcomment
+  assign c_zemin = s.bolum_zemin
+  assign c_bas = s.baslik_rengi
+  assign c_alt = s.alt_rengi
+  assign c_etiket = s.etiket_renk
+  assign c_gorsel = s.gorsel_zemin
+  if s.palet == 'apple'
+    assign c_zemin = '#000000'
+    assign c_bas = '#ffffff'
+    assign c_alt = '#a3a39e'
+    assign c_etiket = '#8a8a85'
+    assign c_gorsel = 'transparent'
+  endif
+
+  comment
+    Degradeli ikinci baslik satiri. Palet bu renkleri belirlemiyor;
+    dogrudan ayardan okunuyor ki hazir palet secili olsa da calissin.
+  endcomment
+  comment
+    Baslik ekrana sabitlendiginde parallax anlamsiz: oge zaten yerinde
+    duruyor, uzerine oteleme koymak titremeye yol acar.
+  endcomment
+  assign parallax_var = false
+  if s.bas_parallax and s.bas_sabit != true
+    assign parallax_var = true
+  endif
+
+  assign c_v1 = s.vurgu_1
+  assign c_v2 = s.vurgu_2
+  assign c_v3 = s.vurgu_3
+-%}
+
+<style>
+  #shopify-section-{{ sid }} .ay-root {
+    background: {{ c_zemin }};
+    padding-top: {{ s.p_top_m }}px;
+    padding-bottom: {{ s.p_bot_m }}px;
+  }
+  #shopify-section-{{ sid }} .ay-root * { box-sizing: border-box; }
+
+  /* --- bolum basligi --- */
+  #shopify-section-{{ sid }} .ay-ust {
+    padding-left: {{ s.kenar_m }}px;
+    padding-right: {{ s.kenar_m }}px;
+    text-align: {{ hiza_css }};
+    margin-bottom: {{ s.bas_yigin_bosluk_m }}px;
+  }
+  #shopify-section-{{ sid }} .ay-etiket {
+    margin: 0 0 10px;
+    font-size: {{ s.etiket_boyut }}px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: {{ c_etiket }};
+  }
+  /* Baslik ucgen bir yigin: logo / ad / degradeli satir. Uc parca da
+     ayri ayri olculendigi icin kapsayiciya punto vermiyoruz. */
+  #shopify-section-{{ sid }} .ay-bas {
+    margin: 0;
+    font-family: var(--font-heading-family);
+    line-height: 1.15;
+    font-weight: 400;
+    color: {{ c_bas }};
+    text-wrap: balance;
+  }
+  #shopify-section-{{ sid }} .ay-bas-logo {
+    display: block;
+    height: {{ s.bas_logo_m }}px;
+    width: auto;
+    margin: 0 0 {{ s.bas_logo_alt }}px;
+    {%- if s.hiza == 'orta' %}
+    margin-left: auto;
+    margin-right: auto;
+    {%- endif %}
+  }
+  #shopify-section-{{ sid }} .ay-bas-metin {
+    display: block;
+    font-size: {{ s.bas_m }}px;
+    line-height: 1.15;
+    letter-spacing: -0.8px;
+    font-weight: 700;
+  }
+
+  {%- if s.vurgu_metni != blank %}
+  /* Degrade yazi: arka plan yaziya kirpiliyor. Destegi olmayan
+     tarayicida asagidaki duz renk gecerli kalir.
+     line-height 1'in altina inince "g, y, ğ" kuyruklari kutunun disinda
+     kalip seffaf gorunur; bol satir yuksekligi + alt dolgu bunu onler. */
+  #shopify-section-{{ sid }} .ay-vurgu {
+    display: block;
+    font-size: {{ s.vurgu_m }}px;
+    font-weight: {{ s.vurgu_kalinlik }};
+    line-height: 1.2;
+    letter-spacing: -1px;
+    padding-bottom: 0.1em;
+    margin-top: {{ s.vurgu_ust }}px;
+    color: {{ s.vurgu_duz_renk }};
+  }
+  {%- if s.vurgu_ac %}
+  @supports (-webkit-background-clip: text) or (background-clip: text) {
+    #shopify-section-{{ sid }} .ay-vurgu {
+      background-image: linear-gradient(
+        {{ s.vurgu_aci }}deg,
+        {{ c_v1 }} 0%,
+        {{ c_v2 }} 50%,
+        {{ c_v3 }} 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+  {%- endif %}
+  {%- endif %}
+
+  {%- if parallax_var %}
+  /* Parallax: baslik blogu kaydirma sirasinda sayfadan biraz yavas
+     hareket eder. Yer degistirmeyi JS yaziyor; azaltilmis hareket
+     tercihi olan ziyaretcide hic uygulanmaz. Giris animasyonu yok,
+     baslik ilk anda oldugu yerde durur. */
+  #shopify-section-{{ sid }} .ay-ust { will-change: transform; }
+  {%- endif %}
+
+  #shopify-section-{{ sid }} .ay-alt {
+    margin: {{ s.bas_alt_bosluk_m }}px 0 0;
+    font-size: {{ s.alt_m }}px;
+    line-height: 1.6;
+    color: {{ c_alt }};
+    {%- if s.hiza == 'orta' %}
+    margin-left: auto;
+    margin-right: auto;
+    {%- endif %}
+    max-width: 46em;
+  }
+  #shopify-section-{{ sid }} .ay-alt p { margin: 0 0 8px; }
+  #shopify-section-{{ sid }} .ay-alt p:last-child { margin-bottom: 0; }
+
+  /* --- yigin --- */
+  /* Her panel sticky; bir sonraki panel akista ustunden gecerek orter. */
+  #shopify-section-{{ sid }} .ay-kat {
+    position: sticky;
+    top: {{ s.ust_bosluk }}px;
+    height: calc({{ s.panel_yuk }}vh - {{ s.ust_bosluk }}px);
+    height: calc({{ s.panel_yuk }}svh - {{ s.ust_bosluk }}px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    {%- unless s.tam_ekran %}
+    padding-left: {{ s.kenar_m }}px;
+    padding-right: {{ s.kenar_m }}px;
+    {%- endunless %}
+  }
+  #shopify-section-{{ sid }} .ay-kart {
+    width: 100%;
+    max-width: {% if s.tam_ekran %}none{% else %}{{ s.kart_max_g }}px{% endif %};
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: {{ s.ic_bosluk_m }}px;
+    padding: {{ s.kart_ic_m }}px;
+    border-radius: {% if s.tam_ekran %}0{% else %}{{ s.kart_kose }}px{% endif %};
+    text-align: {{ hiza_css }};
+    {%- if s.kart_golge %}
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .12);
+    {%- endif %}
+  }
+
+  /* --- kart icerigi --- */
+  #shopify-section-{{ sid }} .ay-yazi {
+    display: flex;
+    flex-direction: column;
+    gap: {{ s.ic_bosluk_m }}px;
+    align-items: {% if s.hiza == 'orta' %}center{% else %}flex-start{% endif %};
+    width: 100%;
+  }
+  #shopify-section-{{ sid }} .ay-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: {% if s.hiza == 'orta' %}center{% else %}flex-start{% endif %};
+    min-width: {{ s.num_cap }}px;
+    height: {{ s.num_cap }}px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: {{ s.num_boyut }}px;
+    font-weight: {{ s.num_kalinlik }};
+    line-height: 1;
+    letter-spacing: .04em;
+  }
+  #shopify-section-{{ sid }} .ay-kbas {
+    margin: 0;
+    font-family: var(--font-heading-family);
+    font-size: {{ s.kart_bas_m }}px;
+    line-height: 1.15;
+    letter-spacing: -0.8px;
+    font-weight: 700;
+    text-wrap: balance;
+  }
+  #shopify-section-{{ sid }} .ay-kmetin {
+    margin: 0;
+    font-size: {{ s.kart_metin_m }}px;
+    line-height: 1.6;
+    max-width: 34em;
+    {%- if s.hiza == 'orta' %}
+    margin-left: auto;
+    margin-right: auto;
+    {%- endif %}
+  }
+  #shopify-section-{{ sid }} .ay-kmetin p { margin: 0 0 8px; }
+  #shopify-section-{{ sid }} .ay-kmetin p:last-child { margin-bottom: 0; }
+
+  #shopify-section-{{ sid }} .ay-gorsel {
+    position: relative;
+    flex: 0 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: {{ hiza_css }};
+    background: {{ c_gorsel }};
+    border-radius: {{ s.gorsel_kose }}px;
+    overflow: hidden;
+  }
+  #shopify-section-{{ sid }} .ay-gorsel img,
+  #shopify-section-{{ sid }} .ay-gorsel video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: {{ s.gorsel_y_m }}vh;
+    object-fit: {{ s.gorsel_kapla }};
+    object-position: center;
+    background: transparent;
+  }
+  /* Video ilk karesini basana kadar panelin renginde durur; posteri
+     olmadigi icin arada acik tonlu bir kare gorunmez. */
+  #shopify-section-{{ sid }} .ay-gorsel video { background-color: var(--ay-panel, transparent); }
+  {%- if s.kenar_yumusat > 0 %}
+  /* Kenarlari panel renginde bir degrade ile eritir. Panel rengi
+     karttan --ay-panel degiskeniyle geliyor. */
+  #shopify-section-{{ sid }} .ay-gorsel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(to right, var(--ay-panel) 0, rgba(0, 0, 0, 0) {{ s.kenar_yumusat }}%),
+      linear-gradient(to left, var(--ay-panel) 0, rgba(0, 0, 0, 0) {{ s.kenar_yumusat }}%),
+      linear-gradient(to bottom, var(--ay-panel) 0, rgba(0, 0, 0, 0) {{ s.kenar_yumusat }}%),
+      linear-gradient(to top, var(--ay-panel) 0, rgba(0, 0, 0, 0) {{ s.kenar_yumusat }}%);
+  }
+  {%- endif %}
+  /* Mobil / masaustu gorsel ayrimı.
+     Secicilerin ".ay-gorsel img/video" ile nitelenmesi sart: yukaridaki
+     "#... .ay-gorsel img { display: block }" kurali bir etiket secici
+     daha tasidigi icin daha ozgul. Sadece ".ay-g-d" yazilinca display
+     none eziliyordu ve mobil + masaustu gorseli AYNI ANDA basiliyordu
+     (yan yana sikisip tek gorselin iki yarisi gibi gorunuyordu).
+     Bu yol yalnizca mobil ve masaustune farkli medya verildiginde
+     calistigi icin bugune kadar fark edilmemisti. */
+  #shopify-section-{{ sid }} .ay-gorsel img.ay-g-d,
+  #shopify-section-{{ sid }} .ay-gorsel video.ay-g-d { display: none; }
+
+  /* --- masaustu --- */
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .ay-root {
+      padding-top: {{ s.p_top_d }}px;
+      padding-bottom: {{ s.p_bot_d }}px;
+    }
+    #shopify-section-{{ sid }} .ay-ust {
+      padding-left: {{ s.kenar_d }}px;
+      padding-right: {{ s.kenar_d }}px;
+      margin-bottom: {{ s.bas_yigin_bosluk_d }}px;
+    }
+    #shopify-section-{{ sid }} .ay-bas-logo { height: {{ s.bas_logo_d }}px; }
+    {%- unless s.tam_ekran %}
+    #shopify-section-{{ sid }} .ay-kat {
+      padding-left: {{ s.kenar_d }}px;
+      padding-right: {{ s.kenar_d }}px;
+    }
+    {%- endunless %}
+    #shopify-section-{{ sid }} .ay-kart {
+      gap: {{ s.ic_bosluk_d }}px;
+      padding: {{ s.kart_ic_d }}px;
+      {%- if s.tam_ekran %}
+      /* Panel kenardan kenara, ama icerik ortada sabit genislikte bir
+         kolonda durur; yazi genis ekranda kenara yapismaz. */
+      padding-left: max({{ s.kart_ic_d }}px, calc((100% - {{ s.kart_max_g }}px) / 2));
+      padding-right: max({{ s.kart_ic_d }}px, calc((100% - {{ s.kart_max_g }}px) / 2));
+      {%- endif %}
+    }
+    #shopify-section-{{ sid }} .ay-gorsel img,
+    #shopify-section-{{ sid }} .ay-gorsel video { max-height: {{ s.gorsel_y_d }}vh; }
+    #shopify-section-{{ sid }} .ay-gorsel img.ay-g-m,
+    #shopify-section-{{ sid }} .ay-gorsel video.ay-g-m { display: none; }
+    #shopify-section-{{ sid }} .ay-gorsel img.ay-g-d,
+    #shopify-section-{{ sid }} .ay-gorsel video.ay-g-d { display: block; }
+
+    {%- if s.masaustu_duzen == 'yan' %}
+    /* Metin solda, gorsel sagda */
+    #shopify-section-{{ sid }} .ay-kart {
+      flex-direction: row;
+      align-items: center;
+      text-align: left;
+      gap: {{ s.ic_bosluk_d }}px;
+    }
+    #shopify-section-{{ sid }} .ay-yazi {
+      flex: 1 1 46%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: {{ s.ic_bosluk_d }}px;
+    }
+    #shopify-section-{{ sid }} .ay-gorsel {
+      flex: 1 1 54%;
+      align-self: stretch;
+      max-height: 100%;
+    }
+    #shopify-section-{{ sid }} .ay-gorsel img,
+    #shopify-section-{{ sid }} .ay-gorsel video { max-height: none; height: 100%; }
+    #shopify-section-{{ sid }} .ay-kmetin { margin-left: 0; margin-right: 0; }
+    #shopify-section-{{ sid }} .ay-no { align-self: flex-start; }
+    {%- endif %}
+  }
+
+  /* Baslik olculeri sayfadaki diger bolumlerle ayni sistemde:
+     kademeler 768 ve 1024, satir yuksekligi 1.15 / 1.6. */
+  @media (min-width: 768px) {
+    #shopify-section-{{ sid }} .ay-bas-metin { font-size: {{ s.bas_t }}px; }
+    #shopify-section-{{ sid }} .ay-vurgu { font-size: {{ s.vurgu_t }}px; }
+    #shopify-section-{{ sid }} .ay-kbas { font-size: {{ s.kart_bas_t }}px; }
+    #shopify-section-{{ sid }} .ay-alt {
+      margin-top: {{ s.bas_alt_bosluk_d }}px;
+      font-size: {{ s.alt_d }}px;
+    }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ sid }} .ay-bas-metin { font-size: {{ s.bas_d }}px; }
+    #shopify-section-{{ sid }} .ay-vurgu { font-size: {{ s.vurgu_d }}px; }
+    #shopify-section-{{ sid }} .ay-kbas { font-size: {{ s.kart_bas_d }}px; }
+    #shopify-section-{{ sid }} .ay-kmetin { font-size: {{ s.kart_metin_d }}px; }
+  }
+
+  /* Sticky desteklenmezse veya bir ust katman onu kirarsa paneller
+     alt alta duz sirayla gorunur; icerik yine okunur. */
+  @supports not (position: sticky) {
+    #shopify-section-{{ sid }} .ay-kat {
+      position: relative;
+      height: auto;
+      padding-top: 32px;
+      padding-bottom: 32px;
+    }
+    #shopify-section-{{ sid }} .ay-kart { height: auto; }
+  }
+  {%- if s.panel_hiza == 'ust' %}
+  /* --- panel icerigi yukari --- */
+  /* Paneller ekran boyunda; icerik ortalaninca ilk panelde basligin
+     altinda yarim ekranlik bosluk kaliyordu. "Ust" secilince icerik
+     panelin tepesine yaslanir, gorsel yine panel boyunca uzar.
+     Blok bilerek en sonda: yukarida .ay-kart icin yazilan
+     justify-content / align-items kurallarini ezmesi gerekiyor. */
+  #shopify-section-{{ sid }} .ay-kart { justify-content: flex-start; }
+  @media (min-width: 750px) {
+    {%- if s.masaustu_duzen == 'yan' %}
+    #shopify-section-{{ sid }} .ay-kart { align-items: flex-start; }
+    {%- else %}
+    #shopify-section-{{ sid }} .ay-kart { justify-content: flex-start; }
+    {%- endif %}
+  }
+  {%- endif %}
+  {%- if s.gorsel_doldur %}
+  /* --- gorsel kalan alani doldursun (mobil) --- */
+  /* Icerik panelin tepesine yaslandiginda altta bos siyah alan
+     kaliyordu: gorsel {{ s.gorsel_y_m }}vh ile sinirliydi. Bu secenek
+     acikken gorsel yazidan artan yuksekligi kaplar. "contain" ile
+     oranlari bozulmaz, sadece bosluk dolar.
+     Yalnizca mobil: masaustunde gorsel zaten panel boyunca uzuyor ve
+     oradaki 54% sutun genisligini bozmamak gerekiyor.
+     Blok en sonda ki yukaridaki max-height ve flex kurallarini ezsin. */
+  @media (max-width: 749px) {
+    #shopify-section-{{ sid }} .ay-gorsel { flex: 1 1 auto; }
+    #shopify-section-{{ sid }} .ay-gorsel img,
+    #shopify-section-{{ sid }} .ay-gorsel video { max-height: none; }
+  }
+  {%- endif %}
+  {%- if s.bas_sabit %}
+  /* --- baslik ekranda sabit --- */
+  /* Baslik bolum boyunca tepede kalir; adim panelleri onun altindan
+     kayip kaybolur. Kartlarin arkadan gorunmemesi icin baslik seridi
+     bolum zeminiyle ayni renkte ve panellerin uzerinde.
+     Panel yuksekligi = ekran - basligin yuksekligi; basligin gercek
+     yuksekligini JS olcup --ay-bas-y degiskenine yaziyor, boylece
+     yazi kac satira sararsa sarsin panel tam kalan alani kaplar.
+     Blok en sonda: yukaridaki .ay-kat sticky kurallarini ezmeli. */
+  #shopify-section-{{ sid }} .ay-ust {
+    position: -webkit-sticky;
+    position: sticky;
+    /* Tema basligi ekrana sabitse baslik seridimiz onun altina oturur;
+       --ay-header-y degerini JS olcuyor. Header sabit degilse 0 kalir. */
+    top: calc(var(--ay-header-y, 0px) + {{ s.bas_ust_ofset }}px);
+    z-index: 3;
+    background: {{ c_zemin }};
+    padding-top: {{ s.bas_sabit_ic }}px;
+    padding-bottom: {{ s.bas_yigin_bosluk_m }}px;
+    margin-bottom: 0;
+  }
+  /* Sticky, bir ust katmanda overflow kirpmasi varsa calismaz; kendi
+     sarmalayicilarimizda bunu acikca kapatiyoruz. */
+  #shopify-section-{{ sid }},
+  #shopify-section-{{ sid }} .ay-root {
+    overflow: visible;
+  }
+  #shopify-section-{{ sid }} .ay-kat {
+    position: static;
+    top: auto;
+    height: calc({{ s.panel_yuk }}vh - var(--ay-bas-y, 0px) - var(--ay-header-y, 0px) - {{ s.bas_ust_ofset }}px);
+    height: calc({{ s.panel_yuk }}svh - var(--ay-bas-y, 0px) - var(--ay-header-y, 0px) - {{ s.bas_ust_ofset }}px);
+  }
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .ay-ust {
+      /* margin degil padding: sabit seritte margin saydam kalir ve
+         kartlar aradan gorunurdu. */
+      padding-bottom: {{ s.bas_yigin_bosluk_d }}px;
+      margin-bottom: 0;
+    }
+  }
+  {%- endif %}
+  {%- if s.gorsel_dikey != 'orta' %}
+  /* --- gorselin dikey yeri --- */
+  /* Gorsel kutusu kalan alani doldurunca "sigdir" modunda gorsel
+     kutunun ortasina oturuyor ve yaziyla arasinda bosluk kaliyordu.
+     object-position ile gorseli kutunun ustune (ya da altina) cekiyoruz;
+     olcek degismez, sadece nerede duracagi degisir. */
+  #shopify-section-{{ sid }} .ay-gorsel img,
+  #shopify-section-{{ sid }} .ay-gorsel video {
+    object-position: center {{ s.gorsel_dikey }};
+  }
+  {%- endif %}
+
+  {%- if s.kaydirma_kilit %}
+  /* --- adimlar tek tek yerine otursun --- */
+  /* Her panel bir durak. scroll-snap-stop ile tek bir kaydirma
+     hareketinde birden fazla adim atlanmaz. Sabit baslik varsa durak
+     cizgisi basligin hemen altina alinir.
+
+     Mod farki onemli:
+     - "kesin" (mandatory) tarayici kaydirmayi surekli en yakin duraga
+       cekili tutar; parmak yavas hareket ettiginde de hareket bastan
+       yumusakca duraga dogru akar ve birakinca oraya oturur.
+     - "yakin" (proximity) yalnizca duraga yeterince yaklasinca devreye
+       girer; yavas cekislerde duzeltme gec basladigi icin "yariya kadar
+       gelip sonra zipladi" hissi verir.
+
+     scroll-snap-type'i BILEREK burada yazmiyoruz. Sayfanin tamaminda
+     acik kalirsa, bolumun disinda hic durak olmadigi icin tarayici
+     ziyaretciyi ilk/son kartta hapsediyor. Onun yerine JS, yalnizca
+     bolum ekrani kapladigi surece acip cikista kapatiyor; JS calismazsa
+     kaydirma tamamen normal kalir. */
+  #shopify-section-{{ sid }} .ay-kat {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    scroll-margin-top: calc(var(--ay-bas-y, 0px) + var(--ay-header-y, 0px));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-snap-type: none !important; }
+  }
+  {%- endif %}
+  {%- if s.panel_icerik_yuk %}
+  /* --- panel yuksekligi icerige gore --- */
+  /* Ekran boyu panelde icerik kisa kalinca altta siyah bosluk oluyordu.
+     Bu secenek acikken panel tam icerigi kadar; bir sonraki adim hemen
+     altta gorunur, "adimlar tek tek yerine otursun" acikken de parmak
+     hareketiyle basligin altina oturur.
+     Blok en sonda: yukaridaki yukseklik ve max-height kurallarini ezer. */
+  #shopify-section-{{ sid }} .ay-kat { height: auto; }
+  #shopify-section-{{ sid }} .ay-kart { height: auto; }
+  #shopify-section-{{ sid }} .ay-gorsel img,
+  #shopify-section-{{ sid }} .ay-gorsel video {
+    height: auto;
+    max-height: {{ s.gorsel_y_m }}vh;
+  }
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .ay-gorsel { align-self: auto; }
+    #shopify-section-{{ sid }} .ay-gorsel img,
+    #shopify-section-{{ sid }} .ay-gorsel video { max-height: {{ s.gorsel_y_d }}vh; }
+  }
+  {%- endif %}
+
+  /* --- numara rozetinde degrade --- */
+  /* Rozet renkleri normalde satir ici stille veriliyor; degrade acikken
+     o satir ici stil hic basilmiyor (bkz. .ay-no cikti satiri), bu yuzden
+     burada !important gerekmiyor. */
+  {%- if s.num_degrade %}
+  #shopify-section-{{ sid }} .ay-no {
+    background: linear-gradient({{ s.num_aci }}deg, {{ s.num_d1 }} 0%, {{ s.num_d2 }} 50%, {{ s.num_d3 }} 100%);
+    color: {{ s.num_degrade_yazi }};
+  }
+  {%- endif %}
+</style>
+
+<div class="ay-root" data-ay-kok data-ay-esik="{{ s.oynat_esigi }}"{% if s.bas_sabit %} data-ay-header="{{ s.header_secici | escape }}"{% endif %}{% if s.kaydirma_kilit %} data-ay-snap="{% if s.kaydirma_mod == 'kesin' %}mandatory{% else %}proximity{% endif %}"{% endif %}>
+  {%- if s.etiket != blank or s.baslik != blank or s.alt_metin != blank or s.bas_logo != blank or s.vurgu_metni != blank -%}
+    <div class="ay-ust"{% if s.bas_sabit %} data-ay-ust-sabit{% endif %}{% if parallax_var %} data-ay-parallax="{{ s.bas_parallax_guc }}"{% endif %}>
+      {%- if s.etiket != blank -%}
+        <p class="ay-etiket">{{ s.etiket }}</p>
+      {%- endif -%}
+      {%- if s.baslik != blank or s.bas_logo != blank or s.vurgu_metni != blank -%}
+        <{{ s.baslik_etiketi }} class="ay-bas">
+          {%- if s.bas_logo != blank -%}
+            {%- assign logo_alt = s.bas_logo.alt | default: shop.name -%}
+            <img
+              class="ay-bas-logo"
+              src="{{ s.bas_logo | image_url: height: 320 }}"
+              alt="{{ logo_alt | escape }}"
+              width="{{ s.bas_logo.width }}"
+              height="{{ s.bas_logo.height }}"
+              loading="lazy"
+              decoding="async"
+            >
+          {%- endif -%}
+          {%- if s.baslik != blank -%}
+            <span class="ay-bas-metin">{{ s.baslik }}</span>
+          {%- endif -%}
+          {%- if s.vurgu_metni != blank -%}
+            <span class="ay-vurgu">{{ s.vurgu_metni }}</span>
+          {%- endif -%}
+        </{{ s.baslik_etiketi }}>
+      {%- endif -%}
+      {%- if s.alt_metin != blank -%}
+        <div class="ay-alt rte">{{ s.alt_metin }}</div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="ay-yigin">
+    {%- for block in adimlar -%}
+      {%- assign a = block.settings -%}
+      {%- assign alt_yazi = a.baslik | strip_html | escape -%}
+      {%- liquid
+        comment
+          Medya secimi: video varsa video, yoksa gorsel. Mobil ve masaustu
+          ayri secilebilir; biri bos birakilirsa digeri kullanilir.
+        endcomment
+        assign gor_m = a.gorsel_mobil | default: a.gorsel
+        assign gor_d = a.gorsel | default: a.gorsel_mobil
+        assign vid_m = a.video_mobil | default: a.video
+        assign vid_d = a.video | default: a.video_mobil
+
+        comment
+          Iki taraf ayni kaynagi gosteriyorsa tek eleman basilir.
+        endcomment
+        assign tek_medya = false
+        if vid_m != blank and vid_d != blank
+          if vid_m.id == vid_d.id
+            assign tek_medya = true
+          endif
+        elsif vid_m == blank and vid_d == blank
+          if gor_m == gor_d
+            assign tek_medya = true
+          endif
+        endif
+
+        assign medya_var = false
+        if vid_m != blank or vid_d != blank or gor_m != blank or gor_d != blank
+          assign medya_var = true
+        endif
+      -%}
+
+      {%- liquid
+        assign k_zemin = a.kart_zemin
+        assign k_yazi = a.kart_yazi
+        assign k_alt = a.kart_alt_yazi
+        assign n_zemin = a.num_zemin
+        assign n_yazi = a.num_yazi
+
+        comment
+          Apple paletinde butun paneller tam siyah.
+        endcomment
+        if s.palet == 'apple'
+          assign k_zemin = '#000000'
+          assign k_yazi = '#ffffff'
+          assign k_alt = '#a3a39e'
+          assign n_zemin = '#d6ff00'
+          assign n_yazi = '#0a0a0a'
+        endif
+      -%}
+
+      <div class="ay-kat" {{ block.shopify_attributes }}>
+        <div class="ay-kart" style="background: {{ k_zemin }}; color: {{ k_yazi }}; --ay-panel: {{ k_zemin }};">
+          <div class="ay-yazi">
+            {%- if s.num_goster and a.numara != blank -%}
+              <span class="ay-no"{% unless s.num_degrade %} style="background: {{ n_zemin }}; color: {{ n_yazi }};"{% endunless %}>{{ a.numara }}</span>
+            {%- endif -%}
+            {%- if a.baslik != blank -%}
+              <p class="ay-kbas" style="color: {{ k_yazi }};">{{ a.baslik }}</p>
+            {%- endif -%}
+            {%- if a.metin != blank -%}
+              <div class="ay-kmetin rte" style="color: {{ k_alt }};">{{ a.metin }}</div>
+            {%- endif -%}
+          </div>
+
+          {%- if medya_var -%}
+            <div class="ay-gorsel">
+              {%- if tek_medya -%}
+
+                {%- if vid_d != blank -%}
+                  {%- assign kaynak = vid_d.sources | where: 'format', 'mp4' | last -%}
+                  {%- assign afis = a.kapak -%}
+                  <video
+                    class="ay-g-tek"
+                    data-ay-vid
+                    data-ay-src="{{ kaynak.url }}"
+                    {% if afis != blank %}poster="{{ afis | image_url: width: 1400 }}"{% endif %}
+                    preload="none"
+                    muted
+                    loop
+                    playsinline
+                    disablepictureinpicture
+                    aria-label="{{ alt_yazi }}"
+                  ></video>
+                {%- else -%}
+                  {%- capture cls_tek -%}ay-g-tek{%- endcapture -%}
+                  {{
+                    gor_d
+                    | image_url: width: 1400
+                    | image_tag: class: cls_tek, loading: 'lazy', decoding: 'async', widths: '400, 600, 800, 1000, 1200, 1400', alt: alt_yazi
+                  }}
+                {%- endif -%}
+
+              {%- else -%}
+
+                {%- comment -%} mobil {%- endcomment -%}
+                {%- if vid_m != blank -%}
+                  {%- assign kaynak_m = vid_m.sources | where: 'format', 'mp4' | first -%}
+                  {%- assign afis_m = a.kapak -%}
+                  <video
+                    class="ay-g-m"
+                    data-ay-vid
+                    data-ay-src="{{ kaynak_m.url }}"
+                    {% if afis_m != blank %}poster="{{ afis_m | image_url: width: 900 }}"{% endif %}
+                    preload="none"
+                    muted
+                    loop
+                    playsinline
+                    disablepictureinpicture
+                    aria-label="{{ alt_yazi }}"
+                  ></video>
+                {%- elsif gor_m != blank -%}
+                  {%- capture cls_m -%}ay-g-m{%- endcapture -%}
+                  {{
+                    gor_m
+                    | image_url: width: 900
+                    | image_tag: class: cls_m, loading: 'lazy', decoding: 'async', widths: '400, 600, 750, 900', alt: alt_yazi
+                  }}
+                {%- endif -%}
+
+                {%- comment -%} masaustu {%- endcomment -%}
+                {%- if vid_d != blank -%}
+                  {%- assign kaynak_d = vid_d.sources | where: 'format', 'mp4' | last -%}
+                  {%- assign afis_d = a.kapak -%}
+                  <video
+                    class="ay-g-d"
+                    data-ay-vid
+                    data-ay-src="{{ kaynak_d.url }}"
+                    {% if afis_d != blank %}poster="{{ afis_d | image_url: width: 1400 }}"{% endif %}
+                    preload="none"
+                    muted
+                    loop
+                    playsinline
+                    disablepictureinpicture
+                    aria-label="{{ alt_yazi }}"
+                  ></video>
+                {%- elsif gor_d != blank -%}
+                  {%- capture cls_d -%}ay-g-d{%- endcapture -%}
+                  {{
+                    gor_d
+                    | image_url: width: 1400
+                    | image_tag: class: cls_d, loading: 'lazy', decoding: 'async', widths: '800, 1000, 1200, 1400', alt: alt_yazi
+                  }}
+                {%- endif -%}
+
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+</div>
+
+<script>
+  (function () {
+    if (window.ayYiginHazir) { window.ayYiginKur(); return; }
+    window.ayYiginHazir = true;
+
+    var azHareket = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Ekranda gercekten duran surum hangisi (mobil mi masaustu mu)
+    function gorunur(el) {
+      return !!(el.offsetParent || el.getClientRects().length);
+    }
+
+    // Kaynak, panel yaklasirken atanir: gorunmeyen surum hic indirilmez,
+    // ama panel ekrana geldiginde video coktan tamponlanmis olur.
+    function yukle(v) {
+      if (!gorunur(v)) return;
+      if (v.getAttribute('src')) return;
+      var k = v.getAttribute('data-ay-src') || '';
+      if (!k) return;
+      v.setAttribute('preload', 'auto');
+      v.setAttribute('src', k);
+      try { v.load(); } catch (e) {}
+    }
+
+    // Her gelisinde bastan oynar.
+    function oynat(v) {
+      if (azHareket || !gorunur(v)) return;
+      yukle(v);
+      v.muted = true;
+      if (v.readyState > 0) {
+        try { v.currentTime = 0; } catch (e) {}
+      } else if (!v.aySifirla) {
+        v.aySifirla = true;
+        v.addEventListener('loadedmetadata', function bir() {
+          v.removeEventListener('loadedmetadata', bir);
+          try { v.currentTime = 0; } catch (e) {}
+        });
+      }
+      var p = v.play();
+      if (p && p.catch) p.catch(function () {});
+    }
+
+    function durdur(v) {
+      try { v.pause(); } catch (e) {}
+    }
+
+    function kur(kok) {
+      if (!kok || kok.ayKurulu) return;
+      kok.ayKurulu = true;
+
+      var katlar = kok.querySelectorAll('.ay-kat');
+      var vids = kok.querySelectorAll('[data-ay-vid]');
+      if (!katlar.length) return;
+
+      var esik = parseInt(kok.getAttribute('data-ay-esik'), 10);
+      if (isNaN(esik)) esik = 80;
+
+      // 1) Erken tampon: panel bir ekran otedeyken video inmeye baslar.
+      if (vids.length && 'IntersectionObserver' in window) {
+        kok.ayYukGoz = new IntersectionObserver(function (girisler) {
+          for (var i = 0; i < girisler.length; i++) {
+            if (girisler[i].isIntersecting) {
+              yukle(girisler[i].target);
+              kok.ayYukGoz.unobserve(girisler[i].target);
+            }
+          }
+        }, { rootMargin: '150% 0px 150% 0px', threshold: 0 });
+        for (var j = 0; j < vids.length; j++) kok.ayYukGoz.observe(vids[j]);
+      }
+
+      // 2) Etkin panel.
+      // Paneller sticky oldugu icin bir onceki panel, ustune bir yenisi
+      // bindikten sonra da geometrik olarak ekranda durur. Bu yuzden
+      // "gorunuyor mu" diye bakmak yetmiyor: ekrani en son kaplayan
+      // panel hangisiyse etkin odur. Boylece ayni anda tek video oynar.
+      var aktif = -1;
+      var bekliyor = false;
+
+      function uygula(yeniAktif) {
+        if (yeniAktif === aktif) return;
+        if (aktif > -1 && katlar[aktif]) {
+          katlar[aktif].classList.remove('is-aktif');
+          var eski = katlar[aktif].querySelectorAll('[data-ay-vid]');
+          for (var a = 0; a < eski.length; a++) durdur(eski[a]);
+        }
+        aktif = yeniAktif;
+        if (aktif > -1 && katlar[aktif]) {
+          katlar[aktif].classList.add('is-aktif');
+          var yeni = katlar[aktif].querySelectorAll('[data-ay-vid]');
+          for (var b = 0; b < yeni.length; b++) oynat(yeni[b]);
+        }
+      }
+
+      function hesapla() {
+        bekliyor = false;
+        // Sabit baslik varsa tema basliginin kapladigi yer degisebilir
+        // (gizlenen/geri gelen header); her karede degil, yalnizca deger
+        // degistiginde yaziliyor.
+        if (kok.ayHeaderOlc) kok.ayHeaderOlc();
+        if (kok.aySnapAyarla) kok.aySnapAyarla();
+        var ekran = window.innerHeight || document.documentElement.clientHeight;
+        var kutu = kok.getBoundingClientRect();
+
+        // Bolum ekranda degilse hicbir video oynamaz
+        if (kutu.bottom <= 0 || kutu.top >= ekran) { uygula(-1); return; }
+
+        // Panel, kendisine ayrilan alanin yuzde "esik" kadarini kaplayinca
+        // etkin olur. ONEMLI: paneller ekranin tepesine degil, sabit
+        // basligin (tema basligi + kendi serit basligimiz) ALTINA
+        // oturuyor. Olcumu ham ekran yuksekligine gore yaparsak, panel
+        // yerine oturdugunda bile ust kenari o cizginin altinda kalir ve
+        // esige hic ulasmaz; video ancak ziyaretci durak noktasini
+        // gecip daha da kaydirinca basliyordu. Bu yuzden siniri panelin
+        // gercekten kullandigi alana gore hesapliyoruz.
+        var hy = parseFloat(kok.style.getPropertyValue('--ay-header-y')) || 0;
+        var by = parseFloat(kok.style.getPropertyValue('--ay-bas-y')) || 0;
+        var cizgi = hy + by;
+        var alan = Math.max(1, ekran - cizgi);
+        var sinir = cizgi + alan * (1 - esik / 100);
+        var secili = -1;
+        for (var i = 0; i < katlar.length; i++) {
+          if (katlar[i].getBoundingClientRect().top <= sinir + 1) secili = i;
+        }
+        uygula(secili);
+      }
+
+      /* --- kaydirma kilidi yalnizca bolum icinde --- */
+      /* Snap tum sayfada acik kalirsa, bolumun disinda hic durak
+         olmadigi icin tarayici ziyaretciyi ilk ya da son kartta tutuyor
+         ve oradan cikamiyor. Bu yuzden snap'i yalnizca bolum, basligin
+         altindaki alani tamamen kapliyorken aciyoruz. Ziyaretci son
+         karttan asagi inmeye baslayinca bolumun alt kenari ekranin
+         altina cikar, snap kapanir ve serbestce cikabilir; yukari
+         ciksarken de ayni sekilde. */
+      var snapMod = kok.getAttribute('data-ay-snap') || '';
+      if (snapMod && !azHareket) {
+        var snapAcik = null;
+        kok.aySnapAyarla = function () {
+          if (!katlar.length) return;
+          // Panellerin hizalandigi cizgi: tema basligi + kendi sabit
+          // baslik seridimizin alt kenari.
+          var hy = parseFloat(kok.style.getPropertyValue('--ay-header-y')) || 0;
+          var by = parseFloat(kok.style.getPropertyValue('--ay-bas-y')) || 0;
+          var cizgi = hy + by;
+
+          var ilk = katlar[0].getBoundingClientRect();
+          var son = katlar[katlar.length - 1].getBoundingClientRect();
+
+          // Snap YALNIZCA ilk ve son duragin tam arasindayken acik.
+          // Ilk/son panel cizgiye oturmusken kapali oluyor; boylece
+          // ziyaretci o karttan yukari ya da asagi serbestce cikabilir.
+          // Kritik nokta: kilit acikken konum degisemedigi icin
+          // "cikmak istiyor" durumu konumdan anlasilamiyordu; kenar
+          // kartlarda bastan kapali tutmak bu kisir dongüyü kiriyor.
+          // Kenardan birkac piksel ilerlenir ilerlenmez kilit geri
+          // devreye girip komsu karta oturtuyor.
+          var pay = 4;
+          var acik = (ilk.top < cizgi - pay) && (son.top > cizgi + pay);
+          if (acik === snapAcik) return;
+          snapAcik = acik;
+          document.documentElement.style.scrollSnapType = acik ? ('y ' + snapMod) : '';
+        };
+        kok.aySnapAyarla();
+      }
+
+      /* --- tema basliginin yuksekligi --- */
+      /* Kendi baslik seridimiz top: 0'a kilitlenince temanin sabit
+         basliginin arkasinda kaliyordu. Header'i bulup yuksekligini
+         olcuyoruz; yalnizca gercekten ekrana sabitlenmis (fixed/sticky)
+         bir header yer kaplar, normal akista kayan header sayilmaz. */
+      var hSecici = kok.getAttribute('data-ay-header') || '';
+      if (hSecici) {
+        var hBul = function () {
+          var parcalar = hSecici.split(',');
+          for (var i = 0; i < parcalar.length; i++) {
+            var el = null;
+            try { el = document.querySelector(parcalar[i].replace(/^\s+|\s+$/g, '')); } catch (e) { el = null; }
+            if (el && el.getBoundingClientRect().height > 0) return el;
+          }
+          return null;
+        };
+        // Tema basligi "position: fixed" olmayabilir: bu temada
+        // <header is="sticky-header"> ozel elemani kendi mekanizmasiyla
+        // sabitliyor. Bu yuzden hesaplanan konuma bakmak yerine ogenin
+        // ekranda gercekten kapladigi yeri olcuyoruz: alt kenari, kendi
+        // yuksekligiyle sinirlanmis hali. Sabit basliklarda bu deger
+        // yuksekligine esittir; akista kayip giden basliklarda 0'a duser.
+        var sonY = -1;
+        kok.ayHeaderOlc = function () {
+          var el = hBul();
+          var y = 0;
+          if (el) {
+            var r = el.getBoundingClientRect();
+            y = Math.round(Math.max(0, Math.min(r.bottom, r.height)));
+          }
+          if (y === sonY) return;
+          sonY = y;
+          kok.style.setProperty('--ay-header-y', y + 'px');
+        };
+        kok.ayHeaderOlc();
+        window.addEventListener('resize', kok.ayHeaderOlc);
+        window.addEventListener('orientationchange', kok.ayHeaderOlc);
+        // Header gec yuklenen bir logo yuzunden buyuyebilir
+        window.setTimeout(kok.ayHeaderOlc, 600);
+      }
+
+      /* --- sabit baslik: panel yuksekligi icin baslik olcusu --- */
+      var ustSabit = kok.querySelector('[data-ay-ust-sabit]');
+      if (ustSabit) {
+        kok.ayUstOlc = function () {
+          var y = Math.round(ustSabit.getBoundingClientRect().height);
+          kok.style.setProperty('--ay-bas-y', y + 'px');
+        };
+        kok.ayUstOlc();
+        window.addEventListener('resize', kok.ayUstOlc);
+        window.addEventListener('orientationchange', kok.ayUstOlc);
+        // Yazi sarmasi degisirse (font gec yuklenirse, dil degisirse)
+        // olcu kendiliginden tazelensin.
+        if (window.ResizeObserver) {
+          kok.ayUstGoz = new ResizeObserver(kok.ayUstOlc);
+          kok.ayUstGoz.observe(ustSabit);
+        }
+      }
+
+      /* --- baslik parallax --- */
+      /* Baslik blogu, sayfa kaydikca ekran ortasina gore hesaplanan
+         kucuk bir mesafe kadar oteleniyor. Giris animasyonu yok:
+         ilk cizimde deger 0'a yakinsa baslik oldugu yerde durur. */
+      var pOge = kok.querySelector('[data-ay-parallax]');
+      if (pOge && !azHareket) {
+        var pGuc = parseInt(pOge.getAttribute('data-ay-parallax'), 10);
+        if (isNaN(pGuc)) pGuc = 30;
+        var pBekliyor = false;
+
+        var pCiz = function () {
+          pBekliyor = false;
+          var r = pOge.getBoundingClientRect();
+          var vy = window.innerHeight || document.documentElement.clientHeight;
+          if (!vy) return;
+          // -1 = baslik ekranin ustunde, 0 = tam ortada, 1 = altinda
+          var t = ((r.top + r.height / 2) - vy / 2) / (vy / 2 + r.height / 2);
+          if (t > 1) t = 1;
+          if (t < -1) t = -1;
+          pOge.style.transform = 'translate3d(0, ' + (t * pGuc).toFixed(1) + 'px, 0)';
+        };
+
+        kok.ayParallax = function () {
+          if (pBekliyor) return;
+          pBekliyor = true;
+          window.requestAnimationFrame(pCiz);
+        };
+
+        pCiz();
+        window.addEventListener('scroll', kok.ayParallax, { passive: true });
+        window.addEventListener('resize', kok.ayParallax);
+      }
+
+      kok.ayTara = function () {
+        if (bekliyor) return;
+        bekliyor = true;
+        window.requestAnimationFrame(hesapla);
+      };
+
+      window.addEventListener('scroll', kok.ayTara, { passive: true });
+      window.addEventListener('resize', kok.ayTara);
+      window.addEventListener('orientationchange', kok.ayTara);
+      hesapla();
+    }
+
+    function sok(kok) {
+      if (!kok) return;
+      var vids = kok.querySelectorAll('[data-ay-vid]');
+      for (var i = 0; i < vids.length; i++) durdur(vids[i]);
+      if (kok.ayYukGoz) { kok.ayYukGoz.disconnect(); kok.ayYukGoz = null; }
+      if (kok.aySnapAyarla) {
+        document.documentElement.style.scrollSnapType = '';
+        kok.aySnapAyarla = null;
+      }
+      if (kok.ayHeaderOlc) {
+        window.removeEventListener('resize', kok.ayHeaderOlc);
+        window.removeEventListener('orientationchange', kok.ayHeaderOlc);
+        kok.ayHeaderOlc = null;
+      }
+      if (kok.ayUstGoz) { kok.ayUstGoz.disconnect(); kok.ayUstGoz = null; }
+      if (kok.ayUstOlc) {
+        window.removeEventListener('resize', kok.ayUstOlc);
+        window.removeEventListener('orientationchange', kok.ayUstOlc);
+        kok.ayUstOlc = null;
+      }
+      if (kok.ayParallax) {
+        window.removeEventListener('scroll', kok.ayParallax);
+        window.removeEventListener('resize', kok.ayParallax);
+        kok.ayParallax = null;
+      }
+      if (kok.ayTara) {
+        window.removeEventListener('scroll', kok.ayTara);
+        window.removeEventListener('resize', kok.ayTara);
+        window.removeEventListener('orientationchange', kok.ayTara);
+        kok.ayTara = null;
+      }
+      kok.ayKurulu = false;
+    }
+
+    window.ayYiginKur = function (alan) {
+      var kokler = (alan || document).querySelectorAll('[data-ay-kok]');
+      for (var i = 0; i < kokler.length; i++) kur(kokler[i]);
+    };
+
+    // Sekme arkaya alininca butun videolar dursun
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) return;
+      var vids = document.querySelectorAll('[data-ay-kok] [data-ay-vid]');
+      for (var i = 0; i < vids.length; i++) durdur(vids[i]);
+    });
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { window.ayYiginKur(); });
+    } else {
+      window.ayYiginKur();
+    }
+
+    document.addEventListener('shopify:section:load', function (e) {
+      window.ayYiginKur(e.target);
+    });
+    document.addEventListener('shopify:section:unload', function (e) {
+      var kokler = e.target.querySelectorAll('[data-ay-kok]');
+      for (var i = 0; i < kokler.length; i++) sok(kokler[i]);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Adım Yığını",
+  "tag": "section",
+  "class": "adim-yigin-section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Renk Paleti"
+    },
+    {
+      "type": "select",
+      "id": "palet",
+      "label": "Renk paleti",
+      "info": "Apple (siyah) seçiliyken aşağıdaki renk seçicileri devre dışı kalır. \"Özel renkler\"e alırsanız hepsi geri gelir.",
+      "default": "apple",
+      "options": [
+        { "value": "apple", "label": "Apple (siyah)" },
+        { "value": "ozel", "label": "Özel renkler" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Bölüm Başlığı"
+    },
+    {
+      "type": "text",
+      "id": "etiket",
+      "label": "Üst etiket",
+      "info": "Küçük, büyük harfli üst yazı. Boş bırakırsanız görünmez.",
+      "default": "SINGLE ZAMAN KAPSÜLÜ"
+    },
+    {
+      "type": "text",
+      "id": "baslik",
+      "label": "Başlık",
+      "default": "Nasıl Çalışır?"
+    },
+    {
+      "type": "select",
+      "id": "baslik_etiketi",
+      "label": "Başlık etiketi (SEO)",
+      "default": "h2",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "p", "label": "Düz metin" }
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "bas_logo",
+      "label": "Başlık logosu",
+      "info": "Başlığın soluna, yazıyla aynı satıra yerleşir. Küçük ve şeffaf zeminli (PNG/SVG) bir sürüm yükleyin."
+    },
+    {
+      "type": "range",
+      "id": "bas_logo_m",
+      "label": "Logo yüksekliği (mobil)",
+      "min": 16,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "bas_logo_d",
+      "label": "Logo yüksekliği (masaüstü)",
+      "min": 16,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "bas_logo_alt",
+      "label": "Logo ile yazı arası boşluk",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "bas_kalinlik",
+      "label": "Başlık kalınlığı",
+      "info": "Logonun altındaki satır. 400 en ince, 700 kalın.",
+      "min": 300,
+      "max": 800,
+      "step": 100,
+      "default": 500
+    },
+    {
+      "type": "text",
+      "id": "vurgu_metni",
+      "label": "Degradeli ikinci satır",
+      "info": "Başlığın hemen altına, degrade renkle yazılır. Boş bırakırsanız görünmez.",
+      "default": "Dört Adımda Öğrenin"
+    },
+    {
+      "type": "range",
+      "id": "vurgu_m",
+      "label": "İkinci satır boyutu (mobil)",
+      "min": 14,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "vurgu_t",
+      "label": "İkinci satır boyutu (tablet)",
+      "min": 14,
+      "max": 72,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "vurgu_d",
+      "label": "İkinci satır boyutu (masaüstü)",
+      "min": 14,
+      "max": 96,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "vurgu_kalinlik",
+      "label": "İkinci satır kalınlığı",
+      "min": 300,
+      "max": 800,
+      "step": 100,
+      "default": 700
+    },
+    {
+      "type": "range",
+      "id": "vurgu_ust",
+      "label": "İkinci satırın üst boşluğu",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "vurgu_ac",
+      "label": "İkinci satır degradeli olsun",
+      "info": "Kapalıyken aşağıdaki düz renk kullanılır.",
+      "default": true
+    },
+    { "type": "range", "id": "vurgu_aci", "label": "Degrade açısı", "min": 0, "max": 360, "step": 5, "unit": "°", "default": 90 },
+    { "type": "color", "id": "vurgu_1", "label": "Degrade 1. renk", "default": "#8a8a85" },
+    { "type": "color", "id": "vurgu_2", "label": "Degrade 2. renk", "default": "#8a8a85" },
+    { "type": "color", "id": "vurgu_3", "label": "Degrade 3. renk", "default": "#8a8a85" },
+    { "type": "color", "id": "vurgu_duz_renk", "label": "Degrade desteklenmezse renk", "default": "#8a8a85" },
+    {
+      "type": "checkbox",
+      "id": "bas_sabit",
+      "label": "Başlık ekranda sabit kalsın",
+      "info": "Bölüm boyunca başlık tepede durur, adım kartları onun altından kayıp kaybolur. Açıkken parallax devre dışı kalır.",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "header_secici",
+      "label": "Tema başlığının CSS seçicisi",
+      "info": "Sabit başlık, sitenin üst menüsünün altına yerleşsin diye onun yüksekliği ölçülür. Üst menü ekrana sabitlenmiyorsa ölçüm 0 kabul edilir. Genelde değiştirmeniz gerekmez.",
+      "default": "header[is='sticky-header'], .shopify-section-group-header-group, #shopify-section-header, header"
+    },
+    {
+      "type": "range",
+      "id": "bas_ust_ofset",
+      "label": "Üst menüyle başlık arası",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "bas_sabit_ic",
+      "label": "Sabit başlığın üst boşluğu",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "bas_parallax",
+      "label": "Başlıkta parallax",
+      "info": "Kaydırdıkça başlık sayfadan biraz yavaş hareket eder. Giriş animasyonu yoktur; başlık ilk anda olduğu yerde durur. Azaltılmış hareket tercihi olan ziyaretçilerde çalışmaz.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "bas_parallax_guc",
+      "label": "Parallax mesafesi",
+      "min": 10,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "richtext",
+      "id": "alt_metin",
+      "label": "Alt yazı",
+      "default": "<p>4 kolay adımda nasıl çalıştığını öğrenin.</p>"
+    },
+    {
+      "type": "select",
+      "id": "hiza",
+      "label": "Hizalama",
+      "default": "orta",
+      "options": [
+        { "value": "orta", "label": "Ortalı" },
+        { "value": "sol", "label": "Sola dayalı" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Başlık Boyutları"
+    },
+    {
+      "type": "range",
+      "id": "bas_m",
+      "label": "Başlık (mobil)",
+      "min": 18,
+      "max": 44,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "bas_t",
+      "label": "Başlık (tablet)",
+      "min": 18,
+      "max": 52,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "bas_d",
+      "label": "Başlık (masaüstü)",
+      "min": 18,
+      "max": 64,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "alt_m",
+      "label": "Alt yazı (mobil)",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "alt_d",
+      "label": "Alt yazı (masaüstü)",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "bas_alt_bosluk_m",
+      "label": "Başlık–alt yazı arası (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "bas_alt_bosluk_d",
+      "label": "Başlık–alt yazı arası (masaüstü)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "etiket_boyut",
+      "label": "Üst etiket boyutu",
+      "min": 9,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Yığın Davranışı"
+    },
+    {
+      "type": "checkbox",
+      "id": "tam_ekran",
+      "label": "Paneller ekranı tamamen kaplasın",
+      "info": "Kapatırsanız her adım, bölüm zemininin üstünde yuvarlak köşeli bir kart olarak durur.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "panel_icerik_yuk",
+      "label": "Panel yüksekliği içeriğe göre olsun",
+      "info": "Panel tam içeriği kadar yer kaplar; altta boş siyah alan kalmaz, bir sonraki adım hemen altta görünmeye başlar.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "gorsel_dikey",
+      "label": "Görselin dikey yeri",
+      "info": "Görsel, kutusunun içinde nerede dursun. \"Üstte\" görseli yazıya yaklaştırır.",
+      "default": "orta",
+      "options": [
+        { "value": "top", "label": "Üstte" },
+        { "value": "orta", "label": "Ortada" },
+        { "value": "bottom", "label": "Altta" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "kaydirma_mod",
+      "label": "Yerine oturma sertliği",
+      "info": "\"Kesin\" yavaş çekişlerde de hareketi baştan yumuşakça adıma doğru akıtır. \"Yakın\" yalnızca adıma yaklaşınca devreye girer.",
+      "default": "yakin",
+      "options": [
+        { "value": "kesin", "label": "Kesin (yumuşak, her zaman oturur)" },
+        { "value": "yakin", "label": "Yakın (sadece yaklaşınca)" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "kaydirma_kilit",
+      "label": "Adımlar tek tek yerine otursun",
+      "info": "Kaydırırken her adım ekrana tam oturur; tek harekette bir adım ilerlenir. Sayfanın geri kalanı normal kayar. Azaltılmış hareket tercihi olan ziyaretçilerde devre dışıdır.",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "gorsel_doldur",
+      "label": "Görsel kalan alanı doldursun (mobil)",
+      "info": "İçerik panelin tepesine yaslandığında altta kalan boşluğu görselle doldurur. Görselin oranı bozulmaz. Masaüstünü etkilemez.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "panel_hiza",
+      "label": "Panel içeriğinin dikey yeri",
+      "info": "\"Ortada\" panelin tam ortasına yerleşir; ekran boyu paneller kullanıldığında başlığın altında geniş bir boşluk bırakır. \"Üstte\" içeriği panelin tepesine yaslar.",
+      "default": "orta",
+      "options": [
+        { "value": "orta", "label": "Ortada" },
+        { "value": "ust", "label": "Üstte" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "panel_yuk",
+      "label": "Panel yüksekliği",
+      "info": "Ekran yüksekliğinin yüzdesi. 100 = tam ekran.",
+      "min": 60,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "ust_bosluk",
+      "label": "Üstten boşluk bırak",
+      "info": "Sabit bir üstbilgi başlığı kapatıyorsa bu değeri artırın.",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "kart_max_g",
+      "label": "İçerik en fazla genişlik (masaüstü)",
+      "info": "Panel ekranı kaplasa bile yazı ve görsel bu genişlikte, ortalanmış bir kolonda durur.",
+      "min": 600,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1120
+    },
+    {
+      "type": "range",
+      "id": "kart_kose",
+      "label": "Kart köşe yuvarlaklığı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "checkbox",
+      "id": "kart_golge",
+      "label": "Kartın altına gölge koy",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "masaustu_duzen",
+      "label": "Masaüstü düzeni",
+      "default": "yan",
+      "options": [
+        { "value": "yan", "label": "Metin solda, görsel sağda" },
+        { "value": "alt", "label": "Metin üstte, görsel altta" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Adım Yazıları"
+    },
+    {
+      "type": "checkbox",
+      "id": "num_goster",
+      "label": "Adım numarası görünsün",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "num_boyut",
+      "label": "Numara yazı boyutu",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "num_cap",
+      "label": "Numara rozeti yüksekliği",
+      "min": 20,
+      "max": 56,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "num_kalinlik",
+      "label": "Numara yazı kalınlığı",
+      "info": "300 en ince, 700 kalın. \"Adım 1\" gibi kelime yazarken 500 daha zarif durur.",
+      "min": 300,
+      "max": 800,
+      "step": 100,
+      "default": 700
+    },
+    {
+      "type": "checkbox",
+      "id": "num_degrade",
+      "label": "Numara rozetinde degrade",
+      "info": "Açıkken adım bloklarındaki numara rengi ayarları yerine aşağıdaki degrade kullanılır.",
+      "default": false
+    },
+    { "type": "color", "id": "num_d1", "label": "Degrade rengi 1", "default": "#d6ff00" },
+    { "type": "color", "id": "num_d2", "label": "Degrade rengi 2", "default": "#d6ff00" },
+    { "type": "color", "id": "num_d3", "label": "Degrade rengi 3", "default": "#d6ff00" },
+    {
+      "type": "range",
+      "id": "num_aci",
+      "label": "Degrade açısı",
+      "min": 0,
+      "max": 360,
+      "step": 5,
+      "unit": "°",
+      "default": 135
+    },
+    { "type": "color", "id": "num_degrade_yazi", "label": "Degrade rozette yazı", "default": "#0a0a0a" },
+    {
+      "type": "range",
+      "id": "kart_bas_m",
+      "label": "Adım başlığı (mobil)",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "kart_bas_t",
+      "label": "Adım başlığı (tablet)",
+      "min": 16,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "kart_bas_d",
+      "label": "Adım başlığı (masaüstü)",
+      "min": 16,
+      "max": 56,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "kart_metin_m",
+      "label": "Adım metni (mobil)",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "kart_metin_d",
+      "label": "Adım metni (masaüstü)",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Görsel"
+    },
+    {
+      "type": "range",
+      "id": "gorsel_y_m",
+      "label": "Görsel en fazla yükseklik (mobil)",
+      "min": 15,
+      "max": 65,
+      "step": 1,
+      "unit": "%",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "gorsel_y_d",
+      "label": "Görsel en fazla yükseklik (masaüstü)",
+      "min": 15,
+      "max": 80,
+      "step": 1,
+      "unit": "%",
+      "default": 55
+    },
+    {
+      "type": "select",
+      "id": "gorsel_kapla",
+      "label": "Görsel oturma biçimi",
+      "info": "\"Sığdır\" görselin tamamını gösterir, \"kırp\" alanı tamamen doldurur.",
+      "default": "contain",
+      "options": [
+        { "value": "contain", "label": "Sığdır (tamamı görünsün)" },
+        { "value": "cover", "label": "Kırp (alanı doldursun)" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "oynat_esigi",
+      "label": "Video ne zaman oynasın",
+      "info": "Panel ekranın bu kadarını kapladığında video baştan oynamaya başlar. Değeri büyüttükçe daha geç, panel iyice ortaya oturunca başlar.",
+      "min": 30,
+      "max": 95,
+      "step": 5,
+      "unit": "%",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "kenar_yumusat",
+      "label": "Video kenarlarını yumuşat",
+      "info": "Kenarları panel renginde bir degradeyle eritir. Zemini siyah olmayan videolar için ikinci çare.",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "%",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "gorsel_zemin",
+      "label": "Görsel arkası",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "range",
+      "id": "gorsel_kose",
+      "label": "Görsel köşe yuvarlaklığı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Renkler"
+    },
+    {
+      "type": "color",
+      "id": "bolum_zemin",
+      "label": "Bölüm zemini",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "color",
+      "id": "baslik_rengi",
+      "label": "Başlık rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "alt_rengi",
+      "label": "Alt yazı rengi",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "color",
+      "id": "etiket_renk",
+      "label": "Üst etiket rengi",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "header",
+      "content": "Boşluklar"
+    },
+    {
+      "type": "range",
+      "id": "kart_ic_m",
+      "label": "Kart iç boşluğu (mobil)",
+      "min": 12,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "kart_ic_d",
+      "label": "Kart iç boşluğu (masaüstü)",
+      "min": 16,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "ic_bosluk_m",
+      "label": "Kart içi öğe arası (mobil)",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "ic_bosluk_d",
+      "label": "Kart içi öğe arası (masaüstü)",
+      "min": 8,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "bas_yigin_bosluk_m",
+      "label": "Başlık ile yığın arası (mobil)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "bas_yigin_bosluk_d",
+      "label": "Başlık ile yığın arası (masaüstü)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "kenar_m",
+      "label": "Yan boşluk (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "kenar_d",
+      "label": "Yan boşluk (masaüstü)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "p_top_m",
+      "label": "Üst boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "p_bot_m",
+      "label": "Alt boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "p_top_d",
+      "label": "Üst boşluk (masaüstü)",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "p_bot_d",
+      "label": "Alt boşluk (masaüstü)",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    }
+  ],
+  "blocks": [
+    {
+      "type": "adim",
+      "name": "Adım",
+      "settings": [
+        {
+          "type": "text",
+          "id": "numara",
+          "label": "Adım numarası",
+          "default": "01"
+        },
+        {
+          "type": "text",
+          "id": "baslik",
+          "label": "Adım başlığı",
+          "default": "Başlık"
+        },
+        {
+          "type": "richtext",
+          "id": "metin",
+          "label": "Adım metni",
+          "default": "<p>Kısa bir açıklama.</p>"
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video (masaüstü)",
+          "info": "Sessiz, sonsuz döngüde oynar. Video seçilirse görselin yerini alır."
+        },
+        {
+          "type": "video",
+          "id": "video_mobil",
+          "label": "Video (mobil)",
+          "info": "Boş bırakırsanız masaüstü videosu kullanılır."
+        },
+        {
+          "type": "image_picker",
+          "id": "kapak",
+          "label": "Video kapağı",
+          "info": "Boş bırakın: video oynayana kadar panelin kendi zemini görünür, hiçbir kare basılmaz. Yalnızca özellikle bir kapak istiyorsanız doldurun."
+        },
+        {
+          "type": "image_picker",
+          "id": "gorsel",
+          "label": "Görsel (masaüstü)",
+          "info": "Yalnızca video seçilmediğinde gösterilir."
+        },
+        {
+          "type": "image_picker",
+          "id": "gorsel_mobil",
+          "label": "Görsel (mobil)",
+          "info": "Yalnızca video seçilmediğinde gösterilir. Boş bırakırsanız üstteki görsel kullanılır."
+        },
+        {
+          "type": "color",
+          "id": "kart_zemin",
+          "label": "Panel zemini",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color",
+          "id": "kart_yazi",
+          "label": "Başlık rengi",
+          "default": "#0a0a0a"
+        },
+        {
+          "type": "color",
+          "id": "kart_alt_yazi",
+          "label": "Metin rengi",
+          "default": "#5c5c57"
+        },
+        {
+          "type": "color",
+          "id": "num_zemin",
+          "label": "Numara rozeti zemini",
+          "default": "#d6ff00"
+        },
+        {
+          "type": "color",
+          "id": "num_yazi",
+          "label": "Numara rozeti yazısı",
+          "default": "#0a0a0a"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Adım Yığını",
+      "blocks": [
+        { "type": "adim" },
+        { "type": "adim" },
+        { "type": "adim" },
+        { "type": "adim" }
+      ]
+    }
+  ]
+}
+{% endschema %}

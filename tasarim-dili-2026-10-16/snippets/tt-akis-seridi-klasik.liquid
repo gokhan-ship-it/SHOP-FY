@@ -1,0 +1,445 @@
+{%- comment -%}
+  Text To Next - urun sayfasi 3 adimli akis seridi
+  Pasif bilgi bandi: link yok, buton yok, tiklama yok.
+
+  Kullanim - urun bolumune "Ozel Liquid" blogu ekleyin, fiyatin altina
+  surukleyin ve asagidakini yapistirin:
+
+  {% render 'tt-akis-seridi',
+     a1: 'Cip ile yukle',        i1: 'nfc',
+     a2: 'Zamani belirle',       i2: 'calendar',
+     a3: 'Vakti gelince acilsin', i3: 'lock-open' %}
+
+  Ayarlar:
+    a1..a5  adim yazisi (bos birakilan adim gorunmez)
+    i1..i5  ikon: nfc, calendar, lock-open, gift, upload, clock
+    g1..g5  ozel ikon adresi (doldurulursa i1..i5 yerine bu kullanilir)
+    cizgi   false yazarsaniz ust/alt ince cizgiler kalkar
+    ok      false yazarsaniz adimlar arasi oklar kalkar
+    zaman   true yazarsaniz ikonlarla yazilar arasina animasyonlu
+            zaman cizgisi girer (dugumler + ilerleyen dolgu).
+            Varsayilan kapali: bu snippet butun urun sayfalarinda
+            kullaniliyor, cizgi yalnizca istenen sayfada aciliyor.
+    sure    bir adimin ekranda kalma suresi (ms, varsayilan 2200)
+
+  Zaman cizgisi hakkinda:
+  - Renkler yine currentColor'dan tureniyor, sabit hex yok; bant hangi
+    zemine konursa konsun okunur kaliyor.
+  - Cizgi her adimin kendi icinde iki yariya bolunuyor (sol/sag). Boylece
+    dugumlerin dikey yeri ikon boyutuna gore kendiliginden oturuyor,
+    hicbir yerde "ikon 20px + bosluk 4px" gibi elle hesap yok.
+  - Iki komsu yarim ayni anda degil, 0 ve yarim sure gecikmeyle doluyor;
+    goz bunu tek bir akici sup gibi goruyor.
+  - Animasyon yalnizca serit ekrandayken donuyor (IntersectionObserver),
+    sekmeden cikilinca duruyor.
+  - prefers-reduced-motion acikken hic hareket yok: butun adimlar dolu
+    ve son adim etkin gosteriliyor.
+{%- endcomment -%}
+
+{%- liquid
+  if cizgi == false
+    assign cizgi_ac = false
+  else
+    assign cizgi_ac = true
+  endif
+
+  if zaman == true
+    assign zaman_ac = true
+  else
+    assign zaman_ac = false
+  endif
+
+  comment
+    Ok isaretleri ile dugumlu cizgi ayni anda durunca serit kalabalik
+    goruluyor; zaman cizgisi acikken oklar kendiliginden kapaniyor.
+  endcomment
+  if ok == false or zaman_ac
+    assign ok_ac = false
+  else
+    assign ok_ac = true
+  endif
+
+  assign adim_suresi = sure | default: 2200
+-%}
+
+{%- capture ham_metin -%}{{ a1 }}|~|{{ a2 }}|~|{{ a3 }}|~|{{ a4 }}|~|{{ a5 }}{%- endcapture -%}
+{%- capture ham_ikon -%}{{ i1 }}|~|{{ i2 }}|~|{{ i3 }}|~|{{ i4 }}|~|{{ i5 }}{%- endcapture -%}
+{%- capture ham_gorsel -%}{{ g1 }}|~|{{ g2 }}|~|{{ g3 }}|~|{{ g4 }}|~|{{ g5 }}{%- endcapture -%}
+
+{%- assign metinler = ham_metin | split: '|~|' -%}
+{%- assign ikonlar = ham_ikon | split: '|~|' -%}
+{%- assign gorseller = ham_gorsel | split: '|~|' -%}
+
+{%- assign adim_sayisi = 0 -%}
+{%- for m in metinler -%}
+  {%- if m != blank -%}{%- assign adim_sayisi = adim_sayisi | plus: 1 -%}{%- endif -%}
+{%- endfor -%}
+
+{%- comment -%}
+  Snippet ayni sayfada birden fazla kez cagrilabilir; increment sayfa
+  basina benzersiz bir sayi veriyor, butun seciciler onunla bitiyor.
+{%- endcomment -%}
+{%- capture ham_kimlik %}{% increment tt_akis_sayaci %}{% endcapture -%}
+{%- assign kimlik = ham_kimlik | strip -%}
+
+{%- if adim_sayisi > 0 -%}
+  <ol class="tt-akis{% if cizgi_ac %} tt-akis--cizgi{% endif %}{% if ok_ac %} tt-akis--ok{% endif %}{% if zaman_ac %} tt-akis--zaman tt-akis-{{ kimlik }}{% endif %}"{% if zaman_ac %} data-tt-akis="{{ adim_suresi }}"{% endif %}>
+    {%- for m in metinler -%}
+      {%- unless m == blank -%}
+        {%- assign sira = forloop.index0 -%}
+        {%- assign ozel = gorseller[sira] -%}
+        {%- assign ikon = ikonlar[sira] -%}
+        <li class="tt-akis-adim"{% if zaman_ac %} data-tt-adim{% endif %}>
+          <span class="tt-akis-ikon" aria-hidden="true">
+            {%- if ozel != blank -%}
+              <img src="{{ ozel }}" alt="" width="20" height="20" loading="lazy" decoding="async">
+            {%- else -%}
+              <svg viewBox="0 0 24 24" focusable="false">
+                {%- case ikon -%}
+                  {%- when 'nfc' -%}
+                    <rect x="3" y="4" width="18" height="16" rx="3"/>
+                    <path d="M8 9.6a4 4 0 0 1 0 4.8"/>
+                    <path d="M11.2 7.8a7.6 7.6 0 0 1 0 8.4"/>
+                    <path d="M14.4 6a11.2 11.2 0 0 1 0 12"/>
+                  {%- when 'calendar' -%}
+                    <rect x="3" y="5" width="18" height="16" rx="2.5"/>
+                    <path d="M3 10.5h18"/>
+                    <path d="M8 3v4"/>
+                    <path d="M16 3v4"/>
+                  {%- when 'lock-open' -%}
+                    <rect x="4" y="11" width="16" height="10" rx="2.5"/>
+                    <path d="M8 11V7.6a4 4 0 0 1 7.7-1.6"/>
+                    <path d="M12 15v2.2"/>
+                  {%- when 'gift' -%}
+                    <rect x="3" y="9.5" width="18" height="11.5" rx="2"/>
+                    <path d="M3 14h18"/>
+                    <path d="M12 9.5V21"/>
+                    <path d="M12 9.5H8.3a2.3 2.3 0 1 1 0-4.6c2.3 0 3.7 4.6 3.7 4.6z"/>
+                    <path d="M12 9.5h3.7a2.3 2.3 0 1 0 0-4.6c-2.3 0-3.7 4.6-3.7 4.6z"/>
+                  {%- when 'upload' -%}
+                    <path d="M12 16.2V4"/>
+                    <path d="M7.5 8.5 12 4l4.5 4.5"/>
+                    <path d="M4 16v2.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V16"/>
+                  {%- when 'clock' -%}
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 7v5.3l3.4 2"/>
+                  {%- else -%}
+                    <circle cx="12" cy="12" r="9"/>
+                {%- endcase -%}
+              </svg>
+            {%- endif -%}
+          </span>
+          {%- if zaman_ac -%}
+            <span class="tt-akis-hat" aria-hidden="true"
+            ><i class="tt-akis-dolu tt-akis-dolu--sol"></i
+            ><i class="tt-akis-dolu tt-akis-dolu--sag"></i
+            ><i class="tt-akis-nokta"></i
+            ></span>
+          {%- endif -%}
+          <span class="tt-akis-yazi">{{ m }}</span>
+        </li>
+      {%- endunless -%}
+    {%- endfor -%}
+  </ol>
+
+  {%- if zaman_ac -%}
+  <style>
+    .tt-akis-{{ kimlik }} .tt-akis-adim { gap: 0; }
+
+    /* Adimin 0 3px yan dolgusu cizgiyi sutun sinirinda kesiyordu; negatif
+       kenar boslugu ile cizgi dolgunun icine tasiyor ve komsu adimla
+       birlesiyor. Dolgu iki yanda esit oldugu icin dugumun merkezi
+       ikonun merkeziyle ayni kaliyor. */
+    .tt-akis-{{ kimlik }} .tt-akis-hat {
+      position: relative;
+      display: block;
+      width: auto;
+      align-self: stretch;
+      height: 10px;
+      margin: 9px -3px 7px;
+    }
+
+    /* Taban cizgi: her adimda sol ve sag yarim. Ilk adimin solu ve
+       son adimin sagi yok, boylece cizgi ilk ve son dugumde bitiyor. */
+    .tt-akis-{{ kimlik }} .tt-akis-hat::before,
+    .tt-akis-{{ kimlik }} .tt-akis-hat::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      height: 1px;
+      margin-top: -0.5px;
+      background: rgba(138, 138, 133, 0.3);
+    }
+    .tt-akis-{{ kimlik }} .tt-akis-hat::before { left: 0; right: 50%; }
+    .tt-akis-{{ kimlik }} .tt-akis-hat::after { left: 50%; right: 0; }
+    .tt-akis-{{ kimlik }} .tt-akis-adim:first-child .tt-akis-hat::before,
+    .tt-akis-{{ kimlik }} .tt-akis-adim:last-child .tt-akis-hat::after { display: none; }
+
+    /* Dolan kisim: taban cizginin uzerinde, soldan saga aciliyor.
+
+       Hiz egrisi bilerek "linear". Bir aralik iki ayri ogeden (bir
+       adimin sag yarisi + sonrakinin sol yarisi) olusuyor; ease
+       kullanilirsa her yarim kendi icinde yavaslayip hizlandigi icin
+       tam aralik ortasinda gorunur bir duraklama olusuyor. Sabit hizda
+       iki yarim kusursuz birlesiyor ve sup tek parca goruluyor. */
+    .tt-akis-{{ kimlik }} .tt-akis-dolu {
+      position: absolute;
+      top: 50%;
+      height: 1px;
+      margin-top: -0.5px;
+      background: currentColor;
+      transform: scaleX(0);
+      transform-origin: left center;
+      opacity: 1;
+      will-change: transform;
+      transition:
+        transform 280ms linear,
+        opacity 260ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tt-akis-{{ kimlik }} .tt-akis-dolu--sol { left: 0; right: 50%; }
+    .tt-akis-{{ kimlik }} .tt-akis-dolu--sag { left: 50%; right: 0; }
+    .tt-akis-{{ kimlik }} .tt-akis-adim:first-child .tt-akis-dolu--sol,
+    .tt-akis-{{ kimlik }} .tt-akis-adim:last-child .tt-akis-dolu--sag { display: none; }
+
+    /* Bir adimin sag yarisi ile bir sonrakinin sol yarisi ayni araligi
+       olusturuyor. Sag once basliyor, sol tam onun bittigi anda (280ms)
+       devraliyor; ikisi de sabit hizda oldugu icin ek yeri goruluyor. */
+    .tt-akis-{{ kimlik }} .tt-akis-adim.is-dolu-sag .tt-akis-dolu--sag { transform: scaleX(1); }
+    .tt-akis-{{ kimlik }} .tt-akis-adim.is-dolu-sol .tt-akis-dolu--sol {
+      transform: scaleX(1);
+      transition-delay: 280ms;
+    }
+
+    /* Dongu sonunda cizgi geri sarmiyor, soneryor: sert bir sicrama
+       yerine sakin bir kapanis. */
+    .tt-akis-{{ kimlik }}.is-sonlaniyor .tt-akis-dolu { opacity: 0; }
+
+    /* Dugum iki pseudo-ogeden olusuyor: ::before halka, ::after nokta.
+       Boylece yalnizca transform / opacity / background-color animasyona
+       giriyor. Eski surumde halka box-shadow ile veriliyordu; box-shadow
+       her karede yeniden boyanir, dugum buyurken takilma yapiyordu. */
+    .tt-akis-{{ kimlik }} .tt-akis-nokta {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 9px;
+      height: 9px;
+      margin: -4.5px 0 0 -4.5px;
+    }
+    .tt-akis-{{ kimlik }} .tt-akis-nokta::before,
+    .tt-akis-{{ kimlik }} .tt-akis-nokta::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+    }
+    .tt-akis-{{ kimlik }} .tt-akis-nokta::before {
+      top: -4px; right: -4px; bottom: -4px; left: -4px;
+      background: rgba(138, 138, 133, 0.16);
+      opacity: 0;
+      transform: scale(0.5);
+      will-change: transform, opacity;
+      transition:
+        opacity 240ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 320ms cubic-bezier(0.34, 1.32, 0.5, 1);
+    }
+    .tt-akis-{{ kimlik }} .tt-akis-nokta::after {
+      top: 0; right: 0; bottom: 0; left: 0;
+      background: rgba(138, 138, 133, 0.34);
+      will-change: transform;
+      transition:
+        background-color 260ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 320ms cubic-bezier(0.34, 1.32, 0.5, 1);
+    }
+    .tt-akis-{{ kimlik }} .tt-akis-adim.is-gecmis .tt-akis-nokta::after { background: currentColor; }
+    .tt-akis-{{ kimlik }} .tt-akis-adim.is-aktif .tt-akis-nokta::after { transform: scale(1.28); }
+    .tt-akis-{{ kimlik }} .tt-akis-adim.is-aktif .tt-akis-nokta::before {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .tt-akis-{{ kimlik }}.is-sonlaniyor .tt-akis-adim.is-aktif .tt-akis-nokta::before { opacity: 0; }
+
+    /* Ikon ve yazi yalnizca opaklikla one cikiyor: kalinlik degismiyor,
+       yani uzun etiketler yeniden sarmalanip serit ziplamiyor. */
+    .tt-akis-{{ kimlik }} .tt-akis-ikon,
+    .tt-akis-{{ kimlik }} .tt-akis-yazi {
+      opacity: 0.4;
+      transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tt-akis-{{ kimlik }} .tt-akis-adim.is-gecmis .tt-akis-ikon,
+    .tt-akis-{{ kimlik }} .tt-akis-adim.is-gecmis .tt-akis-yazi { opacity: 0.72; }
+    .tt-akis-{{ kimlik }} .tt-akis-adim.is-aktif .tt-akis-ikon,
+    .tt-akis-{{ kimlik }} .tt-akis-adim.is-aktif .tt-akis-yazi { opacity: 1; }
+
+    /* Sira ilk adimda degilse vurgu, cizgi oraya VARDIKTAN sonra
+       geciyor (280 + 280 = 560ms). Eskiden dugum ve yazi cizgiyle ayni
+       anda aciliyordu; goz iki ayri hareket goruyor ve akis kopuk
+       hissediliyordu. Ilk adimin oncesinde cizgi olmadigi icin ona
+       gecikme verilmiyor. */
+    .tt-akis-{{ kimlik }} .tt-akis-adim:not(:first-child) .tt-akis-nokta::before,
+    .tt-akis-{{ kimlik }} .tt-akis-adim:not(:first-child) .tt-akis-nokta::after,
+    .tt-akis-{{ kimlik }} .tt-akis-adim:not(:first-child) .tt-akis-ikon,
+    .tt-akis-{{ kimlik }} .tt-akis-adim:not(:first-child) .tt-akis-yazi {
+      transition-delay: 560ms;
+    }
+    /* Kapanista bekleme olmasin: her sey ayni anda sonsun. */
+    .tt-akis-{{ kimlik }}.is-sonlaniyor .tt-akis-adim .tt-akis-nokta::before,
+    .tt-akis-{{ kimlik }}.is-sonlaniyor .tt-akis-adim .tt-akis-nokta::after,
+    .tt-akis-{{ kimlik }}.is-sonlaniyor .tt-akis-adim .tt-akis-ikon,
+    .tt-akis-{{ kimlik }}.is-sonlaniyor .tt-akis-adim .tt-akis-yazi {
+      transition-delay: 0ms;
+    }
+
+    /* Dongu basa sararken geri sarma goruntusu olusmasin diye gecisler
+       bir kare boyunca kapatiliyor. */
+    .tt-akis-{{ kimlik }}.is-sifirla .tt-akis-dolu,
+    .tt-akis-{{ kimlik }}.is-sifirla .tt-akis-nokta::before,
+    .tt-akis-{{ kimlik }}.is-sifirla .tt-akis-nokta::after,
+    .tt-akis-{{ kimlik }}.is-sifirla .tt-akis-ikon,
+    .tt-akis-{{ kimlik }}.is-sifirla .tt-akis-yazi { transition: none !important; }
+
+    @supports (color: color-mix(in srgb, currentColor 20%, transparent)) {
+      .tt-akis-{{ kimlik }} .tt-akis-hat::before,
+      .tt-akis-{{ kimlik }} .tt-akis-hat::after {
+        background: color-mix(in srgb, currentColor 20%, transparent);
+      }
+      .tt-akis-{{ kimlik }} .tt-akis-nokta::after {
+        background: color-mix(in srgb, currentColor 26%, transparent);
+      }
+      .tt-akis-{{ kimlik }} .tt-akis-nokta::before {
+        background: color-mix(in srgb, currentColor 12%, transparent);
+      }
+      .tt-akis-{{ kimlik }} .tt-akis-adim.is-gecmis .tt-akis-nokta::after { background: currentColor; }
+    }
+
+    /* Hareket istemeyen ziyaretci: butun adimlar dolu ve tam opak, hic
+       hareket yok. Seciciler yukaridaki durum kurallariyla AYNI
+       ozgullukte yaziliyor; daha zayif yazilirsa .is-gecmis kurallari
+       bunlari yener ve adimlar soluk kalirdi. */
+    @media (prefers-reduced-motion: reduce) {
+      .tt-akis-{{ kimlik }} .tt-akis-dolu { transition: none; }
+      .tt-akis-{{ kimlik }} .tt-akis-adim.is-dolu-sol .tt-akis-dolu--sol {
+        transition: none;
+        transition-delay: 0ms;
+      }
+      .tt-akis-{{ kimlik }} .tt-akis-nokta::before,
+      .tt-akis-{{ kimlik }} .tt-akis-nokta::after { transition: none; }
+      .tt-akis-{{ kimlik }} .tt-akis-adim.is-gecmis .tt-akis-ikon,
+      .tt-akis-{{ kimlik }} .tt-akis-adim.is-gecmis .tt-akis-yazi { opacity: 1; }
+      .tt-akis-{{ kimlik }} .tt-akis-ikon,
+      .tt-akis-{{ kimlik }} .tt-akis-yazi { transition: none; }
+      .tt-akis-{{ kimlik }} .tt-akis-adim:not(:first-child) .tt-akis-nokta::before,
+      .tt-akis-{{ kimlik }} .tt-akis-adim:not(:first-child) .tt-akis-nokta::after,
+      .tt-akis-{{ kimlik }} .tt-akis-adim:not(:first-child) .tt-akis-ikon,
+      .tt-akis-{{ kimlik }} .tt-akis-adim:not(:first-child) .tt-akis-yazi {
+        transition-delay: 0ms;
+      }
+    }
+  </style>
+
+  <script>
+    (function () {
+      var kok = document.querySelector('.tt-akis-{{ kimlik }}');
+      if (!kok) return;
+      var adimlar = kok.querySelectorAll('[data-tt-adim]');
+      if (!adimlar.length) return;
+
+      var sure = parseInt(kok.getAttribute('data-tt-akis'), 10);
+      if (isNaN(sure) || sure < 400) sure = 2200;
+
+      var azHareket = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      var etkin = 0;
+      var sayac = null;
+      var kapanis = null;
+      var gorunur = false;
+
+      function uygula(i) {
+        for (var k = 0; k < adimlar.length; k++) {
+          var el = adimlar[k];
+          el.classList.toggle('is-aktif', k === i);
+          el.classList.toggle('is-gecmis', k <= i);
+          // k adiminin sag yarisi (k -> k+1 araligi) i, k'yi gectiyse dolu
+          el.classList.toggle('is-dolu-sag', k < i);
+          // k adiminin sol yarisi (k-1 -> k araligi) i, k'ye ulastiysa dolu
+          el.classList.toggle('is-dolu-sol', k <= i && k > 0);
+        }
+      }
+
+      // Hareket azaltmada tek kare: butun cizgi dolu, hicbir adim
+      // one cikmiyor (yanip sonen bir vurgu da bir harekettir).
+      function durgunKur() {
+        for (var k = 0; k < adimlar.length; k++) {
+          var el = adimlar[k];
+          el.classList.remove('is-aktif');
+          el.classList.add('is-gecmis', 'is-dolu-sag', 'is-dolu-sol');
+        }
+      }
+
+      function temizle() {
+        for (var k = 0; k < adimlar.length; k++) {
+          adimlar[k].classList.remove('is-aktif', 'is-gecmis', 'is-dolu-sag', 'is-dolu-sol');
+        }
+      }
+
+      // Dongu sonu: once her sey birlikte soner (SONUS), sonra gorunmez
+      // haldeyken durum sifirlanir ve ilk adim gecisli olarak yeniden
+      // yanar. Eski surumde durum aninda geri aliniyordu; bu her turda
+      // gozle gorulur bir sicrama yapiyordu.
+      var SONUS = 300;
+
+      function sarmala() {
+        kok.classList.add('is-sonlaniyor');
+        kapanis = window.setTimeout(function () {
+          kapanis = null;
+          kok.classList.add('is-sifirla');
+          temizle();
+          kok.classList.remove('is-sonlaniyor');
+          // Reflow: sifirlanmis durum, gecisler acilmadan once yaziya doksun.
+          void kok.offsetWidth;
+          kok.classList.remove('is-sifirla');
+          etkin = 0;
+          uygula(etkin);
+        }, SONUS);
+      }
+
+      function ilerle() {
+        if (etkin >= adimlar.length - 1) sarmala();
+        else { etkin += 1; uygula(etkin); }
+      }
+
+      function basla() {
+        if (sayac || azHareket) return;
+        sayac = window.setInterval(ilerle, sure);
+      }
+      function dur() {
+        if (!sayac) return;
+        window.clearInterval(sayac);
+        sayac = null;
+        // Ekran disina cikildiginda yarim kalmis bir kapanis olmasin.
+        if (kapanis) { window.clearTimeout(kapanis); kapanis = null; }
+        kok.classList.remove('is-sonlaniyor');
+      }
+
+      if (azHareket) { durgunKur(); return; }
+      uygula(0);
+
+      if ('IntersectionObserver' in window) {
+        var gozlemci = new IntersectionObserver(function (girisler) {
+          gorunur = girisler[0].isIntersecting;
+          if (gorunur && !document.hidden) basla(); else dur();
+        }, { threshold: 0.35 });
+        gozlemci.observe(kok);
+      } else {
+        gorunur = true;
+        basla();
+      }
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) dur();
+        else if (gorunur) basla();
+      });
+    })();
+  </script>
+  {%- endif -%}
+{%- endif -%}

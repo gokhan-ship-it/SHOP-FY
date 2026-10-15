@@ -1,0 +1,371 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "name": "t:sections.overlay-group.name",
+  "type": "custom.overlay",
+  "sections": {
+    "cart-drawer": {
+      "type": "cart-drawer",
+      "settings": {
+        "show_vendor": false,
+        "show_cart_note": true,
+        "show_shipping_calculator": true,
+        "add_discount_code": true,
+        "show_view_cart_button": false,
+        "show_checkout_button": true,
+        "show_free_shipping_bar": true,
+        "free_shipping_minimum_amount": "2500",
+        "cart_recommendations_enabled": true,
+        "cart_recommendations_heading": "Bunları da beğenebilirsiniz",
+        "cart_recommendations_limit": 5,
+        "show_cart_recommendations_vendor": false,
+        "show_cart_recommendations_price": true,
+        "cart_recommendations_products": [],
+        "empty_cart_message": "<p>Zaman Kapsüllerini keşfedin.</p>",
+        "empty_cart_collections": [],
+        "recent_products_enabled": false,
+        "recent_products_heading": "Son görüntülenenler",
+        "recent_products_limit": 5,
+        "show_recent_products_vendor": false,
+        "show_recent_products_price": true
+      }
+    },
+    "search-drawer": {
+      "type": "search-drawer",
+      "settings": {}
+    },
+    "newsletter-popup": {
+      "type": "newsletter-popup",
+      "blocks": {
+        "text-1": {
+          "type": "text",
+          "settings": {
+            "text": "<p>ILK DEFA?</p>",
+            "text_font": "body",
+            "text_size": "subtext-custom",
+            "text_max_size": 12,
+            "text_line_height": 1.6,
+            "text_letter_spacing": 0,
+            "text_capitalize": false,
+            "secondary_color": true,
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle"
+          }
+        },
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Kayıt ol ve ilk siparişinde geçerli <em>%10 indirim</em> kazan.",
+            "heading_size": "text-2xl lg:text-3xl",
+            "heading_tag": "h2",
+            "highlighted_text": "scribble",
+            "highlighted_scribble": "basic-underline",
+            "highlighted_reveal": false
+          }
+        },
+        "spacing": {
+          "type": "spacing",
+          "settings": {
+            "height": 32,
+            "height_mobile": 12
+          }
+        },
+        "form": {
+          "type": "form",
+          "settings": {}
+        },
+        "text-2": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Bültenimize katılın; size özel fırsatları ve en yeni Zaman Kapsüllerini ilk siz keşfedin.</p>",
+            "text_font": "body",
+            "text_size": "text-sm",
+            "text_max_size": 32,
+            "text_line_height": 1.6,
+            "text_letter_spacing": 0,
+            "text_capitalize": false,
+            "secondary_color": true,
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle"
+          }
+        },
+        "media": {
+          "type": "media",
+          "disabled": true,
+          "settings": {}
+        },
+        "floating": {
+          "type": "floating",
+          "settings": {
+            "heading": "%10 İndirim Kazan",
+            "content_position": "left-0",
+            "show_social": true,
+            "mobile_disabled": true,
+            "mobile_hide_social": false,
+            "color_text": "#171717",
+            "color_background": "#ffffff"
+          }
+        }
+      },
+      "block_order": [
+        "text-1",
+        "heading",
+        "spacing",
+        "form",
+        "text-2",
+        "media",
+        "floating"
+      ],
+      "disabled": true,
+      "settings": {
+        "mode": "enabled",
+        "only_homepage": false,
+        "only_visitor": false,
+        "delay": 7,
+        "expiry": 30,
+        "text_alignment": "left",
+        "content_position": "right-0",
+        "color_drawer_text": "#171717",
+        "color_drawer_background": "#ffffff",
+        "color_drawer_highlight": "#171717",
+        "color_drawer_button_text": "#ffffff",
+        "color_drawer_button_background": "#171717",
+        "color_drawer_button_gradient": "",
+        "color_drawer_overlay": "#171717"
+      }
+    },
+    "age-verifier": {
+      "type": "age-verifier",
+      "blocks": {
+        "image": {
+          "type": "image",
+          "settings": {
+            "image_width": "custom",
+            "image_max_width": 70,
+            "image_max_width_mobile": 70
+          }
+        },
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Confirm your age",
+            "heading_size": "text-lg-2xl",
+            "heading_tag": "h2",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle",
+            "highlighted_reveal": false
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Are you 18 years old or older?</p>",
+            "text_font": "body",
+            "text_size": "text-base",
+            "text_max_size": 32,
+            "text_line_height": 1.6,
+            "text_letter_spacing": 0,
+            "text_capitalize": false,
+            "secondary_color": false,
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle"
+          }
+        },
+        "spacing": {
+          "type": "spacing",
+          "settings": {
+            "height": 16,
+            "height_mobile": 12
+          }
+        },
+        "buttons": {
+          "type": "buttons",
+          "settings": {
+            "button_label_1": "Yes, I am",
+            "button_label_2": "No, I’m not",
+            "button_link_2": "",
+            "button_external_2": false
+          }
+        }
+      },
+      "block_order": [
+        "image",
+        "heading",
+        "text",
+        "spacing",
+        "buttons"
+      ],
+      "disabled": true,
+      "settings": {
+        "mode": "enabled",
+        "expiry": 30,
+        "text_alignment": "center",
+        "content_position": "center-0",
+        "blur_background_image": false,
+        "color_drawer_text": "#171717",
+        "color_drawer_background": "#ffffff",
+        "color_drawer_highlight": "#ffddbf",
+        "color_drawer_button_text": "#ffffff",
+        "color_drawer_button_background": "#171717",
+        "color_drawer_button_gradient": "",
+        "color_drawer_overlay": "#171717"
+      }
+    },
+    "cookie-banner": {
+      "type": "cookie-banner",
+      "blocks": {
+        "image": {
+          "type": "image",
+          "settings": {
+            "image_width": "custom",
+            "image_max_width": 40,
+            "image_max_width_mobile": 40
+          }
+        },
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Çerez kullanımı",
+            "heading_size": "text-lg-2xl",
+            "heading_tag": "h2",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle",
+            "highlighted_reveal": false
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Size daha iyi bir deneyim sunmak için çerez kullanıyoruz.</p>",
+            "text_font": "body",
+            "text_size": "text-base",
+            "text_max_size": 32,
+            "text_line_height": 1.6,
+            "text_letter_spacing": 0,
+            "text_capitalize": false,
+            "secondary_color": false,
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle"
+          }
+        },
+        "spacing": {
+          "type": "spacing",
+          "settings": {
+            "height": 16,
+            "height_mobile": 12
+          }
+        },
+        "buttons": {
+          "type": "buttons",
+          "settings": {
+            "button_label_1": "Kabul et",
+            "button_label_2": "Reddet"
+          }
+        }
+      },
+      "block_order": [
+        "image",
+        "heading",
+        "text",
+        "spacing",
+        "buttons"
+      ],
+      "settings": {
+        "mode": "enabled",
+        "delay": 5,
+        "text_alignment": "center",
+        "content_position": "left-0",
+        "color_drawer_text": "#0a0a0a",
+        "color_drawer_background": "#ffffff",
+        "color_drawer_highlight": "#d6ff00",
+        "color_drawer_button_text": "#ffffff",
+        "color_drawer_button_background": "#0a0a0a",
+        "color_drawer_button_gradient": ""
+      }
+    },
+    "mobile-dock": {
+      "type": "mobile-dock",
+      "blocks": {
+        "mobile-dock-1": {
+          "type": "home",
+          "settings": {
+            "custom_icon": "",
+            "title": "Ana Sayfa"
+          }
+        },
+        "mobile-dock-5": {
+          "type": "cart",
+          "settings": {
+            "custom_icon": "",
+            "title": "Sepet"
+          }
+        },
+        "mobile-dock-4": {
+          "type": "link",
+          "disabled": true,
+          "settings": {
+            "custom_icon": "",
+            "title": "Shop",
+            "link": "shopify://collections/all",
+            "external": false
+          }
+        },
+        "mobile-dock-3": {
+          "type": "search",
+          "settings": {
+            "custom_icon": "",
+            "title": "Ara"
+          }
+        },
+        "mobile-dock-2": {
+          "type": "menu",
+          "name": "Destek",
+          "settings": {
+            "custom_icon": "",
+            "title": "Destek"
+          }
+        },
+        "mobile-dock-6": {
+          "type": "account",
+          "settings": {
+            "custom_icon": "",
+            "title": "Hesap"
+          }
+        }
+      },
+      "block_order": [
+        "mobile-dock-1",
+        "mobile-dock-5",
+        "mobile-dock-4",
+        "mobile-dock-3",
+        "mobile-dock-2",
+        "mobile-dock-6"
+      ],
+      "disabled": true,
+      "settings": {
+        "color_text": "#000000",
+        "color_background": "#ffffff",
+        "gradient_background": "",
+        "padding_top": 8,
+        "padding_bottom": 8,
+        "divider": true,
+        "rounded": true
+      }
+    }
+  },
+  "order": [
+    "cart-drawer",
+    "search-drawer",
+    "newsletter-popup",
+    "age-verifier",
+    "cookie-banner",
+    "mobile-dock"
+  ]
+}

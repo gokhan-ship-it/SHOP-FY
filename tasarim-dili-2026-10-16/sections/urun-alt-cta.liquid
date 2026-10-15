@@ -1,0 +1,186 @@
+{%- comment -%}
+  Urun sayfasi alt CTA - footer'in hemen ustunde duran sakin bir serit.
+
+  Kurallar (istenen): dugme yok, sadece metin baglantisi; cerceve,
+  golge, gorsel yok; ayirici cizgi yok -- ayirma isini zemin rengi
+  yapiyor. Sayfadaki diger bilesenlerin stillerine dokunulmuyor:
+  butun secicilerin sonuna bolum kimligi ekli, yani bu CSS baska
+  hicbir ogeye sizmiyor.
+
+  Iki renk temadan gelmedi, ayar olarak birakildi:
+  - Zemin: temanin tek acik gri tokeni color_image_background (#fafafa)
+    ve o gorsel arkaplani icin; beyaz uzerinde ayirt edilmiyor. Bu
+    yuzden istenen yedek deger (#F5F5F7) varsayilan yapildi.
+  - Baglanti rengi: temada lacivert bir CTA rengi yok (tema dugmesi
+    #171717). Sayfalarda kullandigimiz Apple mavisi varsayilan.
+
+  Erisim: baglantinin dokunma alani dikey dolgu ile 44px'e cikariliyor;
+  gorsel bosluk bozulmasin diye ust margin dolgu kadar azaltildi
+  (16 + 12 = istenen 28px).
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+-%}
+
+{%- if s.aktif -%}
+<style>
+  .uac-{{ sid }} {
+    box-sizing: border-box;
+    width: 100%;
+    background: {{ s.zemin }};
+    padding: 56px 20px;
+  }
+  .uac-{{ sid }} *,
+  .uac-{{ sid }} *::before,
+  .uac-{{ sid }} *::after { box-sizing: inherit; }
+
+  .uac-kap-{{ sid }} {
+    max-width: 560px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .uac-etiket-{{ sid }} {
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+    color: {{ s.etiket_renk }};
+  }
+
+  .uac-baslik-{{ sid }} {
+    margin: 12px 0 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    color: {{ s.baslik_renk }};
+  }
+
+  .uac-metin-{{ sid }} {
+    max-width: 38ch;
+    margin: 14px auto 0;
+    font-size: 15px;
+    line-height: 1.55;
+    color: {{ s.metin_renk }};
+  }
+
+  /* Dokunma alani 44px: dikey dolgu veriyor, ust margin de dolgu
+     kadar azaltiliyor ki aciklamayla gorsel arasi 28px kalsin. */
+  .uac-bag-{{ sid }} {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    /* Satir kutusu 15 x 1.2 = 18px; 13px dolgu ile kutu tam 44px olur.
+       Boylece flex ortalamasindan gelen 1px kayma da olusmuyor ve
+       aciklamayla gorsel ara tam 28px kaliyor (15 + 13). */
+    margin-top: 15px;
+    padding: 13px 4px;
+    min-height: 44px;
+    font-size: 15px;
+    line-height: 1.2;
+    color: {{ s.bag_renk }};
+    text-decoration: none;
+  }
+
+  /* Alt cizgi pseudo-eleman: text-decoration her tarayicida
+     yumusak gecmiyor, opaklik geciyor. */
+  .uac-bagyazi-{{ sid }} { position: relative; }
+  .uac-bagyazi-{{ sid }}::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+  .uac-bag-{{ sid }}:hover .uac-bagyazi-{{ sid }}::after,
+  .uac-bag-{{ sid }}:focus-visible .uac-bagyazi-{{ sid }}::after {
+    opacity: 1;
+  }
+
+  .uac-ok-{{ sid }} {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  @media (min-width: 750px) {
+    .uac-{{ sid }} { padding: 80px 24px; }
+    .uac-baslik-{{ sid }} { font-size: 32px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uac-bagyazi-{{ sid }}::after { transition: none; }
+  }
+</style>
+
+<div class="uac-{{ sid }}">
+  <div class="uac-kap-{{ sid }}">
+    {%- if s.etiket != blank -%}
+      <p class="uac-etiket-{{ sid }}">{{ s.etiket }}</p>
+    {%- endif -%}
+
+    {%- if s.baslik != blank -%}
+      <h2 class="uac-baslik-{{ sid }}">{{ s.baslik }}</h2>
+    {%- endif -%}
+
+    {%- if s.aciklama != blank -%}
+      <p class="uac-metin-{{ sid }}">{{ s.aciklama }}</p>
+    {%- endif -%}
+
+    {%- if s.bag_metni != blank -%}
+      <a
+        class="uac-bag-{{ sid }}"
+        {% if s.hedef != blank %}href="{{ s.hedef }}"{% endif %}
+      >
+        <span class="uac-bagyazi-{{ sid }}">{{ s.bag_metni }}</span>
+        <svg class="uac-ok-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 5.5 15.5 12 9 18.5"></path>
+        </svg>
+      </a>
+    {%- endif -%}
+  </div>
+</div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Ürün Alt CTA",
+  "tag": "section",
+  "class": "urun-alt-cta-section",
+  "settings": [
+    { "type": "checkbox", "id": "aktif", "label": "Bölümü göster", "default": true },
+
+    { "type": "header", "content": "Metinler" },
+    { "type": "text", "id": "etiket", "label": "Üst etiket", "default": "ZAMAN KAPSÜLÜ" },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Aklında soru mu kaldı?" },
+    { "type": "textarea", "id": "aciklama", "label": "Açıklama", "default": "Nasıl çalıştığını, neler yükleyebileceğini ve o gün nasıl açıldığını tek sayfada anlattık." },
+
+    { "type": "header", "content": "Bağlantı" },
+    { "type": "text", "id": "bag_metni", "label": "Bağlantı metni", "default": "Ürünü öğren" },
+    { "type": "url", "id": "hedef", "label": "Bağlantı hedefi" },
+
+    { "type": "header", "content": "Renkler" },
+    { "type": "color", "id": "zemin", "label": "Zemin", "info": "Bölümü ayıran tek şey bu renk; ayırıcı çizgi yok.", "default": "#F4F4F4" },
+    { "type": "color", "id": "etiket_renk", "label": "Üst etiket rengi", "default": "#5C5C57" },
+    { "type": "color", "id": "baslik_renk", "label": "Başlık rengi", "default": "#0A0A0A" },
+    { "type": "color", "id": "metin_renk", "label": "Açıklama rengi", "default": "#5C5C57" },
+    { "type": "color", "id": "bag_renk", "label": "Bağlantı rengi", "default": "#0A0A0A" }
+  ],
+  "presets": [
+    { "name": "Ürün Alt CTA" }
+  ]
+}
+{% endschema %}

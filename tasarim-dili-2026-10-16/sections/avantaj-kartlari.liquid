@@ -1,0 +1,1024 @@
+{%- comment -%}
+  Avantaj Kartlari - Apple "Neden bizden almalisiniz?" akisi.
+
+  Yatay kayan koyu kartlar. Her kartta ikon, baslik, kisa metin ve sag
+  altta bir dugme bulunur. Dugme "+" ise karta ait detay penceresi acilir;
+  "›" ise dogrudan bir baglantiya gider.
+
+  Serit klavyeyle ve okla da gezilebilir. Detay penceresi <dialog> ile
+  acilir; tarayici desteklemiyorsa elle acilan bir yedek kullanilir.
+
+  JS calismazsa kartlar ve metinleri oldugu gibi okunur kalir; yalnizca
+  detay penceresi devre disi olur.
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+  assign kartlar = section.blocks
+
+  comment
+    Renk katmani. "Ozel" paletinde degerler editordeki seciciden gelir.
+  endcomment
+  assign c_zemin = s.zemin_rengi
+  assign c_kart = s.kart_zemin
+  assign c_bas = s.baslik_rengi
+  assign c_kart_bas = s.kart_bas_rengi
+  assign c_metin = s.metin_rengi
+  assign c_dugme = s.dugme_zemin
+  assign c_dugme_ikon = s.dugme_ikon
+  assign c_bag = s.bag_rengi
+  assign c_kenar = s.kenar_rengi
+
+  if s.palet == 'apple_koyu'
+    assign c_zemin = '#000000'
+    assign c_kart = '#141414'
+    assign c_bas = '#ffffff'
+    assign c_kart_bas = '#ffffff'
+    assign c_metin = '#a3a39e'
+    assign c_dugme = '#ffffff'
+    assign c_dugme_ikon = '#0a0a0a'
+    assign c_bag = '#ffffff'
+    assign c_kenar = '#262624'
+  elsif s.palet == 'apple_acik'
+    assign c_zemin = '#f4f4f4'
+    assign c_kart = '#ffffff'
+    assign c_bas = '#0a0a0a'
+    assign c_kart_bas = '#0a0a0a'
+    assign c_metin = '#5c5c57'
+    assign c_dugme = '#0a0a0a'
+    assign c_dugme_ikon = '#ffffff'
+    assign c_bag = '#0a0a0a'
+    assign c_kenar = '#d2d2cd'
+  endif
+
+  comment
+    Detay penceresinin metin rengi. Bos birakilirsa karttakiyle ayni
+    renk kullanilir; doldurulursa palet ne secili olursa olsun kazanir.
+  endcomment
+  assign c_pop_metin = c_metin
+  if s.pop_metin_rengi != blank
+    assign c_pop_metin = s.pop_metin_rengi
+  endif
+-%}
+
+<style>
+  #shopify-section-{{ sid }} .ak-kok {
+    background: {{ c_zemin }};
+    padding: {{ s.p_top_m }}px 0 {{ s.p_bot_m }}px;
+  }
+  #shopify-section-{{ sid }} .ak-kok * { box-sizing: border-box; }
+
+  /* Tam genislik serit, ortalanmis icerik: kartlar ekran kenarindan
+     baslayip kayabilsin ama basliklar icerik hizasinda dursun. */
+  #shopify-section-{{ sid }} .ak-ust {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 {{ s.kenar_m }}px;
+    max-width: {{ s.max_g }}px;
+    margin: 0 auto {{ s.bas_bosluk }}px;
+  }
+
+  {%- if s.hiza == 'orta' %}
+  /* Ortali hizada baslik ve baglanti alt alta gelir; yan yana
+     "space-between" ile ortalamak mumkun degil. */
+  #shopify-section-{{ sid }} .ak-ust {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+  }
+  {%- endif %}
+
+  /* Site tipografisi: baslik 24/28/32, satir araligi 1.15, kalinlik 700,
+     letter-spacing yok -- anasayfadaki bolumlerle birebir ayni. */
+  #shopify-section-{{ sid }} .ak-bas {
+    margin: 0;
+    font-family: var(--font-heading-family);
+    font-size: {{ s.bas_m }}px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    color: {{ c_bas }};
+    text-wrap: balance;
+  }
+
+  #shopify-section-{{ sid }} .ak-ust-bag {
+    flex: 0 0 auto;
+    color: {{ c_bag }};
+    font-size: {{ s.bag_boyut }}px;
+    line-height: 1.3;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  #shopify-section-{{ sid }} .ak-ust-bag:hover { text-decoration: underline; }
+
+  /* --- serit --- */
+  #shopify-section-{{ sid }} .ak-serit-sar {
+    max-width: {{ s.max_g }}px;
+    margin: 0 auto;
+  }
+
+  #shopify-section-{{ sid }} .ak-serit {
+    display: flex;
+    gap: {{ s.kart_ara }}px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: {{ s.kenar_m }}px;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px {{ s.kenar_m }}px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  #shopify-section-{{ sid }} .ak-serit::-webkit-scrollbar { display: none; }
+
+  #shopify-section-{{ sid }} .ak-kart {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    width: {{ s.kart_g_m }}px;
+    min-height: {{ s.kart_yuk }}px;
+    padding: {{ s.kart_ic }}px;
+    border-radius: {{ s.kart_kose }}px;
+    border: 1px solid {{ c_kenar }};
+    background: {{ c_kart }};
+  }
+
+  #shopify-section-{{ sid }} .ak-ikon {
+    flex: 0 0 auto;
+    width: {{ s.ikon_boyut }}px;
+    height: {{ s.ikon_boyut }}px;
+    margin-bottom: {{ s.ikon_bosluk }}px;
+  }
+  #shopify-section-{{ sid }} .ak-ikon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  #shopify-section-{{ sid }} .ak-ikon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  #shopify-section-{{ sid }} .ak-kart-bas {
+    margin: 0 0 {{ s.kart_bas_bosluk }}px;
+    font-family: var(--font-heading-family);
+    font-size: {{ s.kart_bas_boyut }}px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: {{ c_kart_bas }};
+    text-wrap: balance;
+  }
+
+  /* Govde: site sisteminde satir araligi 1.6 */
+  #shopify-section-{{ sid }} .ak-kart-metin {
+    margin: 0;
+    font-size: {{ s.kart_metin_boyut }}px;
+    line-height: 1.6;
+    color: {{ c_metin }};
+  }
+
+  /* Dugme her zaman kartin sag altinda dursun */
+  #shopify-section-{{ sid }} .ak-alt {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: auto;
+    padding-top: 16px;
+  }
+
+  #shopify-section-{{ sid }} .ak-yuvarlak {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: {{ s.yuvarlak_boyut }}px;
+    height: {{ s.yuvarlak_boyut }}px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: {{ c_dugme }};
+    color: {{ c_dugme_ikon }};
+    cursor: pointer;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: filter 160ms ease, transform 160ms ease;
+  }
+  #shopify-section-{{ sid }} .ak-yuvarlak svg {
+    width: 46%;
+    height: 46%;
+    display: block;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ sid }} .ak-yuvarlak:hover { filter: brightness(1.08); }
+  }
+  #shopify-section-{{ sid }} .ak-yuvarlak:active { transform: scale(0.94); }
+  #shopify-section-{{ sid }} .ak-yuvarlak:focus-visible {
+    outline: 2px solid {{ c_bag }};
+    outline-offset: 3px;
+  }
+
+  /* --- gezinme oklari --- */
+  #shopify-section-{{ sid }} .ak-oklar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    max-width: {{ s.max_g }}px;
+    margin: {{ s.ok_bosluk }}px auto 0;
+    padding: 0 {{ s.kenar_m }}px;
+  }
+  #shopify-section-{{ sid }} .ak-ok {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: {{ s.ok_boyut }}px;
+    height: {{ s.ok_boyut }}px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: {{ c_dugme }};
+    color: {{ c_dugme_ikon }};
+    cursor: pointer;
+    transition: opacity 160ms ease, filter 160ms ease;
+  }
+  #shopify-section-{{ sid }} .ak-ok svg { width: 40%; height: 40%; display: block; }
+  #shopify-section-{{ sid }} .ak-ok[disabled] {
+    opacity: 0.35;
+    cursor: default;
+  }
+  #shopify-section-{{ sid }} .ak-ok:focus-visible {
+    outline: 2px solid {{ c_bag }};
+    outline-offset: 3px;
+  }
+
+  {%- if s.anim_ac %}
+  {%- liquid
+    assign anim_egri = 'cubic-bezier(.33, 1, .68, 1)'
+    if s.anim_egri == 'dengeli'
+      assign anim_egri = 'cubic-bezier(.4, 0, .2, 1)'
+    elsif s.anim_egri == 'belirgin'
+      assign anim_egri = 'cubic-bezier(.16, 1, .3, 1)'
+    endif
+    assign anim_olcek = s.anim_olcek | default: 100 | divided_by: 100.0
+  -%}
+  /* --- kaydirinca kartlar sagdan gelir --- */
+
+  /* Kartlar yerinden oynatildigi icin izgara duzeninde sayfanin sagina
+     tasabilirler. "clip" kaydirma kutusu olusturmadan kirpar. */
+  #shopify-section-{{ sid }} .ak-kok { overflow-x: clip; }
+
+  /* Kartlar oynak oldugu surece snap kapali: "mandatory" snap, tasinmis
+     kartin yeni konumuna yapisip seridi kaydiriyor. */
+  #shopify-section-{{ sid }} .ak-serit.ak-hazir:not(.ak-yerlesti) {
+    scroll-snap-type: none;
+  }
+
+  /* Gizli baslangic durumu yalnizca JS "ak-hazir" sinifini ekledikten
+     sonra gecerli; JS calismazsa kartlar oldugu gibi gorunur kalir. */
+  #shopify-section-{{ sid }} .ak-serit.ak-hazir .ak-kart {
+    opacity: 0;
+    transform: translate3d({{ s.anim_mesafe }}px, 0, 0) scale({{ anim_olcek }});
+    /* Sol kenar sabit kalsin: merkez orijinli olcek kartin sol kenarini
+       yerlestikten sonra bir tik daha disari itiyor. */
+    transform-origin: left center;
+    transition:
+      opacity {{ s.anim_sure }}ms {{ anim_egri }},
+      transform {{ s.anim_sure }}ms {{ anim_egri }};
+    transition-delay: var(--ak-gecikme, 0ms);
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+  }
+
+  #shopify-section-{{ sid }} .ak-serit.ak-hazir .ak-kart.is-gorunur {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  /* Katman yukseltmesi ancak gecis bitince birakilir; sinifla birlikte
+     birakmak katmani tam hareket baslarken dusuruyor. */
+  #shopify-section-{{ sid }} .ak-serit .ak-kart.anim-bitti {
+    will-change: auto;
+    backface-visibility: visible;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .ak-serit.ak-hazir .ak-kart,
+    #shopify-section-{{ sid }} .ak-serit.ak-hazir .ak-kart.is-gorunur {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+  {%- endif %}
+
+  /* --- detay penceresi --- */
+  #shopify-section-{{ sid }} .ak-pencere {
+    width: min(92vw, {{ s.pop_max_g }}px);
+    max-width: 92vw;
+    max-height: 88vh;
+    padding: 0;
+    border: 0;
+    border-radius: {{ s.pop_kose }}px;
+    background: {{ c_kart }};
+    color: {{ c_kart_bas }};
+    overflow: visible;
+  }
+  #shopify-section-{{ sid }} .ak-pencere::backdrop {
+    background: rgba(0, 0, 0, 0.72);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  /* <dialog> desteklenmeyen tarayicilar icin elle konumlandirma */
+  #shopify-section-{{ sid }} .ak-pencere.ak-yedek {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  }
+  #shopify-section-{{ sid }} .ak-perde {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: rgba(0, 0, 0, 0.72);
+  }
+
+  #shopify-section-{{ sid }} .ak-pencere-ic {
+    padding: {{ s.pop_ic }}px;
+    overflow-y: auto;
+    max-height: 88vh;
+    border-radius: {{ s.pop_kose }}px;
+  }
+
+  #shopify-section-{{ sid }} .ak-pop-kapat {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: {{ c_dugme }};
+    color: {{ c_dugme_ikon }};
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  #shopify-section-{{ sid }} .ak-pop-kapat:focus-visible {
+    outline: 2px solid {{ c_bag }};
+    outline-offset: 3px;
+  }
+
+  #shopify-section-{{ sid }} .ak-pop-etiket {
+    margin: 0 0 {{ s.pop_etiket_bosluk }}px;
+    font-size: {{ s.pop_etiket_boyut }}px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: {{ c_kart_bas }};
+  }
+  #shopify-section-{{ sid }} .ak-pop-bas {
+    margin: 0 0 {{ s.pop_bas_bosluk }}px;
+    font-family: var(--font-heading-family);
+    font-size: {{ s.pop_bas_m }}px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: {{ c_kart_bas }};
+    text-wrap: balance;
+  }
+  #shopify-section-{{ sid }} .ak-pop-metin {
+    margin: 0;
+    font-size: {{ s.pop_metin_m }}px;
+    line-height: 1.6;
+    color: {{ c_pop_metin }};
+  }
+  /* Zengin metinde kalin yazilan kisimlar da ayni rengi alsin */
+  #shopify-section-{{ sid }} .ak-pop-metin strong,
+  #shopify-section-{{ sid }} .ak-pop-metin b {
+    color: {{ c_pop_metin }};
+  }
+  #shopify-section-{{ sid }} .ak-pop-metin p { margin: 0 0 12px; }
+  #shopify-section-{{ sid }} .ak-pop-metin p:last-child { margin-bottom: 0; }
+  #shopify-section-{{ sid }} .ak-pop-bag {
+    display: inline-block;
+    margin-top: 18px;
+    color: {{ c_bag }};
+    font-size: {{ s.pop_metin_m }}px;
+    text-decoration: none;
+  }
+  #shopify-section-{{ sid }} .ak-pop-bag:hover { text-decoration: underline; }
+
+  /* --- tablet / masaustu --- */
+  @media (min-width: 768px) {
+    #shopify-section-{{ sid }} .ak-bas { font-size: {{ s.bas_t }}px; }
+  }
+
+  @media (min-width: 990px) {
+    #shopify-section-{{ sid }} .ak-kok {
+      padding: {{ s.p_top_d }}px 0 {{ s.p_bot_d }}px;
+    }
+    #shopify-section-{{ sid }} .ak-bas { font-size: {{ s.bas_d }}px; }
+    #shopify-section-{{ sid }} .ak-kart-bas { font-size: {{ s.kart_bas_boyut_d }}px; }
+    #shopify-section-{{ sid }} .ak-kart-metin { font-size: {{ s.kart_metin_boyut_d }}px; }
+    #shopify-section-{{ sid }} .ak-ust,
+    #shopify-section-{{ sid }} .ak-oklar {
+      padding-left: {{ s.kenar_d }}px;
+      padding-right: {{ s.kenar_d }}px;
+    }
+    #shopify-section-{{ sid }} .ak-serit {
+      padding-left: {{ s.kenar_d }}px;
+      padding-right: {{ s.kenar_d }}px;
+      scroll-padding-left: {{ s.kenar_d }}px;
+    }
+    {%- if s.masaustu_duzen == 'izgara' %}
+    /* Masaustunde kaydirma yok: butun kartlar ayni anda gorunur.
+       Serit gride donuyor, satirdaki kartlar esit yukseklik aliyor. */
+    #shopify-section-{{ sid }} .ak-serit {
+      display: grid;
+      grid-template-columns: repeat({{ s.sutun_d }}, minmax(0, 1fr));
+      overflow: visible;
+      scroll-snap-type: none;
+    }
+    #shopify-section-{{ sid }} .ak-kart {
+      width: auto;
+      scroll-snap-align: none;
+    }
+    #shopify-section-{{ sid }} .ak-oklar { display: none; }
+    {%- else %}
+    #shopify-section-{{ sid }} .ak-kart { width: {{ s.kart_g_d }}px; }
+    {%- endif %}
+    #shopify-section-{{ sid }} .ak-pop-bas { font-size: {{ s.pop_bas_d }}px; }
+    #shopify-section-{{ sid }} .ak-pop-metin,
+    #shopify-section-{{ sid }} .ak-pop-bag { font-size: {{ s.pop_metin_d }}px; }
+  }
+</style>
+
+<div class="ak-kok">
+  {%- if s.baslik != blank or s.bag_metni != blank -%}
+    <div class="ak-ust">
+      {%- if s.baslik != blank -%}
+        <{{ s.baslik_etiketi }} class="ak-bas">{{ s.baslik }}</{{ s.baslik_etiketi }}>
+      {%- else -%}
+        <span></span>
+      {%- endif -%}
+
+      {%- if s.bag_metni != blank and s.bag_url != blank -%}
+        <a class="ak-ust-bag" href="{{ s.bag_url }}">{{ s.bag_metni }} &rsaquo;</a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="ak-serit-sar">
+    <div class="ak-serit" data-ak-serit tabindex="0" role="group" aria-label="{{ s.baslik | strip_html | escape }}">
+      {%- for block in kartlar -%}
+        {%- assign k = block.settings -%}
+        <div class="ak-kart" data-ak-kart {{ block.shopify_attributes }}>
+          {%- if k.gorsel != blank -%}
+            <div class="ak-ikon">
+              {{ k.gorsel | image_url: width: 160 | image_tag: loading: 'lazy', decoding: 'async', alt: '' }}
+            </div>
+          {%- elsif k.ikon != 'yok' -%}
+            <div class="ak-ikon" style="color: {{ k.ikon_renk }};" aria-hidden="true">
+              {%- case k.ikon -%}
+                {%- when 'kart' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/></svg>
+                {%- when 'kargo' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6.5h12v9h-12z"/><path d="M13.5 10h4l3 3v2.5h-7z"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+                {%- when 'kitap' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5h6a3 3 0 0 1 3 3v12a2.5 2.5 0 0 0-2.5-2.5H3z"/><path d="M21 4.5h-6a3 3 0 0 0-3 3v12a2.5 2.5 0 0 1 2.5-2.5H21z"/></svg>
+                {%- when 'destek' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a8 8 0 0 1 16 0"/><rect x="2.5" y="11" width="4" height="6" rx="2"/><rect x="17.5" y="11" width="4" height="6" rx="2"/><path d="M20 17v1a3 3 0 0 1-3 3h-3"/></svg>
+                {%- when 'materyal' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l3.5 6L12 21 2.5 9z"/><path d="M2.5 9h19"/><path d="M9 3l3 6 3-6"/><path d="M12 9v12"/></svg>
+                {%- when 'kalkan' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8 3v6c0 5-3.4 8.8-8 10-4.6-1.2-8-5-8-10v-6z"/><path d="M8.75 12l2.25 2.25 4.25-4.5"/></svg>
+                {%- when 'hediye' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8.5" width="19" height="12.5" rx="2"/><path d="M2.5 13h19"/><path d="M12 8.5V21"/><path d="M12 8.5S10.5 3 7.75 3a2.25 2.25 0 0 0 0 5.5z"/><path d="M12 8.5S13.5 3 16.25 3a2.25 2.25 0 0 1 0 5.5z"/></svg>
+                {%- when 'kalp' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5S3 14.8 3 9.2A4.7 4.7 0 0 1 12 6.9 4.7 4.7 0 0 1 21 9.2c0 5.6-9 11.3-9 11.3z"/></svg>
+                {%- when 'yildiz' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 6.4 7 .8-5.2 4.7 1.4 6.9L12 17.8 5.9 21.3l1.4-6.9L2.1 9.7l7-.8z"/></svg>
+                {%- when 'saat' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 6.5V12l3.5 2"/></svg>
+                {%- when 'kilit' -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="11" rx="2.5"/><path d="M7.75 10.5V7.25a4.25 4.25 0 0 1 8.5 0v3.25"/></svg>
+              {%- endcase -%}
+            </div>
+          {%- endif -%}
+
+          {%- if k.baslik != blank -%}
+            <h3 class="ak-kart-bas">{{ k.baslik }}</h3>
+          {%- endif -%}
+          {%- if k.metin != blank -%}
+            <p class="ak-kart-metin">{{ k.metin }}</p>
+          {%- endif -%}
+
+          {%- if k.eylem == 'popup' -%}
+            <div class="ak-alt">
+              <button
+                type="button"
+                class="ak-yuvarlak"
+                data-ak-ac="{{ forloop.index }}"
+                aria-label="{{ k.baslik | strip_html | escape }} — detaylar"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+          {%- elsif k.eylem == 'link' and k.bag != blank -%}
+            <div class="ak-alt">
+              <a class="ak-yuvarlak" href="{{ k.bag }}" aria-label="{{ k.baslik | strip_html | escape }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+
+  {%- if s.oklar_ac and kartlar.size > 1 -%}
+    <div class="ak-oklar">
+      <button type="button" class="ak-ok" data-ak-geri aria-label="Önceki">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <button type="button" class="ak-ok" data-ak-ileri aria-label="Sonraki">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  {%- endif -%}
+</div>
+
+{%- for block in kartlar -%}
+  {%- assign k = block.settings -%}
+  {%- if k.eylem == 'popup' -%}
+    <dialog class="ak-pencere" data-ak-pencere="{{ forloop.index }}" aria-label="{{ k.pop_baslik | default: k.baslik | strip_html | escape }}">
+      <div class="ak-pencere-ic">
+        <button type="button" class="ak-pop-kapat" data-ak-kapat aria-label="Kapat">&#10005;</button>
+        {%- if k.pop_etiket != blank -%}
+          <p class="ak-pop-etiket">{{ k.pop_etiket }}</p>
+        {%- endif -%}
+        {%- assign pb = k.pop_baslik | default: k.baslik -%}
+        {%- if pb != blank -%}
+          <p class="ak-pop-bas">{{ pb }}</p>
+        {%- endif -%}
+        {%- if k.pop_metin != blank -%}
+          <div class="ak-pop-metin rte">{{ k.pop_metin }}</div>
+        {%- endif -%}
+        {%- if k.pop_bag_metni != blank and k.pop_bag != blank -%}
+          <a class="ak-pop-bag" href="{{ k.pop_bag }}">{{ k.pop_bag_metni }} &rsaquo;</a>
+        {%- endif -%}
+      </div>
+    </dialog>
+  {%- endif -%}
+{%- endfor -%}
+
+<script>
+  (function () {
+    var kok = document.getElementById('shopify-section-{{ sid }}');
+    if (!kok) return;
+
+    var serit = kok.querySelector('[data-ak-serit]');
+    var geri = kok.querySelector('[data-ak-geri]');
+    var ileri = kok.querySelector('[data-ak-ileri]');
+    var animDonuyor = false;
+
+    /* --- serit gezinme --- */
+
+    function adim() {
+      var kart = serit ? serit.querySelector('[data-ak-kart]') : null;
+      if (!kart) return 320;
+      var stil = window.getComputedStyle(serit);
+      var ara = parseFloat(stil.columnGap || stil.gap) || 0;
+      return kart.getBoundingClientRect().width + ara;
+    }
+
+    function oklariTazele() {
+      if (!serit || !geri || !ileri) return;
+      // Kartlar kayarken scrollWidth guvenilir degil; olcumu donduruyoruz.
+      if (animDonuyor) return;
+      var enCok = serit.scrollWidth - serit.clientWidth;
+      // 2px pay: alt piksel yuvarlamalarinda ok bosuna sonuk kalmasin
+      geri.disabled = serit.scrollLeft <= 2;
+      ileri.disabled = serit.scrollLeft >= enCok - 2;
+    }
+
+    function kaydir(yon) {
+      if (!serit) return;
+      serit.scrollBy({ left: yon * adim(), behavior: 'smooth' });
+    }
+
+    if (serit && geri && ileri) {
+      geri.addEventListener('click', function () { kaydir(-1); });
+      ileri.addEventListener('click', function () { kaydir(1); });
+      serit.addEventListener('scroll', oklariTazele, { passive: true });
+      window.addEventListener('resize', oklariTazele);
+      oklariTazele();
+    }
+
+    {%- if s.anim_ac %}
+    /* --- kaydirinca kartlar sagdan gelir --- */
+    (function () {
+      if (!serit) return;
+      var kartDizi = serit.querySelectorAll('[data-ak-kart]');
+      if (!kartDizi.length) return;
+
+      var ara = {{ s.anim_ara }};
+      var sure = {{ s.anim_sure }};
+      var biten = 0;
+      var kapandi = false;
+
+      function bitir() {
+        if (kapandi) return;
+        kapandi = true;
+
+        // Snap geri devreye girerken serit kayabiliyor; konumu koruyoruz.
+        var x = serit.scrollLeft;
+        serit.classList.add('ak-yerlesti');
+        if (serit.scrollLeft !== x) serit.scrollLeft = x;
+        animDonuyor = false;
+        window.requestAnimationFrame(function () {
+          if (Math.abs(serit.scrollLeft - x) > 1) serit.scrollLeft = x;
+          oklariTazele();
+        });
+      }
+
+      function goster() {
+        for (var i = 0; i < kartDizi.length; i++) {
+          kartDizi[i].style.setProperty('--ak-gecikme', (i * ara) + 'ms');
+        }
+
+        // Gecikmeler yerlestikten sonra ayri bir karede basliyoruz; ayni
+        // karede sinif eklenince tarayici ilk kartin gecisini atlayabiliyor.
+        window.requestAnimationFrame(function () {
+          window.requestAnimationFrame(function () {
+            for (var j = 0; j < kartDizi.length; j++) {
+              kartDizi[j].classList.add('is-gorunur');
+            }
+          });
+        });
+
+        for (var k = 0; k < kartDizi.length; k++) {
+          (function (kart) {
+            kart.addEventListener('transitionend', function son(e) {
+              if (e.propertyName !== 'transform') return;
+              kart.removeEventListener('transitionend', son);
+              kart.classList.add('anim-bitti');
+              kart.style.removeProperty('--ak-gecikme');
+              biten++;
+              if (biten >= kartDizi.length) bitir();
+            });
+          })(kartDizi[k]);
+        }
+
+        // transitionend gelmezse snap ve oklar kilitli kalmasin
+        window.setTimeout(bitir, sure + (ara * kartDizi.length) + 400);
+      }
+
+      animDonuyor = true;
+      serit.classList.add('ak-hazir');
+
+      var azHareket = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (azHareket || !('IntersectionObserver' in window)) {
+        goster();
+        return;
+      }
+
+      // Serit yatay kayabildigi icin kartlari tek tek izleyemeyiz: sagdaki
+      // kartlar ekran disinda kalir ve hic gorunmezlerdi. Seridin kendisini
+      // izleyip kartlari sirayla aciyoruz.
+      var goz = new IntersectionObserver(function (girisler) {
+        for (var g = 0; g < girisler.length; g++) {
+          if (!girisler[g].isIntersecting) continue;
+          goz.disconnect();
+          goster();
+          return;
+        }
+      }, { threshold: 0.2, rootMargin: '0px 0px -12% 0px' });
+
+      goz.observe(serit);
+    })();
+    {%- endif %}
+
+    /* --- detay penceresi --- */
+
+    var acikPencere = null;
+    var acikPerde = null;
+    var sonOdak = null;
+
+    function yedekMi(p) {
+      return typeof p.showModal !== 'function';
+    }
+
+    function ac(no) {
+      var p = kok.querySelector('[data-ak-pencere="' + no + '"]');
+      if (!p) return;
+      sonOdak = document.activeElement;
+      acikPencere = p;
+
+      if (yedekMi(p)) {
+        // Eski tarayicilar: perdeyi ve pencereyi elle yonetiyoruz
+        var perde = document.createElement('div');
+        perde.className = 'ak-perde';
+        perde.addEventListener('click', kapat);
+        kok.appendChild(perde);
+        acikPerde = perde;
+        p.classList.add('ak-yedek');
+        p.setAttribute('open', '');
+      } else {
+        p.showModal();
+      }
+
+      var k = p.querySelector('[data-ak-kapat]');
+      if (k) k.focus();
+    }
+
+    function kapat() {
+      var p = acikPencere;
+      if (!p) return;
+      acikPencere = null;
+
+      if (yedekMi(p)) {
+        p.removeAttribute('open');
+        p.classList.remove('ak-yedek');
+        if (acikPerde && acikPerde.parentNode) acikPerde.parentNode.removeChild(acikPerde);
+        acikPerde = null;
+      } else if (p.open) {
+        p.close();
+      }
+
+      if (sonOdak && sonOdak.focus) sonOdak.focus();
+      sonOdak = null;
+    }
+
+    var acmaDugmeleri = kok.querySelectorAll('[data-ak-ac]');
+    for (var i = 0; i < acmaDugmeleri.length; i++) {
+      (function (d) {
+        d.addEventListener('click', function () { ac(d.getAttribute('data-ak-ac')); });
+      })(acmaDugmeleri[i]);
+    }
+
+    var pencereler = kok.querySelectorAll('[data-ak-pencere]');
+    for (var j = 0; j < pencereler.length; j++) {
+      (function (p) {
+        var k = p.querySelector('[data-ak-kapat]');
+        if (k) k.addEventListener('click', kapat);
+
+        // Panelin disina tiklayinca kapansin
+        p.addEventListener('click', function (e) {
+          if (e.target === p) kapat();
+        });
+        p.addEventListener('cancel', function (e) {
+          e.preventDefault();
+          kapat();
+        });
+      })(pencereler[j]);
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (!acikPencere) return;
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        e.preventDefault();
+        kapat();
+      }
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Avantaj Kartları",
+  "tag": "section",
+  "class": "avantaj-kartlari-section",
+  "max_blocks": 10,
+  "settings": [
+    { "type": "header", "content": "Renk Paleti" },
+    {
+      "type": "select",
+      "id": "palet",
+      "label": "Renk paleti",
+      "info": "Apple paletlerinden biri seçiliyken aşağıdaki renk seçicileri devre dışı kalır.",
+      "default": "apple_koyu",
+      "options": [
+        { "value": "apple_koyu", "label": "Apple (koyu)" },
+        { "value": "apple_acik", "label": "Apple (açık ton)" },
+        { "value": "ozel", "label": "Özel renkler" }
+      ]
+    },
+    { "type": "header", "content": "Başlık" },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Zaman Kapsülü'nü neden bizden almalısınız?" },
+    {
+      "type": "select",
+      "id": "hiza",
+      "label": "Başlık hizası",
+      "default": "orta",
+      "options": [
+        { "value": "sol", "label": "Sola dayalı" },
+        { "value": "orta", "label": "Ortalı" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "baslik_etiketi",
+      "label": "Başlık etiketi (SEO)",
+      "default": "h2",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "p", "label": "Düz metin" }
+      ]
+    },
+    { "type": "text", "id": "bag_metni", "label": "Sağdaki bağlantı yazısı", "default": "Ürünleri incele" },
+    { "type": "url", "id": "bag_url", "label": "Sağdaki bağlantı" },
+    { "type": "range", "id": "bas_m", "label": "Başlık (mobil)", "min": 18, "max": 44, "step": 1, "unit": "px", "default": 24 },
+    { "type": "range", "id": "bas_t", "label": "Başlık (tablet)", "min": 18, "max": 52, "step": 1, "unit": "px", "default": 28 },
+    { "type": "range", "id": "bas_d", "label": "Başlık (masaüstü)", "min": 18, "max": 64, "step": 1, "unit": "px", "default": 32 },
+    { "type": "range", "id": "bag_boyut", "label": "Bağlantı yazısı", "min": 12, "max": 24, "step": 1, "unit": "px", "default": 16 },
+    { "type": "range", "id": "bas_bosluk", "label": "Başlık ile kartlar arası", "min": 8, "max": 80, "step": 2, "unit": "px", "default": 24 },
+    { "type": "header", "content": "Kartlar" },
+    {
+      "type": "select",
+      "id": "masaustu_duzen",
+      "label": "Masaüstü düzeni",
+      "info": "Izgara: tüm kartlar aynı anda görünür, kaydırma olmaz. Mobilde her zaman kaydırılır.",
+      "default": "izgara",
+      "options": [
+        { "value": "izgara", "label": "Izgara (hepsi görünür)" },
+        { "value": "kaydir", "label": "Kaydırmalı şerit" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "sutun_d",
+      "label": "Masaüstü sütun sayısı",
+      "info": "Yalnızca ızgara düzeninde geçerli. Kart sayısı fazlaysa alt satıra iner.",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    { "type": "range", "id": "kart_g_m", "label": "Kart genişliği (mobil)", "min": 200, "max": 360, "step": 4, "unit": "px", "default": 264 },
+    { "type": "range", "id": "kart_g_d", "label": "Kart genişliği (masaüstü)", "info": "Yalnızca kaydırmalı şeritte geçerli.", "min": 220, "max": 480, "step": 4, "unit": "px", "default": 300 },
+    { "type": "range", "id": "kart_yuk", "label": "En az kart yüksekliği", "min": 180, "max": 480, "step": 4, "unit": "px", "default": 288 },
+    { "type": "range", "id": "kart_kose", "label": "Kart köşe yuvarlaklığı", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 18 },
+    { "type": "range", "id": "kart_ic", "label": "Kart iç boşluğu", "min": 12, "max": 48, "step": 2, "unit": "px", "default": 24 },
+    { "type": "range", "id": "kart_ara", "label": "Kartlar arası boşluk", "min": 8, "max": 40, "step": 2, "unit": "px", "default": 16 },
+    { "type": "range", "id": "ikon_boyut", "label": "İkon boyutu", "min": 20, "max": 64, "step": 2, "unit": "px", "default": 32 },
+    { "type": "range", "id": "ikon_bosluk", "label": "İkon alt boşluğu", "min": 8, "max": 64, "step": 2, "unit": "px", "default": 28 },
+    { "type": "range", "id": "kart_bas_boyut", "label": "Kart başlığı (mobil)", "min": 14, "max": 28, "step": 1, "unit": "px", "default": 18 },
+    { "type": "range", "id": "kart_bas_boyut_d", "label": "Kart başlığı (masaüstü)", "min": 14, "max": 32, "step": 1, "unit": "px", "default": 20 },
+    { "type": "range", "id": "kart_bas_bosluk", "label": "Kart başlığı alt boşluğu", "min": 0, "max": 32, "step": 2, "unit": "px", "default": 8 },
+    { "type": "range", "id": "kart_metin_boyut", "label": "Kart açıklaması (mobil)", "min": 12, "max": 22, "step": 1, "unit": "px", "default": 16 },
+    { "type": "range", "id": "kart_metin_boyut_d", "label": "Kart açıklaması (masaüstü)", "min": 12, "max": 24, "step": 1, "unit": "px", "default": 17 },
+    { "type": "range", "id": "yuvarlak_boyut", "label": "Kart düğmesi çapı", "min": 24, "max": 56, "step": 2, "unit": "px", "default": 36 },
+    { "type": "header", "content": "Giriş Animasyonu" },
+    {
+      "type": "checkbox",
+      "id": "anim_ac",
+      "label": "Kaydırınca kartlar sağdan gelsin",
+      "info": "Bölüm ekrana girince kartlar sırayla sağdan sola kayarak yerleşir. Bir kez oynar.",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "anim_egri",
+      "label": "Hareket eğrisi",
+      "default": "yumusak",
+      "options": [
+        { "value": "yumusak", "label": "Yumuşak" },
+        { "value": "dengeli", "label": "Dengeli" },
+        { "value": "belirgin", "label": "Belirgin" }
+      ]
+    },
+    { "type": "range", "id": "anim_mesafe", "label": "Kayma mesafesi", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    {
+      "type": "range",
+      "id": "anim_olcek",
+      "label": "Başlangıç boyutu",
+      "info": "100 = boyut değişmez.",
+      "min": 90,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100
+    },
+    { "type": "range", "id": "anim_sure", "label": "Süre", "min": 200, "max": 1400, "step": 50, "unit": "ms", "default": 850 },
+    { "type": "range", "id": "anim_ara", "label": "Kartlar arası gecikme", "min": 0, "max": 300, "step": 10, "unit": "ms", "default": 80 },
+    { "type": "header", "content": "Gezinme Okları" },
+    { "type": "checkbox", "id": "oklar_ac", "label": "Okları göster", "default": true },
+    { "type": "range", "id": "ok_boyut", "label": "Ok çapı", "min": 28, "max": 64, "step": 2, "unit": "px", "default": 40 },
+    { "type": "range", "id": "ok_bosluk", "label": "Okların üst boşluğu", "min": 0, "max": 60, "step": 2, "unit": "px", "default": 20 },
+    { "type": "header", "content": "Detay Penceresi" },
+    { "type": "range", "id": "pop_max_g", "label": "Pencere genişliği", "min": 320, "max": 900, "step": 10, "unit": "px", "default": 640 },
+    { "type": "range", "id": "pop_kose", "label": "Pencere köşe yuvarlaklığı", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 18 },
+    { "type": "range", "id": "pop_ic", "label": "Pencere iç boşluğu", "min": 16, "max": 72, "step": 2, "unit": "px", "default": 32 },
+    { "type": "range", "id": "pop_etiket_boyut", "label": "Üst etiket yazısı", "min": 11, "max": 20, "step": 1, "unit": "px", "default": 14 },
+    { "type": "range", "id": "pop_etiket_bosluk", "label": "Üst etiket alt boşluğu", "min": 4, "max": 48, "step": 2, "unit": "px", "default": 24 },
+    { "type": "range", "id": "pop_bas_m", "label": "Pencere başlığı (mobil)", "min": 18, "max": 48, "step": 1, "unit": "px", "default": 24 },
+    { "type": "range", "id": "pop_bas_d", "label": "Pencere başlığı (masaüstü)", "min": 18, "max": 64, "step": 1, "unit": "px", "default": 32 },
+    { "type": "range", "id": "pop_bas_bosluk", "label": "Pencere başlığı alt boşluğu", "min": 4, "max": 48, "step": 2, "unit": "px", "default": 20 },
+    { "type": "range", "id": "pop_metin_m", "label": "Pencere metni (mobil)", "min": 12, "max": 22, "step": 1, "unit": "px", "default": 16 },
+    { "type": "range", "id": "pop_metin_d", "label": "Pencere metni (masaüstü)", "min": 12, "max": 26, "step": 1, "unit": "px", "default": 20 },
+    {
+      "type": "color",
+      "id": "pop_metin_rengi",
+      "label": "Pencere metni rengi",
+      "info": "Apple paleti seçiliyken bile geçerlidir. Boş bırakırsanız karttaki açıklama rengi kullanılır."
+    },
+    { "type": "header", "content": "Renkler" },
+    { "type": "color", "id": "zemin_rengi", "label": "Bölüm zemini", "default": "#000000" },
+    { "type": "color", "id": "kart_zemin", "label": "Kart zemini", "default": "#141414" },
+    { "type": "color", "id": "kenar_rengi", "label": "Kart kenarlığı", "default": "#262624" },
+    { "type": "color", "id": "baslik_rengi", "label": "Bölüm başlığı", "default": "#ffffff" },
+    { "type": "color", "id": "kart_bas_rengi", "label": "Kart başlığı", "default": "#ffffff" },
+    { "type": "color", "id": "metin_rengi", "label": "Açıklama yazısı", "default": "#a3a39e" },
+    { "type": "color", "id": "dugme_zemin", "label": "Yuvarlak düğme zemini", "default": "#ffffff" },
+    { "type": "color", "id": "dugme_ikon", "label": "Yuvarlak düğme ikonu", "default": "#0a0a0a" },
+    { "type": "color", "id": "bag_rengi", "label": "Bağlantı rengi", "default": "#ffffff" },
+    { "type": "header", "content": "Ölçüler ve Boşluklar" },
+    { "type": "range", "id": "max_g", "label": "İçerik en fazla genişlik", "min": 800, "max": 1800, "step": 20, "unit": "px", "default": 1240 },
+    { "type": "range", "id": "kenar_m", "label": "Yan boşluk (mobil)", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 16 },
+    { "type": "range", "id": "kenar_d", "label": "Yan boşluk (masaüstü)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "p_top_m", "label": "Üst boşluk (mobil)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 48 },
+    { "type": "range", "id": "p_bot_m", "label": "Alt boşluk (mobil)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 48 },
+    { "type": "range", "id": "p_top_d", "label": "Üst boşluk (masaüstü)", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 80 },
+    { "type": "range", "id": "p_bot_d", "label": "Alt boşluk (masaüstü)", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 80 }
+  ],
+  "blocks": [
+    {
+      "type": "kart",
+      "name": "Kart",
+      "settings": [
+        {
+          "type": "select",
+          "id": "ikon",
+          "label": "İkon",
+          "default": "kart",
+          "options": [
+            { "value": "kart", "label": "Kredi kartı" },
+            { "value": "kargo", "label": "Kargo" },
+            { "value": "kitap", "label": "Kılavuz" },
+            { "value": "destek", "label": "Destek" },
+            { "value": "materyal", "label": "Materyal" },
+            { "value": "kalkan", "label": "Kalkan" },
+            { "value": "hediye", "label": "Hediye" },
+            { "value": "kalp", "label": "Kalp" },
+            { "value": "yildiz", "label": "Yıldız" },
+            { "value": "saat", "label": "Saat" },
+            { "value": "kilit", "label": "Kilit" },
+            { "value": "yok", "label": "İkon yok" }
+          ]
+        },
+        { "type": "color", "id": "ikon_renk", "label": "İkon rengi", "default": "#ffffff" },
+        { "type": "image_picker", "id": "gorsel", "label": "İkon yerine görsel", "info": "Seçilirse yukarıdaki ikon yerine bu kullanılır." },
+        { "type": "text", "id": "baslik", "label": "Kart başlığı", "default": "Başlık" },
+        { "type": "textarea", "id": "metin", "label": "Kısa açıklama" },
+        {
+          "type": "select",
+          "id": "eylem",
+          "label": "Sağ alt düğme",
+          "default": "popup",
+          "options": [
+            { "value": "popup", "label": "Detay penceresi açsın (+)" },
+            { "value": "link", "label": "Bağlantıya gitsin (›)" },
+            { "value": "yok", "label": "Düğme olmasın" }
+          ]
+        },
+        { "type": "url", "id": "bag", "label": "Bağlantı", "info": "Yalnızca \"Bağlantıya gitsin\" seçiliyken kullanılır." },
+        { "type": "text", "id": "pop_etiket", "label": "Pencere üst etiketi" },
+        { "type": "text", "id": "pop_baslik", "label": "Pencere başlığı", "info": "Boş bırakılırsa kart başlığı kullanılır." },
+        { "type": "richtext", "id": "pop_metin", "label": "Pencere metni" },
+        { "type": "text", "id": "pop_bag_metni", "label": "Pencere bağlantı yazısı" },
+        { "type": "url", "id": "pop_bag", "label": "Pencere bağlantısı" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Avantaj Kartları",
+      "blocks": [
+        { "type": "kart" },
+        { "type": "kart" },
+        { "type": "kart" },
+        { "type": "kart" },
+        { "type": "kart" }
+      ]
+    }
+  ]
+}
+{% endschema %}

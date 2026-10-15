@@ -1,0 +1,978 @@
+{%- liquid
+  assign s = section.settings
+  assign heading = section.settings.heading
+  assign show_rating = section.settings.show_rating
+  assign rating_number = section.settings.rating_number
+  assign rating_text = section.settings.rating_text
+  assign rating_value = rating_number | times: 1.0
+
+  comment
+    Renk katmani. Apple paletinde asagidaki degerler kazanir; palet
+    "Ozel" iken editordeki renk seciciler aynen gecerli kalir. Boylece
+    ayni bolum dosyasi baska sablonlarda hicbir sey degismeden calisir.
+  endcomment
+  assign c_zemin = s.background_color
+  assign c_bas = s.heading_color
+  assign c_puan = s.rating_text_color
+  assign c_alt_yazi = s.caption_color
+  assign c_kart = '#f4f4f4'
+  assign c_yer_tutucu = '#f4f4f4'
+  assign c_ray = s.scrollbar_track_color
+  assign c_topuz = s.scrollbar_thumb_color | default: '#0a0a0a'
+  assign topuz_gradyan = s.scrollbar_thumb_gradient
+  assign c_yildiz = s.star_color
+  assign c_yildiz_bos = '#d2d2cd'
+
+  if s.palet == 'apple'
+    assign c_zemin = '#000000'
+    assign c_bas = '#ffffff'
+    assign c_puan = '#a3a39e'
+    assign c_alt_yazi = '#a3a39e'
+    assign c_kart = '#141414'
+    assign c_yer_tutucu = '#141414'
+    assign c_ray = 'rgba(255, 255, 255, 0.16)'
+    assign c_topuz = '#ffffff'
+    assign topuz_gradyan = ''
+    assign c_yildiz = '#ffffff'
+    assign c_yildiz_bos = '#262624'
+  elsif s.palet == 'apple_acik'
+    comment
+      Apple acik paleti: #f5f5f7 gri zemin, #1d1d1f baslik,
+      #6e6e73 ikincil, kart yuzeyi #e8e8ed. Yildiz rengi paletten
+      bagimsiz: ayardan okunuyor, boylece kirmizi yildizlar korunuyor.
+    endcomment
+    assign c_zemin = '#f4f4f4'
+    assign c_bas = '#0a0a0a'
+    assign c_puan = '#5c5c57'
+    assign c_alt_yazi = '#5c5c57'
+    assign c_kart = '#ffffff'
+    assign c_yer_tutucu = '#ffffff'
+    assign c_ray = 'rgba(10, 10, 10, 0.12)'
+    assign c_topuz = '#0a0a0a'
+    assign topuz_gradyan = ''
+  endif
+
+  comment
+    Gecis egrisi. Varsayilan "yumusak" (easeOutCubic): mesafenin
+    tamamina yayilan bir yavaslama. Onceki easeOutExpo egrisi yolun
+    %90'ini ilk 150 ms'de aliyordu, bu da kayma degil sicrama gibi
+    gorunuyordu.
+  endcomment
+  assign anim_egri = 'cubic-bezier(.33, 1, .68, 1)'
+  if s.anim_egri == 'dengeli'
+    assign anim_egri = 'cubic-bezier(.4, 0, .2, 1)'
+  elsif s.anim_egri == 'belirgin'
+    assign anim_egri = 'cubic-bezier(.16, 1, .3, 1)'
+  endif
+  assign anim_olcek = s.anim_olcek | default: 100 | divided_by: 100.0
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} {
+    background-color: {{ c_zemin }};
+  }
+
+  .ugc-gallery-{{ section.id }} {
+    padding: 48px 0;
+  }
+
+  .ugc-gallery-rating-{{ section.id }} {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 0 0 10px;
+    padding: 0 16px;
+  }
+
+  .ugc-gallery-stars-{{ section.id }} {
+    display: inline-flex;
+    gap: 2px;
+  }
+
+  .ugc-gallery-star-{{ section.id }} {
+    position: relative;
+    width: 18px;
+    height: 18px;
+  }
+
+  .ugc-gallery-star-{{ section.id }} svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+  }
+
+  .ugc-gallery-star-fill-{{ section.id }} {
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 18px;
+  }
+
+  .ugc-gallery-rating-number-{{ section.id }} {
+    font-size: 14px;
+    font-weight: 700;
+    color: {{ c_puan }};
+  }
+
+  .ugc-gallery-rating-text-{{ section.id }} {
+    font-size: 13px;
+    color: {{ c_puan }};
+  }
+
+  .ugc-gallery-heading-{{ section.id }} {
+    font-size: {{ s.bas_m }}px;
+    line-height: 1.2;
+    letter-spacing: {%- assign tt_ls = s.bas_m -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+    text-align: center;
+    margin: 0 0 20px;
+    padding: 0 16px;
+    color: {{ c_bas }};
+  }
+
+  .ugc-gallery-track-{{ section.id }} {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 16px 14px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .ugc-gallery-track-{{ section.id }}::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ugc-gallery-item-{{ section.id }} {
+    flex: 0 0 auto;
+    width: 128px;
+  }
+
+  .ugc-gallery-play-{{ section.id }} {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: {{ c_kart }};
+    cursor: pointer;
+    scroll-snap-align: start;
+  }
+
+  .ugc-gallery-play-{{ section.id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ugc-gallery-placeholder-{{ section.id }} {
+    position: absolute;
+    inset: 0;
+    background: {{ c_yer_tutucu }};
+  }
+
+  .ugc-gallery-icon-{{ section.id }} {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ugc-gallery-icon-{{ section.id }} svg {
+    width: 34px;
+    height: 34px;
+    filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .45));
+  }
+
+  .ugc-gallery-caption-{{ section.id }} {
+    margin: 6px 0 0;
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: center;
+    color: {{ c_alt_yazi }};
+  }
+
+  .ugc-gallery-dialog-{{ section.id }} {
+    border: 0;
+    border-radius: 14px;
+    padding: 0;
+    background: transparent;
+    max-width: 92vw;
+    max-height: 92vh;
+  }
+
+  .ugc-gallery-dialog-{{ section.id }}::backdrop {
+    background: rgba(0, 0, 0, .78);
+  }
+
+  .ugc-gallery-dialog-inner-{{ section.id }} {
+    position: relative;
+    line-height: 0;
+  }
+
+  .ugc-gallery-dialog-video-{{ section.id }} {
+    display: block;
+    width: auto;
+    height: 85vh;
+    max-width: 92vw;
+    aspect-ratio: 9 / 16;
+    background: #000;
+    border-radius: 14px;
+  }
+
+  .ugc-gallery-close-{{ section.id }} {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    background: rgba(0, 0, 0, .55);
+    color: #fff;
+    border: 0;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .ugc-gallery-scrollbar-wrap-{{ section.id }} {
+    padding: 2px 16px 0;
+  }
+
+  .ugc-gallery-scrollbar-track-{{ section.id }} {
+    position: relative;
+    height: 4px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: {{ c_ray }};
+  }
+
+  .ugc-gallery-scrollbar-thumb-{{ section.id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 8%;
+    border-radius: 999px;
+    transition: width 0.08s linear;
+    {% if topuz_gradyan != blank %}
+      background: {{ topuz_gradyan }};
+    {% else %}
+      background: {{ c_topuz }};
+    {% endif %}
+  }
+
+  @media (min-width: 768px) {
+    .ugc-gallery-item-{{ section.id }} {
+      width: 190px;
+    }
+
+    .ugc-gallery-heading-{{ section.id }} {
+      font-size: {{ s.bas_t }}px;
+    }
+
+    .ugc-gallery-track-{{ section.id }} {
+      width: fit-content;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .ugc-gallery-scrollbar-wrap-{{ section.id }} {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .ugc-gallery-heading-{{ section.id }} {
+      font-size: {{ s.bas_d }}px;
+    }
+  }
+
+  {%- if s.site_tipografi %}
+  /* Site tipografisi: anasayfadaki bolumlerle ayni baslik/govde olculeri.
+     Kapaliyken bu bolumun eski gorunumu hicbir sekilde degismez. */
+  .ugc-gallery-heading-{{ section.id }} {
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: {%- assign tt_ls = s.bas_m -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+    text-wrap: balance;
+  }
+
+  .ugc-gallery-rating-{{ section.id }} {
+    margin-bottom: {{ s.alt_bos_m }}px;
+  }
+
+  .ugc-gallery-rating-number-{{ section.id }},
+  .ugc-gallery-rating-text-{{ section.id }} {
+    font-size: {{ s.alt_m }}px;
+    line-height: 1.6;
+  }
+
+  @media (min-width: 1024px) {
+    .ugc-gallery-rating-{{ section.id }} {
+      margin-bottom: {{ s.alt_bos_d }}px;
+    }
+
+    .ugc-gallery-rating-number-{{ section.id }},
+    .ugc-gallery-rating-text-{{ section.id }} {
+      font-size: {{ s.alt_d }}px;
+    }
+  }
+  {%- endif %}
+
+  {%- if s.anim_ac %}
+  /* Kaydirinca kartlar sagdan sola kayarak yerlesir. Gizli baslangic
+     durumu yalnizca JS "ugc-hazir" sinifini ekledikten sonra gecerli
+     olur; JS calismazsa kartlar oldugu gibi gorunur kalir. */
+  .ugc-gallery-track-{{ section.id }}.ugc-hazir .ugc-gallery-item-{{ section.id }} {
+    opacity: 0;
+    /* translate3d: hareket GPU katmaninda kalsin, telefonda titremesin. */
+    transform: translate3d({{ s.anim_mesafe }}px, 0, 0) scale({{ anim_olcek }});
+    transition:
+      opacity {{ s.anim_sure }}ms {{ anim_egri }},
+      transform {{ s.anim_sure }}ms {{ anim_egri }};
+    transition-delay: var(--ugc-gecikme, 0ms);
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+    /* Buyume sol kenardan olsun. Merkez orijinli olcekte kart yerine
+       otururken sol kenari disari dogru aciliyor, yani ilk kart
+       yerlestikten sonra bir tik daha sola kayiyordu. */
+    transform-origin: left center;
+  }
+
+  .ugc-gallery-track-{{ section.id }}.ugc-hazir .ugc-gallery-item-{{ section.id }}.is-gorunur {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  /* Katman yukseltmesini gecis bitince birakiyoruz. Onceki halde
+     will-change, sinif eklenir eklenmez "auto"ya donuyordu; yani
+     katman tam hareket baslarken dusuyor ve ilk kareler takiliyordu. */
+  .ugc-gallery-track-{{ section.id }} .ugc-gallery-item-{{ section.id }}.anim-bitti {
+    will-change: auto;
+    backface-visibility: visible;
+  }
+
+  /* Snap, kartlar yerinden oynatildigi SURECE kapali kalmali.
+     "ugc-hazir" sinifi kartlari {{ s.anim_mesafe }}px saga itiyor ve bu,
+     animasyon baslamadan cok once -- sayfa yuklenirken -- oluyor. Snap
+     "mandatory" oldugu icin tarayici hemen bu yeni konuma yapisip seridi
+     kaydiriyordu: ilk kart ekranin solundan tasiyor, kartlar yerine
+     oturunca snap geri hesaplanip serit kendini toparliyordu.
+     Kosulu dogrudan "ugc-hazir"a bagladik; boylece kaydirmanin acik
+     oldugu tek bir kare bile kalmiyor. Snap ancak kartlar yerlestikten
+     sonra ("ugc-yerlesti") geri geliyor. */
+  .ugc-gallery-track-{{ section.id }}.ugc-hazir:not(.ugc-yerlesti) {
+    scroll-snap-type: none;
+  }
+
+  /* Asil kayma sebebi buydu: seridin 16px sol ic boslugu var ama snap
+     noktasi bunu bilmiyordu. Animasyon bitip snap geri devreye girince
+     tarayici ilk karti kabin kenarina yapistirmak icin seridi 16px sola
+     cekiyordu -- "gelip sonra kendini ortaliyor" gorunumu buradan.
+     scroll-padding ile snap noktasi kartin gercek durdugu yere denk gelir. */
+  .ugc-gallery-track-{{ section.id }} {
+    scroll-padding-left: 16px;
+    overflow-anchor: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ugc-gallery-track-{{ section.id }}.ugc-hazir .ugc-gallery-item-{{ section.id }},
+    .ugc-gallery-track-{{ section.id }}.ugc-hazir .ugc-gallery-item-{{ section.id }}.is-gorunur {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+  {%- endif %}
+</style>
+
+<div class="ugc-gallery-{{ section.id }}">
+  {% if show_rating %}
+    <div class="ugc-gallery-rating-{{ section.id }}">
+      <span class="ugc-gallery-stars-{{ section.id }}">
+        {% for i in (1..5) %}
+          {% assign star_fill = rating_value | minus: i | plus: 1 | times: 100 %}
+          {% if star_fill > 100 %}
+            {% assign star_fill = 100 %}
+          {% elsif star_fill < 0 %}
+            {% assign star_fill = 0 %}
+          {% endif %}
+          <span class="ugc-gallery-star-{{ section.id }}">
+            <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 1.5L12.47 6.99L18.5 7.64L14 11.72L15.27 17.68L10 14.6L4.73 17.68L6 11.72L1.5 7.64L7.53 6.99L10 1.5Z" fill="{{ c_yildiz_bos }}"/>
+            </svg>
+            <span class="ugc-gallery-star-fill-{{ section.id }}" style="width: {{ star_fill }}%;">
+              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 1.5L12.47 6.99L18.5 7.64L14 11.72L15.27 17.68L10 14.6L4.73 17.68L6 11.72L1.5 7.64L7.53 6.99L10 1.5Z" fill="{{ c_yildiz }}"/>
+              </svg>
+            </span>
+          </span>
+        {% endfor %}
+      </span>
+      {% if rating_number != blank %}
+        <span class="ugc-gallery-rating-number-{{ section.id }}">{{ rating_number }}</span>
+      {% endif %}
+      {% if rating_text != blank %}
+        <span class="ugc-gallery-rating-text-{{ section.id }}">{{ rating_text }}</span>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if heading != blank %}
+    <h2 class="ugc-gallery-heading-{{ section.id }}">{{ heading }}</h2>
+  {% endif %}
+
+  <div class="ugc-gallery-track-{{ section.id }}">
+    {% for block in section.blocks %}
+      {% if block.type == 'video' %}
+        {% assign vsrc = block.settings.video.sources | last %}
+        <div class="ugc-gallery-item-{{ section.id }}" {{ block.shopify_attributes }}>
+          <button
+            type="button"
+            class="ugc-gallery-play-{{ section.id }}"
+            data-ugc-open
+            {% if vsrc %}data-video-src="{{ vsrc.url }}"{% endif %}
+            aria-label="Videoyu büyüt"
+          >
+            {% if block.settings.poster != blank %}
+              {{ block.settings.poster | image_url: width: 400 | image_tag: loading: 'lazy', decoding: 'async' }}
+            {% elsif block.settings.video != blank %}
+              {{ block.settings.video.preview_image | image_url: width: 400 | image_tag: loading: 'lazy', decoding: 'async' }}
+            {% else %}
+              <span class="ugc-gallery-placeholder-{{ section.id }}"></span>
+            {% endif %}
+            {% if vsrc %}
+              <span class="ugc-gallery-icon-{{ section.id }}">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="12" fill="rgba(0,0,0,0.45)"/>
+                  <path d="M9.5 7.5L17 12L9.5 16.5V7.5Z" fill="#fff"/>
+                </svg>
+              </span>
+            {% endif %}
+          </button>
+          {% if block.settings.text != blank %}
+            <p class="ugc-gallery-caption-{{ section.id }}">{{ block.settings.text }}</p>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if section.settings.show_scrollbar %}
+    <div class="ugc-gallery-scrollbar-wrap-{{ section.id }}">
+      <div class="ugc-gallery-scrollbar-track-{{ section.id }}" data-ugc-scrollbar>
+        <div class="ugc-gallery-scrollbar-thumb-{{ section.id }}" data-ugc-thumb></div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<dialog class="ugc-gallery-dialog-{{ section.id }}">
+  <div class="ugc-gallery-dialog-inner-{{ section.id }}">
+    <video class="ugc-gallery-dialog-video-{{ section.id }}" controls playsinline></video>
+    <button type="button" class="ugc-gallery-close-{{ section.id }}" data-ugc-close aria-label="Kapat">✕</button>
+  </div>
+</dialog>
+
+<script>
+  (function () {
+    var root = document.getElementById('shopify-section-{{ section.id }}');
+    if (!root) return;
+
+    var track = root.querySelector('.ugc-gallery-track-{{ section.id }}');
+    var barWrap = root.querySelector('.ugc-gallery-scrollbar-wrap-{{ section.id }}');
+    var thumb = root.querySelector('[data-ugc-thumb]');
+    var lastFill = -1;
+    var animDonuyor = false;
+
+    function updateThumb() {
+      if (!track || !barWrap || !thumb) return;
+      // Kartlar kayarken scrollWidth surekli degisiyor; olcum yapmak
+      // hem cubugu titretiyor hem de her 250 ms'de yerlesim zorluyor.
+      if (animDonuyor) return;
+      var maxScroll = track.scrollWidth - track.clientWidth;
+      if (maxScroll <= 1) {
+        barWrap.style.display = 'none';
+        return;
+      }
+      barWrap.style.display = '';
+      var scrollFrac = track.scrollLeft / maxScroll;
+      var fillPct = Math.min(Math.max(scrollFrac * 100, 8), 100);
+      if (Math.abs(fillPct - lastFill) > 0.3) {
+        lastFill = fillPct;
+        thumb.style.width = fillPct + '%';
+      }
+    }
+
+    if (track && barWrap && thumb) {
+      updateThumb();
+      track.addEventListener('scroll', updateThumb, { passive: true });
+      track.addEventListener('touchmove', updateThumb, { passive: true });
+      window.addEventListener('resize', updateThumb);
+      setInterval(updateThumb, 250);
+    }
+
+    {%- if s.anim_ac %}
+    (function () {
+      if (!track) return;
+      var kartlar = track.querySelectorAll('.ugc-gallery-item-{{ section.id }}');
+      if (!kartlar.length) return;
+
+      var ara = {{ s.anim_ara }};
+      var sure = {{ s.anim_sure }};
+      var biten = 0;
+
+      var kapandi = false;
+
+      function bitir() {
+        if (kapandi) return;
+        kapandi = true;
+
+        // Snap yeniden devreye girerken tarayici seridi en yakin noktaya
+        // cekebiliyor; konumu olcup aynen geri koyuyoruz.
+        var x = track.scrollLeft;
+        track.classList.add('ugc-yerlesti');
+        if (track.scrollLeft !== x) track.scrollLeft = x;
+        requestAnimationFrame(function () {
+          if (Math.abs(track.scrollLeft - x) > 1) track.scrollLeft = x;
+        });
+
+        animDonuyor = false;
+      }
+
+      function goster() {
+        for (var i = 0; i < kartlar.length; i++) {
+          kartlar[i].style.setProperty('--ugc-gecikme', (i * ara) + 'ms');
+        }
+
+        // Gecikmeler yerlestikten sonra ayri bir karede basliyoruz:
+        // ayni karede sinif eklenince tarayici bazen ilk kartin
+        // gecisini atlayip dogrudan yerine koyuyordu.
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            for (var j = 0; j < kartlar.length; j++) {
+              kartlar[j].classList.add('is-gorunur');
+            }
+          });
+        });
+
+        for (var k = 0; k < kartlar.length; k++) {
+          (function (kart) {
+            kart.addEventListener('transitionend', function son(e) {
+              if (e.propertyName !== 'transform') return;
+              kart.removeEventListener('transitionend', son);
+              kart.classList.add('anim-bitti');
+              kart.style.removeProperty('--ugc-gecikme');
+              biten++;
+              if (biten >= kartlar.length) bitir();
+            });
+          })(kartlar[k]);
+        }
+
+        // transitionend gelmezse (sekme arkada, gecis iptal olur) snap ve
+        // cubuk sonsuza kadar kapali kalmasin diye guvenlik agi.
+        setTimeout(bitir, sure + (ara * kartlar.length) + 400);
+      }
+
+      // Gizli baslangic durumunu ancak burada aciyoruz: JS yoksa
+      // kartlar hicbir zaman gizlenmez. Kartlar bu andan itibaren
+      // yerinden oynak oldugu icin kaydirma cubugu olcumu de burada
+      // donduruluyor; scrollWidth animasyon boyunca guvenilir degil.
+      animDonuyor = true;
+      track.classList.add('ugc-hazir');
+
+      var azHareket = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (azHareket || !('IntersectionObserver' in window)) {
+        goster();
+        return;
+      }
+
+      // Serit yatay kaydigi icin kartlari tek tek izleyemeyiz: sagdaki
+      // kartlar ekranin disinda kalir ve hic gorunmezlerdi. Bu yuzden
+      // seridin kendisini izleyip kartlari sirayla aciyoruz.
+      var goz = new IntersectionObserver(function (girisler) {
+        for (var g = 0; g < girisler.length; g++) {
+          if (!girisler[g].isIntersecting) continue;
+          goz.disconnect();
+          goster();
+          return;
+        }
+      }, { threshold: 0.2, rootMargin: '0px 0px -12% 0px' });
+
+      goz.observe(track);
+    })();
+    {%- endif %}
+
+    var dialog = root.querySelector('dialog');
+    if (!dialog) return;
+    var video = dialog.querySelector('video');
+    var closeBtn = dialog.querySelector('[data-ugc-close]');
+
+    function closeDialog() {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+      if (dialog.open) dialog.close();
+    }
+
+    root.querySelectorAll('[data-ugc-open]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var src = btn.getAttribute('data-video-src');
+        if (!src) return;
+        video.src = src;
+        dialog.showModal();
+        video.play();
+      });
+    });
+
+    closeBtn.addEventListener('click', closeDialog);
+    dialog.addEventListener('click', function (e) {
+      if (e.target === dialog) closeDialog();
+    });
+    dialog.addEventListener('cancel', closeDialog);
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "UGC Video Galerisi",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Renk Paleti"
+    },
+    {
+      "type": "select",
+      "id": "palet",
+      "label": "Renk paleti",
+      "info": "Apple paletlerinden biri seçiliyken aşağıdaki renk seçicileri devre dışı kalır. Yıldız rengi hariç — o her zaman ayardan gelir.",
+      "default": "ozel",
+      "options": [
+        {
+          "value": "ozel",
+          "label": "Özel renkler"
+        },
+        {
+          "value": "apple",
+          "label": "Apple (koyu)"
+        },
+        {
+          "value": "apple_acik",
+          "label": "Apple (açık ton)"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Güven Rozeti"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Yıldız ve metni göster",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "rating_number",
+      "label": "Puan (ör. 4.9)",
+      "default": "4.9"
+    },
+    {
+      "type": "text",
+      "id": "rating_text",
+      "label": "Güven metni",
+      "default": "100.000'den fazla kişi Zaman Kapsülü kullanıyor"
+    },
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Yıldız rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "rating_text_color",
+      "label": "Puan/metin rengi",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "header",
+      "content": "Başlık"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Başlık",
+      "default": "Müşterilerimizden Gerçek Anlar"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Başlık rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "bas_m",
+      "label": "Başlık (mobil)",
+      "min": 18,
+      "max": 44,
+      "step": 1,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "range",
+      "id": "bas_t",
+      "label": "Başlık (tablet)",
+      "min": 18,
+      "max": 52,
+      "step": 1,
+      "unit": "px",
+      "default": 34
+    },
+    {
+      "type": "range",
+      "id": "bas_d",
+      "label": "Başlık (masaüstü)",
+      "min": 18,
+      "max": 64,
+      "step": 1,
+      "unit": "px",
+      "default": 34
+    },
+    {
+      "type": "checkbox",
+      "id": "site_tipografi",
+      "label": "Site tipografisini kullan",
+      "info": "Başlık ve rozet yazısı anasayfadaki bölümlerle aynı satır aralığı, kalınlık ve boyutları alır.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "alt_m",
+      "label": "Rozet yazısı (mobil)",
+      "info": "Yalnızca site tipografisi açıkken geçerli.",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "alt_d",
+      "label": "Rozet yazısı (masaüstü)",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "alt_bos_m",
+      "label": "Rozet ile başlık arası (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "alt_bos_d",
+      "label": "Rozet ile başlık arası (masaüstü)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Görünüm"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Arka plan rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "caption_color",
+      "label": "Video açıklama rengi",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "header",
+      "content": "Giriş Animasyonu"
+    },
+    {
+      "type": "checkbox",
+      "id": "anim_ac",
+      "label": "Kaydırınca kartlar sağdan gelsin",
+      "info": "Bölüm ekrana girince kartlar sırayla sağdan sola kayarak yerleşir. Bir kez oynar.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "anim_egri",
+      "label": "Hareket eğrisi",
+      "info": "Yumuşak: yavaşlama tüm mesafeye yayılır. Belirgin: hızlı çıkıp uzun süre yavaşlar.",
+      "default": "yumusak",
+      "options": [
+        {
+          "value": "yumusak",
+          "label": "Yumuşak"
+        },
+        {
+          "value": "dengeli",
+          "label": "Dengeli"
+        },
+        {
+          "value": "belirgin",
+          "label": "Belirgin"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "anim_mesafe",
+      "label": "Kayma mesafesi",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "anim_olcek",
+      "label": "Başlangıç boyutu",
+      "info": "100 = boyut değişmez. Hafif küçükten büyümek hareketi daha yumuşak gösterir.",
+      "min": 90,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 98
+    },
+    {
+      "type": "range",
+      "id": "anim_sure",
+      "label": "Süre",
+      "min": 200,
+      "max": 1400,
+      "step": 50,
+      "unit": "ms",
+      "default": 850
+    },
+    {
+      "type": "range",
+      "id": "anim_ara",
+      "label": "Kartlar arası gecikme",
+      "min": 0,
+      "max": 300,
+      "step": 10,
+      "unit": "ms",
+      "default": 80
+    },
+    {
+      "type": "header",
+      "content": "Kaydırma Çubuğu"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_scrollbar",
+      "label": "Kaydırma çubuğunu göster",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "scrollbar_track_color",
+      "label": "Çubuk arka plan rengi",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "color",
+      "id": "scrollbar_thumb_color",
+      "label": "Kaydırıcı rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color_background",
+      "id": "scrollbar_thumb_gradient",
+      "label": "Kaydırıcı degrade (opsiyonel)",
+      "info": "Ayarlanırsa düz renk yerine bu degrade kullanılır."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video"
+        },
+        {
+          "type": "image_picker",
+          "id": "poster",
+          "label": "Kapak görseli"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Açıklama (opsiyonel)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "UGC Video Galerisi",
+      "blocks": [
+        {
+          "type": "video"
+        },
+        {
+          "type": "video"
+        },
+        {
+          "type": "video"
+        },
+        {
+          "type": "video"
+        },
+        {
+          "type": "video"
+        },
+        {
+          "type": "video"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,342 @@
+{% doc %}
+  @prompt
+    Create a premium Apple-inspired rich text section.
+    
+    Use only typography. No images, cards, borders, icons or decorative elements.
+    
+    The layout should resemble Apple's product pages, with large paragraphs where certain words or sentences can be emphasized in bold.
+    
+    Content width should be around 700-800px and left aligned.
+    
+    Build this section using blocks and rich text so that I can edit everything from the Shopify Theme Editor.
+    
+    Section settings should include:
+    
+    - Content width
+    - Top padding
+    - Bottom padding
+    - Background color
+    - Text alignment
+    
+    Each text block should allow editing:
+    
+    - Rich text content
+    - Heading size
+    - Body text size
+    - Mobile heading size
+    - Mobile body text size
+    - Text color
+    - Bold text color
+    - Line height
+    - Letter spacing
+    - Space below each paragraph
+    
+    The text editor must support rich text formatting, allowing me to make any word or sentence bold without editing code.
+    
+    Typography should use large paragraphs with muted gray text and bold black emphasis, similar to Apple's website.
+    
+    Avoid large gaps between paragraphs. Use approximately 48-64px spacing between text blocks.
+    
+    Do not hardcode font sizes, colors or spacing. Everything should be adjustable from the Theme Editor.
+    
+    The content itself should be fully editable and replaceable.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-apple-text-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    background-color: {{ block.settings.background_color }};
+    padding-top: {{ block.settings.padding_top }}px;
+    padding-bottom: {{ block.settings.padding_bottom }}px;
+  }
+
+  .ai-apple-text__container-{{ ai_gen_id }} {
+    max-width: {{ block.settings.content_width }}px;
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+    text-align: {{ block.settings.text_alignment }};
+  }
+
+  .ai-apple-text__content-{{ ai_gen_id }} {
+    font-family: var(--font-body-family);
+    font-weight: {{ block.settings.body_font.weight }};
+    font-size: {{ block.settings.body_size }}px;
+    line-height: {{ block.settings.line_height }};
+    letter-spacing: {{ block.settings.letter_spacing }}em;
+    color: {{ block.settings.text_color }};
+  }
+
+  .ai-apple-text__content-{{ ai_gen_id }} p {
+    margin: 0 0 {{ block.settings.paragraph_spacing }}px 0;
+  }
+
+  .ai-apple-text__content-{{ ai_gen_id }} p:last-child {
+    margin-bottom: 0;
+  }
+
+  .ai-apple-text__content-{{ ai_gen_id }} strong,
+  .ai-apple-text__content-{{ ai_gen_id }} b {
+    color: {{ block.settings.bold_text_color }};
+    font-weight: 700;
+  }
+
+  .ai-apple-text__content-{{ ai_gen_id }} h1,
+  .ai-apple-text__content-{{ ai_gen_id }} h2,
+  .ai-apple-text__content-{{ ai_gen_id }} h3,
+  .ai-apple-text__content-{{ ai_gen_id }} h4,
+  .ai-apple-text__content-{{ ai_gen_id }} h5,
+  .ai-apple-text__content-{{ ai_gen_id }} h6 {
+    font-family: var(--font-heading-family);
+    font-weight: 700;
+    font-size: {{ block.settings.heading_size }}px;
+    line-height: {{ block.settings.line_height }};
+    letter-spacing: {%- assign tt_ls = block.settings.mobile_heading_size -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+    color: {{ block.settings.text_color }};
+    margin: 0 0 {{ block.settings.paragraph_spacing }}px 0;
+  }
+
+  .ai-apple-text__content-{{ ai_gen_id }} h1:last-child,
+  .ai-apple-text__content-{{ ai_gen_id }} h2:last-child,
+  .ai-apple-text__content-{{ ai_gen_id }} h3:last-child,
+  .ai-apple-text__content-{{ ai_gen_id }} h4:last-child,
+  .ai-apple-text__content-{{ ai_gen_id }} h5:last-child,
+  .ai-apple-text__content-{{ ai_gen_id }} h6:last-child {
+    margin-bottom: 0;
+  }
+
+  .ai-apple-text__content-{{ ai_gen_id }} h1 strong,
+  .ai-apple-text__content-{{ ai_gen_id }} h2 strong,
+  .ai-apple-text__content-{{ ai_gen_id }} h3 strong,
+  .ai-apple-text__content-{{ ai_gen_id }} h4 strong,
+  .ai-apple-text__content-{{ ai_gen_id }} h5 strong,
+  .ai-apple-text__content-{{ ai_gen_id }} h6 strong,
+  .ai-apple-text__content-{{ ai_gen_id }} h1 b,
+  .ai-apple-text__content-{{ ai_gen_id }} h2 b,
+  .ai-apple-text__content-{{ ai_gen_id }} h3 b,
+  .ai-apple-text__content-{{ ai_gen_id }} h4 b,
+  .ai-apple-text__content-{{ ai_gen_id }} h5 b,
+  .ai-apple-text__content-{{ ai_gen_id }} h6 b {
+    color: {{ block.settings.bold_text_color }};
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-apple-text__content-{{ ai_gen_id }} {
+      font-size: {{ block.settings.mobile_body_size }}px;
+    }
+
+    .ai-apple-text__content-{{ ai_gen_id }} h1,
+    .ai-apple-text__content-{{ ai_gen_id }} h2,
+    .ai-apple-text__content-{{ ai_gen_id }} h3,
+    .ai-apple-text__content-{{ ai_gen_id }} h4,
+    .ai-apple-text__content-{{ ai_gen_id }} h5,
+    .ai-apple-text__content-{{ ai_gen_id }} h6 {
+      font-size: {{ block.settings.mobile_heading_size }}px;
+    }
+  }
+{% endstyle %}
+
+<apple-text-{{ ai_gen_id }} class="ai-apple-text-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-apple-text__container-{{ ai_gen_id }}">
+    <div class="ai-apple-text__content-{{ ai_gen_id }}">
+      {{ block.settings.rich_text }}
+    </div>
+  </div>
+</apple-text-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class AppleText{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+    }
+    customElements.define('apple-text-{{ ai_gen_id }}', AppleText{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Apple-style text",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "richtext",
+      "id": "rich_text",
+      "label": "Text",
+      "default": "<p>Designed to make a difference. <strong>Built to last.</strong></p><p>Every detail has been carefully considered to create an experience that's both beautiful and functional. <strong>Premium materials.</strong> Thoughtful design. <strong>Uncompromising quality.</strong></p>"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "label": "Content width",
+      "min": 400,
+      "max": 1200,
+      "step": 50,
+      "unit": "px",
+      "default": 750
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Heading font",
+      "default": "inter_n7"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 20,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "mobile_heading_size",
+      "label": "Mobile heading size",
+      "min": 16,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "font_picker",
+      "id": "body_font",
+      "label": "Body font",
+      "default": "inter_n4"
+    },
+    {
+      "type": "range",
+      "id": "body_size",
+      "label": "Body size",
+      "min": 14,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "mobile_body_size",
+      "label": "Mobile body size",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "line_height",
+      "label": "Line height",
+      "min": 1,
+      "max": 2,
+      "step": 0.1,
+      "default": 1.4
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "label": "Letter spacing",
+      "min": -0.1,
+      "max": 0.2,
+      "step": 0.1,
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "paragraph_spacing",
+      "label": "Space below paragraph",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "color",
+      "id": "bold_text_color",
+      "label": "Bold text color",
+      "default": "#0a0a0a"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Apple-style text"
+    }
+  ]
+}
+{% endschema %}

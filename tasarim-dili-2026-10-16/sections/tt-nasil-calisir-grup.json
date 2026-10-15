@@ -1,0 +1,105 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "custom.tt_nasil_calisir",
+  "name": "Nasıl Çalışır? Butonu",
+  "sections": {
+    "tt_nasil_calisir": {
+      "type": "tt-nasil-calisir",
+      "name": "Nasıl çalışır? butonu",
+      "settings": {
+        "aktif": true,
+        "yer_koleksiyon": true,
+        "yer_urun": false,
+        "yer_anasayfa": true,
+        "yer_sayfa": false,
+        "koleksiyon_liste": "",
+        "dugme_metin": "Nasıl çalışır?",
+        "dugme_aria": "Nasıl çalışır? Bilgi panelini aç",
+        "nabiz": true,
+        "yan_bosluk": 16,
+        "alt_bosluk": 20,
+        "dugme_zemin": "#0A0A0A",
+        "dugme_cerceve": "#D6FF00",
+        "dugme_yazi": "#FFFFFF",
+        "etiket_metin": "Zamana kilitli hediye",
+        "panel_baslik": "Nasıl çalışır?",
+        "panel_alt": "Merak ettiğin konuyu seç",
+        "kapat_etiket": "Kapat",
+        "kart1_baslik": "Couple Zaman Kapsülü nasıl çalışır?",
+        "kart1_alt": "2 ürün · Buluşunca açılır",
+        "kart1_url": "/pages/couple-daha-fazla-bilgi-al",
+        "kart1_ikon": "halkalar",
+        "kart2_baslik": "Single Zaman Kapsülü nasıl çalışır?",
+        "kart2_alt": "1 ürün · Belirlediğin tarihte açılır",
+        "kart2_url": "/pages/hediye-daha-fazla-bilgi-al",
+        "kart2_ikon": "takvim-kalp",
+        "kart3_baslik": "Couple ve Single farkı nedir?",
+        "kart3_alt": "Hangisi sana uygun, karşılaştır",
+        "kart3_eylem": "fark",
+        "kart3_url": "",
+        "kart3_ikon": "oklar",
+        "fark_secici": "[id$=\"tt_nc_fark\"]",
+        "fark_kapat_etiket": "Karşılaştırmayı kapat",
+        "fark_devam_metin": "Alışverişe devam et",
+        "panel_zemin": "#F4F4F4",
+        "ortu_renk": "#0A0A0A",
+        "ortu_opaklik": 55,
+        "tutamac_renk": "#D2D2CD",
+        "etiket_zemin": "#D6FF00",
+        "etiket_renk": "#0A0A0A",
+        "baslik_renk": "#0A0A0A",
+        "alt_renk": "#5C5C57",
+        "kapat_zemin": "#FFFFFF",
+        "kart_zemin": "#FFFFFF",
+        "kart_kenar": "#D2D2CD",
+        "kart_ikon_zemin": "#F4F4F4",
+        "kart_ikon_renk": "#0A0A0A",
+        "kart_ok_zemin": "#F4F4F4",
+        "halka_1": "#0A0A0A",
+        "halka_2": "#0A0A0A"
+      }
+    },
+    "tt_nc_fark": {
+      "type": "tt-catal-karsilastirma",
+      "name": "Çatal Karşılaştırma (panel)",
+      "settings": {
+        "heading": "Bir fikir iki farklı deneyim.",
+        "subheading": "Sana en uygun kapsül türünü seç.",
+        "label_a": "Hediye et",
+        "image_a": "shopify://shop_images/yeni_site2.png",
+        "name_a": "Single Kapsül",
+        "btn_a_label": "Single'ı seç",
+        "btn_a_link": "https://texttonext.com/pages/hediye-daha-fazla-bilgi-al",
+        "label_b": "Birlikte kullan",
+        "image_b": "shopify://shop_images/yeni_site.png",
+        "name_b": "Couple Kapsül",
+        "btn_b_label": "Couple'ı seç",
+        "btn_b_link": "https://texttonext.com/pages/couple-daha-fazla-bilgi-al",
+        "q1": "Kaç ürün almalıyım?",
+        "a1_a": "1 kapsül",
+        "a1_b": "2 kapsül",
+        "q2": "İçeriği kim yükler?",
+        "a2_a": "Sen",
+        "a2_b": "İkiniz",
+        "q3": "Ne zaman açılır?",
+        "a3_a": "Belirlediğin tarihte",
+        "a3_b": "Yan yana geldiğinizde",
+        "q4": "Nasıl tekrar kilitlenir?",
+        "a4_a": "Sen kilitlersin",
+        "a4_b": "Uzaklaşınca kendi kilitlenir"
+      }
+    }
+  },
+  "order": [
+    "tt_nasil_calisir",
+    "tt_nc_fark"
+  ]
+}

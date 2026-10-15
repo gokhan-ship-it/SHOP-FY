@@ -1,0 +1,194 @@
+{%- comment -%}
+  ODEME KOLAYLIKLARI KARTINA TAKSIT KARTLARI  (12. tur)
+
+  Avantaj kartlarindaki "Odeme kolayliklari" karti acilinca metnin
+  altina taksit yapilabilen kart ailelerinin serisi basiliyor.
+
+  ------------------------------------------------------------------
+  NEDEN STATIK
+
+  Onceki surum listeyi PayTR'den CANLI cekiyordu: gizli bir iframe
+  aciliyor, PayTR'nin taksit tablosu script'i orada calistiriliyor
+  ve yazdigi HTML'den logolar toplaniyordu. O yontem sayfayi bozdu --
+  script'in kendi kaynagi sayfanin en basina metin olarak dusuyordu
+  ve bolumun kendi pencere kodunu da calisamaz hale getiriyordu.
+
+  Bu liste hicbir zaman degismeyecegi icin canli cekmenin bir
+  karsiligi yoktu. Artik:
+    - istek yok, iframe yok, document.write yok, zaman asimi yok
+    - script icinde HTML metni URETILMIYOR; sablon asagida hazir
+      duruyor, tiklamada sadece kopyalanip pencereye takiliyor
+  Boylece HTML cozumleyicisini yaniltacak hicbir sey kalmiyor.
+
+  ------------------------------------------------------------------
+  LISTE
+
+  KARTLAR her satirda bir kayit tutuyor:  Ad|gorsel adresi
+  Gorsel adresi bos birakilirsa o kart yazi olarak basiliyor.
+
+  Logo gorselleri Shopify'a yuklenince (Icerik > Dosyalar) yalnizca
+  bu listedeki adres alanlari doldurulacak; baska hicbir yere
+  dokunmak gerekmiyor. Yazi rozetinden logoya gecis bu dosyadaki
+  tek satirlik degisiklik.
+
+  Kart aileleri PayTR'nin kendi tanimindan aliniyor (Bonus, World,
+  Axess, CardFinans, Maximum, Paraf, Advantage, Combo). Magazanin
+  PayTR panelinde kapali bir aile varsa o satir silinmeli.
+
+  ------------------------------------------------------------------
+  KAPSAM: yalnizca kapsam sinifinin altindaki avantaj kartlari.
+  sections/avantaj-kartlari.liquid'e dokunulmadi; ayni bolum baska
+  sayfalarda oldugu gibi calisiyor.
+{%- endcomment -%}
+{%- comment -%}
+  KAPSAM PARAMETRESI
+
+  Bu dosya iki sayfada da render ediliyor; hangi sarmalayici
+  sinifin altina yazacagi disaridan geliyor. Cagrilar
+  layout/theme.liquid icinde:
+
+    parametresiz          -> .tt-couple-page (varsayilan)
+    kok: '.tt-tekli-page' -> tekli (hediye) sayfasi
+
+  Kurallarin kendisi ayni; tek degisen kapsam.
+{%- endcomment -%}
+{%- assign kok = kok | default: '.tt-couple-page' -%}
+
+{%- liquid
+  comment
+    Pencere bu kelimeyi tasiyorsa seri oraya basiliyor. Kucuk harfe
+    cevrilip aranıyor, yani "Odeme Yollari" da "odeme kolayliklari"
+    da eslesiyor.
+  endcomment
+  assign anahtar = 'ödeme'
+  assign baslik = 'Taksit yapılabilen kartlar'
+
+  assign kartlar_ham = 'Bonus|,World|,Axess|,CardFinans|,Maximum|,Paraf|,Advantage|,Combo|'
+  assign kartlar = kartlar_ham | split: ','
+-%}
+
+{%- if kartlar.size > 0 -%}
+<style>
+  #MainContent{{ kok }} .tt-banka {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #262624;
+  }
+
+  #MainContent{{ kok }} .tt-banka-bas {
+    margin: 0 0 12px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #a3a39e;
+  }
+
+  #MainContent{{ kok }} .tt-banka-liste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  {%- comment -%}
+    Iki rozet bicimi var. Yazi rozeti koyu pencerede duruyor;
+    logo rozeti beyaz hapin icinde, cunku banka logolari renkli
+    ve cogu beyaz zemine gore tasarlanmis.
+  {%- endcomment -%}
+  #MainContent{{ kok }} .tt-banka-liste li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid #262624;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.006em;
+    color: #ffffff;
+  }
+
+  #MainContent{{ kok }} .tt-banka-liste li.tt-banka-logo {
+    padding: 6px 10px;
+    border-color: transparent;
+    background: #fff;
+  }
+
+  #MainContent{{ kok }} .tt-banka-liste img {
+    display: block;
+    height: 20px;
+    width: auto;
+    max-width: 92px;
+    object-fit: contain;
+  }
+</style>
+
+{%- comment -%}
+  Blok burada hazir duruyor. Tiklamada kopyalanip pencereye
+  takiliyor; JavaScript tarafinda tek bir HTML metni bile yok.
+{%- endcomment -%}
+<template id="tt-banka-sablon">
+  <div class="tt-banka">
+    <p class="tt-banka-bas">{{ baslik }}</p>
+    <ul class="tt-banka-liste">
+      {%- for kart in kartlar -%}
+        {%- assign parca = kart | split: '|' -%}
+        {%- assign ad = parca[0] | strip -%}
+        {%- assign gorsel = parca[1] | strip -%}
+        {%- if ad == blank -%}{%- continue -%}{%- endif -%}
+        {%- if gorsel != blank -%}
+          <li class="tt-banka-logo"><img src="{{ gorsel }}" alt="{{ ad | escape }}" loading="lazy" decoding="async"></li>
+        {%- else -%}
+          <li>{{ ad }}</li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+</template>
+
+<script>
+  (function () {
+    'use strict';
+
+    var ANAHTAR = {{ anahtar | json }};
+
+    {%- comment -%}
+      Bolumun kendi dinleyicisi "+" tiklamasinda pencereyi aciyor.
+      Biz de ayni tiklamayi KABARCIK evresinde dinliyoruz: bolumun
+      dinleyicisi once calisip pencereyi actigi icin, sira bize
+      geldiginde pencere zaten acik oluyor. Boylece bolumun akisina
+      hic karismiyoruz.
+    {%- endcomment -%}
+    document.addEventListener('click', function (e) {
+      var hedef = e.target;
+      if (!hedef || !hedef.closest) return;
+
+      var dugme = hedef.closest('[data-ak-ac]');
+      if (!dugme) return;
+
+      var kok = document.querySelector('#MainContent{{ kok }}');
+      if (!kok || !kok.contains(dugme)) return;
+
+      var bolum = dugme.closest('.shopify-section') || kok;
+      var pencere = bolum.querySelector('[data-ak-pencere="' + dugme.getAttribute('data-ak-ac') + '"]');
+      if (!pencere || pencere.querySelector('.tt-banka')) return;
+
+      var metin = (pencere.textContent || '') + ' ' + (pencere.getAttribute('aria-label') || '');
+      if (metin.toLocaleLowerCase('tr').indexOf(ANAHTAR) === -1) return;
+
+      var sablon = document.getElementById('tt-banka-sablon');
+      if (!sablon || !sablon.content) return;
+
+      var kap = pencere.querySelector('.ak-pencere-ic') || pencere;
+      var parca = sablon.content.cloneNode(true);
+
+      // Varsa pencere baglantisinin ustune, yoksa en sona.
+      var bag = kap.querySelector('.ak-pop-bag');
+      if (bag && bag.parentNode === kap) kap.insertBefore(parca, bag);
+      else kap.appendChild(parca);
+    });
+  })();
+</script>
+{%- endif -%}

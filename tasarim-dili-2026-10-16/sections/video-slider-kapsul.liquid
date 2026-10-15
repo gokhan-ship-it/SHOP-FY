@@ -1,0 +1,1830 @@
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+
+  assign ilerleme = false
+  if s.ilerleme_goster and s.otomatik_gecis != 'kapali'
+    assign ilerleme = true
+  endif
+
+  assign sag_kolon = 100 | minus: s.d_kolon
+-%}
+<style>
+  #shopify-section-{{ sid }} .vs-root {
+    background: {{ s.arkaplan }};
+    padding-top: {{ s.p_top_m }}px;
+    padding-bottom: {{ s.p_bot_m }}px;
+  }
+  #shopify-section-{{ sid }} .vs-inner {
+    max-width: {{ s.max_w }}px;
+    margin: 0 auto;
+    padding-left: {{ s.edge_m }}px;
+    padding-right: {{ s.edge_m }}px;
+    box-sizing: border-box;
+  }
+  #shopify-section-{{ sid }} .vs-alt {
+    margin: 0 0 {{ s.baslik_bosluk }}px;
+    font-size: {{ s.alt_boyut_m }}px;
+    line-height: 1.6;
+    color: {{ s.alt_renk }};
+    text-align: {{ s.hizalama }};
+    max-width: {{ s.alt_genislik }}px;
+    {%- if s.hizalama == 'center' %}
+    margin-left: auto;
+    margin-right: auto;
+    {%- endif %}
+  }
+  #shopify-section-{{ sid }} .vs-alt > *:first-child { margin-top: 0; }
+  #shopify-section-{{ sid }} .vs-alt > *:last-child { margin-bottom: 0; }
+  #shopify-section-{{ sid }} .vs-head {
+    margin: 0 0 {{ s.baslik_bosluk }}px;
+    font-family: var(--font-heading-family);
+    font-size: {{ s.bas_m }}px;
+    line-height: 1.15;
+    letter-spacing: -0.8px;
+    font-weight: {{ s.baslik_kalinligi }};
+    color: {{ s.baslik_rengi }};
+    text-align: {{ s.hizalama }};
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    visibility: visible !important;
+  }
+
+  #shopify-section-{{ sid }} .vs-root.has-alt .vs-head { margin-bottom: {{ s.baslik_alt_bosluk }}px; }
+
+  {%- if s.anim_ac %}
+  /* Kaydirinca belirme. Baslangic durumu yalnizca JS sinif ekledikten sonra
+     uygulanir; JS calismazsa icerik gorunur kalir.
+     .vs-head'in kendi !important kurallarini gecmek icin ID ile niteleniyor. */
+  #shopify-section-{{ sid }} .vs-root.vs-hazir [data-vs-anim] {
+    opacity: 0 !important;
+    transform: translateY({{ s.anim_mesafe }}px) !important;
+    transition:
+      opacity {{ s.anim_sure }}ms cubic-bezier(.16, 1, .3, 1),
+      transform {{ s.anim_sure }}ms cubic-bezier(.16, 1, .3, 1) !important;
+    transition-delay: var(--vs-gecikme, 0ms) !important;
+    will-change: opacity, transform;
+  }
+  #shopify-section-{{ sid }} .vs-root.vs-hazir [data-vs-anim].is-gorunur {
+    opacity: 1 !important;
+    transform: none !important;
+    will-change: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .vs-root.vs-hazir [data-vs-anim],
+    #shopify-section-{{ sid }} .vs-root.vs-hazir [data-vs-anim].is-gorunur {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+  {%- endif %}
+
+  /* --- video sahnesi --- */
+  #shopify-section-{{ sid }} .vs-col-media {
+    position: relative;
+    min-width: 0;
+  }
+  #shopify-section-{{ sid }} .vs-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: {{ s.oran }};
+    border-radius: {{ s.video_kose }}px;
+    overflow: hidden;
+    background: {{ s.sahne_arkaplan }};
+  }
+  #shopify-section-{{ sid }} .vs-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity {{ s.gecis_suresi }}ms ease;
+    pointer-events: none;
+  }
+  #shopify-section-{{ sid }} .vs-slide.is-on {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  #shopify-section-{{ sid }} .vs-slide video,
+  #shopify-section-{{ sid }} .vs-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: {{ s.doldurma }};
+    display: block;
+  }
+  #shopify-section-{{ sid }} .vs-ph {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.4;
+    color: {{ s.metin_rengi }};
+  }
+  #shopify-section-{{ sid }} .vs-toggle {
+    position: absolute;
+    right: {{ s.buton_kenar }}px;
+    bottom: {{ s.buton_kenar }}px;
+    z-index: 3;
+    width: {{ s.oynat_boyut }}px;
+    height: {{ s.oynat_boyut }}px;
+    border-radius: 999px;
+    border: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: {{ s.oynat_arkaplan }};
+    color: {{ s.oynat_renk }};
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #shopify-section-{{ sid }} .vs-toggle svg {
+    width: 45%;
+    height: 45%;
+    display: block;
+    fill: currentColor;
+  }
+  #shopify-section-{{ sid }} .vs-toggle .vs-ico-pause { display: none; }
+  #shopify-section-{{ sid }} .vs-root.is-playing .vs-toggle .vs-ico-pause { display: block; }
+  #shopify-section-{{ sid }} .vs-root.is-playing .vs-toggle .vs-ico-play { display: none; }
+
+  /* --- kart seridi (mobil) --- */
+  #shopify-section-{{ sid }} .vs-col-text { min-width: 0; }
+  #shopify-section-{{ sid }} .vs-track {
+    display: flex;
+    gap: {{ s.kart_arasi_m }}px;
+    margin: {{ s.sahne_bosluk }}px 0 0;
+    padding: 2px 0;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  #shopify-section-{{ sid }} .vs-track::-webkit-scrollbar { display: none; }
+  #shopify-section-{{ sid }} .vs-card {
+    flex: 0 0 {{ s.kart_genislik_m }}%;
+    scroll-snap-align: start;
+    box-sizing: border-box;
+    background: {{ s.kart_arkaplan }};
+    border-radius: {{ s.kart_kose }}px;
+    padding: {{ s.kart_ic_m }}px;
+    {% if s.kart_kenarlik %}border: 1px solid {{ s.kart_kenarlik_rengi }};{% endif %}
+  }
+  #shopify-section-{{ sid }} .vs-card:focus { outline: none; }
+  #shopify-section-{{ sid }} .vs-card:focus-visible { outline: 2px solid {{ s.kart_baslik_rengi }}; outline-offset: 3px; }
+  #shopify-section-{{ sid }} .vs-fill { display: none; }
+  #shopify-section-{{ sid }} .vs-card-title {
+    margin: 0 0 {{ s.kart_baslik_bosluk }}px;
+    font-family: var(--font-heading-family);
+    font-size: {{ s.kart_baslik_m }}px;
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+    font-weight: {{ s.kart_baslik_kalinlik }};
+    color: {{ s.kart_baslik_rengi }};
+  }
+  #shopify-section-{{ sid }} .vs-card-text {
+    margin: 0;
+    font-size: {{ s.kart_metin_m }}px;
+    line-height: 1.5;
+    color: {{ s.metin_rengi }};
+  }
+  #shopify-section-{{ sid }} .vs-card-text p { margin: 0 0 8px; }
+  #shopify-section-{{ sid }} .vs-card-text p:last-child { margin-bottom: 0; }
+
+  /* --- noktalar --- */
+  #shopify-section-{{ sid }} .vs-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: {{ s.nokta_arasi }}px;
+    margin-top: {{ s.nokta_bosluk }}px;
+  }
+  #shopify-section-{{ sid }} .vs-dot {
+    width: {{ s.nokta_boyut }}px;
+    height: {{ s.nokta_boyut }}px;
+    border-radius: 999px;
+    border: 0;
+    padding: 0;
+    background: {{ s.nokta_renk }};
+    cursor: pointer;
+    transition: background 200ms ease, transform 200ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #shopify-section-{{ sid }} .vs-dot.is-on {
+    background: {{ s.nokta_aktif }};
+    transform: scale(1.15);
+  }
+
+  /* --- buton --- */
+  #shopify-section-{{ sid }} .vs-cta-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: {{ s.cta_bosluk }}px;
+  }
+  #shopify-section-{{ sid }} .vs-cta {
+    display: inline-block;
+    text-decoration: none;
+    background: {{ s.cta_arkaplan }};
+    color: {{ s.cta_yazi_rengi }};
+    border: {% if s.cta_kenarlik %}1px solid {{ s.cta_kenarlik_rengi }}{% else %}0{% endif %};
+    border-radius: {% if s.cta_yuvarlak %}999px{% else %}{{ s.cta_kose }}px{% endif %};
+    padding: {{ s.cta_dikey }}px {{ s.cta_yatay }}px;
+    font-size: {{ s.cta_boyut_m }}px;
+    font-weight: {{ s.cta_kalinlik }};
+    letter-spacing: {{ s.cta_harf_araligi }}px;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+  #shopify-section-{{ sid }} .vs-cta:hover { opacity: .88; }
+
+  @media (min-width: 768px) {
+    #shopify-section-{{ sid }} .vs-root {
+      padding-top: {{ s.p_top_d }}px;
+      padding-bottom: {{ s.p_bot_d }}px;
+    }
+    #shopify-section-{{ sid }} .vs-inner {
+      padding-left: {{ s.edge_d }}px;
+      padding-right: {{ s.edge_d }}px;
+    }
+    #shopify-section-{{ sid }} .vs-head { font-size: {{ s.bas_t }}px; }
+    #shopify-section-{{ sid }} .vs-alt { font-size: {{ s.alt_boyut_d }}px; }
+    #shopify-section-{{ sid }} .vs-stage { aspect-ratio: {{ s.oran_d }}; }
+    #shopify-section-{{ sid }} .vs-track { gap: {{ s.kart_arasi_d }}px; }
+    #shopify-section-{{ sid }} .vs-card {
+      flex-basis: {{ s.kart_genislik_d }}%;
+      padding: {{ s.kart_ic_d }}px;
+    }
+    #shopify-section-{{ sid }} .vs-card-title { font-size: {{ s.kart_baslik_d }}px; }
+    #shopify-section-{{ sid }} .vs-card-text { font-size: {{ s.kart_metin_d }}px; }
+    #shopify-section-{{ sid }} .vs-cta { font-size: {{ s.cta_boyut_d }}px; }
+  }
+
+  {%- if s.d_yerlesim == 'yan' -%}
+  /* --- masaustu: yan yana duzen --- */
+  @media (min-width: 990px) {
+    #shopify-section-{{ sid }} .vs-head { font-size: {{ s.bas_d }}px; }
+    #shopify-section-{{ sid }} .vs-body {
+      display: grid;
+      grid-template-columns: {{ s.d_kolon }}fr {{ sag_kolon }}fr;
+      column-gap: {{ s.d_kolon_arasi }}px;
+      align-items: {{ s.d_dikey }};
+    }
+    #shopify-section-{{ sid }} .vs-col-text { grid-column: 1; grid-row: 1; }
+    #shopify-section-{{ sid }} .vs-col-media { grid-column: 2; grid-row: 1; }
+    #shopify-section-{{ sid }} .vs-stage { aspect-ratio: {{ s.d_oran_yan }}; }
+
+    #shopify-section-{{ sid }} .vs-track {
+      display: block;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+      scroll-snap-type: none;
+    }
+    #shopify-section-{{ sid }} .vs-card {
+      position: relative;
+      display: block;
+      width: auto;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      padding: {{ s.d_satir_ic }}px 0 {{ s.d_satir_ic }}px {{ s.d_satir_sol }}px;
+      cursor: pointer;
+    }
+    #shopify-section-{{ sid }} .vs-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: {{ s.cizgi_kalinlik }}px;
+      background: {{ s.cizgi_pasif }};
+    }
+    #shopify-section-{{ sid }} .vs-fill {
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: {{ s.cizgi_kalinlik }}px;
+      height: 100%;
+      background: {{ s.cizgi_aktif }};
+      transform: scaleY(0);
+      transform-origin: top center;
+      pointer-events: none;
+    }
+    {%- if ilerleme -%}
+    #shopify-section-{{ sid }} .vs-card.is-on .vs-fill {
+      animation: vs-fill-{{ sid }} {{ s.bekleme }}s linear forwards;
+    }
+    #shopify-section-{{ sid }} .vs-root:not(.is-playing) .vs-card.is-on .vs-fill {
+      animation-play-state: paused;
+    }
+    {%- else -%}
+    #shopify-section-{{ sid }} .vs-fill { transition: transform 260ms ease; }
+    #shopify-section-{{ sid }} .vs-card.is-on .vs-fill { transform: scaleY(1); }
+    {%- endif -%}
+
+    #shopify-section-{{ sid }} .vs-card-title {
+      margin: 0;
+      font-size: {{ s.d_baslik_pasif }}px;
+      font-weight: 600;
+      color: {{ s.d_pasif_renk }};
+      transition: color 240ms ease, font-size 240ms ease;
+    }
+    #shopify-section-{{ sid }} .vs-card:hover .vs-card-title { color: {{ s.d_aktif_renk }}; }
+    #shopify-section-{{ sid }} .vs-card.is-on .vs-card-title {
+      font-size: {{ s.d_baslik_aktif }}px;
+      font-weight: {{ s.kart_baslik_kalinlik }};
+      color: {{ s.d_aktif_renk }};
+    }
+    #shopify-section-{{ sid }} .vs-card-body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 340ms ease;
+    }
+    #shopify-section-{{ sid }} .vs-card.is-on .vs-card-body { grid-template-rows: 1fr; }
+    #shopify-section-{{ sid }} .vs-card-body > * {
+      overflow: hidden;
+      min-height: 0;
+    }
+    #shopify-section-{{ sid }} .vs-card-text {
+      font-size: {{ s.d_metin }}px;
+      color: {{ s.d_metin_renk }};
+      padding-top: {{ s.kart_baslik_bosluk }}px;
+      max-width: 36em;
+    }
+
+    {%- if s.d_nokta_gizle -%}
+    #shopify-section-{{ sid }} .vs-dots { display: none; }
+    {%- endif -%}
+
+    #shopify-section-{{ sid }} .vs-cta-wrap {
+      justify-content: {% if s.d_cta_hiza == 'center' %}center{% else %}flex-start{% endif %};
+      margin-top: {{ s.d_cta_bosluk }}px;
+    }
+  }
+  {%- endif -%}
+
+  @keyframes vs-fill-{{ sid }} {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .vs-slide { transition: none; }
+    #shopify-section-{{ sid }} .vs-dot { transition: none; }
+    #shopify-section-{{ sid }} .vs-card-title { transition: none; }
+    #shopify-section-{{ sid }} .vs-card-body { transition: none; }
+    #shopify-section-{{ sid }} .vs-fill { animation: none !important; transition: none; }
+    #shopify-section-{{ sid }} .vs-card.is-on .vs-fill { transform: scaleY(1); }
+  }
+</style>
+
+<div
+  class="vs-root{% if s.alt_metin != blank %} has-alt{% endif %}"
+  data-vs-root
+  data-autoplay="{% if s.otomatik_oynat %}1{% else %}0{% endif %}"
+  data-auto-slide="{{ s.otomatik_gecis }}"
+  data-bekleme="{{ s.bekleme | times: 1000 | round }}"
+  data-bekleme-d="{{ s.bekleme_d | times: 1000 | round }}"
+  {% if s.anim_ac %}data-vs-anim-kok data-vs-ara="{{ s.anim_ara }}"{% endif %}
+>
+  <div class="vs-inner">
+    {%- if s.baslik != blank -%}
+      <{{ s.baslik_etiketi }} class="vs-head"{% if s.anim_ac %} data-vs-anim{% endif %}>{{ s.baslik }}</{{ s.baslik_etiketi }}>
+    {%- endif -%}
+    {%- if s.alt_metin != blank -%}
+      <div class="vs-alt rte"{% if s.anim_ac %} data-vs-anim{% endif %}>{{ s.alt_metin }}</div>
+    {%- endif -%}
+
+    <div class="vs-body">
+      <div class="vs-col-media"{% if s.anim_ac %} data-vs-anim{% endif %}>
+        <div class="vs-stage">
+          {%- for block in section.blocks -%}
+            <div class="vs-slide{% if forloop.first %} is-on{% endif %}" data-vs-slide {{ block.shopify_attributes }}>
+              {%- if block.settings.video != blank -%}
+                {{
+                  block.settings.video
+                  | video_tag:
+                    image_size: '1200x',
+                    autoplay: false,
+                    loop: true,
+                    muted: true,
+                    controls: false,
+                    playsinline: true
+                }}
+              {%- elsif block.settings.poster != blank -%}
+                {%- assign p_alt = block.settings.baslik | strip_html | escape -%}
+                {{ block.settings.poster | image_url: width: 1400 | image_tag: loading: 'lazy', alt: p_alt }}
+              {%- else -%}
+                <span class="vs-ph">{{ block.settings.bos_yazi }}</span>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+
+        {%- if s.oynat_goster -%}
+          <button type="button" class="vs-toggle" data-vs-toggle aria-label="{{ s.oynat_etiket }}">
+            <svg class="vs-ico-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M8 5.5v13l11-6.5z"/>
+            </svg>
+            <svg class="vs-ico-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="7" y="5" width="3.6" height="14" rx="1.2"/>
+              <rect x="13.4" y="5" width="3.6" height="14" rx="1.2"/>
+            </svg>
+          </button>
+        {%- endif -%}
+      </div>
+
+      <div class="vs-col-text">
+        {%- if section.blocks.size > 0 -%}
+          <ul class="vs-track" data-vs-track>
+            {%- for block in section.blocks -%}
+              <li
+                class="vs-card{% if forloop.first %} is-on{% endif %}"
+                data-vs-go="{{ forloop.index0 }}"
+                tabindex="0"
+                role="button"
+                aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
+                {% if s.anim_ac %}data-vs-anim{% endif %}
+              >
+                <span class="vs-fill" aria-hidden="true"></span>
+                {%- if block.settings.baslik != blank -%}
+                  <p class="vs-card-title">{{ block.settings.baslik }}</p>
+                {%- endif -%}
+                {%- if block.settings.metin != blank -%}
+                  <div class="vs-card-body">
+                    <div class="vs-card-text rte">{{ block.settings.metin }}</div>
+                  </div>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+
+          {%- if s.nokta_goster and section.blocks.size > 1 -%}
+            <div class="vs-dots" data-vs-dots>
+              {%- for block in section.blocks -%}
+                <button
+                  type="button"
+                  class="vs-dot{% if forloop.first %} is-on{% endif %}"
+                  data-vs-go="{{ forloop.index0 }}"
+                  aria-label="{{ forloop.index }}. slayt"
+                  aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
+                ></button>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+
+        {%- if s.cta_yazi != blank -%}
+          <div class="vs-cta-wrap">
+            <a class="vs-cta" href="{{ s.cta_link | default: '#' }}">{{ s.cta_yazi }}</a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    if (window.vsKapsulReady) { window.vsKapsulInit(); return; }
+    window.vsKapsulReady = true;
+
+    var roots = [];
+
+    function reduce() {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function wide() {
+      return window.matchMedia('(min-width: 990px)').matches;
+    }
+
+    function autoOn(root) {
+      if (root.vsAutoMode === 'kapali') return false;
+      if (root.vsAutoMode === 'masaustu' && !wide()) return false;
+      return true;
+    }
+
+    function schedule(root) {
+      clearTimeout(root.vsTimer);
+      if (!autoOn(root)) return;
+      if (!root.vsWantPlay || reduce() || document.hidden) return;
+      if (!root.vsInView) return;              // bolum ekranda degilse sayac islemez
+      if (root.vsSlides.length < 2) return;
+      var bek = wide() ? root.vsDelayD : root.vsDelay;
+      root.vsTimer = setTimeout(function () {
+        goTo(root, (root.vsIndex + 1) % root.vsSlides.length);
+      }, bek);
+    }
+
+    // Etkin slaydin videosunu her zaman bastan oynatir.
+    function bastanOynat(v, oynasin) {
+      if (!v) return;
+      try { v.currentTime = 0; } catch (e) {}
+      if (!oynasin) { v.pause(); return; }
+      var pr = v.play();
+      if (pr && pr.catch) pr.catch(function () {});
+    }
+
+    function basla(root) {
+      if (!root.vsWantPlay) return;
+      var v = root.vsSlides[root.vsIndex] && root.vsSlides[root.vsIndex].querySelector('video');
+      bastanOynat(v, true);
+      restartFill(root);
+      schedule(root);
+    }
+
+    function durdur(root) {
+      clearTimeout(root.vsTimer);
+      var v = root.vsSlides[root.vsIndex] && root.vsSlides[root.vsIndex].querySelector('video');
+      if (v) v.pause();
+    }
+
+    function restartFill(root) {
+      var card = root.vsCards[root.vsIndex];
+      if (!card) return;
+      var fill = card.querySelector('.vs-fill');
+      if (!fill) return;
+      fill.style.animation = 'none';
+      void fill.offsetWidth;
+      fill.style.animation = '';
+    }
+
+    function show(root, i) {
+      if (i === root.vsIndex && root.vsReady) return;
+      root.vsIndex = i;
+      for (var k = 0; k < root.vsSlides.length; k++) {
+        var on = k === i;
+        root.vsSlides[k].classList.toggle('is-on', on);
+        var v = root.vsSlides[k].querySelector('video');
+        if (!v) continue;
+        if (on) {
+          // Hangi maddeye tiklanirsa tiklansin video kaldigi yerden degil bastan.
+          bastanOynat(v, root.vsWantPlay && root.vsInView);
+        } else {
+          v.pause();
+          try { v.currentTime = 0; } catch (e) {}
+        }
+      }
+      for (var d = 0; d < root.vsNavs.length; d++) {
+        var dn = parseInt(root.vsNavs[d].getAttribute('data-vs-go'), 10) === i;
+        root.vsNavs[d].classList.toggle('is-on', dn);
+        root.vsNavs[d].setAttribute('aria-current', dn ? 'true' : 'false');
+      }
+      schedule(root);
+    }
+
+    function nearest(root) {
+      var t = root.vsTrack;
+      if (!t) return 0;
+      var tr = t.getBoundingClientRect();
+      var ref = tr.left + tr.width * 0.35;
+      var best = 0, bestD = Infinity;
+      for (var k = 0; k < root.vsCards.length; k++) {
+        var cr = root.vsCards[k].getBoundingClientRect();
+        var d = Math.abs(cr.left - ref);
+        if (d < bestD) { bestD = d; best = k; }
+      }
+      return best;
+    }
+
+    function goTo(root, i) {
+      var t = root.vsTrack;
+      var card = root.vsCards[i];
+      if (t && card && t.scrollWidth > t.clientWidth + 1) {
+        var pad = parseFloat(window.getComputedStyle(t).paddingLeft) || 0;
+        var delta = card.getBoundingClientRect().left - t.getBoundingClientRect().left - pad;
+        var target = Math.max(0, Math.min(t.scrollLeft + delta, t.scrollWidth - t.clientWidth));
+        root.vsLock = true;
+        clearTimeout(root.vsLockT);
+        root.vsLockT = setTimeout(function () { root.vsLock = false; }, 600);
+        if (t.scrollTo) t.scrollTo({ left: target, behavior: reduce() ? 'auto' : 'smooth' });
+        else t.scrollLeft = target;
+      }
+      show(root, i);
+    }
+
+    function setPlaying(root, want) {
+      root.vsWantPlay = want;
+      root.classList.toggle('is-playing', want);
+      if (want) restartFill(root);
+      var v = root.vsSlides[root.vsIndex] && root.vsSlides[root.vsIndex].querySelector('video');
+      if (v) {
+        if (want) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
+        else { v.pause(); }
+      }
+      if (want) schedule(root); else clearTimeout(root.vsTimer);
+    }
+
+    function setup(root) {
+      if (!root || root.vsInited) return;
+      root.vsInited = true;
+      root.vsSlides = root.querySelectorAll('[data-vs-slide]');
+      root.vsNavs = root.querySelectorAll('[data-vs-go]');
+      root.vsTrack = root.querySelector('[data-vs-track]');
+      root.vsCards = root.vsTrack ? root.vsTrack.children : [];
+      root.vsIndex = 0;
+      root.vsReady = false;
+      root.vsAutoMode = root.getAttribute('data-auto-slide') || 'kapali';
+      root.vsDelay = parseInt(root.getAttribute('data-bekleme'), 10) || 6000;
+      root.vsDelayD = parseInt(root.getAttribute('data-bekleme-d'), 10) || root.vsDelay;
+      root.vsWantPlay = root.getAttribute('data-autoplay') === '1' && !reduce();
+      root.vsInView = false;
+
+      var i;
+      for (i = 0; i < root.vsNavs.length; i++) {
+        (function (el) {
+          var idx = parseInt(el.getAttribute('data-vs-go'), 10) || 0;
+          el.addEventListener('click', function () { goTo(root, idx); });
+          el.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+              ev.preventDefault();
+              goTo(root, idx);
+            }
+          });
+        })(root.vsNavs[i]);
+      }
+
+      var toggle = root.querySelector('[data-vs-toggle]');
+      if (toggle) {
+        toggle.addEventListener('click', function () { setPlaying(root, !root.vsWantPlay); });
+      }
+
+      if (root.vsTrack) {
+        root.vsOnScroll = function () {
+          if (root.vsLock || root.vsRaf) return;
+          root.vsRaf = requestAnimationFrame(function () {
+            root.vsRaf = null;
+            show(root, nearest(root));
+          });
+        };
+        root.vsTrack.addEventListener('scroll', root.vsOnScroll, { passive: true });
+      }
+
+      root.classList.toggle('is-playing', root.vsWantPlay);
+      show(root, 0);
+      root.vsReady = true;
+
+      // Video sayfa yuklenince degil, bolum ekrana girince oynar.
+      if ('IntersectionObserver' in window) {
+        root.vsSeeGoz = new IntersectionObserver(function (girisler) {
+          for (var g = 0; g < girisler.length; g++) {
+            var gorunur = girisler[g].isIntersecting;
+            if (gorunur === root.vsInView) continue;
+            root.vsInView = gorunur;
+            if (gorunur) basla(root); else durdur(root);
+          }
+        }, { threshold: 0.25 });
+        root.vsSeeGoz.observe(root);
+      } else {
+        root.vsInView = true;
+        basla(root);
+      }
+
+      roots.push(root);
+    }
+
+    function teardown(root) {
+      if (!root) return;
+      if (root.vsTrack && root.vsOnScroll) root.vsTrack.removeEventListener('scroll', root.vsOnScroll);
+      clearTimeout(root.vsLockT);
+      clearTimeout(root.vsTimer);
+      if (root.vsSeeGoz) { root.vsSeeGoz.disconnect(); root.vsSeeGoz = null; }
+      if (root.vsAnimGoz) { root.vsAnimGoz.disconnect(); root.vsAnimGoz = null; }
+      var vids = root.querySelectorAll('video');
+      for (var i = 0; i < vids.length; i++) vids[i].pause();
+      root.vsInited = false;
+      root.vsAnimKurulu = false;
+      var j = roots.indexOf(root);
+      if (j > -1) roots.splice(j, 1);
+    }
+
+    // --- Kaydirinca giris animasyonu ---
+    function animKur(root) {
+      if (!root || root.vsAnimKurulu) return;
+      root.vsAnimKurulu = true;
+
+      var ogeler = root.querySelectorAll('[data-vs-anim]');
+      if (!ogeler.length) return;
+
+      var ara = parseInt(root.getAttribute('data-vs-ara'), 10);
+      if (isNaN(ara)) ara = 90;
+
+      // Gizleme ancak buradan sonra devreye girer: JS yoksa icerik gorunur kalir.
+      root.classList.add('vs-hazir');
+      for (var i = 0; i < ogeler.length; i++) {
+        ogeler[i].style.setProperty('--vs-gecikme', (i * ara) + 'ms');
+      }
+
+      if (reduce() || !('IntersectionObserver' in window)) {
+        for (var j = 0; j < ogeler.length; j++) ogeler[j].classList.add('is-gorunur');
+        return;
+      }
+
+      root.vsAnimGoz = new IntersectionObserver(function (girisler) {
+        for (var k = 0; k < girisler.length; k++) {
+          if (!girisler[k].isIntersecting) continue;
+          girisler[k].target.classList.add('is-gorunur');
+          root.vsAnimGoz.unobserve(girisler[k].target);   // bir kez oynar
+        }
+      }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
+
+      for (var m = 0; m < ogeler.length; m++) root.vsAnimGoz.observe(ogeler[m]);
+    }
+
+    window.vsKapsulInit = function (scope) {
+      var list = (scope || document).querySelectorAll('[data-vs-root]');
+      for (var i = 0; i < list.length; i++) setup(list[i]);
+      var anim = (scope || document).querySelectorAll('[data-vs-anim-kok]');
+      for (var j = 0; j < anim.length; j++) animKur(anim[j]);
+    };
+
+    document.addEventListener('visibilitychange', function () {
+      for (var i = 0; i < roots.length; i++) {
+        var root = roots[i];
+        if (document.hidden) clearTimeout(root.vsTimer); else schedule(root);
+        var v = root.vsSlides[root.vsIndex] && root.vsSlides[root.vsIndex].querySelector('video');
+        if (!v) continue;
+        if (document.hidden) v.pause();
+        else if (root.vsWantPlay && root.vsInView) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      }
+    });
+
+    var rzT;
+    window.addEventListener('resize', function () {
+      clearTimeout(rzT);
+      rzT = setTimeout(function () {
+        for (var i = 0; i < roots.length; i++) schedule(roots[i]);
+      }, 220);
+    });
+
+    document.addEventListener('shopify:section:load', function (e) { window.vsKapsulInit(e.target); });
+    document.addEventListener('shopify:section:unload', function (e) {
+      var list = e.target.querySelectorAll('[data-vs-root]');
+      for (var i = 0; i < list.length; i++) teardown(list[i]);
+    });
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { window.vsKapsulInit(); });
+    } else {
+      window.vsKapsulInit();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Videolu Slayt",
+  "tag": "section",
+  "class": "video-slider-kapsul-section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Başlık"
+    },
+    {
+      "type": "text",
+      "id": "baslik",
+      "label": "Başlık",
+      "info": "Satır kırmak için araya <br> yazabilirsiniz.",
+      "default": "Her gün, her an<br>yanında"
+    },
+    {
+      "type": "select",
+      "id": "baslik_etiketi",
+      "label": "Başlık etiketi (SEO)",
+      "default": "h2",
+      "options": [
+        { "value": "h1", "label": "H1" },
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "p", "label": "Normal metin" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "hizalama",
+      "label": "Başlık hizası",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Sola" },
+        { "value": "center", "label": "Ortaya" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "baslik_rengi",
+      "label": "Başlık rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "select",
+      "id": "baslik_kalinligi",
+      "label": "Başlık kalınlığı",
+      "default": "700",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" },
+        { "value": "800", "label": "Çok kalın" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "bas_m",
+      "label": "Başlık boyutu (mobil)",
+      "info": "Video Hero başlığı mobilde 28px; bölüm başlıkları bir kademe altında durur.",
+      "min": 16,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "bas_t",
+      "label": "Başlık boyutu (tablet)",
+      "info": "768px ve üzeri.",
+      "min": 16,
+      "max": 56,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "bas_d",
+      "label": "Başlık boyutu (masaüstü)",
+      "info": "990px ve üzeri.",
+      "min": 18,
+      "max": 72,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "baslik_alt_bosluk",
+      "label": "Başlık ile alt yazı arası",
+      "info": "Yalnızca alt yazı doluyken kullanılır.",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "richtext",
+      "id": "alt_metin",
+      "label": "Alt yazı",
+      "info": "Başlığın altında görünür. Boş bırakırsanız hiç basılmaz.",
+      "default": "<p>Her detayı, uzun yıllar yanında kalsın diye düşünüldü.</p>"
+    },
+    {
+      "type": "color",
+      "id": "alt_renk",
+      "label": "Alt yazı rengi",
+      "default": "#a3a39e"
+    },
+    {
+      "type": "range",
+      "id": "alt_boyut_m",
+      "label": "Alt yazı boyutu (mobil)",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "alt_boyut_d",
+      "label": "Alt yazı boyutu (masaüstü)",
+      "min": 12,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "alt_genislik",
+      "label": "Alt yazı genişliği",
+      "min": 320,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 680
+    },
+    {
+      "type": "range",
+      "id": "baslik_bosluk",
+      "label": "Başlık ile video arası",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Masaüstü Düzeni"
+    },
+    {
+      "type": "select",
+      "id": "d_yerlesim",
+      "label": "Masaüstü yerleşimi",
+      "info": "\"Yan yana\" düzen yalnızca 990px ve üzeri ekranlarda çalışır; mobil görünüm hiç değişmez.",
+      "default": "yan",
+      "options": [
+        { "value": "yan", "label": "Yan yana (yazılar solda, video sağda)" },
+        { "value": "alt", "label": "Alt alta (video üstte, kartlar altta)" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "d_kolon",
+      "label": "Sol sütun genişliği",
+      "info": "Kalan alan videoya ayrılır.",
+      "min": 30,
+      "max": 60,
+      "step": 1,
+      "unit": "%",
+      "default": 46
+    },
+    {
+      "type": "range",
+      "id": "d_kolon_arasi",
+      "label": "Sütunlar arası boşluk",
+      "min": 16,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "select",
+      "id": "d_dikey",
+      "label": "Yazıların dikey hizası",
+      "default": "center",
+      "options": [
+        { "value": "start", "label": "Üste" },
+        { "value": "center", "label": "Ortaya" },
+        { "value": "end", "label": "Alta" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "d_oran_yan",
+      "label": "Video oranı (yan yana düzende)",
+      "default": "1 / 1",
+      "options": [
+        { "value": "3 / 4", "label": "Dikey (3:4)" },
+        { "value": "4 / 5", "label": "Dikey (4:5)" },
+        { "value": "1 / 1", "label": "Kare (1:1)" },
+        { "value": "4 / 3", "label": "Klasik (4:3)" },
+        { "value": "16 / 9", "label": "Geniş (16:9)" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "d_satir_ic",
+      "label": "Satır iç boşluğu (dikey)",
+      "min": 6,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "d_satir_sol",
+      "label": "Çizgi ile yazı arası",
+      "min": 12,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "cizgi_kalinlik",
+      "label": "Sol çizgi kalınlığı",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "default": 2
+    },
+    {
+      "type": "color",
+      "id": "cizgi_pasif",
+      "label": "Çizgi rengi (pasif)",
+      "default": "#262624"
+    },
+    {
+      "type": "color",
+      "id": "cizgi_aktif",
+      "label": "Çizgi rengi (seçili)",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "d_pasif_renk",
+      "label": "Pasif başlık rengi",
+      "default": "#8a8a85"
+    },
+    {
+      "type": "color",
+      "id": "d_aktif_renk",
+      "label": "Seçili başlık rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "d_baslik_pasif",
+      "label": "Pasif başlık boyutu",
+      "min": 14,
+      "max": 34,
+      "step": 1,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "d_baslik_aktif",
+      "label": "Seçili başlık boyutu",
+      "min": 14,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 27
+    },
+    {
+      "type": "range",
+      "id": "d_metin",
+      "label": "Açıklama boyutu",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 17
+    },
+    {
+      "type": "color",
+      "id": "d_metin_renk",
+      "label": "Açıklama rengi",
+      "default": "#a3a39e"
+    },
+    {
+      "type": "checkbox",
+      "id": "d_nokta_gizle",
+      "label": "Masaüstünde noktaları gizle",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "d_cta_hiza",
+      "label": "Masaüstünde buton hizası",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Sola" },
+        { "value": "center", "label": "Sol sütunda ortaya" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "d_cta_bosluk",
+      "label": "Liste ile buton arası (masaüstü)",
+      "min": 8,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "header",
+      "content": "Otomatik Geçiş"
+    },
+    {
+      "type": "select",
+      "id": "otomatik_gecis",
+      "label": "Slaytlar kendiliğinden geçsin",
+      "default": "masaustu",
+      "options": [
+        { "value": "masaustu", "label": "Yalnızca masaüstünde" },
+        { "value": "hepsi", "label": "Mobil ve masaüstünde" },
+        { "value": "kapali", "label": "Kapalı" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "bekleme_d",
+      "label": "Bekleme süresi (masaüstü)",
+      "info": "Masaüstünde maddeler arası geçiş bu süreye göre olur.",
+      "min": 2,
+      "max": 15,
+      "step": 0.5,
+      "unit": "sn",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "bekleme",
+      "label": "Her slaytta bekleme süresi (mobil)",
+      "min": 2,
+      "max": 15,
+      "step": 0.5,
+      "unit": "sn",
+      "default": 6
+    },
+    {
+      "type": "checkbox",
+      "id": "ilerleme_goster",
+      "label": "Sol çizgide ilerleme dolgusu göster",
+      "info": "Seçili satırın çizgisi, süre dolarken yukarıdan aşağıya dolar.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Video Alanı"
+    },
+    {
+      "type": "select",
+      "id": "oran",
+      "label": "Video oranı (mobil)",
+      "default": "1 / 1",
+      "options": [
+        { "value": "4 / 5", "label": "Dikey (4:5)" },
+        { "value": "1 / 1", "label": "Kare (1:1)" },
+        { "value": "4 / 3", "label": "Klasik (4:3)" },
+        { "value": "16 / 9", "label": "Geniş (16:9)" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "oran_d",
+      "label": "Video oranı (alt alta düzende)",
+      "default": "16 / 9",
+      "options": [
+        { "value": "4 / 5", "label": "Dikey (4:5)" },
+        { "value": "1 / 1", "label": "Kare (1:1)" },
+        { "value": "4 / 3", "label": "Klasik (4:3)" },
+        { "value": "16 / 9", "label": "Geniş (16:9)" },
+        { "value": "21 / 9", "label": "Sinematik (21:9)" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "doldurma",
+      "label": "Doldurma şekli",
+      "default": "cover",
+      "options": [
+        { "value": "cover", "label": "Alanı doldur (kırpar)" },
+        { "value": "contain", "label": "Tamamını göster" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "sahne_arkaplan",
+      "label": "Video alanı arka planı",
+      "default": "#141414"
+    },
+    {
+      "type": "range",
+      "id": "video_kose",
+      "label": "Video köşe yuvarlaklığı",
+      "info": "0 = keskin köşe. Mobil ve masaüstünde birlikte geçerlidir.",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "gecis_suresi",
+      "label": "Videolar arası geçiş süresi",
+      "min": 0,
+      "max": 1200,
+      "step": 50,
+      "unit": "ms",
+      "default": 300
+    },
+    {
+      "type": "checkbox",
+      "id": "otomatik_oynat",
+      "label": "Otomatik oynat",
+      "info": "Videolar sessiz oynatılır; tarayıcı kuralı gereği ses açıkken otomatik oynatma çalışmaz.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "oynat_goster",
+      "label": "Oynat / durdur düğmesini göster",
+      "info": "Bu düğme videoyu ve otomatik slayt geçişini birlikte durdurur.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "oynat_etiket",
+      "label": "Düğmenin erişilebilirlik etiketi",
+      "default": "Videoyu oynat veya durdur"
+    },
+    {
+      "type": "color",
+      "id": "oynat_arkaplan",
+      "label": "Düğme arka planı",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "oynat_renk",
+      "label": "Düğme ikon rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "oynat_boyut",
+      "label": "Düğme boyutu",
+      "min": 32,
+      "max": 88,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "buton_kenar",
+      "label": "Düğmenin kenardan uzaklığı",
+      "min": 4,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Kartlar (mobil ve alt alta düzen)"
+    },
+    {
+      "type": "range",
+      "id": "sahne_bosluk",
+      "label": "Video ile kartlar arası",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "kart_genislik_m",
+      "label": "Kart genişliği (mobil)",
+      "info": "Ekran genişliğinin yüzdesi. Küçük değer = sağdaki kart daha çok görünür.",
+      "min": 50,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 78
+    },
+    {
+      "type": "range",
+      "id": "kart_genislik_d",
+      "label": "Kart genişliği (masaüstü)",
+      "min": 20,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "kart_arasi_m",
+      "label": "Kartlar arası boşluk (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "kart_arasi_d",
+      "label": "Kartlar arası boşluk (masaüstü)",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "kart_arkaplan",
+      "label": "Kart arka planı",
+      "default": "#141414"
+    },
+    {
+      "type": "range",
+      "id": "kart_kose",
+      "label": "Kart köşe yuvarlaklığı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "kart_ic_m",
+      "label": "Kart iç boşluğu (mobil)",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "kart_ic_d",
+      "label": "Kart iç boşluğu (masaüstü)",
+      "min": 8,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "checkbox",
+      "id": "kart_kenarlik",
+      "label": "Kart kenarlığı",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "kart_kenarlik_rengi",
+      "label": "Kart kenarlık rengi",
+      "default": "#262624"
+    },
+    {
+      "type": "color",
+      "id": "kart_baslik_rengi",
+      "label": "Kart başlığı rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "select",
+      "id": "kart_baslik_kalinlik",
+      "label": "Kart başlığı kalınlığı",
+      "default": "700",
+      "options": [
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "kart_baslik_m",
+      "label": "Kart başlığı boyutu (mobil)",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 17
+    },
+    {
+      "type": "range",
+      "id": "kart_baslik_d",
+      "label": "Kart başlığı boyutu (masaüstü)",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "default": 19
+    },
+    {
+      "type": "range",
+      "id": "kart_baslik_bosluk",
+      "label": "Kart başlığı altı boşluk",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "color",
+      "id": "metin_rengi",
+      "label": "Kart metni rengi",
+      "default": "#a3a39e"
+    },
+    {
+      "type": "range",
+      "id": "kart_metin_m",
+      "label": "Kart metni boyutu (mobil)",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "kart_metin_d",
+      "label": "Kart metni boyutu (masaüstü)",
+      "min": 11,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Noktalar"
+    },
+    {
+      "type": "checkbox",
+      "id": "nokta_goster",
+      "label": "Noktaları göster",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "nokta_renk",
+      "label": "Nokta rengi",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "color",
+      "id": "nokta_aktif",
+      "label": "Seçili nokta rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "nokta_boyut",
+      "label": "Nokta boyutu",
+      "min": 5,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 9
+    },
+    {
+      "type": "range",
+      "id": "nokta_arasi",
+      "label": "Noktalar arası boşluk",
+      "min": 4,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "nokta_bosluk",
+      "label": "Kartlar ile noktalar arası",
+      "min": 4,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "header",
+      "content": "Buton"
+    },
+    {
+      "type": "text",
+      "id": "cta_yazi",
+      "label": "Buton metni",
+      "info": "Boş bırakırsanız buton hiç görünmez. Buton istiyorsanız buraya yazın."
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Buton bağlantısı"
+    },
+    {
+      "type": "color",
+      "id": "cta_arkaplan",
+      "label": "Buton arka planı",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "cta_yazi_rengi",
+      "label": "Buton yazı rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "checkbox",
+      "id": "cta_kenarlik",
+      "label": "Butona kenarlık ekle",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "cta_kenarlik_rengi",
+      "label": "Buton kenarlık rengi",
+      "default": "#ffffff"
+    },
+    {
+      "type": "checkbox",
+      "id": "cta_yuvarlak",
+      "label": "Butonu tam yuvarlak yap",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "cta_kose",
+      "label": "Buton köşe yuvarlaklığı",
+      "info": "Yalnızca \"tam yuvarlak\" kapalıyken geçerlidir.",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "select",
+      "id": "cta_kalinlik",
+      "label": "Buton yazı kalınlığı",
+      "default": "700",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "cta_harf_araligi",
+      "label": "Buton harf aralığı",
+      "min": 0,
+      "max": 4,
+      "step": 0.5,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "cta_boyut_m",
+      "label": "Buton yazı boyutu (mobil)",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "cta_boyut_d",
+      "label": "Buton yazı boyutu (masaüstü)",
+      "min": 11,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "cta_yatay",
+      "label": "Buton iç boşluk - yatay",
+      "min": 12,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 46
+    },
+    {
+      "type": "range",
+      "id": "cta_dikey",
+      "label": "Buton iç boşluk - dikey",
+      "min": 8,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "cta_bosluk",
+      "label": "Noktalar ile buton arası",
+      "min": 4,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Bölüm Görünümü"
+    },
+    {
+      "type": "color_background",
+      "id": "arkaplan",
+      "label": "Bölüm arka planı",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "max_w",
+      "label": "İçerik genişliği",
+      "min": 600,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "edge_m",
+      "label": "Kenar boşluğu (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "edge_d",
+      "label": "Kenar boşluğu (masaüstü)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "p_top_m",
+      "label": "Üst boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "p_bot_m",
+      "label": "Alt boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "p_top_d",
+      "label": "Üst boşluk (masaüstü)",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "p_bot_d",
+      "label": "Alt boşluk (masaüstü)",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "header",
+      "content": "Giriş Animasyonu"
+    },
+    {
+      "type": "checkbox",
+      "id": "anim_ac",
+      "label": "Kaydırınca belirsin",
+      "info": "Başlık, alt yazı, video ve maddeler ekrana girdikçe sırayla yükselerek görünür. Bir kez oynar.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "anim_mesafe",
+      "label": "Yükselme mesafesi",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "anim_sure",
+      "label": "Süre",
+      "min": 200,
+      "max": 1200,
+      "step": 50,
+      "unit": "ms",
+      "default": 600
+    },
+    {
+      "type": "range",
+      "id": "anim_ara",
+      "label": "Öğeler arası gecikme",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "unit": "ms",
+      "default": 90
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slayt",
+      "name": "Slayt",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video",
+          "info": "Shopify'a yüklediğiniz videoyu seçin. Sessiz ve döngüde oynatılır."
+        },
+        {
+          "type": "image_picker",
+          "id": "poster",
+          "label": "Kapak görseli",
+          "info": "Video yoksa bu görsel gösterilir."
+        },
+        {
+          "type": "text",
+          "id": "bos_yazi",
+          "label": "Video yokken görünecek yazı",
+          "default": "video: slayt"
+        },
+        {
+          "type": "text",
+          "id": "baslik",
+          "label": "Kart başlığı",
+          "default": "Slayt başlığı"
+        },
+        {
+          "type": "richtext",
+          "id": "metin",
+          "label": "Kart metni",
+          "default": "<p>Bu slaytta anlatmak istediğinizi kısaca yazın.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Videolu Slayt",
+      "blocks": [
+        {
+          "type": "slayt",
+          "settings": {
+            "bos_yazi": "video: 1. slayt",
+            "baslik": "Şifreli ve size özel",
+            "metin": "<p>Kapsülünüz yalnızca sizin ve paylaştığınız kişi arasında şifrelenir.</p>"
+          }
+        },
+        {
+          "type": "slayt",
+          "settings": {
+            "bos_yazi": "video: 2. slayt",
+            "baslik": "Tek dokunuş yeter",
+            "metin": "<p>NFC çipine dokunun, anılarınız uygulama gerekmeden açılsın.</p>"
+          }
+        },
+        {
+          "type": "slayt",
+          "settings": {
+            "bos_yazi": "video: 3. slayt",
+            "baslik": "Zamanı siz seçin",
+            "metin": "<p>Kapsülü kilitleyin, belirlediğiniz tarihte açılsın.</p>"
+          }
+        },
+        {
+          "type": "slayt",
+          "settings": {
+            "bos_yazi": "video: 4. slayt",
+            "baslik": "Ömür boyu dayanıklı",
+            "metin": "<p>316L cerrahi çelik gövde suya, ısıya ve tere dayanıklıdır.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

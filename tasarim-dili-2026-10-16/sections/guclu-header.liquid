@@ -1,0 +1,1718 @@
+{%- comment -%}
+  Guclu Header - Apple iPad Pro sayfasi tarzinda, simsiyah tam ekran hero.
+
+  Akis (yukaridan asagi):
+    urun adi (ust etiket) -> buyuk baslik (+ istege bagli degrade vurgu)
+    -> alt metin -> medya (gorsel veya dongu video) -> ana dugme
+    -> fiyat / puan satiri -> en altta buzlu cam "Urunu Ogren" cubugu
+
+  Cam cubuk tiklaninca bir sonraki bolume yumusakca kayar; bir baglanti
+  girilirse onun yerine oraya gider.
+
+  JS calismazsa her sey gorunur kalir; yalnizca yumusak kaydirma ve
+  video otomatik oynatma devre disi olur.
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+
+  assign kaynak_d = s.video_d
+  assign kaynak_m = s.video_m
+  if kaynak_m == blank
+    assign kaynak_m = kaynak_d
+  endif
+
+  assign hiza_css = 'center'
+  if s.hiza == 'sol'
+    assign hiza_css = 'left'
+  endif
+
+  assign yasla = 'center'
+  if s.hiza == 'sol'
+    assign yasla = 'flex-start'
+  endif
+
+  # --- parallax yalnizca akis + tasma modunda anlamli ---
+  assign parallax_var = false
+  if s.parallax_ac and s.medya_mod_d == 'tasma' and s.medya_yerlesim_d != 'zemin'
+    assign parallax_var = true
+  endif
+
+  # --- zemin modunda "ust grup / alt grup" ayrimi ---
+  # Alt gruba margin-top: auto verince aradaki bos yer tamamen ona
+  # gider; ust grup yukari yapisir, alt grup asagi iner ve ortasi
+  # gorsel icin acilir. Hangi ogenin alt grubu baslattigi icerige
+  # gore degistigi icin burada seciyoruz.
+  assign alt_grup = ''
+  if s.dugme_metni != blank or s.ikincil_metni != blank
+    assign alt_grup = '.gh-dugmeler'
+  elsif s.bilgi_metni != blank
+    assign alt_grup = '.gh-bilgi'
+  elsif s.puan_ac or s.celenk_ac
+    assign alt_grup = '.gh-puan'
+  endif
+
+  # --- renk paleti ---
+  # "ozel" secilirse asagidaki renk ayarlari aynen kullanilir.
+  # Hazir paletler bu ayarlarin uzerine yazar; boylece tek secimle
+  # tum bolum koyu ya da acik Apple tonuna gecer.
+  assign c_zemin = s.zemin_rengi
+  assign c_etiket = s.etiket_rengi
+  assign c_baslik = s.baslik_rengi
+  assign c_alt = s.alt_rengi
+  assign c_bilgi = s.bilgi_rengi
+  assign c_dug_z = s.dugme_zemin
+  assign c_dug_y = s.dugme_yazi
+  assign c_ik_y = s.ikincil_yazi
+  assign c_ik_k = s.ikincil_kenar
+  # Buzlu cam icin zeminin yari saydam olmasi gerekiyor; renk ayari
+  # duz hex tuttugu icin alfayi ayri bir ayardan veriyoruz. Hazir
+  # paletler zaten kendi rgba degerlerini yaziyor.
+  assign cam_alfa = s.cam_saydam | divided_by: 100.0
+  assign c_cam_z = s.cam_zemin | color_modify: 'alpha', cam_alfa
+  assign c_cam_zd = s.cam_zemin_duz
+  assign c_cam_k = s.cam_kenar
+  assign c_cam_y = s.cam_yazi
+  assign c_v1 = s.vurgu_1
+  assign c_v2 = s.vurgu_2
+  assign c_v3 = s.vurgu_3
+  assign c_v_duz = s.vurgu_duz_renk
+  assign c_celenk = s.celenk_renk
+  assign c_puan = s.puan_renk
+  assign c_golge = 'rgba(0, 0, 0, 0.35)'
+
+  if s.palet == 'apple_koyu'
+    assign c_zemin = '#000000'
+    assign c_etiket = '#8a8a85'
+    assign c_baslik = '#ffffff'
+    assign c_alt = '#a3a39e'
+    assign c_bilgi = '#a3a39e'
+    assign c_dug_z = '#ffffff'
+    assign c_dug_y = '#0a0a0a'
+    assign c_ik_y = '#ffffff'
+    assign c_ik_k = '#262624'
+    assign c_cam_z = 'rgba(20, 20, 20, 0.62)'
+    assign c_cam_zd = '#141414'
+    assign c_cam_k = '#262624'
+    assign c_cam_y = '#ffffff'
+    assign c_v1 = '#8a8a85'
+    assign c_v2 = '#8a8a85'
+    assign c_v3 = '#8a8a85'
+    assign c_v_duz = '#8a8a85'
+    assign c_celenk = '#ffffff'
+    assign c_puan = '#ffffff'
+    assign c_golge = 'rgba(0, 0, 0, 0.35)'
+  elsif s.palet == 'apple_acik'
+    assign c_zemin = '#ffffff'
+    assign c_etiket = '#5c5c57'
+    assign c_baslik = '#0a0a0a'
+    assign c_alt = '#5c5c57'
+    assign c_bilgi = '#5c5c57'
+    assign c_dug_z = '#0a0a0a'
+    assign c_dug_y = '#ffffff'
+    assign c_ik_y = '#0a0a0a'
+    assign c_ik_k = '#d2d2cd'
+    assign c_cam_z = 'rgba(255, 255, 255, 0.72)'
+    assign c_cam_zd = '#ffffff'
+    assign c_cam_k = '#d2d2cd'
+    assign c_cam_y = '#0a0a0a'
+    # Beyaz zeminde okunakli kalmasi icin degrade tonlari koyulastirildi.
+    assign c_v1 = '#8a8a85'
+    assign c_v2 = '#8a8a85'
+    assign c_v3 = '#8a8a85'
+    assign c_v_duz = '#8a8a85'
+    assign c_celenk = '#0a0a0a'
+    assign c_puan = '#0a0a0a'
+    assign c_golge = 'rgba(0, 0, 0, 0.12)'
+  endif
+
+  # Hazir palet degrade renklerini de belirliyor. "Degrade renklerini
+  # kendim sec" isaretliyse paletin uzerine tekrar kullanicinin
+  # sectigi renkleri yaziyoruz - bolumun geri kalani palette kalir.
+  if s.vurgu_ozel
+    assign c_v1 = s.vurgu_1
+    assign c_v2 = s.vurgu_2
+    assign c_v3 = s.vurgu_3
+    assign c_v_duz = s.vurgu_duz_renk
+  endif
+-%}
+
+{%- if s.baslik_font == 'archivo' -%}
+  {%- comment -%}
+    Archivo degisken fontu: wght (100-900) ve wdth (62-125) eksenleri.
+    display=swap ile yazi once yedek fontla cizilir, Archivo gelince
+    degisir - yani font inerken baslik bos kalmaz.
+  {%- endcomment -%}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+{%- endif -%}
+
+<style>
+  #shopify-section-{{ sid }} .gh-kok {
+    position: relative;
+    background: {{ c_zemin }};
+    overflow: hidden;
+    /* Zemin modunda medyaya z-index: -1 veriyoruz. Burasi yigin baglami
+       olmazsa o cocuk .gh-kok'un kendi arka planinin da arkasina duser
+       ve hic gorunmez. isolate bunu engelliyor. */
+    isolation: isolate;
+  }
+  #shopify-section-{{ sid }} .gh-kok * { box-sizing: border-box; }
+
+  #shopify-section-{{ sid }} .gh-ic {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: {{ yasla }};
+    justify-content: center;
+    gap: {{ s.ic_ara_m }}px;
+    max-width: {{ s.max_g }}px;
+    margin: 0 auto;
+    padding: {{ s.p_top_m }}px {{ s.kenar_m }}px {{ s.p_bot_m }}px;
+    text-align: {{ hiza_css }};
+  }
+
+  {%- if s.tam_ekran %}
+  /* svh: mobil tarayicilarda adres cubugu acilip kapanirken hero'nun
+     boyu ziplamasin diye vh yerine kucuk gorunur yukseklik. */
+  #shopify-section-{{ sid }} .gh-ic {
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+  {%- endif %}
+
+  /* --- ust etiket --- */
+  #shopify-section-{{ sid }} .gh-etiket {
+    margin: 0;
+    font-size: {{ s.etiket_m }}px;
+    line-height: 1.3;
+    font-weight: {{ s.etiket_kalin }};
+    color: {{ c_etiket }};
+  }
+
+  /* --- baslik --- */
+  #shopify-section-{{ sid }} .gh-bas {
+    margin: 0;
+    font-family: var(--font-heading-family);
+    font-size: {{ s.bas_m }}px;
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    color: {{ c_baslik }};
+    text-wrap: balance;
+  }
+
+  {%- if s.bas_tek_satir %}
+  /* Baslik tek satirda kalsin: satir kirilmasi kapatilir, asagidaki
+     JS de yaziyi tasmayacak en buyuk punto ile olceklendirir. JS
+     calismazsa min() ile bir vw tavani devreye girer, yani yazi
+     yine ekrandan tasmaz. */
+  #shopify-section-{{ sid }} .gh-bas {
+    white-space: nowrap;
+    text-wrap: nowrap;
+    font-size: min({{ s.bas_m }}px, {{ s.bas_vw | divided_by: 10.0 }}vw);
+  }
+  #shopify-section-{{ sid }} .gh-vurgu { white-space: nowrap; }
+  {%- endif %}
+
+  {%- if s.baslik_font == 'archivo' %}
+  /* Degisken font eksenleri. font-weight/font-stretch standart yol;
+     font-variation-settings ise ekseni tam istenen degere sabitler.
+     Ikisini birden yaziyoruz ki her tarayicida ayni sonuc ciksin. */
+  #shopify-section-{{ sid }} .gh-bas {
+    font-family: var(--font-heading-family);
+    font-weight: {{ s.baslik_wght }};
+    font-stretch: {{ s.baslik_wdth | divided_by: 10.0 }}%;
+    font-variation-settings: 'wght' {{ s.baslik_wght }}, 'wdth' {{ s.baslik_wdth | divided_by: 10.0 }};
+  }
+  {%- endif %}
+
+  {%- if s.vurgu_metni != blank %}
+  /* Degrade yazi: arka plani yaziya kirpiyoruz. Destegi olmayan
+     tarayicida asagidaki duz renk gecerli kalir. */
+  #shopify-section-{{ sid }} .gh-vurgu {
+    display: block;
+    /* em: baslik puntosuna orantili. Baslik tek satira sigdirilirken
+       kuculse bile vurgu satiri ayni orani koruyor. */
+    font-size: {{ s.vurgu_olcek | divided_by: 100.0 }}em;
+    /* background-clip: text ile arka plan yalnizca ogenin kutusu icinde
+       boyanir. line-height 1'in altina inince "g, y, ğ" gibi harflerin
+       kuyruklari kutunun disinda kalir ve seffaf gorunur - yani yazi
+       kesilmis gibi durur. Bol line-height + alt dolgu bunu onler. */
+    line-height: 1.2;
+    padding-bottom: 0.1em;
+    margin-top: {{ s.vurgu_ust | divided_by: 100.0 }}em;
+    color: {{ c_v_duz }};
+  }
+  @supports (-webkit-background-clip: text) or (background-clip: text) {
+    #shopify-section-{{ sid }} .gh-vurgu {
+      background-image: linear-gradient(
+        {{ s.vurgu_aci }}deg,
+        {{ c_v1 }} 0%,
+        {{ c_v2 }} 50%,
+        {{ c_v3 }} 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+  {%- endif %}
+
+  /* --- alt metin --- */
+  #shopify-section-{{ sid }} .gh-alt {
+    margin: 0;
+    max-width: 46ch;
+    font-size: {{ s.alt_m }}px;
+    line-height: 1.6;
+    color: {{ c_alt }};
+    text-wrap: balance;
+  }
+
+  /* --- medya --- */
+  #shopify-section-{{ sid }} .gh-medya {
+    width: 100%;
+    max-width: {{ s.medya_max_m }}px;
+    margin: 0 auto;
+  }
+  #shopify-section-{{ sid }} .gh-medya img,
+  #shopify-section-{{ sid }} .gh-medya video {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: {{ s.medya_yuk_m }}svh;
+    object-fit: contain;
+    border-radius: {{ s.medya_kose }}px;
+    /* Siyah zeminde kenar cizgisi olusmasin diye zemin sifir */
+    background: transparent;
+  }
+
+  {%- if s.medya_mod_m == 'tasma' %}
+  /* Tasma modu (mobil): medya, icerik kutusunun disina cikip ekran
+     kenarindan tasar. Yukseklik sabitlenip object-fit: cover kullanildigi
+     icin gorsel kutuya sigdirilmaz, kadraj disina tasar; boylece "kirpilmis
+     bir kutu" gibi degil, ekranin disindan giren bir sahne gibi okunur.
+     Yatay tasmayi .gh-kok'taki overflow: hidden kirpar, sayfa kaymaz. */
+  #shopify-section-{{ sid }} .gh-medya {
+    align-self: center;
+    width: {{ s.medya_gen_m }}vw;
+    max-width: {{ s.medya_gen_m }}vw;
+    margin: 0;
+  }
+  #shopify-section-{{ sid }} .gh-medya img,
+  #shopify-section-{{ sid }} .gh-medya video {
+    height: {{ s.medya_yuk_m }}svh;
+    max-height: none;
+    object-fit: cover;
+    object-position: {{ s.medya_odak_m }};
+    transform: translateX({{ s.medya_kay_m }}%);
+  }
+  {%- endif %}
+
+  /* --- dugme --- */
+  #shopify-section-{{ sid }} .gh-dugmeler {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: {{ yasla }};
+    gap: {{ s.dugme_ara }}px;
+  }
+
+  #shopify-section-{{ sid }} .gh-dugme {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: {{ s.dugme_dikey }}px {{ s.dugme_yatay }}px;
+    border: 1px solid {{ c_dug_z }};
+    border-radius: {% if s.dugme_form == 'hap' %}999px{% else %}{{ s.dugme_form }}px{% endif %};
+    background: {{ c_dug_z }};
+    color: {{ c_dug_y }};
+    font-family: inherit;
+    font-size: {{ s.dugme_boyut_m }}px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition: filter 180ms ease, transform 180ms ease;
+  }
+
+  /* Dugme incelince gorsel yukseklik dususe de dokunma alani dusmesin:
+     gorunmez bir pay parmak icin hedefi buyutur, tasarimi degistirmez. */
+  #shopify-section-{{ sid }} .gh-dugme::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -{{ s.dugme_dokunma }}px;
+    bottom: -{{ s.dugme_dokunma }}px;
+  }
+  #shopify-section-{{ sid }} .gh-dugme.is-ikincil {
+    background: transparent;
+    color: {{ c_ik_y }};
+    border-color: {{ c_ik_k }};
+  }
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ sid }} .gh-dugme:hover { filter: brightness(1.1); }
+  }
+  #shopify-section-{{ sid }} .gh-dugme:active { transform: scale(0.98); }
+  #shopify-section-{{ sid }} .gh-dugme:focus-visible {
+    outline: 2px solid {{ c_dug_z }};
+    outline-offset: 3px;
+  }
+
+  /* --- ikiye bolunen ana dugme --- */
+  /* Baslangicta iki secenek acik, tetik gizli: JS calismazsa ziyaretci
+     her iki baglantiyi da dogrudan gorur. JS "gh-bol-hazir" ekleyince
+     durum tersine doner ve tek dugme gorunur. */
+  #shopify-section-{{ sid }} .gh-btn-yuva { min-width: 0; }
+
+  #shopify-section-{{ sid }} .gh-btn-tetik { display: none; }
+
+  #shopify-section-{{ sid }} .gh-bol-secenekler {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: {{ yasla }};
+    gap: {{ s.dugme_ara }}px;
+  }
+
+  #shopify-section-{{ sid }} .gh-btn-yuva.gh-bol-hazir .gh-btn-tetik {
+    display: inline-flex;
+  }
+  #shopify-section-{{ sid }} .gh-btn-yuva.gh-bol-hazir .gh-bol-secenekler {
+    display: none;
+  }
+  #shopify-section-{{ sid }} .gh-btn-yuva.gh-bol-hazir.is-bolundu .gh-btn-tetik {
+    display: none;
+  }
+  #shopify-section-{{ sid }} .gh-btn-yuva.gh-bol-hazir.is-bolundu .gh-bol-secenekler {
+    display: flex;
+    animation: gh-bol-{{ sid }} 240ms cubic-bezier(.33, 1, .68, 1) both;
+  }
+
+  @keyframes gh-bol-{{ sid }} {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .gh-btn-yuva.gh-bol-hazir.is-bolundu .gh-bol-secenekler {
+      animation: none;
+    }
+  }
+
+  /* Bolununce iki dugme yan yana durdugu icin biraz daraliyorlar. */
+  #shopify-section-{{ sid }} .gh-dugme.gh-kucuk {
+    padding: {{ s.dugme_dikey }}px {{ s.dugme_yatay | times: 0.72 | round }}px;
+  }
+
+  /* --- fiyat / puan satiri --- */
+  #shopify-section-{{ sid }} .gh-bilgi {
+    margin: 0;
+    font-size: {{ s.bilgi_m }}px;
+    line-height: 1.5;
+    color: {{ c_bilgi }};
+  }
+
+  #shopify-section-{{ sid }} .gh-puan {
+    display: flex;
+    align-items: center;
+    justify-content: {{ yasla }};
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: {{ s.bilgi_m }}px;
+    line-height: 1.4;
+    font-weight: 600;
+    color: {{ c_puan }};
+  }
+  #shopify-section-{{ sid }} .gh-yildizlar {
+    display: inline-flex;
+    gap: 2px;
+    color: {{ s.yildiz_rengi }};
+  }
+  #shopify-section-{{ sid }} .gh-yildizlar svg {
+    width: {{ s.yildiz_boyut }}px;
+    height: {{ s.yildiz_boyut }}px;
+    display: block;
+  }
+  #shopify-section-{{ sid }} .gh-puan-grup {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* --- guven rozeti --- */
+  /* Ikon yuksekligi em cinsinden: yaziyla birlikte olcekleniyor,
+     masaustunde ayrica ayar gerekmiyor. */
+  #shopify-section-{{ sid }} .gh-celenk {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: {{ c_celenk }};
+    font-size: {{ s.celenk_yazi_m }}px;
+    line-height: 1.2;
+  }
+  #shopify-section-{{ sid }} .gh-dal {
+    display: block;
+    flex: 0 0 auto;
+  }
+  #shopify-section-{{ sid }} .gh-dal svg { overflow: visible; }
+  #shopify-section-{{ sid }} .gh-dal svg {
+    display: block;
+    height: {{ s.celenk_boyut | divided_by: 100.0 }}em;
+    width: auto;
+  }
+  #shopify-section-{{ sid }} .gh-celenk-yazi {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  /* --- buzlu cam cubuk --- */
+  #shopify-section-{{ sid }} .gh-cam-sar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc({{ s.cam_alt }}px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    justify-content: center;
+    padding: 0 {{ s.kenar_m }}px;
+    pointer-events: none;
+  }
+
+  #shopify-section-{{ sid }} .gh-cam {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: {{ s.cam_dikey }}px {{ s.cam_yatay }}px;
+    border-radius: 999px;
+    border: 1px solid {{ c_cam_k }};
+    background: {{ c_cam_z }};
+    -webkit-backdrop-filter: saturate(180%) blur({{ s.cam_bulanik }}px);
+    backdrop-filter: saturate(180%) blur({{ s.cam_bulanik }}px);
+    box-shadow: 0 8px 32px {{ c_golge }};
+    color: {{ c_cam_y }};
+    font-family: inherit;
+    font-size: {{ s.cam_boyut }}px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 200ms ease, transform 200ms ease;
+  }
+
+  /* Buzlu cam desteklenmiyorsa okunurluk dussmesin diye donuk zemin */
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    #shopify-section-{{ sid }} .gh-cam {
+      background: {{ c_cam_zd }};
+    }
+  }
+
+  #shopify-section-{{ sid }} .gh-cam svg {
+    width: {{ s.cam_ok }}px;
+    height: {{ s.cam_ok }}px;
+    display: block;
+    flex: 0 0 auto;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ sid }} .gh-cam:hover { transform: translateY(-2px); }
+  }
+  #shopify-section-{{ sid }} .gh-cam:active { transform: scale(0.98); }
+  #shopify-section-{{ sid }} .gh-cam:focus-visible {
+    outline: 2px solid {{ c_cam_y }};
+    outline-offset: 3px;
+  }
+
+  {%- if s.cam_nabiz %}
+  /* Cubugun cevresinde yavasca genisleyip sonen bir halka: dikkat
+     ceker ama dugmenin kendi transformuna (hover/active) dokunmaz. */
+  #shopify-section-{{ sid }} .gh-cam { position: relative; }
+  #shopify-section-{{ sid }} .gh-cam::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 999px;
+    border: 1.5px solid {{ s.cam_nabiz_renk }};
+    opacity: 0;
+    pointer-events: none;
+    animation: gh-nabiz-{{ sid }} 2.8s cubic-bezier(.33, 1, .68, 1) infinite;
+  }
+  @keyframes gh-nabiz-{{ sid }} {
+    0%   { transform: scale(1);    opacity: 0.55; }
+    70%  { transform: scale(1.16); opacity: 0; }
+    100% { transform: scale(1.16); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .gh-cam::before { animation: none; }
+  }
+  {%- endif %}
+
+  {%- if s.cam_zipla %}
+  /* Asagiyi isaret eden ok hafifce inip cikar: kaydirilabilecegini
+     sezdirir. Bir kez degil, yavas ve surekli. */
+  #shopify-section-{{ sid }} .gh-cam svg {
+    animation: gh-zipla-{{ sid }} 2.4s ease-in-out infinite;
+  }
+  @keyframes gh-zipla-{{ sid }} {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(3px); }
+  }
+  {%- endif %}
+
+  /* --- giris animasyonu --- */
+  {%- if s.anim_ac %}
+  #shopify-section-{{ sid }} .gh-kok.gh-hazir [data-gh-anim] {
+    opacity: 0;
+    transform: translate3d(0, {{ s.anim_mesafe }}px, 0);
+    transition:
+      opacity {{ s.anim_sure }}ms cubic-bezier(.33, 1, .68, 1),
+      transform {{ s.anim_sure }}ms cubic-bezier(.33, 1, .68, 1);
+    transition-delay: var(--gh-gecikme, 0ms);
+    will-change: opacity, transform;
+  }
+  #shopify-section-{{ sid }} .gh-kok.gh-hazir [data-gh-anim].is-gorunur {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  #shopify-section-{{ sid }} .gh-kok [data-gh-anim].anim-bitti { will-change: auto; }
+  {%- endif %}
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .gh-cam svg { animation: none; }
+    #shopify-section-{{ sid }} .gh-kok.gh-hazir [data-gh-anim],
+    #shopify-section-{{ sid }} .gh-kok.gh-hazir [data-gh-anim].is-gorunur {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* --- tablet --- */
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .gh-ic {
+      gap: {{ s.ic_ara_d }}px;
+      padding: {{ s.p_top_d }}px {{ s.kenar_d }}px {{ s.p_bot_d }}px;
+    }
+    #shopify-section-{{ sid }} .gh-etiket { font-size: {{ s.etiket_d }}px; }
+    #shopify-section-{{ sid }} .gh-bas { font-size: {%- if s.bas_tek_satir %} min({{ s.bas_t }}px, {{ s.bas_vw | divided_by: 10.0 }}vw){%- else %} {{ s.bas_t }}px{%- endif %}; }
+    /* Alt metin masaustunde daha genis bir olcuye yayilabilsin:
+       iki satir yerine tek satira dusunce medyaya ~30px yer kalir. */
+    #shopify-section-{{ sid }} .gh-alt {
+      font-size: {{ s.alt_d }}px;
+      max-width: {{ s.alt_gen_d }}ch;
+    }
+    {%- if s.alt_gizle_d %}
+    #shopify-section-{{ sid }} .gh-alt { display: none; }
+    {%- endif %}
+    {%- if s.puan_gizle_d %}
+    #shopify-section-{{ sid }} .gh-puan { display: none; }
+    {%- endif %}
+    {%- if s.medya_mod_d == 'tasma' %}
+    #shopify-section-{{ sid }} .gh-medya {
+      align-self: center;
+      width: {{ s.medya_gen_d }}vw;
+      max-width: {{ s.medya_gen_d }}vw;
+      margin: 0;
+    }
+    #shopify-section-{{ sid }} .gh-medya img,
+    #shopify-section-{{ sid }} .gh-medya video {
+      height: {{ s.medya_yuk_d }}svh;
+      max-height: none;
+      object-fit: cover;
+      object-position: {{ s.medya_odak_d }};
+      transform: translateX({{ s.medya_kay_d }}%);
+    }
+    {%- else %}
+    /* Mobilde tasma acik olsa bile masaustunde kutuya geri doner. */
+    #shopify-section-{{ sid }} .gh-medya {
+      align-self: auto;
+      width: 100%;
+      max-width: {{ s.medya_max_d }}px;
+      margin: 0 auto;
+    }
+    #shopify-section-{{ sid }} .gh-medya img,
+    #shopify-section-{{ sid }} .gh-medya video {
+      height: auto;
+      max-height: {{ s.medya_yuk_d }}svh;
+      object-fit: contain;
+      object-position: 50% 50%;
+      transform: none;
+    }
+    {%- endif %}
+    {%- if s.medya_alt_d > 0 %}
+    /* Gorselin altina ek nefes payi: dugme urunun dibine yapismasin. */
+    #shopify-section-{{ sid }} .gh-medya { margin-bottom: {{ s.medya_alt_d }}px; }
+    {%- endif %}
+    #shopify-section-{{ sid }} .gh-dugme { font-size: {{ s.dugme_boyut_d }}px; }
+    #shopify-section-{{ sid }} .gh-bilgi,
+    #shopify-section-{{ sid }} .gh-puan { font-size: {{ s.bilgi_d }}px; }
+    #shopify-section-{{ sid }} .gh-celenk { font-size: {{ s.celenk_yazi_d }}px; }
+    #shopify-section-{{ sid }} .gh-cam-sar { padding: 0 {{ s.kenar_d }}px; }
+  }
+
+  /* --- masaustu --- */
+  @media (min-width: 990px) {
+    #shopify-section-{{ sid }} .gh-bas { font-size: {%- if s.bas_tek_satir %} min({{ s.bas_d }}px, {{ s.bas_vw | divided_by: 10.0 }}vw){%- else %} {{ s.bas_d }}px{%- endif %}; }
+  }
+
+  {%- if s.kompakt %}
+  {%- if s.kompakt_kapsam == 'sadece_mobil' %}
+  /* Tek ekran kurali yalnizca mobilde: masaustunde bolum icerigi kadar
+     uzayabilir, boylece genis (21:9 gibi) bir gorsel dogal boyutuna
+     kavusur. Bedeli: icerik bir ekrani asarsa alttaki cam cubuk
+     ekranin altinda kalir ve gorulmesi icin biraz kaydirmak gerekir. */
+  @media (max-width: 749px) {
+  {%- endif %}
+  /* ================= TEK EKRANA SIGDIRMA =================
+     Bolumun boyu tam olarak bir ekran. Metinler ve dugmeler kendi
+     dogal boylarinda kalir (flex: 0 0 auto), artan/eksilen yeri
+     medya alani yutar (flex: 1 1 auto + min-height: 0). Boylece
+     ekran ne kadar kisa olursa olsun gorsel kuculur, dugme ve fiyat
+     satiri asagi tasmaz. Dikey bosluklar da vh ile olceklenir;
+     kayitli px degerleri burada ust sinir olarak kalir.
+
+     .gh-ic'ye overflow vermiyoruz: tasma modundaki gorselin yatayda
+     ekrandan tasabilmesi gerekiyor. Dikey tasmayi zaten .gh-kok'un
+     overflow: hidden'i kirpiyor.
+
+     Bu blok en sonda duruyor ki yukaridaki medya kurallarini
+     sirasiyla gecersiz kilabilsin. */
+  /* --gh-ust: bolumun ustunde kalan site header'inin yuksekligi.
+     Asagidaki JS olcup yaziyor. Bunu dusmezsek bolum tam bir ekran
+     olur ama header da yer kapladigi icin toplam bir ekrani asar ve
+     en alttaki cam cubuk ekranin disinda kalir. JS calismazsa
+     "Üst boşluk" ayarindaki elle deger devreye girer. */
+  #shopify-section-{{ sid }} .gh-ic {
+    height: calc(100vh - var(--gh-ust, {{ s.ust_ofset }}px));
+    height: calc(100svh - var(--gh-ust, {{ s.ust_ofset }}px));
+    min-height: 0;
+    max-height: calc(100svh - var(--gh-ust, {{ s.ust_ofset }}px));
+    gap: clamp(6px, 1.5vh, {{ s.ic_ara_m }}px);
+    padding-top: clamp(10px, 2.5vh, {{ s.p_top_m }}px);
+    padding-bottom: {% if s.cam_ac %}clamp({{ s.cam_alt | plus: 58 }}px, 12vh, {{ s.p_bot_m }}px){% else %}clamp(14px, 4vh, {{ s.p_bot_m }}px){% endif %};
+  }
+
+  #shopify-section-{{ sid }} .gh-etiket,
+  #shopify-section-{{ sid }} .gh-bas,
+  #shopify-section-{{ sid }} .gh-alt,
+  #shopify-section-{{ sid }} .gh-dugmeler,
+  #shopify-section-{{ sid }} .gh-bilgi,
+  #shopify-section-{{ sid }} .gh-puan,
+  #shopify-section-{{ sid }} .gh-celenk-sar {
+    flex: 0 0 auto;
+  }
+
+  #shopify-section-{{ sid }} .gh-medya {
+    /* basis 0: medya once sifir kabul edilir, sadece artan yeri alir.
+       Boylece gorsel hicbir zaman metni ekran disina itemez. */
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* display: contents -> <picture> yerlesimden cikar, <img> dogrudan
+     .gh-medya'nin flex ogesi olur; boylece yukseklik yuzdesi cozulur. */
+  #shopify-section-{{ sid }} .gh-medya picture { display: contents; }
+
+  #shopify-section-{{ sid }} .gh-medya img,
+  #shopify-section-{{ sid }} .gh-medya video {
+    height: 100%;
+    min-height: 0;
+    /* Yuzde yukseklik cozulemezse svh tavani devrede kalsin. */
+    max-height: {{ s.medya_yuk_m }}svh;
+  }
+
+  {%- if s.kompakt_kapsam != 'sadece_mobil' %}
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .gh-ic {
+      gap: clamp(8px, 1.8vh, {{ s.ic_ara_d }}px);
+      padding-top: clamp(14px, 3vh, {{ s.p_top_d }}px);
+      /* +52: cam cubugun kendi yuksekligi (~40px) + kucuk bir pay.
+         Bu taban ne kadar dusukse medyaya o kadar yer kalir. */
+      padding-bottom: {% if s.cam_ac %}clamp({{ s.cam_alt | plus: 52 }}px, 12vh, {{ s.p_bot_d }}px){% else %}clamp(18px, 4vh, {{ s.p_bot_d }}px){% endif %};
+    }
+    #shopify-section-{{ sid }} .gh-medya img,
+    #shopify-section-{{ sid }} .gh-medya video {
+      max-height: {{ s.medya_yuk_d }}svh;
+    }
+    {%- if s.medya_min_d > 0 %}
+    /* Medyaya taban yukseklik: artan yeri beklemek yerine yerini
+       pesinen alir. Cok yuksek verilirse icerik bir ekrani asar ve
+       .gh-kok'un overflow: hidden'i alttan kirpar - dikkatli artir. */
+    #shopify-section-{{ sid }} .gh-medya { min-height: {{ s.medya_min_d }}svh; }
+    {%- endif %}
+  }
+  {%- endif %}
+  {%- if s.kompakt_kapsam == 'sadece_mobil' %}
+  }
+  {%- endif %}
+  {%- endif %}
+  {%- if s.medya_yerlesim_d == 'zemin' %}
+  /* ============ MASAUSTUNDE TAM EKRAN ZEMIN GORSELI ============
+     Medya akistan cikip .gh-kok'u bastan basa kaplar. .gh-ic'yi
+     "static" yapiyoruz ki mutlak konumlanan medya .gh-ic'nin 1000px'lik
+     kutusuna degil, tam genislikteki .gh-kok'a gore hizalansin.
+     Mobil bu bloktan hic etkilenmez. */
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .gh-ic { position: static; }
+
+    #shopify-section-{{ sid }} .gh-medya {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      max-width: none;
+      min-height: 0;
+      margin: 0;
+      z-index: -1;
+      pointer-events: none;
+      display: block;
+      align-self: auto;
+      flex: 0 0 auto;
+      height: auto;
+    }
+    #shopify-section-{{ sid }} .gh-medya img,
+    #shopify-section-{{ sid }} .gh-medya video {
+      width: 100%;
+      height: 100%;
+      max-height: none;
+      min-height: 0;
+      object-fit: cover;
+      object-position: {{ s.zemin_x_d }}% {{ s.zemin_y_d }}%;
+      transform: none;
+      border-radius: 0;
+    }
+
+    {%- if s.zemin_ayir_d and alt_grup != blank %}
+    /* Yazilar uste, dugme + fiyat + puan alta. Aradaki bosluk gorselin
+       konusuna kalir, uzerine hicbir sey binmez. */
+    #shopify-section-{{ sid }} .gh-ic { justify-content: flex-start; }
+    #shopify-section-{{ sid }} {{ alt_grup }} { margin-top: auto; }
+    {%- endif %}
+
+    /* Tam ekran zemin yukari kayarak girerse altta bir seritlik bosluk
+       aciliyor. Zemin modunda medyanin giris animasyonunu kapatiyoruz;
+       diger ogeler normal sekilde belirmeye devam ediyor. */
+    #shopify-section-{{ sid }} .gh-kok.gh-hazir .gh-medya[data-gh-anim],
+    #shopify-section-{{ sid }} .gh-kok.gh-hazir .gh-medya[data-gh-anim].is-gorunur {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    {%- if s.perde_ac %}
+    /* Okunurluk perdesi: gorselin uzerine, yazinin altina. */
+    {%- assign perde_a = s.perde_opak | divided_by: 100.0 -%}
+    {%- assign perde_c = s.perde_renk | color_modify: 'alpha', perde_a -%}
+    #shopify-section-{{ sid }} .gh-medya::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      {%- if s.perde_yon == 'duz' %}
+      background: {{ perde_c }};
+      {%- elsif s.perde_yon == 'sol' %}
+      background: linear-gradient(to right, {{ perde_c }} 0%, {{ perde_c }} 30%, transparent 75%);
+      {%- elsif s.perde_yon == 'sag' %}
+      background: linear-gradient(to left, {{ perde_c }} 0%, {{ perde_c }} 30%, transparent 75%);
+      {%- else %}
+      background: linear-gradient(to top, {{ perde_c }} 0%, {{ perde_c }} 25%, transparent 80%);
+      {%- endif %}
+    }
+    {%- endif %}
+  }
+  {%- endif %}
+
+  {%- if s.hiza_d != 'miras' %}
+  /* Masaustunde ayri hizalama: zemin gorselinde konu bir yanda,
+     yazi diger yanda durabilsin diye. */
+  {%- liquid
+    case s.hiza_d
+      when 'orta'
+        assign hd_text = 'center'
+        assign hd_flex = 'center'
+      when 'sag'
+        assign hd_text = 'right'
+        assign hd_flex = 'flex-end'
+      else
+        assign hd_text = 'left'
+        assign hd_flex = 'flex-start'
+    endcase
+  -%}
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .gh-ic {
+      align-items: {{ hd_flex }};
+      text-align: {{ hd_text }};
+    }
+    #shopify-section-{{ sid }} .gh-dugmeler,
+    #shopify-section-{{ sid }} .gh-bol-secenekler,
+    #shopify-section-{{ sid }} .gh-puan {
+      justify-content: {{ hd_flex }};
+    }
+  }
+  {%- endif %}
+
+
+  {%- if s.dikey_hiza_d == 'ust' %}
+  /* Bolum min-height: 100svh oldugu icin, icerik ekrandan kisa kalirsa
+     justify-content: center onu dikeyde ortalar ve ustte bosluk birakir.
+     "Uste yasla" secilince icerik her ekran boyunda tepeye oturur;
+     olculerin ve aralarin hicbiri degismez, sadece bos yer alta gider. */
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .gh-ic { justify-content: flex-start; }
+  }
+  {%- endif %}
+
+  {%- if s.cam_konum_d == 'yapiskan' %}
+  /* Yapiskan cubuk: kaydirdikca ekranin dibinde bizi takip eder, bolumun
+     sonuna gelince puan satirinin altina oturur ve orada kalir.
+
+     Onemli: position: sticky, ustunde overflow: hidden olan bir ata
+     varsa calismaz - o ata kaydirma kabi sayilir ve oge hic hareket
+     etmez. Bu yuzden .gh-kok'ta overflow: hidden yerine overflow-x:
+     clip kullaniyoruz; clip kaydirma kabi olusturmadigi icin yatay
+     tasmayi yine kirpar ama sticky'yi bozmaz. Desteklemeyen eski
+     tarayicilarda hidden gecerli kalir, cubuk da eski yerinde durur. */
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .gh-kok {
+      overflow-x: clip;
+      overflow-y: visible;
+    }
+    #shopify-section-{{ sid }} .gh-ic {
+      padding-bottom: {{ s.cam_alt }}px;
+    }
+    #shopify-section-{{ sid }} .gh-cam-sar {
+      position: -webkit-sticky;
+      position: sticky;
+      top: auto;
+      bottom: calc({{ s.cam_alt }}px + env(safe-area-inset-bottom, 0px));
+      transform: none;
+      padding-bottom: {{ s.cam_alt }}px;
+      z-index: 3;
+    }
+  }
+  {%- endif %}
+
+  {%- if s.cam_konum_d == 'ilk_ekran' %}
+  /* Cubugu bolumun degil, ILK EKRANIN dibine sabitliyoruz. Bolum bir
+     ekrandan uzunsa cubuk yine de acilista gorunur kalir.
+     --gh-ust = ustteki site header'inin yuksekligi (JS olcuyor). */
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .gh-cam-sar {
+      top: calc(100vh - var(--gh-ust, 0px) - {{ s.cam_alt }}px);
+      top: calc(100svh - var(--gh-ust, 0px) - {{ s.cam_alt }}px);
+      bottom: auto;
+      transform: translateY(-100%);
+    }
+  }
+  {%- endif %}
+
+  {%- if parallax_var %}
+  /* ================= PARALLAX (masaustu) =================
+     Gorsel kendi seridinden yuksek tutulup ustten negatif konumlaniyor;
+     JS de kaydirmaya gore icinde kaydiriyor. Serit overflow: hidden
+     oldugu icin fazlalik hicbir zaman disari tasmaz.
+     Yalnizca tasma modunda calisir: seride kesin bir yukseklik ancak
+     orada verilebiliyor. */
+  @media (min-width: 750px) {
+    #shopify-section-{{ sid }} .gh-medya {
+      position: relative;
+      overflow: hidden;
+      height: {{ s.medya_yuk_d }}svh;
+    }
+    #shopify-section-{{ sid }} .gh-medya img,
+    #shopify-section-{{ sid }} .gh-medya video {
+      position: absolute;
+      left: 0;
+      top: -{{ s.parallax_guc }}px;
+      width: 100%;
+      height: calc(100% + {{ s.parallax_guc | times: 2 }}px);
+      max-height: none;
+      object-fit: cover;
+      will-change: transform;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ sid }} .gh-medya img,
+    #shopify-section-{{ sid }} .gh-medya video { transform: none !important; }
+  }
+  {%- endif %}
+</style>
+
+<div class="gh-kok" data-gh-kok data-gh-ofset="{{ s.kaydir_ofset }}">
+  <div class="gh-ic">
+    {%- if s.etiket != blank -%}
+      <p class="gh-etiket"{% if s.anim_ac %} data-gh-anim{% endif %}>{{ s.etiket }}</p>
+    {%- endif -%}
+
+    {%- if s.baslik != blank or s.vurgu_metni != blank -%}
+      <{{ s.baslik_etiketi }} class="gh-bas"{% if s.anim_ac %} data-gh-anim{% endif %}>
+        {%- if s.baslik != blank -%}{{ s.baslik }}{%- endif -%}
+        {%- if s.vurgu_metni != blank -%}
+          <span class="gh-vurgu">{{ s.vurgu_metni }}</span>
+        {%- endif -%}
+      </{{ s.baslik_etiketi }}>
+    {%- endif -%}
+
+    {%- if s.alt_metin != blank -%}
+      <p class="gh-alt"{% if s.anim_ac %} data-gh-anim{% endif %}>{{ s.alt_metin }}</p>
+    {%- endif -%}
+
+    {%- if kaynak_d != blank or s.gorsel_d != blank or s.gorsel_m != blank -%}
+      <div class="gh-medya"{% if s.anim_ac %} data-gh-anim{% endif %}>
+        {%- if kaynak_d != blank -%}
+          <video
+            data-gh-video
+            {% if s.kapak != blank %}poster="{{ s.kapak | image_url: width: 1600 }}"{% endif %}
+            preload="metadata"
+            muted
+            loop
+            playsinline
+            disablepictureinpicture
+            aria-label="{{ s.baslik | strip_html | escape }}"
+            data-gh-src-d="{{ kaynak_d.sources[1].url | default: kaynak_d.sources[0].url }}"
+            data-gh-src-m="{{ kaynak_m.sources[1].url | default: kaynak_m.sources[0].url }}"
+          ></video>
+        {%- else -%}
+          {%- assign alt_yazi = s.baslik | strip_html | escape -%}
+          {%- if s.gorsel_m != blank -%}
+            <picture>
+              {%- if s.gorsel_d != blank -%}
+                <source media="(min-width: 750px)" srcset="{{ s.gorsel_d | image_url: width: 1800 }}">
+              {%- endif -%}
+              {{
+                s.gorsel_m
+                | image_url: width: 1200
+                | image_tag: loading: 'eager', fetchpriority: 'high', decoding: 'async', alt: alt_yazi
+              }}
+            </picture>
+          {%- else -%}
+            {{
+              s.gorsel_d
+              | image_url: width: 1800
+              | image_tag: loading: 'eager', fetchpriority: 'high', decoding: 'async', alt: alt_yazi
+            }}
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if s.dugme_metni != blank or s.ikincil_metni != blank -%}
+      <div class="gh-dugmeler"{% if s.anim_ac %} data-gh-anim{% endif %}>
+        {%- liquid
+          assign bol_var = false
+          if s.dugme_bol and s.bol_1_metni != blank and s.bol_2_metni != blank
+            assign bol_var = true
+          endif
+        -%}
+        {%- if s.dugme_metni != blank and bol_var -%}
+          <div class="gh-btn-yuva" data-gh-yuva>
+            <button
+              type="button"
+              class="gh-dugme gh-btn-tetik"
+              data-gh-bol
+              aria-expanded="false"
+              aria-controls="gh-bol-{{ sid }}"
+            >{{ s.dugme_metni }}</button>
+
+            <div class="gh-bol-secenekler" id="gh-bol-{{ sid }}">
+              <a class="gh-dugme gh-kucuk" href="{{ s.bol_1_bag | default: '#' }}">{{ s.bol_1_metni }}</a>
+              <a class="gh-dugme gh-kucuk" href="{{ s.bol_2_bag | default: '#' }}">{{ s.bol_2_metni }}</a>
+            </div>
+          </div>
+        {%- elsif s.dugme_metni != blank -%}
+          <a class="gh-dugme" href="{{ s.dugme_bag | default: '#' }}">{{ s.dugme_metni }}</a>
+        {%- endif -%}
+        {%- if s.ikincil_metni != blank -%}
+          <a class="gh-dugme is-ikincil" href="{{ s.ikincil_bag | default: '#' }}">{{ s.ikincil_metni }}</a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if s.bilgi_metni != blank -%}
+      <p class="gh-bilgi"{% if s.anim_ac %} data-gh-anim{% endif %}>{{ s.bilgi_metni }}</p>
+    {%- endif -%}
+
+    {%- liquid
+      assign celenk_var = false
+      if s.celenk_ac and s.celenk_metni != blank
+        assign celenk_var = true
+      endif
+    -%}
+    {%- if celenk_var -%}
+      {%- capture gh_dal -%}<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9.2" cy="7.4" r="3.7"/><path d="M2.5 19.6c0-3.7 3-6 6.7-6s6.7 2.3 6.7 6c0 .6-.5 1.1-1.1 1.1H3.6c-.6 0-1.1-.5-1.1-1.1Z"/><circle cx="17.6" cy="8.8" r="2.7" opacity=".5"/><path d="M17.6 13.4c2.8 0 4.4 1.9 4.4 4.5 0 .5-.4.9-.9.9h-3.2c.1-.4.2-.9.2-1.4 0-1.7-.6-3.1-1.6-4.1.4.1.7.1 1.1.1Z" opacity=".5"/></svg>{%- endcapture -%}
+    {%- endif -%}
+
+    {%- if s.puan_ac or celenk_var -%}
+      <div class="gh-puan"{% if s.anim_ac %} data-gh-anim{% endif %}>
+        {%- if s.puan_ac -%}
+          <span class="gh-puan-grup">
+            <span class="gh-yildizlar" aria-hidden="true">
+              {%- for i in (1..5) -%}
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.6l2.5 5.4 5.9.7-4.4 4 1.2 5.8L10 14.6 4.8 17.5 6 11.7 1.6 7.7l5.9-.7z"/></svg>
+              {%- endfor -%}
+            </span>
+            {%- if s.puan_metni != blank -%}
+              <span>{{ s.puan_metni }}</span>
+            {%- endif -%}
+          </span>
+        {%- endif -%}
+
+        {%- if celenk_var -%}
+          <span class="gh-celenk">
+            <span class="gh-dal">{{ gh_dal }}</span>
+            <span class="gh-celenk-yazi">{{ s.celenk_metni }}</span>
+          </span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- if s.cam_ac and s.cam_metni != blank -%}
+    <div class="gh-cam-sar">
+      {%- if s.cam_bag != blank -%}
+        <a class="gh-cam" href="{{ s.cam_bag }}">
+          <span>{{ s.cam_metni }}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </a>
+      {%- else -%}
+        <button type="button" class="gh-cam" data-gh-kaydir>
+          <span>{{ s.cam_metni }}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</div>
+
+<script>
+  (function () {
+    var bolum = document.getElementById('shopify-section-{{ sid }}');
+    if (!bolum) return;
+    var kok = bolum.querySelector('[data-gh-kok]');
+    if (!kok) return;
+
+    var azHareket = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* --- cam cubuk: bir sonraki bolume kaydir --- */
+    var kaydirBtn = kok.querySelector('[data-gh-kaydir]');
+    if (kaydirBtn) {
+      kaydirBtn.addEventListener('click', function () {
+        var hedef = bolum.nextElementSibling;
+        // Bos sarmalayicilari atla: bazi bolumler hic yukseklik uretmiyor
+        while (hedef && hedef.getBoundingClientRect().height < 4) {
+          hedef = hedef.nextElementSibling;
+        }
+        if (!hedef) return;
+
+        var ofset = parseInt(kok.getAttribute('data-gh-ofset'), 10);
+        if (isNaN(ofset)) ofset = 0;
+
+        var y = hedef.getBoundingClientRect().top + window.pageYOffset - ofset;
+        var enCok = (document.documentElement.scrollHeight || 0)
+          - (window.innerHeight || document.documentElement.clientHeight);
+        if (y > enCok) y = enCok;
+        if (y < 0) y = 0;
+
+        window.scrollTo({ top: Math.round(y), behavior: azHareket ? 'auto' : 'smooth' });
+      });
+    }
+
+    {%- if s.kompakt %}
+    /* --- ustteki header'in yuksekligini olc --- */
+    /* getBoundingClientRect().top + pageYOffset = bolumun belge
+       icindeki konumu, yani ustunde ne kadar yer kaplandigi. Kaydirma
+       konumundan bagimsizdir. Header sabit (fixed) ve icerigin uzerine
+       biniyorsa bu deger zaten 0 cikar, o zaman dusulecek bir sey yok. */
+    var ustOlc = function () {
+      {%- if s.ust_oto %}
+      var y = kok.getBoundingClientRect().top + window.pageYOffset;
+      if (!isFinite(y) || y < 0) y = 0;
+      // Akil saglig~i siniri: absurt bir deger yuzunden bolum yok olmasin.
+      if (y > 320) y = 320;
+      kok.style.setProperty('--gh-ust', Math.round(y) + 'px');
+      {%- else %}
+      kok.style.setProperty('--gh-ust', '{{ s.ust_ofset }}px');
+      {%- endif %}
+    };
+
+    ustOlc();
+    window.addEventListener('load', ustOlc);
+
+    var ustZaman = null;
+    window.addEventListener('resize', function () {
+      if (ustZaman) window.clearTimeout(ustZaman);
+      ustZaman = window.setTimeout(ustOlc, 120);
+    });
+    {%- endif %}
+
+    /* --- ana dugme ikiye bolunsun --- */
+    var yuva = kok.querySelector('[data-gh-yuva]');
+    if (yuva) {
+      var tetik = yuva.querySelector('[data-gh-bol]');
+      if (tetik) {
+        // Gizli baslangic durumunu ancak burada aciyoruz: JS yoksa
+        // iki baglanti da dogrudan gorunur kalir.
+        yuva.classList.add('gh-bol-hazir');
+
+        var bolAyarla = function (acik) {
+          yuva.classList.toggle('is-bolundu', acik);
+          tetik.setAttribute('aria-expanded', acik ? 'true' : 'false');
+        };
+
+        tetik.addEventListener('click', function (e) {
+          e.preventDefault();
+          bolAyarla(!yuva.classList.contains('is-bolundu'));
+        });
+
+        document.addEventListener('click', function (e) {
+          if (!yuva.classList.contains('is-bolundu')) return;
+          if (yuva.contains(e.target)) return;
+          bolAyarla(false);
+        });
+
+        document.addEventListener('keydown', function (e) {
+          if (e.key !== 'Escape' && e.keyCode !== 27) return;
+          if (yuva.classList.contains('is-bolundu')) bolAyarla(false);
+        });
+      }
+    }
+
+    {%- if s.bas_tek_satir %}
+    /* --- basligi tek satira sigdir --- */
+    /* CSS'teki min(...px, ...vw) zaten tasmayi onluyor; burada punto,
+       kalan bosluga gore mumkun olan en buyuk degere cekiliyor. Boylece
+       her ekran genisliginde tek satir kalir ama gereksiz kucuk olmaz. */
+    var basEl = kok.querySelector('.gh-bas');
+    var basSigdir = function () {
+      if (!basEl) return;
+      basEl.style.fontSize = '';
+      var mevcut = parseFloat(window.getComputedStyle(basEl).fontSize);
+      if (!mevcut) return;
+      var yer = basEl.clientWidth;
+      var gerek = basEl.scrollWidth;
+      if (!yer || !gerek || gerek <= yer) return;
+      // 0.995: scrollWidth tam sayiya yuvarlandigi icin kucuk bir pay.
+      var yeni = Math.floor(mevcut * (yer / gerek) * 0.995 * 100) / 100;
+      if (yeni < 12) yeni = 12;
+      basEl.style.fontSize = yeni + 'px';
+    };
+
+    basSigdir();
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(basSigdir);
+    }
+    window.addEventListener('load', basSigdir);
+
+    var basZaman = null;
+    window.addEventListener('resize', function () {
+      if (basZaman) window.clearTimeout(basZaman);
+      basZaman = window.setTimeout(basSigdir, 120);
+    });
+    {%- endif %}
+
+    {%- if parallax_var %}
+    /* --- parallax --- */
+    var pKutu = kok.querySelector('.gh-medya');
+    var pOge = pKutu ? pKutu.querySelector('img, video') : null;
+    if (pOge) {
+      var pGuc = {{ s.parallax_guc }};
+      var pGenis = window.matchMedia ? window.matchMedia('(min-width: 750px)') : null;
+      var pBekliyor = false;
+
+      var pCiz = function () {
+        pBekliyor = false;
+        if (azHareket || (pGenis && !pGenis.matches)) {
+          pOge.style.transform = '';
+          return;
+        }
+        var r = pKutu.getBoundingClientRect();
+        var vy = window.innerHeight || document.documentElement.clientHeight;
+        if (!vy) return;
+        // -1 = serit ekranin ustunde, 0 = tam ortada, 1 = altinda
+        var t = ((r.top + r.height / 2) - vy / 2) / (vy / 2 + r.height / 2);
+        if (t > 1) t = 1;
+        if (t < -1) t = -1;
+        pOge.style.transform = 'translate3d(0, ' + (t * pGuc).toFixed(1) + 'px, 0)';
+      };
+
+      var pIste = function () {
+        if (pBekliyor) return;
+        pBekliyor = true;
+        window.requestAnimationFrame(pCiz);
+      };
+
+      pCiz();
+      window.addEventListener('scroll', pIste, { passive: true });
+      window.addEventListener('resize', pIste);
+      if (pGenis && pGenis.addEventListener) pGenis.addEventListener('change', pCiz);
+    }
+    {%- endif %}
+
+    /* --- video: gorununce oynat, cikinca durdur --- */
+    var video = kok.querySelector('[data-gh-video]');
+    if (video) {
+      // Kaynagi burada atiyoruz: boylece gizli kalan kirilimin videosu
+      // hic indirilmez. <source media="..."> video icinde calismiyor.
+      var genis = window.matchMedia && window.matchMedia('(min-width: 750px)').matches;
+      var src = genis
+        ? video.getAttribute('data-gh-src-d')
+        : (video.getAttribute('data-gh-src-m') || video.getAttribute('data-gh-src-d'));
+      if (src) video.src = src;
+    }
+
+    if (video && !azHareket) {
+      video.muted = true;
+      var oynat = function () {
+        var p = video.play();
+        if (p && p.catch) p.catch(function () {});
+      };
+      if ('IntersectionObserver' in window) {
+        var vg = new IntersectionObserver(function (girisler) {
+          for (var i = 0; i < girisler.length; i++) {
+            if (girisler[i].isIntersecting) { oynat(); } else { video.pause(); }
+          }
+        }, { threshold: 0.2 });
+        vg.observe(video);
+      } else {
+        oynat();
+      }
+    }
+
+    /* --- giris animasyonu --- */
+    {%- if s.anim_ac %}
+    var ogeler = kok.querySelectorAll('[data-gh-anim]');
+    if (ogeler.length) {
+      var ara = {{ s.anim_ara }};
+      for (var i = 0; i < ogeler.length; i++) {
+        ogeler[i].style.setProperty('--gh-gecikme', (i * ara) + 'ms');
+      }
+
+      kok.classList.add('gh-hazir');
+
+      function goster(oge) {
+        oge.classList.add('is-gorunur');
+        oge.addEventListener('transitionend', function son(e) {
+          if (e.propertyName !== 'transform') return;
+          oge.removeEventListener('transitionend', son);
+          oge.classList.add('anim-bitti');
+          oge.style.removeProperty('--gh-gecikme');
+        });
+      }
+
+      if (azHareket || !('IntersectionObserver' in window)) {
+        for (var a = 0; a < ogeler.length; a++) goster(ogeler[a]);
+      } else {
+        // Hero sayfanin tepesinde oldugu icin hemen baslatiyoruz;
+        // gozlemci yalnizca ilk kareyi beklemek icin.
+        window.requestAnimationFrame(function () {
+          window.requestAnimationFrame(function () {
+            for (var b = 0; b < ogeler.length; b++) goster(ogeler[b]);
+          });
+        });
+      }
+    }
+    {%- endif %}
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Güçlü Header",
+  "tag": "section",
+  "class": "guclu-header-section",
+  "settings": [
+    { "type": "header", "content": "Yerleşim" },
+    {
+      "type": "checkbox",
+      "id": "tam_ekran",
+      "label": "Ekranı tam kaplasın",
+      "info": "Hero, açılışta ekranın tamamını doldurur.",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "dikey_hiza_d",
+      "label": "Dikey hizalama (masaüstü)",
+      "info": "İçerik ekrandan kısa kaldığında nereye yaslanacağı. “Üste yasla” en yukarı taşır; ölçüler ve aralar değişmez.",
+      "default": "orta",
+      "options": [
+        { "value": "orta", "label": "Dikeyde ortala" },
+        { "value": "ust", "label": "Üste yasla" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "hiza",
+      "label": "Hizalama",
+      "default": "orta",
+      "options": [
+        { "value": "orta", "label": "Ortalı" },
+        { "value": "sol", "label": "Sola dayalı" }
+      ]
+    },
+    { "type": "header", "content": "Metinler" },
+    { "type": "text", "id": "etiket", "label": "Üst etiket", "default": "Zaman Kapsülü" },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Bir hediyeden fazlası." },
+    {
+      "type": "text",
+      "id": "vurgu_metni",
+      "label": "Degrade vurgu satırı",
+      "info": "Başlığın altına ikinci satır olarak gelir ve renk geçişiyle yazılır. Boş bırakabilirsiniz.",
+      "default": "Zamanın kendisi."
+    },
+    {
+      "type": "select",
+      "id": "baslik_etiketi",
+      "label": "Başlık etiketi (SEO)",
+      "default": "h1",
+      "options": [
+        { "value": "h1", "label": "H1" },
+        { "value": "h2", "label": "H2" },
+        { "value": "p", "label": "Düz metin" }
+      ]
+    },
+    { "type": "textarea", "id": "alt_metin", "label": "Alt metin" },
+    { "type": "checkbox", "id": "alt_gizle_d", "label": "Alt metni masaüstünde gizle", "info": "Mobilde görünmeye devam eder. Masaüstünde görsele yer açmak için.", "default": false },
+    { "type": "header", "content": "Medya" },
+    { "type": "image_picker", "id": "gorsel_d", "label": "Görsel (masaüstü)" },
+    { "type": "image_picker", "id": "gorsel_m", "label": "Görsel (mobil)" },
+    {
+      "type": "video",
+      "id": "video_d",
+      "label": "Video (masaüstü)",
+      "info": "Video seçilirse görsel yerine bu oynar. Sessiz ve döngülüdür."
+    },
+    { "type": "video", "id": "video_m", "label": "Video (mobil)" },
+    { "type": "image_picker", "id": "kapak", "label": "Video kapak görseli" },
+    { "type": "range", "id": "medya_max_m", "label": "Medya genişliği (mobil)", "min": 120, "max": 720, "step": 10, "unit": "px", "default": 320 },
+    { "type": "range", "id": "medya_max_d", "label": "Medya genişliği (masaüstü)", "min": 200, "max": 1200, "step": 10, "unit": "px", "default": 520 },
+    { "type": "range", "id": "medya_yuk_m", "label": "Medya en fazla yükseklik (mobil)", "min": 20, "max": 80, "step": 1, "unit": "%", "default": 44 },
+    { "type": "range", "id": "medya_yuk_d", "label": "Medya en fazla yükseklik (masaüstü)", "min": 20, "max": 80, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "medya_min_d", "label": "Medyaya en az ayrılacak yer (masaüstü)", "info": "Ekran yüksekliğinin yüzdesi. 0 = kapalı. “Tek ekrana sığsın” açıkken görselin yerini peşinen almasını sağlar; çok yükseltirseniz alttaki içerik kırpılır.", "min": 0, "max": 60, "step": 2, "unit": "%", "default": 0 },
+    { "type": "range", "id": "medya_kose", "label": "Medya köşe yuvarlaklığı", "min": 0, "max": 48, "step": 2, "unit": "px", "default": 0 },
+    { "type": "range", "id": "medya_alt_d", "label": "Görselin altındaki boşluk (masaüstü)", "info": "Düğmenin ürüne yapışmasını engeller.", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 0 },
+    { "type": "checkbox", "id": "parallax_ac", "label": "Parallax (masaüstü)", "info": "Kaydırdıkça görsel şeridin içinde sayfadan yavaş hareket eder. Yalnızca masaüstü “Ekrandan taşsın” modunda çalışır; mobil ve azaltılmış hareket tercihi olan ziyaretçiler etkilenmez.", "default": false },
+    { "type": "range", "id": "parallax_guc", "label": "Parallax mesafesi", "min": 10, "max": 120, "step": 5, "unit": "px", "default": 40 },
+    {
+      "type": "checkbox",
+      "id": "ust_oto",
+      "label": "Üstteki header yüksekliğini otomatik ölç",
+      "info": "“Tek ekrana sığsın” açıkken kullanılır. Bölümün üstünde kalan header kadar boy düşülür, böylece alttaki buzlu cam çubuk ekranın en altında kalır.",
+      "default": true
+    },
+    { "type": "range", "id": "ust_ofset", "label": "Üst boşluk (elle)", "info": "Otomatik ölçüm kapalıysa veya JavaScript çalışmazsa bu değer kullanılır.", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 0 },
+    {
+      "type": "select",
+      "id": "kompakt_kapsam",
+      "label": "Tek ekran kuralı nerede geçerli",
+      "info": "Sadece mobil: masaüstünde bölüm içerik kadar uzayabilir, geniş görseller doğal boyutuna kavuşur. Bedeli, içerik bir ekranı aşarsa alttaki çubuğun görülmesi için biraz kaydırmak gerekir.",
+      "default": "her_ikisi",
+      "options": [
+        { "value": "her_ikisi", "label": "Mobil ve masaüstü" },
+        { "value": "sadece_mobil", "label": "Sadece mobil" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "kompakt",
+      "label": "Tek ekrana sığsın (kaydırma olmasın)",
+      "info": "Bölümün boyu tam bir ekran olur. Metin ve düğmeler kendi boyunda kalır, artan/eksilen yeri görsel alır; böylece kısa ekranlarda da düğme ve fiyat satırı görünür kalır.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "medya_mod_m",
+      "label": "Medya yerleşimi (mobil)",
+      "info": "Taşsın: görsel ekranın dışına doğru genişler ve kenarlardan taşar. Bu modda “Medya en fazla yükseklik” değeri sabit yükseklik olarak kullanılır, görsel kutuya sığdırılmaz. Arka planı bölüm zeminiyle aynı olan fotoğraflarda “ekranın dışından geliyor” hissi verir.",
+      "default": "kutu",
+      "options": [
+        { "value": "kutu", "label": "Kutuda dursun" },
+        { "value": "tasma", "label": "Ekrandan taşsın" }
+      ]
+    },
+    { "type": "range", "id": "medya_gen_m", "label": "Taşma genişliği (mobil)", "info": "Ekran genişliğinin yüzdesi. 100 = tam ekran, 130 = her iki yandan %15 taşar.", "min": 100, "max": 200, "step": 5, "unit": "%", "default": 130 },
+    { "type": "range", "id": "medya_kay_m", "label": "Taşma yatay kayması (mobil)", "info": "Eksi değer sola, artı değer sağa kaydırır.", "min": -60, "max": 60, "step": 5, "unit": "%", "default": 0 },
+    {
+      "type": "select",
+      "id": "medya_odak_m",
+      "label": "Taşmada odak noktası (mobil)",
+      "info": "Görselin hangi bölgesinin görünür kalacağını belirler.",
+      "default": "50% 50%",
+      "options": [
+        { "value": "50% 50%", "label": "Orta" },
+        { "value": "50% 0%", "label": "Üst" },
+        { "value": "50% 100%", "label": "Alt" },
+        { "value": "0% 50%", "label": "Sol" },
+        { "value": "100% 50%", "label": "Sağ" },
+        { "value": "50% 25%", "label": "Üst orta" },
+        { "value": "50% 75%", "label": "Alt orta" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "medya_yerlesim_d",
+      "label": "Masaüstünde görselin yeri",
+      "info": "Zemin: görsel akıştan çıkar, bölümün tamamını arka plan olarak kaplar ve yazılar üstüne biner. Mobil bundan etkilenmez.",
+      "default": "akis",
+      "options": [
+        { "value": "akis", "label": "Akış içinde (yazıların arasında)" },
+        { "value": "zemin", "label": "Tam ekran zemin (arka plan)" }
+      ]
+    },
+    { "type": "range", "id": "zemin_x_d", "label": "Zemin görseli — yatay odak", "info": "0 = sol kenar, 50 = orta, 100 = sağ kenar. Photoshop'ta konuyu kaydırmak yerine burayı oynatabilirsiniz.", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 50 },
+    { "type": "range", "id": "zemin_y_d", "label": "Zemin görseli — dikey odak", "info": "0 = üst kenar, 50 = orta, 100 = alt kenar.", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 50 },
+    { "type": "checkbox", "id": "zemin_ayir_d", "label": "Zemin modunda yazıları üste, düğmeleri alta ayır", "info": "Ortadaki boşluk görsele kalır; başlık ve düğmeler görselin konusunu kapatmaz.", "default": true },
+    { "type": "checkbox", "id": "perde_ac", "label": "Zemin üstüne okunurluk perdesi", "info": "Yazının fotoğraf üzerinde okunabilmesi için araya yarı saydam bir katman koyar.", "default": true },
+    { "type": "color", "id": "perde_renk", "label": "Perde rengi", "default": "#ffffff" },
+    { "type": "range", "id": "perde_opak", "label": "Perde yoğunluğu", "min": 0, "max": 90, "step": 5, "unit": "%", "default": 45 },
+    {
+      "type": "select",
+      "id": "perde_yon",
+      "label": "Perde yönü",
+      "default": "duz",
+      "options": [
+        { "value": "duz", "label": "Her yeri eşit" },
+        { "value": "sol", "label": "Soldan geçişli" },
+        { "value": "sag", "label": "Sağdan geçişli" },
+        { "value": "alt", "label": "Alttan geçişli" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "hiza_d",
+      "label": "Hizalama (masaüstü)",
+      "info": "Zemin görselinde konuyu bir yana, yazıyı diğer yana almak için.",
+      "default": "miras",
+      "options": [
+        { "value": "miras", "label": "Genel ayarla aynı" },
+        { "value": "orta", "label": "Ortalı" },
+        { "value": "sol", "label": "Sola dayalı" },
+        { "value": "sag", "label": "Sağa dayalı" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "medya_mod_d",
+      "label": "Medya yerleşimi (masaüstü, akış içindeyken)",
+      "default": "kutu",
+      "options": [
+        { "value": "kutu", "label": "Kutuda dursun" },
+        { "value": "tasma", "label": "Ekrandan taşsın" }
+      ]
+    },
+    { "type": "range", "id": "medya_gen_d", "label": "Taşma genişliği (masaüstü)", "min": 100, "max": 200, "step": 5, "unit": "%", "default": 120 },
+    { "type": "range", "id": "medya_kay_d", "label": "Taşma yatay kayması (masaüstü)", "min": -60, "max": 60, "step": 5, "unit": "%", "default": 0 },
+    {
+      "type": "select",
+      "id": "medya_odak_d",
+      "label": "Taşmada odak noktası (masaüstü)",
+      "default": "50% 50%",
+      "options": [
+        { "value": "50% 50%", "label": "Orta" },
+        { "value": "50% 0%", "label": "Üst" },
+        { "value": "50% 100%", "label": "Alt" },
+        { "value": "0% 50%", "label": "Sol" },
+        { "value": "100% 50%", "label": "Sağ" },
+        { "value": "50% 25%", "label": "Üst orta" },
+        { "value": "50% 75%", "label": "Alt orta" }
+      ]
+    },
+    { "type": "header", "content": "Düğmeler" },
+    { "type": "text", "id": "dugme_metni", "label": "Ana düğme", "default": "Satın Alın" },
+    { "type": "url", "id": "dugme_bag", "label": "Ana düğme bağlantısı" },
+    {
+      "type": "checkbox",
+      "id": "dugme_bol",
+      "label": "Ana düğme tıklanınca ikiye bölünsün",
+      "info": "Açıkken düğmeye basıldığında aşağıdaki iki seçenek yan yana çıkar. JavaScript çalışmazsa iki bağlantı da doğrudan görünür.",
+      "default": false
+    },
+    { "type": "text", "id": "bol_1_metni", "label": "1. seçenek yazısı", "default": "Kadın" },
+    { "type": "url", "id": "bol_1_bag", "label": "1. seçenek bağlantısı" },
+    { "type": "text", "id": "bol_2_metni", "label": "2. seçenek yazısı", "default": "Erkek" },
+    { "type": "url", "id": "bol_2_bag", "label": "2. seçenek bağlantısı" },
+    { "type": "text", "id": "ikincil_metni", "label": "İkincil düğme" },
+    { "type": "url", "id": "ikincil_bag", "label": "İkincil düğme bağlantısı" },
+    { "type": "text", "id": "bilgi_metni", "label": "Fiyat / bilgi satırı", "default": "Başlangıç fiyatı: 2.499 TL" },
+    { "type": "header", "content": "Puan" },
+    { "type": "checkbox", "id": "puan_ac", "label": "Yıldız satırını göster", "default": false },
+    { "type": "checkbox", "id": "puan_gizle_d", "label": "Puan satırını masaüstünde gizle", "info": "Mobilde görünmeye devam eder. Masaüstünde görsele yaklaşık 35 px yer açar.", "default": false },
+    { "type": "text", "id": "puan_metni", "label": "Puan metni", "default": "4.9/5" },
+    {
+      "type": "checkbox",
+      "id": "celenk_ac",
+      "label": "Güven rozetini göster",
+      "info": "Puanın yanında küçük bir ikon ve yazı gösterir.",
+      "default": false
+    },
+    { "type": "text", "id": "celenk_metni", "label": "Rozet yazısı", "default": "100.000+ kişi kullanıyor" },
+    { "type": "range", "id": "celenk_boyut", "label": "Rozet ikonu boyutu", "info": "Yazı boyutuna oranla. 130 = yazının 1,3 katı yükseklik.", "min": 100, "max": 300, "step": 10, "unit": "%", "default": 200 },
+    { "type": "range", "id": "celenk_yazi_m", "label": "Rozet yazısı (mobil)", "min": 10, "max": 20, "step": 1, "unit": "px", "default": 13 },
+    { "type": "range", "id": "celenk_yazi_d", "label": "Rozet yazısı (masaüstü)", "min": 10, "max": 24, "step": 1, "unit": "px", "default": 14 },
+    { "type": "color", "id": "celenk_renk", "label": "Rozet rengi", "default": "#0a0a0a" },
+    { "type": "range", "id": "yildiz_boyut", "label": "Yıldız boyutu", "min": 10, "max": 28, "step": 1, "unit": "px", "default": 16 },
+    { "type": "color", "id": "yildiz_rengi", "label": "Yıldız rengi", "default": "#0a0a0a" },
+    { "type": "color", "id": "puan_renk", "label": "Puan satırı rengi", "default": "#0a0a0a" },
+    { "type": "header", "content": "Buzlu Cam Çubuk" },
+    { "type": "checkbox", "id": "cam_ac", "label": "Alt çubuğu göster", "default": true },
+    { "type": "text", "id": "cam_metni", "label": "Çubuk yazısı", "default": "Ürünü Öğren" },
+    {
+      "type": "url",
+      "id": "cam_bag",
+      "label": "Çubuk bağlantısı",
+      "info": "Boş bırakırsanız bir sonraki bölüme yumuşakça kaydırır."
+    },
+    { "type": "checkbox", "id": "cam_zipla", "label": "Ok hafifçe hareket etsin", "default": true },
+    { "type": "checkbox", "id": "cam_nabiz", "label": "Çubuk hafifçe nabız atsın", "info": "Çubuğun çevresinde yavaşça genişleyip sönen bir halka belirir.", "default": false },
+    { "type": "color", "id": "cam_nabiz_renk", "label": "Nabız halkasının rengi", "default": "#0a0a0a" },
+    {
+      "type": "select",
+      "id": "cam_konum_d",
+      "label": "Çubuğun yeri (masaüstü)",
+      "info": "Bölüm bir ekrandan uzun olduğunda çubuğun nerede duracağı. “Yapışkan” seçilirse kaydırdıkça ekranın dibinde takip eder, bölümün sonunda puan satırının altına oturur.",
+      "default": "bolum_alti",
+      "options": [
+        { "value": "bolum_alti", "label": "Bölümün en altı" },
+        { "value": "ilk_ekran", "label": "İlk ekranın dibi" },
+        { "value": "yapiskan", "label": "Yapışkan (takip edip yerleşir)" }
+      ]
+    },
+    { "type": "range", "id": "kaydir_ofset", "label": "Kaydırma payı", "info": "Yapışkan header'ın altında kalmaması için.", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 80 },
+    { "type": "range", "id": "cam_alt", "label": "Alttan uzaklık", "min": 8, "max": 120, "step": 2, "unit": "px", "default": 28 },
+    { "type": "range", "id": "cam_bulanik", "label": "Buzlu cam yoğunluğu", "min": 0, "max": 30, "step": 1, "unit": "px", "default": 18 },
+    { "type": "range", "id": "cam_dikey", "label": "Çubuk dikey boşluğu", "min": 6, "max": 28, "step": 1, "unit": "px", "default": 12 },
+    { "type": "range", "id": "cam_yatay", "label": "Çubuk yatay boşluğu", "min": 10, "max": 48, "step": 2, "unit": "px", "default": 22 },
+    { "type": "range", "id": "cam_boyut", "label": "Çubuk yazı boyutu", "min": 12, "max": 22, "step": 1, "unit": "px", "default": 15 },
+    { "type": "range", "id": "cam_ok", "label": "Ok boyutu", "min": 10, "max": 26, "step": 1, "unit": "px", "default": 16 },
+    { "type": "color", "id": "cam_zemin", "label": "Çubuk zemini", "default": "#ffffff" },
+    { "type": "range", "id": "cam_saydam", "label": "Çubuk zemini saydamlığı", "info": "100 = tamamen opak. Buzlu cam etkisinin görünmesi için 60-80 arası önerilir.", "min": 0, "max": 100, "step": 2, "unit": "%", "default": 100 },
+    { "type": "color", "id": "cam_zemin_duz", "label": "Çubuk zemini (cam desteklenmezse)", "default": "#ffffff" },
+    { "type": "color", "id": "cam_kenar", "label": "Çubuk kenarlığı", "default": "#d2d2cd" },
+    { "type": "color", "id": "cam_yazi", "label": "Çubuk yazısı", "default": "#0a0a0a" },
+    { "type": "header", "content": "Renkler" },
+    {
+      "type": "select",
+      "id": "palet",
+      "label": "Renk paleti",
+      "info": "Hazır bir palet seçerseniz aşağıdaki tekil renk ayarları yok sayılır. Kendi renklerinizi kullanmak için “Özel”i seçin.",
+      "default": "ozel",
+      "options": [
+        { "value": "ozel", "label": "Özel (aşağıdaki renkler)" },
+        { "value": "apple_koyu", "label": "Apple — koyu" },
+        { "value": "apple_acik", "label": "Apple — açık" }
+      ]
+    },
+    { "type": "color", "id": "zemin_rengi", "label": "Bölüm zemini", "default": "#ffffff" },
+    { "type": "color", "id": "etiket_rengi", "label": "Üst etiket", "default": "#5c5c57" },
+    { "type": "color", "id": "baslik_rengi", "label": "Başlık", "default": "#0a0a0a" },
+    { "type": "color", "id": "alt_rengi", "label": "Alt metin", "default": "#5c5c57" },
+    { "type": "color", "id": "bilgi_rengi", "label": "Fiyat / puan satırı", "default": "#5c5c57" },
+    { "type": "color", "id": "dugme_zemin", "label": "Ana düğme zemini", "default": "#0a0a0a" },
+    { "type": "color", "id": "dugme_yazi", "label": "Ana düğme yazısı", "default": "#ffffff" },
+    { "type": "color", "id": "ikincil_yazi", "label": "İkincil düğme yazısı", "default": "#0a0a0a" },
+    { "type": "color", "id": "ikincil_kenar", "label": "İkincil düğme kenarlığı", "default": "#d2d2cd" },
+    { "type": "header", "content": "Degrade Vurgu" },
+    {
+      "type": "checkbox",
+      "id": "vurgu_ozel",
+      "label": "Degrade renklerini kendim seçeceğim",
+      "info": "Hazır bir renk paleti seçiliyken bile aşağıdaki üç renk geçerli olur. İşaretlemezseniz palet kendi degrade renklerini kullanır.",
+      "default": false
+    },
+    { "type": "color", "id": "vurgu_1", "label": "Renk 1", "default": "#8a8a85" },
+    { "type": "color", "id": "vurgu_2", "label": "Renk 2", "default": "#8a8a85" },
+    { "type": "color", "id": "vurgu_3", "label": "Renk 3", "default": "#8a8a85" },
+    { "type": "color", "id": "vurgu_duz_renk", "label": "Yedek düz renk", "default": "#8a8a85" },
+    { "type": "range", "id": "vurgu_aci", "label": "Degrade açısı", "min": 0, "max": 360, "step": 5, "unit": "°", "default": 90 },
+    { "type": "header", "content": "Tipografi" },
+    {
+      "type": "select",
+      "id": "etiket_kalin",
+      "label": "Üst etiket kalınlığı",
+      "default": "600",
+      "options": [
+        { "value": "400", "label": "İnce" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" }
+      ]
+    },
+    { "type": "range", "id": "etiket_m", "label": "Üst etiket (mobil)", "min": 12, "max": 30, "step": 1, "unit": "px", "default": 17 },
+    { "type": "range", "id": "etiket_d", "label": "Üst etiket (masaüstü)", "min": 12, "max": 40, "step": 1, "unit": "px", "default": 21 },
+    {
+      "type": "select",
+      "id": "baslik_font",
+      "label": "Başlık fontu",
+      "info": "Archivo seçilirse Google Fonts'tan değişken (variable) sürüm yüklenir ve aşağıdaki kalınlık / genişlik eksenleri devreye girer. Yalnızca bu bölümün başlığını etkiler.",
+      "default": "tema",
+      "options": [
+        { "value": "tema", "label": "Tema fontu" },
+        { "value": "archivo", "label": "Archivo (değişken)" }
+      ]
+    },
+    { "type": "range", "id": "baslik_wght", "label": "Başlık kalınlığı (wght)", "info": "Archivo seçiliyken geçerli.", "min": 100, "max": 900, "step": 25, "default": 900 },
+    { "type": "range", "id": "baslik_wdth", "label": "Başlık genişliği (wdth)", "info": "Onda bir cinsinden: 825 = %82,5. Archivo seçiliyken geçerli.", "min": 700, "max": 1100, "step": 5, "default": 825 },
+    {
+      "type": "checkbox",
+      "id": "bas_tek_satir",
+      "label": "Başlık tek satırda kalsın",
+      "info": "Başlık satır atlamaz; sığması için punto otomatik küçülür. Uzun başlıklarda yazı belirgin şekilde küçülebilir.",
+      "default": false
+    },
+    { "type": "range", "id": "bas_vw", "label": "Tek satır punto tavanı", "info": "Ekran genişliğinin onda biri cinsinden. 60 = ekran genişliğinin %6'sı. Yalnızca “tek satırda kalsın” açıkken kullanılır; JS çalışmazsa güvenlik sınırı olarak devreye girer.", "min": 30, "max": 140, "step": 5, "unit": "‰", "default": 60 },
+    { "type": "range", "id": "vurgu_olcek", "label": "Degrade vurgu satırı boyutu", "info": "Başlık puntosuna oranla. 100 = başlıkla aynı, 120 = %20 daha büyük.", "min": 60, "max": 200, "step": 5, "unit": "%", "default": 100 },
+    { "type": "range", "id": "vurgu_ust", "label": "Degrade satırı üst boşluğu", "info": "Kendi punto boyutuna oranla. Eksi değer başlığa yaklaştırır.", "min": -20, "max": 40, "step": 2, "unit": "%", "default": 0 },
+    { "type": "range", "id": "bas_m", "label": "Başlık (mobil)", "min": 22, "max": 72, "step": 1, "unit": "px", "default": 38 },
+    { "type": "range", "id": "bas_t", "label": "Başlık (tablet)", "min": 22, "max": 96, "step": 1, "unit": "px", "default": 52 },
+    { "type": "range", "id": "bas_d", "label": "Başlık (masaüstü)", "min": 22, "max": 120, "step": 1, "unit": "px", "default": 64 },
+    { "type": "range", "id": "alt_m", "label": "Alt metin (mobil)", "min": 12, "max": 24, "step": 1, "unit": "px", "default": 16 },
+    { "type": "range", "id": "alt_d", "label": "Alt metin (masaüstü)", "min": 12, "max": 28, "step": 1, "unit": "px", "default": 20 },
+    { "type": "range", "id": "alt_gen_d", "label": "Alt metin genişliği (masaüstü)", "info": "Karakter cinsinden satır uzunluğu. Büyütürseniz metin tek satıra iner ve görsele yer kalır.", "min": 30, "max": 96, "step": 2, "unit": "ch", "default": 46 },
+    { "type": "range", "id": "bilgi_m", "label": "Bilgi satırı (mobil)", "min": 11, "max": 22, "step": 1, "unit": "px", "default": 14 },
+    { "type": "range", "id": "bilgi_d", "label": "Bilgi satırı (masaüstü)", "min": 11, "max": 24, "step": 1, "unit": "px", "default": 16 },
+    { "type": "range", "id": "dugme_boyut_m", "label": "Düğme yazısı (mobil)", "min": 12, "max": 24, "step": 1, "unit": "px", "default": 16 },
+    { "type": "range", "id": "dugme_boyut_d", "label": "Düğme yazısı (masaüstü)", "min": 12, "max": 26, "step": 1, "unit": "px", "default": 17 },
+    { "type": "range", "id": "dugme_dikey", "label": "Düğme dikey boşluğu", "min": 4, "max": 28, "step": 1, "unit": "px", "default": 14 },
+    { "type": "range", "id": "dugme_dokunma", "label": "Düğme dokunma payı", "info": "Görünmez. Düğme inceldiğinde parmakla hedeflemeyi kolaylaştırır; tasarımda bir değişiklik yapmaz.", "min": 0, "max": 16, "step": 1, "unit": "px", "default": 0 },
+    {
+      "type": "select",
+      "id": "dugme_form",
+      "label": "Düğme köşesi",
+      "default": "hap",
+      "options": [
+        { "value": "hap", "label": "Tam hap (yuvarlak uçlu)" },
+        { "value": "14", "label": "Yumuşak köşe" },
+        { "value": "8", "label": "Hafif köşe" }
+      ]
+    },
+    { "type": "range", "id": "dugme_yatay", "label": "Düğme yatay boşluğu", "min": 12, "max": 60, "step": 2, "unit": "px", "default": 28 },
+    { "type": "range", "id": "dugme_ara", "label": "Düğmeler arası boşluk", "min": 4, "max": 32, "step": 2, "unit": "px", "default": 12 },
+    { "type": "header", "content": "Giriş Animasyonu" },
+    { "type": "checkbox", "id": "anim_ac", "label": "Açılışta sırayla belirsin", "default": true },
+    { "type": "range", "id": "anim_mesafe", "label": "Yükselme mesafesi", "min": 0, "max": 48, "step": 2, "unit": "px", "default": 18 },
+    { "type": "range", "id": "anim_sure", "label": "Süre", "min": 200, "max": 1400, "step": 50, "unit": "ms", "default": 800 },
+    { "type": "range", "id": "anim_ara", "label": "Öğeler arası gecikme", "min": 0, "max": 300, "step": 10, "unit": "ms", "default": 90 },
+    { "type": "header", "content": "Ölçüler ve Boşluklar" },
+    { "type": "range", "id": "max_g", "label": "İçerik en fazla genişlik", "min": 600, "max": 1600, "step": 20, "unit": "px", "default": 1000 },
+    { "type": "range", "id": "ic_ara_m", "label": "Öğeler arası (mobil)", "min": 6, "max": 48, "step": 2, "unit": "px", "default": 16 },
+    { "type": "range", "id": "ic_ara_d", "label": "Öğeler arası (masaüstü)", "min": 6, "max": 64, "step": 2, "unit": "px", "default": 22 },
+    { "type": "range", "id": "kenar_m", "label": "Yan boşluk (mobil)", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 20 },
+    { "type": "range", "id": "kenar_d", "label": "Yan boşluk (masaüstü)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "p_top_m", "label": "Üst boşluk (mobil)", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 48 },
+    { "type": "range", "id": "p_bot_m", "label": "Alt boşluk (mobil)", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 100 },
+    { "type": "range", "id": "p_top_d", "label": "Üst boşluk (masaüstü)", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "p_bot_d", "label": "Alt boşluk (masaüstü)", "min": 0, "max": 240, "step": 4, "unit": "px", "default": 120 }
+  ],
+  "presets": [
+    { "name": "Güçlü Header" }
+  ]
+}
+{% endschema %}

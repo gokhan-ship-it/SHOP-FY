@@ -1,0 +1,398 @@
+{%- doc -%}
+  URUN SAYFASI "NASIL CALISIR?" BUTONU + ALT PANEL  (.tt-nc-*)
+
+  Sol altta sabit bir hap buton; dokununca alttan bir panel aciliyor
+  ve icinde uc yonlendirme karti var.
+
+  ------------------------------------------------------------------
+  NEDEN SABLONA DEGIL LAYOUT'A BAGLI
+
+  layout/theme.liquid icinde, sections/tt-nasil-calisir-grup.json
+  bolum grubu olarak, HER sayfada cagriliyor. Boylece:
+
+    - tek bir yerden butun sablonlari kapsiyor (urun, koleksiyon,
+      anasayfa, icerik sayfalari; ileride eklenecekler dahil),
+      her sablona ayri ayri eklemek gerekmiyor;
+    - sablon JSON'larina hic dokunulmuyor -- urun sablonlari zaten
+      25 bolumle Shopify'in sinirina dayanmis durumda;
+    - duzenleyicide HANGI sayfayi onizlersen onizle listede cikiyor,
+      yani ayarlarina her zaman erisiliyor.
+
+  Statik "section" cagrisi DEGIL: o bicimde bolum duzenleyicinin
+  bolum listesinde hic gorunmuyor, ayarlarina erisilemiyor.
+
+  Buton ve panel position: fixed oldugu icin bolumun sayfadaki
+  SIRASI zaten gorunumu etkilemiyor -- sablona eklemenin tek kazanci
+  siralama olurdu, o da burada anlamsiz.
+
+  ------------------------------------------------------------------
+  HANGI SAYFADA CIKACAGI AYARDAN GELIYOR
+
+  Kosul artik layout'ta degil, asagidaki "goster" hesabinda: dort
+  sayfa turu icin ayri birer onay kutusu, koleksiyonlar icin ayrica
+  istege bagli bir kisa ad listesi. Hicbiri secili degilse bolum
+  hicbir yerde cizilmiyor -- CSS'i de yuklemiyor, cunku varlik
+  etiketi bu kosulun ICINDE.
+
+  Kapatmak icin: tema duzenleyici > "Nasil calisir? butonu" >
+  "Butonu goster".
+
+  ------------------------------------------------------------------
+  DOKUNULMAYAN SEYLER
+
+  Sagdaki Sohbet balonu (Shopify Inbox) ve alttaki indirim cubugu bu
+  bolumun disinda. Cubukla cakismama isi CSS'te, carkin zaten
+  yazdigi --ttn-cark-bar degiskeni uzerinden cozuluyor; iki tarafin
+  koduna da dokunulmuyor.
+{%- enddoc -%}
+
+{%- liquid
+  assign s = section.settings
+  assign sid = section.id
+
+  comment
+    Ortu rengi tek bir renk ayari + ayri bir opaklik ayarindan
+    kuruluyor: tema duzenleyicisinin renk secicisi alfa vermiyor.
+  endcomment
+  assign ortu_ham = s.ortu_renk | default: '#0A0A0A'
+  assign alfa = s.ortu_opaklik | times: 1.0 | divided_by: 100.0
+  assign ortu = ortu_ham | color_modify: 'alpha', alfa
+  if ortu == blank
+    assign ortu = 'rgba(10, 10, 10, .55)'
+  endif
+
+  assign bid = 'ttNcBas-' | append: sid
+
+  comment
+    Sayfa turu kapisi. Bolum her sayfada cagriliyor, gorunurlugu
+    burada kararlastiriliyor.
+  endcomment
+  assign goster = false
+  if template.name == 'collection' and s.yer_koleksiyon
+    assign goster = true
+  elsif template.name == 'product' and s.yer_urun
+    assign goster = true
+  elsif template.name == 'index' and s.yer_anasayfa
+    assign goster = true
+  elsif template.name == 'page' and s.yer_sayfa
+    assign goster = true
+  endif
+
+  comment
+    Istege bagli koleksiyon suzgeci. Bos birakilirsa butun
+    koleksiyonlar gecerli; doluysa yalnizca listedekiler.
+  endcomment
+  if goster and template.name == 'collection' and s.koleksiyon_liste != blank
+    assign goster = false
+    assign izinli = s.koleksiyon_liste | split: ','
+    for kisa_ad in izinli
+      assign temiz = kisa_ad | strip
+      if temiz != blank and temiz == collection.handle
+        assign goster = true
+        break
+      endif
+    endfor
+  endif
+-%}
+
+{%- comment -%}
+  KARSILASTIRMA BOLUMUNU BASTAN GIZLE.
+
+  Ucuncu kart, ayni bolum grubunun ikinci uyesi olan "Catal
+  Karsilastirma" bolumunu tam ekran aciyor. O bolum sayfaya normal
+  bir blok olarak basiliyor; katmana donusmesi JS ile oluyor. Arada
+  gorunmesin diye display kurali BURADA, kapinin DISINDA basiliyor:
+
+    - Kapinin icinde olsaydi butonun gizli oldugu sayfalarda kural
+      hic basilmaz, karsilastirma bolumu sayfanin altinda oldugu
+      gibi gorunurdu.
+    - Varlik dosyasinda olsaydi secici sabitlenirdi; secici ayardan
+      geliyor cunku bolum grubundaki anahtar degistirilebilir.
+
+  Acik hali de burada: ikisi ayni ozgullukte, ikincisi kazaniyor.
+  Varlik dosyasi display'e hic dokunmuyor -- dokunamaz da: buradaki
+  secici id tabanli, oradaki sinif tabanli, yani bu kural her zaman
+  kazaniyor.
+
+  Acik hali "flex" cunku icerik ekrandan kisa kaldiginda kartin
+  DIKEYDE ORTALANMASI gerekiyor; ortalamayi cocuktaki margin: auto
+  yapiyor (varlik dosyasinda). justify-content: center degil, cunku
+  icerik ekrandan uzun oldugunda o kuralin ustu kirpiliyor ve
+  kaydirma cubugunun basina donulemiyor.
+{%- endcomment -%}
+{%- if s.fark_secici != blank -%}
+  <style>
+    {{ s.fark_secici }} { display: none; }
+    body[data-tt-nc-fark] {{ s.fark_secici }} { display: flex; }
+  </style>
+{%- endif -%}
+
+{%- if s.aktif and goster -%}
+  {{ 'tt-nasil-calisir.css' | asset_url | stylesheet_tag }}
+
+  <div
+    class="tt-nc"
+    data-tt-nc
+    data-tt-nc-fark-secici="{{ s.fark_secici | escape }}"
+    data-tt-nc-fark-etiket="{{ s.fark_kapat_etiket | default: s.kapat_etiket | escape }}"
+    data-tt-nc-fark-devam="{{ s.fark_devam_metin | escape }}"
+    data-nabiz="{% if s.nabiz %}1{% else %}0{% endif %}"
+    style="
+      --tt-nc-zemin: {{ s.dugme_zemin }};
+      --tt-nc-cerceve: {{ s.dugme_cerceve }};
+      --tt-nc-yazi: {{ s.dugme_yazi }};
+      --tt-nc-panel-zemin: {{ s.panel_zemin }};
+      --tt-nc-ortu: {{ ortu }};
+      --tt-nc-tutamac: {{ s.tutamac_renk }};
+      --tt-nc-etiket-zemin: {{ s.etiket_zemin }};
+      --tt-nc-etiket-renk: {{ s.etiket_renk }};
+      --tt-nc-baslik-renk: {{ s.baslik_renk }};
+      --tt-nc-alt-renk: {{ s.alt_renk }};
+      --tt-nc-kapat-zemin: {{ s.kapat_zemin }};
+      --tt-nc-kart-zemin: {{ s.kart_zemin }};
+      --tt-nc-kart-kenar: {{ s.kart_kenar }};
+      --tt-nc-ikon-zemin: {{ s.kart_ikon_zemin }};
+      --tt-nc-ikon-renk: {{ s.kart_ikon_renk }};
+      --tt-nc-ok-zemin: {{ s.kart_ok_zemin }};
+      --tt-nc-halka-1: {{ s.halka_1 }};
+      --tt-nc-halka-2: {{ s.halka_2 }};
+      --tt-nc-yan: {{ s.yan_bosluk }}px;
+      --tt-nc-alt: {{ s.alt_bosluk }}px;
+    "
+  >
+    <button
+      type="button"
+      class="tt-nc-dugme"
+      data-tt-nc-ac
+      aria-haspopup="dialog"
+      aria-label="{{ s.dugme_aria | default: s.dugme_metin | escape }}"
+    >
+      <span class="tt-nc-dugme-ikon" aria-hidden="true">
+        {%- render 'tt-nc-ikon', ad: 'parilti' -%}
+      </span>
+      <span class="tt-nc-dugme-yazi">{{ s.dugme_metin }}</span>
+    </button>
+
+    {%- comment -%}
+      <dialog> KENDISI tam ekran ve saydam; gorunen ortu ile sheet
+      onun cocugu. Gerekce assets/tt-nasil-calisir.css'te.
+
+      aria-modal dialog'un uzerinde: carkin alt cubugu
+      [aria-modal="true"] goruncce kendini gizliyor (ttn-cark.js >
+      ORTU_SEC), yani panel acilinca alttaki serit cekiliyor.
+    {%- endcomment -%}
+    <dialog class="tt-nc-kat" data-tt-nc-kat aria-modal="true" aria-labelledby="{{ bid }}">
+      <div class="tt-nc-ortu" data-tt-nc-kapat aria-hidden="true"></div>
+
+      <div class="tt-nc-panel" data-tt-nc-panel>
+        <span class="tt-nc-tut" aria-hidden="true"></span>
+
+        <div class="tt-nc-bas">
+          <div class="tt-nc-bas-yazi">
+            {%- if s.etiket_metin != blank -%}
+              <span class="tt-nc-etiket">
+                {%- render 'tt-nc-ikon', ad: 'kilit' -%}
+                <span>{{ s.etiket_metin }}</span>
+              </span>
+            {%- endif -%}
+            <h2 class="tt-nc-baslik" id="{{ bid }}">{{ s.panel_baslik }}</h2>
+            {%- if s.panel_alt != blank -%}
+              <p class="tt-nc-altbaslik">{{ s.panel_alt }}</p>
+            {%- endif -%}
+          </div>
+          <button
+            type="button"
+            class="tt-nc-kapat"
+            data-tt-nc-kapat
+            aria-label="{{ s.kapat_etiket | escape }}"
+          >
+            {%- render 'tt-nc-ikon', ad: 'kapat' -%}
+          </button>
+        </div>
+
+        {%- comment -%}
+          KARTLAR. Ucu de ayni stilde; yalnizca ikon degisiyor.
+
+          Ucuncu kart iki turlu calisabiliyor: bir sayfaya gitmek ya
+          da karsilastirma katmanini acmak. Katman secildiginde kart
+          <a> degil <button> oluyor -- gidilecek bir adres yok, bu
+          yuzden "baglanti bos" kurali da ona uygulanmiyor.
+
+          Kartin ici iki durumda birebir ayni; tek yerde kurulup
+          ikisine de basiliyor.
+        {%- endcomment -%}
+        {%- for i in (1..3) -%}
+          {%- liquid
+            assign fark_kart = false
+            case i
+              when 1
+                assign k_bas = s.kart1_baslik
+                assign k_alt = s.kart1_alt
+                assign k_url = s.kart1_url
+                assign k_ikon = s.kart1_ikon
+              when 2
+                assign k_bas = s.kart2_baslik
+                assign k_alt = s.kart2_alt
+                assign k_url = s.kart2_url
+                assign k_ikon = s.kart2_ikon
+              else
+                assign k_bas = s.kart3_baslik
+                assign k_alt = s.kart3_alt
+                assign k_url = s.kart3_url
+                assign k_ikon = s.kart3_ikon
+                if s.kart3_eylem == 'fark'
+                  assign fark_kart = true
+                endif
+            endcase
+
+            assign kart_ciz = false
+            if k_bas != blank
+              if fark_kart
+                assign kart_ciz = true
+              elsif k_url != blank
+                assign kart_ciz = true
+              endif
+            endif
+          -%}
+          {%- if kart_ciz -%}
+            {%- capture kart_ic -%}
+              <span class="tt-nc-kart-ikon" aria-hidden="true">
+                {%- render 'tt-nc-ikon', ad: k_ikon -%}
+              </span>
+              <span class="tt-nc-kart-metin">
+                <span class="tt-nc-kart-bas">{{ k_bas }}</span>
+                {%- if k_alt != blank -%}
+                  <span class="tt-nc-kart-alt">{{ k_alt }}</span>
+                {%- endif -%}
+              </span>
+              <span class="tt-nc-kart-ok" aria-hidden="true">
+                {%- render 'tt-nc-ikon', ad: 'ok' -%}
+              </span>
+            {%- endcapture -%}
+            {%- if fark_kart -%}
+              <button type="button" class="tt-nc-kart" data-tt-nc-fark aria-haspopup="dialog">
+                {{- kart_ic -}}
+              </button>
+            {%- else -%}
+              <a class="tt-nc-kart" href="{{ k_url }}">
+                {{- kart_ic -}}
+              </a>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </dialog>
+  </div>
+
+  <script src="{{ 'tt-nasil-calisir.js' | asset_url }}" defer></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Nasıl çalışır? butonu",
+  "settings": [
+    { "type": "paragraph", "content": "Sol altta sabit duran buton ve dokununca açılan panel. Sağdaki Sohbet balonuyla aynı hizada durması için alt boşluğunu aşağıdan ayarlayın; alttaki indirim çubuğu göründüğünde buton kendiliğinden yukarı kalkar." },
+    { "type": "checkbox", "id": "aktif", "label": "Butonu göster", "default": true },
+
+    { "type": "header", "content": "Hangi sayfalarda" },
+    { "type": "paragraph", "content": "Buton ve paneli yalnızca işaretlediğiniz sayfa türlerinde çıkar. Hiçbiri işaretli değilse hiçbir yerde görünmez." },
+    { "type": "checkbox", "id": "yer_koleksiyon", "label": "Koleksiyon sayfaları", "default": true },
+    { "type": "checkbox", "id": "yer_urun", "label": "Ürün sayfaları", "default": false },
+    { "type": "checkbox", "id": "yer_anasayfa", "label": "Ana sayfa", "default": false },
+    { "type": "checkbox", "id": "yer_sayfa", "label": "İçerik sayfaları", "default": false },
+    { "type": "text", "id": "koleksiyon_liste", "label": "Yalnızca bu koleksiyonlar", "info": "Koleksiyon adresindeki kısa adlar, virgülle: zaman-kapsulu-kolyeler, erkek-zaman-kapsulu. Boş bırakılırsa bütün koleksiyonlarda çıkar." },
+
+    { "type": "header", "content": "Buton" },
+    { "type": "text", "id": "dugme_metin", "label": "Buton yazısı", "default": "Nasıl çalışır?" },
+    { "type": "text", "id": "dugme_aria", "label": "Buton açıklaması (ekran okuyucu)", "default": "Nasıl çalışır? Bilgi panelini aç" },
+    { "type": "checkbox", "id": "nabiz", "label": "İkonda nabız animasyonu", "default": true },
+    { "type": "range", "id": "yan_bosluk", "label": "Sol kenardan uzaklık", "min": 0, "max": 48, "step": 2, "unit": "px", "default": 16 },
+    { "type": "range", "id": "alt_bosluk", "label": "Alt kenardan uzaklık", "min": 0, "max": 96, "step": 2, "unit": "px", "default": 20,
+      "info": "Sohbet balonuyla aynı hizada dursun diye bu değeri kullanın. iPhone'daki alt çubuk payı ayrıca ekleniyor." },
+    { "type": "color", "id": "dugme_zemin", "label": "Buton zemini", "default": "#0A0A0A" },
+    { "type": "color", "id": "dugme_cerceve", "label": "Çerçeve ve ikon zemini", "default": "#D6FF00" },
+    { "type": "color", "id": "dugme_yazi", "label": "Buton yazı rengi", "default": "#FFFFFF" },
+
+    { "type": "header", "content": "Panel başlığı" },
+    { "type": "text", "id": "etiket_metin", "label": "Küçük etiket", "default": "Zamana kilitli hediye",
+      "info": "Kilit ikonuyla birlikte çıkar. Boş bırakılırsa etiket görünmez." },
+    { "type": "text", "id": "panel_baslik", "label": "Başlık", "default": "Nasıl çalışır?" },
+    { "type": "text", "id": "panel_alt", "label": "Alt başlık", "default": "Merak ettiğin konuyu seç" },
+    { "type": "text", "id": "kapat_etiket", "label": "Kapat butonu (ekran okuyucu)", "default": "Kapat" },
+
+    { "type": "header", "content": "1. kart" },
+    { "type": "text", "id": "kart1_baslik", "label": "Başlık", "default": "Couple Zaman Kapsülü nasıl çalışır?" },
+    { "type": "text", "id": "kart1_alt", "label": "Açıklama", "default": "2 ürün · Buluşunca açılır" },
+    { "type": "url", "id": "kart1_url", "label": "Bağlantı" },
+    { "type": "select", "id": "kart1_ikon", "label": "İkon", "default": "halkalar",
+      "options": [
+        { "value": "halkalar", "label": "İç içe iki halka (couple)" },
+        { "value": "takvim-kalp", "label": "Kalpli takvim" },
+        { "value": "oklar", "label": "Karşılıklı oklar" },
+        { "value": "kilit", "label": "Kilit" },
+        { "value": "parilti", "label": "Parıltı" }
+      ] },
+
+    { "type": "header", "content": "2. kart" },
+    { "type": "text", "id": "kart2_baslik", "label": "Başlık", "default": "Single Zaman Kapsülü nasıl çalışır?" },
+    { "type": "text", "id": "kart2_alt", "label": "Açıklama", "default": "1 ürün · Belirlediğin tarihte açılır" },
+    { "type": "url", "id": "kart2_url", "label": "Bağlantı" },
+    { "type": "select", "id": "kart2_ikon", "label": "İkon", "default": "takvim-kalp",
+      "options": [
+        { "value": "halkalar", "label": "İç içe iki halka (couple)" },
+        { "value": "takvim-kalp", "label": "Kalpli takvim" },
+        { "value": "oklar", "label": "Karşılıklı oklar" },
+        { "value": "kilit", "label": "Kilit" },
+        { "value": "parilti", "label": "Parıltı" }
+      ] },
+
+    { "type": "header", "content": "3. kart" },
+    { "type": "paragraph", "content": "Bu kart karşılaştırma ekranını açar. \"Bağlantıya git\" seçilirse bunun yerine bir sayfaya gider ve bağlantı girilene kadar görünmez." },
+    { "type": "text", "id": "kart3_baslik", "label": "Başlık", "default": "Couple ve Single farkı nedir?" },
+    { "type": "text", "id": "kart3_alt", "label": "Açıklama", "default": "Hangisi sana uygun, karşılaştır" },
+    { "type": "select", "id": "kart3_eylem", "label": "Tıklanınca", "default": "fark",
+      "options": [
+        { "value": "fark", "label": "Karşılaştırma ekranını aç" },
+        { "value": "bag", "label": "Bağlantıya git" }
+      ] },
+    { "type": "url", "id": "kart3_url", "label": "Bağlantı", "info": "Yalnızca \"Bağlantıya git\" seçiliyken kullanılır." },
+    { "type": "select", "id": "kart3_ikon", "label": "İkon", "default": "oklar",
+      "options": [
+        { "value": "halkalar", "label": "İç içe iki halka (couple)" },
+        { "value": "takvim-kalp", "label": "Kalpli takvim" },
+        { "value": "oklar", "label": "Karşılıklı oklar" },
+        { "value": "kilit", "label": "Kilit" },
+        { "value": "parilti", "label": "Parıltı" }
+      ] },
+
+    { "type": "header", "content": "Karşılaştırma ekranı" },
+    { "type": "paragraph", "content": "İçeriği bu bölümde değil, hemen altındaki \"Çatal Karşılaştırma\" bölümünde düzenlenir. Orası sayfada normalde görünmez; yalnızca 3. karta basılınca tam ekran açılır." },
+    { "type": "text", "id": "fark_secici", "label": "Karşılaştırma bölümünün CSS seçicisi", "default": "[id$=\"tt_nc_fark\"]",
+      "info": "Bölüm grubundaki anahtarı değiştirmediyseniz bu değere dokunmayın. Boş bırakılırsa 3. kart hiç görünmez." },
+    { "type": "text", "id": "fark_kapat_etiket", "label": "Kapat butonu (ekran okuyucu)", "default": "Karşılaştırmayı kapat" },
+    { "type": "text", "id": "fark_devam_metin", "label": "Alttaki butonun yazısı", "default": "Alışverişe devam et",
+      "info": "Bu buton yalnızca ekranı kapatır, müşteri bulunduğu sayfada kalır. Karşılaştırma bölümünün kendi \"Single'ı seç / Couple'ı seç\" butonları bu ekranda gizlenir; bölümün kendi sayfasında (ana sayfa) aynen durur. Boş bırakılırsa buton eklenmez ve iki seçim butonu görünür kalır." },
+
+    { "type": "header", "content": "Panel renkleri" },
+    { "type": "color", "id": "panel_zemin", "label": "Panel zemini", "default": "#F4F4F4" },
+    { "type": "color", "id": "ortu_renk", "label": "Arka plan örtüsü", "default": "#0A0A0A" },
+    { "type": "range", "id": "ortu_opaklik", "label": "Örtü koyuluğu", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 55 },
+    { "type": "color", "id": "tutamac_renk", "label": "Tutma çubuğu", "default": "#D2D2CD" },
+    { "type": "color", "id": "etiket_zemin", "label": "Küçük etiket zemini", "default": "#D6FF00" },
+    { "type": "color", "id": "etiket_renk", "label": "Küçük etiket yazısı", "default": "#0A0A0A" },
+    { "type": "color", "id": "baslik_renk", "label": "Başlık rengi", "default": "#0A0A0A" },
+    { "type": "color", "id": "alt_renk", "label": "Açıklama rengi", "default": "#5C5C57" },
+    { "type": "color", "id": "kapat_zemin", "label": "Kapat butonu zemini", "default": "#FFFFFF" },
+
+    { "type": "header", "content": "Kart renkleri" },
+    { "type": "paragraph", "content": "Üç kart da aynı stilde; aralarında renk farkı yok." },
+    { "type": "color", "id": "kart_zemin", "label": "Kart zemini", "default": "#FFFFFF" },
+    { "type": "color", "id": "kart_kenar", "label": "Kart çerçevesi", "default": "#D2D2CD" },
+    { "type": "color", "id": "kart_ikon_zemin", "label": "İkon kutusu zemini", "default": "#F4F4F4" },
+    { "type": "color", "id": "kart_ikon_renk", "label": "İkon rengi", "default": "#0A0A0A" },
+    { "type": "color", "id": "kart_ok_zemin", "label": "Ok butonu zemini", "default": "#F4F4F4" },
+    { "type": "color", "id": "halka_1", "label": "1. halka (couple ikonu)", "default": "#0A0A0A" },
+    { "type": "color", "id": "halka_2", "label": "2. halka (couple ikonu)", "default": "#0A0A0A" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,1119 @@
+{% doc %}
+  @prompt
+    Create a premium Apple-style horizontal card slider section inspired by the "Get to know iPhone" section on apple.com.
+    
+    ### Layout
+    
+    * Create a horizontally scrollable slider.
+    * Display 4 cards.
+    * Cards should slide horizontally.
+    * Each card must have identical dimensions.
+    * All uploaded images must automatically use the same aspect ratio and size.
+    * Maintain equal spacing between cards.
+    * Show navigation arrows below the slider.
+    * Support touch swipe on mobile.
+    
+    ### Card Structure
+    
+    Each card should contain:
+    
+    * Small category text at the top left.
+    * Large headline below the category.
+    * Large image occupying the lower part of the card.
+    * Optional plus button in the bottom-right corner.
+    * Rounded corners with customizable border radius.
+    * Premium Apple-style spacing and proportions.
+    
+    ### Images
+    
+    For every card, create:
+    
+    * Desktop image
+    * Mobile image
+    
+    Desktop images should appear only on desktop screens.
+    
+    Mobile images should appear only on mobile screens.
+    
+    All cards must maintain the exact same image dimensions regardless of the uploaded image size.
+    
+    ### Content Settings
+    
+    For each card provide editable settings:
+    
+    * Category text
+    * Headline text
+    * Desktop image
+    * Mobile image
+    * Optional button text
+    * Optional button link
+    * Plus icon visibility
+    
+    ### Section Settings
+    
+    Allow full customization through Shopify schema settings.
+    
+    Create settings for:
+    
+    #### Colors
+    
+    * Section background color
+    * Card background color
+    * Category text color
+    * Headline color
+    * Arrow background color
+    * Arrow icon color
+    * Plus button background color
+    * Plus button icon color
+    
+    #### Typography
+    
+    * Section title size desktop
+    * Section title size mobile
+    * Category text size desktop
+    * Category text size mobile
+    * Headline size desktop
+    * Headline size mobile
+    
+    #### Layout
+    
+    * Card width
+    * Card height
+    * Card border radius
+    * Image border radius
+    * Card spacing
+    * Top padding
+    * Bottom padding
+    * Left and right padding
+    
+    #### Slider
+    
+    * Enable or disable arrows
+    * Enable or disable dots
+    * Enable or disable autoplay
+    * Slider speed
+    * Number of cards visible on desktop
+    * Number of cards visible on tablet
+    * Number of cards visible on mobile
+    
+    ### Section Header
+    
+    Add a large section title above the slider aligned to the left, similar to Apple's "Get to know iPhone" section.
+    
+    ### Styling
+    
+    Use Apple's design language:
+    
+    * Minimal and premium appearance.
+    * Large typography.
+    * Rounded cards.
+    * Clean spacing.
+    * Elegant proportions.
+    * Smooth horizontal scrolling.
+    
+    Keep the category label and headline placement similar to Apple's design, with both positioned at the upper-left area of each card and the image occupying the lower portion of the card.
+    
+    Generate a complete Shopify section with Liquid, CSS and schema settings so every visual property can be controlled from the theme editor.
+    , Keep the current design exactly the same.
+    
+    Fix the slider behavior so each card snaps perfectly into view when scrolling.
+    
+    Requirements:
+    
+    Enable smooth horizontal swipe with finger on mobile.
+    Enable drag/swipe support on desktop and mobile.
+    When the user swipes or clicks the arrows, the next card must align cleanly and fully inside the visible area.
+    Use CSS scroll-snap so each card snaps to the center or start position consistently.
+    Prevent cards from stopping halfway or being partially cut off after scrolling.
+    Arrow buttons should move exactly one card at a time.
+    On mobile, show one main card clearly with the next card slightly visible only if spacing allows.
+    Keep all card sizes equal.
+    Do not change the current visual design, colors, typography, or card layout. Only fix the slider scrolling and snapping behavior.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-apple-slider-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    background-color: {{ block.settings.section_bg_color }};
+    padding: {{ block.settings.padding_top }}px {{ block.settings.padding_horizontal }}px {{ block.settings.padding_bottom }}px;
+  }
+
+  .ai-apple-slider-container-{{ ai_gen_id }} {
+    max-width: {{ settings.page_width }}px;
+    margin: 0 auto;
+  }
+
+  .ai-apple-slider-header-{{ ai_gen_id }} {
+    margin-bottom: 40px;
+  }
+
+  .ai-apple-slider-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.title_size_desktop }}px;
+    font-weight: 700;
+    color: {{ block.settings.headline_color }};
+    margin: 0;
+    letter-spacing: {%- assign tt_ls = block.settings.title_size_mobile -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+  }
+
+  .ai-apple-slider-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ai-apple-slider-track-{{ ai_gen_id }} {
+    display: flex;
+    gap: {{ block.settings.card_spacing }}px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 20px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ai-apple-slider-track-{{ ai_gen_id }}::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ai-apple-slider-card-{{ ai_gen_id }} {
+    flex: 0 0 {{ block.settings.card_width }}px;
+    height: {{ block.settings.card_height }}px;
+    background-color: {{ block.settings.card_bg_color }};
+    border-radius: {{ block.settings.card_border_radius }}px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 32px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .ai-apple-slider-card-content-{{ ai_gen_id }} {
+    flex: 0 0 auto;
+    z-index: 2;
+  }
+
+  .ai-apple-slider-category-{{ ai_gen_id }} {
+    font-size: {{ block.settings.category_size_desktop }}px;
+    color: {{ block.settings.category_color }};
+    margin: 0 0 12px 0;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .ai-apple-slider-headline-{{ ai_gen_id }} {
+    font-size: {{ block.settings.headline_size_desktop }}px;
+    color: {{ block.settings.headline_color }};
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: {%- assign tt_ls = block.settings.headline_size_mobile -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+  }
+
+  .ai-apple-slider-image-wrapper-{{ ai_gen_id }} {
+    flex: 1;
+    position: relative;
+    margin-top: 24px;
+  }
+
+  .ai-apple-slider-image-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: {{ block.settings.image_border_radius }}px;
+  }
+
+  .ai-apple-slider-image-placeholder-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: {{ block.settings.card_bg_color }};
+    border-radius: {{ block.settings.image_border_radius }}px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-apple-slider-image-placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+    max-height: 200px;
+    opacity: 0.3;
+  }
+
+  .ai-apple-slider-plus-button-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 32px;
+    right: 32px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: {{ block.settings.plus_bg_color }};
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3;
+    transition: transform 0.2s ease;
+  }
+
+  .ai-apple-slider-plus-button-{{ ai_gen_id }}:hover {
+    transform: scale(1.1);
+  }
+
+  .ai-apple-slider-plus-icon-{{ ai_gen_id }} {
+    width: 20px;
+    height: 20px;
+    color: {{ block.settings.plus_icon_color }};
+  }
+
+  .ai-apple-slider-navigation-{{ ai_gen_id }} {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 32px;
+  }
+
+  .ai-apple-slider-arrow-{{ ai_gen_id }} {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: {{ block.settings.arrow_bg_color }};
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .ai-apple-slider-arrow-{{ ai_gen_id }}:hover {
+    transform: scale(1.05);
+  }
+
+  .ai-apple-slider-arrow-{{ ai_gen_id }}:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .ai-apple-slider-arrow-{{ ai_gen_id }}:disabled:hover {
+    transform: none;
+  }
+
+  .ai-apple-slider-arrow-icon-{{ ai_gen_id }} {
+    width: 20px;
+    height: 20px;
+    color: {{ block.settings.arrow_icon_color }};
+  }
+
+  .ai-apple-slider-dots-{{ ai_gen_id }} {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 24px;
+  }
+
+  .ai-apple-slider-dot-{{ ai_gen_id }} {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: {{ block.settings.arrow_bg_color }};
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+  }
+
+  .ai-apple-slider-dot-{{ ai_gen_id }}.active {
+    opacity: 1;
+  }
+
+  @media screen and (max-width: 989px) {
+    .ai-apple-slider-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.title_size_mobile }}px;
+    }
+
+    .ai-apple-slider-category-{{ ai_gen_id }} {
+      font-size: {{ block.settings.category_size_mobile }}px;
+    }
+
+    .ai-apple-slider-headline-{{ ai_gen_id }} {
+      font-size: {{ block.settings.headline_size_mobile }}px;
+    }
+
+    .ai-apple-slider-card-{{ ai_gen_id }} {
+      flex: 0 0 calc({{ block.settings.card_width }}px * 0.85);
+      height: calc({{ block.settings.card_height }}px * 0.85);
+      padding: 24px;
+    }
+
+    .ai-apple-slider-plus-button-{{ ai_gen_id }} {
+      bottom: 24px;
+      right: 24px;
+      width: 36px;
+      height: 36px;
+    }
+
+    .ai-apple-slider-plus-icon-{{ ai_gen_id }} {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-apple-slider-card-{{ ai_gen_id }} {
+      flex: 0 0 calc({{ block.settings.card_width }}px * 0.75);
+      height: calc({{ block.settings.card_height }}px * 0.75);
+      padding: 20px;
+    }
+  }
+{% endstyle %}
+
+<apple-slider-{{ ai_gen_id }} class="ai-apple-slider-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-apple-slider-container-{{ ai_gen_id }}">
+    {% if block.settings.section_title != blank %}
+      <div class="ai-apple-slider-header-{{ ai_gen_id }}">
+        <h2 class="ai-apple-slider-title-{{ ai_gen_id }}">{{ block.settings.section_title }}</h2>
+      </div>
+    {% endif %}
+
+    <div class="ai-apple-slider-wrapper-{{ ai_gen_id }}">
+      <div class="ai-apple-slider-track-{{ ai_gen_id }}" data-slider-track>
+        {% for i in (1..4) %}
+          {% liquid
+            assign category_key = 'card_' | append: i | append: '_category'
+            assign headline_key = 'card_' | append: i | append: '_headline'
+            assign desktop_image_key = 'card_' | append: i | append: '_desktop_image'
+            assign mobile_image_key = 'card_' | append: i | append: '_mobile_image'
+            assign button_text_key = 'card_' | append: i | append: '_button_text'
+            assign button_link_key = 'card_' | append: i | append: '_button_link'
+            assign show_plus_key = 'card_' | append: i | append: '_show_plus'
+
+            assign category = block.settings[category_key]
+            assign headline = block.settings[headline_key]
+            assign desktop_image = block.settings[desktop_image_key]
+            assign mobile_image = block.settings[mobile_image_key]
+            assign button_text = block.settings[button_text_key]
+            assign button_link = block.settings[button_link_key]
+            assign show_plus = block.settings[show_plus_key]
+          %}
+
+          <div class="ai-apple-slider-card-{{ ai_gen_id }}">
+            <div class="ai-apple-slider-card-content-{{ ai_gen_id }}">
+              {% if category != blank %}
+                <p class="ai-apple-slider-category-{{ ai_gen_id }}">{{ category }}</p>
+              {% endif %}
+              {% if headline != blank %}
+                <h3 class="ai-apple-slider-headline-{{ ai_gen_id }}">{{ headline }}</h3>
+              {% endif %}
+            </div>
+
+            <div class="ai-apple-slider-image-wrapper-{{ ai_gen_id }}">
+              {% if desktop_image != blank or mobile_image != blank %}
+                <picture>
+                  {% if mobile_image != blank %}
+                    <source
+                      media="(max-width: 749px)"
+                      srcset="{{ mobile_image | image_url: width: 800 }}"
+                    >
+                  {% endif %}
+                  {% if desktop_image != blank %}
+                    <img
+                      src="{{ desktop_image | image_url: width: 1200 }}"
+                      alt="{{ headline | escape }}"
+                      class="ai-apple-slider-image-{{ ai_gen_id }}"
+                      loading="lazy"
+                      width="{{ desktop_image.width }}"
+                      height="{{ desktop_image.height }}"
+                    >
+                  {% elsif mobile_image != blank %}
+                    <img
+                      src="{{ mobile_image | image_url: width: 1200 }}"
+                      alt="{{ headline | escape }}"
+                      class="ai-apple-slider-image-{{ ai_gen_id }}"
+                      loading="lazy"
+                      width="{{ mobile_image.width }}"
+                      height="{{ mobile_image.height }}"
+                    >
+                  {% endif %}
+                </picture>
+              {% else %}
+                <div class="ai-apple-slider-image-placeholder-{{ ai_gen_id }}">
+                  {{ 'image' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+            </div>
+
+            {% if show_plus and button_link != blank %}
+              <a
+                href="{{ button_link }}"
+                class="ai-apple-slider-plus-button-{{ ai_gen_id }}"
+                aria-label="{% if button_text != blank %}{{ button_text }}{% else %}Learn more{% endif %}"
+              >
+                <svg
+                  class="ai-apple-slider-plus-icon-{{ ai_gen_id }}"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" stroke-width="2" stroke-linecap="round"></line>
+                  <line x1="5" y1="12" x2="19" y2="12" stroke-width="2" stroke-linecap="round"></line>
+                </svg>
+              </a>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if block.settings.show_arrows %}
+      <div class="ai-apple-slider-navigation-{{ ai_gen_id }}">
+        <button
+          class="ai-apple-slider-arrow-{{ ai_gen_id }}"
+          data-slider-prev
+          aria-label="Previous slide"
+        >
+          <svg
+            class="ai-apple-slider-arrow-icon-{{ ai_gen_id }}"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polyline points="15 18 9 12 15 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          </svg>
+        </button>
+        <button
+          class="ai-apple-slider-arrow-{{ ai_gen_id }}"
+          data-slider-next
+          aria-label="Next slide"
+        >
+          <svg
+            class="ai-apple-slider-arrow-icon-{{ ai_gen_id }}"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polyline points="9 18 15 12 9 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          </svg>
+        </button>
+      </div>
+    {% endif %}
+
+    {% if block.settings.show_dots %}
+      <div class="ai-apple-slider-dots-{{ ai_gen_id }}" data-slider-dots>
+        {% for i in (1..4) %}
+          <button
+            class="ai-apple-slider-dot-{{ ai_gen_id }} {% if i == 1 %}active{% endif %}"
+            data-slider-dot="{{ forloop.index0 }}"
+            aria-label="Go to slide {{ i }}"
+          ></button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</apple-slider-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class AppleSlider{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.track = null;
+        this.cards = [];
+        this.prevButton = null;
+        this.nextButton = null;
+        this.dots = [];
+        this.currentIndex = 0;
+        this.autoplayInterval = null;
+        this.isScrolling = false;
+        this.scrollTimeout = null;
+      }
+
+      connectedCallback() {
+        this.track = this.querySelector('[data-slider-track]');
+        this.cards = Array.from(this.querySelectorAll('.ai-apple-slider-card-{{ ai_gen_id }}'));
+        this.prevButton = this.querySelector('[data-slider-prev]');
+        this.nextButton = this.querySelector('[data-slider-next]');
+        this.dots = Array.from(this.querySelectorAll('[data-slider-dot]'));
+
+        if (!this.track || this.cards.length === 0) return;
+
+        this.setupEventListeners();
+        this.updateNavigationState();
+        this.updateDots();
+
+        if ({{ block.settings.enable_autoplay }}) {
+          this.startAutoplay();
+        }
+      }
+
+      disconnectedCallback() {
+        this.stopAutoplay();
+        if (this.scrollTimeout) {
+          clearTimeout(this.scrollTimeout);
+        }
+      }
+
+      setupEventListeners() {
+        if (this.prevButton) {
+          this.prevButton.addEventListener('click', () => {
+            this.stopAutoplay();
+            this.scrollToCard(this.currentIndex - 1);
+          });
+        }
+
+        if (this.nextButton) {
+          this.nextButton.addEventListener('click', () => {
+            this.stopAutoplay();
+            this.scrollToCard(this.currentIndex + 1);
+          });
+        }
+
+        this.dots.forEach((dot, index) => {
+          dot.addEventListener('click', () => {
+            this.stopAutoplay();
+            this.scrollToCard(index);
+          });
+        });
+
+        this.track.addEventListener('scroll', () => {
+          this.isScrolling = true;
+          
+          if (this.scrollTimeout) {
+            clearTimeout(this.scrollTimeout);
+          }
+
+          this.scrollTimeout = setTimeout(() => {
+            this.isScrolling = false;
+            this.updateCurrentIndex();
+            this.updateNavigationState();
+            this.updateDots();
+          }, 150);
+        });
+
+        this.addEventListener('mouseenter', () => this.stopAutoplay());
+        this.addEventListener('mouseleave', () => {
+          if ({{ block.settings.enable_autoplay }}) {
+            this.startAutoplay();
+          }
+        });
+      }
+
+      scrollToCard(index) {
+        if (index < 0 || index >= this.cards.length) return;
+
+        const card = this.cards[index];
+        if (!card) return;
+
+        const cardLeft = card.offsetLeft;
+        
+        this.track.scrollTo({
+          left: cardLeft,
+          behavior: 'smooth'
+        });
+
+        this.currentIndex = index;
+      }
+
+      updateCurrentIndex() {
+        const scrollLeft = this.track.scrollLeft;
+        const cardWidth = this.cards[0].offsetWidth;
+        const gap = {{ block.settings.card_spacing }};
+        
+        let closestIndex = 0;
+        let closestDistance = Infinity;
+
+        this.cards.forEach((card, index) => {
+          const cardLeft = card.offsetLeft;
+          const distance = Math.abs(scrollLeft - cardLeft);
+          
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestIndex = index;
+          }
+        });
+
+        this.currentIndex = closestIndex;
+      }
+
+      updateNavigationState() {
+        if (!this.prevButton || !this.nextButton) return;
+
+        this.prevButton.disabled = this.currentIndex === 0;
+        this.nextButton.disabled = this.currentIndex === this.cards.length - 1;
+      }
+
+      updateDots() {
+        this.dots.forEach((dot, index) => {
+          if (index === this.currentIndex) {
+            dot.classList.add('active');
+          } else {
+            dot.classList.remove('active');
+          }
+        });
+      }
+
+      startAutoplay() {
+        this.stopAutoplay();
+        this.autoplayInterval = setInterval(() => {
+          if (this.currentIndex >= this.cards.length - 1) {
+            this.scrollToCard(0);
+          } else {
+            this.scrollToCard(this.currentIndex + 1);
+          }
+        }, {{ block.settings.autoplay_speed }} * 1000);
+      }
+
+      stopAutoplay() {
+        if (this.autoplayInterval) {
+          clearInterval(this.autoplayInterval);
+          this.autoplayInterval = null;
+        }
+      }
+    }
+
+    customElements.define('apple-slider-{{ ai_gen_id }}', AppleSlider{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Apple card slider",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section header"
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Title",
+      "default": "Get to know our products"
+    },
+    {
+      "type": "range",
+      "id": "title_size_desktop",
+      "label": "Title size desktop",
+      "min": 24,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "title_size_mobile",
+      "label": "Title size mobile",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "header",
+      "content": "Card 1"
+    },
+    {
+      "type": "text",
+      "id": "card_1_category",
+      "label": "Category",
+      "default": "New"
+    },
+    {
+      "type": "text",
+      "id": "card_1_headline",
+      "label": "Headline",
+      "default": "Discover our latest collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_1_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_1_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_1_show_plus",
+      "label": "Show plus button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "card_1_button_text",
+      "label": "Button text",
+      "default": "Learn more"
+    },
+    {
+      "type": "url",
+      "id": "card_1_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Card 2"
+    },
+    {
+      "type": "text",
+      "id": "card_2_category",
+      "label": "Category",
+      "default": "Featured"
+    },
+    {
+      "type": "text",
+      "id": "card_2_headline",
+      "label": "Headline",
+      "default": "Premium quality products"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_2_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_2_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_2_show_plus",
+      "label": "Show plus button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "card_2_button_text",
+      "label": "Button text",
+      "default": "Learn more"
+    },
+    {
+      "type": "url",
+      "id": "card_2_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Card 3"
+    },
+    {
+      "type": "text",
+      "id": "card_3_category",
+      "label": "Category",
+      "default": "Popular"
+    },
+    {
+      "type": "text",
+      "id": "card_3_headline",
+      "label": "Headline",
+      "default": "Customer favorites"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_3_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_3_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_3_show_plus",
+      "label": "Show plus button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "card_3_button_text",
+      "label": "Button text",
+      "default": "Learn more"
+    },
+    {
+      "type": "url",
+      "id": "card_3_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Card 4"
+    },
+    {
+      "type": "text",
+      "id": "card_4_category",
+      "label": "Category",
+      "default": "Exclusive"
+    },
+    {
+      "type": "text",
+      "id": "card_4_headline",
+      "label": "Headline",
+      "default": "Limited edition items"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_4_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_4_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_4_show_plus",
+      "label": "Show plus button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "card_4_button_text",
+      "label": "Button text",
+      "default": "Learn more"
+    },
+    {
+      "type": "url",
+      "id": "card_4_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "section_bg_color",
+      "label": "Section background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "color",
+      "id": "category_color",
+      "label": "Category text",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "color",
+      "id": "headline_color",
+      "label": "Headline",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "arrow_bg_color",
+      "label": "Arrow background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "color",
+      "id": "arrow_icon_color",
+      "label": "Arrow icon",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "plus_bg_color",
+      "label": "Plus button background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "plus_icon_color",
+      "label": "Plus button icon",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "category_size_desktop",
+      "label": "Category size desktop",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "category_size_mobile",
+      "label": "Category size mobile",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "headline_size_desktop",
+      "label": "Headline size desktop",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "headline_size_mobile",
+      "label": "Headline size mobile",
+      "min": 16,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "card_width",
+      "label": "Card width",
+      "min": 200,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "default": 400
+    },
+    {
+      "type": "range",
+      "id": "card_height",
+      "label": "Card height",
+      "min": 300,
+      "max": 700,
+      "step": 10,
+      "unit": "px",
+      "default": 500
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Card border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "label": "Image border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "card_spacing",
+      "label": "Card spacing",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_horizontal",
+      "label": "Left and right padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Slider controls"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Enable autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay speed",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    }
+  ],
+  "presets": [
+    {
+      "name": "Apple card slider"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,569 @@
+{% doc %}
+  @prompt
+    Create a hero section that matches the reference layout as closely as possible, but remove both CTA buttons completely.
+    
+    Layout:
+    - Center all content.
+    - Small rounded pill badge at the top.
+    - Large bold headline below the badge.
+    - Supporting paragraph below the headline.
+    - No buttons anywhere.
+    - Large rounded image with generous border radius below the text.
+    - Keep the image width around 85–90% of the content area.
+    - Maintain balanced spacing between each element.
+    
+    Design:
+    - Premium Apple-inspired minimal design.
+    - Warm off-white background (#F7F2E7 or similar).
+    - Clean typography with excellent visual hierarchy.
+    - Large bold heading.
+    - Dark text.
+    - Rounded corners throughout.
+    - No gradients.
+    - No shadows except a very subtle image shadow.
+    - No animations.
+    - Plenty of breathing room without excessive empty space.
+    
+    Mobile:
+    - This layout should be optimized primarily for mobile.
+    - The hero should not exceed one screen height.
+    - Use compact vertical spacing.
+    - Keep the image large and prominent.
+    - Ensure the next section becomes visible after a small scroll.
+    
+    Customization:
+    Everything must be editable in the Shopify Theme Editor:
+    - Badge text
+    - Badge colors
+    - Heading
+    - Description
+    - Desktop image
+    - Mobile image
+    - Image border radius
+    - Background color
+    - Content width
+    - Spacing
+    - Desktop and mobile font sizes
+    - Desktop and mobile padding
+    
+    Important:
+    Do not include any CTA buttons.
+    Do not leave empty space where buttons would normally appear.
+    The image should move directly below the description.
+    The final layout should visually match the reference as closely as possible while remaining fully editable in Shopify.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-hero-{{ ai_gen_id }} {
+    display: block;
+    background-color: {{ block.settings.background_color }};
+    padding: {{ block.settings.padding_top_mobile }}px {{ block.settings.padding_horizontal_mobile }}px {{ block.settings.padding_bottom_mobile }}px;
+    width: 100%;
+  }
+
+  .ai-hero-container-{{ ai_gen_id }} {
+    max-width: {{ block.settings.content_width }}px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .ai-hero-badge-{{ ai_gen_id }} {
+    display: inline-block;
+    background-color: {{ block.settings.badge_background }};
+    color: {{ block.settings.badge_text_color }};
+    padding: {{ block.settings.badge_padding_vertical }}px {{ block.settings.badge_padding_horizontal }}px;
+    border-radius: {{ block.settings.badge_border_radius }}px;
+    font-size: {{ block.settings.badge_font_size_mobile }}px;
+    font-weight: 500;
+    margin-bottom: {{ block.settings.spacing_after_badge_mobile }}px;
+  }
+
+  .ai-hero-heading-{{ ai_gen_id }} {
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.heading_font_size_mobile }}px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 0 0 {{ block.settings.spacing_after_heading_mobile }}px;
+    letter-spacing: {%- assign tt_ls = block.settings.heading_font_size_mobile -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+  }
+
+  .ai-hero-description-{{ ai_gen_id }} {
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.description_font_size_mobile }}px;
+    line-height: 1.5;
+    margin: 0 0 {{ block.settings.spacing_after_description_mobile }}px;
+    opacity: 0.8;
+    max-width: 90%;
+  }
+
+  .ai-hero-image-wrapper-{{ ai_gen_id }} {
+    width: {{ block.settings.image_width_mobile }}%;
+    max-width: 100%;
+  }
+
+  .ai-hero-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .ai-hero-image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #f4f4f4;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .ai-hero-image-placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media screen and (min-width: 750px) {
+    .ai-hero-{{ ai_gen_id }} {
+      padding: {{ block.settings.padding_top_desktop }}px {{ block.settings.padding_horizontal_desktop }}px {{ block.settings.padding_bottom_desktop }}px;
+    }
+
+    .ai-hero-badge-{{ ai_gen_id }} {
+      font-size: {{ block.settings.badge_font_size_desktop }}px;
+      margin-bottom: {{ block.settings.spacing_after_badge_desktop }}px;
+    }
+
+    .ai-hero-heading-{{ ai_gen_id }} {
+      font-size: {{ block.settings.heading_font_size_desktop }}px;
+      margin-bottom: {{ block.settings.spacing_after_heading_desktop }}px;
+    }
+
+    .ai-hero-description-{{ ai_gen_id }} {
+      font-size: {{ block.settings.description_font_size_desktop }}px;
+      margin-bottom: {{ block.settings.spacing_after_description_desktop }}px;
+      max-width: 70%;
+    }
+
+    .ai-hero-image-wrapper-{{ ai_gen_id }} {
+      width: {{ block.settings.image_width_desktop }}%;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-hero-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-hero-container-{{ ai_gen_id }}">
+    {% if block.settings.badge_text != blank %}
+      <div class="ai-hero-badge-{{ ai_gen_id }}">
+        {{ block.settings.badge_text }}
+      </div>
+    {% endif %}
+
+    {% if block.settings.heading != blank %}
+      <h1 class="ai-hero-heading-{{ ai_gen_id }}">
+        {{ block.settings.heading }}
+      </h1>
+    {% endif %}
+
+    {% if block.settings.description != blank %}
+      <div class="ai-hero-description-{{ ai_gen_id }}">
+        {{ block.settings.description }}
+      </div>
+    {% endif %}
+
+    <div class="ai-hero-image-wrapper-{{ ai_gen_id }}">
+      {% if block.settings.image_mobile != blank and block.settings.image_desktop != blank %}
+        <picture>
+          <source
+            media="(min-width: 750px)"
+            srcset="{{ block.settings.image_desktop | image_url: width: 1600 }}"
+          >
+          <img
+            src="{{ block.settings.image_mobile | image_url: width: 800 }}"
+            alt="{{ block.settings.image_mobile.alt | escape }}"
+            class="ai-hero-image-{{ ai_gen_id }}"
+            loading="lazy"
+            width="{{ block.settings.image_mobile.width }}"
+            height="{{ block.settings.image_mobile.height }}"
+          >
+        </picture>
+      {% elsif block.settings.image_desktop != blank %}
+        <img
+          src="{{ block.settings.image_desktop | image_url: width: 1600 }}"
+          alt="{{ block.settings.image_desktop.alt | escape }}"
+          class="ai-hero-image-{{ ai_gen_id }}"
+          loading="lazy"
+          width="{{ block.settings.image_desktop.width }}"
+          height="{{ block.settings.image_desktop.height }}"
+        >
+      {% elsif block.settings.image_mobile != blank %}
+        <img
+          src="{{ block.settings.image_mobile | image_url: width: 800 }}"
+          alt="{{ block.settings.image_mobile.alt | escape }}"
+          class="ai-hero-image-{{ ai_gen_id }}"
+          loading="lazy"
+          width="{{ block.settings.image_mobile.width }}"
+          height="{{ block.settings.image_mobile.height }}"
+        >
+      {% else %}
+        <div class="ai-hero-image-placeholder-{{ ai_gen_id }}">
+          {{ 'hero-apparel-1' | placeholder_svg_tag }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Minimal hero",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Badge"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "New Collection"
+    },
+    {
+      "type": "color",
+      "id": "badge_background",
+      "label": "Badge background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text color",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "badge_padding_vertical",
+      "label": "Badge vertical padding",
+      "min": 4,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "badge_padding_horizontal",
+      "label": "Badge horizontal padding",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "badge_border_radius",
+      "label": "Badge border radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "badge_font_size_mobile",
+      "label": "Badge font size (mobile)",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "badge_font_size_desktop",
+      "label": "Badge font size (desktop)",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Premium Quality, Timeless Design"
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size_mobile",
+      "label": "Heading font size (mobile)",
+      "min": 24,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size_desktop",
+      "label": "Heading font size (desktop)",
+      "min": 32,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "header",
+      "content": "Description"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Discover our carefully curated collection of premium products designed to elevate your everyday experience."
+    },
+    {
+      "type": "range",
+      "id": "description_font_size_mobile",
+      "label": "Description font size (mobile)",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "description_font_size_desktop",
+      "label": "Description font size (desktop)",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile image"
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "label": "Image border radius",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "image_width_mobile",
+      "label": "Image width (mobile)",
+      "min": 70,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 90
+    },
+    {
+      "type": "range",
+      "id": "image_width_desktop",
+      "label": "Image width (desktop)",
+      "min": 60,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 85
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#F4F4F4"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#0A0A0A"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "label": "Content width",
+      "min": 600,
+      "max": 1400,
+      "step": 50,
+      "unit": "px",
+      "default": 1000
+    },
+    {
+      "type": "header",
+      "content": "Spacing (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Top padding",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Bottom padding",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_horizontal_mobile",
+      "label": "Horizontal padding",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "spacing_after_badge_mobile",
+      "label": "Space after badge",
+      "min": 10,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "spacing_after_heading_mobile",
+      "label": "Space after heading",
+      "min": 10,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "spacing_after_description_mobile",
+      "label": "Space after description",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Spacing (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_desktop",
+      "label": "Top padding",
+      "min": 40,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_desktop",
+      "label": "Bottom padding",
+      "min": 40,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_horizontal_desktop",
+      "label": "Horizontal padding",
+      "min": 20,
+      "max": 100,
+      "step": 10,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "spacing_after_badge_desktop",
+      "label": "Space after badge",
+      "min": 10,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "spacing_after_heading_desktop",
+      "label": "Space after heading",
+      "min": 10,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "spacing_after_description_desktop",
+      "label": "Space after description",
+      "min": 30,
+      "max": 120,
+      "step": 5,
+      "unit": "px",
+      "default": 45
+    }
+  ],
+  "presets": [
+    {
+      "name": "Minimal hero"
+    }
+  ]
+}
+{% endschema %}

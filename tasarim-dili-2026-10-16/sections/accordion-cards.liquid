@@ -1,0 +1,535 @@
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+-%}
+<style>
+  .ac-{{ sid }} {
+    {% if s.background_color != blank %}background: {{ s.background_color }};{% endif %}
+    padding-top: {{ s.p_top_m }}px;
+    padding-bottom: {{ s.p_bot_m }}px;
+  }
+  .ac-inner-{{ sid }} {
+    max-width: {{ s.max_width }}px;
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .ac-heading-{{ sid }} {
+    margin: 0 0 {{ s.head_gap }}px;
+    font-size: {{ s.head_m }}px;
+    line-height: 1.2;
+    font-weight: 400;
+    letter-spacing: {%- assign tt_ls = s.head_m -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+    color: {{ s.heading_color | default: '#0a0a0a' }};
+    {% if s.heading_align == 'center' %}text-align: center;{% endif %}
+  }
+  .ac-heading-{{ sid }} strong,
+  .ac-heading-{{ sid }} b { font-weight: 700; }
+  .ac-list-{{ sid }} {
+    display: grid;
+    gap: {{ s.c_gap_m }}px;
+  }
+  .ac-item-{{ sid }} {
+    background: {{ s.card_background | default: '#ffffff' }};
+    border-radius: {{ s.card_radius }}px;
+    {% if s.card_border %}border: 1px solid {{ s.card_border_color | default: '#d2d2cd' }};{% endif %}
+    {% if s.card_shadow %}box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);{% endif %}
+    overflow: hidden;
+  }
+  .ac-summary-{{ sid }} {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: {{ s.c_pad_y_m }}px {{ s.c_pad_x_m }}px;
+    cursor: pointer;
+    list-style: none;
+    font-size: {{ s.t_size_m }}px;
+    line-height: 1.3;
+    font-weight: {{ s.title_weight }};
+    letter-spacing: {%- assign tt_ls = s.t_size_m -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+    color: {{ s.title_color | default: '#0a0a0a' }};
+  }
+  .ac-summary-{{ sid }}::-webkit-details-marker { display: none; }
+  .ac-summary-{{ sid }}::marker { content: ''; }
+  .ac-icon-{{ sid }} {
+    flex: none;
+    width: {{ s.ic_size }}px;
+    height: {{ s.ic_size }}px;
+    color: {{ s.icon_color | default: '#0a0a0a' }};
+  }
+  .ac-icon-{{ sid }} svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    stroke: currentColor;
+    stroke-width: {{ s.icon_thickness }};
+    stroke-linecap: round;
+    fill: none;
+    transition: transform .25s ease;
+  }
+  .ac-item-{{ sid }}[open] .ac-icon-{{ sid }} svg { transform: rotate(180deg); }
+  .ac-icon-bar-{{ sid }} { transition: opacity .2s ease, transform .25s ease; transform-origin: center; }
+  .ac-item-{{ sid }}[open] .ac-icon-bar-{{ sid }} { opacity: 0; transform: rotate(90deg); }
+  .ac-body-{{ sid }} {
+    padding: 0 {{ s.c_pad_x_m }}px {{ s.c_pad_y_m }}px;
+    font-size: {{ s.x_size_m }}px;
+    line-height: 1.55;
+    color: {{ s.text_color | default: '#5c5c57' }};
+    animation: acReveal-{{ sid }} .25s ease;
+  }
+  .ac-body-{{ sid }} > :first-child { margin-top: 0; }
+  .ac-body-{{ sid }} > :last-child { margin-bottom: 0; }
+  .ac-body-{{ sid }} p { margin: 0 0 10px; }
+  .ac-body-{{ sid }} ul,
+  .ac-body-{{ sid }} ol { margin: 0 0 10px; padding-left: 20px; }
+  .ac-body-{{ sid }} li { margin-bottom: 6px; }
+  @keyframes acReveal-{{ sid }} {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (min-width: 768px) {
+    .ac-{{ sid }} {
+      padding-top: {{ s.p_top_d }}px;
+      padding-bottom: {{ s.p_bot_d }}px;
+    }
+    .ac-inner-{{ sid }} {
+      max-width: {{ s.max_width_desktop }}px;
+      padding-left: 32px;
+      padding-right: 32px;
+    }
+    .ac-heading-{{ sid }} { font-size: {{ s.head_d }}px; line-height: 1.15; }
+    .ac-summary-{{ sid }} {
+      font-size: {{ s.t_size_d }}px;
+      padding: {{ s.c_pad_y_d }}px {{ s.c_pad_x_d }}px;
+    }
+    .ac-body-{{ sid }} {
+      font-size: {{ s.x_size_d }}px;
+      padding: 0 {{ s.c_pad_x_d }}px {{ s.c_pad_y_d }}px;
+    }
+    .ac-list-{{ sid }} { gap: {{ s.c_gap_d }}px; }
+  }
+</style>
+
+<div class="ac-{{ sid }}">
+  <div class="ac-inner-{{ sid }}">
+    {%- if s.heading != blank -%}
+      <h2 class="ac-heading-{{ sid }}">{{ s.heading }}</h2>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="ac-list-{{ sid }}">
+        {%- for block in section.blocks -%}
+          <details
+            class="ac-item-{{ sid }}"
+            {% if s.one_at_a_time %}name="ac-group-{{ sid }}"{% endif %}
+            {% if block.settings.open_by_default %}open{% endif %}
+            {{ block.shopify_attributes }}
+          >
+            <summary class="ac-summary-{{ sid }}">
+              <span>{{ block.settings.title }}</span>
+              <span class="ac-icon-{{ sid }}" aria-hidden="true">
+                {%- if s.icon_style == 'chevron' -%}
+                  <svg viewBox="0 0 24 24"><path d="M6 9.5 12 15.5 18 9.5"/></svg>
+                {%- else -%}
+                  <svg viewBox="0 0 24 24">
+                    <line x1="4" y1="12" x2="20" y2="12"/>
+                    <line class="ac-icon-bar-{{ sid }}" x1="12" y1="4" x2="12" y2="20"/>
+                  </svg>
+                {%- endif -%}
+              </span>
+            </summary>
+            {%- if block.settings.content != blank -%}
+              <div class="ac-body-{{ sid }} rte">{{ block.settings.content }}</div>
+            {%- endif -%}
+          </details>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Açılır Kapanır Kartlar",
+  "tag": "section",
+  "class": "accordion-cards-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Başlık (isteğe bağlı)"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Başlık",
+      "info": "Boş bırakırsanız başlık görünmez."
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Başlık rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "select",
+      "id": "heading_align",
+      "label": "Başlık hizası",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Sola" },
+        { "value": "center", "label": "Ortaya" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "head_m",
+      "label": "Başlık boyutu (mobil)",
+      "min": 16,
+      "max": 44,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "head_d",
+      "label": "Başlık boyutu (masaüstü)",
+      "min": 18,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "range",
+      "id": "head_gap",
+      "label": "Başlık ile kartlar arası boşluk",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Kart Görünümü"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Kart arka planı",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "label": "Köşe yuvarlaklığı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "c_gap_m",
+      "label": "Kartlar arası boşluk (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "c_gap_d",
+      "label": "Kartlar arası boşluk (masaüstü)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "c_pad_x_m",
+      "label": "Kart iç boşluk - yatay (mobil)",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "c_pad_y_m",
+      "label": "Kart iç boşluk - dikey (mobil)",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "c_pad_x_d",
+      "label": "Kart iç boşluk - yatay (masaüstü)",
+      "min": 8,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "c_pad_y_d",
+      "label": "Kart iç boşluk - dikey (masaüstü)",
+      "min": 8,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "checkbox",
+      "id": "card_border",
+      "label": "Kart kenarlığı göster",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Kenarlık rengi",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_shadow",
+      "label": "Hafif gölge ekle",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Yazılar"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Satır başlığı rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "t_size_m",
+      "label": "Satır başlığı boyutu (mobil)",
+      "min": 13,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "t_size_d",
+      "label": "Satır başlığı boyutu (masaüstü)",
+      "min": 13,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Satır başlığı kalınlığı",
+      "default": "500",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "İçerik yazı rengi",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "range",
+      "id": "x_size_m",
+      "label": "İçerik boyutu (mobil)",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "x_size_d",
+      "label": "İçerik boyutu (masaüstü)",
+      "min": 11,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "header",
+      "content": "İkon ve Davranış"
+    },
+    {
+      "type": "select",
+      "id": "icon_style",
+      "label": "İkon şekli",
+      "default": "plus",
+      "options": [
+        { "value": "plus", "label": "Artı / Eksi (+ −)" },
+        { "value": "chevron", "label": "Ok (v)" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "İkon rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "ic_size",
+      "label": "İkon boyutu",
+      "min": 12,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "icon_thickness",
+      "label": "İkon çizgi kalınlığı",
+      "min": 1,
+      "max": 4,
+      "step": 0.5,
+      "default": 1.5
+    },
+    {
+      "type": "checkbox",
+      "id": "one_at_a_time",
+      "label": "Aynı anda tek kart açık kalsın",
+      "info": "Biri açıldığında diğerleri otomatik kapanır.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Bölüm Görünümü"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Bölüm arka planı",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "İçerik genişliği (mobil)",
+      "min": 320,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 760
+    },
+    {
+      "type": "range",
+      "id": "max_width_desktop",
+      "label": "İçerik genişliği (masaüstü)",
+      "min": 600,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 900
+    },
+    {
+      "type": "range",
+      "id": "p_top_m",
+      "label": "Üst boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "p_bot_m",
+      "label": "Alt boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "p_top_d",
+      "label": "Üst boşluk (masaüstü)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "p_bot_d",
+      "label": "Alt boşluk (masaüstü)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "row",
+      "name": "Açılır satır",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Başlık",
+          "default": "Başlık"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "İçerik",
+          "default": "<p>Buraya açıklamanızı yazın.</p>"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_by_default",
+          "label": "Sayfa açıldığında açık gelsin",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Açılır Kapanır Kartlar",
+      "blocks": [
+        { "type": "row" },
+        { "type": "row" },
+        { "type": "row" },
+        { "type": "row" }
+      ]
+    }
+  ]
+}
+{% endschema %}

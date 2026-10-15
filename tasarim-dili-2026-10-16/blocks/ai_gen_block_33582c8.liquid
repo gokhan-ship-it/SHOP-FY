@@ -1,0 +1,1193 @@
+{% doc %}
+  @prompt
+    Create a Shopify Liquid “How It Works” section.
+    
+    Goal:
+    Black-and-white Apple-like 4-step horizontal slider.
+    
+    Rules:
+    - 4 editable cards.
+    - All cards must have the same size.
+    - All image areas must have the same size.
+    - Each card must use a 1:1 square image area.
+    - Images must never change card height.
+    - Images must not overflow.
+    - Use object-fit: cover.
+    
+    Each card:
+    - Step number
+    - Title
+    - Text
+    - Desktop image upload
+    - Mobile image upload
+    
+    Layout:
+    - Desktop: horizontal slider.
+    - Mobile: horizontal swipe slider.
+    - Use scroll snap.
+    - Add pagination dots.
+    - Hide scrollbar.
+    
+    Shopify:
+    - Liquid section.
+    - Complete schema.
+    - Max 4 blocks.
+    - No external libraries.
+    - Class prefix: ttn-hiw-
+    
+    Output only full Liquid code., Follow-up improvements:
+    
+    - Add a body copy below the "How it works" heading. It should be editable from the Shopify editor.
+    - Remove all borders from the cards.
+    - Use soft corner radii throughout the section. A border radius of 16px is preferred.
+    - Keep the design minimal and Apple-inspired.
+    - Cards should rely on spacing and subtle shadows instead of borders.
+    - Maintain equal card sizes and equal 1:1 image areas across all slides.
+    - Preserve the existing slider behavior and pagination dots., Improve the step number design.
+    
+    - Instead of plain text numbers, place the step number inside a small rounded pill/circle.
+    - Center it horizontally inside the card.
+    - Position it near the top with generous spacing.
+    - Use a subtle light gray background.
+    - Use bold black text.
+    - Keep it minimal and Apple-inspired.
+    - Border radius should be fully rounded.
+    - The number badge should feel elegant and premium, similar to Apple's UI elements., Keep the original card layout.
+    
+    The previous layout was better.
+    
+    - Place the title and description at the top of the card.
+    - Keep the image in the bottom section of the card.
+    - The image should occupy the lower half of the card.
+    - Maintain generous spacing between text and image.
+    - Do not place the image above the title.
+    - Keep all cards identical.
+    - Maintain the 1:1 image area.
+    - Preserve the Apple-inspired premium look.
+    
+    For the step number:
+    - Use a small rounded pill with soft gray background.
+    - Center it horizontally near the top of the card.
+    - Make it subtle and elegant., The step number badge, title, description and image must belong to the same card.
+    
+    Currently the image feels like a separate section below the text.
+    
+    Please make each slide a single card containing:
+    
+    - Step number badge at the top
+    - Title below the badge
+    - Description below the title
+    - 1:1 image area at the bottom
+    
+    The image should not appear outside the card.
+    
+    Keep generous spacing and maintain the previous layout where the text was above and the image occupied the lower part of the card.
+    
+    Everything should feel like one unified Apple-inspired card with 16px border radius.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+{%- liquid
+  comment
+    "apple" stili opsiyoneldir. Varsayilan "klasik", yani bu blogun
+    kullanildigi diger sayfalarin ciktisi bit bit ayni kaliyor.
+  endcomment
+  assign apple = false
+  if block.settings.stil == 'apple'
+    assign apple = true
+  endif
+  assign apple_oran = 62.5
+  case block.settings.apple_oran
+    when 'kare'
+      assign apple_oran = 100
+    when 'dort_uc'
+      assign apple_oran = 75
+    when 'onalti_dokuz'
+      assign apple_oran = 56.25
+  endcase
+  assign apple_nokta = block.settings.dot_size | times: 3
+-%}
+
+{% style %}
+  .ttn-hiw-container-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    background-color: {{ block.settings.background_color }};
+    padding: {{ block.settings.padding_top }}px 0 {{ block.settings.padding_bottom }}px;
+  }
+
+  .ttn-hiw-wrapper-{{ ai_gen_id }} {
+    max-width: {{ block.settings.container_width }}px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .ttn-hiw-header-{{ ai_gen_id }} {
+    text-align: center;
+    margin-bottom: {{ block.settings.header_spacing }}px;
+  }
+
+  .ttn-hiw-heading-{{ ai_gen_id }} {
+    margin: 0 0 {{ block.settings.subheading_spacing }}px;
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.heading_size }}px;
+    font-weight: 700;
+    letter-spacing: {%- assign tt_ls = block.settings.heading_size | times: 0.7 -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+  }
+
+  .ttn-hiw-subheading-{{ ai_gen_id }} {
+    margin: 0;
+    color: {{ block.settings.subheading_color }};
+    font-size: {{ block.settings.subheading_size }}px;
+    line-height: 1.5;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .ttn-hiw-slider-container-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+  }
+
+  .ttn-hiw-slider-{{ ai_gen_id }} {
+    display: flex;
+    gap: {{ block.settings.card_gap }}px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0 0 20px;
+  }
+
+  .ttn-hiw-slider-{{ ai_gen_id }}::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ttn-hiw-card-{{ ai_gen_id }} {
+    flex: 0 0 calc((100% - ({{ block.settings.card_gap }}px * 3)) / 4);
+    scroll-snap-align: start;
+    background-color: {{ block.settings.card_background }};
+    border-radius: 16px;
+    padding: {{ block.settings.card_padding }}px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .ttn-hiw-step-number-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: {{ block.settings.badge_size }}px;
+    height: {{ block.settings.badge_size }}px;
+    padding: 0 {{ block.settings.badge_padding }}px;
+    background-color: {{ block.settings.badge_background }};
+    color: {{ block.settings.badge_text_color }};
+    font-size: {{ block.settings.step_number_size }}px;
+    font-weight: 700;
+    border-radius: 999px;
+    margin: 0 auto {{ block.settings.step_spacing }}px;
+  }
+
+  .ttn-hiw-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.title_size }}px;
+    font-weight: 700;
+    letter-spacing: {%- assign tt_ls = block.settings.title_size -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+    color: {{ block.settings.text_color }};
+    margin: 0 0 {{ block.settings.title_spacing }}px;
+    text-align: center;
+  }
+
+  .ttn-hiw-text-{{ ai_gen_id }} {
+    font-size: {{ block.settings.text_size }}px;
+    color: {{ block.settings.text_color }};
+    line-height: 1.5;
+    margin: 0 0 {{ block.settings.content_spacing }}px;
+    opacity: 0.7;
+    text-align: center;
+  }
+
+  .ttn-hiw-image-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    overflow: hidden;
+    border-radius: 16px;
+    background-color: {{ block.settings.image_background }};
+    margin-top: auto;
+  }
+
+  .ttn-hiw-image-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ttn-hiw-image-placeholder-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ttn-hiw-image-placeholder-{{ ai_gen_id }} svg {
+    width: 50%;
+    height: 50%;
+    opacity: 0.3;
+  }
+
+  .ttn-hiw-mobile-image-{{ ai_gen_id }} {
+    display: none;
+  }
+
+  .ttn-hiw-pagination-{{ ai_gen_id }} {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .ttn-hiw-dot-{{ ai_gen_id }} {
+    width: {{ block.settings.dot_size }}px;
+    height: {{ block.settings.dot_size }}px;
+    border-radius: 50%;
+    background-color: {{ block.settings.dot_inactive_color }};
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .ttn-hiw-dot-{{ ai_gen_id }}.active {
+    background-color: {{ block.settings.dot_active_color }};
+  }
+
+  @media screen and (max-width: 989px) {
+    .ttn-hiw-card-{{ ai_gen_id }} {
+      flex: 0 0 calc((100% - ({{ block.settings.card_gap }}px * 1)) / 2);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ttn-hiw-card-{{ ai_gen_id }} {
+      flex: 0 0 calc(100% - 40px);
+    }
+
+    .ttn-hiw-desktop-image-{{ ai_gen_id }} {
+      display: none;
+    }
+
+    .ttn-hiw-mobile-image-{{ ai_gen_id }} {
+      display: block;
+    }
+
+    .ttn-hiw-heading-{{ ai_gen_id }} {
+      font-size: {{ block.settings.heading_size | times: 0.7 }}px;
+    }
+
+    .ttn-hiw-subheading-{{ ai_gen_id }} {
+      font-size: {{ block.settings.subheading_size | times: 0.9 }}px;
+    }
+  }
+
+  {%- if apple %}
+  /* --- Apple kipi ---------------------------------------------------
+     Kart cercevesi, golge ve ic bosluk yok: icerik dogrudan bolum
+     zemininde duruyor. Yukseklik kazanci esas olarak gorsel oranindan
+     geliyor (1:1 yerine varsayilan 16:10). Tum kurallar .ttn-hiw-apple
+     sinifi altinda; sinif yalnizca stil "apple" secilince basiliyor,
+     dolayisiyla klasik kip hic etkilenmiyor. */
+  .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-card-{{ ai_gen_id }} {
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  /* Rozet yerine kucuk, harf araligi acilmis gri etiket */
+  .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-step-number-{{ ai_gen_id }} {
+    min-width: 0;
+    height: auto;
+    padding: 0;
+    background-color: transparent;
+    color: {{ block.settings.subheading_color }};
+    font-size: {{ block.settings.step_number_size | minus: 2 }}px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    border-radius: 0;
+    justify-content: flex-start;
+    margin: 0 0 8px;
+  }
+
+  .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-title-{{ ai_gen_id }} {
+    text-align: left;
+    line-height: 1.3;
+    letter-spacing: {%- assign tt_ls = block.settings.title_size -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+  }
+
+  .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-text-{{ ai_gen_id }} {
+    text-align: left;
+    line-height: 1.45;
+    opacity: 0.62;
+  }
+
+  .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-image-wrapper-{{ ai_gen_id }} {
+    padding-bottom: {{ apple_oran }}%;
+    border-radius: 18px;
+  }
+
+  .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-slider-{{ ai_gen_id }} {
+    padding-bottom: 4px;
+  }
+
+  .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-pagination-{{ ai_gen_id }} {
+    margin-top: 16px;
+  }
+
+  /* Etkin nokta hap seklinde uzuyor */
+  .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-dot-{{ ai_gen_id }} {
+    border-radius: 999px;
+    transition: width 0.25s ease, background-color 0.25s ease;
+  }
+
+  .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-dot-{{ ai_gen_id }}.active {
+    width: {{ apple_nokta }}px;
+  }
+
+  @media screen and (max-width: 989px) {
+    .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-card-{{ ai_gen_id }} {
+      flex: 0 0 calc((100% - ({{ block.settings.card_gap }}px * 2)) / 3);
+    }
+  }
+
+  /* Mobilde bir sonraki kart kenardan gorunsun: kaydirilabildigi belli olsun */
+  @media screen and (max-width: 749px) {
+    .ttn-hiw-apple-{{ ai_gen_id }} .ttn-hiw-card-{{ ai_gen_id }} {
+      flex: 0 0 78%;
+    }
+  }
+  {%- endif %}
+{% endstyle %}
+
+<ttn-how-it-works-{{ ai_gen_id }} class="ttn-hiw-container-{{ ai_gen_id }}{% if apple %} ttn-hiw-apple-{{ ai_gen_id }}{% endif %}"{% if apple %} data-oto-nokta{% endif %} {{ block.shopify_attributes }}>
+  <div class="ttn-hiw-wrapper-{{ ai_gen_id }}">
+    <div class="ttn-hiw-header-{{ ai_gen_id }}">
+      {% if block.settings.heading != blank %}
+        <h2 class="ttn-hiw-heading-{{ ai_gen_id }}">{{ block.settings.heading }}</h2>
+      {% endif %}
+
+      {% if block.settings.subheading != blank %}
+        <div class="ttn-hiw-subheading-{{ ai_gen_id }}">{{ block.settings.subheading }}</div>
+      {% endif %}
+    </div>
+
+    <div class="ttn-hiw-slider-container-{{ ai_gen_id }}">
+      <div class="ttn-hiw-slider-{{ ai_gen_id }}" data-slider>
+        {% liquid
+          assign step_1_number = block.settings.step_1_number
+          assign step_1_desktop_image = block.settings.step_1_desktop_image
+          assign step_1_mobile_image = block.settings.step_1_mobile_image
+          assign step_1_title = block.settings.step_1_title
+          assign step_1_text = block.settings.step_1_text
+
+          assign step_2_number = block.settings.step_2_number
+          assign step_2_desktop_image = block.settings.step_2_desktop_image
+          assign step_2_mobile_image = block.settings.step_2_mobile_image
+          assign step_2_title = block.settings.step_2_title
+          assign step_2_text = block.settings.step_2_text
+
+          assign step_3_number = block.settings.step_3_number
+          assign step_3_desktop_image = block.settings.step_3_desktop_image
+          assign step_3_mobile_image = block.settings.step_3_mobile_image
+          assign step_3_title = block.settings.step_3_title
+          assign step_3_text = block.settings.step_3_text
+
+          assign step_4_number = block.settings.step_4_number
+          assign step_4_desktop_image = block.settings.step_4_desktop_image
+          assign step_4_mobile_image = block.settings.step_4_mobile_image
+          assign step_4_title = block.settings.step_4_title
+          assign step_4_text = block.settings.step_4_text
+        %}
+
+        <div class="ttn-hiw-card-{{ ai_gen_id }}" data-card="0">
+          <div class="ttn-hiw-step-number-{{ ai_gen_id }}">{{ step_1_number }}</div>
+
+          {% if step_1_title != blank %}
+            <h3 class="ttn-hiw-title-{{ ai_gen_id }}">{{ step_1_title }}</h3>
+          {% endif %}
+
+          {% if step_1_text != blank %}
+            <div class="ttn-hiw-text-{{ ai_gen_id }}">{{ step_1_text }}</div>
+          {% endif %}
+
+          <div class="ttn-hiw-image-wrapper-{{ ai_gen_id }}">
+            {% if step_1_desktop_image %}
+              <img
+                src="{{ step_1_desktop_image | image_url: width: 800 }}"
+                alt="{{ step_1_desktop_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-desktop-image-{{ ai_gen_id }}"
+              >
+            {% else %}
+              <div class="ttn-hiw-image-placeholder-{{ ai_gen_id }} ttn-hiw-desktop-image-{{ ai_gen_id }}">
+                {{ 'image' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+
+            {% if step_1_mobile_image %}
+              <img
+                src="{{ step_1_mobile_image | image_url: width: 800 }}"
+                alt="{{ step_1_mobile_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}"
+              >
+            {% elsif step_1_desktop_image %}
+              <img
+                src="{{ step_1_desktop_image | image_url: width: 800 }}"
+                alt="{{ step_1_desktop_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}"
+              >
+            {% else %}
+              <div class="ttn-hiw-image-placeholder-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}">
+                {{ 'image' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="ttn-hiw-card-{{ ai_gen_id }}" data-card="1">
+          <div class="ttn-hiw-step-number-{{ ai_gen_id }}">{{ step_2_number }}</div>
+
+          {% if step_2_title != blank %}
+            <h3 class="ttn-hiw-title-{{ ai_gen_id }}">{{ step_2_title }}</h3>
+          {% endif %}
+
+          {% if step_2_text != blank %}
+            <div class="ttn-hiw-text-{{ ai_gen_id }}">{{ step_2_text }}</div>
+          {% endif %}
+
+          <div class="ttn-hiw-image-wrapper-{{ ai_gen_id }}">
+            {% if step_2_desktop_image %}
+              <img
+                src="{{ step_2_desktop_image | image_url: width: 800 }}"
+                alt="{{ step_2_desktop_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-desktop-image-{{ ai_gen_id }}"
+              >
+            {% else %}
+              <div class="ttn-hiw-image-placeholder-{{ ai_gen_id }} ttn-hiw-desktop-image-{{ ai_gen_id }}">
+                {{ 'image' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+
+            {% if step_2_mobile_image %}
+              <img
+                src="{{ step_2_mobile_image | image_url: width: 800 }}"
+                alt="{{ step_2_mobile_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}"
+              >
+            {% elsif step_2_desktop_image %}
+              <img
+                src="{{ step_2_desktop_image | image_url: width: 800 }}"
+                alt="{{ step_2_desktop_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}"
+              >
+            {% else %}
+              <div class="ttn-hiw-image-placeholder-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}">
+                {{ 'image' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="ttn-hiw-card-{{ ai_gen_id }}" data-card="2">
+          <div class="ttn-hiw-step-number-{{ ai_gen_id }}">{{ step_3_number }}</div>
+
+          {% if step_3_title != blank %}
+            <h3 class="ttn-hiw-title-{{ ai_gen_id }}">{{ step_3_title }}</h3>
+          {% endif %}
+
+          {% if step_3_text != blank %}
+            <div class="ttn-hiw-text-{{ ai_gen_id }}">{{ step_3_text }}</div>
+          {% endif %}
+
+          <div class="ttn-hiw-image-wrapper-{{ ai_gen_id }}">
+            {% if step_3_desktop_image %}
+              <img
+                src="{{ step_3_desktop_image | image_url: width: 800 }}"
+                alt="{{ step_3_desktop_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-desktop-image-{{ ai_gen_id }}"
+              >
+            {% else %}
+              <div class="ttn-hiw-image-placeholder-{{ ai_gen_id }} ttn-hiw-desktop-image-{{ ai_gen_id }}">
+                {{ 'image' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+
+            {% if step_3_mobile_image %}
+              <img
+                src="{{ step_3_mobile_image | image_url: width: 800 }}"
+                alt="{{ step_3_mobile_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}"
+              >
+            {% elsif step_3_desktop_image %}
+              <img
+                src="{{ step_3_desktop_image | image_url: width: 800 }}"
+                alt="{{ step_3_desktop_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}"
+              >
+            {% else %}
+              <div class="ttn-hiw-image-placeholder-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}">
+                {{ 'image' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="ttn-hiw-card-{{ ai_gen_id }}" data-card="3">
+          <div class="ttn-hiw-step-number-{{ ai_gen_id }}">{{ step_4_number }}</div>
+
+          {% if step_4_title != blank %}
+            <h3 class="ttn-hiw-title-{{ ai_gen_id }}">{{ step_4_title }}</h3>
+          {% endif %}
+
+          {% if step_4_text != blank %}
+            <div class="ttn-hiw-text-{{ ai_gen_id }}">{{ step_4_text }}</div>
+          {% endif %}
+
+          <div class="ttn-hiw-image-wrapper-{{ ai_gen_id }}">
+            {% if step_4_desktop_image %}
+              <img
+                src="{{ step_4_desktop_image | image_url: width: 800 }}"
+                alt="{{ step_4_desktop_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-desktop-image-{{ ai_gen_id }}"
+              >
+            {% else %}
+              <div class="ttn-hiw-image-placeholder-{{ ai_gen_id }} ttn-hiw-desktop-image-{{ ai_gen_id }}">
+                {{ 'image' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+
+            {% if step_4_mobile_image %}
+              <img
+                src="{{ step_4_mobile_image | image_url: width: 800 }}"
+                alt="{{ step_4_mobile_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}"
+              >
+            {% elsif step_4_desktop_image %}
+              <img
+                src="{{ step_4_desktop_image | image_url: width: 800 }}"
+                alt="{{ step_4_desktop_image.alt | escape }}"
+                width="800"
+                height="800"
+                loading="lazy"
+                class="ttn-hiw-image-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}"
+              >
+            {% else %}
+              <div class="ttn-hiw-image-placeholder-{{ ai_gen_id }} ttn-hiw-mobile-image-{{ ai_gen_id }}">
+                {{ 'image' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="ttn-hiw-pagination-{{ ai_gen_id }}" data-pagination>
+        <button
+          class="ttn-hiw-dot-{{ ai_gen_id }} active"
+          data-dot="0"
+          aria-label="Go to step 1"
+        ></button>
+        <button
+          class="ttn-hiw-dot-{{ ai_gen_id }}"
+          data-dot="1"
+          aria-label="Go to step 2"
+        ></button>
+        <button
+          class="ttn-hiw-dot-{{ ai_gen_id }}"
+          data-dot="2"
+          aria-label="Go to step 3"
+        ></button>
+        <button
+          class="ttn-hiw-dot-{{ ai_gen_id }}"
+          data-dot="3"
+          aria-label="Go to step 4"
+        ></button>
+      </div>
+    </div>
+  </div>
+</ttn-how-it-works-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class TtnHowItWorks{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.slider = this.querySelector('[data-slider]');
+        this.dots = this.querySelectorAll('[data-dot]');
+        this.cards = this.querySelectorAll('[data-card]');
+
+        if (!this.slider || this.dots.length === 0) return;
+
+        this.setupScrollListener();
+        this.setupDotListeners();
+        this.noktalariTazele();
+      }
+
+      /* Apple kipinde genis ekranda dort kart tam sigiyor ve kaydiracak
+         bir sey kalmiyor. O durumda noktalar islevsiz kaliyor, gizliyoruz.
+         Yalnizca data-oto-nokta varken calisir; klasik kipin davranisi
+         hic degismiyor. */
+      noktalariTazele() {
+        if (!this.hasAttribute('data-oto-nokta')) return;
+        const pag = this.querySelector('[data-pagination]');
+        if (!pag) return;
+        const bak = () => {
+          const kaydirilir = this.slider.scrollWidth > this.slider.clientWidth + 2;
+          pag.style.display = kaydirilir ? '' : 'none';
+        };
+        bak();
+        if (window.ResizeObserver) {
+          this.gozlemci = new ResizeObserver(bak);
+          this.gozlemci.observe(this.slider);
+        } else {
+          window.addEventListener('resize', bak);
+        }
+      }
+
+      disconnectedCallback() {
+        if (this.gozlemci) { this.gozlemci.disconnect(); this.gozlemci = null; }
+      }
+
+      setupScrollListener() {
+        let scrollTimeout;
+        this.slider.addEventListener('scroll', () => {
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(() => {
+            this.updateActiveDot();
+          }, 100);
+        });
+      }
+
+      setupDotListeners() {
+        this.dots.forEach((dot) => {
+          dot.addEventListener('click', () => {
+            const index = parseInt(dot.getAttribute('data-dot'));
+            const card = this.cards[index];
+            if (card) {
+              card.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'start'
+              });
+            }
+          });
+        });
+      }
+
+      updateActiveDot() {
+        const scrollLeft = this.slider.scrollLeft;
+        const cardWidth = this.cards[0].offsetWidth;
+        const gap = parseInt(getComputedStyle(this.slider).gap) || 0;
+        const activeIndex = Math.round(scrollLeft / (cardWidth + gap));
+
+        this.dots.forEach((dot, index) => {
+          if (index === activeIndex) {
+            dot.classList.add('active');
+          } else {
+            dot.classList.remove('active');
+          }
+        });
+      }
+    }
+
+    customElements.define('ttn-how-it-works-{{ ai_gen_id }}', TtnHowItWorks{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "How it works",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Stil"
+    },
+    {
+      "type": "select",
+      "id": "stil",
+      "label": "Görünüm",
+      "info": "Apple: kart kutusu ve gölge yok, yazılar sola dayalı, görsel daha alçak — bölüm belirgin şekilde kısalır.",
+      "default": "klasik",
+      "options": [
+        { "value": "klasik", "label": "Klasik (kartlı)" },
+        { "value": "apple", "label": "Apple (minimal)" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "apple_oran",
+      "label": "Görsel oranı (Apple stilinde)",
+      "default": "onalti_on",
+      "options": [
+        { "value": "onalti_dokuz", "label": "16:9 — en alçak" },
+        { "value": "onalti_on", "label": "16:10" },
+        { "value": "dort_uc", "label": "4:3" },
+        { "value": "kare", "label": "1:1 — kare" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Section"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "How it works"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Follow these simple steps to get started with your purchase."
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "label": "Subheading size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "subheading_spacing",
+      "label": "Spacing below heading",
+      "min": 8,
+      "max": 32,
+      "step": 4,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "header_spacing",
+      "label": "Spacing below header",
+      "min": 20,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "label": "Container width",
+      "min": 1000,
+      "max": 2000,
+      "step": 100,
+      "unit": "px",
+      "default": 1400
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "header",
+      "content": "Cards"
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "label": "Gap between cards",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "card_padding",
+      "label": "Card padding",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "default": 25
+    },
+    {
+      "type": "range",
+      "id": "content_spacing",
+      "label": "Spacing between content and image",
+      "min": 16,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Step badge"
+    },
+    {
+      "type": "range",
+      "id": "badge_size",
+      "label": "Badge height",
+      "min": 24,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "badge_padding",
+      "label": "Badge horizontal padding",
+      "min": 8,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "badge_background",
+      "label": "Badge background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text color",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "step_number_size",
+      "label": "Number size",
+      "min": 12,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "step_spacing",
+      "label": "Spacing below badge",
+      "min": 8,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "color",
+      "id": "image_background",
+      "label": "Image background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Size",
+      "min": 14,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "title_spacing",
+      "label": "Spacing below",
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "header",
+      "content": "Pagination"
+    },
+    {
+      "type": "range",
+      "id": "dot_size",
+      "label": "Dot size",
+      "min": 6,
+      "max": 16,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "color",
+      "id": "dot_active_color",
+      "label": "Active dot color",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "dot_inactive_color",
+      "label": "Inactive dot color",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "header",
+      "content": "Step 1"
+    },
+    {
+      "type": "text",
+      "id": "step_1_number",
+      "label": "Number",
+      "default": "01"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_1_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_1_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "text",
+      "id": "step_1_title",
+      "label": "Title",
+      "default": "Choose your product"
+    },
+    {
+      "type": "textarea",
+      "id": "step_1_text",
+      "label": "Text",
+      "default": "Browse our collection and select your favorite item."
+    },
+    {
+      "type": "header",
+      "content": "Step 2"
+    },
+    {
+      "type": "text",
+      "id": "step_2_number",
+      "label": "Number",
+      "default": "02"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_2_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_2_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "text",
+      "id": "step_2_title",
+      "label": "Title",
+      "default": "Add to cart"
+    },
+    {
+      "type": "textarea",
+      "id": "step_2_text",
+      "label": "Text",
+      "default": "Click the add to cart button to proceed."
+    },
+    {
+      "type": "header",
+      "content": "Step 3"
+    },
+    {
+      "type": "text",
+      "id": "step_3_number",
+      "label": "Number",
+      "default": "03"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_3_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_3_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "text",
+      "id": "step_3_title",
+      "label": "Title",
+      "default": "Checkout"
+    },
+    {
+      "type": "textarea",
+      "id": "step_3_text",
+      "label": "Text",
+      "default": "Complete your purchase securely."
+    },
+    {
+      "type": "header",
+      "content": "Step 4"
+    },
+    {
+      "type": "text",
+      "id": "step_4_number",
+      "label": "Number",
+      "default": "04"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_4_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_4_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "text",
+      "id": "step_4_title",
+      "label": "Title",
+      "default": "Enjoy"
+    },
+    {
+      "type": "textarea",
+      "id": "step_4_text",
+      "label": "Text",
+      "default": "Receive your order and enjoy your purchase."
+    }
+  ],
+  "presets": [
+    {
+      "name": "How it works"
+    }
+  ]
+}
+{% endschema %}

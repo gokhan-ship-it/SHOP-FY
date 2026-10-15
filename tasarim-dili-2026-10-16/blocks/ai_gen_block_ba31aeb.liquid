@@ -1,0 +1,1245 @@
+{% doc %}
+  @prompt
+    Create a premium Apple-inspired card slider section similar to Apple's "Get to know iPhone" experience.
+    
+    The section should contain exactly 4 cards arranged horizontally.
+    
+    ## Section Header
+    
+    Add:
+    
+    * Optional category label
+    * Large title aligned to the left
+    * Optional subtitle below the title
+    
+    All typography must feel premium and Apple-like.
+    
+    ---
+    
+    # Card Layout
+    
+    Each card should contain:
+    
+    1. Small category label
+    2. Large headline
+    3. Optional description text
+    4. Large image area
+    
+    Hierarchy:
+    
+    Category
+    
+    ↓
+    
+    Headline
+    
+    ↓
+    
+    Description
+    
+    ↓
+    
+    Image
+    
+    ---
+    
+    # Images
+    
+    For each card create:
+    
+    * Desktop image
+    * Mobile image
+    
+    Desktop image appears only on desktop.
+    
+    Mobile image appears only on mobile.
+    
+    Very important:
+    
+    * Image container must use a fixed 1:1 aspect ratio.
+    * All cards must use exactly the same image dimensions.
+    * Use object-fit: cover.
+    * Images should fill the image container completely.
+    * No stretching.
+    * No excessive empty space around the image.
+    * Image size should determine the card proportions.
+    * Image containers must align perfectly across every card.
+    
+    ---
+    
+    # Card Dimensions
+    
+    Very important:
+    
+    * All cards must have identical width and height.
+    * Cards should not be overly tall.
+    * Remove excessive whitespace.
+    * Use balanced Apple-style spacing.
+    * Image should be the primary visual element.
+    * Cards should feel compact and premium.
+    
+    ---
+    
+    # Card Borders
+    
+    Very important:
+    
+    * Card borders must be perfectly continuous.
+    * No broken borders.
+    * No missing top border.
+    * Rounded corners should remain smooth.
+    * Border radius should apply consistently on all four sides.
+    * Prevent border clipping and overflow issues.
+    
+    ---
+    
+    # Slider Behavior
+    
+    Very important:
+    
+    The slider should feel extremely smooth.
+    
+    Enable:
+    
+    * Finger swipe on mobile.
+    * Mouse dragging on desktop.
+    * CSS scroll snap.
+    * Momentum scrolling.
+    * Smooth transitions.
+    
+    Use:
+    
+    * -webkit-overflow-scrolling: touch
+    * touch-action: pan-x
+    
+    Requirements:
+    
+    * Mobile swipe should feel effortless.
+    * Prevent sticky dragging.
+    * Prevent vertical page scrolling from blocking horizontal swipes.
+    * Cards should snap cleanly after finger release.
+    * iPhone Safari and Android Chrome should behave smoothly.
+    
+    ---
+    
+    # Navigation
+    
+    Remove arrow buttons completely.
+    
+    Only use pagination dots.
+    
+    Requirements:
+    
+    * No previous button.
+    * No next button.
+    * Navigation relies on swipe gestures and dots only.
+    
+    ---
+    
+    # Pagination Dots
+    
+    Create small Apple-style dots.
+    
+    * Dot size around 6px.
+    * Active dot around 7–8px.
+    * Small spacing between dots.
+    * Elegant appearance.
+    
+    Allow editing:
+    
+    * Dot size
+    * Dot spacing
+    * Dot color
+    * Active dot color
+    
+    ---
+    
+    # Customization Settings
+    
+    Create Shopify settings for EVERYTHING.
+    
+    ## Colors
+    
+    * Section background color
+    * Card background color
+    * Border color
+    * Category text color
+    * Headline color
+    * Description color
+    * Dot color
+    * Active dot color
+    
+    ## Typography
+    
+    Create separate desktop and mobile controls for:
+    
+    * Category size
+    * Title size
+    * Subtitle size
+    * Card category size
+    * Card headline size
+    * Card description size
+    
+    ## Layout
+    
+    * Card width
+    * Card height
+    * Card spacing
+    * Card border radius
+    * Image border radius
+    * Section top padding
+    * Section bottom padding
+    * Left padding
+    * Right padding
+    
+    ## Slider
+    
+    * Dot size
+    * Dot spacing
+    * Autoplay enable/disable
+    * Transition speed
+    
+    ---
+    
+    # Per Card Settings
+    
+    For each of the 4 cards create:
+    
+    * Category text
+    * Headline text
+    * Description text
+    * Desktop image
+    * Mobile image
+    
+    Use Shopify image pickers, color pickers, text fields and range sliders.
+    
+    Default appearance should remain premium, minimal and closely inspired by Apple's "Get to know iPhone" cards.
+    , Keep the current design exactly the same.
+    
+    Only fix the image fitting inside the card.
+    
+    The uploaded image is currently not filling the image area correctly.
+    
+    Requirements:
+    
+    * The image must completely fill the image container inside the card.
+    * The image container must stay inside the card padding.
+    * The image should not leave large empty space.
+    * The image should not overflow outside the card.
+    * Use `width: 100%`.
+    * Use `height: 100%`.
+    * Use `object-fit: cover`.
+    * Use `display: block`.
+    * The image container should use a fixed 1:1 aspect ratio.
+    * All four cards must use the exact same image container size.
+    * The image container should align perfectly with the card width.
+    * Keep the image border radius consistent.
+    
+    Do not change the card design, text, colors, typography, slider behavior or dots.
+    
+    Only make the uploaded images fit perfectly inside the card image area., Keep the current design exactly the same.
+    
+    Only fix the proportion between the card and the image area.
+    
+    The image area is currently not balanced inside the card.
+    
+    Requirements:
+    
+    * Make the image area wider and more proportional to the card.
+    * The image container should use almost the full available card width.
+    * Keep equal left and right padding inside the card.
+    * Maintain a fixed 1:1 square aspect ratio.
+    * The image should sit closer to the text, with less empty vertical space.
+    * Reduce unnecessary empty space below the image.
+    * The card should feel balanced: text area on top, image area below.
+    * Image area should occupy around 55–65% of the card height.
+    * All 4 cards must have identical card size and identical image size.
+    * Use `object-fit: cover` and `width: 100%; height: 100%;`.
+    
+    Do not change typography, colors, dots, slider behavior or card border radius.
+    
+    Only adjust the card/image proportions so the card looks premium and balanced.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-card-slider-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    background-color: {{ block.settings.section_bg_color }};
+    padding: {{ block.settings.section_padding_top }}px {{ block.settings.section_padding_horizontal }}px {{ block.settings.section_padding_bottom }}px;
+  }
+
+  .ai-card-slider-container-{{ ai_gen_id }} {
+    max-width: {{ block.settings.desktop_width_percent }}%;
+    margin: 0 auto;
+  }
+
+  .ai-card-slider-header-{{ ai_gen_id }} {
+    margin-bottom: 40px;
+  }
+
+  .ai-card-slider-category-{{ ai_gen_id }} {
+    font-size: {{ block.settings.header_category_size_desktop }}px;
+    color: {{ block.settings.header_category_color }};
+    margin-bottom: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .ai-card-slider-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.header_title_size_desktop }}px;
+    color: {{ block.settings.header_title_color }};
+    margin: 0 0 12px 0;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: {%- assign tt_ls = block.settings.header_title_size_mobile -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+  }
+
+  .ai-card-slider-subtitle-{{ ai_gen_id }} {
+    font-size: {{ block.settings.header_subtitle_size_desktop }}px;
+    color: {{ block.settings.header_subtitle_color }};
+    margin: 0;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .ai-card-slider-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ai-card-slider-track-{{ ai_gen_id }} {
+    display: flex;
+    gap: {{ block.settings.card_spacing }}px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+    padding-bottom: 2px;
+  }
+
+  .ai-card-slider-track-{{ ai_gen_id }}::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ai-card-slider-card-{{ ai_gen_id }} {
+    flex: 0 0 {{ block.settings.card_width }}px;
+    min-width: {{ block.settings.card_width }}px;
+    height: {{ block.settings.card_height }}px;
+    background-color: {{ block.settings.card_bg_color }};
+    border: 1px solid {{ block.settings.card_border_color }};
+    border-radius: {{ block.settings.card_border_radius }}px;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .ai-card-slider-card-content-{{ ai_gen_id }} {
+    padding: 20px 16px 12px;
+    flex-shrink: 0;
+  }
+
+  .ai-card-slider-card-category-{{ ai_gen_id }} {
+    font-size: {{ block.settings.card_category_size_desktop }}px;
+    color: {{ block.settings.card_category_color }};
+    margin-bottom: 6px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  .ai-card-slider-card-headline-{{ ai_gen_id }} {
+    font-size: {{ block.settings.card_headline_size_desktop }}px;
+    color: {{ block.settings.card_headline_color }};
+    margin: 0 0 6px 0;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: {%- assign tt_ls = block.settings.card_headline_size_mobile -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+  }
+
+  .ai-card-slider-card-description-{{ ai_gen_id }} {
+    font-size: {{ block.settings.card_description_size_desktop }}px;
+    color: {{ block.settings.card_description_color }};
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .ai-card-slider-card-image-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: calc(100% - 32px);
+    margin: 0 16px 16px;
+    overflow: hidden;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    flex: 1;
+  }
+
+  .ai-card-slider-card-image-wrapper-{{ ai_gen_id }}::before {
+    content: '';
+    display: block;
+    padding-top: 100%;
+  }
+
+  .ai-card-slider-card-image-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ai-card-slider-card-image-desktop-{{ ai_gen_id }} {
+    display: block;
+  }
+
+  .ai-card-slider-card-image-mobile-{{ ai_gen_id }} {
+    display: none;
+  }
+
+  .ai-card-slider-card-image-placeholder-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-card-slider-card-image-placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+    opacity: 0.3;
+  }
+
+  .ai-card-slider-pagination-{{ ai_gen_id }} {
+    display: flex;
+    justify-content: center;
+    gap: {{ block.settings.dot_spacing }}px;
+    margin-top: 32px;
+  }
+
+  .ai-card-slider-dot-{{ ai_gen_id }} {
+    width: {{ block.settings.dot_size }}px;
+    height: {{ block.settings.dot_size }}px;
+    border-radius: 50%;
+    background-color: {{ block.settings.dot_color }};
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .ai-card-slider-dot-{{ ai_gen_id }}.active {
+    width: {{ block.settings.dot_size | plus: 2 }}px;
+    height: {{ block.settings.dot_size | plus: 2 }}px;
+    background-color: {{ block.settings.dot_active_color }};
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-card-slider-category-{{ ai_gen_id }} {
+      font-size: {{ block.settings.header_category_size_mobile }}px;
+    }
+
+    .ai-card-slider-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.header_title_size_mobile }}px;
+    }
+
+    .ai-card-slider-subtitle-{{ ai_gen_id }} {
+      font-size: {{ block.settings.header_subtitle_size_mobile }}px;
+    }
+
+    .ai-card-slider-card-category-{{ ai_gen_id }} {
+      font-size: {{ block.settings.card_category_size_mobile }}px;
+    }
+
+    .ai-card-slider-card-headline-{{ ai_gen_id }} {
+      font-size: {{ block.settings.card_headline_size_mobile }}px;
+    }
+
+    .ai-card-slider-card-description-{{ ai_gen_id }} {
+      font-size: {{ block.settings.card_description_size_mobile }}px;
+    }
+
+    .ai-card-slider-card-{{ ai_gen_id }} {
+      flex: 0 0 85%;
+      min-width: 85%;
+    }
+
+    .ai-card-slider-card-image-desktop-{{ ai_gen_id }} {
+      display: none;
+    }
+
+    .ai-card-slider-card-image-mobile-{{ ai_gen_id }} {
+      display: block;
+    }
+  }
+{% endstyle %}
+
+<apple-card-slider-{{ ai_gen_id }} class="ai-card-slider-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-card-slider-container-{{ ai_gen_id }}">
+    {% if block.settings.header_category != blank or block.settings.header_title != blank or block.settings.header_subtitle != blank %}
+      <div class="ai-card-slider-header-{{ ai_gen_id }}">
+        {% if block.settings.header_category != blank %}
+          <div class="ai-card-slider-category-{{ ai_gen_id }}">{{ block.settings.header_category }}</div>
+        {% endif %}
+        {% if block.settings.header_title != blank %}
+          <h2 class="ai-card-slider-title-{{ ai_gen_id }}">{{ block.settings.header_title }}</h2>
+        {% endif %}
+        {% if block.settings.header_subtitle != blank %}
+          <div class="ai-card-slider-subtitle-{{ ai_gen_id }}">{{ block.settings.header_subtitle }}</div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="ai-card-slider-wrapper-{{ ai_gen_id }}">
+      <div class="ai-card-slider-track-{{ ai_gen_id }}" data-slider-track>
+        {% for i in (1..4) %}
+          {% liquid
+            assign card_category_key = 'card_' | append: i | append: '_category'
+            assign card_headline_key = 'card_' | append: i | append: '_headline'
+            assign card_description_key = 'card_' | append: i | append: '_description'
+            assign card_image_desktop_key = 'card_' | append: i | append: '_image_desktop'
+            assign card_image_mobile_key = 'card_' | append: i | append: '_image_mobile'
+
+            assign card_category = block.settings[card_category_key]
+            assign card_headline = block.settings[card_headline_key]
+            assign card_description = block.settings[card_description_key]
+            assign card_image_desktop = block.settings[card_image_desktop_key]
+            assign card_image_mobile = block.settings[card_image_mobile_key]
+          %}
+
+          <div class="ai-card-slider-card-{{ ai_gen_id }}" data-card-index="{{ forloop.index0 }}">
+            <div class="ai-card-slider-card-content-{{ ai_gen_id }}">
+              {% if card_category != blank %}
+                <div class="ai-card-slider-card-category-{{ ai_gen_id }}">{{ card_category }}</div>
+              {% endif %}
+              {% if card_headline != blank %}
+                <h3 class="ai-card-slider-card-headline-{{ ai_gen_id }}">{{ card_headline }}</h3>
+              {% endif %}
+              {% if card_description != blank %}
+                <div class="ai-card-slider-card-description-{{ ai_gen_id }}">{{ card_description }}</div>
+              {% endif %}
+            </div>
+
+            <div class="ai-card-slider-card-image-wrapper-{{ ai_gen_id }}">
+              {% if card_image_desktop %}
+                <img
+                  src="{{ card_image_desktop | image_url: width: 800 }}"
+                  alt="{{ card_image_desktop.alt | escape }}"
+                  loading="lazy"
+                  width="{{ card_image_desktop.width }}"
+                  height="{{ card_image_desktop.height }}"
+                  class="ai-card-slider-card-image-{{ ai_gen_id }} ai-card-slider-card-image-desktop-{{ ai_gen_id }}"
+                >
+              {% else %}
+                <div class="ai-card-slider-card-image-placeholder-{{ ai_gen_id }} ai-card-slider-card-image-desktop-{{ ai_gen_id }}">
+                  {{ 'image' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+
+              {% if card_image_mobile %}
+                <img
+                  src="{{ card_image_mobile | image_url: width: 800 }}"
+                  alt="{{ card_image_mobile.alt | escape }}"
+                  loading="lazy"
+                  width="{{ card_image_mobile.width }}"
+                  height="{{ card_image_mobile.height }}"
+                  class="ai-card-slider-card-image-{{ ai_gen_id }} ai-card-slider-card-image-mobile-{{ ai_gen_id }}"
+                >
+              {% elsif card_image_desktop %}
+                <img
+                  src="{{ card_image_desktop | image_url: width: 800 }}"
+                  alt="{{ card_image_desktop.alt | escape }}"
+                  loading="lazy"
+                  width="{{ card_image_desktop.width }}"
+                  height="{{ card_image_desktop.height }}"
+                  class="ai-card-slider-card-image-{{ ai_gen_id }} ai-card-slider-card-image-mobile-{{ ai_gen_id }}"
+                >
+              {% else %}
+                <div class="ai-card-slider-card-image-placeholder-{{ ai_gen_id }} ai-card-slider-card-image-mobile-{{ ai_gen_id }}">
+                  {{ 'image' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="ai-card-slider-pagination-{{ ai_gen_id }}" data-pagination>
+      {% for i in (1..4) %}
+        <button
+          class="ai-card-slider-dot-{{ ai_gen_id }} {% if forloop.first %}active{% endif %}"
+          data-dot-index="{{ forloop.index0 }}"
+          aria-label="Go to slide {{ forloop.index }}"
+        ></button>
+      {% endfor %}
+    </div>
+  </div>
+</apple-card-slider-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class AppleCardSlider{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.track = null;
+        this.dots = [];
+        this.cards = [];
+        this.currentIndex = 0;
+        this.autoplayInterval = null;
+        this.isDragging = false;
+        this.startX = 0;
+        this.scrollLeft = 0;
+      }
+
+      connectedCallback() {
+        this.track = this.querySelector('[data-slider-track]');
+        this.dots = Array.from(this.querySelectorAll('[data-dot-index]'));
+        this.cards = Array.from(this.querySelectorAll('[data-card-index]'));
+
+        if (!this.track || this.dots.length === 0) return;
+
+        this.setupEventListeners();
+        this.updateActiveDot(0);
+
+        {% if block.settings.autoplay_enabled %}
+          this.startAutoplay();
+        {% endif %}
+      }
+
+      disconnectedCallback() {
+        this.stopAutoplay();
+      }
+
+      setupEventListeners() {
+        this.dots.forEach((dot) => {
+          dot.addEventListener('click', () => {
+            const index = parseInt(dot.getAttribute('data-dot-index'));
+            this.scrollToCard(index);
+            this.stopAutoplay();
+          });
+        });
+
+        this.track.addEventListener('scroll', () => {
+          this.handleScroll();
+        });
+
+        this.track.addEventListener('mousedown', (e) => this.handleDragStart(e));
+        this.track.addEventListener('mousemove', (e) => this.handleDragMove(e));
+        this.track.addEventListener('mouseup', () => this.handleDragEnd());
+        this.track.addEventListener('mouseleave', () => this.handleDragEnd());
+
+        this.track.addEventListener('touchstart', () => {
+          this.stopAutoplay();
+        });
+      }
+
+      handleDragStart(e) {
+        this.isDragging = true;
+        this.startX = e.pageX - this.track.offsetLeft;
+        this.scrollLeft = this.track.scrollLeft;
+        this.track.style.cursor = 'grabbing';
+        this.stopAutoplay();
+      }
+
+      handleDragMove(e) {
+        if (!this.isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - this.track.offsetLeft;
+        const walk = (x - this.startX) * 2;
+        this.track.scrollLeft = this.scrollLeft - walk;
+      }
+
+      handleDragEnd() {
+        this.isDragging = false;
+        this.track.style.cursor = 'grab';
+      }
+
+      handleScroll() {
+        const scrollLeft = this.track.scrollLeft;
+        const cardWidth = this.cards[0].offsetWidth;
+        const gap = {{ block.settings.card_spacing }};
+        const index = Math.round(scrollLeft / (cardWidth + gap));
+        
+        if (index !== this.currentIndex) {
+          this.currentIndex = index;
+          this.updateActiveDot(index);
+        }
+      }
+
+      scrollToCard(index) {
+        if (index < 0 || index >= this.cards.length) return;
+        
+        const card = this.cards[index];
+        const cardWidth = card.offsetWidth;
+        const gap = {{ block.settings.card_spacing }};
+        const scrollPosition = index * (cardWidth + gap);
+        
+        this.track.scrollTo({
+          left: scrollPosition,
+          behavior: 'smooth'
+        });
+        
+        this.currentIndex = index;
+        this.updateActiveDot(index);
+      }
+
+      updateActiveDot(index) {
+        this.dots.forEach((dot, i) => {
+          if (i === index) {
+            dot.classList.add('active');
+          } else {
+            dot.classList.remove('active');
+          }
+        });
+      }
+
+      startAutoplay() {
+        {% if block.settings.autoplay_enabled %}
+          const speed = {{ block.settings.transition_speed }} * 1000;
+          this.autoplayInterval = setInterval(() => {
+            let nextIndex = this.currentIndex + 1;
+            if (nextIndex >= this.cards.length) {
+              nextIndex = 0;
+            }
+            this.scrollToCard(nextIndex);
+          }, speed);
+        {% endif %}
+      }
+
+      stopAutoplay() {
+        if (this.autoplayInterval) {
+          clearInterval(this.autoplayInterval);
+          this.autoplayInterval = null;
+        }
+      }
+    }
+
+    customElements.define('apple-card-slider-{{ ai_gen_id }}', AppleCardSlider{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Apple card slider",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section header"
+    },
+    {
+      "type": "text",
+      "id": "header_category",
+      "label": "Category label"
+    },
+    {
+      "type": "text",
+      "id": "header_title",
+      "label": "Title",
+      "default": "Get to know our products"
+    },
+    {
+      "type": "text",
+      "id": "header_subtitle",
+      "label": "Subtitle"
+    },
+    {
+      "type": "header",
+      "content": "Header typography - Desktop"
+    },
+    {
+      "type": "range",
+      "id": "header_category_size_desktop",
+      "label": "Category size",
+      "min": 10,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "header_title_size_desktop",
+      "label": "Title size",
+      "min": 20,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "header_subtitle_size_desktop",
+      "label": "Subtitle size",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "header",
+      "content": "Header typography - Mobile"
+    },
+    {
+      "type": "range",
+      "id": "header_category_size_mobile",
+      "label": "Category size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "header_title_size_mobile",
+      "label": "Title size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "header_subtitle_size_mobile",
+      "label": "Subtitle size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Header colors"
+    },
+    {
+      "type": "color",
+      "id": "header_category_color",
+      "label": "Category",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "color",
+      "id": "header_title_color",
+      "label": "Title",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "header_subtitle_color",
+      "label": "Subtitle",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "header",
+      "content": "Card 1"
+    },
+    {
+      "type": "text",
+      "id": "card_1_category",
+      "label": "Category",
+      "default": "New"
+    },
+    {
+      "type": "text",
+      "id": "card_1_headline",
+      "label": "Headline",
+      "default": "Premium Design"
+    },
+    {
+      "type": "textarea",
+      "id": "card_1_description",
+      "label": "Description",
+      "default": "Crafted with precision and attention to detail."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_1_image_desktop",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_1_image_mobile",
+      "label": "Mobile image"
+    },
+    {
+      "type": "header",
+      "content": "Card 2"
+    },
+    {
+      "type": "text",
+      "id": "card_2_category",
+      "label": "Category",
+      "default": "Featured"
+    },
+    {
+      "type": "text",
+      "id": "card_2_headline",
+      "label": "Headline",
+      "default": "Advanced Technology"
+    },
+    {
+      "type": "textarea",
+      "id": "card_2_description",
+      "label": "Description",
+      "default": "Innovation that pushes boundaries."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_2_image_desktop",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_2_image_mobile",
+      "label": "Mobile image"
+    },
+    {
+      "type": "header",
+      "content": "Card 3"
+    },
+    {
+      "type": "text",
+      "id": "card_3_category",
+      "label": "Category",
+      "default": "Popular"
+    },
+    {
+      "type": "text",
+      "id": "card_3_headline",
+      "label": "Headline",
+      "default": "Seamless Experience"
+    },
+    {
+      "type": "textarea",
+      "id": "card_3_description",
+      "label": "Description",
+      "default": "Everything works together perfectly."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_3_image_desktop",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_3_image_mobile",
+      "label": "Mobile image"
+    },
+    {
+      "type": "header",
+      "content": "Card 4"
+    },
+    {
+      "type": "text",
+      "id": "card_4_category",
+      "label": "Category",
+      "default": "Essential"
+    },
+    {
+      "type": "text",
+      "id": "card_4_headline",
+      "label": "Headline",
+      "default": "Built to Last"
+    },
+    {
+      "type": "textarea",
+      "id": "card_4_description",
+      "label": "Description",
+      "default": "Quality that stands the test of time."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_4_image_desktop",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_4_image_mobile",
+      "label": "Mobile image"
+    },
+    {
+      "type": "header",
+      "content": "Card typography - Desktop"
+    },
+    {
+      "type": "range",
+      "id": "card_category_size_desktop",
+      "label": "Category size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "card_headline_size_desktop",
+      "label": "Headline size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "card_description_size_desktop",
+      "label": "Description size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "header",
+      "content": "Card typography - Mobile"
+    },
+    {
+      "type": "range",
+      "id": "card_category_size_mobile",
+      "label": "Category size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 11
+    },
+    {
+      "type": "range",
+      "id": "card_headline_size_mobile",
+      "label": "Headline size",
+      "min": 14,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "card_description_size_mobile",
+      "label": "Description size",
+      "min": 11,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "header",
+      "content": "Card colors"
+    },
+    {
+      "type": "color",
+      "id": "card_category_color",
+      "label": "Category",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "color",
+      "id": "card_headline_color",
+      "label": "Headline",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "card_description_color",
+      "label": "Description",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "header",
+      "content": "Card layout"
+    },
+    {
+      "type": "range",
+      "id": "card_width",
+      "label": "Card width",
+      "min": 200,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "default": 340
+    },
+    {
+      "type": "range",
+      "id": "card_height",
+      "label": "Card height",
+      "min": 300,
+      "max": 700,
+      "step": 10,
+      "unit": "px",
+      "default": 500
+    },
+    {
+      "type": "range",
+      "id": "card_spacing",
+      "label": "Card spacing",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Border",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Card border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "label": "Image border radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Pagination"
+    },
+    {
+      "type": "range",
+      "id": "dot_size",
+      "label": "Dot size",
+      "min": 4,
+      "max": 12,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "dot_spacing",
+      "label": "Dot spacing",
+      "min": 4,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "color",
+      "id": "dot_color",
+      "label": "Dot color",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "color",
+      "id": "dot_active_color",
+      "label": "Active dot color",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "header",
+      "content": "Slider behavior"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay_enabled",
+      "label": "Enable autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "transition_speed",
+      "label": "Transition speed",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "range",
+      "id": "desktop_width_percent",
+      "label": "Desktop width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "section_bg_color",
+      "label": "Background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "section_padding_horizontal",
+      "label": "Horizontal padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "Apple card slider"
+    }
+  ]
+}
+{% endschema %}

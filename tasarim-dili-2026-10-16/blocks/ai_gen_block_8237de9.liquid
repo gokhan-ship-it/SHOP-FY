@@ -1,0 +1,1885 @@
+{% doc %}
+  Urun Karsilastirma blogu - Apple stili.
+
+  Iki sutun yan yana durur (mobilde de). Her sutunda gorsel karti, urun
+  adi ve alt alta ozellik kartlari bulunur. En altta iki dugme.
+
+  Bu dosya daha once yapay zeka tarafindan uretilmisti; tasarim elden
+  gecirildi ama BUTUN ayar kimlikleri korundu, dolayisiyla girilmis
+  icerik ve renkler kaybolmaz.
+
+  Iki yeni anahtar ayar:
+  - "palet": Apple (koyu/acik) secilince asagidaki renk seciciler devre
+    disi kalir. "Ozel" secilince bolumun onceki renkleri aynen doner.
+  - "tipografi": "Site" secilince basliklar anasayfadaki olculere
+    (24/28/32) oturur. "Ozel" secilince kayitli punto ayarlari kullanilir.
+{% enddoc %}
+
+{% liquid
+  assign ai_gen_id = block.id | replace: '_', '' | downcase
+  assign s = block.settings
+
+  comment
+    --- renk katmani ---
+  endcomment
+  assign c_zemin = s.section_background
+  assign c_etiket = s.category_color
+  assign c_bas = s.title_color
+  assign c_alt = s.subtitle_color
+  assign c_urun_bas = s.product_title_color
+  assign c_gorsel_kart = s.image_card_background
+  assign c_gorsel_zemin = s.image_background
+  assign c_kart = s.feature_card_background
+  assign c_kart_kenar = s.feature_card_border_color
+  assign c_kart_yazi = s.feature_text_color
+  assign c_dugme = s.button_background
+  assign c_dugme_yazi = s.button_text_color
+  assign c_dugme_kenar = s.button_border_color
+  assign c_dugme_h = s.button_hover_background
+  assign c_dugme_h_yazi = s.button_hover_text_color
+  assign c_dugme_h_kenar = s.button_hover_border_color
+  assign kart_kenar_kalinlik = s.feature_card_border_width
+
+  if s.palet == 'apple_koyu'
+    assign c_zemin = '#000000'
+    assign c_etiket = '#8a8a85'
+    assign c_bas = '#ffffff'
+    assign c_alt = '#a3a39e'
+    assign c_urun_bas = '#ffffff'
+    assign c_gorsel_kart = '#141414'
+    assign c_gorsel_zemin = '#141414'
+    assign c_kart = '#141414'
+    assign c_kart_kenar = 'rgba(255, 255, 255, 0.10)'
+    assign c_kart_yazi = '#ffffff'
+    assign c_dugme = '#ffffff'
+    assign c_dugme_yazi = '#0a0a0a'
+    assign c_dugme_kenar = '#ffffff'
+    assign c_dugme_h = '#f4f4f4'
+    assign c_dugme_h_yazi = '#0a0a0a'
+    assign c_dugme_h_kenar = '#f4f4f4'
+    assign kart_kenar_kalinlik = 1
+  elsif s.palet == 'apple_acik'
+    assign c_zemin = '#f4f4f4'
+    assign c_etiket = '#5c5c57'
+    assign c_bas = '#0a0a0a'
+    assign c_alt = '#5c5c57'
+    assign c_urun_bas = '#0a0a0a'
+    assign c_gorsel_kart = '#ffffff'
+    assign c_gorsel_zemin = '#ffffff'
+    assign c_kart = '#ffffff'
+    assign c_kart_kenar = '#d2d2cd'
+    assign c_kart_yazi = '#0a0a0a'
+    assign c_dugme = '#ffffff'
+    assign c_dugme_yazi = '#0a0a0a'
+    assign c_dugme_kenar = '#d2d2cd'
+    assign c_dugme_h = '#f4f4f4'
+    assign c_dugme_h_yazi = '#0a0a0a'
+    assign c_dugme_h_kenar = '#d2d2cd'
+    assign kart_kenar_kalinlik = 1
+  endif
+
+  comment
+    Hazir palet dugme renklerini de belirliyor. "Dugme renklerini kendim
+    secegim" isaretliyse paletin uzerine yeniden ayardaki renkler yazilir.
+    Varsayilan kapali; bu blogu kullanan diger sablonlar etkilenmez.
+  endcomment
+  if s.dugme_ozel
+    assign c_dugme = s.button_background
+    assign c_dugme_yazi = s.button_text_color
+    assign c_dugme_kenar = s.button_border_color
+    assign c_dugme_h = s.button_hover_background
+    assign c_dugme_h_yazi = s.button_hover_text_color
+    assign c_dugme_h_kenar = s.button_hover_border_color
+  endif
+
+  comment
+    --- tipografi katmani ---
+    "Site" modunda anasayfadaki olculer kullanilir: baslik 24/28/32,
+    satir araligi 1.15, kalinlik 700; govde 16/20, satir araligi 1.6.
+  endcomment
+  assign f_etiket_m = s.category_size_mobile
+  assign f_etiket_d = s.category_size_desktop
+  assign f_bas_m = s.title_size_mobile
+  assign f_bas_t = s.title_size_desktop
+  assign f_bas_d = s.title_size_desktop
+  assign f_alt_m = s.subtitle_size_mobile
+  assign f_alt_d = s.subtitle_size_desktop
+  assign f_urun_m = s.product_title_size_mobile
+  assign f_urun_d = s.product_title_size_desktop
+  assign f_kart_m = s.feature_text_size_mobile
+  assign f_kart_d = s.feature_text_size_desktop
+  assign f_dugme_m = s.button_text_size_mobile
+  assign f_dugme_d = s.button_text_size_desktop
+
+  if s.tipografi == 'site'
+    assign f_etiket_m = 12
+    assign f_etiket_d = 13
+    assign f_bas_m = 24
+    assign f_bas_t = 28
+    assign f_bas_d = 32
+    assign f_alt_m = 16
+    assign f_alt_d = 20
+    assign f_urun_m = 18
+    assign f_urun_d = 22
+    assign f_kart_m = 15
+    assign f_kart_d = 16
+    assign f_dugme_m = 15
+    assign f_dugme_d = 16
+  endif
+
+  comment
+    "Site" tipografisi dugme yazi olcusunu de sabitliyor. "Dugme yazi
+    boyutunu kendim secegim" isaretliyse tipografinin uzerine yeniden
+    ayardaki olculer yazilir; gerisi site olcusunde kalir. Varsayilan
+    kapali oldugu icin bu blogu kullanan diger sablonlar etkilenmez.
+  endcomment
+  if s.dugme_yazi_ozel
+    assign f_dugme_m = s.button_text_size_mobile
+    assign f_dugme_d = s.button_text_size_desktop
+  endif
+
+  comment
+    Masaustu dugme yuksekligi. 0 = ayri bir deger yok, mobil olcusu
+    gecerli. Kompakt moddaki vh katsayisi da hedef yukseklige gore
+    olcekleniyor; 48px'te katsayi 5.2 kalir, yani eski davranis aynen
+    korunur.
+  endcomment
+  assign dugme_yuk_d = s.button_height
+  if s.button_height_d > 0
+    assign dugme_yuk_d = s.button_height_d
+  endif
+  assign dugme_vh = dugme_yuk_d | times: 5.2 | divided_by: 48.0 | round: 2
+
+  assign kart_kalinlik = 400
+  if s.feature_text_weight == 'orta'
+    assign kart_kalinlik = 500
+  elsif s.feature_text_weight == 'kalin'
+    assign kart_kalinlik = 600
+  endif
+%}
+
+{% style %}
+  .ai-comparison-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    background-color: {{ c_zemin }};
+    padding: {{ s.section_padding_mobile }}px {{ s.kenar_m }}px;
+  }
+  .ai-comparison-{{ ai_gen_id }} * { box-sizing: border-box; }
+
+  .ai-comparison-container-{{ ai_gen_id }} {
+    max-width: {{ s.max_width }}px;
+    margin: 0 auto;
+  }
+
+  /* --- baslik --- */
+  .ai-comparison-header-{{ ai_gen_id }} {
+    text-align: center;
+    margin-bottom: {{ s.header_spacing }}px;
+  }
+
+  .ai-comparison-category-{{ ai_gen_id }} {
+    font-size: {{ f_etiket_m }}px;
+    color: {{ c_etiket }};
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .ai-comparison-title-{{ ai_gen_id }} {
+    font-size: {{ f_bas_m }}px;
+    color: {{ c_bas }};
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: {%- assign tt_ls = f_bas_m -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+    text-wrap: balance;
+  }
+
+  .ai-comparison-subtitle-{{ ai_gen_id }} {
+    font-size: {{ f_alt_m }}px;
+    color: {{ c_alt }};
+    margin: 14px auto 0;
+    max-width: 46ch;
+    line-height: 1.6;
+    text-wrap: balance;
+  }
+
+  /* --- urun sutunlari --- */
+  .ai-comparison-products-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: {{ s.column_gap }}px;
+    margin-bottom: {{ s.features_spacing }}px;
+  }
+
+  .ai-comparison-product-{{ ai_gen_id }} {
+    text-align: center;
+    min-width: 0;
+  }
+
+  .ai-comparison-product-image-wrapper-{{ ai_gen_id }} {
+    width: 100%;
+    max-width: {{ s.image_card_size }}px;
+    margin: 0 auto {{ s.image_spacing }}px;
+    border-radius: {{ s.image_card_radius }}px;
+    background-color: {{ c_gorsel_kart }};
+    overflow: hidden;
+  }
+
+  .ai-comparison-product-image-{{ ai_gen_id }} {
+    width: 100%;
+    border-radius: {{ s.image_border_radius }}px;
+    overflow: hidden;
+  }
+
+  /* Kare oran: iki sutunun gorselleri her zaman ayni yukseklikte olur,
+     boylece urun adlari da ayni hizada durur. */
+  .ai-comparison-product-image-{{ ai_gen_id }} img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    object-fit: {{ s.image_fit }};
+    object-position: center;
+    display: block;
+  }
+
+  .ai-comparison-product-image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    aspect-ratio: 1;
+    background-color: {{ c_gorsel_zemin }};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: {{ s.image_border_radius }}px;
+  }
+
+  .ai-comparison-product-image-placeholder-{{ ai_gen_id }} svg {
+    width: 50%;
+    height: 50%;
+    opacity: 0.3;
+  }
+
+  .ai-comparison-desktop-image-{{ ai_gen_id }} { display: none; }
+  .ai-comparison-mobile-image-{{ ai_gen_id }} { display: block; }
+
+  .ai-comparison-product-title-{{ ai_gen_id }} {
+    font-size: {{ f_urun_m }}px;
+    color: {{ c_urun_bas }};
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: {%- assign tt_ls = f_urun_m -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+  }
+
+  /* --- ozellik kartlari --- */
+  .ai-comparison-features-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    gap: {{ s.feature_card_spacing }}px;
+  }
+
+  /* Satirdaki iki kart grid sayesinde kendiliginden esit yukseklikte
+     olur; eskiden bunu JS ile olcup yaziyorduk, gereksizdi. */
+  .ai-comparison-feature-row-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: {{ s.column_gap }}px;
+    align-items: stretch;
+  }
+
+  .ai-comparison-feature-card-{{ ai_gen_id }} {
+    background-color: {{ c_kart }};
+    border: {{ kart_kenar_kalinlik }}px solid {{ c_kart_kenar }};
+    border-radius: {{ s.feature_card_radius }}px;
+    padding: {{ s.feature_card_padding }}px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .ai-comparison-feature-title-{{ ai_gen_id }} {
+    font-size: {{ f_kart_m }}px;
+    color: {{ c_kart_yazi }};
+    margin: 0;
+    font-weight: {{ kart_kalinlik }};
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  /* --- dugmeler --- */
+  .ai-comparison-buttons-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: {{ s.column_gap }}px;
+    margin-top: {{ s.button_spacing }}px;
+  }
+
+  .ai-comparison-button-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: {{ s.button_width }}%;
+    min-height: {{ s.button_height }}px;
+    padding: 10px 18px;
+    background-color: {{ c_dugme }};
+    color: {{ c_dugme_yazi }};
+    border: {{ s.button_border_width }}px solid {{ c_dugme_kenar }};
+    border-radius: 999px;
+    font-size: {{ f_dugme_m }}px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 200ms ease, color 200ms ease,
+      border-color 200ms ease, transform 200ms ease;
+    margin: 0 auto;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .ai-comparison-button-{{ ai_gen_id }}:hover {
+      background-color: {{ c_dugme_h }};
+      color: {{ c_dugme_h_yazi }};
+      border-color: {{ c_dugme_h_kenar }};
+    }
+    {%- comment -%}
+      Hover zemininde degrade (istege bagli). Varsayilan kapali: bu blok
+      baska sablonlarda da kullaniliyor, kapaliyken cikti aynen eskisi gibi.
+      background-color yukarida kisayolla degil dogrudan verildigi icin
+      buradaki background-image onu silmiyor, uzerine biniyor.
+    {%- endcomment -%}
+    {%- if block.settings.hover_degrade %}
+    .ai-comparison-button-{{ ai_gen_id }}:hover {
+      background-image: linear-gradient({{ block.settings.hover_aci }}deg, {{ block.settings.hover_d1 }} 0%, {{ block.settings.hover_d2 }} 50%, {{ block.settings.hover_d3 }} 100%);
+      background-size: 100% 100%;
+    }
+    {%- endif %}
+  }
+  .ai-comparison-button-{{ ai_gen_id }}:active { transform: scale(0.98); }
+  .ai-comparison-button-{{ ai_gen_id }}:focus-visible {
+    outline: 2px solid {{ c_bas }};
+    outline-offset: 3px;
+  }
+
+  /* --- ikiye bolunen dugme --- */
+  /* Baslangicta secenekler acik, tetik gizli: JS calismazsa ziyaretci
+     iki baglantiyi da dogrudan gorur. JS "ai-bol-hazir" ekleyince
+     durum tersine doner. */
+  .ai-btn-yuva-{{ ai_gen_id }} { min-width: 0; }
+
+  .ai-btn-tetik-{{ ai_gen_id }} { display: none; }
+
+  .ai-bol-secenekler-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(6px, 2vw, 10px);
+  }
+
+  .ai-btn-yuva-{{ ai_gen_id }}.ai-bol-hazir .ai-btn-tetik-{{ ai_gen_id }} {
+    display: inline-flex;
+  }
+  .ai-btn-yuva-{{ ai_gen_id }}.ai-bol-hazir .ai-bol-secenekler-{{ ai_gen_id }} {
+    display: none;
+  }
+  .ai-btn-yuva-{{ ai_gen_id }}.ai-bol-hazir.is-bolundu .ai-btn-tetik-{{ ai_gen_id }} {
+    display: none;
+  }
+  .ai-btn-yuva-{{ ai_gen_id }}.ai-bol-hazir.is-bolundu .ai-bol-secenekler-{{ ai_gen_id }} {
+    display: grid;
+    animation: ai-bol-{{ ai_gen_id }} 240ms cubic-bezier(.33, 1, .68, 1) both;
+  }
+
+  @keyframes ai-bol-{{ ai_gen_id }} {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ai-btn-yuva-{{ ai_gen_id }}.ai-bol-hazir.is-bolundu .ai-bol-secenekler-{{ ai_gen_id }} {
+      animation: none;
+    }
+  }
+
+  .ai-kucuk-{{ ai_gen_id }} {
+    padding: 6px 8px;
+    font-size: 0.92em;
+  }
+
+  {% if s.anim_ac %}
+  /* --- kaydirinca sirayla belirme --- */
+  /* Gizli baslangic durumu yalnizca JS "ai-hazir" sinifini ekledikten
+     sonra gecerli; JS calismazsa icerik oldugu gibi gorunur kalir. */
+  .ai-comparison-{{ ai_gen_id }}.ai-hazir [data-ai-anim] {
+    opacity: 0;
+    transform: translate3d(0, {{ s.anim_mesafe }}px, 0);
+    transition:
+      opacity {{ s.anim_sure }}ms cubic-bezier(.33, 1, .68, 1),
+      transform {{ s.anim_sure }}ms cubic-bezier(.33, 1, .68, 1);
+    transition-delay: var(--ai-gecikme, 0ms);
+    will-change: opacity, transform;
+  }
+  .ai-comparison-{{ ai_gen_id }}.ai-hazir [data-ai-anim].is-gorunur {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  .ai-comparison-{{ ai_gen_id }} [data-ai-anim].anim-bitti {
+    will-change: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ai-comparison-{{ ai_gen_id }}.ai-hazir [data-ai-anim],
+    .ai-comparison-{{ ai_gen_id }}.ai-hazir [data-ai-anim].is-gorunur {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+  {% endif %}
+
+  /* --- tablet --- */
+  @media screen and (min-width: 750px) {
+    .ai-comparison-{{ ai_gen_id }} {
+      padding: {{ s.section_padding_desktop }}px {{ s.kenar_d }}px;
+    }
+    .ai-comparison-category-{{ ai_gen_id }} { font-size: {{ f_etiket_d }}px; }
+    .ai-comparison-title-{{ ai_gen_id }} { font-size: {{ f_bas_t }}px; }
+    .ai-comparison-subtitle-{{ ai_gen_id }} { font-size: {{ f_alt_d }}px; }
+    .ai-comparison-desktop-image-{{ ai_gen_id }} { display: block; }
+    .ai-comparison-mobile-image-{{ ai_gen_id }} { display: none; }
+    .ai-comparison-product-title-{{ ai_gen_id }} { font-size: {{ f_urun_d }}px; }
+    .ai-comparison-feature-title-{{ ai_gen_id }} { font-size: {{ f_kart_d }}px; }
+    .ai-comparison-button-{{ ai_gen_id }} { font-size: {{ f_dugme_d }}px; }
+  }
+
+  /* --- masaustu --- */
+  @media screen and (min-width: 990px) {
+    .ai-comparison-title-{{ ai_gen_id }} { font-size: {{ f_bas_d }}px; }
+
+    /* Masaustunde sutunlar arasi daha genis, gorseller daha buyuk:
+       genis ekranda ayni olculer bolumu seyrek gosteriyordu. */
+    .ai-comparison-products-{{ ai_gen_id }},
+    .ai-comparison-feature-row-{{ ai_gen_id }},
+    .ai-comparison-buttons-{{ ai_gen_id }} {
+      gap: {{ s.column_gap_d }}px;
+    }
+    .ai-comparison-product-image-wrapper-{{ ai_gen_id }} {
+      max-width: {{ s.image_card_size_d }}px;
+    }
+    .ai-comparison-feature-card-{{ ai_gen_id }} {
+      padding: {{ s.feature_card_padding_d }}px;
+    }
+    {%- unless s.dugme_genis_d %}
+    .ai-comparison-buttons-{{ ai_gen_id }} {
+      max-width: {{ s.dugme_max_g }}px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    {%- endunless %}
+    .ai-comparison-button-{{ ai_gen_id }} { min-height: {{ dugme_yuk_d }}px; }
+  }
+
+  {% if s.kompakt %}
+  /* ================= TEK EKRANA SIGDIRMA =================
+     Karsilastirmanin tamami tek ekranda gorulebilsin diye butun
+     olculer ekran genisligine gore olceklenir (clamp). Kayitli px
+     ayarlari bu modda devre disi kalir; kapatinca aynen geri doner.
+     Satir sayisi ve metin uzunlugu yuksekligi belirledigi icin
+     asagidaki degerler 5 satirlik bir karsilastirmaya gore secildi. */
+  @media screen and (max-width: 749px) {
+    .ai-comparison-{{ ai_gen_id }} {
+      padding: clamp(18px, 5vw, 40px) clamp(12px, 4vw, 20px);
+    }
+    .ai-comparison-header-{{ ai_gen_id }} {
+      margin-bottom: clamp(12px, 3.5vw, 24px);
+    }
+    .ai-comparison-category-{{ ai_gen_id }} {
+      font-size: clamp(10px, 2.8vw, 12px);
+      margin-bottom: 6px;
+    }
+    /* Baslik ve alt metne dokunmuyoruz: anasayfayla ayni olcude
+       kalmalilar (24 px baslik, 16 px govde, satir araligi 1.6).
+       Kazanilacak yer kartlardan ve bosluklardan cikariliyor. */
+    .ai-comparison-subtitle-{{ ai_gen_id }} {
+      margin-top: 8px;
+    }
+    .ai-comparison-products-{{ ai_gen_id }} {
+      gap: clamp(8px, 3vw, 14px);
+      margin-bottom: clamp(10px, 3vw, 18px);
+    }
+    .ai-comparison-product-image-wrapper-{{ ai_gen_id }} {
+      max-width: min(120px, 30vw);
+      margin-bottom: clamp(6px, 1.8vw, 10px);
+      border-radius: 14px;
+    }
+    .ai-comparison-product-image-{{ ai_gen_id }} { border-radius: 14px; }
+    .ai-comparison-product-title-{{ ai_gen_id }} {
+      font-size: clamp(13px, 3.8vw, 17px);
+    }
+    .ai-comparison-features-{{ ai_gen_id }} {
+      gap: clamp(5px, 1.6vw, 9px);
+    }
+    .ai-comparison-feature-row-{{ ai_gen_id }} {
+      gap: clamp(8px, 3vw, 14px);
+    }
+    .ai-comparison-feature-card-{{ ai_gen_id }} {
+      padding: clamp(7px, 2.3vw, 13px);
+      border-radius: 14px;
+    }
+    .ai-comparison-feature-title-{{ ai_gen_id }} {
+      font-size: clamp(11px, 3.1vw, 14px);
+      line-height: 1.32;
+    }
+    .ai-comparison-buttons-{{ ai_gen_id }} {
+      gap: clamp(8px, 3vw, 14px);
+      margin-top: clamp(10px, 3vw, 18px);
+    }
+    .ai-comparison-button-{{ ai_gen_id }} {
+      min-height: clamp(34px, 9.5vw, 44px);
+      font-size: clamp(12px, 3.3vw, 15px);
+      padding: 6px 10px;
+    }
+    {% if s.alt_gizle_m %}
+    /* Son 40-50 pikseli de kazanmak icin alt metin mobilde gizlenir */
+    .ai-comparison-subtitle-{{ ai_gen_id }} { display: none; }
+    {% endif %}
+  }
+
+  /* Masaustunde olculeri ekran GENISLIGINE degil YUKSEKLIGINE bagliyoruz:
+     tek ekrana sigma sorunu bir yukseklik sorunu. Alcak bir tarayici
+     penceresinde gorsel ve bosluklar kendiliginden kuculur. */
+  @media screen and (min-width: 750px) {
+    .ai-comparison-{{ ai_gen_id }} {
+      padding: clamp(20px, 3.5vh, 48px) {{ s.kenar_d }}px;
+    }
+    .ai-comparison-header-{{ ai_gen_id }} { margin-bottom: clamp(12px, 2vh, 26px); }
+    .ai-comparison-subtitle-{{ ai_gen_id }} { margin-top: 10px; }
+    .ai-comparison-products-{{ ai_gen_id }} { margin-bottom: clamp(12px, 2vh, 26px); }
+    .ai-comparison-product-image-wrapper-{{ ai_gen_id }} {
+      max-width: min({{ s.image_card_size_d }}px, 19vh);
+      margin-bottom: clamp(6px, 1.2vh, 14px);
+    }
+    .ai-comparison-features-{{ ai_gen_id }} { gap: clamp(6px, 1vh, 12px); }
+    .ai-comparison-feature-card-{{ ai_gen_id }} {
+      padding: clamp(10px, 1.7vh, {{ s.feature_card_padding_d }}px);
+    }
+    .ai-comparison-buttons-{{ ai_gen_id }} { margin-top: clamp(12px, 2vh, 26px); }
+    .ai-comparison-button-{{ ai_gen_id }} {
+      min-height: clamp(38px, {{ dugme_vh }}vh, {{ dugme_yuk_d }}px);
+    }
+  }
+  {% endif %}
+
+  {%- comment -%}
+    Iki dugmeye ayri ayri degrade (istege bagli, varsayilan kapali).
+    Bu blok baska sablonlarda da kullaniliyor; kapaliyken tek bir
+    kural bile basilmiyor, cikti eskisiyle birebir ayni kaliyor.
+
+    Kurallar bilerek stil blogunun en sonunda: hover kurallariyla
+    ozgulluk esit (0,2,0) oldugu icin kaynak sirasi belirliyor ve
+    dugmeye ozel degrade genel hover degradesinin onune geciyor.
+    Uzerine gelince degrade degismiyor, sadece hafifce parlıyor --
+    yoksa background-color degisimi degradenin altinda kalacagi icin
+    dugme hicbir tepki vermemis gibi gorunurdu.
+  {%- endcomment -%}
+  {%- if s.gift_deg %}
+  .ai-btn-hediye-{{ ai_gen_id }},
+  .ai-btn-hediye-{{ ai_gen_id }}:hover {
+    background-image: linear-gradient({{ s.gift_aci }}deg, {{ s.gift_d1 }} 0%, {{ s.gift_d2 }} 50%, {{ s.gift_d3 }} 100%);
+    background-size: 100% 100%;
+    border-color: transparent;
+    color: {{ s.gift_yazi }};
+  }
+  .ai-btn-hediye-{{ ai_gen_id }} {
+    transition: filter 200ms ease, transform 200ms ease;
+  }
+  .ai-btn-hediye-{{ ai_gen_id }}:focus-visible { outline-color: {{ c_bas }}; }
+  @media (hover: hover) and (pointer: fine) {
+    .ai-btn-hediye-{{ ai_gen_id }}:hover { filter: brightness(1.08); }
+  }
+  {%- endif %}
+  {%- if s.couple_deg %}
+  .ai-btn-couple-{{ ai_gen_id }},
+  .ai-btn-couple-{{ ai_gen_id }}:hover {
+    background-image: linear-gradient({{ s.couple_aci }}deg, {{ s.couple_d1 }} 0%, {{ s.couple_d2 }} 50%, {{ s.couple_d3 }} 100%);
+    background-size: 100% 100%;
+    border-color: transparent;
+    color: {{ s.couple_yazi }};
+  }
+  .ai-btn-couple-{{ ai_gen_id }} {
+    transition: filter 200ms ease, transform 200ms ease;
+  }
+  .ai-btn-couple-{{ ai_gen_id }}:focus-visible { outline-color: {{ c_bas }}; }
+  @media (hover: hover) and (pointer: fine) {
+    .ai-btn-couple-{{ ai_gen_id }}:hover { filter: brightness(1.08); }
+  }
+  {%- endif %}
+{% endstyle %}
+
+<div class="ai-comparison-{{ ai_gen_id }}" data-ai-kok {{ block.shopify_attributes }}>
+  <div class="ai-comparison-container-{{ ai_gen_id }}">
+    {% if s.category != blank or s.title != blank or s.subtitle != blank %}
+      <div class="ai-comparison-header-{{ ai_gen_id }}" data-ai-anim>
+        {% if s.category != blank %}
+          <div class="ai-comparison-category-{{ ai_gen_id }}">{{ s.category }}</div>
+        {% endif %}
+
+        {% if s.title != blank %}
+          <h2 class="ai-comparison-title-{{ ai_gen_id }}">{{ s.title }}</h2>
+        {% endif %}
+
+        {% if s.subtitle != blank %}
+          <div class="ai-comparison-subtitle-{{ ai_gen_id }}">{{ s.subtitle }}</div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="ai-comparison-products-{{ ai_gen_id }}" data-ai-anim>
+      <div class="ai-comparison-product-{{ ai_gen_id }}">
+        <div class="ai-comparison-product-image-wrapper-{{ ai_gen_id }}">
+          <div class="ai-comparison-product-image-{{ ai_gen_id }}">
+            {% if s.gift_image_desktop %}
+              <div class="ai-comparison-desktop-image-{{ ai_gen_id }}">
+                <img
+                  src="{{ s.gift_image_desktop | image_url: width: 800 }}"
+                  alt="{{ s.gift_image_alt | escape }}"
+                  loading="lazy"
+                  decoding="async"
+                  width="{{ s.gift_image_desktop.width }}"
+                  height="{{ s.gift_image_desktop.height }}"
+                >
+              </div>
+            {% else %}
+              <div class="ai-comparison-desktop-image-{{ ai_gen_id }}">
+                <div class="ai-comparison-product-image-placeholder-{{ ai_gen_id }}">
+                  {{ 'product-1' | placeholder_svg_tag }}
+                </div>
+              </div>
+            {% endif %}
+
+            {% if s.gift_image_mobile %}
+              <div class="ai-comparison-mobile-image-{{ ai_gen_id }}">
+                <img
+                  src="{{ s.gift_image_mobile | image_url: width: 600 }}"
+                  alt="{{ s.gift_image_alt | escape }}"
+                  loading="lazy"
+                  decoding="async"
+                  width="{{ s.gift_image_mobile.width }}"
+                  height="{{ s.gift_image_mobile.height }}"
+                >
+              </div>
+            {% elsif s.gift_image_desktop %}
+              <div class="ai-comparison-mobile-image-{{ ai_gen_id }}">
+                <img
+                  src="{{ s.gift_image_desktop | image_url: width: 600 }}"
+                  alt="{{ s.gift_image_alt | escape }}"
+                  loading="lazy"
+                  decoding="async"
+                  width="{{ s.gift_image_desktop.width }}"
+                  height="{{ s.gift_image_desktop.height }}"
+                >
+              </div>
+            {% else %}
+              <div class="ai-comparison-mobile-image-{{ ai_gen_id }}">
+                <div class="ai-comparison-product-image-placeholder-{{ ai_gen_id }}">
+                  {{ 'product-1' | placeholder_svg_tag }}
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        {% if s.gift_product_title != blank %}
+          <h3 class="ai-comparison-product-title-{{ ai_gen_id }}">{{ s.gift_product_title }}</h3>
+        {% endif %}
+      </div>
+
+      <div class="ai-comparison-product-{{ ai_gen_id }}">
+        <div class="ai-comparison-product-image-wrapper-{{ ai_gen_id }}">
+          <div class="ai-comparison-product-image-{{ ai_gen_id }}">
+            {% if s.couple_image_desktop %}
+              <div class="ai-comparison-desktop-image-{{ ai_gen_id }}">
+                <img
+                  src="{{ s.couple_image_desktop | image_url: width: 800 }}"
+                  alt="{{ s.couple_image_alt | escape }}"
+                  loading="lazy"
+                  decoding="async"
+                  width="{{ s.couple_image_desktop.width }}"
+                  height="{{ s.couple_image_desktop.height }}"
+                >
+              </div>
+            {% else %}
+              <div class="ai-comparison-desktop-image-{{ ai_gen_id }}">
+                <div class="ai-comparison-product-image-placeholder-{{ ai_gen_id }}">
+                  {{ 'product-2' | placeholder_svg_tag }}
+                </div>
+              </div>
+            {% endif %}
+
+            {% if s.couple_image_mobile %}
+              <div class="ai-comparison-mobile-image-{{ ai_gen_id }}">
+                <img
+                  src="{{ s.couple_image_mobile | image_url: width: 600 }}"
+                  alt="{{ s.couple_image_alt | escape }}"
+                  loading="lazy"
+                  decoding="async"
+                  width="{{ s.couple_image_mobile.width }}"
+                  height="{{ s.couple_image_mobile.height }}"
+                >
+              </div>
+            {% elsif s.couple_image_desktop %}
+              <div class="ai-comparison-mobile-image-{{ ai_gen_id }}">
+                <img
+                  src="{{ s.couple_image_desktop | image_url: width: 600 }}"
+                  alt="{{ s.couple_image_alt | escape }}"
+                  loading="lazy"
+                  decoding="async"
+                  width="{{ s.couple_image_desktop.width }}"
+                  height="{{ s.couple_image_desktop.height }}"
+                >
+              </div>
+            {% else %}
+              <div class="ai-comparison-mobile-image-{{ ai_gen_id }}">
+                <div class="ai-comparison-product-image-placeholder-{{ ai_gen_id }}">
+                  {{ 'product-2' | placeholder_svg_tag }}
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        {% if s.couple_product_title != blank %}
+          <h3 class="ai-comparison-product-title-{{ ai_gen_id }}">{{ s.couple_product_title }}</h3>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="ai-comparison-features-{{ ai_gen_id }}">
+      {% for i in (1..5) %}
+        {% liquid
+          assign gift_title_key = 'feature_' | append: i | append: '_gift_title'
+          assign couple_title_key = 'feature_' | append: i | append: '_couple_title'
+          assign gift_title = s[gift_title_key]
+          assign couple_title = s[couple_title_key]
+        %}
+
+        {% comment %}
+          Iki taraf da bossa satiri hic basmiyoruz: bos kart cifti
+          karsilastirmada anlamsiz bir bosluk birakiyordu.
+        {% endcomment %}
+        {% if gift_title != blank or couple_title != blank %}
+          <div class="ai-comparison-feature-row-{{ ai_gen_id }}" data-ai-anim>
+            <div class="ai-comparison-feature-card-{{ ai_gen_id }}">
+              {% if gift_title != blank %}
+                <div class="ai-comparison-feature-title-{{ ai_gen_id }}">{{ gift_title }}</div>
+              {% endif %}
+            </div>
+
+            <div class="ai-comparison-feature-card-{{ ai_gen_id }}">
+              {% if couple_title != blank %}
+                <div class="ai-comparison-feature-title-{{ ai_gen_id }}">{{ couple_title }}</div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if s.gift_button_text != blank or s.couple_button_text != blank %}
+      <div class="ai-comparison-buttons-{{ ai_gen_id }}" data-ai-anim>
+        {% liquid
+          assign bol_var = false
+          if s.gift_split and s.gift_split_1_text != blank and s.gift_split_2_text != blank
+            assign bol_var = true
+          endif
+        %}
+        {% if s.gift_button_text != blank and bol_var %}
+          <div class="ai-btn-yuva-{{ ai_gen_id }}" data-ai-yuva>
+            <button
+              type="button"
+              class="ai-comparison-button-{{ ai_gen_id }} ai-btn-tetik-{{ ai_gen_id }} ai-btn-hediye-{{ ai_gen_id }}"
+              data-ai-bol
+              aria-expanded="false"
+              aria-controls="ai-bol-{{ ai_gen_id }}"
+            >{{ s.gift_button_text }}</button>
+
+            <div class="ai-bol-secenekler-{{ ai_gen_id }}" id="ai-bol-{{ ai_gen_id }}">
+              <a href="{{ s.gift_split_1_link | default: '#' }}" class="ai-comparison-button-{{ ai_gen_id }} ai-kucuk-{{ ai_gen_id }} ai-btn-hediye-{{ ai_gen_id }}">
+                {{ s.gift_split_1_text }}
+              </a>
+              <a href="{{ s.gift_split_2_link | default: '#' }}" class="ai-comparison-button-{{ ai_gen_id }} ai-kucuk-{{ ai_gen_id }} ai-btn-hediye-{{ ai_gen_id }}">
+                {{ s.gift_split_2_text }}
+              </a>
+            </div>
+          </div>
+        {% elsif s.gift_button_text != blank %}
+          <a href="{{ s.gift_button_link | default: '#' }}" class="ai-comparison-button-{{ ai_gen_id }} ai-btn-hediye-{{ ai_gen_id }}">
+            {{ s.gift_button_text }}
+          </a>
+        {% else %}
+          <div></div>
+        {% endif %}
+
+        {% if s.couple_button_text != blank %}
+          <a href="{{ s.couple_button_link | default: '#' }}" class="ai-comparison-button-{{ ai_gen_id }} ai-btn-couple-{{ ai_gen_id }}">
+            {{ s.couple_button_text }}
+          </a>
+        {% else %}
+          <div></div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if s.anim_ac %}
+  <script>
+    (function () {
+      var kok = document.querySelector('.ai-comparison-{{ ai_gen_id }}');
+      if (!kok) return;
+
+      var ogeler = kok.querySelectorAll('[data-ai-anim]');
+      if (!ogeler.length) return;
+
+      var ara = {{ s.anim_ara }};
+      for (var i = 0; i < ogeler.length; i++) {
+        ogeler[i].style.setProperty('--ai-gecikme', (i * ara) + 'ms');
+      }
+
+      kok.classList.add('ai-hazir');
+
+      function goster(oge) {
+        oge.classList.add('is-gorunur');
+        oge.addEventListener('transitionend', function son(e) {
+          if (e.propertyName !== 'transform') return;
+          oge.removeEventListener('transitionend', son);
+          oge.classList.add('anim-bitti');
+          oge.style.removeProperty('--ai-gecikme');
+        });
+      }
+
+      var azHareket = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (azHareket || !('IntersectionObserver' in window)) {
+        for (var a = 0; a < ogeler.length; a++) goster(ogeler[a]);
+        return;
+      }
+
+      var goz = new IntersectionObserver(function (girisler) {
+        for (var g = 0; g < girisler.length; g++) {
+          if (!girisler[g].isIntersecting) continue;
+          goster(girisler[g].target);
+          goz.unobserve(girisler[g].target);
+        }
+      }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+
+      for (var b = 0; b < ogeler.length; b++) goz.observe(ogeler[b]);
+    })();
+  </script>
+{% endif %}
+
+{% liquid
+  assign bol_js = false
+  if s.gift_split and s.gift_split_1_text != blank and s.gift_split_2_text != blank
+    assign bol_js = true
+  endif
+%}
+{% if bol_js %}
+  <script>
+    (function () {
+      var yuva = document.querySelector('.ai-btn-yuva-{{ ai_gen_id }}');
+      if (!yuva) return;
+      var tetik = yuva.querySelector('[data-ai-bol]');
+      if (!tetik) return;
+
+      // Gizli baslangic durumunu ancak burada aciyoruz: JS yoksa iki
+      // baglanti da dogrudan gorunur kalir.
+      yuva.classList.add('ai-bol-hazir');
+
+      function ayarla(acik) {
+        yuva.classList.toggle('is-bolundu', acik);
+        tetik.setAttribute('aria-expanded', acik ? 'true' : 'false');
+      }
+
+      tetik.addEventListener('click', function (e) {
+        e.preventDefault();
+        ayarla(!yuva.classList.contains('is-bolundu'));
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!yuva.classList.contains('is-bolundu')) return;
+        if (yuva.contains(e.target)) return;
+        ayarla(false);
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape' && e.keyCode !== 27) return;
+        if (yuva.classList.contains('is-bolundu')) ayarla(false);
+      });
+    })();
+  </script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Product comparison",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Renk Paleti"
+    },
+    {
+      "type": "select",
+      "id": "palet",
+      "label": "Renk paleti",
+      "info": "Apple paletlerinden biri seçiliyken aşağıdaki renk seçicileri devre dışı kalır. \"Özel\" bu bölümün eski renklerini geri getirir.",
+      "default": "apple_koyu",
+      "options": [
+        { "value": "apple_koyu", "label": "Apple (koyu)" },
+        { "value": "apple_acik", "label": "Apple (açık ton)" },
+        { "value": "ozel", "label": "Özel renkler" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "tipografi",
+      "label": "Tipografi",
+      "info": "Site: başlıklar anasayfadaki ölçülere oturur (24/28/32). Özel: aşağıdaki punto ayarları kullanılır.",
+      "default": "site",
+      "options": [
+        { "value": "site", "label": "Site tipografisi" },
+        { "value": "ozel", "label": "Özel punto ayarları" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "kompakt",
+      "label": "Tek ekrana sığdır",
+      "info": "Bütün ölçüler ekran boyutuna göre küçülür, böylece karşılaştırmanın tamamı tek ekranda görünür. Kapatırsanız aşağıdaki px ayarları geçerli olur.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "alt_gizle_m",
+      "label": "Alt metni mobilde gizle",
+      "info": "Küçük ekranlarda son birkaç satırı kazanmak için. Yalnızca \"Tek ekrana sığdır\" açıkken geçerli.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Section header"
+    },
+    {
+      "type": "text",
+      "id": "category",
+      "label": "Category label",
+      "default": "Karşılaştırma"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Choose Your Capsule"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Two unique ways to preserve your memories"
+    },
+    {
+      "type": "header",
+      "content": "Gift Capsule images"
+    },
+    {
+      "type": "image_picker",
+      "id": "gift_image_desktop",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "gift_image_mobile",
+      "label": "Mobile image"
+    },
+    {
+      "type": "text",
+      "id": "gift_image_alt",
+      "label": "Image alt text",
+      "default": "Gift Capsule"
+    },
+    {
+      "type": "range",
+      "id": "gift_image_size",
+      "label": "Image size",
+      "min": 100,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "gift_image_border_radius",
+      "label": "Image border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "gift_image_background",
+      "label": "Image background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "text",
+      "id": "gift_product_title",
+      "label": "Product title",
+      "default": "Gift Capsule"
+    },
+    {
+      "type": "header",
+      "content": "Couple Capsule images"
+    },
+    {
+      "type": "image_picker",
+      "id": "couple_image_desktop",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "couple_image_mobile",
+      "label": "Mobile image"
+    },
+    {
+      "type": "text",
+      "id": "couple_image_alt",
+      "label": "Image alt text",
+      "default": "Couple Capsule"
+    },
+    {
+      "type": "range",
+      "id": "couple_image_size",
+      "label": "Image size",
+      "min": 100,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "couple_image_border_radius",
+      "label": "Image border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "couple_image_background",
+      "label": "Image background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "text",
+      "id": "couple_product_title",
+      "label": "Product title",
+      "default": "Couple Capsule"
+    },
+    {
+      "type": "header",
+      "content": "Feature row 1"
+    },
+    {
+      "type": "text",
+      "id": "feature_1_gift_title",
+      "label": "Gift feature",
+      "default": "Opens on the date you choose"
+    },
+    {
+      "type": "text",
+      "id": "feature_1_couple_title",
+      "label": "Couple feature",
+      "default": "Opens when you meet"
+    },
+    {
+      "type": "header",
+      "content": "Feature row 2"
+    },
+    {
+      "type": "text",
+      "id": "feature_2_gift_title",
+      "label": "Gift feature",
+      "default": "Perfect for birthdays and anniversaries"
+    },
+    {
+      "type": "text",
+      "id": "feature_2_couple_title",
+      "label": "Couple feature",
+      "default": "Perfect for long-distance relationships"
+    },
+    {
+      "type": "header",
+      "content": "Feature row 3"
+    },
+    {
+      "type": "text",
+      "id": "feature_3_gift_title",
+      "label": "Gift feature",
+      "default": "Set your unlock date"
+    },
+    {
+      "type": "text",
+      "id": "feature_3_couple_title",
+      "label": "Couple feature",
+      "default": "Unlocks when both scan"
+    },
+    {
+      "type": "header",
+      "content": "Feature row 4"
+    },
+    {
+      "type": "text",
+      "id": "feature_4_gift_title",
+      "label": "Gift feature"
+    },
+    {
+      "type": "text",
+      "id": "feature_4_couple_title",
+      "label": "Couple feature"
+    },
+    {
+      "type": "header",
+      "content": "Feature row 5"
+    },
+    {
+      "type": "text",
+      "id": "feature_5_gift_title",
+      "label": "Gift feature"
+    },
+    {
+      "type": "text",
+      "id": "feature_5_couple_title",
+      "label": "Couple feature"
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "gift_button_text",
+      "label": "Gift button text",
+      "default": "Shop Gift Capsule"
+    },
+    {
+      "type": "url",
+      "id": "gift_button_link",
+      "label": "Gift button link"
+    },
+    {
+      "type": "text",
+      "id": "couple_button_text",
+      "label": "Couple button text",
+      "default": "Shop Couple Capsule"
+    },
+    {
+      "type": "url",
+      "id": "couple_button_link",
+      "label": "Couple button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "gift_split",
+      "label": "Hediye düğmesi ikiye bölünsün",
+      "info": "Tıklanınca düğme iki küçük seçeneğe ayrılır (ör. Kadın / Erkek).",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "gift_split_1_text",
+      "label": "1. seçenek yazısı",
+      "default": "Kadın"
+    },
+    {
+      "type": "url",
+      "id": "gift_split_1_link",
+      "label": "1. seçenek bağlantısı"
+    },
+    {
+      "type": "text",
+      "id": "gift_split_2_text",
+      "label": "2. seçenek yazısı",
+      "default": "Erkek"
+    },
+    {
+      "type": "url",
+      "id": "gift_split_2_link",
+      "label": "2. seçenek bağlantısı"
+    },
+    {
+      "type": "header",
+      "content": "Giriş Animasyonu"
+    },
+    {
+      "type": "checkbox",
+      "id": "anim_ac",
+      "label": "Kaydırınca sırayla belirsin",
+      "info": "Başlık, ürün sütunları ve her karşılaştırma satırı ekrana girdikçe yükselerek görünür.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "anim_mesafe",
+      "label": "Yükselme mesafesi",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "anim_sure",
+      "label": "Süre",
+      "min": 200,
+      "max": 1200,
+      "step": 50,
+      "unit": "ms",
+      "default": 600
+    },
+    {
+      "type": "range",
+      "id": "anim_ara",
+      "label": "Öğeler arası gecikme",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "unit": "ms",
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Section colors"
+    },
+    {
+      "type": "color",
+      "id": "section_background",
+      "label": "Section background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "color",
+      "id": "category_color",
+      "label": "Category",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Main title",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "subtitle_color",
+      "label": "Subtitle",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "color",
+      "id": "product_title_color",
+      "label": "Product title",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "header",
+      "content": "Image card colors"
+    },
+    {
+      "type": "color",
+      "id": "image_card_background",
+      "label": "Card background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "image_background",
+      "label": "Image background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Görsel oturma biçimi",
+      "default": "cover",
+      "options": [
+        { "value": "cover", "label": "Kırp (alanı doldursun)" },
+        { "value": "contain", "label": "Sığdır (tamamı görünsün)" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Feature card colors"
+    },
+    {
+      "type": "color",
+      "id": "feature_card_background",
+      "label": "Card background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "feature_card_border_color",
+      "label": "Card border",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "color",
+      "id": "feature_text_color",
+      "label": "Feature text",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "select",
+      "id": "feature_text_weight",
+      "label": "Özellik yazısı kalınlığı",
+      "info": "Apple stilinde normal kalınlık daha sakin durur.",
+      "default": "normal",
+      "options": [
+        { "value": "normal", "label": "Normal" },
+        { "value": "orta", "label": "Orta" },
+        { "value": "kalin", "label": "Kalın" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Button colors"
+    },
+    {
+      "type": "checkbox",
+      "id": "dugme_ozel",
+      "label": "Düğme renklerini kendim seçeceğim",
+      "info": "Hazır palet seçiliyken bile aşağıdaki düğme renkleri geçerli olur.",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Text",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Border",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_background",
+      "label": "Hover background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "checkbox",
+      "id": "gift_deg",
+      "label": "Hediye düğmesi degradeli",
+      "info": "Açıkken Hediye düğmesi (ve ikiye bölününce Kadın/Erkek düğmeleri) düz renk yerine aşağıdaki degradeyi kullanır.",
+      "default": false
+    },
+    { "type": "color", "id": "gift_d1", "label": "Hediye degrade 1", "default": "#ffffff" },
+    { "type": "color", "id": "gift_d2", "label": "Hediye degrade 2", "default": "#ffffff" },
+    { "type": "color", "id": "gift_d3", "label": "Hediye degrade 3", "default": "#ffffff" },
+    {
+      "type": "range",
+      "id": "gift_aci",
+      "label": "Hediye degrade açısı",
+      "min": 0,
+      "max": 360,
+      "step": 5,
+      "unit": "°",
+      "default": 135
+    },
+    { "type": "color", "id": "gift_yazi", "label": "Hediye düğmesi yazı rengi", "default": "#0a0a0a" },
+    {
+      "type": "checkbox",
+      "id": "couple_deg",
+      "label": "Couple düğmesi degradeli",
+      "info": "Açıkken Couple düğmesi düz renk yerine aşağıdaki degradeyi kullanır.",
+      "default": false
+    },
+    { "type": "color", "id": "couple_d1", "label": "Couple degrade 1", "default": "#ffffff" },
+    { "type": "color", "id": "couple_d2", "label": "Couple degrade 2", "default": "#ffffff" },
+    { "type": "color", "id": "couple_d3", "label": "Couple degrade 3", "default": "#ffffff" },
+    {
+      "type": "range",
+      "id": "couple_aci",
+      "label": "Couple degrade açısı",
+      "min": 0,
+      "max": 360,
+      "step": 5,
+      "unit": "°",
+      "default": 100
+    },
+    { "type": "color", "id": "couple_yazi", "label": "Couple düğmesi yazı rengi", "default": "#0a0a0a" },
+    {
+      "type": "checkbox",
+      "id": "hover_degrade",
+      "label": "Hover zemininde degrade",
+      "info": "Açıkken üstüne gelince düz renk yerine aşağıdaki degrade kullanılır.",
+      "default": false
+    },
+    { "type": "color", "id": "hover_d1", "label": "Hover degrade 1", "default": "#f4f4f4" },
+    { "type": "color", "id": "hover_d2", "label": "Hover degrade 2", "default": "#f4f4f4" },
+    { "type": "color", "id": "hover_d3", "label": "Hover degrade 3", "default": "#f4f4f4" },
+    {
+      "type": "range",
+      "id": "hover_aci",
+      "label": "Hover degrade açısı",
+      "min": 0,
+      "max": 360,
+      "step": 5,
+      "unit": "°",
+      "default": 135
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text_color",
+      "label": "Hover text",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_border_color",
+      "label": "Hover border",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "header",
+      "content": "Desktop typography"
+    },
+    {
+      "type": "range",
+      "id": "category_size_desktop",
+      "label": "Category size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "title_size_desktop",
+      "label": "Main title size",
+      "min": 24,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "subtitle_size_desktop",
+      "label": "Subtitle size",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "product_title_size_desktop",
+      "label": "Product title size",
+      "min": 16,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "feature_text_size_desktop",
+      "label": "Feature text size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "button_text_size_desktop",
+      "label": "Button text size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Mobile typography"
+    },
+    {
+      "type": "range",
+      "id": "category_size_mobile",
+      "label": "Category size",
+      "min": 8,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "title_size_mobile",
+      "label": "Main title size",
+      "min": 18,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "subtitle_size_mobile",
+      "label": "Subtitle size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "product_title_size_mobile",
+      "label": "Product title size",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "feature_text_size_mobile",
+      "label": "Feature text size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "button_text_size_mobile",
+      "label": "Button text size",
+      "min": 10,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max width",
+      "min": 800,
+      "max": 1600,
+      "step": 50,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "kenar_m",
+      "label": "Yan boşluk (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "kenar_d",
+      "label": "Yan boşluk (masaüstü)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "section_padding_desktop",
+      "label": "Section padding desktop",
+      "min": 20,
+      "max": 160,
+      "step": 5,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "section_padding_mobile",
+      "label": "Section padding mobile",
+      "min": 10,
+      "max": 120,
+      "step": 5,
+      "unit": "px",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "header_spacing",
+      "label": "Header spacing",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "features_spacing",
+      "label": "Features spacing",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "button_spacing",
+      "label": "Button spacing",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "checkbox",
+      "id": "dugme_genis_d",
+      "label": "Düğmeler kartlarla aynı genişlikte (masaüstü)",
+      "info": "Açıkken düğme satırı yukarıdaki kartlarla aynı hizaya yayılır ve aşağıdaki genişlik sınırı devre dışı kalır.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "dugme_max_g",
+      "label": "Düğme alanı genişliği (masaüstü)",
+      "min": 300,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 640
+    },
+    {
+      "type": "range",
+      "id": "button_height_d",
+      "label": "Düğme yüksekliği (masaüstü)",
+      "info": "0 = mobildeki yükseklikle aynı.",
+      "min": 0,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "dugme_yazi_ozel",
+      "label": "Düğme yazı boyutunu kendim seçeceğim",
+      "info": "\"Site\" tipografisi seçiliyken bile düğme yazı boyutu ayarları geçerli olur.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "Column gap",
+      "min": 8,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "column_gap_d",
+      "label": "Column gap (masaüstü)",
+      "min": 10,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "image_card_size",
+      "label": "Image card size",
+      "min": 100,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "image_card_size_d",
+      "label": "Image card size (masaüstü)",
+      "min": 120,
+      "max": 520,
+      "step": 10,
+      "unit": "px",
+      "default": 190
+    },
+    {
+      "type": "range",
+      "id": "image_spacing",
+      "label": "Image spacing",
+      "min": 10,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "image_card_radius",
+      "label": "Image card border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "label": "Image border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "feature_card_padding",
+      "label": "Feature card padding",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "feature_card_padding_d",
+      "label": "Feature card padding (masaüstü)",
+      "min": 10,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "feature_card_spacing",
+      "label": "Feature card spacing",
+      "min": 6,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "feature_card_radius",
+      "label": "Feature card border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "feature_card_border_width",
+      "label": "Feature card border width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "button_width",
+      "label": "Button width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "button_height",
+      "label": "Button height",
+      "min": 36,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "label": "Button border radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "button_border_width",
+      "label": "Button border width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product comparison"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,854 @@
+{%- comment -%}
+  PayTR taksit tablosu - urun sayfasi paneli.
+
+  NEDEN BOLUM, NEDEN BLOK DEGIL:
+  Bu tema, yapiskan "Sepete Ekle" dugmesi icin urun formunun IKINCI bir
+  kopyasini basiyor (.product-sticky-form). "Urun bilgileri" bolumunun
+  icindeki her blok o kopyada tekrar ciziliyor. Panel bir blok oldugunda
+  sayfada iki tane olusuyordu; kod ilkini buluyor, o da payment_trust
+  blogundaki ".product-sticky-form { display:none }" kurali yuzunden
+  gizli bir kutunun icinde kaliyordu. Panel aciliyor ama gorunmuyordu.
+  Bolumler kopyalanmadigi icin bu sorun kaynagindan kalkiyor.
+
+  RAKAMLAR NEREDEN GELIYOR:
+  Liquid yalnizca FIYATI veriyor (secili varyant + tum varyant haritasi).
+  Vade farki oranlari ve taksit tutarlari PayTR'den CANLI geliyor; boylece
+  panelde oran degistiginde modal kendiliginden guncelleniyor ve musteriye
+  odeme adiminda cikacak tutardan farkli bir sey gosterme riski olmuyor.
+  "Tek cekim" satiri PayTR'den gelmiyorsa urun fiyatindan uretiliyor.
+
+  PayTR script'i AYRI BIR IFRAME icinde calistiriliyor: bu tur gomme
+  script'ler document.write kullanabiliyor ve sayfa yuklendikten sonra
+  calisan bir document.write butun belgeyi siler.
+
+  TURKCE BUYUK HARF:
+  Bu bolumde text-transform: uppercase KULLANILMIYOR. Sebep: "taksit"
+  kelimesinin "TAKSIT" degil "TAKSIT" (noktali I) olmasi tarayicinin
+  lang="tr" bilgisini dogru yorumlamasina bagli ve bu her tarayicida
+  guvenilir degil. Etiketler oldugu gibi yaziliyor.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign sid = section.id
+-%}
+
+{%- if s.aktif and s.token != blank and s.merchant_id != blank -%}
+<style>
+  .tt-tk-{{ sid }} {
+    --tk-zemin: {{ s.zemin }};
+    --tk-grup: {{ s.grup_zemin }};
+    --tk-metin: {{ s.metin_renk }};
+    --tk-ikincil: {{ s.ikincil_renk }};
+    --tk-silik: {{ s.silik_renk }};
+    --tk-cizgi: {{ s.cizgi_renk }};
+    --tk-kapat: {{ s.kapat_zemin }};
+    --tk-rozet-zemin: {{ s.vurgu_zemin }};
+    --tk-rozet-metin: {{ s.vurgu_metin }};
+    --tk-rozet-cizgi: {{ s.vurgu_metin | color_modify: 'alpha', 0.18 }};
+    --tk-rozet-kod: {{ s.vurgu_metin | color_modify: 'alpha', 0.10 }};
+    --tk-bilgi-zemin: {{ s.bilgi_zemin }};
+    --tk-bilgi-cizgi: {{ s.metin_renk | color_modify: 'alpha', 0.07 }};
+    --tk-bilgi-kod: {{ s.metin_renk | color_modify: 'alpha', 0.06 }};
+    --tk-odak: {{ s.vurgu }};
+
+    position: fixed;
+    border: 0;
+    padding: 0;
+    margin: auto;
+    width: calc(100vw - 32px);
+    max-width: 400px;
+    max-height: min(88vh, 720px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 20px;
+    background: var(--tk-zemin);
+    color: var(--tk-metin);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .22);
+    -webkit-font-smoothing: antialiased;
+  }
+  .tt-tk-{{ sid }}::backdrop { background: rgba(0, 0, 0, .42); }
+  .tt-tk-{{ sid }} * { box-sizing: border-box; }
+  .tt-tk-{{ sid }} .tt-tk-ic { padding: 24px 20px 20px; }
+  .tt-tk-{{ sid }} .tt-tk-ic:focus { outline: none; }
+
+  {%- comment -%} Mobilde alttan acilan sheet {%- endcomment -%}
+  @media (max-width: 480px) {
+    .tt-tk-{{ sid }} {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      inset: auto 0 0 0;
+      max-height: 88vh;
+      border-radius: 20px 20px 0 0;
+    }
+    .tt-tk-{{ sid }} .tt-tk-ic { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+  }
+
+  {%- comment -%} ---------- Baslik ---------- {%- endcomment -%}
+  .tt-tk-{{ sid }} .tt-tk-ust {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .tt-tk-{{ sid }} .tt-tk-baslik {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    font-family: var(--font-heading-family);
+    letter-spacing: -0.8px;
+    line-height: 1.18;
+    color: var(--tk-metin);
+    text-transform: none;
+  }
+  .tt-tk-{{ sid }} .tt-tk-fiyat {
+    margin: 4px 0 0;
+    font-size: 15px;
+    line-height: 1.33;
+    letter-spacing: -.01em;
+    color: var(--tk-ikincil);
+  }
+  .tt-tk-{{ sid }} .tt-tk-fiyat b { font-weight: 600; color: var(--tk-metin); }
+  .tt-tk-{{ sid }} .tt-tk-kapat {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--tk-kapat);
+    color: var(--tk-ikincil);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background .15s ease;
+  }
+  .tt-tk-{{ sid }} .tt-tk-kapat:hover { background: rgba(138, 138, 133, .28); }
+  .tt-tk-{{ sid }} .tt-tk-kapat:focus-visible { outline: 2px solid var(--tk-odak); outline-offset: 2px; }
+
+  {%- comment -%}
+    ---------- Indirim bandi ----------
+    Sayfadaki tek renkli oge. Kod okunamazsa JS bu blogu HIC basmiyor,
+    yani indirim yokken panel eskisi gibi sade kaliyor.
+  {%- endcomment -%}
+  .tt-tk-{{ sid }} .tt-tk-indirim {
+    background: var(--tk-rozet-zemin);
+    border: .5px solid var(--tk-rozet-cizgi);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .tt-tk-{{ sid }} .tt-tk-ind-ust {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .tt-tk-{{ sid }} .tt-tk-ind-etiket {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -.014em;
+    color: var(--tk-rozet-metin);
+  }
+  .tt-tk-{{ sid }} .tt-tk-ind-kod {
+    font-size: 12px;
+    font-weight: 500;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .02em;
+    color: var(--tk-rozet-metin);
+    background: var(--tk-rozet-kod);
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .tt-tk-{{ sid }} .tt-tk-ind-not {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.4;
+    letter-spacing: -.006em;
+    color: var(--tk-rozet-metin);
+    opacity: .85;
+  }
+  {%- comment -%}
+    Gri "bilgi" varyanti: kod var ama indirim tutari bilinmiyor.
+    Temel kurallar yesil olani ciziyor, buradakiler uzerine yaziyor.
+  {%- endcomment -%}
+  .tt-tk-{{ sid }} .tt-tk-indirim.tt-tk-ind-bilgi {
+    background: var(--tk-bilgi-zemin);
+    border-color: var(--tk-bilgi-cizgi);
+  }
+  .tt-tk-{{ sid }} .tt-tk-ind-bilgi .tt-tk-ind-etiket { color: var(--tk-metin); }
+  .tt-tk-{{ sid }} .tt-tk-ind-bilgi .tt-tk-ind-kod {
+    color: var(--tk-ikincil);
+    background: var(--tk-bilgi-kod);
+  }
+  .tt-tk-{{ sid }} .tt-tk-ind-bilgi .tt-tk-ind-not { color: var(--tk-ikincil); opacity: 1; }
+
+  {%- comment -%} Sabit genislik: sayac her saniye tikledikce satir oynamasin {%- endcomment -%}
+  .tt-tk-{{ sid }} .tt-tk-sayac {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 5.2ch;
+  }
+
+  {%- comment -%} ---------- Secenek listesi ---------- {%- endcomment -%}
+  .tt-tk-{{ sid }} .tt-tk-grup {
+    background: var(--tk-grup);
+    border: .5px solid var(--tk-cizgi);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .tt-tk-{{ sid }} .tt-tk-grup + .tt-tk-grup { margin-top: 14px; }
+  .tt-tk-{{ sid }} .tt-tk-satir {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+  }
+  .tt-tk-{{ sid }} .tt-tk-satir + .tt-tk-satir { border-top: .5px solid var(--tk-cizgi); }
+  .tt-tk-{{ sid }} .tt-tk-etiket {
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: -.014em;
+    line-height: 1.2;
+    color: var(--tk-metin);
+    text-transform: none;
+  }
+  .tt-tk-{{ sid }} .tt-tk-alt {
+    margin-top: 3px;
+    font-size: 13px;
+    letter-spacing: -.006em;
+    color: var(--tk-silik);
+  }
+  .tt-tk-{{ sid }} .tt-tk-sag { text-align: right; }
+  .tt-tk-{{ sid }} .tt-tk-tutar-satir {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  {%- comment -%} Ustu cizili eski tutar: tasarrufu her satirda somutlastirir {%- endcomment -%}
+  .tt-tk-{{ sid }} .tt-tk-eski {
+    font-size: 13px;
+    color: var(--tk-silik);
+    text-decoration: line-through;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .tt-tk-{{ sid }} .tt-tk-tutar {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    line-height: 1.2;
+    color: var(--tk-metin);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .tt-tk-{{ sid }} .tt-tk-toplam {
+    margin-top: 3px;
+    font-size: 13px;
+    color: var(--tk-silik);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  {%- comment -%} ---------- Notlar ve kartlar ---------- {%- endcomment -%}
+  {%- comment -%}
+    Maddeli not listesi. Tik gri: yesil yalnizca indirim bandina ait
+    kalsin, sayfada tek renkli oge o olsun.
+  {%- endcomment -%}
+  .tt-tk-{{ sid }} .tt-tk-liste { list-style: none; margin: 16px 0 0; padding: 0; }
+  .tt-tk-{{ sid }} .tt-tk-liste li {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 13px;
+    line-height: 1.45;
+    letter-spacing: -.006em;
+    color: var(--tk-ikincil);
+  }
+  .tt-tk-{{ sid }} .tt-tk-liste li + li { margin-top: 9px; }
+  .tt-tk-{{ sid }} .tt-tk-tik {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    margin-top: 2px;
+    stroke: var(--tk-silik);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+  }
+  .tt-tk-{{ sid }} .tt-tk-uyari {
+    margin: 14px 2px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    font-weight: 600;
+    letter-spacing: -.006em;
+    color: var(--tk-metin);
+  }
+  .tt-tk-{{ sid }} .tt-tk-kartlar {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: .5px solid var(--tk-cizgi);
+  }
+  .tt-tk-{{ sid }} .tt-tk-kartlar-baslik {
+    margin: 0 2px 10px;
+    font-size: 13px;
+    letter-spacing: -.006em;
+    color: var(--tk-silik);
+    text-transform: none;
+  }
+  .tt-tk-{{ sid }} .tt-tk-logolar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .tt-tk-{{ sid }} .tt-tk-logolar img {
+    height: 16px;
+    width: auto;
+    filter: grayscale(1);
+    opacity: .7;
+  }
+  {%- comment -%} Aileler farkli oran verdiginde her grubun ustundeki logo {%- endcomment -%}
+  .tt-tk-{{ sid }} .tt-tk-aile { margin: 0 2px 8px; display: flex; align-items: center; gap: 8px; }
+  .tt-tk-{{ sid }} .tt-tk-aile img { height: 16px; width: auto; filter: grayscale(1); opacity: .7; }
+  .tt-tk-{{ sid }} .tt-tk-aile + .tt-tk-grup { margin-top: 0; }
+  .tt-tk-{{ sid }} .tt-tk-bolum + .tt-tk-bolum { margin-top: 16px; }
+
+  .tt-tk-{{ sid }} .tt-tk-durum {
+    margin: 0;
+    padding: 22px 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--tk-ikincil);
+    text-align: center;
+  }
+
+  {%- comment -%}
+    Dar ekranda satirlarin sikilastirilmasi. Indirim varken sag tarafta
+    ustu cizili tutar da bulundugu icin "+... vade farki" satiri aksi
+    halde iki satira kaciyor.
+  {%- endcomment -%}
+  @media (max-width: 430px) {
+    .tt-tk-{{ sid }} .tt-tk-ic { padding-left: 16px; padding-right: 16px; }
+    .tt-tk-{{ sid }} .tt-tk-satir { gap: 12px; padding-left: 14px; padding-right: 14px; }
+    .tt-tk-{{ sid }} .tt-tk-alt { font-size: 12px; }
+    .tt-tk-{{ sid }} .tt-tk-eski { font-size: 12px; }
+    .tt-tk-{{ sid }} .tt-tk-tutar-satir { gap: 5px; }
+  }
+
+  {%- comment -%}
+    Cok dar ekran: indirim varken ustu cizili tutar sagda yan yana
+    sigmiyor, "+... vade farki" satirini iki satira itiyordu. Burada
+    ustu cizili tutar kendi satirina aliniyor ve bant dikey yerlesime
+    geciyor -- hicbir bilgi kirpilmiyor.
+  {%- endcomment -%}
+  @media (max-width: 400px) {
+    .tt-tk-{{ sid }} .tt-tk-tutar-satir { flex-direction: column; align-items: flex-end; gap: 0; }
+    .tt-tk-{{ sid }} .tt-tk-eski { line-height: 1.3; }
+    .tt-tk-{{ sid }} .tt-tk-ind-ust { flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+
+{%- if s.karanlik_mod %}
+  {%- comment -%}
+    Karanlik mod: yalnizca bu ayar acikken. Magaza her zaman acik temada
+    calisiyorsa kapali birakin, yoksa acik sayfanin ustunde koyu bir
+    pencere acilir.
+  {%- endcomment -%}
+  @media (prefers-color-scheme: dark) {
+    .tt-tk-{{ sid }} {
+      --tk-zemin: #0A0A0A;
+      --tk-grup: #141414;
+      --tk-metin: #FFFFFF;
+      --tk-ikincil: #A3A39E;
+      --tk-silik: #A3A39E;
+      --tk-cizgi: rgba(255, 255, 255, .12);
+      --tk-kapat: #262624;
+      --tk-odak: #FFFFFF;
+      --tk-rozet-zemin: #141414;
+      --tk-rozet-metin: #FFFFFF;
+      --tk-rozet-cizgi: rgba(255, 255, 255, .22);
+      --tk-rozet-kod: rgba(255, 255, 255, .12);
+      --tk-bilgi-zemin: #141414;
+      --tk-bilgi-cizgi: rgba(255, 255, 255, .08);
+      --tk-bilgi-kod: rgba(255, 255, 255, .10);
+    }
+    .tt-tk-{{ sid }} .tt-tk-logolar img,
+    .tt-tk-{{ sid }} .tt-tk-aile img { filter: grayscale(1) invert(1); opacity: .75; }
+  }
+{%- endif %}
+</style>
+
+{%- comment -%}
+  ---------- Urun sayfasi fiyat blogu ----------
+  Bu kurallar panelin icinde degil, sayfanin kendisinde duruyor; bu yuzden
+  bolum kimligine baglanmadi. Tema urun formunun ikinci bir kopyasini
+  bastigi icin blok DOM'da iki kez olusabiliyor, JS hepsini guncelliyor.
+{%- endcomment -%}
+<style>
+  .tt-fb { margin: 10px 0 0; }
+  .tt-fb a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+  {%- comment -%} Indirim seridi: kod yoksa hic basilmaz {%- endcomment -%}
+  .tt-fb-serit {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 12px 0 0;
+    padding: 9px 12px;
+    border-radius: 12px;
+    background: {{ s.vurgu_zemin }};
+    border: .5px solid {{ s.vurgu_metin | color_modify: 'alpha', 0.18 }};
+  }
+  .tt-fb-serit[hidden] { display: none; }
+  {%- comment -%} Tutar bilinmiyorsa (Durum B) serit gri: rakamsiz bilgi {%- endcomment -%}
+  .tt-fb-serit.tt-fb-serit-bilgi {
+    background: {{ s.bilgi_zemin }};
+    border-color: {{ s.metin_renk | color_modify: 'alpha', 0.07 }};
+  }
+  .tt-fb-serit-bilgi .tt-fb-serit-metin { color: {{ s.metin_renk }}; }
+  .tt-fb-serit-bilgi .tt-fb-serit-saat { color: {{ s.ikincil_renk }}; opacity: 1; }
+  .tt-fb-serit-metin {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    color: {{ s.vurgu_metin }};
+  }
+  .tt-fb-serit-saat {
+    font-size: 12px;
+    color: {{ s.vurgu_metin }};
+    opacity: .8;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  {%- comment -%} Sabit genislik: her tik satiri oynatmasin {%- endcomment -%}
+  .tt-fb-serit-saat [data-tt-tk-sayac] { display: inline-block; min-width: 5.2ch; }
+
+  {%- comment -%}
+    Taksit satiri iki vurgu seviyesinde.
+    s3 (kod YOK): kendi zemininde, 18px -- yarisacagi bir sey yok.
+    s2 (kod VAR): duz metin -- vurguyu yesil serit tasiyor.
+  {%- endcomment -%}
+  .tt-fb-satir {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.01em;
+    color: {{ s.metin_renk }};
+  }
+  .tt-fb-buyuk { font-weight: 600; letter-spacing: -.02em; }
+  .tt-fb-silik { color: {{ s.ikincil_renk }}; }
+  .tt-fb-ayrac { color: {{ s.ikincil_renk }}; }
+
+  .tt-fb-satir.tt-fb-s3 {
+    margin: 12px 0 0;
+    padding: 11px 13px;
+    border-radius: 12px;
+    background: {{ s.fb_zemin }};
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 15px;
+  }
+  .tt-fb-s3 .tt-fb-buyuk { font-size: 18px; }
+  .tt-fb-s3 .tt-fb-ayrac { display: none; }
+  .tt-fb-s3 .tt-fb-link { font-size: 13px; color: {{ s.ikincil_renk }}; white-space: nowrap; }
+
+  .tt-fb-satir.tt-fb-s2 {
+    display: block;
+    margin: 5px 0 0;
+    padding: 0;
+    background: none;
+    font-size: 15px;
+  }
+  .tt-fb-s2 .tt-fb-buyuk { font-size: 17px; }
+  .tt-fb-s2 .tt-fb-link { color: {{ s.ikincil_renk }}; }
+
+  {%- comment -%}
+    Dar ekran: "Ayda 773,54 TL × 3 taksit — Taksit tablosu" 375px'te iki
+    satira kaciyordu. Punto bir kademe dusuyor, satir tek kaliyor.
+  {%- endcomment -%}
+  @media (max-width: 400px) {
+    .tt-fb-satir.tt-fb-s2 { font-size: 13.5px; }
+    .tt-fb-s2 .tt-fb-buyuk { font-size: 15.5px; }
+    .tt-fb-satir.tt-fb-s3 { padding: 10px 12px; font-size: 13.5px; gap: 8px; }
+    .tt-fb-s3 .tt-fb-buyuk { font-size: 16px; }
+    .tt-fb-s3 .tt-fb-link { font-size: 12px; }
+  }
+
+  {%- comment -%} En dar telefonlar (iPhone SE vb.) {%- endcomment -%}
+  @media (max-width: 370px) {
+    .tt-fb-satir.tt-fb-s3 { font-size: 12.5px; padding: 10px 11px; }
+    .tt-fb-s3 .tt-fb-buyuk { font-size: 15px; }
+    .tt-fb-s3 .tt-fb-link { font-size: 11.5px; }
+  }
+</style>
+
+{%- comment -%}
+  ---------- Koleksiyon sayfasi ----------
+  Izgaranin ustunde TEK indirim seridi + her kartin fiyatinin altinda
+  aylik tutar. Serit bolumun kendi yerinde ciziliyor, yani sablonda
+  urun izgarasinin hemen ustune konularak konumlaniyor; JS'in izgarayi
+  bulmasi gerekmiyor. Kart satirlari ise ".price" ogesinden sonra
+  ekleniyor (kartlar da ayni product-price snippet'ini kullaniyor).
+{%- endcomment -%}
+{%- if s.koleksiyon_modu %}
+<style>
+  .tt-kol { max-width: {{ s.kol_genislik }}px; margin: 0 auto; padding: 0 {{ s.kol_kenar_m }}px; }
+  @media (min-width: 768px) { .tt-kol { padding: 0 {{ s.kol_kenar_d }}px; } }
+  .tt-kol-serit {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 13px;
+    border-radius: 12px;
+    background: {{ s.vurgu_zemin }};
+    border: .5px solid {{ s.vurgu_metin | color_modify: 'alpha', 0.18 }};
+  }
+  .tt-kol-serit[hidden] { display: none; }
+  .tt-kol-metin { font-size: 14px; font-weight: 600; letter-spacing: -.01em; color: {{ s.vurgu_metin }}; }
+  .tt-kol-saat {
+    font-size: 12px;
+    color: {{ s.vurgu_metin }};
+    opacity: .8;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .tt-kol-saat [data-tt-tk-sayac] { display: inline-block; min-width: 5.2ch; }
+  {%- comment -%} Tutar bilinmiyorsa gri {%- endcomment -%}
+  .tt-kol-serit.tt-kol-bilgi {
+    background: {{ s.bilgi_zemin }};
+    border-color: {{ s.metin_renk | color_modify: 'alpha', 0.07 }};
+  }
+  .tt-kol-bilgi .tt-kol-metin { color: {{ s.metin_renk }}; }
+  .tt-kol-bilgi .tt-kol-saat { color: {{ s.ikincil_renk }}; opacity: 1; }
+
+  {%- comment -%} Kart fiyatinin altindaki aylik satiri {%- endcomment -%}
+  .tt-kol-aylik {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    letter-spacing: -.005em;
+    color: {{ s.ikincil_renk }};
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+<div class="tt-kol" data-tt-kol data-tt-kol-oran="{{ s.kol_oran }}" data-tt-kol-taksit="{{ s.en_cok_taksit }}">
+  <div class="tt-kol-serit" data-tt-kol-serit hidden>
+    <span class="tt-kol-metin" data-tt-kol-metin></span>
+    <span class="tt-kol-saat" data-tt-kol-saat></span>
+  </div>
+</div>
+{%- endif %}
+
+{%- capture tt_veri -%}
+{
+  "varsayilan": {{ product.selected_or_first_available_variant.price | default: 0 }},
+  "varyantlar": { {%- for v in product.variants -%}"{{ v.id }}": {{ v.price }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} },
+  "enCokTaksit": {{ s.en_cok_taksit }},
+  "altLimit": {{ s.alt_limit | times: 100 }},
+  "metin": {{ s.baglanti_metni | downcase | json }},
+  "fiyatOnEk": {{ s.fiyat_on_ek | json }},
+  "paraBirim": {{ s.para_birim | json }},
+  "tekCekim": {{ s.tek_cekim | json }},
+  "vadeYok": {{ s.vade_yok | json }},
+  "vadeFark": {{ s.vade_fark | json }},
+  "toplamOn": {{ s.toplam_on | json }},
+  "taksitEk": {{ s.taksit_ek | json }},
+  "indirimAktif": {{ settings.tt_indirim_aktif | json }},
+  "cKod": {{ settings.tt_cerez_kod | json }},
+  "cSure": {{ settings.tt_cerez_sure | json }},
+  "cZaman": {{ settings.tt_cerez_zaman | json }},
+  "indTutar": {{ settings.tt_indirim_tutar | json }},
+  "indEtiket": {{ s.indirim_etiket | json }},
+  "indBEtiket": {{ s.indirim_b_etiket | json }},
+  "indBNot": {{ s.indirim_b_not | json }},
+  "indSayacMetni": {{ s.indirim_sayac_metni | json }},
+  "indNot": {{ s.indirim_not | json }},
+  "kolMetni": {{ s.kol_metni | json }},
+  "kolSaat": {{ s.kol_saat | json }},
+  "kolAylik": {{ s.kol_aylik | json }},
+  "fbKodlu": {{ s.fb_kodlu | json }},
+  "fbSaat": {{ s.fb_saat | json }},
+  "fbAyda": {{ s.fb_ayda | json }},
+  "fbTaksitEk": {{ s.fb_taksit_ek | json }},
+  "maddeler": {{ s.not_maddeleri | json }},
+  "logoNot": {{ s.logo_notu | json }},
+  "kartNot": {{ s.kart_notu | json }},
+  "yok": {{ s.taksit_yok | json }},
+  "hata": {{ s.hata_metni | json }},
+  "yukleniyor": {{ s.yukleniyor | json }},
+  "kaynak": "https://www.paytr.com/odeme/taksit-tablosu/v2?token={{ s.token | escape }}&merchant_id={{ s.merchant_id | escape }}&amount={TUTAR}&taksit=0&tumu={% if s.tablo_kapsam == 'avantajli' %}0{% else %}1{% endif %}"
+}
+{%- endcapture -%}
+<dialog class="tt-tk-{{ sid }} tt-taksit-panel" data-tt-tk data-tt-tk-veri="{{ tt_veri | strip | escape }}" aria-labelledby="tt-tk-baslik-{{ sid }}">
+  <div class="tt-tk-ic" tabindex="-1">
+    <div class="tt-tk-ust">
+      <div>
+        <h2 class="tt-tk-baslik" id="tt-tk-baslik-{{ sid }}">{{ s.baslik | escape }}</h2>
+        <p class="tt-tk-fiyat" data-tt-tk-fiyat></p>
+      </div>
+      <button type="button" class="tt-tk-kapat" data-tt-tk-kapat aria-label="{{ s.kapat_etiket | escape }}" autofocus>✕</button>
+    </div>
+    <div data-tt-tk-govde>
+      <p class="tt-tk-durum">{{ s.yukleniyor | escape }}</p>
+    </div>
+  </div>
+</dialog>
+
+{%- if s.tani -%}
+<div data-tt-tk-tani style="position:fixed;left:8px;bottom:8px;z-index:2147483647;max-width:calc(100vw - 16px);
+  background:#0a0a0a;color:#fff;font:12px/1.45 var(--font-body-family);padding:10px 12px;
+  border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);white-space:pre-wrap;word-break:break-word">
+teşhis yükleniyor…</div>
+{%- endif -%}
+
+{%- comment -%} Script layout/theme.liquid icindeki tt-yapilandirma ile sayfa basina bir kez yukleniyor. {%- endcomment -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Taksit Tablosu",
+  "tag": "section",
+  "class": "taksit-tablosu-section",
+  "settings": [
+    { "type": "checkbox", "id": "aktif", "label": "Bölümü çalıştır", "default": true },
+    {
+      "type": "checkbox",
+      "id": "tani",
+      "label": "Teşhis kutusunu göster (geçici)",
+      "info": "Açıkken sayfanın sol altında siyah bir bilgi kutusu çıkar. Sorun çözülünce kapatın.",
+      "default": false
+    },
+    {
+      "type": "paragraph",
+      "content": "Bu bölüm sayfada yer kaplamaz. Ürün bilgilerindeki \"Taksit tablosu\" bağlantısına tıklandığında açılan pencereyi çalıştırır. Şablonda nereye koyduğunuz görünümü etkilemez."
+    },
+    {
+      "type": "paragraph",
+      "content": "Taksit tutarları ve vade farkı oranları PayTR'den canlı gelir. Oranları buradan girmezsiniz: PayTR panelinizde değişen oran, pencereye kendiliğinden yansır."
+    },
+
+    { "type": "header", "content": "PayTR" },
+    { "type": "text", "id": "token", "label": "Taksit tablosu token", "info": "PayTR mağaza panelinden alınır." },
+    { "type": "text", "id": "merchant_id", "label": "Mağaza numarası (merchant_id)" },
+    {
+      "type": "range",
+      "id": "en_cok_taksit",
+      "label": "En fazla taksit",
+      "info": "0 seçilirse PayTR'nin döndürdüğü bütün taksitler gösterilir.",
+      "min": 0, "max": 12, "step": 1, "default": 3
+    },
+    {
+      "type": "select",
+      "id": "tablo_kapsam",
+      "label": "PayTR tablo kapsamı",
+      "info": "PayTR'nin \"tumu\" parametresi. \"Yalnızca avantajlı\" seçilirse PayTR bazı taksit adetlerini hiç göndermez (2 taksitin kaybolmasının sebebi buydu).",
+      "options": [
+        { "value": "tum", "label": "Tüm taksitler (önerilen)" },
+        { "value": "avantajli", "label": "Yalnızca avantajlı taksitler" }
+      ],
+      "default": "tum"
+    },
+    {
+      "type": "range",
+      "id": "alt_limit",
+      "label": "Taksit alt limiti",
+      "info": "Bu tutarın altındaki ürünlerde pencere açılmaz. 0 = sınır yok.",
+      "min": 0, "max": 5000, "step": 50, "unit": "₺", "default": 0
+    },
+
+    { "type": "header", "content": "Bağlantı" },
+    {
+      "type": "text",
+      "id": "baglanti_metni",
+      "label": "Bağlantı metni",
+      "info": "Ürün bilgilerindeki metin bağlantısıyla BİREBİR aynı olmalı; pencere bu metinden tanınıyor.",
+      "default": "Taksit tablosu"
+    },
+
+    { "type": "header", "content": "Pencere metinleri" },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Taksit seçenekleri" },
+    { "type": "text", "id": "fiyat_on_ek", "label": "Fiyat satırı ön eki", "default": "Ürün fiyatı" },
+    { "type": "text", "id": "para_birim", "label": "Para birimi eki", "default": "TL" },
+    {
+      "type": "text",
+      "id": "tek_cekim",
+      "label": "Tek çekim satırı",
+      "info": "Listenin ilk satırı. PayTR tek çekim döndürmezse ürün fiyatından üretilir.",
+      "default": "Tek çekim"
+    },
+    { "type": "text", "id": "vade_yok", "label": "Vade farksız etiketi", "default": "Vade farkı yok" },
+    {
+      "type": "text",
+      "id": "vade_fark",
+      "label": "Vade farkı satırı",
+      "info": "{TUTAR} yerine hesaplanan fark yazılır.",
+      "default": "+{TUTAR} vade farkı"
+    },
+    { "type": "text", "id": "toplam_on", "label": "Toplam ön eki", "default": "Toplam" },
+    {
+      "type": "text",
+      "id": "taksit_ek",
+      "label": "Taksit satırı eki",
+      "info": "Örnek: \"3 taksit\" yazması için buraya \"taksit\" yazın.",
+      "default": "taksit"
+    },
+    {
+      "type": "textarea",
+      "id": "not_maddeleri",
+      "label": "Liste altı maddeler",
+      "info": "Her satır bir madde olarak, önünde tik işaretiyle gösterilir. Boş satırlar atlanır.",
+      "default": "Ödeme adımında kart bilgilerinizi girdiğinizde kartınıza uygun taksit seçenekleri listelenir.\nYukarıdaki tutarlara vade farkı dahildir, ödeme adımında ek ücret çıkmaz."
+    },
+    { "type": "text", "id": "logo_notu", "label": "Kart listesi başlığı", "default": "Taksit yapılabilen kartlar" },
+    {
+      "type": "textarea",
+      "id": "kart_notu",
+      "label": "Kart listesi altı uyarı",
+      "info": "Kalın gösterilir. Anlaşmalı olmayan kartlarda taksit çıkmadığı için müşteriyi önden bilgilendirir.",
+      "default": "Diğer banka kartlarında ödeme tek çekim olarak alınır."
+    },
+    { "type": "text", "id": "yukleniyor", "label": "Yükleniyor metni", "default": "Taksit tablosu yükleniyor…" },
+    { "type": "text", "id": "taksit_yok", "label": "Taksit yoksa", "default": "Bu tutar için taksit seçeneği bulunmuyor." },
+    { "type": "text", "id": "hata_metni", "label": "Tablo gelmezse", "default": "Taksit tablosu şu an görüntülenemiyor. Taksit seçeneklerini ödeme adımında görebilirsiniz." },
+    { "type": "text", "id": "kapat_etiket", "label": "Kapat düğmesi etiketi", "default": "Kapat" },
+
+    { "type": "header", "content": "İndirim kodu katmanı" },
+    {
+      "type": "paragraph",
+      "content": "İndirim kodu çark uygulamasının yazdığı çerezlerden okunur; kod çubuğunun ekranda olmasına gerek yoktur. Kod varsa ve süresi dolmamışsa pencerede bir bant çıkar. Çerezlerden biri bile okunamazsa hiçbir bant basılmaz."
+    },
+    { "type": "checkbox", "id": "indirim_aktif", "label": "İndirim katmanını çalıştır", "default": false },
+    {
+      "type": "text",
+      "id": "indirim_tutar",
+      "label": "İndirim tutarı (₺)",
+      "info": "Çarkın verdiği sabit tutar. Boş veya 0 ise kod yine duyurulur ama tutarlar indirimsiz gösterilir — yanlış rakam gösterilmez.",
+      "default": "0"
+    },
+    {
+      "type": "text",
+      "id": "indirim_etiket",
+      "label": "Bant başlığı (tutar biliniyorsa)",
+      "info": "{TUTAR} yerine indirim tutarı yazılır.",
+      "default": "{TUTAR} indirim uygulanacak"
+    },
+    {
+      "type": "text",
+      "id": "indirim_sayac_metni",
+      "label": "Geri sayım cümlesi",
+      "info": "{SURE} yerine kalan süre yazılır.",
+      "default": "Kodunuz {SURE} içinde geçerliliğini yitiriyor."
+    },
+    {
+      "type": "text",
+      "id": "indirim_not",
+      "label": "İndirim varken eklenecek madde",
+      "info": "Yalnızca indirim tutarı biliniyorken (yeşil bant) listeye eklenir.",
+      "default": "İndirim kodunuz sepette otomatik uygulanır, elle girmenize gerek yok."
+    },
+    {
+      "type": "text",
+      "id": "indirim_b_etiket",
+      "label": "Bant başlığı (tutar bilinmiyorsa)",
+      "default": "İndirim kodunuz sepette uygulanacak"
+    },
+    {
+      "type": "text",
+      "id": "indirim_b_not",
+      "label": "Bant uyarısı (tutar bilinmiyorsa)",
+      "default": "Aşağıdaki tutarlar indirim öncesi fiyat üzerindendir."
+    },
+
+    { "type": "header", "content": "Ürün sayfası fiyat bloğu" },
+    {
+      "type": "paragraph",
+      "content": "Fiyatın altındaki taksit satırı ve indirim şeridi. Vade farkı oranı bloğun kendi kodunda duruyor (Özel Liquid alanı); sayfa açıldıktan sonra PayTR'den gerçek oran çekilip gerekiyorsa sessizce düzeltilir."
+    },
+    {
+      "type": "text",
+      "id": "fb_ayda",
+      "label": "Aylık tutar metni",
+      "info": "{TUTAR} yerine hesaplanan aylık tutar yazılır.",
+      "default": "Ayda {TUTAR}"
+    },
+    {
+      "type": "text",
+      "id": "fb_taksit_ek",
+      "label": "Taksit adedi metni",
+      "info": "{ADET} yerine taksit sayısı yazılır.",
+      "default": "× {ADET} taksit"
+    },
+    {
+      "type": "text",
+      "id": "fb_kodlu",
+      "label": "İndirim şeridi metni",
+      "info": "{TUTAR} yerine indirimli fiyat yazılır. Tutar bilinmiyorsa bunun yerine \"Bant başlığı (tutar bilinmiyorsa)\" kullanılır.",
+      "default": "Kodunuzla {TUTAR}"
+    },
+    {
+      "type": "text",
+      "id": "fb_saat",
+      "label": "Şerit sayaç metni",
+      "info": "{SURE} yerine geri sayım yazılır.",
+      "default": "{SURE} kaldı"
+    },
+    { "type": "color", "id": "fb_zemin", "label": "Taksit satırı zemini (kod yokken)", "default": "#F4F4F4" },
+
+    { "type": "header", "content": "Koleksiyon sayfası" },
+    {
+      "type": "paragraph",
+      "content": "Bu bölümü koleksiyon şablonunda ürün ızgarasının hemen üstüne koyun. Izgaranın üstünde tek bir indirim şeridi, her kartın fiyatının altında da aylık tutar gösterir."
+    },
+    { "type": "checkbox", "id": "koleksiyon_modu", "label": "Koleksiyon modu", "default": false },
+    {
+      "type": "text",
+      "id": "kol_oran",
+      "label": "Vade farkı oranı (%)",
+      "info": "İlk boyamada kullanılır; sayfa açıldıktan sonra PayTR'den gelen gerçek oranla sessizce düzeltilir.",
+      "default": "10.5583"
+    },
+    { "type": "text", "id": "kol_metni", "label": "Şerit metni", "info": "{TUTAR} yerine indirim tutarı yazılır.", "default": "{TUTAR} indirim kodunuz aktif" },
+    { "type": "text", "id": "kol_saat", "label": "Şerit sayaç metni", "info": "{SURE} yerine geri sayım yazılır.", "default": "{SURE} kaldı" },
+    { "type": "text", "id": "kol_aylik", "label": "Kart aylık satırı", "info": "{TUTAR} aylık tutar, {ADET} taksit sayısı.", "default": "Ayda {TUTAR} × {ADET}" },
+    { "type": "range", "id": "kol_genislik", "label": "Şerit en fazla genişlik", "min": 600, "max": 1600, "step": 20, "unit": "px", "default": 1400 },
+    { "type": "range", "id": "kol_kenar_m", "label": "Yan boşluk (mobil)", "min": 0, "max": 48, "step": 2, "unit": "px", "default": 20 },
+    { "type": "range", "id": "kol_kenar_d", "label": "Yan boşluk (masaüstü)", "min": 0, "max": 80, "step": 4, "unit": "px", "default": 40 },
+
+    { "type": "header", "content": "İndirim çerez adları" },
+    {
+      "type": "paragraph",
+      "content": "Çark uygulaması bu adları değiştirirse katman sessizce kapanır. Değiştirmeniz gerekmiyorsa dokunmayın."
+    },
+    { "type": "text", "id": "cerez_kod", "label": "Kod çerezi", "default": "wlo-codebar-code" },
+    { "type": "text", "id": "cerez_sure", "label": "Süre çerezi (saniye)", "default": "wlo-codebar-counter" },
+    { "type": "text", "id": "cerez_zaman", "label": "Başlangıç çerezi (ms)", "default": "wlo-codebar-time" },
+
+    { "type": "header", "content": "Renkler" },
+    {
+      "type": "checkbox",
+      "id": "karanlik_mod",
+      "label": "Karanlık modu destekle",
+      "info": "Ziyaretçinin cihazı karanlık moddaysa pencere koyu görünür. Mağazanız her zaman açık temada çalışıyorsa kapalı bırakın.",
+      "default": false
+    },
+    { "type": "color", "id": "zemin", "label": "Pencere zemini", "default": "#FFFFFF" },
+    { "type": "color", "id": "grup_zemin", "label": "Liste zemini", "default": "#FFFFFF" },
+    { "type": "color", "id": "metin_renk", "label": "Metin", "default": "#0A0A0A" },
+    { "type": "color", "id": "ikincil_renk", "label": "İkincil metin", "default": "#5C5C57" },
+    { "type": "color", "id": "silik_renk", "label": "Dipnot ve toplam", "default": "#5C5C57" },
+    { "type": "color", "id": "cizgi_renk", "label": "Ayırıcı çizgi", "default": "#D2D2CD" },
+    { "type": "color", "id": "kapat_zemin", "label": "Kapat düğmesi zemini", "default": "#F4F4F4" },
+    { "type": "color", "id": "vurgu_zemin", "label": "İndirim bandı zemini (tutar biliniyorsa)", "default": "#F4F4F4" },
+    { "type": "color", "id": "vurgu_metin", "label": "İndirim bandı metni (tutar biliniyorsa)", "default": "#0A0A0A" },
+    { "type": "color", "id": "bilgi_zemin", "label": "İndirim bandı zemini (tutar bilinmiyorsa)", "default": "#F4F4F4" },
+    { "type": "color", "id": "vurgu", "label": "Odak halkası", "default": "#0A0A0A" }
+  ],
+  "presets": [
+    { "name": "Taksit Tablosu" }
+  ]
+}
+{% endschema %}

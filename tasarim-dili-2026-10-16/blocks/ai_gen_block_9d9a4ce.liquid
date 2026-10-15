@@ -1,0 +1,797 @@
+{% doc %}
+  @prompt
+    Create a Shopify homepage collection hero section inspired by the clean Apple style product cards.
+    
+    The section should be a large vertical collection banner card placed on the homepage. It should look minimal, premium, modern and highly polished.
+    
+    Main layout:
+    Use a soft light gray or off white background.
+    Place all text content centered at the top.
+    Use a large bold collection title.
+    Under the title, add a short subtitle.
+    Below the subtitle, add two rounded pill buttons side by side.
+    Under the buttons, place a large product image area that visually dominates the lower part of the section.
+    
+    Important:
+    Do not copy Apple branding, logo, colors or exact product layout. Only use the same clean, minimal, premium visual language.
+    
+    Card structure:
+    Top area:
+    Centered title placeholder
+    Centered subtitle placeholder
+    Two buttons placed horizontally
+    
+    Button style:
+    Button 1 should be filled.
+    Use a soft premium pastel color suitable for a baby products brand.
+    Button 2 should be outlined.
+    Both buttons should have rounded pill shape, smooth hover effect, clean typography and comfortable padding.
+    The buttons should feel elegant, friendly and clickable.
+    
+    Product image area:
+    Place the collection product image or product group image at the bottom center.
+    The image should be large, sharp and clean.
+    It can slightly overlap the lower edge of the card for a premium advertising look.
+    Keep the product as the visual focus.
+    Use soft shadows only if needed.
+    Avoid cluttered backgrounds.
+    
+    Visual style:
+    Minimal Apple inspired composition
+    Large whitespace
+    Soft rounded corners
+    Premium e commerce feeling
+    Clean typography
+    Soft pastel tones
+    Warm, boutique and trustworthy look
+    Suitable for a handmade baby products Shopify brand
+    
+    Responsive behavior:
+    Desktop:
+    The banner should be wide and centered.
+    Text at the top, buttons below, image at the bottom.
+    The image should be large but not cropped badly.
+    
+    Mobile:
+    The section should keep the same vertical structure.
+    Title, subtitle and buttons should stay centered.
+    Buttons can stay side by side if they fit, otherwise stack vertically.
+    The product image should remain large and visible.
+    Make the section mobile first and optimized for Shopify.
+    
+    Use placeholder content only:
+    Title: Collection Title
+    Subtitle: Short collection description
+    Button 1: Shop Now
+    Button 2: Learn More
+    
+    Final goal:
+    Create a premium homepage collection card that quickly introduces a product collection and drives users to click one of the two buttons., Revise the current collection hero section.
+    
+    The product image must not appear inside a small separate image box. Remove the inner image container completely.
+    
+    The collection image should fill the full width of the hero card, from left edge to right edge, like a large product showcase image. It should occupy the entire lower part of the card and visually feel connected to the card itself.
+    
+    The image should be large, clean and dominant. It should align to the bottom of the hero card. The bottom corners of the image should follow the same rounded corners as the main card. Do not leave large side margins around the image.
+    
+    Keep the text area at the top centered:
+    Title
+    Subtitle
+    Two buttons
+    
+    The two buttons must be placed side by side horizontally, not stacked vertically. This should apply on mobile as well. Use a small gap between the buttons and make both buttons compact enough to fit on one row.
+    
+    Button style:
+    Primary button filled
+    Secondary button outlined
+    Both buttons rounded pill style
+    Same height
+    Balanced padding
+    Clean premium look
+    
+    Overall layout:
+    The card should look like a premium Apple inspired collection card.
+    Top area should be clean with centered text and two horizontal buttons.
+    Bottom area should be a full width collection image.
+    No separate image frame.
+    No small image thumbnail.
+    No boxed image area inside the card.
+    
+    Make the section fully responsive for Shopify mobile and desktop., Revise the current collection hero section.
+    
+    I want separate image settings for desktop and mobile.
+    
+    Add two different image upload fields in the section settings:
+    Desktop image
+    Mobile image
+    
+    The section must use the desktop image on desktop screens and the mobile image on mobile screens.
+    
+    The image sizing should be different for desktop and mobile:
+    On desktop, the image should appear larger and wider, optimized for a horizontal desktop layout.
+    On mobile, the image should be optimized for a narrower vertical layout and fit the mobile card proportion correctly.
+    
+    Do not use a single shared image for all devices.
+    I want two separate image inputs so I can upload different visuals for desktop and mobile.
+    
+    Keep the current collection hero structure:
+    title at the top
+    subtitle under it
+    two buttons side by side
+    large image area below
+    
+    Important layout rules:
+    The two buttons must stay side by side horizontally.
+    The image should remain large and visually strong.
+    The image should feel integrated into the lower part of the card.
+    The section should stay clean, minimal and premium.
+    
+    Technical behavior:
+    Show Desktop image on desktop and tablet if appropriate.
+    Show Mobile image on mobile devices.
+    If one image is missing, allow fallback to the other image.
+    
+    Settings needed in the editor:
+    Collection title
+    Subtitle
+    Desktop image upload
+    Mobile image upload
+    Primary button label
+    Primary button link
+    Secondary button label
+    Secondary button link
+    
+    The final result should be fully responsive and give me full control over desktop and mobile image uploads separately.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-collection-hero-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .ai-collection-hero-card-{{ ai_gen_id }} {
+    background-color: {{ block.settings.card_background }};
+    border-radius: {{ block.settings.card_border_radius }}px;
+    max-width: {{ block.settings.max_width }}px;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ai-collection-hero-content-{{ ai_gen_id }} {
+    text-align: center;
+    padding: {{ block.settings.card_padding_top }}px {{ block.settings.card_padding_horizontal }}px {{ block.settings.buttons_spacing }}px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .ai-collection-hero-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.title_size }}px;
+    font-weight: 700;
+    color: {{ block.settings.title_color }};
+    margin: 0 0 {{ block.settings.title_spacing }}px;
+    line-height: 1.1;
+    letter-spacing: {%- assign tt_ls = block.settings.title_size_mobile -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+  }
+
+  .ai-collection-hero-subtitle-{{ ai_gen_id }} {
+    font-size: {{ block.settings.subtitle_size }}px;
+    color: {{ block.settings.subtitle_color }};
+    margin: 0 0 {{ block.settings.subtitle_spacing }}px;
+    line-height: 1.4;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .ai-collection-hero-buttons-{{ ai_gen_id }} {
+    display: flex;
+    gap: {{ block.settings.button_gap }}px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .ai-collection-hero-button-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: {{ block.settings.button_padding_vertical }}px {{ block.settings.button_padding_horizontal }}px;
+    border-radius: 999px;
+    font-size: {{ block.settings.button_font_size }}px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .ai-collection-hero-button-primary-{{ ai_gen_id }} {
+    background-color: {{ block.settings.button_primary_bg }};
+    color: {{ block.settings.button_primary_text_color }};
+    border-color: {{ block.settings.button_primary_bg }};
+  }
+
+  .ai-collection-hero-button-primary-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_primary_hover_bg }};
+    border-color: {{ block.settings.button_primary_hover_bg }};
+    transform: translateY(-1px);
+  }
+
+  .ai-collection-hero-button-secondary-{{ ai_gen_id }} {
+    background-color: #ffffff;
+    color: {{ block.settings.button_secondary_text_color }};
+    border-color: {{ block.settings.button_secondary_border }};
+  }
+
+  .ai-collection-hero-button-secondary-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_secondary_hover_bg }};
+    border-color: {{ block.settings.button_secondary_hover_border }};
+    transform: translateY(-1px);
+  }
+
+  .ai-collection-hero-image-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    margin: 0;
+    border-radius: 0 0 {{ block.settings.card_border_radius }}px {{ block.settings.card_border_radius }}px;
+    overflow: hidden;
+  }
+
+  .ai-collection-hero-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: auto;
+    display: block;
+    {% if block.settings.image_shadow %}
+      filter: drop-shadow(0 -10px 30px rgba(0, 0, 0, 0.08));
+    {% endif %}
+  }
+
+  .ai-collection-hero-image-desktop-{{ ai_gen_id }} {
+    display: block;
+  }
+
+  .ai-collection-hero-image-mobile-{{ ai_gen_id }} {
+    display: none;
+  }
+
+  .ai-collection-hero-image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ai-collection-hero-image-placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    max-width: 400px;
+    max-height: 400px;
+    opacity: 0.2;
+  }
+
+  .ai-collection-hero-empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    font-size: 14px;
+    color: #5c5c57;
+    text-align: center;
+    pointer-events: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-collection-hero-content-{{ ai_gen_id }} {
+      padding: {{ block.settings.card_padding_top_mobile }}px {{ block.settings.card_padding_horizontal_mobile }}px {{ block.settings.buttons_spacing_mobile }}px;
+    }
+
+    .ai-collection-hero-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.title_size_mobile }}px;
+    }
+
+    .ai-collection-hero-subtitle-{{ ai_gen_id }} {
+      font-size: {{ block.settings.subtitle_size_mobile }}px;
+    }
+
+    .ai-collection-hero-button-{{ ai_gen_id }} {
+      font-size: {{ block.settings.button_font_size_mobile }}px;
+      padding: {{ block.settings.button_padding_vertical_mobile }}px {{ block.settings.button_padding_horizontal_mobile }}px;
+    }
+
+    .ai-collection-hero-image-desktop-{{ ai_gen_id }} {
+      display: none;
+    }
+
+    .ai-collection-hero-image-mobile-{{ ai_gen_id }} {
+      display: block;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-collection-hero-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-collection-hero-card-{{ ai_gen_id }}">
+    <div class="ai-collection-hero-content-{{ ai_gen_id }}">
+      {% if block.settings.title != blank %}
+        <h2 class="ai-collection-hero-title-{{ ai_gen_id }}">
+          {{ block.settings.title }}
+        </h2>
+      {% endif %}
+
+      {% if block.settings.subtitle != blank %}
+        <div class="ai-collection-hero-subtitle-{{ ai_gen_id }}">
+          {{ block.settings.subtitle }}
+        </div>
+      {% endif %}
+
+      <div class="ai-collection-hero-buttons-{{ ai_gen_id }}">
+        {% if block.settings.button_primary_label != blank %}
+          <a
+            href="{{ block.settings.button_primary_link }}"
+            class="ai-collection-hero-button-{{ ai_gen_id }} ai-collection-hero-button-primary-{{ ai_gen_id }}"
+          >
+            {{ block.settings.button_primary_label }}
+          </a>
+        {% endif %}
+
+        {% if block.settings.button_secondary_label != blank %}
+          <a
+            href="{{ block.settings.button_secondary_link }}"
+            class="ai-collection-hero-button-{{ ai_gen_id }} ai-collection-hero-button-secondary-{{ ai_gen_id }}"
+          >
+            {{ block.settings.button_secondary_label }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="ai-collection-hero-image-wrapper-{{ ai_gen_id }}">
+      {% liquid
+        assign desktop_image = block.settings.image_desktop
+        assign mobile_image = block.settings.image_mobile
+        assign has_desktop = false
+        assign has_mobile = false
+
+        if desktop_image != blank
+          assign has_desktop = true
+        endif
+
+        if mobile_image != blank
+          assign has_mobile = true
+        endif
+      %}
+
+      {% if has_desktop or has_mobile %}
+        {% if has_desktop %}
+          <img
+            src="{{ desktop_image | image_url: width: 2000 }}"
+            alt="{{ desktop_image.alt | escape }}"
+            loading="lazy"
+            width="{{ desktop_image.width }}"
+            height="{{ desktop_image.height }}"
+            class="ai-collection-hero-image-{{ ai_gen_id }} ai-collection-hero-image-desktop-{{ ai_gen_id }}"
+          >
+        {% endif %}
+
+        {% if has_mobile %}
+          <img
+            src="{{ mobile_image | image_url: width: 1000 }}"
+            alt="{{ mobile_image.alt | escape }}"
+            loading="lazy"
+            width="{{ mobile_image.width }}"
+            height="{{ mobile_image.height }}"
+            class="ai-collection-hero-image-{{ ai_gen_id }} ai-collection-hero-image-mobile-{{ ai_gen_id }}"
+          >
+        {% elsif has_desktop %}
+          <img
+            src="{{ desktop_image | image_url: width: 1000 }}"
+            alt="{{ desktop_image.alt | escape }}"
+            loading="lazy"
+            width="{{ desktop_image.width }}"
+            height="{{ desktop_image.height }}"
+            class="ai-collection-hero-image-{{ ai_gen_id }} ai-collection-hero-image-mobile-{{ ai_gen_id }}"
+          >
+        {% endif %}
+      {% else %}
+        <div class="ai-collection-hero-image-placeholder-{{ ai_gen_id }}">
+          {{ 'product-1' | placeholder_svg_tag }}
+          <div class="ai-collection-hero-empty-state-{{ ai_gen_id }}">
+            Add desktop and mobile images
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Collection hero",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "label": "Title",
+      "default": "Collection Title"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Short collection description"
+    },
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile image"
+    },
+    {
+      "type": "header",
+      "content": "Primary button"
+    },
+    {
+      "type": "text",
+      "id": "button_primary_label",
+      "label": "Label",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "button_primary_link",
+      "label": "Link"
+    },
+    {
+      "type": "color",
+      "id": "button_primary_bg",
+      "label": "Background",
+      "default": "#0A0A0A"
+    },
+    {
+      "type": "color",
+      "id": "button_primary_hover_bg",
+      "label": "Hover background",
+      "default": "#0A0A0A"
+    },
+    {
+      "type": "color",
+      "id": "button_primary_text_color",
+      "label": "Text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Secondary button"
+    },
+    {
+      "type": "text",
+      "id": "button_secondary_label",
+      "label": "Label",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "button_secondary_link",
+      "label": "Link"
+    },
+    {
+      "type": "color",
+      "id": "button_secondary_text_color",
+      "label": "Text color",
+      "default": "#0A0A0A"
+    },
+    {
+      "type": "color",
+      "id": "button_secondary_border",
+      "label": "Border color",
+      "default": "#D2D2CD"
+    },
+    {
+      "type": "color",
+      "id": "button_secondary_hover_bg",
+      "label": "Hover background",
+      "default": "#F4F4F4"
+    },
+    {
+      "type": "color",
+      "id": "button_secondary_hover_border",
+      "label": "Hover border",
+      "default": "#D2D2CD"
+    },
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Background",
+      "default": "#F4F4F4"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Maximum width",
+      "min": 800,
+      "max": 1600,
+      "step": 50,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Title size (desktop)",
+      "min": 24,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "title_size_mobile",
+      "label": "Title size (mobile)",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#0A0A0A"
+    },
+    {
+      "type": "range",
+      "id": "subtitle_size",
+      "label": "Subtitle size (desktop)",
+      "min": 14,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "subtitle_size_mobile",
+      "label": "Subtitle size (mobile)",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "subtitle_color",
+      "label": "Subtitle color",
+      "default": "#5C5C57"
+    },
+    {
+      "type": "header",
+      "content": "Button style"
+    },
+    {
+      "type": "range",
+      "id": "button_font_size",
+      "label": "Font size (desktop)",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "button_font_size_mobile",
+      "label": "Font size (mobile)",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "button_padding_vertical",
+      "label": "Vertical padding (desktop)",
+      "min": 8,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "button_padding_vertical_mobile",
+      "label": "Vertical padding (mobile)",
+      "min": 6,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "button_padding_horizontal",
+      "label": "Horizontal padding (desktop)",
+      "min": 16,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "button_padding_horizontal_mobile",
+      "label": "Horizontal padding (mobile)",
+      "min": 12,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "button_gap",
+      "label": "Gap between buttons",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_top",
+      "label": "Card top padding (desktop)",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "card_padding_horizontal",
+      "label": "Card horizontal padding (desktop)",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "card_padding_top_mobile",
+      "label": "Card top padding (mobile)",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "card_padding_horizontal_mobile",
+      "label": "Card horizontal padding (mobile)",
+      "min": 15,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "title_spacing",
+      "label": "Title bottom spacing",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "subtitle_spacing",
+      "label": "Subtitle bottom spacing",
+      "min": 16,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "buttons_spacing",
+      "label": "Buttons bottom spacing (desktop)",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "buttons_spacing_mobile",
+      "label": "Buttons bottom spacing (mobile)",
+      "min": 20,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Image settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "image_shadow",
+      "label": "Enable shadow",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection hero"
+    }
+  ]
+}
+{% endschema %}

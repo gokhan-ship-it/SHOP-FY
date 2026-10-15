@@ -1,0 +1,831 @@
+{% doc %}
+  @prompt
+    Create a premium "How it works" section with exactly 4 cards, using the same layout and styling as the attached example.
+    
+    ## Section heading
+    
+    Add a centered heading:
+    
+    "How it works"
+    
+    The heading must be editable from the Shopify theme editor.
+    
+    ---
+    
+    ## Desktop layout
+    
+    * Display exactly 4 cards.
+    * Show all 4 cards at once.
+    * Center the cards inside the section.
+    * Equal spacing between cards.
+    * Rounded corners.
+    * Light gray background.
+    * Premium Apple-inspired design.
+    
+    ---
+    
+    ## Mobile layout
+    
+    * Show one large card with part of the next card visible.
+    * Smooth horizontal swiping.
+    * Exactly 4 pagination dots.
+    * One dot per card.
+    * Dots must update correctly.
+    * Users must still be able to scroll the page vertically when touching the slider.
+    
+    ---
+    
+    ## Card structure
+    
+    Each card contains:
+    
+    ### Step badge
+    
+    Small label at the top:
+    
+    STEP 1
+    STEP 2
+    STEP 3
+    STEP 4
+    
+    The badge should be small, subtle and uppercase.
+    
+    ---
+    
+    ### Title
+    
+    Card 1
+    **Choose Your Gift**
+    
+    Card 2
+    **Upload Memories**
+    
+    Card 3
+    **Set The Opening Date**
+    
+    Card 4
+    **Recipient Unlocks It**
+    
+    ---
+    
+    ### Description
+    
+    Card 1
+    
+    Select the perfect time capsule and create a meaningful gift for someone special.
+    
+    Card 2
+    
+    Add photos, videos, voice messages and heartfelt memories inside your capsule.
+    
+    Card 3
+    
+    Choose the exact date and time when the memories will become accessible.
+    
+    Card 4
+    
+    The recipient simply taps their phone and unlocks the capsule when the countdown ends.
+    
+    ---
+    
+    ### Image area
+    
+    * Large image placed near the bottom.
+    * Full card width.
+    * Square image area.
+    * aspect-ratio: 1 / 1.
+    * object-fit: cover.
+    * Rounded corners.
+    * Image should never appear as a small thumbnail.
+    
+    ---
+    
+    ## Theme editor settings
+    
+    Allow editing:
+    
+    * Section title
+    * Background color
+    * Card background color
+    * Border color
+    * Badge color
+    * Title color
+    * Description color
+    * Border radius
+    * Card spacing
+    * Desktop image
+    * Mobile image
+    
+    Desktop and mobile images should be separate, with desktop image used as fallback if no mobile image is provided.
+    
+    Keep the overall appearance identical to the premium Apple-style card layout shown in the example.
+    , The current mobile behavior is incorrect.
+    
+    I cannot swipe left and right with my finger.
+    
+    Please fix the touch interaction without changing the visual design.
+    
+    Requirements:
+    
+    * Users must be able to drag the carousel left and right with one finger.
+    * Swiping left or right should smoothly move between cards.
+    * Users must also be able to scroll the page vertically when their finger starts on a card or image.
+    * The carousel must never lock or trap the finger.
+    * Horizontal swiping and vertical page scrolling must both work naturally.
+    
+    Do not use custom drag logic.
+    
+    Do not call:
+    
+    ```javascript
+    preventDefault()
+    stopPropagation()
+    ```
+    
+    on touch events.
+    
+    Do not disable pointer events.
+    
+    Do not use any code that hijacks gestures.
+    
+    Use native scrolling:
+    
+    ```css
+    .carousel-track {
+      overflow-x: auto;
+      overflow-y: visible;
+      display: flex;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+    }
+    
+    .carousel-card {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+    }
+    ```
+    
+    If JavaScript is used, use passive touch listeners:
+    
+    ```javascript
+    { passive: true }
+    ```
+    
+    Never use:
+    
+    ```javascript
+    touchmove => preventDefault()
+    pointermove => preventDefault()
+    ```
+    
+    The final experience should behave like Apple's product sliders:
+    
+    * Swipe left/right = move cards
+    * Swipe up/down = scroll page
+    * No locking
+    * No stuck gestures
+    * No blocked scrolling
+    
+    Keep the current layout, card sizes, typography, colors and images exactly as they are.
+    , Add a circular arrow button on the right side of the mobile carousel so users can also navigate by tapping.
+    
+    Keep the current design exactly the same and only add this control.
+    
+    Requirements:
+    
+    * Add one circular arrow button on the right side of the carousel.
+    * The button should float over the carousel area, vertically centered.
+    * Use a clean minimal arrow icon pointing right.
+    * Button style should feel premium and subtle.
+    * The button should have a circular background.
+    * On tap/click, it should move the carousel to the next card.
+    * When it reaches the last card, tapping again should return to the first card.
+    * The arrow button must work on mobile and desktop.
+    * Do not remove swipe behavior.
+    * Do not change the card layout, spacing, images, colors, or typography.
+    * Keep the 4 pagination dots working as they are.
+    
+    This button is a fallback navigation option in case finger swiping does not work.
+    
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-how-it-works-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    padding: 60px 20px;
+    background-color: {{ block.settings.section_background_color }};
+  }
+
+  .ai-how-it-works-container-{{ ai_gen_id }} {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .ai-how-it-works-heading-{{ ai_gen_id }} {
+    text-align: center;
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin: 0 0 50px;
+    color: {{ block.settings.heading_color }};
+  }
+
+  .ai-how-it-works-carousel-wrapper-{{ ai_gen_id }} {
+    position: relative;
+  }
+
+  .ai-how-it-works-cards-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: {{ block.settings.card_spacing }}px;
+    margin: 0 auto;
+  }
+
+  .ai-how-it-works-card-{{ ai_gen_id }} {
+    background-color: {{ block.settings.card_background_color }};
+    border: 1px solid {{ block.settings.card_border_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    padding: 30px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .ai-how-it-works-card-{{ ai_gen_id }}:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .ai-how-it-works-badge-{{ ai_gen_id }} {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: {{ block.settings.badge_color }};
+    opacity: 0.7;
+  }
+
+  .ai-how-it-works-card-title-{{ ai_gen_id }} {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    margin: 0;
+    color: {{ block.settings.title_color }};
+    line-height: 1.3;
+  }
+
+  .ai-how-it-works-card-description-{{ ai_gen_id }} {
+    font-size: 15px;
+    line-height: 1.6;
+    color: {{ block.settings.description_color }};
+    margin: 0;
+    flex-grow: 1;
+  }
+
+  .ai-how-it-works-card-image-{{ ai_gen_id }} {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: {{ block.settings.border_radius }}px;
+    overflow: hidden;
+    margin-top: auto;
+  }
+
+  .ai-how-it-works-card-image-{{ ai_gen_id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ai-how-it-works-card-image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-how-it-works-card-image-placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+    opacity: 0.3;
+  }
+
+  .ai-how-it-works-nav-button-{{ ai_gen_id }} {
+    display: none;
+  }
+
+  .ai-how-it-works-pagination-{{ ai_gen_id }} {
+    display: none;
+  }
+
+  @media screen and (max-width: 989px) {
+    .ai-how-it-works-heading-{{ ai_gen_id }} {
+      font-size: 32px;
+      margin-bottom: 40px;
+    }
+
+    .ai-how-it-works-cards-{{ ai_gen_id }} {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-how-it-works-{{ ai_gen_id }} {
+      padding: 40px 0;
+    }
+
+    .ai-how-it-works-heading-{{ ai_gen_id }} {
+      font-size: 28px;
+      margin-bottom: 30px;
+      padding: 0 20px;
+    }
+
+    .ai-how-it-works-cards-{{ ai_gen_id }} {
+      display: flex;
+      grid-template-columns: none;
+      gap: 16px;
+      overflow-x: auto;
+      overflow-y: visible;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 0 20px;
+      overscroll-behavior-x: contain;
+    }
+
+    .ai-how-it-works-cards-{{ ai_gen_id }}::-webkit-scrollbar {
+      display: none;
+    }
+
+    .ai-how-it-works-card-{{ ai_gen_id }} {
+      flex: 0 0 85%;
+      scroll-snap-align: start;
+      min-width: 85%;
+    }
+
+    .ai-how-it-works-nav-button-{{ ai_gen_id }} {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+
+    .ai-how-it-works-nav-button-{{ ai_gen_id }}:active {
+      transform: translateY(-50%) scale(0.95);
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .ai-how-it-works-nav-button-{{ ai_gen_id }} svg {
+      width: 20px;
+      height: 20px;
+      stroke: {{ block.settings.title_color }};
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .ai-how-it-works-pagination-{{ ai_gen_id }} {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 24px;
+      padding: 0 20px;
+    }
+
+    .ai-how-it-works-dot-{{ ai_gen_id }} {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: {{ block.settings.badge_color }};
+      opacity: 0.3;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .ai-how-it-works-dot-{{ ai_gen_id }}.active {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+{% endstyle %}
+
+<how-it-works-{{ ai_gen_id }} class="ai-how-it-works-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-how-it-works-container-{{ ai_gen_id }}">
+    {% if block.settings.section_heading != blank %}
+      <h2 class="ai-how-it-works-heading-{{ ai_gen_id }}">{{ block.settings.section_heading }}</h2>
+    {% endif %}
+
+    <div class="ai-how-it-works-carousel-wrapper-{{ ai_gen_id }}">
+      <div class="ai-how-it-works-cards-{{ ai_gen_id }}" data-cards-container>
+        {% for i in (1..4) %}
+          {% liquid
+            assign step_key = 'step_' | append: i | append: '_badge'
+            assign title_key = 'step_' | append: i | append: '_title'
+            assign description_key = 'step_' | append: i | append: '_description'
+            assign desktop_image_key = 'step_' | append: i | append: '_desktop_image'
+            assign mobile_image_key = 'step_' | append: i | append: '_mobile_image'
+
+            assign step_badge = block.settings[step_key]
+            assign step_title = block.settings[title_key]
+            assign step_description = block.settings[description_key]
+            assign desktop_image = block.settings[desktop_image_key]
+            assign mobile_image = block.settings[mobile_image_key]
+
+            if mobile_image != blank
+              assign display_image = mobile_image
+            else
+              assign display_image = desktop_image
+            endif
+          %}
+
+          <div class="ai-how-it-works-card-{{ ai_gen_id }}" data-card-index="{{ i }}">
+            {% if step_badge != blank %}
+              <div class="ai-how-it-works-badge-{{ ai_gen_id }}">{{ step_badge }}</div>
+            {% endif %}
+
+            {% if step_title != blank %}
+              <h3 class="ai-how-it-works-card-title-{{ ai_gen_id }}">{{ step_title }}</h3>
+            {% endif %}
+
+            {% if step_description != blank %}
+              <p class="ai-how-it-works-card-description-{{ ai_gen_id }}">{{ step_description }}</p>
+            {% endif %}
+
+            <div class="ai-how-it-works-card-image-{{ ai_gen_id }}">
+              {% if display_image != blank %}
+                <img
+                  src="{{ display_image | image_url: width: 800 }}"
+                  alt="{{ step_title | escape }}"
+                  loading="lazy"
+                  width="800"
+                  height="800"
+                >
+              {% else %}
+                <div class="ai-how-it-works-card-image-placeholder-{{ ai_gen_id }}">
+                  {{ 'image' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <button 
+        class="ai-how-it-works-nav-button-{{ ai_gen_id }}" 
+        data-nav-button
+        aria-label="Next card"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <div class="ai-how-it-works-pagination-{{ ai_gen_id }}" data-pagination>
+      {% for i in (1..4) %}
+        <div class="ai-how-it-works-dot-{{ ai_gen_id }}" data-dot="{{ i }}"></div>
+      {% endfor %}
+    </div>
+  </div>
+</how-it-works-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class HowItWorks{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.cardsContainer = null;
+        this.navButton = null;
+        this.cards = [];
+        this.dots = [];
+        this.currentIndex = 0;
+        this.isMobile = false;
+      }
+
+      connectedCallback() {
+        this.cardsContainer = this.querySelector('[data-cards-container]');
+        this.navButton = this.querySelector('[data-nav-button]');
+        this.cards = Array.from(this.querySelectorAll('[data-card-index]'));
+        this.dots = Array.from(this.querySelectorAll('[data-dot]'));
+        
+        this.checkMobile();
+        this.setupScrollListener();
+        this.setupNavButton();
+        this.updateActiveDot();
+        
+        window.addEventListener('resize', () => this.checkMobile());
+      }
+
+      checkMobile() {
+        const wasMobile = this.isMobile;
+        this.isMobile = window.innerWidth <= 749;
+        
+        if (wasMobile !== this.isMobile) {
+          this.updateActiveDot();
+        }
+      }
+
+      setupScrollListener() {
+        if (!this.cardsContainer) return;
+
+        let scrollTimeout;
+        this.cardsContainer.addEventListener('scroll', () => {
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(() => {
+            this.updateActiveDot();
+          }, 100);
+        }, { passive: true });
+      }
+
+      setupNavButton() {
+        if (!this.navButton) return;
+
+        this.navButton.addEventListener('click', () => {
+          this.scrollToNext();
+        });
+      }
+
+      scrollToNext() {
+        if (!this.cardsContainer || !this.isMobile) return;
+
+        const nextIndex = (this.currentIndex + 1) % 4;
+        const card = this.cards[nextIndex];
+        
+        if (card) {
+          card.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'start'
+          });
+        }
+      }
+
+      updateActiveDot() {
+        if (!this.isMobile || !this.cardsContainer) {
+          this.dots.forEach((dot, index) => {
+            if (index === 0) {
+              dot.classList.add('active');
+            } else {
+              dot.classList.remove('active');
+            }
+          });
+          return;
+        }
+
+        const scrollLeft = this.cardsContainer.scrollLeft;
+        const cardWidth = this.cards[0]?.offsetWidth || 0;
+        const gap = 16;
+        const scrollPosition = scrollLeft + (cardWidth / 2);
+        const index = Math.floor(scrollPosition / (cardWidth + gap));
+        
+        this.currentIndex = Math.min(Math.max(index, 0), 3);
+
+        this.dots.forEach((dot, i) => {
+          if (i === this.currentIndex) {
+            dot.classList.add('active');
+          } else {
+            dot.classList.remove('active');
+          }
+        });
+      }
+    }
+
+    customElements.define('how-it-works-{{ ai_gen_id }}', HowItWorks{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "How it works",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section"
+    },
+    {
+      "type": "text",
+      "id": "section_heading",
+      "label": "Heading",
+      "default": "How it works"
+    },
+    {
+      "type": "color",
+      "id": "section_background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "color",
+      "id": "card_background_color",
+      "label": "Card background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Card border",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "color",
+      "id": "badge_color",
+      "label": "Badge color",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description color",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "card_spacing",
+      "label": "Card spacing",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Step 1"
+    },
+    {
+      "type": "text",
+      "id": "step_1_badge",
+      "label": "Badge",
+      "default": "STEP 1"
+    },
+    {
+      "type": "text",
+      "id": "step_1_title",
+      "label": "Title",
+      "default": "Choose Your Gift"
+    },
+    {
+      "type": "textarea",
+      "id": "step_1_description",
+      "label": "Description",
+      "default": "Select the perfect time capsule and create a meaningful gift for someone special."
+    },
+    {
+      "type": "image_picker",
+      "id": "step_1_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_1_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "header",
+      "content": "Step 2"
+    },
+    {
+      "type": "text",
+      "id": "step_2_badge",
+      "label": "Badge",
+      "default": "STEP 2"
+    },
+    {
+      "type": "text",
+      "id": "step_2_title",
+      "label": "Title",
+      "default": "Upload Memories"
+    },
+    {
+      "type": "textarea",
+      "id": "step_2_description",
+      "label": "Description",
+      "default": "Add photos, videos, voice messages and heartfelt memories inside your capsule."
+    },
+    {
+      "type": "image_picker",
+      "id": "step_2_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_2_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "header",
+      "content": "Step 3"
+    },
+    {
+      "type": "text",
+      "id": "step_3_badge",
+      "label": "Badge",
+      "default": "STEP 3"
+    },
+    {
+      "type": "text",
+      "id": "step_3_title",
+      "label": "Title",
+      "default": "Set The Opening Date"
+    },
+    {
+      "type": "textarea",
+      "id": "step_3_description",
+      "label": "Description",
+      "default": "Choose the exact date and time when the memories will become accessible."
+    },
+    {
+      "type": "image_picker",
+      "id": "step_3_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_3_mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "header",
+      "content": "Step 4"
+    },
+    {
+      "type": "text",
+      "id": "step_4_badge",
+      "label": "Badge",
+      "default": "STEP 4"
+    },
+    {
+      "type": "text",
+      "id": "step_4_title",
+      "label": "Title",
+      "default": "Recipient Unlocks It"
+    },
+    {
+      "type": "textarea",
+      "id": "step_4_description",
+      "label": "Description",
+      "default": "The recipient simply taps their phone and unlocks the capsule when the countdown ends."
+    },
+    {
+      "type": "image_picker",
+      "id": "step_4_desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_4_mobile_image",
+      "label": "Mobile image"
+    }
+  ],
+  "presets": [
+    {
+      "name": "How it works"
+    }
+  ]
+}
+{% endschema %}

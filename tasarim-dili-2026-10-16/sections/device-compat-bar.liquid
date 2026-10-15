@@ -1,0 +1,884 @@
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+-%}
+<style>
+  .dcb-{{ sid }} {
+    {% if s.bg != blank %}background: {{ s.bg }};{% endif %}
+    padding-top: {{ s.p_top_m }}px;
+    padding-bottom: {{ s.p_bot_m }}px;
+    {% if s.border_top %}border-top: 1px solid {{ s.border_color | default: '#d2d2cd' }};{% endif %}
+    {% if s.border_bottom %}border-bottom: 1px solid {{ s.border_color | default: '#d2d2cd' }};{% endif %}
+  }
+  .dcb-inner-{{ sid }} {
+    max-width: {{ s.max_w_m }}px;
+    margin: 0 auto;
+    padding-left: {{ s.edge_m }}px;
+    padding-right: {{ s.edge_m }}px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: {{ s.gap_m }}px;
+    flex-wrap: wrap;
+  }
+  .dcb-left-{{ sid }} {
+    display: flex;
+    align-items: center;
+    gap: {{ s.logo_gap }}px;
+    min-width: 0;
+  }
+  .dcb-logo-{{ sid }} {
+    flex: none;
+    height: {{ s.logo_h_m }}px;
+    width: auto;
+    display: block;
+  }
+  .dcb-brand-{{ sid }} {
+    flex: none;
+    width: {{ s.brand_size_m }}px;
+    height: {{ s.brand_size_m }}px;
+    display: block;
+    fill: {{ s.brand_color | default: '#0a0a0a' }};
+  }
+  .dcb-brandwrap-{{ sid }} {
+    display: inline-flex;
+    align-items: center;
+    gap: {{ s.brand_label_gap }}px;
+  }
+  .dcb-brandlab-{{ sid }} {
+    font-size: {{ s.text_size_m }}px;
+    font-weight: {{ s.text_weight }};
+    color: {{ s.text_color | default: '#0a0a0a' }};
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .dcb-mid-{{ sid }} {
+    display: flex;
+    align-items: center;
+    gap: {{ s.mid_gap }}px;
+    min-width: 0;
+  }
+  .dcb-midico-{{ sid }} {
+    flex: none;
+    width: {{ s.mid_icon_size }}px;
+    height: {{ s.mid_icon_size }}px;
+    display: block;
+    color: {{ s.mid_icon_color | default: '#0a0a0a' }};
+  }
+  .dcb-midico-{{ sid }} circle,
+  .dcb-midico-{{ sid }} path {
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .dcb-midtext-{{ sid }} {
+    margin: 0;
+    font-size: {{ s.mid_size_m }}px;
+    line-height: 1.35;
+    font-weight: {{ s.mid_weight }};
+    color: {{ s.mid_color | default: '#0a0a0a' }};
+  }
+  .dcb-text-{{ sid }} {
+    margin: 0;
+    font-size: {{ s.text_size_m }}px;
+    line-height: 1.35;
+    font-weight: {{ s.text_weight }};
+    color: {{ s.text_color | default: '#0a0a0a' }};
+  }
+  .dcb-btn-{{ sid }} {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: {{ s.btn_gap }}px;
+    background: {{ s.btn_bg | default: '#ffffff' }};
+    color: {{ s.btn_color | default: '#0a0a0a' }};
+    border: {% if s.btn_border %}1px solid {{ s.btn_border_color | default: '#d2d2cd' }}{% else %}0{% endif %};
+    {% unless s.btn_border %}box-shadow: inset 0 0 0 1px {{ s.btn_border_color | default: '#d2d2cd' }};{% endunless %}
+    border-radius: 999px;
+    padding: {{ s.btn_pad_y }}px {{ s.btn_pad_x }}px;
+    font-size: {{ s.btn_size_m }}px;
+    font-weight: {{ s.btn_weight }};
+    line-height: 1.2;
+    cursor: pointer;
+    text-align: left;
+  }
+  .dcb-btn-{{ sid }}:hover { opacity: .85; }
+  .dcb-ico-{{ sid }} {
+    flex: none;
+    width: {{ s.btn_icon_size }}px;
+    height: {{ s.btn_icon_size }}px;
+    display: block;
+  }
+  .dcb-ico-{{ sid }} circle,
+  .dcb-ico-{{ sid }} path,
+  .dcb-ico-{{ sid }} line {
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .dcb-dot-{{ sid }} { fill: currentColor; stroke: none; }
+
+  .dcb-dialog-{{ sid }} {
+    border: 0;
+    padding: 0;
+    border-radius: {{ s.pop_radius }}px;
+    max-width: {{ s.pop_width }}px;
+    width: calc(100vw - 32px);
+    background: {{ s.pop_bg | default: '#ffffff' }};
+    box-shadow: 0 10px 44px rgba(0,0,0,.22);
+  }
+  .dcb-dialog-{{ sid }}::backdrop { background: rgba(0,0,0,.55); }
+  .dcb-pop-inner-{{ sid }} { padding: {{ s.pop_pad }}px; position: relative; }
+  .dcb-pop-title-{{ sid }} {
+    margin: 0 0 12px;
+    padding-right: 34px;
+    font-size: {{ s.pop_title_size }}px;
+    line-height: 1.25;
+    font-weight: 700;
+    font-family: var(--font-heading-family);
+    letter-spacing: {%- assign tt_ls = s.pop_title_size -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+    color: {{ s.pop_title_color | default: '#0a0a0a' }};
+  }
+  .dcb-pop-body-{{ sid }} {
+    font-size: {{ s.pop_text_size }}px;
+    line-height: 1.55;
+    color: {{ s.pop_text_color | default: '#5c5c57' }};
+  }
+  .dcb-pop-body-{{ sid }} p { margin: 0 0 10px; }
+  .dcb-pop-body-{{ sid }} p:last-child { margin-bottom: 0; }
+  .dcb-pop-body-{{ sid }} ul,
+  .dcb-pop-body-{{ sid }} ol { margin: 0 0 10px; padding-left: 20px; }
+  .dcb-pop-body-{{ sid }} li { margin-bottom: 6px; }
+  .dcb-pop-body-{{ sid }} strong { color: {{ s.pop_title_color | default: '#0a0a0a' }}; }
+  .dcb-close-{{ sid }} {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 50%;
+    background: #f4f4f4;
+    color: #0a0a0a;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  @media (min-width: 768px) {
+    .dcb-{{ sid }} {
+      padding-top: {{ s.p_top_d }}px;
+      padding-bottom: {{ s.p_bot_d }}px;
+    }
+    .dcb-inner-{{ sid }} {
+      max-width: {{ s.max_w_d }}px;
+      padding-left: {{ s.edge_d }}px;
+      padding-right: {{ s.edge_d }}px;
+      gap: {{ s.gap_d }}px;
+      flex-wrap: nowrap;
+    }
+    .dcb-logo-{{ sid }} { height: {{ s.logo_h_d }}px; }
+    .dcb-brand-{{ sid }} { width: {{ s.brand_size_d }}px; height: {{ s.brand_size_d }}px; }
+    .dcb-brandlab-{{ sid }} { font-size: {{ s.text_size_d }}px; }
+    .dcb-midtext-{{ sid }} { font-size: {{ s.mid_size_d }}px; }
+    .dcb-text-{{ sid }} { font-size: {{ s.text_size_d }}px; }
+    .dcb-btn-{{ sid }} { font-size: {{ s.btn_size_d }}px; }
+  }
+</style>
+
+<div class="dcb-{{ sid }}">
+  <div class="dcb-inner-{{ sid }}">
+    <div class="dcb-left-{{ sid }}">
+      {%- if s.show_apple -%}
+        <span class="dcb-brandwrap-{{ sid }}">
+        <svg class="dcb-brand-{{ sid }}" viewBox="0 0 24 24" aria-label="Apple" role="img">
+          <path d="M17.05 12.54c-.03-2.66 2.17-3.94 2.27-4-1.24-1.81-3.17-2.06-3.85-2.09-1.64-.17-3.2.96-4.03.96-.83 0-1.91-.94-3.14-.92-1.61.03-3.1.94-3.93 2.38-1.68 2.91-.43 7.22 1.2 9.58.8 1.16 1.75 2.46 3 2.41 1.2-.05 1.66-.78 3.11-.78 1.45 0 1.86.78 3.13.76 1.29-.02 2.11-1.18 2.9-2.34.91-1.34 1.29-2.64 1.31-2.71-.03-.01-2.54-.97-2.57-3.85z"/>
+          <path d="M14.6 4.6c.66-.8 1.11-1.92.99-3.03-.95.04-2.11.63-2.79 1.43-.61.71-1.15 1.85-1.01 2.94 1.06.08 2.15-.54 2.81-1.34z"/>
+        </svg>
+        {%- if s.apple_label != blank -%}<span class="dcb-brandlab-{{ sid }}">{{ s.apple_label }}</span>{%- endif -%}
+        </span>
+      {%- endif -%}
+      {%- if s.show_android -%}
+        <span class="dcb-brandwrap-{{ sid }}">
+        <svg class="dcb-brand-{{ sid }}" viewBox="0 0 24 24" aria-label="Android" role="img">
+          <path d="M17.6 10.48l1.84-3.18a.38.38 0 0 0-.14-.52.38.38 0 0 0-.52.14l-1.86 3.22a11.4 11.4 0 0 0-9.84 0L5.22 6.92a.38.38 0 0 0-.52-.14.38.38 0 0 0-.14.52L6.4 10.48A10.8 10.8 0 0 0 1 19h22a10.8 10.8 0 0 0-5.4-8.52zM7 15.75a1.25 1.25 0 1 1 1.25-1.25A1.25 1.25 0 0 1 7 15.75zm10 0A1.25 1.25 0 1 1 18.25 14.5 1.25 1.25 0 0 1 17 15.75z"/>
+        </svg>
+        {%- if s.android_label != blank -%}<span class="dcb-brandlab-{{ sid }}">{{ s.android_label }}</span>{%- endif -%}
+        </span>
+      {%- endif -%}
+      {%- if s.logo != blank -%}
+        {{ s.logo | image_url: width: 600 | image_tag: loading: 'lazy', class: 'dcb-logo-' | append: sid, alt: s.text | strip_html | escape }}
+      {%- endif -%}
+      {%- if s.text != blank -%}
+        <p class="dcb-text-{{ sid }}">{{ s.text }}</p>
+      {%- endif -%}
+    </div>
+
+    {%- if s.orta_yazi != blank -%}
+      <div class="dcb-mid-{{ sid }}">
+        {%- if s.mid_icon != 'none' -%}
+          <svg class="dcb-midico-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
+            {%- if s.mid_icon == 'users' -%}
+              <circle cx="9.2" cy="8.2" r="3.2"/>
+              <path d="M2.8 19.4c.8-3.3 3.4-5.1 6.4-5.1s5.6 1.8 6.4 5.1"/>
+              <path d="M16.4 5.4a3.2 3.2 0 0 1 0 6.1"/>
+              <path d="M17.6 14.6c2.1.5 3.4 2.1 3.9 4.3"/>
+            {%- else -%}
+              <circle cx="12" cy="8" r="3.4"/>
+              <path d="M4.6 19.8c.9-3.5 3.8-5.5 7.4-5.5s6.5 2 7.4 5.5"/>
+            {%- endif -%}
+          </svg>
+        {%- endif -%}
+        <p class="dcb-midtext-{{ sid }}">{{ s.orta_yazi }}</p>
+      </div>
+    {%- endif -%}
+
+    {%- if s.btn_label != blank -%}
+      <button type="button" class="dcb-btn-{{ sid }}" id="dcbBtn-{{ sid }}" aria-haspopup="dialog">
+        {%- if s.btn_icon_style == 'question' -%}
+          <svg class="dcb-ico-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <circle class="dcb-dot-{{ sid }}" cx="12" cy="17" r="1.05"/>
+          </svg>
+        {%- elsif s.btn_icon_style == 'info' -%}
+          <svg class="dcb-ico-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <line x1="12" y1="11" x2="12" y2="16.5"/>
+            <circle class="dcb-dot-{{ sid }}" cx="12" cy="7.75" r="1.1"/>
+          </svg>
+        {%- endif -%}
+        <span>{{ s.btn_label }}</span>
+        {%- if s.btn_arrow -%}
+          <svg class="dcb-ico-{{ sid }}" viewBox="0 0 24 24" aria-hidden="true">
+            <line x1="4" y1="12" x2="19" y2="12"/>
+            <path d="M13.5 6.5 19 12l-5.5 5.5"/>
+          </svg>
+        {%- endif -%}
+      </button>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- if s.btn_label != blank -%}
+  <dialog class="dcb-dialog-{{ sid }}" id="dcbDialog-{{ sid }}">
+    <div class="dcb-pop-inner-{{ sid }}">
+      <button type="button" class="dcb-close-{{ sid }}" id="dcbClose-{{ sid }}" aria-label="Kapat">&#10005;</button>
+      {%- if s.pop_title != blank -%}
+        <p class="dcb-pop-title-{{ sid }}">{{ s.pop_title }}</p>
+      {%- endif -%}
+      <div class="dcb-pop-body-{{ sid }} rte">{{ s.pop_content }}</div>
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      var btn = document.getElementById('dcbBtn-{{ sid }}');
+      var dlg = document.getElementById('dcbDialog-{{ sid }}');
+      var cls = document.getElementById('dcbClose-{{ sid }}');
+      if (!btn || !dlg) return;
+      btn.addEventListener('click', function () {
+        if (typeof dlg.showModal === 'function') dlg.showModal();
+        else dlg.setAttribute('open', '');
+      });
+      if (cls) cls.addEventListener('click', function () { dlg.close(); });
+      dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+    })();
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Cihaz Uyumluluk Şeridi",
+  "tag": "section",
+  "class": "device-compat-bar-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Sol Taraf"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_apple",
+      "label": "Apple logosunu göster",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_android",
+      "label": "Android logosunu göster",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "apple_label",
+      "label": "Apple logosunun yanındaki yazı",
+      "info": "Boş bırakırsanız yalnızca logo görünür.",
+      "default": "iOS"
+    },
+    {
+      "type": "text",
+      "id": "android_label",
+      "label": "Android logosunun yanındaki yazı",
+      "default": "Android"
+    },
+    {
+      "type": "range",
+      "id": "brand_label_gap",
+      "label": "Logo ile etiketi arası boşluk",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "color",
+      "id": "brand_color",
+      "label": "Logo rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "brand_size_m",
+      "label": "Logo boyutu (mobil)",
+      "min": 12,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "brand_size_d",
+      "label": "Logo boyutu (masaüstü)",
+      "min": 12,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Ek logo görseli",
+      "info": "İsterseniz kendi logo görselinizi de ekleyebilirsiniz. Boş bırakılabilir."
+    },
+    {
+      "type": "range",
+      "id": "logo_h_m",
+      "label": "Ek logo yüksekliği (mobil)",
+      "min": 10,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "logo_h_d",
+      "label": "Ek logo yüksekliği (masaüstü)",
+      "min": 10,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "logo_gap",
+      "label": "Sol taraftaki öğeler arası boşluk",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "inline_richtext",
+      "id": "text",
+      "label": "Ek yazı",
+      "info": "Boş bırakabilirsiniz."
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Etiket / yazı rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "select",
+      "id": "text_weight",
+      "label": "Etiket / yazı kalınlığı",
+      "default": "500",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "text_size_m",
+      "label": "Etiket / yazı boyutu (mobil)",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "text_size_d",
+      "label": "Etiket / yazı boyutu (masaüstü)",
+      "min": 10,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "Orta Bölme"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "orta_yazi",
+      "label": "Orta yazı",
+      "info": "Boş bırakırsanız orta bölme hiç görünmez; şerit tek satır olur."
+    },
+    {
+      "type": "select",
+      "id": "mid_icon",
+      "label": "Orta ikon",
+      "default": "users",
+      "options": [
+        { "value": "user", "label": "Tek kişi" },
+        { "value": "users", "label": "Çoklu kişi" },
+        { "value": "none", "label": "Yok" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "mid_icon_color",
+      "label": "Orta ikon rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "mid_icon_size",
+      "label": "Orta ikon boyutu",
+      "min": 10,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "mid_gap",
+      "label": "Orta ikon ile yazı arası boşluk",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "color",
+      "id": "mid_color",
+      "label": "Orta yazı rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "select",
+      "id": "mid_weight",
+      "label": "Orta yazı kalınlığı",
+      "default": "500",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "mid_size_m",
+      "label": "Orta yazı boyutu (mobil)",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "mid_size_d",
+      "label": "Orta yazı boyutu (masaüstü)",
+      "min": 10,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "Buton"
+    },
+    {
+      "type": "text",
+      "id": "btn_label",
+      "label": "Buton yazısı",
+      "info": "Boş bırakırsanız buton ve pop-up görünmez.",
+      "default": "Cihaz uyumluluğu"
+    },
+    {
+      "type": "select",
+      "id": "btn_icon_style",
+      "label": "Buton ikonu",
+      "default": "question",
+      "options": [
+        { "value": "question", "label": "Soru işareti (?)" },
+        { "value": "info", "label": "Bilgi (i)" },
+        { "value": "none", "label": "Yok" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "btn_arrow",
+      "label": "Sağdaki ok işaretini göster",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "btn_bg",
+      "label": "Buton arka planı",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "btn_color",
+      "label": "Buton yazı rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "checkbox",
+      "id": "btn_border",
+      "label": "Butona kenarlık ekle",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "btn_border_color",
+      "label": "Buton kenarlık rengi",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "range",
+      "id": "btn_radius",
+      "label": "Buton köşe yuvarlaklığı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "btn_pad_x",
+      "label": "Buton iç boşluk - yatay",
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "btn_pad_y",
+      "label": "Buton iç boşluk - dikey",
+      "min": 2,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 9
+    },
+    {
+      "type": "range",
+      "id": "btn_gap",
+      "label": "Buton içi öğe aralığı",
+      "min": 2,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "btn_icon_size",
+      "label": "Buton ikon boyutu",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 17
+    },
+    {
+      "type": "select",
+      "id": "btn_weight",
+      "label": "Buton yazı kalınlığı",
+      "default": "500",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Orta" },
+        { "value": "600", "label": "Yarı kalın" },
+        { "value": "700", "label": "Kalın" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "btn_size_m",
+      "label": "Buton yazı boyutu (mobil)",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "btn_size_d",
+      "label": "Buton yazı boyutu (masaüstü)",
+      "min": 10,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "Pop-up İçeriği"
+    },
+    {
+      "type": "text",
+      "id": "pop_title",
+      "label": "Pop-up başlığı",
+      "default": "Hangi telefonlar uyumlu?"
+    },
+    {
+      "type": "richtext",
+      "id": "pop_content",
+      "label": "Pop-up metni",
+      "info": "Kalın, italik, madde işareti ve bağlantı ekleyebilirsiniz.",
+      "default": "<p><strong>iPhone:</strong> iPhone 7 ve sonrası (iOS 13+) NFC etiketlerini uygulamasız okur.</p><p><strong>Android:</strong> NFC özelliği olan tüm modeller. Telefonun ayarlarından NFC'nin açık olması yeterlidir.</p><p>Cihazınızda NFC olup olmadığını ayarlar bölümünde <strong>NFC</strong> araması yaparak kontrol edebilirsiniz.</p>"
+    },
+    {
+      "type": "color",
+      "id": "pop_bg",
+      "label": "Pop-up arka planı",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "pop_title_color",
+      "label": "Başlık rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "pop_text_color",
+      "label": "Metin rengi",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "range",
+      "id": "pop_title_size",
+      "label": "Başlık boyutu",
+      "min": 12,
+      "max": 34,
+      "step": 1,
+      "unit": "px",
+      "default": 19
+    },
+    {
+      "type": "range",
+      "id": "pop_text_size",
+      "label": "Metin boyutu",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "pop_width",
+      "label": "Pop-up genişliği",
+      "min": 300,
+      "max": 800,
+      "step": 20,
+      "unit": "px",
+      "default": 480
+    },
+    {
+      "type": "range",
+      "id": "pop_radius",
+      "label": "Pop-up köşe yuvarlaklığı",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "pop_pad",
+      "label": "Pop-up iç boşluğu",
+      "min": 12,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Şerit Görünümü"
+    },
+    {
+      "type": "color_background",
+      "id": "bg",
+      "label": "Arka plan",
+      "default": "#ffffff"
+    },
+    {
+      "type": "checkbox",
+      "id": "border_top",
+      "label": "Üst çizgi",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "border_bottom",
+      "label": "Alt çizgi",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Çizgi rengi",
+      "default": "#d2d2cd"
+    },
+    {
+      "type": "range",
+      "id": "gap_m",
+      "label": "Bölmeler arası boşluk (mobil)",
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "gap_d",
+      "label": "Bölmeler arası boşluk (masaüstü)",
+      "min": 4,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "max_w_m",
+      "label": "İçerik genişliği (mobil)",
+      "min": 320,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 760
+    },
+    {
+      "type": "range",
+      "id": "max_w_d",
+      "label": "İçerik genişliği (masaüstü)",
+      "min": 600,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1240
+    },
+    {
+      "type": "range",
+      "id": "edge_m",
+      "label": "Kenar boşluğu (mobil)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "edge_d",
+      "label": "Kenar boşluğu (masaüstü)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "p_top_m",
+      "label": "Üst boşluk (mobil)",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "p_bot_m",
+      "label": "Alt boşluk (mobil)",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "p_top_d",
+      "label": "Üst boşluk (masaüstü)",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "p_bot_d",
+      "label": "Alt boşluk (masaüstü)",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cihaz Uyumluluk Şeridi"
+    }
+  ]
+}
+{% endschema %}

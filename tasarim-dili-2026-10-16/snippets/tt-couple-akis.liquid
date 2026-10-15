@@ -1,0 +1,407 @@
+{%- comment -%}
+  COUPLE ZAMAN KAPSULU -- 3 ADIMLI ANIMASYONLU AKIS  (.tt-cak)
+
+  Yukleyin -> Bulusun -> Acilsin, 11 saniyelik dongu; son 1,4 saniyede
+  cizgi basa doner ve "ve tekrarlayin" belirir.
+
+  Nereden cagriliyor: snippets/tt-akis-seridi.liquid. O dosya artik bir
+  yonlendirici; urun sablonu couple ise bu dosyayi, degilse eski seridi
+  (tt-akis-seridi-klasik) render ediyor. Boylece urun sablonundaki
+  "Ozel Liquid" blogu oldugu gibi kaldi, akis fiyatin hemen altindaki
+  ayni yerde duruyor.
+
+  ------------------------------------------------------------------
+  YAPISI
+
+  Butun ritim tek degiskende: --tt-cak-sure (11s). Degistirince uc adim
+  da senkron kalir; adimlarin gecikmeleri sureden turetiliyor
+  (--tt-cak-g).
+
+  Renkler --tt-cak-* degiskenlerinden. Koyu zemine konursa bolume
+  tt-cak--koyu sinifi eklemek yeterli.
+
+  Mobilde etiketler kisa surume duser (Yukleyin / Bulusun / Acilsin),
+  uzun aciklama alttaki durum satirinda kalir.
+
+  Ekrana girmeden animasyon donmez: IntersectionObserver bolume
+  tt-cak--oynat sinifini takar, cikinca alir. JS calismazsa sinif
+  hicbir zaman eklenmez ve animasyonlar duraklamis kalir -- bu yuzden
+  hareket azaltma kuralinda son kare sabitleniyor.
+
+  prefers-reduced-motion acikken hic hareket yok: cizgi dolu, ucuncu
+  adim etkin, ucuncu durum yazisi gorunur.
+
+  KAPSAM: butun sinif adlari tt-cak- onekli, temada baska yerde
+  gecmiyor. Hicbir bolum ya da sablon dosyasina dokunulmadi.
+
+  OLCUM (Chromium, scrollWidth = innerWidth her genislikte)
+    360px   noktalar arasi 130px
+    390px   noktalar arasi 145px  (onceki daralmis surumde 108px)
+    430px   noktalar arasi 162px
+    kisa etiketler (Yukleyin / Bulusun / Acilsin), cakisma yok
+    1200px  uzun etiketler, masaustu olculeri degismedi
+    ikisinde de animasyon donuyor, JS hatasi yok
+    azaltilmis hareket: cizgi dolu, 3. durum yazisi gorunur
+    2. adim kare kare dogrulandi: 0 sn uzakta ve kucuk -> 1,05 sn'de
+    tam ust uste -> 1,3 sn'de tek kisi -> 1,65 sn'de kalp
+    kisi ikonu diger iki ikonla ayni cerceveyi dolduruyor
+    (kilit 14,8x15,8 / yukleme 14,8x14,3 / kisi 10,4x12,4 birim)
+{%- endcomment -%}
+<style>
+  .tt-cak {
+    /* ritim */
+    --tt-cak-sure: 11s;
+    /* renkler */
+    --tt-cak-metin: #0a0a0a;
+    --tt-cak-solgun: #5c5c57;
+    --tt-cak-cizgi: rgba(0, 0, 0, .12);
+    --tt-cak-nokta: rgba(0, 0, 0, .26);
+    --tt-cak-aktif: #0a0a0a;
+    --tt-cak-halka: rgba(0, 0, 0, .07);
+    --tt-cak-vurgu: #0a0a0a;
+    --tt-cak-kenar: rgba(0, 0, 0, .09);
+    /* olculer */
+    --tt-cak-ic: 15%;
+    --tt-cak-hat: 44px;
+    --tt-cak-etiket-en: 150px;
+    font-family: inherit;
+    color: var(--tt-cak-metin);
+    border-top: 1px solid var(--tt-cak-kenar);
+    border-bottom: 1px solid var(--tt-cak-kenar);
+    padding: 34px 24px 28px;
+  }
+
+  .tt-cak--koyu {
+    --tt-cak-metin: #ffffff;
+    --tt-cak-solgun: #a3a39e;
+    --tt-cak-cizgi: rgba(255, 255, 255, .16);
+    --tt-cak-nokta: rgba(255, 255, 255, .32);
+    --tt-cak-aktif: #ffffff;
+    --tt-cak-halka: rgba(255, 255, 255, .12);
+    --tt-cak-vurgu: #ffffff;
+    --tt-cak-kenar: rgba(255, 255, 255, .12);
+    background: #000;
+  }
+
+  .tt-cak-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap }
+  .tt-cak-ray { position: relative; max-width: 760px; margin: 0 auto; padding: 0 var(--tt-cak-ic) }
+  .tt-cak-hat { position: relative; height: 84px }
+
+  .tt-cak-taban,
+  .tt-cak-dolgu {
+    position: absolute; left: 0; right: 0;
+    top: calc(var(--tt-cak-hat) - 1px); height: 2px; border-radius: 2px;
+  }
+  .tt-cak-taban { background: var(--tt-cak-cizgi) }
+  .tt-cak-dolgu {
+    background: var(--tt-cak-aktif);
+    transform: scaleX(0); transform-origin: left center;
+    animation: ttCakDolgu var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite;
+  }
+
+  .tt-cak-adim {
+    position: absolute; top: 0; left: var(--tt-cak-yer);
+    width: var(--tt-cak-etiket-en);
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .tt-cak-adim--1 { --tt-cak-yer: 0%;   --tt-cak-g: 0s }
+  .tt-cak-adim--2 { --tt-cak-yer: 50%;  --tt-cak-g: calc(var(--tt-cak-sure) * -.7083) }
+  .tt-cak-adim--3 { --tt-cak-yer: 100%; --tt-cak-g: calc(var(--tt-cak-sure) * -.4167) }
+
+  .tt-cak-ikon {
+    width: 24px; height: 24px; margin-bottom: 16px; opacity: .36;
+    animation: ttCakIkon var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g);
+  }
+  .tt-cak-ikon svg { display: block; width: 24px; height: 24px }
+
+  .tt-cak-nokta {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--tt-cak-nokta);
+    animation: ttCakNokta var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g);
+  }
+
+  .tt-cak-etiket {
+    margin-top: 14px; font-size: 13px; line-height: 1.25; letter-spacing: -.01em;
+    text-align: center; color: var(--tt-cak-solgun); white-space: nowrap;
+    animation: ttCakEtiket var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g);
+  }
+  .tt-cak-kisa { display: none }
+
+  {%- comment -%}
+    Ikon ici mikro hareketler.
+
+    2. adim: iki kisi uzaktan gelir, ust uste bininca TEK kisiye
+    doner ve kafalarinin ustunde kirmizi kalp belirir. Uc ayri oge
+    var (sol / sag / tek); merkezde el degistiriyorlar, boylece
+    "birlesme" tek bir sekil morphu gibi okunuyor.
+
+    Ikisi de kendi merkezinden olceklensin/buyusun diye
+    transform-box: fill-box; SVG'de varsayilan orijin viewBox'in
+    0,0 noktasidir, o yuzden bu satir olmadan sekiller kayar.
+  {%- endcomment -%}
+  .tt-cak-kisi-sol,
+  .tt-cak-kisi-sag { transform-box: fill-box; transform-origin: center }
+  .tt-cak-kisi-sol { animation: ttCakKisiSol var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
+  .tt-cak-kisi-sag { animation: ttCakKisiSag var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
+  {%- comment -%}
+    Tek kisi ikisinden bir tik buyuk; devralma aninda boy farki
+    sicrama gibi gorunmesin diye .87'den girip normale buyuyor.
+    Ayaklar yerinde kalsin diye orijin alt-orta.
+  {%- endcomment -%}
+  .tt-cak-kisi-tek {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: ttCakKisiTek var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g);
+  }
+  .tt-cak-kalp {
+    fill: var(--tt-cak-aktif);
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ttCakKalp var(--tt-cak-sure) cubic-bezier(.34, 1.4, .5, 1) infinite var(--tt-cak-g);
+  }
+  .tt-cak-kanca { animation: ttCakKanca var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g) }
+
+  .tt-cak-durumlar { position: relative; max-width: 520px; margin: 20px auto 0; min-height: 38px }
+  .tt-cak-durum,
+  .tt-cak-dongu {
+    position: absolute; left: 0; right: 0; top: 0; text-align: center;
+    font-size: 13px; line-height: 1.45; letter-spacing: -.01em; opacity: 0;
+  }
+  .tt-cak-durum {
+    color: var(--tt-cak-solgun);
+    animation: ttCakDurum var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite var(--tt-cak-g);
+  }
+  .tt-cak-dongu {
+    color: var(--tt-cak-vurgu); font-weight: 500;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    animation: ttCakDongu var(--tt-cak-sure) cubic-bezier(.4, 0, .2, 1) infinite;
+  }
+  .tt-cak-dongu svg { width: 14px; height: 14px; display: block }
+
+  {%- comment -%}
+    Zaman cizelgesi (--tt-cak-sure = 11s)
+      0-3,1sn   1. adim   |  3,2-6,3sn   2. adim
+      6,4-9,5sn 3. adim   |  9,6-11sn    "ve tekrarlayin" + cizgi basa
+  {%- endcomment -%}
+  @keyframes ttCakDolgu {
+    0%, 28.33%   { transform: scaleX(0) }
+    32%, 57.5%   { transform: scaleX(.5) }
+    61%, 86.67%  { transform: scaleX(1) }
+    98%, 100%    { transform: scaleX(0) }
+  }
+  @keyframes ttCakNokta {
+    0%           { transform: scale(1);   background: var(--tt-cak-nokta); box-shadow: 0 0 0 0 var(--tt-cak-halka) }
+    2%, 28.33%   { transform: scale(1.5); background: var(--tt-cak-aktif); box-shadow: 0 0 0 5px var(--tt-cak-halka) }
+    31%, 100%    { transform: scale(1);   background: var(--tt-cak-nokta); box-shadow: 0 0 0 0 var(--tt-cak-halka) }
+  }
+  @keyframes ttCakIkon {
+    0%           { opacity: .36 }
+    2%, 28.33%   { opacity: 1 }
+    31%, 100%    { opacity: .36 }
+  }
+  @keyframes ttCakEtiket {
+    0%           { color: var(--tt-cak-solgun) }
+    2%, 28.33%   { color: var(--tt-cak-metin) }
+    31%, 100%    { color: var(--tt-cak-solgun) }
+  }
+  @keyframes ttCakDurum {
+    0%           { opacity: 0; transform: translateY(4px) }
+    3%, 26.5%    { opacity: 1; transform: none }
+    30%, 100%    { opacity: 0; transform: translateY(-4px) }
+  }
+  @keyframes ttCakDongu {
+    0%, 86%      { opacity: 0; transform: translateY(3px) scale(.96) }
+    89%, 96%     { opacity: 1; transform: translateY(0) scale(1.04) }
+    99%, 100%    { opacity: 0; transform: translateY(-2px) scale(1) }
+  }
+  {%- comment -%}
+    Ikisi cercevenin iki ucundan ve hafif kucuk (0,82) baslar --
+    kucukluk "uzakta" okumasini veriyor. Yaklastikca normal boya
+    donuyorlar ve merkezde kafalari TAM ust uste biniyor: sol kisi
+    8,4 + 3,6 = 12, sag kisi 15,6 - 3,6 = 12. Tam o karede ikisi
+    soner, tek kisi acilir, kalp firlar.
+
+    Bulusma %12'den %9,5'e cekildi: adim suresi de 12s'ten 11s'e
+    indigi icin yaklasma 1,44 sn'den 1,05 sn'ye iniyor.
+  {%- endcomment -%}
+  @keyframes ttCakKisiSol {
+    0%           { transform: translateX(-3.8px) scale(.82); opacity: 1 }
+    9.5%         { transform: translateX(3.6px) scale(1);    opacity: 1 }
+    12%, 28.33%  { transform: translateX(3.6px) scale(1);    opacity: 0 }
+    33%, 100%    { transform: translateX(-3.8px) scale(.82); opacity: 1 }
+  }
+  @keyframes ttCakKisiSag {
+    0%           { transform: translateX(3.8px) scale(.82);  opacity: 1 }
+    9.5%         { transform: translateX(-3.6px) scale(1);   opacity: 1 }
+    12%, 28.33%  { transform: translateX(-3.6px) scale(1);   opacity: 0 }
+    33%, 100%    { transform: translateX(3.8px) scale(.82);  opacity: 1 }
+  }
+  @keyframes ttCakKisiTek {
+    0%, 9.5%     { opacity: 0; transform: scale(.87) }
+    12%          { opacity: 1; transform: scale(.87) }
+    15%, 28.33%  { opacity: 1; transform: scale(1) }
+    31%, 100%    { opacity: 0; transform: scale(.87) }
+  }
+  @keyframes ttCakKalp {
+    0%, 10.5%    { opacity: 0; transform: scale(.35) translateY(2px) }
+    15%          { opacity: 1; transform: scale(1.12) translateY(0) }
+    18%, 28.33%  { opacity: 1; transform: scale(1) translateY(0) }
+    31%, 100%    { opacity: 0; transform: scale(.35) translateY(2px) }
+  }
+  @keyframes ttCakKanca {
+    0%           { transform: translateY(1.4px) }
+    9%, 28.33%   { transform: translateY(-1.6px) }
+    33%, 100%    { transform: translateY(1.4px) }
+  }
+
+  {%- comment -%} Ekrana girmeden baslamasin {%- endcomment -%}
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-dolgu,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-nokta,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-ikon,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-etiket,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-durum,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-dongu,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-kisi-sol,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-kisi-sag,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-kisi-tek,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-kalp,
+  .tt-cak:not(.tt-cak--oynat) .tt-cak-kanca { animation-play-state: paused }
+
+  {%- comment -%}
+    Mobil olculer.
+
+    --tt-cak-ic ray'in kendi ic boslugu; uc adim bu boslugun ICINE
+    yerlesiyor, yani deger buyudukce noktalar birbirine yaklasiyor.
+    Urun sutunu dar oldugu icin 15% ikonlari ic ice sokuyordu; 4%
+    ile ray sutunun neredeyse tamamini kullaniyor ve noktalar arasi
+    mesafe yaklasik yariya yakin artiyor.
+
+    --tt-cak-etiket-en adim kutusunun genisligi. Kutu noktanin
+    uzerinde ortalandigi icin ilk ve son adimda yarisi disari tasar;
+    ray ic boslugu kuculdukce bu tasma sayfaya yatay kaydirma
+    ekleyebilir. Bu yuzden kisa etiketlere (Yukleyin / Bulusun /
+    Acilsin) yetecek kadar daraltiliyor -- olculer Chromium'da
+    360px ve 390px'te dogrulandi, scrollWidth artmiyor.
+  {%- endcomment -%}
+  @media (max-width: 600px) {
+    .tt-cak { --tt-cak-ic: 4%; --tt-cak-hat: 40px; --tt-cak-etiket-en: 66px; padding: 28px 20px 24px }
+    .tt-cak-hat { height: 78px }
+    .tt-cak-ikon { width: 22px; height: 22px; margin-bottom: 14px }
+    .tt-cak-ikon svg { width: 22px; height: 22px }
+    .tt-cak-etiket { font-size: 12px; margin-top: 13px }
+    .tt-cak-uzun { display: none }
+    .tt-cak-kisa { display: inline }
+    .tt-cak-durum, .tt-cak-dongu { font-size: 12.5px }
+    .tt-cak-durumlar { margin-top: 18px; min-height: 36px }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tt-cak * { animation: none !important }
+    .tt-cak-dolgu { transform: scaleX(1) }
+    .tt-cak-ikon { opacity: 1 }
+    .tt-cak-adim--3 .tt-cak-etiket { color: var(--tt-cak-metin) }
+    .tt-cak-adim--3 .tt-cak-nokta { background: var(--tt-cak-aktif); transform: scale(1.5); box-shadow: 0 0 0 5px var(--tt-cak-halka) }
+    .tt-cak-durum--3 { opacity: 1 }
+    .tt-cak-kisi-sol, .tt-cak-kisi-sag { opacity: 0 }
+    .tt-cak-kisi-tek, .tt-cak-kalp { opacity: 1 }
+  }
+</style>
+
+<section class="tt-cak" aria-label="Couple Zaman Kapsülü nasıl çalışır">
+  <p class="tt-cak-sr">Üç adım: ikiniz de yükleyin, yan yana gelin, kapsül birlikte açılır. Uzaklaşınca tekrar kilitlenir.</p>
+
+  <div class="tt-cak-ray" aria-hidden="true">
+    <div class="tt-cak-hat">
+      <span class="tt-cak-taban"></span>
+      <span class="tt-cak-dolgu"></span>
+
+      <div class="tt-cak-adim tt-cak-adim--1">
+        <span class="tt-cak-ikon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.6 15.6v2.5A1.9 1.9 0 0 0 6.5 20h11a1.9 1.9 0 0 0 1.9-1.9v-2.5"/>
+            <path d="M9 15V5.7"/><path d="M7.1 7.6 9 5.7l1.9 1.9"/>
+            <path d="M15 15V5.7"/><path d="M13.1 7.6 15 5.7l1.9 1.9"/>
+          </svg>
+        </span>
+        <span class="tt-cak-nokta"></span>
+        <span class="tt-cak-etiket"><span class="tt-cak-uzun">İkiniz de yükleyin</span><span class="tt-cak-kisa">Yükleyin</span></span>
+      </div>
+
+      <div class="tt-cak-adim tt-cak-adim--2">
+        <span class="tt-cak-ikon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path class="tt-cak-kalp" fill="#0a0a0a" stroke="none"
+                  d="M12 7.2c-2.1-1.5-3.4-2.6-3.4-3.9 0-1.05.85-1.8 1.8-1.8.75 0 1.35.42 1.6.95.25-.53.85-.95 1.6-.95.95 0 1.8.75 1.8 1.8 0 1.3-1.3 2.4-3.4 3.9z"/>
+            <g class="tt-cak-kisi-sol">
+              <circle cx="8.4" cy="12.8" r="2.7"/>
+              <path d="M3.9 21c0-2.49 2.01-4.5 4.5-4.5s4.5 2.01 4.5 4.5"/>
+            </g>
+            <g class="tt-cak-kisi-sag">
+              <circle cx="15.6" cy="12.8" r="2.7"/>
+              <path d="M11.1 21c0-2.49 2.01-4.5 4.5-4.5s4.5 2.01 4.5 4.5"/>
+            </g>
+            <g class="tt-cak-kisi-tek">
+              <circle cx="12" cy="11.7" r="3.1"/>
+              <path d="M6.8 21c0-2.87 2.32-5.2 5.2-5.2s5.2 2.32 5.2 5.2"/>
+            </g>
+          </svg>
+        </span>
+        <span class="tt-cak-nokta"></span>
+        <span class="tt-cak-etiket"><span class="tt-cak-uzun">Yan yana gelin</span><span class="tt-cak-kisa">Buluşun</span></span>
+      </div>
+
+      <div class="tt-cak-adim tt-cak-adim--3">
+        <span class="tt-cak-ikon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4.6" y="10.6" width="14.8" height="9.2" rx="2.3"/>
+            <path class="tt-cak-kanca" d="M8.7 10.6V7.4a3.35 3.35 0 0 1 6.7 0v1.6"/>
+            <path d="M12 14.3v2.1"/>
+          </svg>
+        </span>
+        <span class="tt-cak-nokta"></span>
+        <span class="tt-cak-etiket"><span class="tt-cak-uzun">Birlikte açılsın</span><span class="tt-cak-kisa">Açılsın</span></span>
+      </div>
+    </div>
+
+    <div class="tt-cak-durumlar">
+      <p class="tt-cak-durum tt-cak-durum--1 tt-cak-adim--1">Fotoğraf, video ve notlarınızı ikiniz de yükleyin.</p>
+      <p class="tt-cak-durum tt-cak-durum--2 tt-cak-adim--2">Buluşana kadar kapsül kilitli kalır.</p>
+      <p class="tt-cak-durum tt-cak-durum--3 tt-cak-adim--3">Yan yana geldiğinizde kapsül açılır, uzaklaşınca tekrar kilitlenir.</p>
+      <p class="tt-cak-dongu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4.5V11h-6"/>
+        </svg>
+        ve tekrarlayın
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    'use strict';
+
+    function tara() {
+      var kokler = document.querySelectorAll('.tt-cak');
+      if (!kokler.length) return;
+
+      if (!('IntersectionObserver' in window)) {
+        for (var i = 0; i < kokler.length; i++) kokler[i].classList.add('tt-cak--oynat');
+        return;
+      }
+
+      var gozcu = new IntersectionObserver(function (kayitlar) {
+        for (var k = 0; k < kayitlar.length; k++) {
+          kayitlar[k].target.classList.toggle('tt-cak--oynat', kayitlar[k].isIntersecting);
+        }
+      }, { threshold: .35 });
+
+      for (var j = 0; j < kokler.length; j++) gozcu.observe(kokler[j]);
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tara);
+    else tara();
+  })();
+</script>

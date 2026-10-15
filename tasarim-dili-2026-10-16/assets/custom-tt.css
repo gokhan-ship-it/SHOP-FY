@@ -1,0 +1,273 @@
+/* Text To Next - ozel duzenlemeler */
+
+/* ------------------------------------------------------------------
+   Varyant secim butonlari: Sepete Ekle butonu ile ayni yuvarlak hat
+------------------------------------------------------------------ */
+.variant-picker .label-swatch,
+.swatches--variant .label-swatch,
+.product-form__input .label-swatch {
+  border-radius: 999px !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+/* ------------------------------------------------------------------
+   Nasil Calisir (Akis) - MASAUSTU
+------------------------------------------------------------------ */
+@media (min-width: 768px) {
+  .how-it-works-timeline-section > div > div {
+    max-width: 1240px;
+  }
+
+  .how-it-works-timeline-section ol {
+    gap: 32px !important;
+  }
+
+  .how-it-works-timeline-section ol > li {
+    border: 1px solid #d2d2cd;
+    border-radius: 16px;
+    padding: 24px 16px;
+    background: #ffffff;
+    align-items: flex-start;
+    text-align: left;
+    row-gap: 16px;
+  }
+
+  .how-it-works-timeline-section ol > li p,
+  .how-it-works-timeline-section ol > li div {
+    text-align: left;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Cihaz Uyumluluk Seridi - MOBIL
+   Tek satir: solda iOS + Android logolari, sagda buton.
+   (Orta bolme bolumun "Orta yazi" ayari bos oldugu icin hic basilmiyor.)
+------------------------------------------------------------------ */
+@media (max-width: 767px) {
+  .device-compat-bar-section > div > div {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .device-compat-bar-section > div > div > div:first-child {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .device-compat-bar-section > div > div > button {
+    margin-left: auto;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}
+@media (max-width: 359px) {
+  .device-compat-bar-section > div > div > button {
+    gap: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Urun sayfasi: baslik ustunde yildizlar - puan - kullanici sayisi
+   (custom-tt.js tarafindan yerlestirilir)
+------------------------------------------------------------------ */
+.tt-proof {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  flex-wrap: wrap;
+}
+.tt-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 0;
+}
+.tt-stars svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  fill: #0a0a0a;
+}
+.tt-proof-score,
+.tt-proof-users {
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #0a0a0a;
+  white-space: nowrap;
+}
+.tt-proof-sep {
+  width: 1px;
+  height: 14px;
+  background: #d2d2cd;
+  display: inline-block;
+  margin: 0 2px;
+}
+.tt-proof-icon {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  display: block;
+  fill: none;
+  stroke: #0a0a0a;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  margin-right: -2px;
+}
+@media (max-width: 479px) {
+  .tt-proof { gap: 6px; }
+  .tt-proof-score,
+  .tt-proof-users { font-size: 13px; }
+  .tt-stars svg { width: 15px; height: 15px; }
+}
+
+/* ------------------------------------------------------------------
+   Urun sayfasi: Sepete Ekle altindaki satir ikonlari
+   (custom-tt.js icerigi degistirir, olculere dokunmaz)
+------------------------------------------------------------------ */
+svg[data-tt-icon] {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ------------------------------------------------------------------
+   Urun sayfasi: 3 adimli akis seridi
+   snippets/tt-akis-seridi.liquid ile birlikte calisir.
+   Pasif bilgi bandi: link/buton yok, imlec degismez, hover yok.
+   Renkler temanin metin renginden turetilir, sabit hex yoktur.
+------------------------------------------------------------------ */
+.tt-akis {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  padding: 7px 0;
+  list-style: none;
+}
+.tt-akis--cizgi {
+  border-top: 0.5px solid rgba(138, 138, 133, 0.32);
+  border-bottom: 0.5px solid rgba(138, 138, 133, 0.32);
+}
+@supports (color: color-mix(in srgb, currentColor 20%, transparent)) {
+  .tt-akis--cizgi {
+    border-top-color: color-mix(in srgb, currentColor 22%, transparent);
+    border-bottom-color: color-mix(in srgb, currentColor 22%, transparent);
+  }
+}
+.tt-akis-adim {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0 3px;
+  text-align: center;
+  list-style: none;
+}
+.tt-akis-ikon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+.tt-akis-ikon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tt-akis-ikon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+.tt-akis-yazi {
+  display: block;
+  font-size: 12px;
+  line-height: 1.35;
+  hyphens: none;
+  -webkit-hyphens: none;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.tt-akis--ok .tt-akis-adim + .tt-akis-adim::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: translateY(-50%) rotate(45deg);
+  opacity: 0.35;
+  pointer-events: none;
+}
+.rte .tt-akis,
+.rte .tt-akis li,
+.rte .tt-akis p {
+  margin: 0;
+  padding-left: 0;
+}
+.rte .tt-akis-adim { padding: 0 3px; }
+@media (max-width: 400px) {
+  .tt-akis-yazi { font-size: 11px; }
+  .tt-akis--ok .tt-akis-adim + .tt-akis-adim::before { display: none; }
+  .tt-akis-adim { padding: 0 2px; }
+}
+
+/* ------------------------------------------------------------------
+   Shopify Inbox sohbet balonu mobilde sabit Sepete Ekle seridini
+   kapatiyordu. Balonu seridin ustune al, z-index'i seridin altina cek.
+   (Serit: product-sticky-form, z-20)
+------------------------------------------------------------------ */
+@media (max-width: 767px) {
+  #ShopifyChat,
+  div[id^="ShopifyChat"],
+  iframe[name="ShopifyChat"],
+  .shopify-chat-container {
+    z-index: 15 !important;
+    bottom: 92px !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Marka dili (palet): fiyat, indirim rozeti, ikincil butonlar
+------------------------------------------------------------------ */
+/* Ustu cizili eski fiyat: muted, cizgi theme.css'te #5c5c57 */
+.price__sale {
+  color: #5c5c57;
+}
+
+/* Indirim adi rozeti (sepet): lime yazi acik zeminde olmasin.
+   Tutar rozeti (.badge--onsale) tema ayarindan lime + ink geliyor. */
+.badge.badge--highlight {
+  --badge-background: #f4f4f4;
+  --badge-foreground: #0a0a0a;
+}
+
+/* Ikincil butonlar (acik zemin): beyaz zemin, ink yazi, 1px #d2d2cd */
+.cookie-modal .cookie__buttons .button--secondary,
+.page-404 .button--secondary,
+.cart .title-wrapper .button--secondary {
+  background-color: #ffffff;
+  color: #0a0a0a;
+}
+.cookie-modal .cookie__buttons .button--secondary::after,
+.page-404 .button--secondary::after,
+.cart .title-wrapper .button--secondary::after {
+  border: 1px solid #d2d2cd;
+}

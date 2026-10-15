@@ -1,0 +1,533 @@
+{%- liquid
+  assign sid = section.id
+  assign ic_size_m = section.settings.ic_size_m
+-%}
+<style>
+  .fh-{{ sid }} {
+    {% if section.settings.background_color != blank %}background: {{ section.settings.background_color }};{% endif %}
+    padding-top: {{ section.settings.p_top_m }}px;
+    padding-bottom: {{ section.settings.p_bot_m }}px;
+  }
+  .fh-inner-{{ sid }} {
+    max-width: {{ section.settings.max_width }}px;
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .fh-heading-{{ sid }} {
+    margin: 0 0 {{ section.settings.head_gap }}px;
+    font-size: {{ section.settings.head_m }}px;
+    line-height: 1.2;
+    font-weight: 400;
+    letter-spacing: {%- assign tt_ls = section.settings.head_m -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+    color: {{ section.settings.heading_color | default: '#0a0a0a' }};
+  }
+  .fh-heading-{{ sid }} strong,
+  .fh-heading-{{ sid }} b { font-weight: 700; }
+  .fh-list-{{ sid }} {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: {{ section.settings.r_gap_m }}px;
+  }
+  .fh-item-{{ sid }} {
+    display: flex;
+    align-items: flex-start;
+    gap: {{ section.settings.ic_gap }}px;
+  }
+  .fh-icon-{{ sid }} {
+    flex: none;
+    width: {{ ic_size_m }}px;
+    height: {{ ic_size_m }}px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fh-icon-{{ sid }} img,
+  .fh-icon-{{ sid }} svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .fh-body-{{ sid }} { min-width: 0; }
+  .fh-title-{{ sid }} {
+    margin: 0 0 4px;
+    font-size: {{ section.settings.t_size_m }}px;
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: {%- assign tt_ls = section.settings.t_size_m -%}{%- if tt_ls >= 28 -%}-1px{%- elsif tt_ls >= 20 -%}-0.8px{%- elsif tt_ls >= 16 -%}-0.3px{%- else -%}normal{%- endif -%};
+    color: {{ section.settings.title_color | default: '#0a0a0a' }};
+  }
+  .fh-text-{{ sid }} {
+    margin: 0;
+    font-size: {{ section.settings.x_size_m }}px;
+    line-height: 1.45;
+    color: {{ section.settings.text_color | default: '#5c5c57' }};
+  }
+  .fh-text-{{ sid }} p { margin: 0; }
+  .fh-text-{{ sid }} p + p { margin-top: 6px; }
+
+  @media (min-width: 768px) {
+    .fh-{{ sid }} {
+      padding-top: {{ section.settings.p_top_d }}px;
+      padding-bottom: {{ section.settings.p_bot_d }}px;
+    }
+    .fh-inner-{{ sid }} {
+      max-width: {{ section.settings.max_width_desktop }}px;
+      padding-left: 32px;
+      padding-right: 32px;
+    }
+    .fh-heading-{{ sid }} {
+      font-size: {{ section.settings.head_d }}px;
+      line-height: 1.15;
+      {% if section.settings.heading_align_desktop == 'center' %}text-align: center;{% endif %}
+      {% if section.settings.heading_max_width > 0 %}max-width: {{ section.settings.heading_max_width }}px;{% endif %}
+      {% if section.settings.heading_align_desktop == 'center' %}margin-left: auto; margin-right: auto;{% endif %}
+    }
+    .fh-title-{{ sid }} { font-size: {{ section.settings.t_size_d }}px; }
+    .fh-text-{{ sid }} { font-size: {{ section.settings.x_size_d }}px; }
+    .fh-icon-{{ sid }} {
+      width: {{ section.settings.ic_size_d }}px;
+      height: {{ section.settings.ic_size_d }}px;
+    }
+
+    {%- case section.settings.desktop_layout -%}
+      {%- when 'split' -%}
+        .fh-wrap-{{ sid }} {
+          display: grid;
+          grid-template-columns: minmax(0, {{ section.settings.split_ratio }}fr) minmax(0, 1fr);
+          gap: {{ section.settings.column_gap }}px;
+          align-items: start;
+        }
+        .fh-heading-{{ sid }} { margin-bottom: 0; max-width: none; }
+        .fh-list-{{ sid }} { gap: {{ section.settings.r_gap_d }}px; }
+
+      {%- when 'columns' -%}
+        .fh-list-{{ sid }} {
+          grid-template-columns: repeat({{ section.settings.columns_desktop }}, minmax(0, 1fr));
+          column-gap: {{ section.settings.column_gap }}px;
+          row-gap: {{ section.settings.r_gap_d }}px;
+        }
+        {%- if section.settings.stack_icon_desktop -%}
+          .fh-item-{{ sid }} { flex-direction: column; {% if section.settings.heading_align_desktop == 'center' %}align-items: center; text-align: center;{% endif %} }
+        {%- endif -%}
+
+      {%- else -%}
+        .fh-list-{{ sid }} { gap: {{ section.settings.r_gap_d }}px; }
+    {%- endcase -%}
+  }
+</style>
+
+<div class="fh-{{ sid }}">
+  <div class="fh-inner-{{ sid }}">
+    <div class="fh-wrap-{{ sid }}">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="fh-heading-{{ sid }}">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="fh-list-{{ sid }}" role="list">
+          {%- for block in section.blocks -%}
+            <li class="fh-item-{{ sid }}" {{ block.shopify_attributes }}>
+              {%- if block.settings.icon_image != blank -%}
+                <span class="fh-icon-{{ sid }}">
+                  {%- assign icon_alt = block.settings.icon_image.alt | default: block.settings.title | escape -%}
+                  {{- block.settings.icon_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: icon_alt, widths: '80, 120, 160, 240' -}}
+                </span>
+              {%- elsif block.settings.icon != 'none' -%}
+                <span class="fh-icon-{{ sid }}">
+                  {%- render 'icon-guarantee', icon: block.settings.icon, size: 'custom', class: 'stroke-1', width: ic_size_m -%}
+                </span>
+              {%- endif -%}
+              <div class="fh-body-{{ sid }}">
+                {%- if block.settings.title != blank -%}
+                  <p class="fh-title-{{ sid }}">{{ block.settings.title }}</p>
+                {%- endif -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="fh-text-{{ sid }} rte">{{ block.settings.text }}</div>
+                {%- endif -%}
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Özellik Listesi",
+  "tag": "section",
+  "class": "feature-highlights-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Başlık"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Başlık",
+      "info": "Kalın yazmak için metni seçip B (bold) kullanın.",
+      "default": "Malzemelerimiz Zaman Kapsülü'nün <strong>ömür boyu dayanmasını</strong> sağlar."
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Başlık rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "head_m",
+      "label": "Başlık boyutu (mobil)",
+      "min": 16,
+      "max": 44,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "head_gap",
+      "label": "Başlık ile liste arası boşluk (mobil)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Yazılar"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Satır başlığı rengi",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "range",
+      "id": "t_size_m",
+      "label": "Satır başlığı boyutu (mobil)",
+      "min": 12,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Açıklama rengi",
+      "default": "#5c5c57"
+    },
+    {
+      "type": "range",
+      "id": "x_size_m",
+      "label": "Açıklama boyutu (mobil)",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "header",
+      "content": "İkonlar ve Yerleşim (mobil)"
+    },
+    {
+      "type": "range",
+      "id": "ic_size_m",
+      "label": "İkon boyutu (mobil)",
+      "min": 20,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 34
+    },
+    {
+      "type": "range",
+      "id": "ic_gap",
+      "label": "İkon ile yazı arası boşluk",
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "r_gap_m",
+      "label": "Satırlar arası boşluk (mobil)",
+      "min": 4,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Arka plan",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "İçerik genişliği (mobil)",
+      "min": 320,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 760
+    },
+    {
+      "type": "range",
+      "id": "p_top_m",
+      "label": "Üst boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "p_bot_m",
+      "label": "Alt boşluk (mobil)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "MASAÜSTÜ GÖRÜNÜMÜ",
+      "info": "Bu bölümdeki ayarlar yalnızca 768px ve üzeri ekranlarda geçerlidir. Mobil görünüm etkilenmez."
+    },
+    {
+      "type": "select",
+      "id": "desktop_layout",
+      "label": "Masaüstü yerleşimi",
+      "default": "split",
+      "options": [
+        { "value": "split", "label": "Başlık solda, özellikler sağda" },
+        { "value": "columns", "label": "Başlık üstte, özellikler yan yana" },
+        { "value": "narrow", "label": "Mobil ile aynı (alt alta)" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_align_desktop",
+      "label": "Başlık hizası",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Sola" },
+        { "value": "center", "label": "Ortaya" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "head_d",
+      "label": "Başlık boyutu",
+      "min": 20,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "heading_max_width",
+      "label": "Başlık satır genişliği",
+      "info": "Başlığın kaç piksel sonra alt satıra ineceğini belirler. 0 = sınırsız (tek satır kalmaya çalışır).",
+      "min": 0,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "split_ratio",
+      "label": "Başlık sütunu genişliği",
+      "info": "\"Başlık solda\" yerleşiminde kullanılır. Küçük değer = dar başlık sütunu.",
+      "min": 0.4,
+      "max": 2,
+      "step": 0.1,
+      "default": 0.9
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Sütun sayısı",
+      "info": "\"Başlık üstte, özellikler yan yana\" yerleşiminde kullanılır.",
+      "default": "3",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "stack_icon_desktop",
+      "label": "İkonu yazının üstüne al",
+      "info": "\"Başlık üstte, özellikler yan yana\" yerleşiminde kullanılır.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "ic_size_d",
+      "label": "İkon boyutu",
+      "min": 20,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "t_size_d",
+      "label": "Satır başlığı boyutu",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "x_size_d",
+      "label": "Açıklama boyutu",
+      "min": 11,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "r_gap_d",
+      "label": "Satırlar arası boşluk",
+      "min": 4,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "Sütunlar arası boşluk",
+      "min": 16,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "max_width_desktop",
+      "label": "İçerik genişliği",
+      "min": 600,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1120
+    },
+    {
+      "type": "range",
+      "id": "p_top_d",
+      "label": "Üst boşluk",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "p_bot_d",
+      "label": "Alt boşluk",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "Özellik satırı",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon_image",
+          "label": "İkon görseli",
+          "info": "Kendi ikonunuzu yükleyin. Boş bırakırsanız aşağıdaki hazır ikon kullanılır."
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Hazır ikon",
+          "default": "shield",
+          "options": [
+            { "value": "none", "label": "Yok" },
+            { "value": "shield", "label": "Kalkan" },
+            { "value": "award", "label": "Ödül" },
+            { "value": "trophy", "label": "Kupa" },
+            { "value": "star", "label": "Yıldız" },
+            { "value": "heart", "label": "Kalp" },
+            { "value": "lock", "label": "Kilit" },
+            { "value": "check_mark", "label": "Onay" },
+            { "value": "wash", "label": "Su / Yıkama" },
+            { "value": "droplet", "label": "Su damlası (su geçirmez)" },
+            { "value": "recycling", "label": "Geri dönüşüm" },
+            { "value": "organic", "label": "Organik / Yaprak" },
+            { "value": "lightning", "label": "Şimşek" },
+            { "value": "time", "label": "Saat" },
+            { "value": "watch", "label": "Kol saati" },
+            { "value": "truck", "label": "Kargo" },
+            { "value": "return", "label": "İade" },
+            { "value": "gift", "label": "Hediye" },
+            { "value": "ruler", "label": "Cetvel" },
+            { "value": "devices", "label": "Cihazlar" },
+            { "value": "support", "label": "Destek" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Satır başlığı",
+          "default": "Özellik başlığı"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Açıklama",
+          "default": "<p>Bu özelliği müşterilerinize kısaca anlatın.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Özellik Listesi",
+      "blocks": [
+        { "type": "feature" },
+        { "type": "feature" },
+        { "type": "feature" }
+      ]
+    }
+  ]
+}
+{% endschema %}

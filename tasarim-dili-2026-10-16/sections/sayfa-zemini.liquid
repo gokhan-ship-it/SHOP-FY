@@ -1,0 +1,62 @@
+{%- comment -%}
+  Sayfa Zemini - gorunur bir ciktisi yoktur, yalnizca CSS basar.
+
+  Neden bolum olarak duruyor: zemin rengini tema ayarlarindan
+  degistirmek TUM sayfalari etkiler. Bu bolum sadece eklendigi
+  sablonda calisir, yani yalnizca bu koleksiyon sayfasinin zeminini
+  degistirir; magazanin geri kalani beyaz kalir.
+
+  Bolumun kendi sarmalayicisi bos kalir (yukseklik uretmez), sirasi
+  onemli degil -- CSS nerede basilirsa basilsin sayfanin tamamina
+  uygulanir.
+
+  Not: urun kartlarinin zemini tema ayarindan geliyor. Kart rengi ile
+  sayfa zemini birbirine cok yakinsa kartlarin siniri silikleşir;
+  boyle bir durumda kart rengini tema ayarlarindan ayirmak gerekir.
+{%- endcomment -%}
+
+{%- if section.settings.aktif and section.settings.zemin != blank -%}
+<style>
+  body,
+  #MainContent,
+  .main-content,
+  main {
+    background-color: {{ section.settings.zemin }};
+  }
+
+  {%- if section.settings.bolumleri_saydamlastir %}
+  /* Tema kimi bolum sarmalayicilarina kendi zeminini basiyor; bunlar
+     saydam yapilinca sayfa zemini alttan gorunuyor. Kendi rengi olan
+     bolumler (koyu serit gibi) kendi ic ogesini boyadigi icin
+     bundan etkilenmiyor. */
+  .shopify-section > .section,
+  .shopify-section > .section--padding {
+    background-color: transparent;
+  }
+  {%- endif %}
+</style>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Sayfa Zemini",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Bu bölümün görünür bir çıktısı yoktur. Yalnızca eklendiği sayfanın arka plan rengini değiştirir."
+    },
+    { "type": "checkbox", "id": "aktif", "label": "Etkin", "default": true },
+    { "type": "color", "id": "zemin", "label": "Sayfa zemini", "default": "#F4F4F4" },
+    {
+      "type": "checkbox",
+      "id": "bolumleri_saydamlastir",
+      "label": "Bölüm zeminlerini saydamlaştır",
+      "info": "Bir bölüm hâlâ beyaz kalıyorsa bunu açın.",
+      "default": false
+    }
+  ],
+  "presets": [
+    { "name": "Sayfa Zemini" }
+  ]
+}
+{% endschema %}
