@@ -1,0 +1,1215 @@
+/* ------------------------------------------------------------------
+   SINGLE / COUPLE SECIM KARTLARI  (.tt-sc-*)
+
+   Golge yok, degrade yok, gereksiz animasyon yok.
+   Renkler bolum ayarindan geliyor; buradaki var() yedekleri yalnizca
+   ayar okunamazsa devreye giriyor.
+
+   URUN KARTI BU DOSYADA DEGIL: izgaradaki kart artik bu is icin
+   yazilan .tt-uk-* karti (assets/tt-uk-kart.css). Temanin kendi
+   snippets/product-card.liquid dosyasina hic dokunulmadi, magazanin
+   geri kalan sayfalarinda oldugu gibi kullanilmaya devam ediyor.
+   Burasi yalnizca izgarayi ve karonun sarmalayicisini bicimliyor.
+
+   OLCULEN KONTRASTLAR
+     #15171c / beyaz            17.9:1
+     #6b6f78 / beyaz             5.0:1
+     beyaz  / #15171c           17.9:1
+     #a3a6ad / #15171c           7.4:1
+     #30614b / beyaz             7.2:1
+     beyaz  / #30614b            7.2:1
+     #30614b / #f0f7f3           6.6:1
+     #30614b / #eef6f1           6.5:1
+     #8fcbb0 / #1f2c26           7.8:1
+     #8fcbb0 / #15171c           9.7:1
+     #b42318 / beyaz             6.6:1
+   ------------------------------------------------------------------ */
+.tt-sc {
+  --tt-sc-zemin: #ffffff;
+  --tt-sc-koyu: #15171c;
+  --tt-sc-kenar: #e1e4e8;
+  --tt-sc-gri: #6b6f78;
+  --tt-sc-gri-koyu: #a3a6ad;
+  /* Ayirici cizgi. Acik ton kenarlik ayarindan DEGIL sabit:
+     kart kenarligindan (#e1e4e8) bir tik acik olmasi isteniyor. */
+  --tt-sc-cizgi: #eceef1;
+  --tt-sc-ayrac-koyu: #2c2e33;
+  --tt-sc-yesil: #30614b;
+  --tt-sc-halka-yesil: #599176;
+  --tt-sc-yesil-acik: #8fcbb0;
+  --tt-sc-yesil-zemin: #f0f7f3;
+  /* Yukleme kutusu. Bolum ayari DEGIL: iki kartin tek farkini anlatan
+     sabit bir vurgu, renk secimine acilmasi istenmedi.
+     Olculdu: #30614b / #eef6f1 = 6.5:1, #8fcbb0 / #1f2c26 = 7.8:1. */
+  /* Kirilimdeki "%50" cipi ve tasarruf rozeti. Olculdu:
+     #30614b / #e3f1ea = 6.1:1 */
+  --tt-sc-rozet-zemin: #e3f1ea;
+  --tt-sc-kutu-zemin: #eef6f1;
+  --tt-sc-kutu-yazi: #30614b;
+  --tt-sc-kutu-zemin-koyu: #1f2c26;
+  --tt-sc-kutu-yazi-koyu: #8fcbb0;
+  --tt-sc-uyari: #b42318;
+  --tt-sc-genislik: 1200px;
+  --tt-sc-sutun-m: 2;
+  --tt-sc-sutun-d: 4;
+
+  background: var(--tt-sc-zemin);
+  color: var(--tt-sc-koyu);
+  font-variant-numeric: tabular-nums;
+}
+.tt-sc *, .tt-sc *::before, .tt-sc *::after { box-sizing: border-box; }
+
+.tt-sc-ic {
+  max-width: var(--tt-sc-genislik);
+  margin: 0 auto;
+  padding: 28px 16px 40px;
+}
+
+/* --- Baslik --- */
+.tt-sc-bas { display: grid; gap: 4px; margin-bottom: 18px; }
+.tt-sc-ust {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--tt-sc-gri);
+}
+.tt-sc .tt-sc-baslik {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--tt-sc-koyu);
+}
+
+/* ------------------------------------------------------------------
+   SECIM KARTLARI
+
+   Iki kartin BUTUN satirlari birebir hizali olmali: Single'in acilma
+   sekli iki satira tassa bile "Single" ve "Couple" basliklari,
+   ayirici cizgiler ve alt satirlar ayni yerden baslamali.
+
+   Bunu subgrid sagliyor. Kartlar .tt-sc-kartlar'in DOGRUDAN cocugu
+   -- araya bir sarmalayici koyulsaydi subgrid zinciri kirilirdi.
+   Satir araliklari row-gap ile degil satir ogelerinin KENDI
+   marjlariyla veriliyor; boylece bir satirin yuksekligi iki karttan
+   uzun olanina gore buyuyor ve digeri de ayni yerden devam ediyor.
+
+   Rozet kartin ust kenarina biniyor (top: -10px); izgaraya 12px ust
+   bosluk verildi ki kirpilmasin.
+   ------------------------------------------------------------------ */
+/* ALTI SATIR: baslik, acilma sekli, ayirici, urun sayisi, yukleme
+   kutusu, "Nasil calisir?" dugmesi. Altinci satir sonradan eklendi;
+   dugmenin iki kartta AYNI hizada olmasi da subgrid'den geliyor --
+   kartlardan biri uzasa (Single'in acilma metni iki satira duser)
+   digerinin dugmesi de ayni yerde kaliyor. Kart flex'e cevrilseydi
+   bu kilit kirilirdi. */
+.tt-sc-kartlar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(6, auto);
+  column-gap: 8px;
+  row-gap: 0;
+  padding-top: 12px;
+}
+.tt-sc-kart {
+  position: relative;
+  grid-row: span 6;
+  display: grid;
+  grid-template-rows: subgrid;
+  padding: 22px 12px 13px;
+  /* Kenarlik border DEGIL inset box-shadow: Chrome border-width'i tam
+     piksele yuvarliyor, yani "1.5px" ekranda 1px cikiyordu. Inset
+     golge yuvarlanmiyor ve DUZENI HIC ETKILEMIYOR -- kartin olcusu
+     secili olsun olmasin ayni, yani secim degisince yanindaki kart
+     yerinden oynamiyor. */
+  border: 0;
+  box-shadow: inset 0 0 0 1.5px var(--tt-sc-kenar);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  text-align: left;
+  cursor: pointer;
+}
+.tt-sc-kart[aria-checked="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--tt-sc-koyu);
+  background: var(--tt-sc-koyu);
+  color: #fff;
+}
+.tt-sc-kart:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+.tt-sc-kart[aria-checked="true"]:focus-visible { outline-color: var(--tt-sc-yesil-acik); }
+
+/* Rozet: kartin ust kenarina oturuyor, basligin hizasina DEGIL --
+   kartin ust ic boslugu 22px, yani rozetin altinda da yazinin
+   ustunde de yer kaliyor. Iki kartta da ayni bosluk var ki
+   rozetsiz kartin satirlari kaymasin. */
+.tt-sc-rozet {
+  position: absolute;
+  top: -10px;
+  /* Kartin ust kenarinda YATAY ORTA. Kartin kendi transform'u yok ve
+     secim degisiminde de transform kullanilmiyor (yalnizca background
+     ve box-shadow), yani translateX ile cakisma riski yok. */
+  left: 50%;
+  transform: translateX(-50%);
+  /* Dar ekranda kart kenarindan tasmasin. */
+  max-width: calc(100% - 16px);
+  z-index: 1;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--tt-sc-yesil);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Secim dairesi: sag ust kosede. Seciliyken ici dolu gorunsun diye
+   kalin beyaz kenarlik + koyu ic (kartin zeminiyle ayni). */
+/* Dairenin dikey merkezi BASLIGIN ILK SATIRININ ortasinda:
+   kart ust dolgusu 22 + (20px x 1.2 = 24px satir kutusu) / 2 = 34,
+   dairenin yarisi 8 -> top: 26px. */
+.tt-sc-radyo {
+  position: absolute;
+  top: 26px;
+  right: 12px;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--tt-sc-kenar);
+  border-radius: 50%;
+  background: #fff;
+}
+.tt-sc-kart[aria-checked="true"] .tt-sc-radyo {
+  border: 4.5px solid #fff;
+  background: var(--tt-sc-koyu);
+}
+
+/* Baslik artik kartin ILK satiri; ustundeki kucuk gri yazi kaldirildi.
+   Sag dolgu secim dairesi icin: yazi daireye binmiyor. */
+.tt-sc-ad {
+  display: block;
+  padding-right: 22px;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: inherit;
+}
+
+/* --- Acilma sekli: basligin hemen altinda, GRI DEGIL ---
+   "Belirledigin tarihte acilir" / "Bulusunca acilir" urunun en onemli
+   farkini anlatiyor. Once basligin USTUNDE 12px gri duruyordu, yani
+   karttaki en silik yaziydi. Artik basligin altinda, 14px medium ve
+   kartin ana yazi renginde: beyaz kartta #15171c, secili kartta beyaz
+   (color: inherit ile kendiliginden). */
+.tt-sc-acilma {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: inherit;
+}
+.tt-sc-acilma-metin { min-width: 0; }
+/* Metin iki satira kirilirsa ikon ustte, ilk satirin yaninda kaliyor.
+   14px x 1.3 = 18.2px satir kutusu, ikon 16px -> 1px ust bosluk ortaliyor. */
+.tt-sc-acilma .tt-sc-ikon { flex: none; width: 16px; height: 16px; margin-top: 1px; }
+
+.tt-sc-ayrac {
+  display: block;
+  height: 1px;
+  margin: 11px 0 9px;
+  background: var(--tt-sc-cizgi);
+}
+.tt-sc-satir {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--tt-sc-gri);
+}
+.tt-sc-satir + .tt-sc-satir { margin-top: 8px; }
+.tt-sc-satir-metin { min-width: 0; }
+.tt-sc-ikon { flex: 0 0 auto; width: 15px; height: 15px; color: currentColor; }
+
+.tt-sc-kart[aria-checked="true"] .tt-sc-satir { color: var(--tt-sc-gri-koyu); }
+.tt-sc-kart[aria-checked="true"] .tt-sc-ayrac { background: var(--tt-sc-ayrac-koyu); }
+
+/* --- Yukleme kutusu: iki kartin ASIL farki ---
+   "Sadece sen yuklersin" ile "Ikiniz de yuklersiniz" arasindaki fark
+   Single ile Couple arasindaki farkin ta kendisi; ust satirla ayni
+   agirlikta duruyorken goze carpmiyordu. Kendi zemini, kendi rengi ve
+   bir punto buyuk yazisi var.
+
+   Kutu kendi grid satirini DOLDURUYOR: subgrid'de grid ogesinin
+   varsayilan hizalamasi stretch, yani metinlerden biri iki satira
+   kirilirsa satir buyuyor ve diger karttaki kutu da onunla ayni boya
+   uzuyor. Ek bir kural gerekmiyor -- sadece height/align-self ile
+   bozulmamasi gerekiyor, o yuzden ikisi de verilmedi.
+
+   Renk gecisi YOK: bolumde hicbir yerde transition yok, kart secilince
+   butun renkler ani degisiyor. Kutu da onlarla ayni anda degisiyor. */
+.tt-sc-satir--kutu {
+  align-items: flex-start;
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: var(--tt-sc-kutu-zemin);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--tt-sc-kutu-yazi);
+}
+/* Ikon ilk satirla hizali: 13px x 1.25 = 16.25px satir kutusu, ikon
+   16px. align-items: flex-start ikisini ustten esitliyor. */
+.tt-sc-satir--kutu .tt-sc-ikon { flex: none; width: 16px; height: 16px; }
+
+/* Ustteki .tt-sc-satir kurali ile AYNI ozgullukte; sirayla kazaniyor.
+   Bu yuzden kutu kurallari o bloktan SONRA duruyor. */
+.tt-sc-kart[aria-checked="true"] .tt-sc-satir--kutu {
+  background: var(--tt-sc-kutu-zemin-koyu);
+  color: var(--tt-sc-kutu-yazi-koyu);
+}
+
+/* Halkalar CSS ile ciziliyor: 14px cap, 2px kenarlik, ikincisi
+   -5px ile birincinin uzerine biniyor. Couple'in ikinci halkasi
+   yesil; secili koyu kartta acik yesile donuyor ki kaybolmasin. */
+.tt-sc-halkalar { flex: 0 0 auto; display: flex; align-items: center; }
+.tt-sc-halkalar i {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+.tt-sc-halkalar--cift i + i {
+  margin-left: -5px;
+  border-color: var(--tt-sc-halka-yesil);
+}
+.tt-sc-kart[aria-checked="true"] .tt-sc-halkalar--cift i + i {
+  border-color: var(--tt-sc-yesil-acik);
+}
+
+/* Subgrid desteklemeyen tarayici (Safari 15 ve oncesi): kartlar
+   flex'e dusuyor ve hiza sabit min-yuksekliklerle korunuyor.
+   2.6em = 14px yazi, 1.3 satir yuksekligi, iki satir + pay. */
+@supports not (grid-template-rows: subgrid) {
+  .tt-sc-kartlar { grid-template-rows: none; align-items: stretch; }
+  .tt-sc-kart { grid-row: auto; display: flex; flex-direction: column; }
+  .tt-sc-ad { min-height: 1.2em; }
+  .tt-sc-acilma { min-height: 2.6em; }
+  .tt-sc-satir { min-height: 15px; }
+  /* Kutu karti dibine yaslaniyor: kartlar zaten esit boyda (stretch),
+     boylece iki kutu da ayni cizgide bitiyor. min-height iki satirlik
+     metne gore: 7 + 7 dolgu + 2 x 16.25 satir = 46.5px. */
+  .tt-sc-satir:last-child { margin-top: auto; }
+  .tt-sc-satir--kutu { min-height: 47px; }
+}
+
+/* --- Filtre satiri --- */
+/* DIKKAT: hidden niteligi tek basina YETMIYOR. Tarayicinin
+   [hidden] { display: none } kurali, ogeye acikca bir display
+   verildiginde eziliyor. Asagidaki ogelerin hepsinde acik bir display
+   var, o yuzden her birinin ayrica [hidden] kurali olmak ZORUNDA.
+   .tt-sc-cipler'de bu unutuldu ve cip satiri gizlenmesi gereken yerde
+   ekranda kaldi: icindeki Kadin/Erkek cipleri gizlenip geriye tek
+   basina "Tumu" kaldi. */
+.tt-sc-filtre[hidden] { display: none; }
+.tt-sc-cipler[hidden] { display: none; }
+.tt-sc-izgara[hidden] { display: none; }
+.tt-sc-sayac[hidden] { display: none; }
+.tt-sc-filtre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+.tt-sc-cipler { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.tt-sc-cip {
+  padding: 7px 14px;
+  border: 1px solid var(--tt-sc-kenar);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tt-sc-cip[aria-checked="true"] {
+  border-color: var(--tt-sc-koyu);
+  background: var(--tt-sc-koyu);
+  color: #fff;
+}
+.tt-sc-cip[hidden] { display: none; }
+.tt-sc-cip:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+.tt-sc-sayac { flex: 0 0 auto; font-size: 13px; line-height: 1.2; color: var(--tt-sc-gri); }
+
+/* ------------------------------------------------------------------
+   SETINI OLUSTUR
+   ------------------------------------------------------------------ */
+/* SET KUTUSU
+   Ic boslugu kutunun kendisinde DEGIL, bolumlerde: en ustteki koyu
+   bandin kenara kadar uzanmasi gerekiyor. overflow: hidden bandin
+   koseleri takip etmesi icin.
+
+   "%50" rozeti slotun ustune -9px tasiyor; slot satirinin ustunde
+   ilerleme cubugundan gelen 12px bosluk var, o yuzden overflow: hidden
+   rozeti kesmiyor. Rozet kutunun DIS kenarina da yaklasmiyor. */
+/* 20px: Couple modunda kutu kartlarin hemen altinda, yani Single'da
+   filtrenin durdugu yerde. Iki modda ilk bosluk ayni kalsin diye
+   filtreyle ayni deger. */
+.tt-sc-set {
+  margin-top: 20px;
+  overflow: hidden;
+  border: 1px solid var(--tt-sc-kenar);
+  border-radius: 16px;
+  background: #fff;
+}
+.tt-sc-set[hidden] { display: none; }
+
+/* --- Kural bandi --- */
+.tt-sc-set-bant {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 12px;
+  background: var(--tt-sc-koyu);
+}
+.tt-sc-set-bant .tt-sc-bant-ikon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: var(--tt-sc-yesil-acik);
+}
+.tt-sc-set-bant-metin { min-width: 0; }
+.tt-sc-set-bant-ana {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: #fff;
+}
+/* Olculdu: #a3a6ad / #15171c = 7.4:1 */
+.tt-sc-set-bant-alt {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--tt-sc-gri-koyu);
+}
+
+/* --- Ic alan --- */
+.tt-sc-set-ic { padding: 12px; }
+.tt-sc-set-bas {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tt-sc-set-baslik { font-size: 15px; font-weight: 500; line-height: 1.25; color: var(--tt-sc-koyu); }
+.tt-sc-set-sayac { flex: 0 0 auto; font-size: 13px; font-weight: 500; line-height: 1.2; color: var(--tt-sc-yesil); }
+
+/* --- Ilerleme cubugu --- */
+.tt-sc-ilerleme {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  margin: 8px 0 12px;
+}
+.tt-sc-ilerleme i {
+  height: 4px;
+  border-radius: 999px;
+  background: #e5e8ec;
+  transition: background-color 160ms linear;
+}
+.tt-sc-ilerleme i[data-sc-dolu] { background: var(--tt-sc-yesil); }
+
+/* --- Slotlar --- */
+.tt-sc-slotlar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tt-sc-slot {
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-height: 62px;
+  padding: 11px 10px;
+  border: 1.5px dashed #c9ced5;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+/* DOLU SLOTUN 1.5px KENARI BOX-SHADOW ILE.
+   Chrome border-width'i tam piksele yuvarliyor: "1.5px" yaziliyor,
+   1px ciziliyor (kartlarda da ayni tuzaga dusmustuk). Dolu slotta
+   kenarlik duz oldugu icin inset golge ile gercekten 1.5px
+   cizdirilebiliyor; bos slotun kesikli kenari golgeyle yapilamadigi
+   icin orada Chrome'un 1px'i kaliyor.
+   Kenarligin kendisi seffaflasiyor ama yerinde duruyor: yerlesim
+   iki durumda da ayni, slotlar zipllamiyor. */
+.tt-sc-slot[data-sc-dolu] {
+  border-style: solid;
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--tt-sc-koyu);
+}
+.tt-sc-slot:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+
+.tt-sc-slot-ust {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.tt-sc-slot .tt-sc-slot-ikon { flex: none; width: 15px; height: 15px; }
+/* Bos ve dolu ikonun ikisi de basiliyor, secimi CSS yapiyor. */
+.tt-sc-slot .tt-sc-slot-ikon--dolu,
+.tt-sc-slot[data-sc-dolu] .tt-sc-slot-ikon--bos { display: none; }
+.tt-sc-slot[data-sc-dolu] .tt-sc-slot-ikon--dolu { display: block; }
+/* Uzun urun adi slotu bozmasin: tek satir, ucu uc nokta. */
+.tt-sc-slot-ad { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.tt-sc-slot-alt { font-size: 12px; line-height: 1.3; color: var(--tt-sc-gri); overflow-wrap: anywhere; }
+
+/* 2. slot: %50 indirimli urun. Bos haliyle de vurgulu -- musteriyi
+   doldurmaya cagiran sey indirimin kendisi.
+   Olculdu: #30614b / #f0f7f3 = 6.6:1, beyaz / #30614b = 7.2:1 */
+.tt-sc-slot--indirim {
+  border-color: var(--tt-sc-halka-yesil);
+  background: var(--tt-sc-yesil-zemin);
+  color: var(--tt-sc-yesil);
+}
+.tt-sc-slot--indirim[data-sc-dolu] {
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--tt-sc-yesil);
+}
+.tt-sc-slot--indirim .tt-sc-slot-alt { font-weight: 500; color: var(--tt-sc-yesil); }
+.tt-sc-slot--indirim:focus-visible { outline-color: var(--tt-sc-yesil); }
+.tt-sc-slot-rozet {
+  position: absolute;
+  top: -9px;
+  right: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--tt-sc-yesil);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45;
+  white-space: nowrap;
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-sc-ilerleme i { transition: none; }
+}
+
+/* Ekran okuyucuya yapilan duyurular (sepete eklendi / hata) icin.
+   JS bu ogeyi bolumun koküne ekliyor, .tt-uk'in disina. */
+.tt-sc .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------
+   URUN IZGARASI
+   Temanin card-grid sinifi DEGIL: her karo filtrelenebilir bir
+   sarmalayicida duruyor ve temanin izgarasi dogrudan-cocuk
+   secicilerine dayaniyor olabilirdi.
+   ------------------------------------------------------------------ */
+.tt-sc-izgara {
+  display: grid;
+  grid-template-columns: repeat(var(--tt-sc-sutun-m), minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 20px;
+  /* Ayni satirdaki kartlar esit boyda: izgara ogesinin varsayilan
+     hizalamasi stretch, kart da height: 100% aliyor. */
+  align-items: stretch;
+}
+.tt-sc-karo { position: relative; min-width: 0; }
+.tt-sc-karo[hidden] { display: none; }
+
+.tt-sc .tt-sc-grup {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.tt-sc-grup[hidden] { display: none; }
+.tt-sc-grup-sayi { flex: 0 0 auto; font-size: 12px; font-weight: 400; color: var(--tt-sc-gri); }
+
+/* Kartin ALTINDAKI eski "Sete ekle" dugmesi ve onun dis outline'i
+   kaldirildi. Dugme artik gorselin sag alt kosesinde (.tt-uk-dugme)
+   ve secili kartin cercevesi kartin KENDI seffaf cercevesinin rengi
+   degisince olusuyor -- ikisi de kartin olcusunu degistirmiyor, mod
+   degisince izgara yeniden akmiyor.
+   Bkz. assets/tt-uk-kart.css */
+
+.tt-sc .tt-sc-bos {
+  margin: 24px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--tt-sc-gri);
+}
+.tt-sc-bos[hidden] { display: none; }
+
+/* ------------------------------------------------------------------
+   YAPISKAN SEPET CUBUGU
+
+   Cubuk KOYU degil BEYAZ: icine fiyat kirilimi girdi ve kirilimin
+   butun renkleri (urun adi, cipler, ustu cizili fiyat, ayrac) acik bir
+   yuzey icin tanimli. Koyu zeminde bunlarin hicbiri okunmuyordu.
+
+   OLCULEN KONTRASTLAR (hepsi beyaz ya da kendi zemini uzerinde)
+     #15171c / beyaz    17.9:1   urun adi
+     #6b6f78 / beyaz     5.0:1   durum yazisi, "Toplam"
+     #73767e / beyaz     4.5:1   ustu cizili liste fiyati
+     #686c75 / #eceef1   4.5:1   "1. urun" cipi
+     #30614b / #e3f1ea   6.1:1   "%50" cipi ve tasarruf rozeti
+     beyaz  / #30614b    7.2:1   buton
+     #b42318 / beyaz     6.6:1   uyari
+
+   #73767e ve #686c75, istenen #8b8e95 ve #6b6f78 tonlarinin AA'yi
+   tutturan EN AZ koyulastirilmis hali (3.3:1 ve 4.3:1 idiler); ton ve
+   doygunluk aynen korundu.
+   ------------------------------------------------------------------ */
+.tt-sc-cubuk {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 60;
+  width: 100%;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--tt-sc-cizgi);
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  box-shadow: 0 -2px 12px rgb(0 0 0 / .06);
+}
+.tt-sc-cubuk[hidden] { display: none; }
+/* Gercek sepet cekmecesi (z-35) acikken cubuk (z-60) odeme butonunu
+   ortuyordu. Z-index dusurmek yetmez -- cubuk perdenin altindan yine
+   gorunurdu; katman aciksa cubuk tamamen kalkiyor. Niteligi JS
+   koyuyor, karari da gorunurluge bakarak veriyor. */
+.tt-sc-cubuk[data-sc-ortulu] { display: none; }
+.tt-sc-cubuk-ic { max-width: var(--tt-sc-genislik); margin: 0 auto; }
+
+/* --- Fiyat kirilimi ---
+   Acilma/kapanma grid-template-rows 0fr -> 1fr ile yapiliyor:
+   yukseklik onceden bilinmiyor, max-height tahmini de kisa metinde
+   yavas, uzun metinde kirpik olurdu. Ic sarmalayicinin min-height: 0
+   ve overflow: hidden almasi sart, yoksa kapali halde tasar. */
+.tt-sc-kirilim {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 180ms ease;
+}
+.tt-sc-kirilim[data-sc-acik] { grid-template-rows: 1fr; }
+.tt-sc-kirilim-ic {
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.tt-sc-kirilim[data-sc-acik] .tt-sc-kirilim-ic { opacity: 1; }
+
+.tt-sc-kir {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.tt-sc-kir + .tt-sc-kir { margin-top: 4px; }
+/* Satirin kendi display'i var; [hidden] tek basina yetmiyor. */
+.tt-sc-kir[hidden] { display: none; }
+
+.tt-sc-kir-sol {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  /* min-width: 0 olmadan uzun ad esnek kutuyu tasirir ve fiyati
+     saga dogru iter. */
+  min-width: 0;
+}
+/* Uzun urun adi satiri bozmasin: tek satir, ucu uc nokta. */
+.tt-sc-kir-ad {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: var(--tt-sc-koyu);
+}
+.tt-sc-kir-etiket {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.tt-sc-kir[data-sc-indirimli] .tt-sc-kir-etiket {
+  background: var(--tt-sc-rozet-zemin);
+  color: var(--tt-sc-yesil);
+}
+.tt-sc-kir:not([data-sc-indirimli]) .tt-sc-kir-etiket {
+  background: #eceef1;
+  color: #686c75;
+}
+
+.tt-sc-kir-sag {
+  flex: none;
+  white-space: nowrap;
+  /* Rakamlar alt alta hizali dursun. */
+  font-variant-numeric: tabular-nums;
+}
+.tt-sc-kir-eski {
+  margin-right: 5px;
+  font-size: 11.5px;
+  color: #73767e;
+}
+.tt-sc-kir-eski[hidden] { display: none; }
+.tt-sc-kir-fiyat { font-weight: 500; }
+
+.tt-sc-kir-ayrac {
+  height: 1px;
+  margin: 10px 0 9px;
+  background: var(--tt-sc-cizgi);
+}
+/* Ayrac urun satirlarini TOPLAMDAN ayiriyor. Tek urun seciliyken
+   toplam yok, yani ayiracak bir sey de yok -- yoksa satirin altinda
+   bir yere baglanmayan bir cizgi kaliyordu. Kosul JS'ten degil
+   kokteki hazir bayragindan geliyor (n === 2). */
+.tt-sc-cubuk:not([data-sc-hazir]) .tt-sc-kir-ayrac { display: none; }
+
+/* ARA TOPLAM VE CARK INDIRIMI
+   Urun satirlariyla ayni olculer, ama adlari urun adi degil -- normal
+   agirlikta ve gri, boylece goz once urunlere takiliyor. Kod satirinin
+   tutari yesil: ekrandaki tek "eksi" rakam o, ayrica indirimin nereden
+   geldigini renk de soyluyor.
+   Olculdu: #6b6f78 / beyaz = 5.0:1, #30614b / beyaz = 7.2:1 */
+.tt-sc-kir--ara[hidden],
+.tt-sc-kir--kod[hidden] { display: none; }
+.tt-sc-kir--ara .tt-sc-kir-ad,
+.tt-sc-kir--kod .tt-sc-kir-ad {
+  font-weight: 400;
+  color: var(--tt-sc-gri);
+}
+.tt-sc-kir--ara .tt-sc-kir-fiyat { font-weight: 400; color: var(--tt-sc-gri); }
+.tt-sc-kir--kod .tt-sc-kir-fiyat { color: var(--tt-sc-yesil); }
+/* Kod satiri aciksa altindaki "Toplam" ona yapisik duruyordu: iki
+   rakam alt alta tek blok gibi okunuyordu. Yalnizca satir gorunurken
+   bosluk aciliyor, kapaliyken cubuk eskisi kadar kisa kaliyor. */
+.tt-sc-kir--kod:not([hidden]) { margin-bottom: 9px; }
+
+/* --- Tasarruf ve toplam --- */
+.tt-sc-cubuk-ust {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+}
+.tt-sc-cubuk-durum { font-size: 13px; line-height: 1.3; color: var(--tt-sc-gri); }
+.tt-sc-cubuk-durum[hidden] { display: none; }
+
+.tt-sc-tasarruf {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--tt-sc-rozet-zemin);
+  color: var(--tt-sc-yesil);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.tt-sc-tasarruf[hidden] { display: none; }
+.tt-sc-tasarruf .tt-sc-tasarruf-ikon { flex: none; width: 15px; height: 15px; }
+
+.tt-sc-toplam {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+.tt-sc-toplam[hidden] { display: none; }
+.tt-sc-toplam-etiket { font-size: 11px; line-height: 1.3; color: var(--tt-sc-gri); }
+.tt-sc-cubuk-tutar {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Buton --- */
+.tt-sc-cubuk-dugme {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  margin-top: 11px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tt-sc-yesil);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.tt-sc-cubuk-dugme .tt-sc-dugme-ikon { flex: none; width: 18px; height: 18px; }
+.tt-sc-cubuk-dugme:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+.tt-sc-cubuk-dugme[aria-busy="true"] { opacity: .65; }
+
+.tt-sc .tt-sc-cubuk-uyari {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--tt-sc-uyari);
+}
+.tt-sc-cubuk-uyari[hidden] { display: none; }
+
+/* Cubuk sayfanin son satirini kapatmasin. Yukseklik JS tarafindan
+   olculup yaziliyor (kirilim acilinca da yeniden); burasi yalnizca
+   JS calismazsa devreye giren yedek. */
+body.tt-sc-cubuk-acik { padding-bottom: var(--tt-sc-cubuk-yuk, 210px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-sc-kirilim,
+  .tt-sc-kirilim-ic { transition: none; }
+}
+
+/* ------------------------------------------------------------------
+   VARYANT SECICI
+   ------------------------------------------------------------------ */
+.tt-sc-varyant {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tt-sc-koyu);
+}
+.tt-sc-varyant::backdrop { background: rgb(0 0 0 / .45); }
+.tt-sc-varyant-ic {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  background: #fff;
+}
+.tt-sc-varyant-bas {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.tt-sc .tt-sc-varyant-baslik { margin: 0; font-size: 17px; font-weight: 500; line-height: 1.3; }
+.tt-sc-varyant-kapat {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--tt-sc-kenar);
+  border-radius: 50%;
+  background: #fff;
+  color: inherit;
+  cursor: pointer;
+}
+.tt-sc-varyant-kapat svg { width: 13px; height: 13px; }
+.tt-sc-varyant-liste { display: grid; gap: 8px; overflow-y: auto; overscroll-behavior: contain; }
+.tt-sc-varyant-sec {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid var(--tt-sc-kenar);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--tt-sc-koyu);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+}
+.tt-sc-varyant-sec:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+.tt-sc-varyant-sec[disabled] { opacity: .45; cursor: not-allowed; }
+.tt-sc-varyant-fiyat { flex: 0 0 auto; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* CARK KODU VARKEN: karttaki blogun ayni duzeni -- etiket, yesil tutar,
+   ustu cizili liste fiyati. Kartta alt alta uc satir; burada da oyle,
+   ama saga dayali cunku secenek adi solda duruyor.
+   Olculdu: #30614b / beyaz = 7.2:1, #73767e / beyaz = 4.5:1 */
+.tt-sc-varyant-fiyat[data-sc-indirimli] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  text-align: right;
+}
+.tt-sc-varyant-kod-etiket {
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--tt-sc-yesil);
+}
+.tt-sc-varyant-yeni {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -.01em;
+  color: var(--tt-sc-yesil);
+}
+.tt-sc-varyant-eski {
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: #73767e;
+  text-decoration-thickness: 1px;
+}
+
+/* ------------------------------------------------------------------
+   "NASIL CALISIR?" DUGMESI  (kartin 6. satiri)
+
+   RENKLER NEDEN DEGISKEN DEGIL
+   Bu dortlu (zemin, kenar, yazi, ikon dairesi) brief'te birebir hex
+   olarak verildi ve kartin kendi paletinden bagimsiz. Ayara baglansa
+   iki ayri dogruluk kaynagi olurdu; burada tek yerde duruyorlar.
+
+   !important NEDEN VAR
+   Temanin genel buton kurallari (theme.css) .tt-sc kapsamindan daha
+   yuksek ozgullukte color veriyor ve yaziyi griye cekiyordu. Yazi ve
+   ok ayri sinifta tutuluyor ki !important yalnizca RENGE uygulansin,
+   baska hicbir ozelligi kilitlemesin.
+   ------------------------------------------------------------------ */
+.tt-sc-nasil-ac {
+  /* Kartin en altina yaslaniyor: 6. satir kalan yuksekligi aliyor ve
+     dugme o satirin ALT kenarina oturuyor. Iki kartta da ayni yer. */
+  align-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid #c3c8ce;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  /* Temanin buton gecisleri burada istenmiyor; yalnizca renk gecsin. */
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+.tt-sc-nasil-ac-ikon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #11161c;
+  color: #fff;
+}
+.tt-sc-nasil-ac-ikon .tt-sc-ikon { width: 13px; height: 13px; }
+.tt-sc-nasil-ac-yazi {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+  color: #11161c !important;
+}
+.tt-sc-nasil-ac-ok {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  color: #11161c !important;
+}
+.tt-sc-nasil-ac-ok .tt-sc-ikon { width: 13px; height: 13px; }
+
+/* Secili (koyu) kart */
+.tt-sc-kart[aria-checked="true"] .tt-sc-nasil-ac {
+  border-color: #262d35;
+  background: #262d35;
+}
+.tt-sc-kart[aria-checked="true"] .tt-sc-nasil-ac-ikon {
+  background: #9fd4bd;
+  color: #11161c;
+}
+.tt-sc-kart[aria-checked="true"] .tt-sc-nasil-ac-yazi,
+.tt-sc-kart[aria-checked="true"] .tt-sc-nasil-ac-ok { color: #fff !important; }
+
+.tt-sc-nasil-ac:focus-visible { outline: 2px solid #11161c; outline-offset: 2px; }
+.tt-sc-kart[aria-checked="true"] .tt-sc-nasil-ac:focus-visible { outline-color: var(--tt-sc-yesil-acik); }
+
+/* ------------------------------------------------------------------
+   "NASIL CALISIR?" POP-UP'I
+
+   Varyant secicinin (.tt-sc-varyant) kullandigi desenin aynisi -- native <dialog>:
+   mobilde alttan acilan sheet, masaustunde ortada modal. ESC, odak
+   tuzagi ve arka planin kaymamasi tarayicidan geliyor.
+   ------------------------------------------------------------------ */
+.tt-sc-nasil {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tt-sc-koyu);
+}
+.tt-sc-nasil::backdrop { background: rgb(0 0 0 / .45); }
+.tt-sc-nasil-ic {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  padding: 10px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  background: #fff;
+}
+/* Alttan yukari kayarak gelme. Native dialog'da acilis anini
+   yakalayabilecegimiz tek kanca [open]; kapanis animasyonu icin JS
+   gerekirdi, kapanis bilerek ani birakildi (250ms'lik bir gecikme
+   kapatmayi agir hissettiriyordu). */
+@keyframes ttScNasilGir {
+  from { transform: translateY(14px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.tt-sc-nasil[open] .tt-sc-nasil-ic { animation: ttScNasilGir 250ms cubic-bezier(.22,.68,.32,1); }
+.tt-sc-nasil[open]::backdrop { animation: ttScNasilOrtu 250ms ease; }
+@keyframes ttScNasilOrtu { from { opacity: 0; } to { opacity: 1; } }
+
+.tt-sc-nasil-tutamac {
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  background: #d8dce1;
+}
+
+.tt-sc-nasil-bas {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.tt-sc-nasil-bas-yazi { min-width: 0; }
+.tt-sc-nasil-etiket {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--tt-sc-yesil);
+}
+.tt-sc .tt-sc-nasil-baslik {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -.01em;
+}
+.tt-sc-nasil-kapat {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f6f7f9;
+  color: var(--tt-sc-koyu);
+  cursor: pointer;
+}
+.tt-sc-nasil-kapat svg { width: 13px; height: 13px; }
+.tt-sc-nasil-kapat:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+
+/* Kaydirma yalnizca burada: baslik ve alttaki dugme sabit kaliyor. */
+.tt-sc-nasil-govde {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tt-sc-nasil-adimlar {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tt-sc-nasil-adim {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.tt-sc-nasil-no {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #11161c;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
+}
+.tt-sc-nasil-adim-yazi { min-width: 0; }
+.tt-sc-nasil-adim-bas {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.tt-sc-nasil-adim-metin {
+  display: block;
+  margin-top: 2px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--tt-sc-gri);
+}
+
+/* Oran BASTAN sabit: gorsel eklenince ya da cikarilinca pop-up
+   ziplamiyor, bos halde de ayni yeri kapliyor. */
+.tt-sc-nasil-gorsel {
+  margin-top: 18px;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  background: #f6f7f9;
+}
+.tt-sc-nasil-gorsel--bos { border: 1px dashed #d8dce1; }
+.tt-sc-nasil-gorsel-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.tt-sc-nasil-ayak { padding-top: 16px; }
+.tt-sc-nasil-onay {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tt-sc-koyu);
+  color: #fff !important;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.tt-sc-nasil-onay:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 2px; }
+
+/* ------------------------------------------------------------------
+   MASAUSTU
+   ------------------------------------------------------------------ */
+@media (min-width: 750px) {
+  .tt-sc-ic { padding: 48px 32px 64px; }
+  .tt-sc-bas { margin-bottom: 26px; }
+  .tt-sc .tt-sc-baslik { font-size: 32px; }
+  .tt-sc-kart { padding: 26px 22px 20px; }
+  .tt-sc-ad { font-size: 22px; }
+
+  .tt-sc-izgara {
+    grid-template-columns: repeat(var(--tt-sc-sutun-d), minmax(0, 1fr));
+    gap: 26px 20px;
+    margin-top: 26px;
+  }
+
+  .tt-sc-cubuk-ic {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
+  .tt-sc-cubuk-ust { flex: 1 1 auto; justify-content: space-between; gap: 16px; }
+  .tt-sc-cubuk-dugme { flex: 0 0 auto; width: auto; margin-top: 0; padding: 0 32px; }
+  .tt-sc-cubuk-uyari { flex: 1 0 100%; margin-top: 0; text-align: left; }
+  /* Kirilim masaustunde de tam genislikte, cubugun ustunde. */
+  .tt-sc-kirilim { flex: 1 0 100%; }
+
+  .tt-sc-varyant { max-width: 440px; margin: auto; }
+  .tt-sc-varyant-ic { max-height: 76vh; border-radius: 18px; }
+
+  /* Masaustunde ortada modal. Tutamac yalnizca alttan acilan
+     sheet'te anlamli, burada kalkiyor. */
+  .tt-sc-nasil { max-width: 520px; margin: auto; }
+  .tt-sc-nasil-ic {
+    max-height: 82vh;
+    padding: 22px 24px 24px;
+    border-radius: 24px;
+  }
+  .tt-sc-nasil-tutamac { display: none; }
+  .tt-sc .tt-sc-nasil-baslik { font-size: 22px; }
+  /* Masaustunde dugme kartta daha genis duruyor, yazi da bir tik buyuk. */
+  .tt-sc-nasil-ac { padding: 7px 12px 7px 7px; }
+  .tt-sc-nasil-ac-yazi { font-size: 13px; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tt-sc-kart[aria-checked="false"]:hover { box-shadow: inset 0 0 0 1.5px var(--tt-sc-gri); }
+  .tt-sc-cip[aria-checked="false"]:hover { border-color: var(--tt-sc-gri); }
+  .tt-uk-dugme:hover { box-shadow: 0 2px 6px rgb(0 0 0 / .18); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-sc *, .tt-sc-varyant *, .tt-sc-nasil * { transition: none !important; animation: none !important; }
+  /* ::backdrop bir cocuk DEGIL, yukaridaki * onu kapsamiyor. */
+  .tt-sc-nasil[open] .tt-sc-nasil-ic,
+  .tt-sc-nasil[open]::backdrop { animation: none !important; }
+}
