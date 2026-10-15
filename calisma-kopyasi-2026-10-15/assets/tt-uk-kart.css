@@ -69,6 +69,13 @@
      kirpiliyordu. Gorseller object-fit: cover ile tam oturuyor;
      img'nin width/height nitelikleri de 800x1000 (snippet). */
   aspect-ratio: 4 / 5;
+  /* aspect-ratio'lu kutunun varsayilan "min-height: auto"su icerigin
+     boyunu en kucuk olcu sayiyor: 3:4 eski fotograflarda (Nora,
+     Klasik) gorsel kendi oraninda uzayip alani 4:5'ten buyutuyor ve
+     kart satirindaki komsusundan uzun kaliyordu. 0 ile oran her
+     gorselde sabit; tasan kisim object-fit: cover ile kirpiliyor. */
+  min-height: 0;
+  overflow: hidden;
   background: var(--tt-uk-zemin);
 }
 .tt-uk-serit {
