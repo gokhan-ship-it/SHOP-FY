@@ -105,7 +105,8 @@ body.has-modal-open .tt-nc-dugme { opacity: 0; pointer-events: none; }
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--tt-nc-cerceve);
+  /* Marka dili: ekranda en fazla 1-2 neon; lime yalnizca cercevede, ikon dairesi beyaz. */
+  background: #FFFFFF;
   color: var(--tt-nc-zemin);
 }
 .tt-nc-dugme-ikon .tt-nc-ikon { width: 16px; height: 16px; }
