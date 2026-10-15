@@ -20,6 +20,7 @@
   @param {boolean} [preload] - Preload media resources
   @param {boolean} [autoplay] - Auto-play videos
   @param {boolean} [loop] - Loop video playback
+  @param {string} [couple_ad] - Couple görünümünde tekli ürünün adı; verilirse alt metin "<ad> – <ikiz alt metninin ilk ' – ' sonrası>" olarak üretilir
 
   @example
   {% render 'product-media',
@@ -97,6 +98,22 @@
   endif
 
   assign media_alt = media_alt | default: product.title
+
+  comment
+    Couple gorunumu: gorsel ikiz urunden geliyor, alt metni tekli urunun
+    adiyla yeniden uretiliyor ("<tekli ad> – <ikiz alt metninin ilk ' – '
+    sonrasi>"). couple_ad verilmezse hicbir sey degismiyor.
+  endcomment
+  if couple_ad != blank
+    assign tt_parca = media.alt | split: ' – '
+    if tt_parca.size > 1
+      assign tt_bas = tt_parca.first | append: ' – '
+      assign tt_kalan = media.alt | remove_first: tt_bas
+      assign media_alt = couple_ad | append: ' – ' | append: tt_kalan
+    else
+      assign media_alt = couple_ad
+    endif
+  endif
 -%}
 
 {%- if show_product_media -%}

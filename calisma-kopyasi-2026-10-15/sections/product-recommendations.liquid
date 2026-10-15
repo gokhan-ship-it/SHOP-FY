@@ -6,9 +6,28 @@
   }
 </style>
 
-<product-recommendations class="related-products block" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.product_limit }}&intent=related">
+{%- liquid
+  comment
+    COUPLE IKIZLERI ONERILMIYOR
+    custom.couple_ikizi = true olan urunler (tekli urunlerin yalnizca
+    gorsel kaynagi olan "X Couple" ikizleri) bu bolumde hic basilmiyor;
+    hazir set urunleri ve digerleri kaliyor. Filtre yuzunden sayi
+    dusmesin diye Shopify'dan birkac fazla oneri isteniyor (en cok 10)
+    ve ayardaki sayiya kadar gosteriliyor.
+  endcomment
+  assign tt_istek = section.settings.product_limit | plus: 4 | at_most: 10
+  assign tt_gosterilecek = 0
+  if recommendations.performed
+    for rec in recommendations.products
+      unless rec.metafields.custom.couple_ikizi.value == true
+        assign tt_gosterilecek = tt_gosterilecek | plus: 1
+      endunless
+    endfor
+  endif
+-%}
+<product-recommendations class="related-products block" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ tt_istek }}&intent=related">
   <div class="section section--padding{% if section.settings.divider %} section--divider{% endif %}{% if section.settings.rounded %} section--rounded relative{% endif %}">
-    {%- if recommendations.performed and recommendations.products_count > 0 -%}
+    {%- if recommendations.performed and tt_gosterilecek > 0 -%}
       <div class="page-width{% if section.settings.full_width %} page-width--full{% endif %} relative overflow-hidden md:overflow-visible">
         {%- capture indicators -%}
           <div class="indicators hidden lg:flex gap-2d5">
@@ -30,7 +49,11 @@
 
         <slider-element id="Slider-{{ section.id }}" class="grid slider{% if section.settings.carousel_on_desktop %} slider--desktop{% endif %}{% if section.settings.swipe_on_mobile %} slider--tablet{% endif %}" selector=".card-grid>.card"{% if section.settings.carousel_on_desktop or section.settings.swipe_on_mobile %} tabindex="0"{% endif %}>
           <motion-list class="card-grid card-grid--{{ section.settings.columns }} mobile:card-grid--{{ section.settings.columns_mobile }} grid">
+            {%- assign tt_sayac = 0 -%}
             {%- for recommendation in recommendations.products -%}
+              {%- if recommendation.metafields.custom.couple_ikizi.value == true -%}{%- continue -%}{%- endif -%}
+              {%- if tt_sayac >= section.settings.product_limit -%}{%- break -%}{%- endif -%}
+              {%- assign tt_sayac = tt_sayac | plus: 1 -%}
               {%- render 'product-card',
                 product: recommendation,
                 product_id: recommendation.id,

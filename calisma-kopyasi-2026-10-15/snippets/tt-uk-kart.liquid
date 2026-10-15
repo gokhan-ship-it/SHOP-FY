@@ -90,6 +90,28 @@
     endif
   endif
 
+  comment
+    COUPLE GORSEL KAYNAGI
+    Couple modunda kart, custom.couple_urun ile bagli ikiz urunun
+    gorsellerini gosterir. Ikiz yalnizca GORSEL kaynagi: adi, linki,
+    fiyati hicbir yerde kullanilmiyor; alt metin tekli urunun adiyla
+    yeniden uretiliyor. Ikizin galerisi yeni sablonda degilse (2.
+    gorsel "Couple 4 adimda nasil calisir" degilse) ikinci serit hic
+    basilmiyor ve kart her iki modda da normal galeriyi gosteriyor --
+    galeri yenilendiginde kod degisikligi gerekmeden devreye girer.
+    Taslak ikizler vitrinde nil geliyor; o durumda da serit yok.
+  endcomment
+  assign ik = p.metafields.custom.couple_urun.value
+  assign ik_ok = false
+  if ik != blank and ik.media.size > 1
+    if ik.media[1].alt contains 'Couple 4 adımda nasıl çalışır'
+      assign ik_ok = true
+    endif
+  endif
+  if ik_ok
+    assign ik_gorseller = ik.media | where: 'media_type', 'image'
+  endif
+
   assign cok_varyant = false
   assign satilabilir = 0
   for vr in p.variants
@@ -103,13 +125,13 @@
 -%}
 
 <div class="tt-uk"
-     data-uk
+     data-uk{% if ik_ok %} data-uk-couple{% endif %}
      data-uk-url="{{ url }}"
      data-uk-var="{% if musait %}1{% else %}0{% endif %}">
 
   <div class="tt-uk-gorsel">
     {%- if gorseller.size > 0 -%}
-      <div class="tt-uk-serit" data-uk-serit{% if gorseller.size < 2 %} data-uk-tek{% endif %}>
+      <div class="tt-uk-serit tt-uk-serit--single" data-uk-serit{% if gorseller.size < 2 %} data-uk-tek{% endif %}>
         {%- for m in gorseller limit: en_cok -%}
           {%- liquid
             assign ilk_mi = false
@@ -158,10 +180,47 @@
         {%- endfor -%}
       </div>
     {%- else -%}
-      <div class="tt-uk-serit" data-uk-serit data-uk-tek>
+      <div class="tt-uk-serit tt-uk-serit--single" data-uk-serit data-uk-tek>
         <div class="tt-uk-kare">
           <a class="tt-uk-bag" href="{{ url }}" data-uk-bag tabindex="-1" aria-hidden="true"></a>
         </div>
+      </div>
+    {%- endif -%}
+
+    {%- if ik_ok -%}
+      {%- comment -%}
+        COUPLE SERIDI: yalnizca bolum Couple modundayken gorunur (CSS,
+        [data-sc-aktif-mod="couple"]). Ilk gorsel DAHIL hepsi yer
+        tutucuyla basiliyor: Single modunda bu seridin hicbir gorseli
+        indirilmiyor; JS ancak mod Couple'a gecince ve kart gorus
+        alanina yaklasinca kaynaklari yaziyor. Olculer, srcset ve
+        sizes ustteki seritle birebir ayni.
+        Alt metin: "<tekli urun adi> – <ikiz alt metninin ilk ' – '
+        sonrasi>". Ikizin adi kaynaga hic yazilmiyor.
+      {%- endcomment -%}
+      <div class="tt-uk-serit tt-uk-serit--couple" data-uk-serit data-uk-couple-serit{% if ik_gorseller.size < 2 %} data-uk-tek{% endif %}>
+        {%- for m in ik_gorseller limit: en_cok -%}
+          {%- liquid
+            assign ik_parca = m.alt | split: ' – '
+            if ik_parca.size > 1
+              assign ik_bas = ik_parca.first | append: ' – '
+              assign ik_kalan = m.alt | remove_first: ik_bas
+              assign alt_metin = p.title | append: ' – ' | append: ik_kalan
+            else
+              assign alt_metin = p.title
+            endif
+          -%}
+          <div class="tt-uk-kare">
+            <a class="tt-uk-bag" href="{{ url }}" data-uk-bag tabindex="-1" aria-hidden="true">
+              <img class="tt-uk-img" draggable="false" alt="{{ alt_metin | escape }}"
+                   width="800" height="800" loading="lazy" decoding="async"
+                   data-uk-src="{{ m | image_url: width: 800 }}"
+                   data-uk-srcset="{{ m | image_url: width: 200 }} 200w, {{ m | image_url: width: 300 }} 300w, {{ m | image_url: width: 400 }} 400w, {{ m | image_url: width: 600 }} 600w, {{ m | image_url: width: 800 }} 800w"
+                   sizes="(min-width: 750px) 25vw, 50vw"
+                   src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800'%3E%3C/svg%3E">
+            </a>
+          </div>
+        {%- endfor -%}
       </div>
     {%- endif -%}
 
@@ -176,8 +235,14 @@
     {%- endcomment -%}
     {%- if gorseller.size > 1 -%}
       {%- assign nokta_sayisi = gorseller.size | at_most: en_cok -%}
-      <div class="tt-uk-noktalar" data-uk-noktalar aria-hidden="true">
+      <div class="tt-uk-noktalar tt-uk-noktalar--single" data-uk-noktalar aria-hidden="true">
         {%- for n in (1..nokta_sayisi) -%}<i{% if forloop.first %} data-uk-aktif{% endif %}></i>{%- endfor -%}
+      </div>
+    {%- endif -%}
+    {%- if ik_ok and ik_gorseller.size > 1 -%}
+      {%- assign ik_nokta = ik_gorseller.size | at_most: en_cok -%}
+      <div class="tt-uk-noktalar tt-uk-noktalar--couple" data-uk-noktalar="couple" aria-hidden="true">
+        {%- for n in (1..ik_nokta) -%}<i{% if forloop.first %} data-uk-aktif{% endif %}></i>{%- endfor -%}
       </div>
     {%- endif -%}
 
