@@ -59,6 +59,8 @@
   #TtMenu *, #TtMenu *::before, #TtMenu *::after { box-sizing: border-box; }
 
   .ttm-ortu {
+    /* Temanin "div:empty { display: none }" kurali karartmayi gizliyordu. */
+    display: block !important;
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
