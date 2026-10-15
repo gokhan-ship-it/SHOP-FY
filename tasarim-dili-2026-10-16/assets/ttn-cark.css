@@ -111,6 +111,8 @@
 .ttn-cark-dugme[disabled] { opacity: .55; cursor: default; }
 .ttn-cark-dugme--kucuk { flex: none; height: 36px; padding: 0 18px; font-size: 14px; }
 .ttn-cark-dugme--tam { width: 100%; height: 44px; margin-top: 14px; font-size: 15px; }
+/* Marka dili: buyuk neon buton yok. Tam genislik "Carki cevir" koyu kartta beyaz + murekkep yazi; lime yalnizca kucuk "Cevir" ve ibrede. */
+.ttn-cark-dugme--tam { background: #FFFFFF; color: #0A0A0A; }
 
 /* --- Acilan alan ---
    max-height ile: acilan icerigin yuksekligi sabit (cark + buton +
