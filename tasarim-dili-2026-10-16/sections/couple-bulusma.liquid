@@ -46,8 +46,6 @@
     --cb-ikincil: {{ s.ikincil }};
     --cb-metin: {{ s.metin }};
     --cb-bosluk: {{ s.tile_ara }}px;
-    /* Baslik ve dugme ayni degradeyi paylasiyor */
-    --cb-degrade: linear-gradient({{ s.vurgu_aci }}deg, {{ s.vurgu_1 }} 0%, {{ s.vurgu_2 }} 52%, {{ s.vurgu_3 }} 100%);
 
     background: var(--cb-zemin);
     color: var(--cb-metin);
@@ -351,18 +349,11 @@
     color: var(--cb-ikincil);
     animation: cb-yanip-{{ sid }} 2.4s ease-in-out infinite;
   }
-  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-    #shopify-section-{{ sid }} .cb-ipucu {
-      background-image: var(--cb-degrade);
-      background-size: 160% 160%;
-      background-position: 20% 50%;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      -webkit-text-fill-color: transparent;
-      line-height: 1.4;
-      padding-bottom: 0.08em;
-    }
+  /* Marka dili: ipucu duz renk (degrade/background-clip yok). */
+  #shopify-section-{{ sid }} .cb-ipucu {
+    color: {{ s.vurgu_1 }};
+    line-height: 1.4;
+    padding-bottom: 0.08em;
   }
   /* Degradeli hali koyu kirmizi tonlar icerdigi icin sonme alt siniri
      .45'ten .62'ye cekildi; yoksa yaziyi kaybediyoruz. */
@@ -431,8 +422,8 @@
       left: 0;
       border-radius: 99px;
       padding: 2px;
-      background-image: var(--cb-degrade);
-      background-size: 160% 160%;
+      /* Marka dili: bulusma halkasi kucuk lime cerceve (degrade yok). */
+      background-color: #D6FF00;
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
       mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -503,9 +494,8 @@
     height: 150px;
     margin: -75px 0 0 -75px;
     border-radius: 999px;
-    background-color: {{ s.vurgu_1 }};
-    background-image: var(--cb-degrade);
-    background-size: 100% 100%;
+    /* Marka dili: acilma anindaki parlama lime, duz renk. */
+    background-color: #D6FF00;
     opacity: 0;
     transform: scale(0);
     pointer-events: none;
@@ -529,9 +519,8 @@
     height: 52px;
     border-radius: 99px;
     border: 1px solid transparent;
+    /* Marka dili: birincil buton, duz ink (degrade yok). */
     background-color: {{ s.vurgu_2 }};
-    background-image: var(--cb-degrade);
-    background-size: 160% 160%;
     color: {{ s.dugme_yazi }};
     font-family: inherit;
     font-size: 15px;

@@ -246,6 +246,8 @@
     margin-top: {{ s.vurgu_ust | divided_by: 100.0 }}em;
     color: {{ c_v_duz }};
   }
+  {%- comment -%} Marka dili: degrade yalnizca "vurgu_degrade" acikken (varsayilan kapali, duz renk). {%- endcomment -%}
+  {%- if s.vurgu_degrade %}
   @supports (-webkit-background-clip: text) or (background-clip: text) {
     #shopify-section-{{ sid }} .gh-vurgu {
       background-image: linear-gradient(
@@ -260,6 +262,7 @@
       -webkit-text-fill-color: transparent;
     }
   }
+  {%- endif %}
   {%- endif %}
 
   /* --- alt metin --- */
@@ -1631,6 +1634,7 @@
     { "type": "color", "id": "vurgu_2", "label": "Renk 2", "default": "#8a8a85" },
     { "type": "color", "id": "vurgu_3", "label": "Renk 3", "default": "#8a8a85" },
     { "type": "color", "id": "vurgu_duz_renk", "label": "Yedek düz renk", "default": "#8a8a85" },
+    { "type": "checkbox", "id": "vurgu_degrade", "label": "Vurgu satırında degrade kullan", "info": "Kapalıyken (marka dili) vurgu satırı 'Yedek düz renk' ile düz yazılır.", "default": false },
     { "type": "range", "id": "vurgu_aci", "label": "Degrade açısı", "min": 0, "max": 360, "step": 5, "unit": "°", "default": 90 },
     { "type": "header", "content": "Tipografi" },
     {
