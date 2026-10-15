@@ -1,0 +1,91 @@
+{%- doc -%}
+  "NASIL CALISIR?" KARTI -- URUN IZGARASINDA TEK HUCRE
+
+  Izgarada urun karolariyla ayni genislikte bir hucre. Icinde IKI
+  dugme var (Single ve Couple); hangisinin gorunecegini bolum kokunun
+  data-sc-aktif-mod niteligi belirliyor (assets/tt-secim-kartlari.css),
+  yani mod degisince sayfa yenilenmeden icerik degisiyor. Gorunmeyen
+  dugme display:none oldugu icin erisilebilirlik agacinda da yok.
+
+  Hucre urun degil: data-sc-karo TASIMIYOR, dolayisiyla "23 urun"
+  sayacina, filtreye ve set mantigina hic girmiyor. Izgaradaki yerini
+  (gorunen listenin N. hucresi) JS her cizimde yeniden kuruyor; Liquid
+  ilk boyamada ayni yere basiyor.
+
+  Dugmeye basinca snippets/tt-sc-nk-pencere.liquid ile basilan ayni
+  moddaki pencere aciliyor (data-sc-nk-ac -> data-sc-np).
+
+  Metinler bolum ayarlarindan geliyor (nk_*). Adimlar cok satirli
+  alanda, her satir bir adim; numaralar (01, 02...) otomatik.
+
+  Dugmenin icinde liste ogesi (ol/li) KULLANILMADI: <button> yalnizca
+  "phrasing" icerik kabul ediyor. Erisilebilir ad aria-label'dan
+  geliyor ("Single nasil calisir?"), icerik gorsel.
+
+  @param {object} s - Bolum ayarlari
+  @param {string} sid - Bolum kimligi (SVG clipPath kimligi icin)
+  @param {boolean} [gizli] - Ilk boyamada gizli (gorunen urun yok)
+{%- enddoc -%}
+
+{%- liquid
+  assign s_adim = s.nk_s_adimlar | newline_to_br | split: '<br />'
+  assign c_adim = s.nk_c_adimlar | newline_to_br | split: '<br />'
+-%}
+
+<div class="tt-sc-nk" data-sc-nk{% if gizli %} hidden{% endif %}>
+  <button type="button" class="tt-sc-nk-kart tt-sc-nk-kart--single" data-sc-nk-ac="single"
+          aria-haspopup="dialog"
+          aria-label="{{ s.nk_s_bas1 | append: ' ' | append: s.nk_s_bas2 | strip | escape }}">
+    <span class="tt-sc-nk-ust">
+      <span class="tt-sc-nk-ikon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="-15 -15 30 30" fill="none" focusable="false"><circle r="12.5" stroke="#2E2E2C" stroke-width="1.6"/><path d="M0 -12.5 A12.5 12.5 0 1 1 -10.8 6.25" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/><circle cx="-10.8" cy="6.25" r="2.4" fill="#D6FF00"/><path d="M-2.6 -1v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke="#FFFFFF" stroke-width="1.4"/><rect x="-4.2" y="-1.2" width="8.4" height="6.4" rx="1.5" fill="#FFFFFF"/></svg>
+      </span>
+      <span class="tt-sc-nk-baslik" aria-hidden="true">
+        <span>{{ s.nk_s_bas1 | escape }}</span>
+        <span class="tt-sc-nk-baslik2">{{ s.nk_s_bas2 | escape }}</span>
+      </span>
+      <span class="tt-sc-nk-adimlar" aria-hidden="true">
+        {%- assign n = 0 -%}
+        {%- for a in s_adim -%}
+          {%- assign a_t = a | strip -%}
+          {%- if a_t != blank -%}
+            {%- assign n = n | plus: 1 -%}
+            <span class="tt-sc-nk-adim"><span class="tt-sc-nk-no">{% if n < 10 %}0{% endif %}{{ n }}</span><span class="tt-sc-nk-metin">{{ a_t | escape }}</span></span>
+          {%- endif -%}
+        {%- endfor -%}
+      </span>
+    </span>
+    <span class="tt-sc-nk-alt" aria-hidden="true">
+      <span class="tt-sc-nk-alt-yazi">{{ s.nk_alt | escape }}</span>
+      <span class="tt-sc-nk-ok"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#0A0A0A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M2 7h10M8 3l4 4-4 4"/></svg></span>
+    </span>
+  </button>
+
+  <button type="button" class="tt-sc-nk-kart tt-sc-nk-kart--couple" data-sc-nk-ac="couple"
+          aria-haspopup="dialog"
+          aria-label="{{ s.nk_c_bas1 | append: ' ' | append: s.nk_c_bas2 | strip | escape }}">
+    <span class="tt-sc-nk-ust">
+      <span class="tt-sc-nk-ikon" aria-hidden="true">
+        <svg width="34" height="24" viewBox="-17 -12 34 24" fill="none" focusable="false"><defs><clipPath id="ttScNkKes-{{ sid }}"><circle cx="-5.5" r="9.5"/></clipPath></defs><circle cx="5.5" r="9.5" fill="#D6FF00" clip-path="url(#ttScNkKes-{{ sid }})"/><circle cx="-5.5" r="9.5" stroke="#FFFFFF" stroke-width="1.6"/><circle cx="5.5" r="9.5" stroke="#FFFFFF" stroke-width="1.6"/></svg>
+      </span>
+      <span class="tt-sc-nk-baslik" aria-hidden="true">
+        <span>{{ s.nk_c_bas1 | escape }}</span>
+        <span class="tt-sc-nk-baslik2">{{ s.nk_c_bas2 | escape }}</span>
+      </span>
+      <span class="tt-sc-nk-adimlar" aria-hidden="true">
+        {%- assign n = 0 -%}
+        {%- for a in c_adim -%}
+          {%- assign a_t = a | strip -%}
+          {%- if a_t != blank -%}
+            {%- assign n = n | plus: 1 -%}
+            <span class="tt-sc-nk-adim"><span class="tt-sc-nk-no">{% if n < 10 %}0{% endif %}{{ n }}</span><span class="tt-sc-nk-metin">{{ a_t | escape }}</span></span>
+          {%- endif -%}
+        {%- endfor -%}
+      </span>
+    </span>
+    <span class="tt-sc-nk-alt" aria-hidden="true">
+      <span class="tt-sc-nk-alt-yazi">{{ s.nk_alt | escape }}</span>
+      <span class="tt-sc-nk-ok"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#0A0A0A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M2 7h10M8 3l4 4-4 4"/></svg></span>
+    </span>
+  </button>
+</div>

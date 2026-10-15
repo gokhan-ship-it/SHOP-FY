@@ -97,6 +97,15 @@
   endif
 
   assign tekil_kol = collection
+
+  comment
+    "Nasil calisir?" karti (izgarada) ve penceresi. nk_n: kartin
+    gorunen listedeki sirasi (1 = ilk hucre). nk_esik: kartin
+    ONUNDE kac urun duracagi.
+  endcomment
+  assign nk_acik = s.nk_goster
+  assign nk_n = s.nk_sira | default: 4 | at_least: 1 | round
+  assign nk_esik = nk_n | minus: 1
   assign kadin_kol = collections[s.kadin_koleksiyon]
   assign erkek_kol = collections[s.erkek_koleksiyon]
 
@@ -817,6 +826,8 @@
          assets/tt-secim-kartlari.js > ciz sonu).
        {%- endcomment -%}
        data-sc-varsayilan-kime="{{ vk }}"
+       data-sc-nk-sira="{{ nk_n }}"
+       data-sc-sayfa="{{ collection.handle | escape }}"
        {%- if vk != 'tumu' %} data-sc-ilk{% endif -%}
        data-sc-para-ornek="{{ para_ornek | escape }}"
        data-sc-tutar-goster="{{ s.tutar_goster }}"
@@ -1721,6 +1732,30 @@
         {%- endcomment -%}
         {%- assign gorulen = ',' -%}
         {%- assign sira = 0 -%}
+
+        {%- comment -%}
+          "NASIL CALISIR?" KARTI -- ILK BOYAMADAKI YERI
+          Kart gorunen listenin nk_n. hucresi (varsayilan 4: 3. urunden
+          sonra). JS her cizimde yerini yeniden kuruyor (filtre, mod,
+          tukenenlerin sona alinmasi); burada ilk boyama icin ayni hesap
+          yapiliyor ki sayfa acilirken kart yer degistirip izgarayi
+          kaydirmasin.
+
+          "Gorunur" sayimi karoUygun() ile ayni, tek fark: filtre bir
+          cinsiyete ayarliyken "ikisi" karolar sayilmiyor, cunku JS onlari
+          listenin sonuna aliyor. "Tumu"de kart yalnizca ILK grubun
+          (Kadin) icinde; o grup kisaysa grubun sonunda duruyor.
+          Hic gorunur urun yoksa kart gizli basiliyor -- filtre degisince
+          JS aciyor.
+        {%- endcomment -%}
+        {%- liquid
+          assign nk_say = 0
+          assign nk_bitti = false
+          if nk_acik and nk_esik == 0
+            render 'tt-sc-nk-kart', s: s, sid: sid
+            assign nk_bitti = true
+          endif
+        -%}
         {%- for p in kadin_kol.products -%}
           {%- assign ara = ',' | append: p.id | append: ',' -%}
           {%- unless gorulen contains ara -%}
@@ -1744,6 +1779,24 @@
             -%}
             {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: tekil, grup: 'kadin', s: s, sira: sira -%}
             {%- assign sira = sira | plus: 1 -%}
+            {%- liquid
+              if nk_acik and nk_bitti == false
+                assign nk_gor = true
+                if acilis_mod == 'couple' and kime == ''
+                  assign nk_gor = false
+                endif
+                if vk != 'tumu' and kime != vk
+                  assign nk_gor = false
+                endif
+                if nk_gor
+                  assign nk_say = nk_say | plus: 1
+                  if nk_say == nk_esik
+                    render 'tt-sc-nk-kart', s: s, sid: sid
+                    assign nk_bitti = true
+                  endif
+                endif
+              endif
+            -%}
           {%- endunless -%}
         {%- endfor -%}
 
@@ -1765,8 +1818,33 @@
             -%}
             {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: '1', grup: 'kadin', s: s, sira: sira -%}
             {%- assign sira = sira | plus: 1 -%}
+            {%- liquid
+              if nk_acik and nk_bitti == false
+                assign nk_gor = true
+                if acilis_mod == 'couple' and kime == ''
+                  assign nk_gor = false
+                endif
+                if vk != 'tumu' and kime != vk
+                  assign nk_gor = false
+                endif
+                if nk_gor
+                  assign nk_say = nk_say | plus: 1
+                  if nk_say == nk_esik
+                    render 'tt-sc-nk-kart', s: s, sid: sid
+                    assign nk_bitti = true
+                  endif
+                endif
+              endif
+            -%}
           {%- endunless -%}
         {%- endfor -%}
+
+        {%- liquid
+          if nk_acik and nk_bitti == false and vk == 'tumu' and nk_say > 0
+            render 'tt-sc-nk-kart', s: s, sid: sid
+            assign nk_bitti = true
+          endif
+        -%}
 
         <h3 class="tt-sc-grup" data-sc-grup="erkek" hidden>
           <span>{{ s.kime_erkek }}</span><span class="tt-sc-grup-sayi" data-sc-grup-sayi></span>
@@ -1785,8 +1863,35 @@
             -%}
             {%- render 'tt-sc-karo', p: p, sid: sid, kime: kime, tekil: tekil, grup: 'erkek', s: s, sira: sira -%}
             {%- assign sira = sira | plus: 1 -%}
+            {%- liquid
+              if nk_acik and nk_bitti == false
+                assign nk_gor = true
+                if acilis_mod == 'couple' and kime == ''
+                  assign nk_gor = false
+                endif
+                if vk != 'tumu' and kime != vk
+                  assign nk_gor = false
+                endif
+                if nk_gor
+                  assign nk_say = nk_say | plus: 1
+                  if nk_say == nk_esik
+                    render 'tt-sc-nk-kart', s: s, sid: sid
+                    assign nk_bitti = true
+                  endif
+                endif
+              endif
+            -%}
           {%- endunless -%}
         {%- endfor -%}
+        {%- liquid
+          if nk_acik and nk_bitti == false
+            if nk_say > 0
+              render 'tt-sc-nk-kart', s: s, sid: sid
+            else
+              render 'tt-sc-nk-kart', s: s, sid: sid, gizli: true
+            endif
+          endif
+        -%}
       </div>
 
       <p class="tt-sc-bos" data-sc-bos hidden>{{ s.bos_metin }}</p>
@@ -1906,6 +2011,16 @@
         <div class="tt-sc-varyant-liste" data-sc-varyant-liste role="list"></div>
       </div>
     </dialog>
+
+    {%- comment -%}
+      "NASIL CALISIR?" KARTININ PENCERELERI (izgaradaki kart acar)
+      Kilitli sayfada yalnizca o modun penceresi basiliyor: couple-urunler
+      sayfasinda Single penceresini acacak bir kart hic gorunmuyor.
+    {%- endcomment -%}
+    {%- if nk_acik -%}
+      {%- unless kilit == 'couple' -%}{%- render 'tt-sc-nk-pencere', s: s, sid: sid, mod: 'single' -%}{%- endunless -%}
+      {%- unless kilit == 'single' -%}{%- render 'tt-sc-nk-pencere', s: s, sid: sid, mod: 'couple' -%}{%- endunless -%}
+    {%- endif -%}
 
     {%- comment -%}
       "NASIL CALISIR?" POP-UP'LARI
@@ -2170,6 +2285,43 @@
     { "type": "text", "id": "uk_aria_sepet", "label": "Buton etiketi — Single (ekran okuyucu)", "default": "[ad] sepete ekle" },
     { "type": "text", "id": "uk_aria_set_ekle", "label": "Buton etiketi — Couple, seçili değil", "default": "[ad] sete ekle" },
     { "type": "text", "id": "uk_aria_set_cikar", "label": "Buton etiketi — Couple, seçili", "default": "[ad] setten çıkar" },
+
+    { "type": "header", "content": "Nasıl çalışır kartı" },
+    { "type": "paragraph", "content": "Ürün ızgarasında tek bir hücre. Single modunda Single, Couple modunda Couple içeriğini gösterir; dokununca alttan açılan anlatım penceresini açar. Ürün sayısına dahil değildir." },
+    { "type": "checkbox", "id": "nk_goster", "label": "Nasıl çalışır kartını göster", "default": true },
+    { "type": "number", "id": "nk_sira", "label": "Kartın sırası", "default": 4,
+      "info": "Görünen listedeki hücre numarası. 4 = üçüncü üründen sonra. Listede daha az ürün varsa kart listenin sonunda durur. \"Tümü\" seçiliyken ilk grubun içinde kalır." },
+    { "type": "text", "id": "nk_s_bas1", "label": "Single – başlık 1. satır", "default": "Single",
+      "info": "Kartta ve pencerede aynı başlık. Ekran okuyucu adı iki satırın birleşimidir." },
+    { "type": "text", "id": "nk_s_bas2", "label": "Single – başlık 2. satır", "default": "nasıl çalışır?" },
+    { "type": "textarea", "id": "nk_s_adimlar", "label": "Single – karttaki adımlar", "default": "Anılarını yükle.\nAçılacağı günü seç.\nO gün açılsın.",
+      "info": "Her satır bir adım. Numaralar (01, 02...) otomatik." },
+    { "type": "text", "id": "nk_c_bas1", "label": "Couple – başlık 1. satır", "default": "Couple" },
+    { "type": "text", "id": "nk_c_bas2", "label": "Couple – başlık 2. satır", "default": "nasıl çalışır?" },
+    { "type": "textarea", "id": "nk_c_adimlar", "label": "Couple – karttaki adımlar", "default": "Yükleyin.\nBekleyin.\nBuluşun.\nAçın.",
+      "info": "Her satır bir adım." },
+    { "type": "text", "id": "nk_alt", "label": "Kartın alt satırı", "default": "4 adımda gör" },
+
+    { "type": "header", "content": "Nasıl çalışır penceresi – Single" },
+    { "type": "textarea", "id": "np_s_adimlar", "label": "Adımlar", "default": "Anılarını yükle. | Fotoğraf, video, ses ve not.\nAçılacağı günü seç. | O güne kadar kilitli kalır.\nHediye et. | Belirlediğin tarihe kadar geri sayımı görür.\nO gün açılsın. | Gün gelince çipi telefonuna okutarak kapsülü açar.",
+      "info": "Her satır bir adım: Başlık | Açıklama. 3. adımın altında geri sayım kutusu, 4. adım vurgulu (yeşil)." },
+    { "type": "textarea", "id": "np_s_sayac", "label": "Geri sayım kutusu", "default": "214 | gün\n06 | saat\n32 | dakika\n18 | saniye",
+      "info": "Her satır bir sütun: Sayı | Birim. Statik metin, sayaç çalışmaz." },
+    { "type": "text", "id": "np_s_etiket", "label": "Bölüm etiketi", "default": "HEDİYE ETTİKTEN SONRA DA" },
+    { "type": "textarea", "id": "np_s_kutular", "label": "Kutular", "default": "Uzaktan yükle. | Hediyeyi verdikten sonra bile anı ekle.\nTekrar kullan. | Açılınca yeni bir tarih için yeniden kilitle.\nSınırsız yükle. | Fotoğraf, video, ses ve not.\nSüresiz garanti. | Çip bozulursa ücretsiz değiştiriyoruz.",
+      "info": "Dört satır: Başlık | Açıklama. İkonlar sırayla sabit (bulut, kilit, sonsuzluk, kalkan)." },
+
+    { "type": "header", "content": "Nasıl çalışır penceresi – Couple" },
+    { "type": "textarea", "id": "np_c_adimlar", "label": "Adımlar", "default": "İki ürün seçin. | İkisi birbirine bağlanır ve ortak bir kapsül oluşur.\nİkiniz de anı yükleyin. | Biri yüklediğinde diğerine bildirim gider ama yeni anılar gizli kalır.\nBuluşunca açılır. | Yan yana geldiğinizde yeni anılar açılır ve ortak galerinize eklenir.\nDöngü yeniden başlar. | Açılan anılar galeride kalır; yeni yüklenenler bir sonraki buluşmanıza kadar gizli kalır.",
+      "info": "Her satır bir adım: Başlık | Açıklama. 3. adım vurgulu (yeşil) ve altında rozet." },
+    { "type": "text", "id": "np_c_rozet", "label": "3. adımın rozeti", "default": "48 yeni anı galerinize eklendi" },
+    { "type": "text", "id": "np_c_etiket", "label": "Bölüm etiketi", "default": "İLİŞKİNİN EN GÜZEL ALIŞKANLIĞI" },
+    { "type": "textarea", "id": "np_c_kutular", "label": "Kutular", "default": "Bir gelecek inşa edin. | Bir buluşma rutini haline getirin.\nOtomatik kilitlenir. | Her buluşmada kullanabilirsiniz.\nSadece ikiniz görebilirsiniz. | Tüm içerikler şifrelenir ve üçüncü kişilerin erişimine karşı korunur.\nKaybolsa da güvende. | Kapsülünüz kaybolursa içerikleriniz silinmez.",
+      "info": "Dört satır: Başlık | Açıklama. İkonlar sırayla sabit (takvim, halkalar, kilit, kalkan)." },
+
+    { "type": "header", "content": "Nasıl çalışır penceresi – ortak" },
+    { "type": "text", "id": "np_anladim", "label": "Alttaki buton", "default": "Anladım" },
+    { "type": "text", "id": "np_kapat", "label": "Kapat butonu (ekran okuyucu)", "default": "Kapat" },
     { "type": "text", "id": "kart_ekle", "label": "Sete ekle (ekran okuyucu)", "default": "Sete ekle" },
     { "type": "text", "id": "kart_secili", "label": "Setinde (ekran okuyucu)", "default": "Setinde" },
 

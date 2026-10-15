@@ -1,0 +1,141 @@
+{%- doc -%}
+  "NASIL CALISIR?" PENCERESI (alttan acilan sheet)
+
+  Native <dialog>, temadaki taksit penceresinin kaliplari
+  (sections/taksit-tablosu.liquid): showModal() ile ust katmanda,
+  ::backdrop karartmasi, Esc'yi tarayici kendisi kapatiyor. Mobilde
+  alttan aciliyor, masaustunde ortada (en fazla 440px).
+
+  YUKSEKLIK: pencere en fazla 90dvh. Icerik (.tt-sc-np-govde) KENDI
+  icinde kayiyor; "Anladim" dugmesi (.tt-sc-np-alt) govdenin DISINDA,
+  pencerenin altinda sabit -- icerik ne kadar uzun olursa olsun hep
+  gorunur. Alt kenarda env(safe-area-inset-bottom) payi var.
+
+  Icerik sayfada HAZIR basiliyor (JS ile cekilmiyor), gorsel yok.
+  Acma/kapama, sayfa kilidi ve olcum assets/tt-secim-kartlari.js'te.
+
+  Metinler bolum ayarlarindan (np_*). Adim ve kutu listeleri cok
+  satirli alanlarda, her satir "Baslik | Aciklama". Vurgulu adim,
+  geri sayim kutusu (Single, 3. adim) ve rozet (Couple, 3. adim)
+  tasarimin parcasi; yerleri sabit. Kutu ikonlari da sirayla sabit.
+
+  @param {object} s - Bolum ayarlari
+  @param {string} sid - Bolum kimligi
+  @param {string} mod - single | couple
+{%- enddoc -%}
+
+{%- liquid
+  if mod == 'couple'
+    assign bas1 = s.nk_c_bas1
+    assign bas2 = s.nk_c_bas2
+    assign adimlar = s.np_c_adimlar | newline_to_br | split: '<br />'
+    assign kutular = s.np_c_kutular | newline_to_br | split: '<br />'
+    assign etiket = s.np_c_etiket
+    assign vurgu = 3
+  else
+    assign bas1 = s.nk_s_bas1
+    assign bas2 = s.nk_s_bas2
+    assign adimlar = s.np_s_adimlar | newline_to_br | split: '<br />'
+    assign kutular = s.np_s_kutular | newline_to_br | split: '<br />'
+    assign etiket = s.np_s_etiket
+    assign vurgu = 4
+  endif
+  assign sayac = s.np_s_sayac | newline_to_br | split: '<br />'
+-%}
+
+<dialog class="tt-sc-np tt-sc-np--{{ mod }}" data-sc-np="{{ mod }}" aria-labelledby="ttScNpBas-{{ sid }}-{{ mod }}">
+  <div class="tt-sc-np-govde">
+    <div class="tt-sc-np-tutamac" aria-hidden="true"></div>
+
+    <div class="tt-sc-np-ust">
+      <h2 class="tt-sc-np-baslik" id="ttScNpBas-{{ sid }}-{{ mod }}">
+        <span class="tt-sc-np-baslik1">{{ bas1 | escape }}</span>
+        <span class="tt-sc-np-baslik2">{{ bas2 | escape }}</span>
+      </h2>
+      <button type="button" class="tt-sc-np-kapat" data-sc-np-kapat aria-label="{{ s.np_kapat | escape }}">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#0A0A0A" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M2 2l10 10M12 2L2 12"/></svg>
+      </button>
+    </div>
+
+    <ol class="tt-sc-np-adimlar">
+      {%- assign n = 0 -%}
+      {%- for satir in adimlar -%}
+        {%- assign satir_t = satir | strip -%}
+        {%- if satir_t != blank -%}
+          {%- assign n = n | plus: 1 -%}
+          {%- assign parca = satir_t | split: '|' -%}
+          <li class="tt-sc-np-adim{% if n == vurgu %} tt-sc-np-adim--vurgu{% endif %}">
+            <span class="tt-sc-np-sol" aria-hidden="true">
+              <span class="tt-sc-np-no">{{ n }}</span>
+              <span class="tt-sc-np-cizgi"></span>
+            </span>
+            <div class="tt-sc-np-sag">
+              <h3 class="tt-sc-np-adim-bas">{{ parca[0] | strip | escape }}</h3>
+              {%- if parca.size > 1 -%}
+                <p class="tt-sc-np-adim-acik">{{ parca[1] | strip | escape }}</p>
+              {%- endif -%}
+              {%- if mod == 'single' and n == 3 -%}
+                <div class="tt-sc-np-sayac">
+                  {%- for sy in sayac -%}
+                    {%- assign sy_t = sy | strip -%}
+                    {%- if sy_t != blank -%}
+                      {%- assign sy_p = sy_t | split: '|' -%}
+                      <span class="tt-sc-np-sayac-sutun"><span class="tt-sc-np-sayac-sayi">{{ sy_p[0] | strip | escape }}</span><span class="tt-sc-np-sayac-birim">{{ sy_p[1] | strip | escape }}</span></span>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </div>
+              {%- endif -%}
+              {%- if mod == 'couple' and n == 3 and s.np_c_rozet != blank -%}
+                <span class="tt-sc-np-rozet"><span class="tt-sc-np-rozet-nokta" aria-hidden="true"></span>{{ s.np_c_rozet | escape }}</span>
+              {%- endif -%}
+            </div>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ol>
+
+    {%- if etiket != blank -%}
+      <p class="tt-sc-np-etiket">{{ etiket | escape }}</p>
+    {%- endif -%}
+
+    <ul class="tt-sc-np-kutular">
+      {%- assign k = 0 -%}
+      {%- for satir in kutular -%}
+        {%- assign satir_t = satir | strip -%}
+        {%- if satir_t != blank -%}
+          {%- assign k = k | plus: 1 -%}
+          {%- assign parca = satir_t | split: '|' -%}
+          <li class="tt-sc-np-kutu">
+            <div class="tt-sc-np-kutu-bas">
+              <svg class="tt-sc-np-kutu-ikon" viewBox="0 0 30 30" fill="none" stroke="#0A0A0A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                {%- if mod == 'couple' -%}
+                  {%- case k -%}
+                    {%- when 1 -%}<rect x="5" y="7" width="20" height="18" rx="3"/><path d="M5 12h20M10 4v5M20 4v5"/><path d="M11.5 18.5l2.5 2.5 4.5-5"/>
+                    {%- when 2 -%}<circle cx="11" cy="15" r="7"/><circle cx="19" cy="15" r="7"/>
+                    {%- when 3 -%}<rect x="7" y="13" width="16" height="12" rx="2.5"/><path d="M10 13v-3a5 5 0 0 1 10 0v3"/>
+                    {%- else -%}<path d="M15 4l9 3.5v6.5c0 6-4 9.5-9 12-5-2.5-9-6-9-12V7.5z"/><path d="M11 15l3 3 5-6"/>
+                  {%- endcase -%}
+                {%- else -%}
+                  {%- case k -%}
+                    {%- when 1 -%}<path d="M9 22.5h-1.5a5.5 5.5 0 0 1-.6-11 7.5 7.5 0 0 1 14.4-1.5 6 6 0 0 1 1.2 11.9"/><path d="M15 25.5v-9"/><path d="M11.5 19.5l3.5-3.5 3.5 3.5"/>
+                    {%- when 2 -%}<rect x="8" y="14" width="14" height="11" rx="2.5"/><path d="M11 14v-3a4 4 0 0 1 7.6-1.8"/><path d="M15 18.5v2.5"/>
+                    {%- when 3 -%}<path d="M15 15c-2.6-3.4-4.8-5-7.2-5a5 5 0 0 0 0 10c2.4 0 4.6-1.6 7.2-5s4.8-5 7.2-5a5 5 0 0 1 0 10c-2.4 0-4.6-1.6-7.2-5z"/>
+                    {%- else -%}<path d="M15 4l9 3.5v6.5c0 6-4 9.5-9 12-5-2.5-9-6-9-12V7.5z"/><path d="M11 15l3 3 5-6"/>
+                  {%- endcase -%}
+                {%- endif -%}
+              </svg>
+              <strong class="tt-sc-np-kutu-baslik">{{ parca[0] | strip | escape }}</strong>
+            </div>
+            {%- if parca.size > 1 -%}
+              <p class="tt-sc-np-kutu-acik">{{ parca[1] | strip | escape }}</p>
+            {%- endif -%}
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+
+  <div class="tt-sc-np-alt">
+    <button type="button" class="tt-sc-np-tamam" data-sc-np-kapat>{{ s.np_anladim | escape }}</button>
+  </div>
+</dialog>

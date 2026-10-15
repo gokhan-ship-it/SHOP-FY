@@ -55,6 +55,11 @@
     var TUKENDI_SONA = KOK.getAttribute('data-sc-tukendi-sona') === 'true';
 
     var izgara   = KOK.querySelector('[data-sc-izgara]');
+    /* "Nasil calisir?" karti: izgarada urun olmayan tek hucre. Karo
+       degil (data-sc-karo yok) -- sayaca, filtreye ve sete girmiyor;
+       siralama da onu atliyor (siraKur / sirala). Yeri nkYerlestir()'de. */
+    var nkHucre  = izgara ? izgara.querySelector('[data-sc-nk]') : null;
+    var NK_SIRA  = Math.max(1, parseInt(KOK.getAttribute('data-sc-nk-sira'), 10) || 4);
     var filtreEl = KOK.querySelector('[data-sc-filtre]');
     var karolar  = Array.prototype.slice.call(KOK.querySelectorAll('[data-sc-karo]'));
     /* [data-sc-kime] urun karolarinda da var; cipler kendi niteligini
@@ -255,6 +260,8 @@
         if (sayiEl) sayiEl.textContent = String(grupSayi[ad] || 0);
       }
 
+      nkYerlestir(basliklarGorunur);
+
       /* Single modunda temanin izgarasina devrediliyorsa bu bolumun
          izgarasi, filtre satiri ve bos-sonuc metni tamamen kalkiyor:
          gorunen liste artik bu bolumun degil. */
@@ -385,7 +392,7 @@
     var TEMEL_SIRA = null;
     function siraKur() {
       if (!izgara) return;
-      TEMEL_SIRA = Array.prototype.slice.call(izgara.children);
+      TEMEL_SIRA = Array.prototype.filter.call(izgara.children, function (el) { return el !== nkHucre; });
     }
     function sirala() {
       if (!izgara || !TEMEL_SIRA) return;
@@ -403,9 +410,11 @@
         hedef = once.concat(sona);
       }
       /* Sira zaten dogruysa DOM'a hic dokunulmuyor: her ciz() cagrisinda
-         29 karoyu yeniden baglamanin anlami yok. */
+         29 karoyu yeniden baglamanin anlami yok. "Nasil calisir?" karti
+         karsilastirmaya girmiyor; yerini ardindan nkYerlestir() kuruyor. */
+      var cocuklar = Array.prototype.filter.call(izgara.children, function (el) { return el !== nkHucre; });
       for (var j = 0; j < hedef.length; j++) {
-        if (izgara.children[j] !== hedef[j]) break;
+        if (cocuklar[j] !== hedef[j]) break;
       }
       if (j === hedef.length) return;
       var parca = document.createDocumentFragment();
@@ -1025,6 +1034,115 @@
           sepetBtn.removeAttribute('aria-busy');
           cubukOlc();
         });
+    }
+
+    /* ---------- "Nasil calisir?" karti: izgaradaki yeri ----------
+       Kart GORUNEN listenin NK_SIRA. hucresi (varsayilan 4: ucuncu
+       urunden sonra). Her ciz() sonunda, karolarin gorunurlugu ve
+       sirasi kesinlestikten sonra cagriliyor -- filtre, mod ve "ikisi"
+       karolarin sona alinmasi hep burada sonuclaniyor.
+
+         "Tumu" + iki grup (basliklar gorunur): yalnizca ILK gruptaki
+                  karolar sayiliyor; kart o grubun icinde kaliyor, sayfada
+                  tek kez.
+         Daha az urun: kart listenin (ya da ilk grubun) sonunda.
+         Hic urun yok: kart gizli.
+
+       Kart zaten dogru yerdeyse DOM'a dokunulmuyor. */
+    function nkYerlestir(gruplu) {
+      if (!nkHucre || !izgara) return;
+      var gorunur = [], ilkGrup = null;
+      for (var i = 0; i < izgara.children.length; i++) {
+        var el = izgara.children[i];
+        if (!el.hasAttribute('data-sc-karo') || el.hidden) continue;
+        if (gruplu) {
+          var g = el.getAttribute('data-sc-grup');
+          if (ilkGrup === null) ilkGrup = g;
+          else if (g !== ilkGrup) break;
+        }
+        gorunur.push(el);
+      }
+      if (!gorunur.length) { nkHucre.hidden = true; return; }
+      nkHucre.hidden = false;
+      var ref;
+      if (NK_SIRA - 1 < gorunur.length) ref = gorunur[NK_SIRA - 1];
+      else ref = gorunur[gorunur.length - 1].nextElementSibling;
+      if (ref === nkHucre) return;
+      if (nkHucre.nextElementSibling === ref && ref) return;
+      izgara.insertBefore(nkHucre, ref);
+    }
+
+    /* ---------- "Nasil calisir?" penceresi ----------
+       Native <dialog> + showModal(): Esc'yi tarayici kapatiyor, odak
+       pencerenin icinde kaliyor. Kapanma yollari: kapat dugmesi,
+       "Anladim", karartilmis alan (tiklamanin hedefi dialog'un
+       KENDISI oldugunda) ve Esc. Hepsi 'close' olayina dusuyor; sayfa
+       kilidi orada kalkiyor ve odak acan karta donuyor.
+
+       SAYFA KILIDI: body position:fixed + eski kaydirma konumu.
+       Yalnizca overflow:hidden iOS Safari'de arka sayfanin kaymasini
+       durdurmuyor. Kapaninca konum geri yaziliyor. */
+    var npDonus = null, npKonum = 0, npKilitli = false;
+    function npKilit(ac) {
+      var b = document.body, h = document.documentElement;
+      if (ac && !npKilitli) {
+        npKilitli = true;
+        npKonum = window.pageYOffset || h.scrollTop || 0;
+        b.style.position = 'fixed';
+        b.style.top = (-npKonum) + 'px';
+        b.style.left = '0';
+        b.style.right = '0';
+        b.style.width = '100%';
+        h.style.overflow = 'hidden';
+      } else if (!ac && npKilitli) {
+        npKilitli = false;
+        b.style.position = '';
+        b.style.top = '';
+        b.style.left = '';
+        b.style.right = '';
+        b.style.width = '';
+        h.style.overflow = '';
+        try { window.scrollTo({ top: npKonum, left: 0, behavior: 'instant' }); }
+        catch (e) { window.scrollTo(0, npKonum); }
+      }
+    }
+    function npAc(mod, dugme) {
+      var d = KOK.querySelector('[data-sc-np="' + mod + '"]');
+      if (!d || typeof d.showModal !== 'function') return;
+      if (d.open) return;
+      npDonus = dugme || null;
+      npKilit(true);
+      d.showModal();
+      /* Olcum: Shopify customer events'e ozel olay. Pixel tarafinda
+         analytics.subscribe('nasil_calisir_acildi', ...) ile okunur.
+         Baska hicbir yere (dataLayer vb.) yazilmiyor. */
+      try {
+        if (window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') {
+          Shopify.analytics.publish('nasil_calisir_acildi', { mod: mod, sayfa: KOK.getAttribute('data-sc-sayfa') || '' });
+        }
+      } catch (e) {}
+    }
+    Array.prototype.slice.call(KOK.querySelectorAll('[data-sc-np]')).forEach(function (d) {
+      d.addEventListener('click', function (e) {
+        if (e.target === d) { d.close(); return; }
+        var k = e.target.closest && e.target.closest('[data-sc-np-kapat]');
+        if (k && d.contains(k)) d.close();
+      });
+      d.addEventListener('close', function () {
+        npKilit(false);
+        if (npDonus && typeof npDonus.focus === 'function') {
+          try { npDonus.focus({ preventScroll: true }); } catch (e) { npDonus.focus(); }
+        }
+        npDonus = null;
+      });
+    });
+    if (nkHucre) {
+      Array.prototype.slice.call(nkHucre.querySelectorAll('[data-sc-nk-ac]')).forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.preventDefault();
+          npAc(b.getAttribute('data-sc-nk-ac'), b);
+        });
+      });
     }
 
     /* ---------- Olcum ----------

@@ -1213,3 +1213,344 @@ body.tt-sc-cubuk-acik { padding-bottom: var(--tt-sc-cubuk-yuk, 210px); }
   .tt-sc-nasil[open] .tt-sc-nasil-ic,
   .tt-sc-nasil[open]::backdrop { animation: none !important; }
 }
+
+/* ------------------------------------------------------------------
+   "NASIL CALISIR?" KARTI (urun izgarasinda tek hucre)
+   snippets/tt-sc-nk-kart.liquid. Olculer ve renkler onayli tasarimdan
+   birebir; yazi tipi bolumden miras (temanin yazi tipi, Inter).
+
+   Hucre izgara ogesi: satirin yuksekligine esneniyor (stretch), dugme
+   hucreyi tamamen dolduruyor. Icerik sigmazsa hicbir sey kirpilmiyor;
+   kart ve dolayisiyla satir uzuyor.
+
+   Hangi dugmenin gorunecegi kokun data-sc-aktif-mod niteliginden.
+   JS ilk cizimi yapana kadar nitelik yok; o arada acilis modu
+   (data-sc-varsayilan) gecerli.
+   ------------------------------------------------------------------ */
+.tt-sc-nk { display: flex; min-width: 0; }
+.tt-sc-nk[hidden] { display: none; }
+
+.tt-sc-nk-kart {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 18px 16px 16px;
+  border: 0;
+  /* Urun kartinin koseleriyle ayni (assets/tt-uk-kart.css: .tt-uk). */
+  border-radius: 14px;
+  background: #0A0A0A;
+  color: #FFFFFF;
+  font: inherit;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+.tt-sc-nk-kart:focus-visible { outline: 2px solid #D6FF00; outline-offset: 2px; }
+.tt-sc-nk-kart--couple { display: none; }
+.tt-sc[data-sc-aktif-mod="couple"] .tt-sc-nk-kart--single,
+.tt-sc:not([data-sc-aktif-mod])[data-sc-varsayilan="couple"] .tt-sc-nk-kart--single { display: none; }
+.tt-sc[data-sc-aktif-mod="couple"] .tt-sc-nk-kart--couple,
+.tt-sc:not([data-sc-aktif-mod])[data-sc-varsayilan="couple"] .tt-sc-nk-kart--couple { display: flex; }
+
+.tt-sc-nk-ust { display: block; }
+.tt-sc-nk-ikon { display: block; line-height: 0; }
+.tt-sc-nk-ikon svg { display: block; }
+.tt-sc-nk-baslik {
+  display: block;
+  margin-top: 14px;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.6px;
+  color: #FFFFFF;
+}
+.tt-sc-nk-baslik > span { display: block; }
+.tt-sc-nk-baslik .tt-sc-nk-baslik2 { color: #8A8A85; }
+
+.tt-sc-nk-adimlar { display: block; margin-top: 12px; }
+.tt-sc-nk-adim {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid #262624;
+}
+.tt-sc-nk-adim:first-child { border-top: 0; }
+.tt-sc-nk-kart--couple .tt-sc-nk-adim { padding: 7px 0; }
+.tt-sc-nk-no {
+  flex: 0 0 18px;
+  width: 18px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #D6FF00;
+}
+.tt-sc-nk-metin {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: #F2F2EF;
+}
+
+.tt-sc-nk-alt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #262624;
+}
+.tt-sc-nk-alt-yazi {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #BDBDB8;
+}
+.tt-sc-nk-ok {
+  display: flex;
+  flex: 0 0 34px;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #D6FF00;
+}
+.tt-sc-nk-ok svg { display: block; }
+
+/* ------------------------------------------------------------------
+   "NASIL CALISIR?" PENCERESI (snippets/tt-sc-nk-pencere.liquid)
+   Mobilde alttan acilan sheet, masaustunde ortada (en fazla 440px).
+   En fazla 90dvh: govde kendi icinde kayiyor, "Anladim" altta sabit.
+   ------------------------------------------------------------------ */
+.tt-sc-np {
+  position: fixed;
+  inset: auto 0 0 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: 90vh;
+  max-height: 90dvh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 24px 24px 0 0;
+  background: #F4F4F4;
+  color: #0A0A0A;
+  font: inherit;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+.tt-sc-np[open] { display: flex; flex-direction: column; }
+.tt-sc-np::backdrop { background: rgba(0, 0, 0, 0.5); }
+.tt-sc-np * { box-sizing: border-box; }
+@media (min-width: 750px) {
+  .tt-sc-np {
+    inset: 0;
+    width: calc(100% - 32px);
+    max-width: 440px;
+    margin: auto;
+    border-radius: 24px;
+  }
+}
+
+.tt-sc-np-govde {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 20px 0;
+}
+.tt-sc-np-tutamac {
+  width: 40px;
+  height: 5px;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: #CFCFCB;
+}
+
+.tt-sc-np-ust {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+.tt-sc-np--couple .tt-sc-np-ust { margin-top: 10px; }
+.tt-sc-np .tt-sc-np-baslik {
+  margin: 0;
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.8px;
+  text-transform: none;
+  color: #0A0A0A;
+}
+.tt-sc-np-baslik > span { display: block; }
+.tt-sc-np .tt-sc-np-baslik2 { color: #8A8A85; }
+.tt-sc-np-kapat {
+  display: flex;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #FFFFFF;
+  cursor: pointer;
+}
+.tt-sc-np-kapat:focus-visible,
+.tt-sc-np-tamam:focus-visible { outline: 2px solid #0A0A0A; outline-offset: 2px; }
+
+/* --- Adimlar --- */
+.tt-sc-np-adimlar { list-style: none; margin: 17px 0 0; padding: 0; }
+.tt-sc-np-adim {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  column-gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+.tt-sc-np-adim::before, .tt-sc-np-adim::marker { content: none; }
+.tt-sc-np-sol { display: flex; flex-direction: column; align-items: center; }
+.tt-sc-np-no {
+  display: flex;
+  flex: 0 0 30px;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #0A0A0A;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+.tt-sc-np-adim--vurgu .tt-sc-np-no { background: #D6FF00; color: #0A0A0A; }
+/* Dikey cizgi daireden bir sonraki adimin dairesine kadar uzaniyor:
+   sag sutunun alt boslugu (adimlar arasi 13px) da onun icinde. */
+.tt-sc-np-cizgi { flex: 1 1 auto; width: 2px; background: #D2D2CD; }
+.tt-sc-np-adim:last-child .tt-sc-np-cizgi { display: none; }
+.tt-sc-np-sag { min-width: 0; padding-bottom: 13px; }
+.tt-sc-np-adim:last-child .tt-sc-np-sag { padding-bottom: 0; }
+.tt-sc-np .tt-sc-np-adim-bas {
+  margin: 4px 0 0;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+  text-transform: none;
+  color: #0A0A0A;
+}
+.tt-sc-np .tt-sc-np-adim-acik {
+  margin: 2px 0 0;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: #5C5C57;
+}
+
+/* Geri sayim (Single, 3. adim) -- statik */
+.tt-sc-np-sayac {
+  display: inline-flex;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 7px 12px 6px;
+  border-radius: 12px;
+  background: #0A0A0A;
+}
+.tt-sc-np-sayac-sutun { display: flex; flex-direction: column; align-items: center; }
+.tt-sc-np-sayac-sayi { font-size: 15px; font-weight: 600; line-height: 1.2; color: #D6FF00; font-variant-numeric: tabular-nums; }
+.tt-sc-np-sayac-birim { font-size: 9.5px; line-height: 1.2; color: #A3A39E; }
+
+/* Rozet (Couple, 3. adim) */
+.tt-sc-np-rozet {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: #0A0A0A;
+  color: #D6FF00;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.tt-sc-np-rozet-nokta { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #D6FF00; }
+
+/* --- Bolum etiketi + kutular --- */
+.tt-sc-np .tt-sc-np-etiket {
+  margin: 19px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: #8A8A85;
+}
+.tt-sc-np-kutular {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+.tt-sc-np-kutu {
+  margin: 0;
+  padding: 11px 12px 12px;
+  border-radius: 14px;
+  background: #FFFFFF;
+}
+.tt-sc-np-kutu::before, .tt-sc-np-kutu::marker { content: none; }
+.tt-sc-np-kutu-bas { display: flex; align-items: center; gap: 8px; }
+.tt-sc-np-kutu-ikon { display: block; flex: 0 0 20px; width: 20px; height: 20px; }
+.tt-sc-np-kutu-baslik { font-size: 13px; font-weight: 700; line-height: 1.2; color: #0A0A0A; }
+.tt-sc-np .tt-sc-np-kutu-acik {
+  margin: 5px 0 0;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: #5C5C57;
+}
+.tt-sc-np--couple .tt-sc-np-kutu { padding: 10px 11px 11px; }
+.tt-sc-np--couple .tt-sc-np-kutu-ikon { flex-basis: 19px; width: 19px; height: 19px; }
+.tt-sc-np--couple .tt-sc-np-kutu-baslik { font-size: 12.5px; }
+.tt-sc-np--couple .tt-sc-np-kutu-acik { font-size: 11px; }
+
+/* --- "Anladim": govdenin disinda, pencerenin altinda sabit --- */
+.tt-sc-np-alt {
+  flex: 0 0 auto;
+  padding: 16px 20px calc(22px + env(safe-area-inset-bottom));
+  background: #F4F4F4;
+}
+.tt-sc-np-tamam {
+  display: block;
+  width: 100%;
+  height: 50px;
+  margin: 0;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #0A0A0A;
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 50px;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
