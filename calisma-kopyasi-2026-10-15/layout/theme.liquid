@@ -56,6 +56,26 @@
       uzerinde; body'de degil, cunku taksit modali kendini body altina
       tasiyor ve tokenlarin ona miras kalmamasi gerekiyor.
     {%- endcomment -%}
+    {%- comment -%}
+      URUN SAYFASI KAPISI -- asagida uc yerde kullaniliyor (CSS
+      katmani, urun cubugu, <main> sinifi).
+
+      product.zaman-kapsulu* sablonlarinin yaninda product.couple da
+      giriyor: o sablon yalnizca ?view=couple ile aciliyor (Couple
+      modundaki kart linkleri) ve galeri disinda normal urun
+      sayfasiyla ayni gorunmeli. Onceden bu sablon kapinin disinda
+      kaldigi icin beyaz Concept header'iyla ve stilsiz hap/avantaj
+      alanlariyla aciliyordu.
+    {%- endcomment -%}
+    {%- liquid
+      assign tt_urun_sayfa = false
+      if template.name == 'product'
+        if template.suffix contains 'zaman-kapsulu' or template.suffix == 'couple'
+          assign tt_urun_sayfa = true
+        endif
+      endif
+    -%}
+
     {%- if template.suffix == 'couple-daha-fazla-bilgial' -%}
       {%- render 'tt-couple' -%}
       {%- comment -%}
@@ -89,7 +109,7 @@
       {%- render 'tt-couple-banka', kok: '.tt-tekli-page' -%}
       {%- render 'tt-aln-mavi', kok: '.tt-tekli-page' -%}
       {%- render 'tt-tekli-gorunum' -%}
-    {%- elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' -%}
+    {%- elsif tt_urun_sayfa -%}
       {%- comment -%}
         Urun sayfasinda katmanin YALNIZCA avantaj kartlari parcasi:
         mobilde 2x2 izgara ve "Odeme kolayliklari" penceresindeki
@@ -252,12 +272,12 @@
     {%- endcomment -%}
     {%- if template.name == 'product' and template.suffix == 'zaman-kapsulu-couple' -%}
       {% sections 'tt-couple-urun' %}
-    {%- elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' -%}
+    {%- elsif tt_urun_sayfa -%}
       {% sections 'tt-urun-cubuk' %}
     {%- endif -%}
 
     <div class="page-container" id="PageContainer">
-      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% elsif template.name == 'product' and template.suffix contains 'zaman-kapsulu' %} tt-urun-page{% endif %}" id="MainContent" role="main">
+      <main class="main-content relative{% if template.suffix == 'couple-daha-fazla-bilgial' %} tt-couple-page{% elsif template.suffix == 'hediye-daha-fazla-bilgial' %} tt-tekli-page{% elsif tt_urun_sayfa %} tt-urun-page{% endif %}" id="MainContent" role="main">
         {{ content_for_layout }}
       </main>
 
