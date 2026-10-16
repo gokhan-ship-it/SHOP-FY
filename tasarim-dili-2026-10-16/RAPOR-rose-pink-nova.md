@@ -28,7 +28,7 @@ Rose Pink 2.699 olduğu için bildirilecek bir sapma yok. Tekli toplam 5.098, se
 | Stok takibi / politika | tracked, CONTINUE | tracked, CONTINUE |
 | Stok adedi | -444 | 0 |
 | Kargo gerekir / vergi | evet / hayır | evet / hayır |
-| Birim maliyet | 456 | **boş** (Chloe'ye özel maliyet, kopyalanmadı — girilmesi gerekiyor) |
+| Birim maliyet | 456 | **380** (16.10.2026, kullanıcı onayıyla) |
 | Şablon | zaman-kapsulu-couple | zaman-kapsulu-couple |
 | Satıcı / tür / etiket | Text To Next / boş / yok | aynı |
 | Kategori | Mücevherler > Kolyeler | aynı |
@@ -126,7 +126,7 @@ Temalar listelendi: Tasarim dili **UNPUBLISHED**, yayındaki MAIN "Calisma tasla
 **Önemli:** Ürün yayına alınmadan önizleme yalnızca admin önizleme linkiyle (shopifypreview.com) açılabiliyor. Bu link `preview_theme_id` parametresini yok sayıyor ve sayfayı **yayındaki temayla** çiziyor. Tasarim dili önizlemesi ise DRAFT ürün için 404 veriyor. Bu yüzden ekran görüntüleri yayındaki temaya ait (yalnızca görüntüleme yapıldı, hiçbir şey değişmedi). Tasarim dili görünümü, ürün yayına alındığında (ya da tema yayına girdiğinde) kontrol edilmeli.
 
 ## Bilgi / onay gereken noktalar
-1. **Malzeme:** Açıklamada iki ürün için de "Hipoalerjenik 316L Çelik" yazıyor. Fiyat 2.699 olan Rose Pink varyantı 316L Çelik (SKU ATN313RG), o yüzden iddia korundu. Ama Rose Pink'in kendi açıklaması 925 gümüşten bahsediyor ve packshot'ta rose gold renkte. Lütfen doğrulayın.
+1. **Malzeme:** Açıklamada iki ürün için de "Hipoalerjenik 316L Çelik" yazıyor. Fiyat 2.699 olan Rose Pink varyantı 316L Çelik (SKU ATN313RG), o yüzden iddia korundu. Ama Rose Pink'in kendi açıklaması 925 gümüşten bahsediyor ve packshot'ta rose gold renkte. **Kullanıcı doğruladı: 316L çelik.**
 2. **SKU:** Setlerde SKU yok; SET-ROSEPINK-NOVA uyduruldu ve benzersiz olduğu kontrol edildi.
-3. **Birim maliyet:** Boş bırakıldı (Nova + Chloe'nin 456'sı Chloe'ye özel).
+3. **Birim maliyet:** Kullanıcının verdiği 380 girildi.
 4. **related_products:** Nova + Chloe'de boş liste; ayarlanamadığı için yeni üründe hiç oluşturulmadı.
