@@ -123,12 +123,12 @@
 
   /* ---------- Acilir pencereler ---------- */
   /* Boyutlar (sablondaki "Ozel Liquid" blogu) */
-  .tt-urun-page .size-popup-inner h3 {
+  body.template-product .size-popup-inner h3 {
     font-family: var(--font-heading-family);
     font-weight: 700;
     color: #0a0a0a;
   }
-  .tt-urun-page .size-popup-close {
+  body.template-product .size-popup-close {
     background: #f4f4f4;
     color: #0a0a0a;
     width: 44px;
@@ -136,22 +136,31 @@
   }
 
   /* Kapat dugmeleri 44x44 (taksit, cihaz uyumlulugu, avantaj, boyutlar) */
-  .tt-urun-page .tt-tk-kapat,
-  .tt-urun-page [class^="dcb-close-"],
-  .tt-urun-page .ak-pop-kapat {
+  /* Taksit penceresi JS ile <body>'ye tasiniyor; Hizli Bakis da <main>
+     disinda olusturuluyor -- bu yuzden pencere kurallari body kapsaminda.
+     Dosya yalnizca urun sayfalarinda yuklendigi icin kapsam yine urun
+     sayfasi. */
+  body.template-product .tt-tk-kapat,
+  body.template-product [class^="dcb-close-"],
+  body.template-product .ak-pop-kapat {
     width: 44px !important;
     height: 44px !important;
     color: #0a0a0a !important;
   }
   /* Gorsel buyutme (PhotoSwipe body'ye ekleniyor) ve Hizli Bakis galerisi */
   body.template-product .pswp button { background-color: #ffffff; border-color: #d2d2cd; color: #0a0a0a; }
-  .tt-urun-page button[is^="media-"]:has(.icon-zoom) {
+  body.template-product button[is^="media-"]:has(.icon-zoom) {
     background-color: #ffffff !important;
     border-color: #d2d2cd !important;
     color: #0a0a0a;
   }
   /* Hizli Bakis: basliklar 700 */
-  .tt-urun-page .quick-view :is(h1, h2, h3, .heading, .recommend__title) { font-weight: 700; color: #0a0a0a; }
+  body.template-product .quick-view :is(h1, h2, h3, .heading, .recommend__title) { font-weight: 700; color: #0a0a0a; }
+  /* Hizli Bakis: stok durumu (yesil) -> notr */
+  body.template-product .quick-view .alert--success {
+    background-color: #f4f4f4;
+    color: #0a0a0a;
+  }
 
   /* ---------- 12 product-recommendations ---------- */
   .tt-urun-page [id$="__product-recommendations"] .quick-view__button::after { border-color: #d2d2cd; }
