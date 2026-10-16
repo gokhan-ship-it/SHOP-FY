@@ -1582,3 +1582,77 @@ body.tt-sc-cubuk-acik { padding-bottom: var(--tt-sc-cubuk-yuk, 210px); }
   letter-spacing: normal;
   cursor: pointer;
 }
+
+/* ------------------------------------------------------------------
+   2'DEN FAZLA URUN (16.10.2026)
+   Set kutusunda 3. ve sonraki urunlerin listesi, cubukta alt metin,
+   sinira gelince pasif "+" dugmeleri. Iki uronlu gorunum (slotlar,
+   kirilim) hic degismedi.
+   ------------------------------------------------------------------ */
+.tt-sc-ek {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.tt-sc-ek[hidden] { display: none; }
+.tt-sc-ek-oge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 36px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid var(--tt-sc-cizgi);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--tt-sc-koyu);
+}
+.tt-sc-ek-ad {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tt-sc-ek-cikar {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tt-sc-gri);
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.tt-sc-ek-cikar:hover { background: rgb(0 0 0 / .05); color: var(--tt-sc-koyu); }
+.tt-sc-ek-cikar:focus-visible { outline: 2px solid var(--tt-sc-koyu); outline-offset: 1px; }
+
+/* Cubuktaki alt metin: 2+ uronde "Istersen daha fazla urun
+   ekleyebilirsin.", sinirda "En fazla 6 urun secebilirsin." */
+.tt-sc .tt-sc-cubuk-ipucu {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--tt-sc-gri);
+}
+.tt-sc-cubuk-ipucu[hidden] { display: none; }
+@media screen and (min-width: 768px) {
+  .tt-sc-cubuk-ipucu { flex: 1 0 100%; margin-top: 0; text-align: left; }
+}
+
+/* 2 urunden once buton pasif gorunuyor; tiklaninca yine uyari cikiyor
+   (neden calismadigini soyleyen bir buton, sessizce kapali bir
+   butondan iyi). */
+.tt-sc-cubuk-dugme[aria-disabled="true"] { opacity: .45; }
+
+/* Sinirda SECILMEMIS kartlarin "+"si pasif. */
+[data-sc-pasif] .tt-uk-dugme,
+.tt-uk-dugme[aria-disabled="true"] { opacity: .35; }

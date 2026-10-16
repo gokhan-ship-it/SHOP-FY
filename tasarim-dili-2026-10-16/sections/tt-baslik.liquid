@@ -85,9 +85,17 @@
     Anasayfa boyle kullaniliyor.
   endcomment
   assign dugme_var = false
-  if s.cta_metni != blank
+  if s.cta_metni != blank and s.dugme_goster != false
     assign dugme_var = true
   endif
+
+  comment
+    "Dugmeyi goster" kapaliysa metin ve baglanti AYARDA KALIYOR, yalnizca
+    dugme basilmiyor. Boylece tek tikla geri acilabiliyor. 16.10.2026:
+    koleksiyon sayfalarindaki "Urunu Ogren" bu ayarla kapatildi.
+    "!= false" bilerek: ayar eklenmeden once kaydedilmis orneklerde deger
+    yok (nil) ve onlar eskisi gibi dugmeli kalmali.
+  endcomment
 
   assign menu = linklists[s.menu]
 -%}
@@ -119,6 +127,24 @@
     /* Dugme ekranin sagindan geliyor; disarida kalan kismi kirpilsin
        ki yatay kaydirma cubugu olusmasin. */
     overflow: hidden;
+  }
+
+  /* CUBUK YENILEMEDE KAYBOLUYORDU (16.10.2026).
+     Tema (assets/theme.css) sayfa ilk cizilirken, yani <body>'de
+     data-page-rendering varken, #MainContent icindeki UCUNCU ve sonraki
+     bolumlere content-visibility: auto veriyor; .no-touch bunu geri
+     aliyor, yani yalnizca dokunmatik cihazlarda (iPhone) gecerli.
+     Bolum sablonda (koleksiyon, anlatim sayfalari) asagida duruyor;
+     tarayici sarmalayiciyi "ekran disi" sayip icerigini cizmiyor ve
+     content-visibility'nin getirdigi contain yuzunden fixed cubuk
+     ekrana degil sarmalayiciya baglaniyor: sayfanin 5000. pikselinde,
+     cizilmemis halde kaliyor. Nitelik ancak kullanici dokununca ya da
+     zaman asiminda kalktigi icin "bazen" ve "yenileyince geri geliyor".
+     WebKit'te olculdu. Ayni cozum sections/hediye-secim-cubugu.liquid'de
+     de var: bu bolumun sarmalayicisi bu davranistan muaf. */
+  #shopify-section-{{ sid }} {
+    content-visibility: visible !important;
+    contain: none !important;
   }
 
   /* Cubuk sabit; biraktigi bosluk govdeye geri veriliyor ki sayfanin
@@ -630,6 +656,28 @@
       durumuUygula();
     }
 
+    /* YENILEME / GERI-ILERI SONRASI DURUM.
+       Tarayici yenilemede kaydirma konumunu geri yukluyor (load'dan
+       sonra da olabiliyor) ve geri-ileri onbellekten (bfcache) donuste
+       hicbir script yeniden calismiyor. Iki durumda da durum MEVCUT
+       konumdan yeniden hesaplaniyor; onceki sayfadan kalan bir sinif
+       takili kalmiyor. Cubugun kendisi hicbir durumda gizlenmiyor --
+       degisen yalnizca sagdaki ikon/dugme yuvasi. */
+    function yenidenKur(e) {
+      if (e && e.persisted) {
+        /* Menu acikken sayfadan cikildiysa bfcache acik haliyle geri
+           getiriyor: sayfa kilitli, cubuk carpi isaretinde kalirdi. */
+        if (typeof menuAyarla === 'function') menuAyarla(false);
+        document.documentElement.classList.remove('tth-kilit-{{ sid }}');
+        kok.classList.remove('is-menu', 'is-bolundu');
+      }
+      if (!yuva) return;
+      gorunur = !gorunur;   /* esitlik kisa devresini atlat, durumu zorla yaz */
+      durumuUygula();
+    }
+    window.addEventListener('pageshow', yenidenKur);
+    window.addEventListener('load', function () { yenidenKur(); });
+
     /* ---------- dugmenin bolunmesi ---------- */
     var bolundu = false, geriSayac = null;
 
@@ -734,6 +782,7 @@
       "type": "paragraph",
       "content": "Düğme başlangıçta görünmez; sayfa aşağıdaki eşik kadar kaydırılınca belirir. Sol ve sağ seçeneğin İKİSİ de doluysa düğme tıklanınca ikiye bölünür; boş bırakılırsa düğme doğrudan kendi bağlantısına gider."
     },
+    { "type": "checkbox", "id": "dugme_goster", "label": "Düğmeyi göster", "default": true, "info": "Kapalıyken düğme hiç çıkmaz; arama ve sepet ikonları her kaydırma durumunda görünür kalır. Metin ve bağlantı silinmez, geri açınca aynen döner." },
     { "type": "text", "id": "cta_metni", "label": "Düğme metni", "info": "Boş bırakılırsa o sayfada düğme hiç çıkmaz; arama ve sepet ikonları her zaman görünür kalır.", "default": "Satın Al" },
     { "type": "url", "id": "cta_bag", "label": "Düğme bağlantısı", "info": "Yalnızca bölünmeyen düğmede kullanılır." },
     { "type": "text", "id": "bol_1_metni", "label": "Sol seçenek" },

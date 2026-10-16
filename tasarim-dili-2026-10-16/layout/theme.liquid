@@ -51,6 +51,14 @@
     <link rel="stylesheet" href="{{ 'custom-tt.css' | asset_url }}">
 
     {%- comment -%}
+      CARK KODU ILK BOYAMADA: gecerli bir kod varsa <html>'e
+      data-tt-kod yaziliyor, indirimli fiyatlar sayfa cizilmeden
+      gorunuyor (once normal fiyat cikip sonra "ziplamiyor").
+      Ayrinti snippet'in basinda.
+    {%- endcomment -%}
+    {%- render 'tt-kod-erken' -%}
+
+    {%- comment -%}
       Couple sayfasi tasarim token katmani. Sablon kapisi disinda hicbir
       sayfa bu dosyayi yuklemiyor. Sarmalayici sinif asagida <main>
       uzerinde; body'de degil, cunku taksit modali kendini body altina
@@ -350,5 +358,12 @@
       hamburger ikonlari bunu aciyor. Icerik bolum ayarlarindan geliyor.
     {%- endcomment -%}
     {% sections 'tt-menu-grup' %}
+    {%- comment -%}
+      ALT YIGIN: sepete ekle cubugu, cark sayac cubugu ve yuzen
+      butonlar (Nasil calisir? / Sohbet) tek degiskenle diziliyor.
+      Ayrinti snippet'in basinda. En sonda: CSS'i ayni ozgulluktaki
+      eski kurallarin onune geciyor.
+    {%- endcomment -%}
+    {%- render 'tt-alt-yigin' -%}
   </body>
 </html>

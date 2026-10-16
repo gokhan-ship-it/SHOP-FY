@@ -1,0 +1,163 @@
+{%- comment -%}
+  ALT YIGIN -- ekranin altindaki sabit ogelerin tek yerden dizilmesi
+  (16.10.2026)
+
+  ------------------------------------------------------------------
+  SORUN
+  Alttaki sabit ogelerin her biri kendi yerini kendisi hesapliyordu:
+    - carkin sayac cubugu ("500 TL indirim aktif 26:38") bottom: 0
+    - Couple modundaki "Sepete ekle (0/2)" cubugu (tt-sc-cubuk) bottom: 0
+    - urun sayfasinin yapiskan sepete ekle cubugu (product-sticky-form)
+    - "Nasil calisir?" yuzen butonu (tt-nc-dugme), soldan
+    - Shopify Inbox "Sohbet" butonu (<shopify-chat>), sagdan
+  Iki cubuk ayni anda cikinca sayac cubugu digerinin arkasinda kaliyor,
+  yuzen butonlar da cubuklara biniyordu; her birinin kaydirma kurali
+  digerini bilmiyordu.
+
+  ------------------------------------------------------------------
+  DUZEN (alttan yukari)
+    1. Sepete ekle cubugu (gorunurken)        --tt-alt-sepet
+    2. Cark sayac cubugu (gorunurken)         --tt-alt-cark
+       sepet cubugu yokken en altta
+    3. Yuzen butonlar: solda "Nasil calisir?", sagda "Sohbet";
+       cubuklarin 12px ustunde
+  --tt-alt-yigin = 1 + 2. Butonlar ve sayfanin alt boslugu yalnizca bu
+  TEK degiskeni okuyor; cubuklar acilip kapandikca (sepet cubugunun
+  kaydirinca kayarak gizlenmesi dahil) hepsi kendiliginden kayiyor.
+
+  ------------------------------------------------------------------
+  NE OLCULUYOR
+  Gorunurluk tahmin edilmiyor, cubuklarin KENDI isaretlerinden
+  okunuyor (hepsi ilgili kodun zaten koydugu nitelikler):
+    tt-sc-cubuk        : [hidden] yok ve [data-sc-gizli] yok
+    product-sticky-form: ilk cocugun opacity/visibility'si (tema
+                         ProductStickyForm boyle aciyor; custom-tt.js
+                         de ayni yolla okuyor)
+    ttn-cark-bar       : [hidden] yok ve [data-ttn-ortulu] yok
+  Yukseklik offsetHeight; animasyon ortasinda bile mantiksal deger
+  okunuyor, kayma CSS gecisiyle yumusak.
+
+  Uygulamalarin koduna dokunulmuyor. Sohbet butonu Shopify Inbox'in
+  kendi CSS degiskeniyle (--shopify-chat-activator-offset) kaydiriliyor;
+  uygulamanin ayarinda alt ofset yok, yalnizca sol/sag konum var.
+
+  Carkin "kaydir_secici" / "gizle_secici" ayarlari (sections/ttn-cark.json)
+  bu yuzden BOSALTILDI: o ikisi cubugu sepet cubugu varken gizliyor ve
+  yuzen ogeleri kendi yuksekligi kadar kaldiriyordu -- burasiyla catisir.
+  Carkin kendisine, koda, tutara dokunulmadi.
+{%- endcomment -%}
+<style>
+  /* Cark cubugu sepet cubugunun ustune oturuyor. */
+  .ttn-cark-bar {
+    bottom: var(--tt-alt-sepet, 0px);
+    transition: bottom 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  /* Sepet cubugu altta guvenli alani (iPhone ev cubugu) zaten
+     kapsiyor; ustteki cark cubugu ikinci kez birakmasin. */
+  html.tt-ay-sepet .ttn-cark-bar { padding-bottom: 9px; }
+
+  /* Yuzen butonlar: yigin varken yiginin 12px ustu. Yigin yokken
+     kendi kurallari (20px + guvenli alan) aynen gecerli. Carkin
+     eski translateY kaydirmasi burada sifirlaniyor; yer artik
+     bottom'dan geliyor. */
+  html.tt-ay-var .tt-nc-dugme {
+    bottom: calc(var(--tt-alt-yigin, 0px) + 12px) !important;
+    transform: none !important;
+    transition: bottom 220ms cubic-bezier(0.4, 0, 0.2, 1), transform 140ms ease;
+  }
+  html.tt-ay-var .tt-nc-dugme:active { transform: scale(.97) !important; }
+  html.tt-ay-var shopify-chat {
+    --shopify-chat-activator-offset: calc(var(--tt-alt-yigin, 0px) + 12px) !important;
+  }
+
+  /* Sayfanin son satiri yiginin arkasinda kalmasin. Carkin ve sepet
+     cubugunun kendi body padding kurallarinin YERINE gecer: ikisi
+     birden acikken toplam yukseklik kadar bosluk. */
+  html.tt-ay-var body { padding-bottom: var(--tt-alt-yigin, 0px) !important; }
+</style>
+<script>
+  (function () {
+    'use strict';
+    if (window.__ttAltYigin) return;
+    window.__ttAltYigin = true;
+
+    var kok = document.documentElement;
+    var son = '';
+
+    function gizliMi(el) {
+      if (!el || el.hidden || el.closest('[hidden]')) return true;
+      var st = window.getComputedStyle(el);
+      return st.display === 'none' || st.visibility === 'hidden';
+    }
+
+    function sepetYuk() {
+      var en = 0;
+      var sc = document.querySelectorAll('.tt-sc-cubuk');
+      for (var i = 0; i < sc.length; i++) {
+        var c = sc[i];
+        if (c.hidden || c.hasAttribute('data-sc-gizli')) continue;
+        if (window.getComputedStyle(c).display === 'none') continue;
+        en = Math.max(en, c.offsetHeight);
+      }
+      var kart = document.querySelector('product-sticky-form > :first-child');
+      if (kart) {
+        var st = window.getComputedStyle(kart);
+        var form = kart.parentElement;
+        if (st.visibility !== 'hidden' && parseFloat(st.opacity) > 0.01 && kart.offsetHeight > 0 &&
+            window.getComputedStyle(form).display !== 'none') {
+          /* Kartin ustunden ekranin altina kadar: formun ic boslugu
+             da kapladigi alana dahil. */
+          var r = kart.getBoundingClientRect();
+          en = Math.max(en, Math.round(window.innerHeight - r.top));
+        }
+      }
+      return Math.max(0, en);
+    }
+
+    function carkYuk() {
+      var b = document.querySelector('.ttn-cark-bar');
+      if (!b || b.hidden || b.hasAttribute('data-ttn-ortulu') || gizliMi(b)) return 0;
+      return b.offsetHeight;
+    }
+
+    function guncelle() {
+      bekliyor = false;
+      var s = sepetYuk();
+      var c = carkYuk();
+      var imza = s + '|' + c;
+      if (imza === son) return;
+      son = imza;
+      kok.style.setProperty('--tt-alt-sepet', s + 'px');
+      kok.style.setProperty('--tt-alt-cark', c + 'px');
+      kok.style.setProperty('--tt-alt-yigin', (s + c) + 'px');
+      kok.classList.toggle('tt-ay-sepet', s > 0);
+      kok.classList.toggle('tt-ay-var', s + c > 0);
+    }
+
+    var bekliyor = false;
+    function planla() {
+      if (bekliyor) return;
+      bekliyor = true;
+      window.requestAnimationFrame(guncelle);
+    }
+
+    function kur() {
+      guncelle();
+      if (window.MutationObserver) {
+        new MutationObserver(planla).observe(document.body, {
+          subtree: true, childList: true, attributes: true,
+          attributeFilter: ['hidden', 'data-sc-gizli', 'data-ttn-ortulu', 'style', 'class']
+        });
+      }
+      window.addEventListener('resize', planla);
+      window.addEventListener('scroll', planla, { passive: true });
+      window.addEventListener('pageshow', function () { son = ''; planla(); });
+      /* Emniyet: gozlemcinin kacirdigi bir degisiklik (uygulama
+         ogeleri, gec yuklenen cubuk) en gec bir saniyede yakalaniyor. */
+      window.setInterval(planla, 1000);
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', kur);
+    else kur();
+  })();
+</script>

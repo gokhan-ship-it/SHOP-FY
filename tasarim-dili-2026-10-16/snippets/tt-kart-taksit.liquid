@@ -52,13 +52,21 @@
   {%- assign tt_etiket = settings.tt_kart_etiket | default: 'İndirim kodu ile' -%}
   <p class="tt-kart-fiyat" data-tt-kart-fb data-tt-kart-fiyat="{{ tt_taban }}" hidden>
     <span class="tt-kart-etiket">{{ tt_etiket }}</span>
-    <span class="tt-kart-yeni">{%- render 'tt-para', kurus: tt_net -%}</span>
-    <span class="tt-kart-eski">
-      {%- comment -%} "Itibaren" on eki yalnizca cizili satirda; yesil satirda tekrarlanmaz. {%- endcomment -%}
-      {%- if product.price_varies -%}
-        <span class="tt-kart-on">{{ settings.tt_kart_itibaren | default: 'İtibaren' }}</span>
-      {% endif -%}
-      {%- render 'tt-para', kurus: tt_taban -%}
+    {%- comment -%}
+      16.10.2026: indirimli tutar ile ustu cizili normal fiyat AYNI
+      satirda (yan yana, sigmazsa alta sariyor). Cok satanlar ve set
+      seridindeki blokla ayni bicim: ustte kucuk etiket, altinda koyu
+      tutar, yaninda #5C5C57 cizili fiyat.
+    {%- endcomment -%}
+    <span class="tt-kart-satir">
+      <span class="tt-kart-yeni">{%- render 'tt-para', kurus: tt_net -%}</span>
+      <s class="tt-kart-eski">
+        {%- comment -%} "Itibaren" on eki yalnizca cizili tutarda; indirimli tutarda tekrarlanmaz. {%- endcomment -%}
+        {%- if product.price_varies -%}
+          <span class="tt-kart-on">{{ settings.tt_kart_itibaren | default: 'İtibaren' }}</span>
+        {% endif -%}
+        {%- render 'tt-para', kurus: tt_taban -%}
+      </s>
     </span>
   </p>
 {%- endif -%}

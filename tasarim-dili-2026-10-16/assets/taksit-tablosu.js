@@ -712,6 +712,23 @@
       saatKur(serit.querySelector('[data-tt-fb-saat]'), V.fbSaat);
       serit.hidden = false;
     }
+    /* URUN SAYFASI FIYAT BLOGU (snippets/tt-fiyat-kod.liquid, 16.10.2026).
+       Liquid ilk varyantin rakamini basti; varyant degisince tutarlar ve
+       blogun data-tt-kart-fiyat'i burada guncelleniyor. Gorunurluk
+       kurali kolCiz ile ayni: gecerli kod ve tutar < fiyat. */
+    var uf = document.querySelectorAll('[data-tt-uf]');
+    for (var u = 0; u < uf.length; u++) {
+      var acik = !!(ind && ind.durum === 'A');
+      uf[u].setAttribute('data-tt-kart-fiyat', String(tamKurus));
+      if (acik) {
+        var ye = uf[u].querySelector('[data-tt-uf-yeni]');
+        var es = uf[u].querySelector('[data-tt-uf-eski]');
+        if (ye) ye.textContent = bicim(V, ind.netKurus / 100);
+        if (es) es.textContent = bicim(V, tamKurus / 100);
+      }
+      uf[u].hidden = !acik;
+    }
+
     /* Sayaci burasi yonetiyor: indirim varsa calisir, yoksa durur.
        Boylece modal kapandiginda serit sayaci olmuyor. */
     if (ind) sayaciBaslat(ind.bitis);
@@ -923,6 +940,12 @@
          kod yok/dolmus -> blok gizli kalir, tek satir normal fiyat gorunur
        Sure dolunca sureBittiIc() burayi yeniden cagirdigi icin sayfa
        yenilenmeden sessizce ikinci duruma donuluyor. */
+    /* <html>'deki data-tt-kod, snippets/tt-kod-erken.liquid'in ilk
+       boyamada actigi isaret. Kod gecerliligi burada degisince (cark
+       sayfada cevrildi / sure doldu) isaret de esitleniyor; boylece
+       sonradan eklenen kartlar dogru durumda doguyor. */
+    document.documentElement.toggleAttribute('data-tt-kod', !!(g && indKurus > 0));
+
     var bloklar = document.querySelectorAll('[data-tt-kart-fb]');
     for (var i = 0; i < bloklar.length; i++) {
       var b = bloklar[i];
@@ -940,12 +963,38 @@
     else if (!document.querySelector('[data-tt-fb]')) { sayaciDurdur(); sonBitis = null; }
   }
 
+  /* SONRADAN GELEN KARTLAR (16.10.2026).
+     Urun onerileri, son goruntulenenler, filtre sonucu yeniden cizilen
+     izgara: kartlar kur()'dan SONRA DOM'a giriyor ve kolCiz onlari hic
+     gormuyordu -- oneri kartlarinda indirimli fiyat bu yuzden cikmiyordu.
+     Yeni bir [data-tt-kart-fb] eklenince kolCiz bir kez daha calisiyor
+     (kisa gecikmeyle toplu). */
+  function yeniKartIzle() {
+    if (!window.MutationObserver) return;
+    var z = null;
+    new MutationObserver(function (m) {
+      for (var i = 0; i < m.length; i++) {
+        var e = m[i].addedNodes;
+        for (var j = 0; j < e.length; j++) {
+          var n = e[j];
+          if (n.nodeType !== 1) continue;
+          if (n.hasAttribute('data-tt-kart-fb') || (n.querySelector && n.querySelector('[data-tt-kart-fb]'))) {
+            if (z) window.clearTimeout(z);
+            z = window.setTimeout(kolCiz, 50);
+            return;
+          }
+        }
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
   function kur() {
     panelBul();
     fbCiz();
     kolCiz();
     fbIzle();
     cerezIzle();
+    yeniKartIzle();
     window.setTimeout(fbOranDuzelt, 1200);     // ilk boyamayi beklettirme
     var V = veri();
     var l = document.getElementsByTagName('a');

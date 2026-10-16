@@ -204,6 +204,11 @@
   "sayacEki": {{ s.sayac_eki | json }},
   "setSayac": {{ s.set_sayac | json }},
   "setHazir": {{ s.set_hazir | json }},
+  "setSayacCok": {{ s.set_sayac_cok | default: '[n] ürün seçildi ✓' | json }},
+  "ekOn": {{ s.ek_on | default: '[n].' | json }},
+  "ekCikar": {{ s.ek_cikar | default: '[ad] ürününü setten çıkar' | json }},
+  "ekIpucu": {{ s.ek_ipucu | default: 'İstersen daha fazla ürün ekleyebilirsin.' | json }},
+  "sinirMetin": {{ s.sinir_metin | default: 'En fazla [n] ürün seçebilirsin.' | json }},
   "slot1Ust": {{ s.slot1_ust | json }},
   "slot1AltBos": {{ s.slot1_alt_bos | json }},
   "slot2Ust": {{ s.slot2_ust | json }},
@@ -852,6 +857,7 @@
          Katman kapaliyken 0 gonderiliyor ve cubuk kod satirini hic
          acmiyor.
        {%- endcomment -%}
+       data-sc-sinir="{{ s.secim_sinir | default: 6 }}"
        data-sc-kod-kurus="{% if settings.tt_indirim_aktif %}{{ settings.tt_indirim_tutar | times: 100 | round }}{% else %}0{% endif %}"
        data-sc-metin="{{ metin_json | strip | escape }}"
        style="
@@ -1689,6 +1695,14 @@
               {%- endif -%}
             </button>
           </div>
+
+          {%- comment -%}
+            3. VE SONRAKI URUNLER (16.10.2026). Slotlar Couple setinin
+            kendisi (1. tam fiyat / 2. %50) ve aynen kaliyor; fazladan
+            secilenler burada kucuk bir liste, her biri "x" ile
+            cikariliyor. JS dolduruyor (setCiz).
+          {%- endcomment -%}
+          <ul class="tt-sc-ek" data-sc-ek hidden></ul>
         </div>
       </div>
 
@@ -2016,6 +2030,7 @@
           {%- render 'tt-sc-ikon', ad: 'canta', sinif: 'tt-sc-dugme-ikon' -%}
           <span data-sc-dugme-metin>{{ s.dugme_eksik }}</span>
         </button>
+        <p class="tt-sc-cubuk-ipucu" data-sc-ipucu hidden></p>
         <p class="tt-sc-cubuk-uyari" data-sc-uyari hidden></p>
       </div>
     </div>
@@ -2284,9 +2299,15 @@
     { "type": "text", "id": "set_bant_alt", "label": "Kural bandı — alt satır",
       "default": "Couple set için sepette 2 ürün olmalı." },
     { "type": "text", "id": "set_baslik", "label": "Başlık", "default": "Setini oluştur" },
-    { "type": "text", "id": "set_hazir", "label": "Sayaç: iki ürün de seçilmişken", "default": "Set hazır" },
+    { "type": "text", "id": "set_hazir", "label": "Sayaç: iki ürün seçilmişken", "default": "2/2 seçildi ✓" },
     { "type": "text", "id": "set_sayac", "label": "Sayaç metni", "default": "[n]/2 seçildi",
       "info": "[n] seçili ürün sayısıyla değişir." },
+    { "type": "text", "id": "set_sayac_cok", "label": "Sayaç: 3 ve daha fazla ürün seçiliyken", "default": "[n] ürün seçildi ✓", "info": "[n] seçilen ürün sayısıyla değişir." },
+    { "type": "range", "id": "secim_sinir", "label": "En fazla seçilebilecek ürün", "min": 2, "max": 10, "step": 1, "default": 6, "info": "Couple seti için 2 ürün gerekir; müşteri bu sayıya kadar ürün seçip hepsini tek seferde sepete ekleyebilir." },
+    { "type": "text", "id": "ek_on", "label": "3. ve sonraki ürünler listesi: sıra öneki", "default": "[n]." },
+    { "type": "text", "id": "ek_cikar", "label": "Listeden çıkar düğmesi (ekran okuyucu)", "default": "[ad] ürününü setten çıkar" },
+    { "type": "text", "id": "ek_ipucu", "label": "2 ürün ve üstü seçiliyken alt metin", "default": "İstersen daha fazla ürün ekleyebilirsin." },
+    { "type": "text", "id": "sinir_metin", "label": "Sınıra gelince alt metin", "default": "En fazla [n] ürün seçebilirsin.", "info": "[n] yukarıdaki sınırla değişir." },
     { "type": "text", "id": "slot1_ust", "label": "1. slot üst yazı", "default": "1. ürün" },
     { "type": "text", "id": "slot1_alt_bos", "label": "1. slot alt yazı (boşken)", "default": "Tam fiyat",
       "info": "Slot dolunca yerine ürünün Kadın/Erkek bilgisi yazılıyor." },
@@ -2374,7 +2395,7 @@
       "info": "Sepette başka ürün varken indirimin hangi ürüne düşeceğine Shopify sepette karar veriyor; çubuk bu yüzden rakam yazmıyor. Boş bırakırsanız üstteki metin çıkar." },
     { "type": "text", "id": "dugme_eksik", "label": "Buton – eksik seçim", "default": "Sepete ekle ([n]/2)",
       "info": "[n] seçili ürün sayısıyla değişir." },
-    { "type": "text", "id": "dugme_tam", "label": "Buton – 2 ürün seçiliyken", "default": "2 ürünü sepete ekle" },
+    { "type": "text", "id": "dugme_tam", "label": "Buton – 2 ve daha fazla ürün seçiliyken", "default": "Sepete ekle ([n])", "info": "[n] seçilen ürün sayısıyla değişir." },
     { "type": "text", "id": "uyari_metin", "label": "Eksik seçimle basılırsa", "default": "Sete bir ürün daha seç." },
     { "type": "text", "id": "hata_metin", "label": "Sepete eklenemezse", "default": "Sepete eklenemedi. Ürünlerden biri tükenmiş olabilir." },
     { "type": "checkbox", "id": "tutar_goster", "label": "Çubukta toplam tutarı göster", "default": true,

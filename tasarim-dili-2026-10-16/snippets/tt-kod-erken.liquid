@@ -1,0 +1,105 @@
+{%- comment -%}
+  CARK KODU -- ILK BOYAMADA INDIRIMLI FIYAT (16.10.2026)
+
+  ------------------------------------------------------------------
+  SORUN
+  Indirimli fiyat bloklari ([data-tt-kart-fb]) Liquid'de hesaplanip
+  [hidden] basiliyor; acan kod assets/taksit-tablosu.js > kolCiz().
+  O dosya "defer" ile sayfanin SONUNDA yukleniyor. Sayfa yenilenince
+  musteri once normal fiyati goruyor, bir an sonra rakam degisiyor
+  (zipliyor). Urun onerileri gibi sonradan (fetch ile) gelen kartlar
+  ise kolCiz'den SONRA geldigi icin hic acilmiyordu.
+
+  ------------------------------------------------------------------
+  COZUM
+  <head>'de, CSS'ten hemen sonra calisan kucuk bir script:
+    1. Kod gecerli mi? Ayni kaynaklar, ayni kural: carkin yazdigi uc
+       cerez (tema ayarindaki adlarla) ya da katmanin localStorage
+       aynasi (ttKod). Ikinci bir indirim mantigi YOK -- kolCiz/kodBul
+       ile birebir ayni kosul.
+    2. Gecerliyse <html>'e data-tt-kod yaziliyor.
+    3. Bir MutationObserver, HTML ayristirilirken eklenen her
+       [data-tt-kart-fb] blogunu GORUNDUGU ANDA aciyor (kolCiz'in
+       yaptiginin aynisi: tutar fiyattan kucukse hidden kalkiyor).
+       Gozlemci geri cagrilari boyamadan once calistigi icin blok ilk
+       cizimde zaten acik. Sonradan gelen kartlar (oneriler, filtre)
+       da ayni yoldan aciliyor.
+    4. Normal fiyat satiri (.price) blok gorunurken CSS :has ile
+       gizleniyor; sira (once/sonra) onemli degil.
+
+  Sure dolunca taksit-tablosu.js blogu geri gizliyor (sureBitti /
+  cerez izleme); :has kurali da kendiliginden birakiyor. Her yeni blok
+  icin gecerlilik YENIDEN soruluyor, yani suresi gecmis bir kod yeni
+  kartlari acmiyor.
+
+  Carkin kendisine, koda, tutara dokunulmuyor; yalnizca GOSTERIM.
+{%- endcomment -%}
+{%- if settings.tt_indirim_aktif -%}
+{%- liquid
+  assign tt_ke_ind = settings.tt_indirim_tutar | times: 100 | round
+-%}
+<style>
+  .tt-gizli { display: none !important; }
+  html[data-tt-kod] :has(> [data-tt-kart-fb]:not([hidden])) > .price { display: none !important; }
+</style>
+<script>
+  (function () {
+    'use strict';
+    var C_KOD = {{ settings.tt_cerez_kod | json }};
+    var C_SURE = {{ settings.tt_cerez_sure | json }};
+    var C_ZAMAN = {{ settings.tt_cerez_zaman | json }};
+    var IND = {{ tt_ke_ind | json }};
+    if (!(IND > 0)) return;
+
+    function cerez(ad) {
+      if (!ad) return '';
+      var h = String(document.cookie || '').split(';');
+      for (var i = 0; i < h.length; i++) {
+        var c = h[i].trim(), e = c.indexOf('=');
+        if (e < 0 || c.slice(0, e) !== ad) continue;
+        try { return decodeURIComponent(c.slice(e + 1)); } catch (x) { return c.slice(e + 1); }
+      }
+      return '';
+    }
+    /* assets/taksit-tablosu.js > kodBul() ile ayni kosul. */
+    function gecerli() {
+      var k = cerez(C_KOD), s = parseFloat(cerez(C_SURE)), b = parseFloat(cerez(C_ZAMAN));
+      if (k && isFinite(s) && isFinite(b) && b + s * 1000 > Date.now()) return true;
+      try {
+        var v = JSON.parse(localStorage.getItem('ttKod') || 'null');
+        if (v && v.k && v.b > Date.now()) return true;
+      } catch (x) {}
+      return false;
+    }
+
+    var kok = document.documentElement;
+    if (!gecerli()) return;
+    kok.setAttribute('data-tt-kod', '');
+
+    function ac(b) {
+      if (!b.hidden) return;
+      var kurus = parseInt(b.getAttribute('data-tt-kart-fiyat'), 10);
+      if (!(isFinite(kurus) && IND < kurus)) return;
+      if (!gecerli()) { kok.removeAttribute('data-tt-kod'); return; }
+      b.hidden = false;
+    }
+    function tara(n) {
+      if (!n || n.nodeType !== 1) return;
+      if (n.hasAttribute('data-tt-kart-fb')) ac(n);
+      if (n.querySelectorAll) {
+        var a = n.querySelectorAll('[data-tt-kart-fb][hidden]');
+        for (var i = 0; i < a.length; i++) ac(a[i]);
+      }
+    }
+    if (window.MutationObserver) {
+      new MutationObserver(function (m) {
+        if (!kok.hasAttribute('data-tt-kod')) return;
+        for (var i = 0; i < m.length; i++) {
+          var e = m[i].addedNodes;
+          for (var j = 0; j < e.length; j++) tara(e[j]);
+        }
+      }).observe(kok, { childList: true, subtree: true });
+    }
+  })();
+</script>
+{%- endif -%}

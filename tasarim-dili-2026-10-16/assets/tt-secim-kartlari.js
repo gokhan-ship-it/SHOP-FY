@@ -36,6 +36,12 @@
     /* Cark kodunun tutari KURUS cinsinden; kartlardaki indirimli fiyat
        blogu ile AYNI tema ayarindan geliyor (bkz. bolumun Liquid'i). */
     var KOD_KURUS = parseInt(KOK.getAttribute('data-sc-kod-kurus'), 10) || 0;
+    /* Couple setine en fazla kac urun secilebilir (bolum ayari
+       "secim_sinir", varsayilan 6). 16.10.2026'ya kadar sabit 2'ydi ve
+       ucuncu secim en eskiyi dusuruyordu; kararsiz musteri 3-6 urunu
+       birden sepete atip orada karar verebilsin diye acildi. Couple
+       setinin kendisi yine 2 urun: buton 2'den once pasif. */
+    var SINIR = Math.max(2, parseInt(KOK.getAttribute('data-sc-sinir'), 10) || 6);
     /* Single modunda listeyi kim ciziyor -- TEK ayar bu.
 
          tema   Sayfanin kendi izgarasi (main-collection). Filtreleri,
@@ -87,6 +93,8 @@
     var kodTutar = KOK.querySelector('[data-sc-kod-tutar]');
     var dugmeMet = KOK.querySelector('[data-sc-dugme-metin]');
     var sepetBtn = KOK.querySelector('[data-sc-ekle-sepet]');
+    var ekListe  = KOK.querySelector('[data-sc-ek]');      /* 3.+ urunler */
+    var ipucuEl  = KOK.querySelector('[data-sc-ipucu]');   /* cubuktaki alt metin */
     var uyariEl  = KOK.querySelector('[data-sc-uyari]');
     var vDialog  = KOK.querySelector('[data-sc-varyant]');
     var vBaslik  = KOK.querySelector('[data-sc-varyant-baslik]');
@@ -108,7 +116,7 @@
     if (VARSAYILAN_KIME !== 'kadin' && VARSAYILAN_KIME !== 'erkek') VARSAYILAN_KIME = 'tumu';
     var kime = VARSAYILAN_KIME;
     var kimeOnceki = null;   /* couple'a gecerken saklanan secim */
-    var set = [];          /* en fazla 2: {urunId, varyantId, ad, kime, fiyat} */
+    var set = [];          /* en fazla SINIR: {urunId, varyantId, ad, kime, fiyat} */
     var gonderiyor = false;
 
     /* ---------- Para bicimi ----------
@@ -608,9 +616,20 @@
        ogeyi gosterdigi data-sc-kaynak'ta duruyor, bosaltma da onu
        okuyor. */
     function gosterimSirasi() {
-      if (set.length < 2) return set.map(function (_, i) { return i; });
-      return set[0].fiyat >= set[1].fiyat ? [0, 1] : [1, 0];
+      var s = set.map(function (_, i) { return i; });
+      if (set.length < 2) return s;
+      /* Pahalidan ucuza; esit fiyatta secim sirasi korunuyor. Ilk iki
+         sira slotlara, kalanlar slotlarin altindaki listeye gidiyor. */
+      return s.sort(function (a, b) { return (set[b].fiyat - set[a].fiyat) || (a - b); });
     }
+
+    /* Kac urune %50 dusuyor? Magaza kurali (otomatik "Ikinci Urunde %50
+       Indirim", Buy X Get Y: 1 al, 1'i %50, siparis basina SINIRSIZ):
+       her 1+1 cifti icin bir indirim, Shopify bunu sepetteki EN UCUZ
+       uygun urunlere uyguluyor. Yani n urunde floor(n/2) urun, sirali
+       listenin sonundakiler. 16.10.2026'da sepete gercekten eklenerek
+       2-5 urunle dogrulandi (bkz. RAPOR-bes-sorun.md). */
+    function indirimliAdet(n) { return Math.floor(n / 2); }
 
     function setCiz() {
       var n = set.length;
@@ -636,7 +655,38 @@
         }
       }
       for (var c = 0; c < cubuklar.length; c++) cubuklar[c].toggleAttribute('data-sc-dolu', c < n);
-      if (setSayac) setSayac.textContent = n === 2 ? (M.setHazir || '') : yaz(M.setSayac, n);
+      if (setSayac) {
+        setSayac.textContent = n < 2 ? yaz(M.setSayac, n)
+          : n === 2 ? (M.setHazir || '')
+          : yaz(M.setSayacCok, n);
+      }
+
+      /* 3. ve sonraki urunler: slotlarin altinda kucuk liste, her biri
+         kaldirilabilir. Slotlar (1. urun tam fiyat / 2. urun %50)
+         oldugu gibi kaliyor. */
+      if (ekListe) {
+        ekListe.textContent = '';
+        for (var x = 2; x < sira.length; x++) {
+          var ee = set[sira[x]];
+          var li = document.createElement('li');
+          li.className = 'tt-sc-ek-oge';
+          var sp = document.createElement('span');
+          sp.className = 'tt-sc-ek-ad';
+          sp.textContent = yaz(M.ekOn, x + 1) + ' ' + ee.ad + (ee.varyantAd ? ' · ' + ee.varyantAd : '');
+          var kb = document.createElement('button');
+          kb.type = 'button';
+          kb.className = 'tt-sc-ek-cikar';
+          kb.setAttribute('data-sc-ek-cikar', String(sira[x]));
+          kb.setAttribute('aria-label', String(M.ekCikar || '').replace('[ad]', ee.ad));
+          kb.textContent = '×';
+          li.appendChild(sp);
+          li.appendChild(kb);
+          ekListe.appendChild(li);
+        }
+        ekListe.hidden = sira.length <= 2;
+      }
+      var sinirda = n >= SINIR;
+      KOK.toggleAttribute('data-sc-sinirda', sinirda);
 
       for (var k = 0; k < karolar.length; k++) {
         var id = karolar[k].getAttribute('data-sc-urun');
@@ -655,6 +705,14 @@
         var metin = karolar[k].querySelector('[data-sc-ekle-metin]');
         if (metin) metin.textContent = icinde ? (M.kartSecili || '') : (M.kartEkle || '');
         if (btn) {
+          /* Sinira gelindiyse SECILMEMIS kartlarin "+"si pasif. disabled
+             degil aria-disabled: dugme odaklanabilir kaliyor, basilinca
+             nedenini soyleyen uyari cikiyor (tiklama dinleyicisi). Secili
+             kartlar her zaman cikarilabilir. */
+          var pasif = mod === 'couple' && sinirda && !icinde;
+          if (pasif) btn.setAttribute('aria-disabled', 'true');
+          else btn.removeAttribute('aria-disabled');
+          karolar[k].toggleAttribute('data-sc-pasif', pasif);
           btn.setAttribute('aria-pressed', icinde ? 'true' : 'false');
           var ad = karolar[k].getAttribute('data-sc-ad') || '';
           var sablon = mod === 'couple'
@@ -670,9 +728,21 @@
       }
 
       cubukCiz(n, sira);
-      if (dugmeMet) dugmeMet.textContent = n === 2 ? (M.dugmeTam || '') : yaz(M.dugmeEksik, n);
-      if (cubuk) cubuk.toggleAttribute('data-sc-hazir', n === 2);
-      if (n === 2 && uyariEl) uyariEl.hidden = true;
+      if (dugmeMet) dugmeMet.textContent = n < 2 ? yaz(M.dugmeEksik, n) : yaz(M.dugmeTam, n);
+      if (cubuk) cubuk.toggleAttribute('data-sc-hazir', n >= 2);
+      if (sepetBtn) {
+        if (n < 2) sepetBtn.setAttribute('aria-disabled', 'true');
+        else sepetBtn.removeAttribute('aria-disabled');
+      }
+      if (n >= 2 && n < SINIR && uyariEl) uyariEl.hidden = true;
+      /* Iki urunden sonra: "Istersen daha fazla urun ekleyebilirsin.";
+         sinirda: "En fazla 6 urun secebilirsin." Iki urunden once
+         bos: o durumda durum cumlesi ("1 urun daha sec") zaten var. */
+      if (ipucuEl) {
+        var ip = n < 2 ? '' : (sinirda ? yaz(M.sinirMetin, SINIR) : (M.ekIpucu || ''));
+        ipucuEl.textContent = ip;
+        ipucuEl.hidden = !ip;
+      }
       cubukGorunurluk();
       cubukOlc();
     }
@@ -743,7 +813,12 @@
        Bu yuzden "%50" etiketi ve ustu cizili fiyat her zaman ikinci
        satirda. */
     function cubukCiz(n, sira) {
-      var ikiUrun = n === 2;
+      /* "ikiUrun" artik "en az iki urun": kirilim ve toplam 2+ uronde
+         aciliyor. Satir satir kirilim YALNIZCA tam 2 uronde; 3+ uronde
+         cubuk telefon ekraninin yarisini kaplamasin diye satirlar
+         kapali, toplam ve tasarruf kaliyor (kalemler set kutusunda
+         listeleniyor). */
+      var ikiUrun = n >= 2;
       /* Kirilim TEK URUNDE DE aciliyor. Once yalnizca ikide aciliyordu
          ve bir urun secen musteri sectigi seyin fiyatini hic
          gormuyordu -- oysa o rakam kesin: liste fiyati, hicbir indirim
@@ -778,19 +853,26 @@
         return;
       }
 
-      /* Iki urunde iki satir da geri geliyor. */
-      for (var g = 0; g < kirSatir.length; g++) kirSatir[g].hidden = false;
+      /* Tam iki urunde iki satir da geri geliyor; 3+ uronde kapali. */
+      for (var g = 0; g < kirSatir.length; g++) kirSatir[g].hidden = n !== 2;
 
       var kir = rakamKesin();
 
+      /* Sira pahalidan ucuza; son floor(n/2) urun %50 (indirimliAdet). */
+      var kacInd = indirimliAdet(n);
+      var liste = 0, araToplam = 0;
+      for (var q = 0; q < sira.length; q++) {
+        var fq = set[sira[q]].fiyat;
+        liste += fq;
+        araToplam += q >= sira.length - kacInd ? Math.round(fq / 2) : fq;
+      }
       var tam = set[sira[0]], ind = set[sira[1]];
       var indFiyat = Math.round(ind.fiyat / 2);
-      var araToplam = tam.fiyat + indFiyat;
       var kod = kir ? kodKurusu(araToplam) : 0;
       var toplam = araToplam - kod;
-      /* Tasarruf = %50'den gelen + carktan gelen. Musterinin cebinde
-         kalan tutar bu; ikisini ayri ayri saymak yerine tek rakam. */
-      var kazanc = (ind.fiyat - indFiyat) + kod;
+      /* Tasarruf = %50'lerden gelen + carktan gelen. Musterinin cebinde
+         kalan tutar bu; ayri ayri saymak yerine tek rakam. */
+      var kazanc = (liste - araToplam) + kod;
 
       var veri = [
         { e: tam, etiket: M.cubukEtiketTam, indirimli: false, odenen: tam.fiyat },
@@ -854,14 +936,22 @@
       if (tutarEl) tutarEl.textContent = kir ? para(toplam) : '';
     }
 
+    function sinirUyar() {
+      if (!uyariEl) return;
+      uyariEl.textContent = yaz(M.sinirMetin, SINIR);
+      uyariEl.hidden = false;
+      cubukOlc();
+    }
+
     function setEkle(urunId, varyant, karo) {
       var idx = -1;
       for (var i = 0; i < set.length; i++) if (String(set[i].urunId) === String(urunId)) idx = i;
       if (idx >= 0) { set.splice(idx, 1); setCiz(); return; }
 
-      /* Ucuncu secimde EN ESKI cikiyor: musteri en son dokundugu urunu
-         kaybetmeyi beklemez. */
-      if (set.length >= 2) set.shift();
+      /* Sinira gelindiyse eklenmiyor (16.10.2026'ya kadar ucuncu secim
+         en eskiyi dusuruyordu; artik SINIR'a kadar birikiyor). Neden
+         eklenmedigi cubuktaki uyari satirinda yaziyor. */
+      if (set.length >= SINIR) { sinirUyar(); return; }
 
       var k = karo.getAttribute('data-sc-kime');
       set.push({
@@ -1039,7 +1129,7 @@
     }
 
     /* ---------- Couple setini sepete ekleme ----------
-       Iki urun TEK istekte gidiyor. Ayni varyant iki kez secilmisse
+       Secilen urunler (2..SINIR) TEK istekte gidiyor. Ayni varyant iki kez secilmisse
        quantity 2 olarak birlesiyor -- iki ayri satir gondermek sepette
        tek satir olarak birlesirdi zaten, ama istek de gereksiz buyurdu. */
     function sepeteEkle() {
@@ -1052,10 +1142,15 @@
       gonderiyor = true;
       sepetBtn.setAttribute('aria-busy', 'true');
 
-      var a = set[0].varyantId, b = set[1].varyantId;
-      var items = String(a) === String(b)
-        ? [{ id: a, quantity: 2 }]
-        : [{ id: a, quantity: 1 }, { id: b, quantity: 1 }];
+      /* Butun secilenler TEK istekte. Ayni varyant birden fazla
+         secilmisse adedi birlesiyor (sepette zaten tek satir olurdu). */
+      var adet = {}, sira = [];
+      for (var i = 0; i < set.length; i++) {
+        var v = String(set[i].varyantId);
+        if (!adet[v]) { adet[v] = 0; sira.push(v); }
+        adet[v]++;
+      }
+      var items = sira.map(function (v) { return { id: v, quantity: adet[v] }; });
 
       olc('tt_couple_set_sepete_ekle', {
         urunler: set.map(function (e) { return e.urunId; }).join(','),
@@ -1301,6 +1396,8 @@
 
         if (mod === 'couple') {
           var zatenSecili = set.some(function (x) { return String(x.urunId) === id; });
+          /* Sinirdayken yeni urun icin varyant penceresi bile acilmasin. */
+          if (!zatenSecili && set.length >= SINIR) { sinirUyar(); return; }
           /* Secili urune tekrar basmak cikarma demek; varyant sormaya
              gerek yok. */
           if (zatenSecili || vs.length === 1) setEkle(id, vs[0], karo);
@@ -1312,6 +1409,20 @@
           if (vs.length === 1) tekUrunEkle(karo, vs[0]);
           else varyantAc(karo, 'sepet');
         }
+      });
+    }
+
+    /* Slotlarin altindaki listede "x": o urunu setten cikariyor.
+       data-sc-ek-cikar `set` dizinini tasiyor (liste her setCiz'de
+       yeniden kuruluyor, dizin hep guncel). */
+    if (ekListe) {
+      ekListe.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('[data-sc-ek-cikar]');
+        if (!b) return;
+        var i = parseInt(b.getAttribute('data-sc-ek-cikar'), 10);
+        if (!set[i]) return;
+        set.splice(i, 1);
+        setCiz();
       });
     }
 
