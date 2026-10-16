@@ -160,7 +160,7 @@
     display: block;
     width: 100%;
     aspect-ratio: 9 / 16;
-    border-radius: 14px;
+    border-radius: 12px;
     overflow: hidden;
     border: 0;
     padding: 0;
@@ -207,7 +207,7 @@
 
   .ugc-gallery-dialog-{{ section.id }} {
     border: 0;
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 0;
     background: transparent;
     max-width: 92vw;
@@ -230,7 +230,7 @@
     max-width: 92vw;
     aspect-ratio: 9 / 16;
     background: #000;
-    border-radius: 14px;
+    border-radius: 12px;
   }
 
   .ugc-gallery-close-{{ section.id }} {
@@ -238,12 +238,12 @@
     top: 10px;
     right: 10px;
     z-index: 2;
-    background: rgba(0, 0, 0, .55);
-    color: #fff;
+    background: #fff;
+    color: #0a0a0a;
     border: 0;
     border-radius: 50%;
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     cursor: pointer;
     font-size: 16px;
     line-height: 1;
@@ -460,8 +460,8 @@
             {% if vsrc %}
               <span class="ugc-gallery-icon-{{ section.id }}">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="12" fill="rgba(0,0,0,0.45)"/>
-                  <path d="M9.5 7.5L17 12L9.5 16.5V7.5Z" fill="#fff"/>
+                  <circle cx="12" cy="12" r="12" fill="#fff"/>
+                  <path d="M9.5 7.5L17 12L9.5 16.5V7.5Z" fill="#0a0a0a"/>
                 </svg>
               </span>
             {% endif %}

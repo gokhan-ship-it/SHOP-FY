@@ -1,0 +1,123 @@
+{%- comment -%}
+  URUN SAYFASI -- MARKA DILI KATMANI
+
+  Yalnizca urun sablonlarinda (layout/theme.liquid icindeki "urun
+  sayfasi kapisi": product.zaman-kapsulu*, product.couple) yukleniyor;
+  butun seciciler <main class="tt-urun-page"> ile sinirli. Yalnizca
+  renk, kalinlik, harf araligi ve kenar/halka degisiyor: olcu, yerlesim,
+  metin ve JS davranisi ayni.
+
+  Palet: ink #0A0A0A, lime #D6FF00, surface #F4F4F4, white #FFFFFF,
+  black #000000, dark-raised #141414, muted #5C5C57, muted-strong
+  #8A8A85, muted-dark #A3A39E, line #D2D2CD, line-dark #262624.
+{%- endcomment -%}
+<style>
+  /* ---------- 02 main-product: galeri ---------- */
+  .tt-urun-page .product__media { background-color: #ffffff; }
+  /* Kucuk gorseller: secili olan 2px ink cerceve, digerleri cercevesiz */
+  .tt-urun-page .product__thumbnails:not(.with-dots) .product__thumbnail::after {
+    box-shadow: none !important;
+  }
+  .tt-urun-page .product__thumbnails:not(.with-dots) .product__thumbnail[aria-current="true"]::after {
+    box-shadow: inset 0 0 0 2px #0a0a0a !important;
+  }
+  /* Galeri noktalari: aktif ink, pasif line */
+  .tt-urun-page .product__thumbnails.with-dots .product__thumbnail::before,
+  .tt-urun-page .flickity-page-dot::before {
+    background-color: #d2d2cd;
+  }
+  .tt-urun-page .product__thumbnails.with-dots .product__thumbnail[aria-current="true"]::before,
+  .tt-urun-page .flickity-page-dot.is-selected::before,
+  .tt-urun-page .flickity-page-dot[aria-current="true"]::before {
+    background-color: #0a0a0a;
+    box-shadow: none;
+  }
+  /* "Buyut" dugmesi: beyaz zemin, ink ikon */
+  .tt-urun-page .product__media > button[is^="media-"] {
+    background-color: #ffffff !important;
+    border-color: #d2d2cd !important;
+    color: #0a0a0a;
+  }
+
+  /* ---------- 02 main-product: ad, fiyat ---------- */
+  .tt-urun-page .product__title h1,
+  .tt-urun-page .product__title h1 * {
+    letter-spacing: -0.8px;
+  }
+  .tt-urun-page .product__title .price__regular { font-weight: 600; color: #0a0a0a; }
+  .tt-urun-page .product__title .price__sale { font-weight: 400; color: #5c5c57; }
+
+  /* "Ayda ... x 3 taksit" satiri */
+  .tt-urun-page .tt-fb-satir .tt-fb-buyuk,
+  .tt-urun-page .tt-fb-satir .tt-fb-silik { color: #5c5c57; }
+
+  /* ---------- 02 main-product: adim seridi (tekli) ----------
+     Pasif adim yazilari opaklikla soluklasiyordu (ink %40-%72); yerine
+     tam opak #5C5C57, aktif adim ink. Cizgi ve pasif noktalar line,
+     gecilen/aktif noktalar ink. Kapanis (is-sonlaniyor) animasyonuna
+     dokunulmuyor. */
+  .tt-urun-page .tt-akis .tt-akis-adim .tt-akis-yazi {
+    color: #5c5c57;
+    transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1), color 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .tt-urun-page .tt-akis:not(.is-sonlaniyor) .tt-akis-adim .tt-akis-yazi { opacity: 1; }
+  .tt-urun-page .tt-akis .tt-akis-adim.is-aktif .tt-akis-yazi { color: #0a0a0a; }
+  .tt-urun-page .tt-akis .tt-akis-hat::before,
+  .tt-urun-page .tt-akis .tt-akis-hat::after { background: #d2d2cd; }
+  .tt-urun-page .tt-akis .tt-akis-adim .tt-akis-nokta::after { background: #d2d2cd; }
+  .tt-urun-page .tt-akis .tt-akis-adim:is(.is-gecmis, .is-aktif) .tt-akis-nokta::after { background: #0a0a0a; }
+  .tt-urun-page .tt-akis--cizgi { border-top-color: #d2d2cd; border-bottom-color: #d2d2cd; }
+
+  /* ---------- 02 main-product: adim seridi (Couple) ---------- */
+  .tt-urun-page .tt-cak {
+    --tt-cak-cizgi: #d2d2cd;
+    --tt-cak-nokta: #d2d2cd;
+    --tt-cak-kenar: #d2d2cd;
+  }
+
+  /* ---------- 02 main-product: malzeme secici ---------- */
+  .tt-urun-page .swatches .label-swatch::after {
+    --tw-shadow-color: #d2d2cd;
+    --tw-shadow-colored: 0 0 0 1px var(--tw-shadow-color);
+  }
+  .tt-urun-page .swatches :checked + .label-swatch { color: #0a0a0a; }
+  .tt-urun-page .swatches :checked + .label-swatch::after {
+    --tw-shadow-color: #0a0a0a;
+    --tw-shadow-colored: 0 0 0 1.5px var(--tw-shadow-color);
+  }
+  .tt-urun-page .swatches input:is([type=checkbox], [type=radio]):is(:disabled, .disabled) + .label-swatch {
+    background-color: transparent;
+    color: #8a8a85;
+    text-decoration: line-through;
+  }
+  .tt-urun-page .swatches input:is([type=checkbox], [type=radio]):is(:disabled, .disabled) + .label-swatch::after {
+    --tw-shadow-color: #d2d2cd;
+  }
+  .tt-urun-page .swatches input:is([type=checkbox], [type=radio]):is(:disabled, .disabled) + .label-swatch::before {
+    display: none;
+  }
+
+  /* ---------- 02 main-product: adet, guven kutusu ---------- */
+  .tt-urun-page .quantity { border-color: #d2d2cd; }
+  .tt-urun-page .quantity .quantity__button { color: #0a0a0a; }
+  .tt-urun-page .product__text { background-color: #f4f4f4; }
+  .tt-urun-page .product__text .rte a { color: #0a0a0a; }
+
+  /* ---------- 04 feature-highlights ----------
+     Baslik tam 700; vurgulu ikinci kisim gri. Telefonda baslik 22px:
+     #8A8A85 bu boyutta #F4F4F4 uzerinde 3.2:1 kaliyor (24px alti
+     4.5:1 gerekir), o yuzden telefonda #5C5C57; 24px ve ustunde
+     #8A8A85. */
+  .tt-urun-page [class^="fh-heading-"] { font-weight: 700; color: #0a0a0a; }
+  .tt-urun-page [class^="fh-heading-"] :is(strong, b, em) { color: #5c5c57; font-weight: 700; }
+  .tt-urun-page [class^="fh-title-"] { font-weight: 600; color: #0a0a0a; }
+
+  /* ---------- 11 faq (koyu kart) ---------- */
+  .tt-urun-page [id$="__faq"] .accordion { border-color: #262624; }
+  .tt-urun-page [id$="__faq"] .details__content,
+  .tt-urun-page [id$="__faq"] .details__content * { color: #a3a39e; }
+
+  /* ---------- 12 product-recommendations ---------- */
+  .tt-urun-page [id$="__product-recommendations"] .quick-view__button::after { border-color: #d2d2cd; }
+  .tt-urun-page [id$="__product-recommendations"] .product-card .media { background-color: #ffffff; }
+</style>

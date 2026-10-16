@@ -127,6 +127,8 @@
       {%- render 'tt-couple-izgara', kok: '.tt-urun-page' -%}
       {%- render 'tt-couple-banka', kok: '.tt-urun-page' -%}
       {%- render 'tt-urun-hap' -%}
+      {%- comment -%} Urun sayfasi marka dili (renk/kalinlik); ayrinti dosyanin icinde. {%- endcomment -%}
+      {%- render 'tt-urun-dil' -%}
     {%- elsif template.name == 'collection' and template.suffix == 'couple-urunler' -%}
       {%- comment -%}
         Couple koleksiyon sayfasina ozel yerel duzeltmeler. Su an tek
