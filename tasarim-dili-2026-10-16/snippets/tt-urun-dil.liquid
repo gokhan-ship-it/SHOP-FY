@@ -33,15 +33,15 @@
     box-shadow: none;
   }
   /* "Buyut" dugmesi: beyaz zemin, ink ikon */
-  .tt-urun-page .product__media > button[is^="media-"] {
+  .tt-urun-page .product__media > button[is^="media-"]:has(.icon-zoom) {
     background-color: #ffffff !important;
     border-color: #d2d2cd !important;
     color: #0a0a0a;
   }
 
   /* ---------- 02 main-product: ad, fiyat ---------- */
-  .tt-urun-page .product__title h1,
-  .tt-urun-page .product__title h1 * {
+  .tt-urun-page .product__title h1 split-words,
+  .tt-urun-page .product__title h1 split-words * {
     letter-spacing: -0.8px;
   }
   .tt-urun-page .product__title .price__regular { font-weight: 600; color: #0a0a0a; }
@@ -110,12 +110,48 @@
      #8A8A85. */
   .tt-urun-page [class^="fh-heading-"] { font-weight: 700; color: #0a0a0a; }
   .tt-urun-page [class^="fh-heading-"] :is(strong, b, em) { color: #5c5c57; font-weight: 700; }
+  @media (min-width: 768px) {
+    /* 768px ve ustunde baslik 28px */
+    .tt-urun-page [class^="fh-heading-"] :is(strong, b, em) { color: #8a8a85; }
+  }
   .tt-urun-page [class^="fh-title-"] { font-weight: 600; color: #0a0a0a; }
 
   /* ---------- 11 faq (koyu kart) ---------- */
   .tt-urun-page [id$="__faq"] .accordion { border-color: #262624; }
   .tt-urun-page [id$="__faq"] .details__content,
   .tt-urun-page [id$="__faq"] .details__content * { color: #a3a39e; }
+
+  /* ---------- Acilir pencereler ---------- */
+  /* Boyutlar (sablondaki "Ozel Liquid" blogu) */
+  .tt-urun-page .size-popup-inner h3 {
+    font-family: var(--font-heading-family);
+    font-weight: 700;
+    color: #0a0a0a;
+  }
+  .tt-urun-page .size-popup-close {
+    background: #f4f4f4;
+    color: #0a0a0a;
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Kapat dugmeleri 44x44 (taksit, cihaz uyumlulugu, avantaj, boyutlar) */
+  .tt-urun-page .tt-tk-kapat,
+  .tt-urun-page [class^="dcb-close-"],
+  .tt-urun-page .ak-pop-kapat {
+    width: 44px;
+    height: 44px;
+    color: #0a0a0a;
+  }
+  /* Gorsel buyutme (PhotoSwipe body'ye ekleniyor) ve Hizli Bakis galerisi */
+  body.template-product .pswp button { background-color: #ffffff; border-color: #d2d2cd; color: #0a0a0a; }
+  .tt-urun-page button[is^="media-"]:has(.icon-zoom) {
+    background-color: #ffffff !important;
+    border-color: #d2d2cd !important;
+    color: #0a0a0a;
+  }
+  /* Hizli Bakis: basliklar 700 */
+  .tt-urun-page .quick-view :is(h1, h2, h3, .heading) { font-weight: 700; color: #0a0a0a; }
 
   /* ---------- 12 product-recommendations ---------- */
   .tt-urun-page [id$="__product-recommendations"] .quick-view__button::after { border-color: #d2d2cd; }
