@@ -698,12 +698,15 @@
       if (kutuGozcu || !setKutu || !('IntersectionObserver' in window)) return;
       kutuGozcu = new IntersectionObserver(function (girdiler) {
         var g = girdiler[girdiler.length - 1];
-        var yuk = g.rootBounds ? g.rootBounds.height : window.innerHeight;
-        /* Ust kenar ekranin altinin ustundeyse: kutu ya gorunuyor ya da
-           ustte kaldi (asagidaki izgaraya inildi). Ikisinde de cubuk acik. */
-        kutuGecti = g.boundingClientRect.height > 0 && g.boundingClientRect.top < yuk;
+        /* Kok alani yukari dogru cok genisletildi (rootMargin): kutu
+           ekranin altinin ustundeyse -- gorunuyor ya da ustte kaldi
+           (izgaraya inildi) -- "kesisiyor" sayiliyor. Boylece "basa don"
+           gibi tek seferlik sicramalarda da (kutu ekranin ustunden
+           dogrudan altina gectiginde) durum degisiyor ve geri cagri
+           calisiyor. */
+        kutuGecti = g.isIntersecting && g.boundingClientRect.height > 0;
         cubukGorunurluk();
-      }, { threshold: [0] });
+      }, { rootMargin: '1000000px 0px 0px 0px', threshold: [0] });
       kutuGozcu.observe(setKutu);
     }
     function cubukGorunurluk() {
