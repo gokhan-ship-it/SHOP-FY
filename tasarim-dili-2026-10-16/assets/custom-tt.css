@@ -271,3 +271,12 @@ svg[data-tt-icon] {
 .cart .title-wrapper .button--secondary::after {
   border: 1px solid #d2d2cd;
 }
+
+/* ------------------------------------------------------------------
+   Shopify Inbox "Sohbet" dugmesi urun sayfasinin yapiskan sepet
+   cubugu gorunurken cubugun 12px ustune kalkiyor (sinif ve yukseklik
+   custom-tt.js'ten). Uygulamanin kendi degiskeni kullaniliyor.
+------------------------------------------------------------------ */
+body.tt-urun-cubuk-acik shopify-chat {
+  --shopify-chat-activator-offset: var(--tt-urun-cubuk-yuk, 113px) !important;
+}

@@ -606,6 +606,36 @@
   box-shadow: 0 -2px 12px rgb(0 0 0 / .06);
 }
 .tt-sc-cubuk[hidden] { display: none; }
+/* Couple modunda cubuk "Kendi setini olustur" kutusuna gelinince alttan
+   kayarak cikiyor (karar JS'te: cubukGorunurluk). Gecis yalnizca
+   transform -- yerlesim kaymiyor, CLS yok. Gizliyken visibility:hidden
+   + inert: klavye ile odaklanilamiyor. */
+.tt-sc-cubuk {
+  transform: translateY(0);
+  transition:
+    transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 0s;
+}
+.tt-sc-cubuk[data-sc-gizli] {
+  transform: translateY(calc(100% + 24px));
+  visibility: hidden;
+  transition:
+    transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 220ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tt-sc-cubuk,
+  .tt-sc-cubuk[data-sc-gizli] { transition: none; }
+}
+/* Shopify Inbox "Sohbet" dugmesi cubuk gorunurken cubugun 12px ustune
+   kalkiyor. Uygulamanin kendi CSS degiskeni kullaniliyor
+   (--shopify-chat-activator-offset, varsayilan 20px); uygulamanin
+   koduna dokunulmuyor. --tt-sc-cubuk-yuk = cubuk yuksekligi + 12px
+   (JS olcuyor). Cubuk gizlenince sinif kalkiyor, dugme eski yerine
+   donuyor. */
+body.tt-sc-cubuk-acik shopify-chat {
+  --shopify-chat-activator-offset: var(--tt-sc-cubuk-yuk, 130px) !important;
+}
 /* Gercek sepet cekmecesi (z-35) acikken cubuk (z-60) odeme butonunu
    ortuyordu. Z-index dusurmek yetmez -- cubuk perdenin altindan yine
    gorunurdu; katman aciksa cubuk tamamen kalkiyor. Niteligi JS
