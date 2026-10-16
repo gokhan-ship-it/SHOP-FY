@@ -1,0 +1,58 @@
+{%- comment -%}
+  COUPLE GORUNUMU ALT METNI -- tek kaynak
+
+  Girdi : media (ikizin galerisindeki gorsel), ad (tekli urunun adi)
+  Cikti : "<ad> – <tur>" (ör. "Chloe – Couple 4 adımda nasıl çalışır")
+
+  Tur once DOSYA ADINDAN okunuyor ("<ad>-NN-<tur>[_uuid].<uzanti>"):
+    packshot -> ürün fotoğrafı, lifestyle-N -> model üzerinde N,
+    couple-dort-adim / dort-adim, garanti, single-couple,
+    couple-uygulama / uygulama, hediyeler-biter, kutu-teslimat,
+    sette-neler-var -> galeri standardindaki tur adi.
+  Dosya adi tur vermezse ikizin alt metninin SON " – " sonrasi (galeri
+  standardi "<ad> – <aciklama> – <tur>"); o da yoksa yalnizca ad.
+  Neden: 15.10.2026'da alt metinler toplu olarak "<ad> - Text To Next"
+  yapildi; tur yalnizca dosya adinda kaldi.
+
+  Kullananlar: snippets/product-media-gallery.liquid (one cikan gorsel),
+  snippets/product-media.liquid, snippets/product-thumbnail.liquid.
+{%- endcomment -%}
+{%- liquid
+  assign ca_tur = ''
+  if media.preview_image != blank
+    assign ca_dosya = media.preview_image.src | split: '?' | first | split: '/' | last | downcase | split: '.' | first | split: '_' | first
+    assign ca_son9 = ca_dosya | slice: -9, 9
+    if ca_son9 == '-packshot'
+      assign ca_tur = 'ürün fotoğrafı'
+    elsif ca_dosya contains '-lifestyle-'
+      assign ca_n = ca_dosya | split: '-lifestyle-' | last | split: '-' | first
+      assign ca_tur = 'model üzerinde ' | append: ca_n
+    elsif ca_dosya contains '-couple-dort-adim'
+      assign ca_tur = 'Couple 4 adımda nasıl çalışır'
+    elsif ca_dosya contains '-dort-adim'
+      assign ca_tur = '4 adımda nasıl çalışır'
+    elsif ca_dosya contains '-garanti'
+      assign ca_tur = 'süresiz çip garantisi'
+    elsif ca_dosya contains '-single-couple'
+      assign ca_tur = 'Single ve Couple karşılaştırması'
+    elsif ca_dosya contains '-couple-uygulama'
+      assign ca_tur = 'Couple uygulama ekranları'
+    elsif ca_dosya contains '-uygulama'
+      assign ca_tur = 'uygulama ekranları'
+    elsif ca_dosya contains '-hediyeler-biter'
+      assign ca_tur = 'hediye ömrü karşılaştırması'
+    elsif ca_dosya contains '-kutu-teslimat'
+      assign ca_tur = 'kutu ve teslimat'
+    elsif ca_dosya contains '-sette-neler-var'
+      assign ca_tur = 'sette neler var'
+    endif
+  endif
+  if ca_tur == '' and media.alt contains ' – '
+    assign ca_tur = media.alt | split: ' – ' | last | strip
+  endif
+  if ca_tur == ''
+    echo ad
+  else
+    echo ad | append: ' – ' | append: ca_tur
+  endif
+-%}

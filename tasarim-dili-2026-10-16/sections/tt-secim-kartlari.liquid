@@ -1323,7 +1323,28 @@
                 gercekten sigmayacak kadar cok kare varsa aciliyor,
                 yoksa gosterge eskisi gibi butun noktalari gosteriyor.
               {%- endcomment -%}
-              {%- assign sgorseller = sp.media | where: 'media_type', 'image' -%}
+              {%- comment -%}
+                KARTTA YALNIZCA FOTOGRAF: set packshot'i, model uzerinde 1,
+                model uzerinde 2 (en fazla 3); bilgi kareleri (Couple 4
+                adim, sette neler var, garanti, uygulama, hediye omru,
+                kutu) gosterilmiyor. Secim koleksiyon kartlariyla ayni
+                kaynaktan: snippets/tt-kart-gorsel-sec.liquid (once dosya
+                adi, sonra alt metin). Turu okunamayan eski galerilerde
+                eskisi gibi butun gorseller (setler_gorsel_sayisi sinirli).
+              {%- endcomment -%}
+              {%- liquid
+                assign stum = sp.media | where: 'media_type', 'image'
+                capture ssira
+                  render 'tt-kart-gorsel-sec', urun: sp
+                endcapture
+                assign ssira = ssira | strip | split: ','
+                assign sgorseller = '' | split: ''
+                for ss in ssira
+                  assign si = ss | plus: 0
+                  assign stek = stum | slice: si, 1
+                  assign sgorseller = sgorseller | concat: stek
+                endfor
+              -%}
               {%- assign skare = sgorseller.size -%}
               {%- if skare > s.setler_gorsel_sayisi -%}
                 {%- assign skare = s.setler_gorsel_sayisi -%}

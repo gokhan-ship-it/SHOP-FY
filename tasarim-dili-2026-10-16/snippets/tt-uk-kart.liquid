@@ -90,33 +90,15 @@
   endif
 
   comment
-    KARTTA YALNIZCA FOTOGRAF
-    Galerilerin bilgi kareleri (4 adim, garanti, karsilastirma, uygulama
-    ekranlari, hediye omru, kutu...) urun sayfasi icin tasarlandi; kartta
-    ASLA gorunmez. Kart yalnizca su turleri ve bu SIRAYLA gosteriyor:
-      "ürün fotoğrafı" -> "model üzerinde 1" -> "model üzerinde 2"
+    KARTTA YALNIZCA FOTOGRAF: hangi gorsellerin hangi sirayla gosterilecegi
+    snippets/tt-kart-gorsel-sec.liquid'de (tek kaynak; Kampanyali Couple
+    Setler seridi ve oneri kartlari da onu kullaniyor). Tur once DOSYA
+    ADINDAN (-packshot, -lifestyle-1, -lifestyle-2; bilgi kareleri
+    elenir), dosya adi tur vermezse alt metinden okunuyor; hicbir gorselin
+    turu bilinmiyorsa eski davranis (ilk uk_gorsel_sayisi gorsel).
     Ust sinir uk_gorsel_sayisi ayari (3).
 
-    GORSELIN TURU IKI KAYNAKTAN OKUNUYOR (once alt metin, sonra dosya adi):
-    1) Alt metnin SON ayracindan sonraki kisim. Ayrac en-dash (–),
-       em-dash (—) ya da kisa tire (-) olabilir; buyuk/kucuk harf ve
-       Turkce I/ı/İ/i farki yok sayiliyor, bastaki/sondaki bosluk
-       atiliyor. ("<ad> – <aciklama> – <tur>")
-    2) Alt metin bir tur vermiyorsa dosya adi: galeri dosyalari
-       "<ad>-NN-<tur>.jpg" bicimindedir (packshot, lifestyle-1/2/3,
-       dort-adim, couple-dort-adim, garanti, single-couple, uygulama,
-       couple-uygulama, hediyeler-biter, kutu-teslimat). Shopify'in
-       ekledigi "_<uuid>" soneki ve uzanti atilarak okunuyor.
-       Neden: 15.10.2026 19:03-19:06 UTC'de galerili urunlerin alt
-       metinleri toplu olarak "<ad> - Text To Next" yapildi; tur bilgisi
-       yalnizca dosya adinda kaldi. Alt metinlere dokunulmadi.
-
-    ESKI GALERI GERI DONUSU (ilk uk_gorsel_sayisi gorsel) yalnizca
-    urunun HICBIR gorselinde bilinen bir tur (fotograf ya da bilgi
-    karesi) yoksa calisiyor (Nora, Klasik, Tasli Kilit...). Bir tane
-    bile bilinen tur varsa bilgi kareleri her durumda eleniyor.
-
-    Dizi kurmak icin her secilen gorsel "where: 'id'" ile tek elemanli
+    Dizi kurmak icin her secilen gorsel "slice: i, 1" ile tek elemanli
     bir diziye cevrilip concat ediliyor (Liquid'de push yok).
 
     Couple modunda da AYNI gorseller: kart iki modda da tekli urunun
@@ -125,106 +107,16 @@
     baglantilariYaz). Couple galerisi yalnizca urun sayfasinda.
   endcomment
   assign tum_gorseller = p.media | where: 'media_type', 'image'
-  assign g_paket = nil
-  assign g_model1 = nil
-  assign g_model2 = nil
-  assign g_bilinen = false
-  assign g_bilgi_yok = '' | split: ''
-  for m in tum_gorseller
-    assign g_tur = ''
-
-    # 1) alt metin: son ayractan sonrasi, normalize
-    assign g_alt = m.alt | default: '' | replace: '—', '-' | replace: '–', '-'
-    assign g_alt = g_alt | split: '-' | last | default: ''
-    assign g_alt = g_alt | replace: 'İ', 'i' | replace: 'I', 'i' | downcase | replace: 'ı', 'i' | replace: 'i̇', 'i' | strip
-    case g_alt
-      when 'ürün fotoğrafi'
-        assign g_tur = 'paket'
-      when 'model üzerinde 1'
-        assign g_tur = 'model1'
-      when 'model üzerinde 2'
-        assign g_tur = 'model2'
-      when '4 adimda nasil çalişir', 'couple 4 adimda nasil çalişir', 'süresiz çip garantisi', 'single ve couple karşilaştirmasi', 'uygulama ekranlari', 'couple uygulama ekranlari', 'hediye ömrü karşilaştirmasi', 'kutu ve teslimat'
-        assign g_tur = 'bilgi'
-    endcase
-    if g_tur == ''
-      assign g_bas = g_alt | slice: 0, 14
-      if g_bas == 'model üzerinde'
-        assign g_tur = 'foto'
-      endif
-    endif
-
-    # 2) dosya adi: "<ad>-NN-<tur>[_uuid].jpg"
-    if g_tur == '' and m.preview_image != blank
-      assign g_ham = m.preview_image.src | split: '?' | first | split: '/' | last | downcase | split: '.' | first
-      assign g_dosya = g_ham | split: '_' | first
-      assign g_son9 = g_dosya | slice: -9, 9
-      assign g_son12 = g_dosya | slice: -12, 12
-      if g_son9 == '-packshot'
-        assign g_tur = 'paket'
-      elsif g_son12 == '-lifestyle-1'
-        assign g_tur = 'model1'
-      elsif g_son12 == '-lifestyle-2'
-        assign g_tur = 'model2'
-      elsif g_dosya contains '-lifestyle-'
-        assign g_tur = 'foto'
-      elsif g_dosya contains '-dort-adim' or g_dosya contains '-garanti' or g_dosya contains '-single-couple' or g_dosya contains '-uygulama' or g_dosya contains '-hediyeler-biter' or g_dosya contains '-kutu-teslimat'
-        assign g_tur = 'bilgi'
-      elsif g_ham contains 'nasil_calisir' or g_ham contains 'nasil-calisir'
-        comment
-          Eski galerilerdeki "nasil calisir" bilgi karesi (or. Rose 2. gorsel
-          nasil_calisir33.jpg).
-        endcomment
-        assign g_tur = 'bilgi'
-      endif
-    endif
-
-    if g_tur != ''
-      assign g_bilinen = true
-    endif
-    if g_tur == 'paket' and g_paket == nil
-      assign g_paket = m
-    elsif g_tur == 'model1' and g_model1 == nil
-      assign g_model1 = m
-    elsif g_tur == 'model2' and g_model2 == nil
-      assign g_model2 = m
-    endif
-    if g_tur != 'bilgi'
-      assign g_tek = tum_gorseller | where: 'id', m.id
-      assign g_bilgi_yok = g_bilgi_yok | concat: g_tek
-    endif
-  endfor
-
-  if g_bilinen == false
-    comment
-      Hicbir gorselin turu bilinmiyor: eski galeri, bugunku gibi ilk
-      uk_gorsel_sayisi gorsel.
-    endcomment
-    assign gorseller = tum_gorseller
-  elsif g_paket == nil and g_model1 == nil and g_model2 == nil
-    comment
-      Turler biliniyor ama urun/model fotografi isaretli degil: bilgi
-      kareleri disindaki gorseller sirasiyla.
-    endcomment
-    assign gorseller = g_bilgi_yok
-  else
-    assign gorseller = '' | split: ''
-    if g_paket != nil
-      assign g_tek = tum_gorseller | where: 'id', g_paket.id
-    else
-      assign g_tek = g_bilgi_yok | where: 'id', g_bilgi_yok.first.id
-    endif
+  capture g_sira
+    render 'tt-kart-gorsel-sec', urun: p
+  endcapture
+  assign g_sira = g_sira | strip | split: ','
+  assign gorseller = '' | split: ''
+  for g_s in g_sira
+    assign g_i = g_s | plus: 0
+    assign g_tek = tum_gorseller | slice: g_i, 1
     assign gorseller = gorseller | concat: g_tek
-    assign g_ilk_id = g_tek.first.id
-    if g_model1 != nil and g_model1.id != g_ilk_id
-      assign g_tek = tum_gorseller | where: 'id', g_model1.id
-      assign gorseller = gorseller | concat: g_tek
-    endif
-    if g_model2 != nil and g_model2.id != g_ilk_id
-      assign g_tek = tum_gorseller | where: 'id', g_model2.id
-      assign gorseller = gorseller | concat: g_tek
-    endif
-  endif
+  endfor
   assign gorsel_adet = gorseller.size | at_most: en_cok
 
   assign cok_varyant = false

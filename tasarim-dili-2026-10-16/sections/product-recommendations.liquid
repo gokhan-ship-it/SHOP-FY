@@ -51,9 +51,11 @@
           <motion-list class="card-grid card-grid--{{ section.settings.columns }} mobile:card-grid--{{ section.settings.columns_mobile }} grid">
             {%- comment -%}
               Marka dili: oneri kartlari koleksiyon kartlariyla ayni 4:5
-              oranda ve yalnizca urun fotografi (one cikan gorsel) ile
-              ciziliyor. Ikinci/coklu gorsel kapali: galerinin 2.
-              gorseli "4 adimda nasil calisir" bilgi karesi.
+              oranda ve yalnizca urun fotografi ile ciziliyor. Ikinci/
+              coklu gorsel kapali: galerinin 2. gorseli "4 adimda nasil
+              calisir" bilgi karesi. Kart gorseli tt_gorsel_sec ile
+              koleksiyon kartlariyla ayni kuraldan geliyor
+              (snippets/tt-kart-gorsel-sec.liquid: once dosya adi).
             {%- endcomment -%}
             {%- assign tt_sayac = 0 -%}
             {%- for recommendation in recommendations.products -%}
@@ -69,6 +71,7 @@
                 image_fill: settings.product_image_fill,
                 show_secondary_image: false,
                 show_multiple_images: false,
+                tt_gorsel_sec: true,
                 show_vendor: settings.product_vendor,
                 title_truncation: settings.product_title_truncation,
                 title_line_limit: settings.product_title_line_limit,

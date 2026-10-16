@@ -1,0 +1,148 @@
+{%- comment -%}
+  KART GORSEL SECIMI -- tek kaynak
+
+  Girdi : urun (product)
+  Cikti : urunun GORSEL dizisindeki (urun.media | where: 'media_type',
+          'image') secilen gorsellerin 0'dan baslayan sira numaralari,
+          gosterim sirasiyla ve virgulle: "0,2,4". Sinir YOK; kac tane
+          gosterilecegini cagiran sinirliyor. Gorsel yoksa bos.
+
+  Kullanim:
+    capture sira
+      render 'tt-kart-gorsel-sec', urun: p
+    endcapture
+    assign sira = sira | strip | split: ','
+    for s in sira
+      assign i = s | plus: 0
+      ... gorseller[i] ...
+
+  Kullananlar: snippets/tt-uk-kart.liquid (koleksiyon kartlari),
+  sections/tt-secim-kartlari.liquid (Kampanyali Couple Setler seridi),
+  snippets/product-card.liquid tt_gorsel_sec: true ile (oneri kartlari).
+
+  KARTTA YALNIZCA FOTOGRAF
+  Galerilerin bilgi kareleri (4 adim, Couple 4 adim, garanti, Single/
+  Couple karsilastirmasi, uygulama ekranlari, hediye omru, kutu ve
+  teslimat, sette neler var) urun sayfasi icin tasarlandi; kartta ASLA
+  gorunmez. Kart su turleri bu SIRAYLA gosteriyor:
+    urun fotografi (packshot) -> model uzerinde 1 -> model uzerinde 2
+
+  GORSELIN TURU (once DOSYA ADI, sonra alt metin):
+  1) Dosya adi "<ad>-NN-<tur>[_uuid].<uzanti>": "_<uuid>" (Shopify ayni
+     adli dosyaya ekliyor) ve uzanti atiliyor.
+       -packshot            -> urun fotografi
+       -lifestyle-1 / -2    -> model uzerinde 1 / 2
+       -lifestyle-N (N>2)   -> fotograf (ilk ucte yer kalmiyor)
+       -dort-adim, -couple-dort-adim, -garanti, -single-couple,
+       -uygulama, -couple-uygulama, -hediyeler-biter, -kutu-teslimat,
+       -sette-neler-var, eski "nasil_calisir" -> bilgi karesi
+  2) Dosya adi tur vermiyorsa alt metnin SON ayracindan sonrasi
+     ("<ad> – <aciklama> – <tur>"); ayrac –, — ya da -, buyuk/kucuk harf
+     ve Turkce I/ı/İ/i farki yok sayiliyor.
+  Neden bu sira: 15.10.2026 19:03-19:06 UTC'de galerili urunlerin alt
+  metinleri toplu olarak "<ad> - Text To Next" yapildi; alt metin
+  degisebilir, dosya adi degismez.
+
+  SECIM
+  - Hicbir gorselin turu bilinmiyor (eski galeri): butun gorseller
+    sirasiyla (eski davranis; cagiran ilk N'i aliyor).
+  - Tur biliniyor ama urun/model fotografi yok: bilgi kareleri disindaki
+    gorseller sirasiyla.
+  - Aksi halde: packshot (yoksa bilgi karesi olmayan ilk gorsel),
+    model uzerinde 1, model uzerinde 2.
+{%- endcomment -%}
+{%- liquid
+  assign k_gorseller = urun.media | where: 'media_type', 'image'
+  assign k_paket = ''
+  assign k_model1 = ''
+  assign k_model2 = ''
+  assign k_bilinen = false
+  assign k_bilgisiz = ''
+
+  for m in k_gorseller
+    assign k_tur = ''
+
+    if m.preview_image != blank
+      assign k_ham = m.preview_image.src | split: '?' | first | split: '/' | last | downcase | split: '.' | first
+      assign k_dosya = k_ham | split: '_' | first
+      assign k_son9 = k_dosya | slice: -9, 9
+      assign k_son12 = k_dosya | slice: -12, 12
+      if k_son9 == '-packshot'
+        assign k_tur = 'paket'
+      elsif k_son12 == '-lifestyle-1'
+        assign k_tur = 'model1'
+      elsif k_son12 == '-lifestyle-2'
+        assign k_tur = 'model2'
+      elsif k_dosya contains '-lifestyle-'
+        assign k_tur = 'foto'
+      elsif k_dosya contains '-dort-adim' or k_dosya contains '-garanti' or k_dosya contains '-single-couple' or k_dosya contains '-uygulama' or k_dosya contains '-hediyeler-biter' or k_dosya contains '-kutu-teslimat' or k_dosya contains '-sette-neler-var'
+        assign k_tur = 'bilgi'
+      elsif k_ham contains 'nasil_calisir' or k_ham contains 'nasil-calisir'
+        assign k_tur = 'bilgi'
+      endif
+    endif
+
+    if k_tur == ''
+      assign k_alt = m.alt | default: '' | replace: '—', '-' | replace: '–', '-'
+      assign k_alt = k_alt | split: '-' | last | default: ''
+      assign k_alt = k_alt | replace: 'İ', 'i' | replace: 'I', 'i' | downcase | replace: 'ı', 'i' | replace: 'i̇', 'i' | strip
+      case k_alt
+        when 'ürün fotoğrafi'
+          assign k_tur = 'paket'
+        when 'model üzerinde 1'
+          assign k_tur = 'model1'
+        when 'model üzerinde 2'
+          assign k_tur = 'model2'
+        when '4 adimda nasil çalişir', 'couple 4 adimda nasil çalişir', 'süresiz çip garantisi', 'single ve couple karşilaştirmasi', 'uygulama ekranlari', 'couple uygulama ekranlari', 'hediye ömrü karşilaştirmasi', 'kutu ve teslimat', 'sette neler var'
+          assign k_tur = 'bilgi'
+      endcase
+      if k_tur == ''
+        assign k_bas = k_alt | slice: 0, 14
+        if k_bas == 'model üzerinde'
+          assign k_tur = 'foto'
+        endif
+      endif
+    endif
+
+    assign k_i = forloop.index0 | append: ''
+    if k_tur != ''
+      assign k_bilinen = true
+    endif
+    if k_tur == 'paket' and k_paket == ''
+      assign k_paket = k_i
+    elsif k_tur == 'model1' and k_model1 == ''
+      assign k_model1 = k_i
+    elsif k_tur == 'model2' and k_model2 == ''
+      assign k_model2 = k_i
+    endif
+    if k_tur != 'bilgi'
+      assign k_bilgisiz = k_bilgisiz | append: ',' | append: k_i
+    endif
+  endfor
+
+  assign k_sonuc = ''
+  if k_gorseller.size > 0
+    if k_bilinen == false
+      for m in k_gorseller
+        assign k_sonuc = k_sonuc | append: ',' | append: forloop.index0
+      endfor
+    elsif k_paket == '' and k_model1 == '' and k_model2 == ''
+      assign k_sonuc = k_bilgisiz
+    else
+      assign k_ilk = k_paket
+      if k_ilk == ''
+        assign k_ilk = k_bilgisiz | remove_first: ',' | split: ',' | first | default: ''
+      endif
+      if k_ilk != ''
+        assign k_sonuc = ',' | append: k_ilk
+      endif
+      if k_model1 != '' and k_model1 != k_ilk
+        assign k_sonuc = k_sonuc | append: ',' | append: k_model1
+      endif
+      if k_model2 != '' and k_model2 != k_ilk
+        assign k_sonuc = k_sonuc | append: ',' | append: k_model2
+      endif
+    endif
+  endif
+  echo k_sonuc | remove_first: ','
+-%}

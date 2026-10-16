@@ -36,9 +36,11 @@
     Galeri, tekli urunun custom.couple_urun ile bagli ikizinin
     medyasini KENDI sirasiyla gosteriyor. Ad, fiyat, varyant ve sepet
     tekli urunun kaliyor; alt metinler tekli urunun adiyla yeniden
-    uretiliyor (couple_ad parametresi). Ikiz yoksa, taslaksa (vitrinde
-    nil) ya da galerisi yeni sablonda degilse (2. gorsel "Couple 4
-    adimda nasil calisir" degilse) normal galeri gosteriliyor.
+    uretiliyor: "<tekli ad> – <tur>", tur once dosya adindan
+    (couple_ad parametresi, snippets/tt-couple-alt.liquid). Ikiz
+    yoksa, taslaksa (vitrinde nil) ya da galerisi yeni sablonda
+    degilse (2. gorsel "Couple 4 adimda nasil calisir" degilse) normal
+    galeri gosteriliyor.
     Diger sablonlar ve hizli bakis bu bloktan etkilenmiyor.
   endcomment
   assign gal_medya = product.media
@@ -47,22 +49,30 @@
     assign tt_ik = product.metafields.custom.couple_urun.value
     if tt_ik != blank and tt_ik.media.size > 1
       comment
-        Ikizin 2. gorseli "Couple 4 adimda nasil calisir" mi? Iki kaynak:
-        - alt metin (ayrac –, — ya da -, buyuk/kucuk harf ve I/ı/İ/i
-          farki yok sayiliyor)
-        - dosya adi ("<ad>-couple-NN-couple-dort-adim.jpg").
+        Ikizin galerisi yeni sablonda mi = 2. gorseli "Couple 4 adimda
+        nasil calisir" mi? Once DOSYA ADI ("<ad>-couple-NN-couple-dort-
+        adim[_uuid].jpg"), dosya adi bunu soylemiyorsa alt metin (ayrac
+        –, — ya da -, buyuk/kucuk harf ve I/ı/İ/i farki yok sayiliyor).
         15.10.2026 19:03-19:06 UTC'de alt metinler toplu olarak
         "<ad> - Text To Next" yapildi; yalnizca alt metne bakan eski
         kosul o andan beri hep yanlis donuyor, sayfa Couple galerisi
         yerine tekli galeriyi gosteriyordu. Alt metinlere dokunulmadi.
       endcomment
       assign tt_2 = tt_ik.media[1]
-      assign tt_2_alt = tt_2.alt | default: '' | replace: '—', '-' | replace: '–', '-' | replace: 'İ', 'i' | replace: 'I', 'i' | downcase | replace: 'ı', 'i' | replace: 'i̇', 'i'
       assign tt_2_dosya = ''
       if tt_2.preview_image != blank
-        assign tt_2_dosya = tt_2.preview_image.src | split: '?' | first | split: '/' | last | downcase
+        assign tt_2_dosya = tt_2.preview_image.src | split: '?' | first | split: '/' | last | downcase | split: '.' | first | split: '_' | first
       endif
-      if tt_2_alt contains 'couple 4 adimda nasil çalişir' or tt_2_dosya contains 'couple-dort-adim'
+      assign tt_2_yeni = false
+      if tt_2_dosya contains '-couple-dort-adim'
+        assign tt_2_yeni = true
+      else
+        assign tt_2_alt = tt_2.alt | default: '' | replace: '—', '-' | replace: '–', '-' | replace: 'İ', 'i' | replace: 'I', 'i' | downcase | replace: 'ı', 'i' | replace: 'i̇', 'i'
+        if tt_2_alt contains 'couple 4 adimda nasil çalişir'
+          assign tt_2_yeni = true
+        endif
+      endif
+      if tt_2_yeni
         assign gal_medya = tt_ik.media
         assign couple_ad = product.title
       endif
@@ -157,14 +167,10 @@
           {%- liquid
             assign media_alt = featured_media.alt | default: product.title
             if couple_ad != blank
-              assign tt_parca = featured_media.alt | split: ' – '
-              if tt_parca.size > 1
-                assign tt_bas = tt_parca.first | append: ' – '
-                assign tt_kalan = featured_media.alt | remove_first: tt_bas
-                assign media_alt = couple_ad | append: ' – ' | append: tt_kalan
-              else
-                assign media_alt = couple_ad
-              endif
+              capture media_alt
+                render 'tt-couple-alt', media: featured_media, ad: couple_ad
+              endcapture
+              assign media_alt = media_alt | strip
             endif
           -%}
           {%- render 'media', section_id: section_id, product_id: product_id, media: featured_media, sizes: featured_media_sizes, preload: true, autoplay: enable_video_autoplay, loop: enable_video_looping, media_alt: media_alt -%}
