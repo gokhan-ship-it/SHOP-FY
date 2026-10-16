@@ -33,7 +33,18 @@ Testler Playwright **WebKit** (iPhone 13 profili, 390×844 ve 360×740) ile yap�
 
 | Sayfa | Konum | Önce: kayboldu | Sonra: kayboldu |
 |---|---|---|---|
-SONRA_TABLO
+| Ana sayfa | en üst | 0/20 | 0/20 |
+| Ana sayfa | orta | 0/20 | 0/20 |
+| Ana sayfa | en alt | 0/20 | 0/20 |
+| Koleksiyon | en üst | 20/20 | 0/20 |
+| Koleksiyon | orta | 20/20 | 0/20 |
+| Koleksiyon | en alt | 20/20 | 0/20 |
+| Ürün | en üst | 0/20 | 0/20 |
+| Ürün | orta | 0/20 | 0/20 |
+| Ürün | en alt | 0/20 | 0/20 |
+| Anlatım (couple) | en üst | 20/20 | 0/20 |
+| Anlatım (couple) | orta | 20/20 | 0/20 |
+| Anlatım (couple) | en alt | 20/20 | 0/20 |
 
 ---
 
@@ -220,7 +231,7 @@ Varsayılan olarak mevcut metinler değiştirilmedi.
 Commit'ler: c305b9b (ana iş), e755d43 (geri sayım boşluğu). Dal: `claude/new-session-uhmgke`.
 
 ## Yayındaki temanın MD5'i
-CANLI_MD5
+İş başında ve sonunda Calisma taslagi - 2026-10-05 temasının 669 dosyasının MD5'i alındı: **669 dosya, fark: 0** — yayındaki tema değişmedi.
 
 ## Açık konular / öneriler
 1. **Yapışkan sepete ekle çubuğu (ürün sayfası):** Yayındaki temada da indirimli fiyat göstermiyor. Temanın `main-product` bölümüne dokunmak gerektiği için kapsam dışı bırakıldı.
