@@ -99,4 +99,12 @@
   product-info:has([data-tt-uf]:not([hidden])) .tt-fb-serit {
     justify-content: flex-start;
   }
+  {%- comment -%}
+    Serit yalnizca "29:23 kaldi" tasiyor; sayacin sabit genisligi
+    (5.2ch, rakamlar degisirken metin kaymasin diye) burada rakamla
+    "kaldi" arasinda bos bir delik birakiyordu.
+  {%- endcomment -%}
+  product-info:has([data-tt-uf]:not([hidden])) .tt-fb-serit-saat [data-tt-tk-sayac] {
+    min-width: 0;
+  }
 </style>
