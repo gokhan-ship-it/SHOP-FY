@@ -1,0 +1,409 @@
+{%- comment -%}
+  LEGAL HUB -- /pages/sozlesmeler-ve-politikalar (sablon: page.sozlesmeler)
+
+  Yedi yasal belge tek sayfada, sekmeli. Metinler BURADA YAZILI DEGIL;
+  her sekme belgenin kendi kaynagindan canli okunuyor:
+
+    #mesafeli-satis      shop.terms_of_service.body
+    #on-bilgilendirme    pages['on-bilgilendirme-formu'].content
+    #iade                shop.refund_policy.body
+    #kargo               shop.shipping_policy.body
+    #gizlilik            shop.privacy_policy.body
+    #cerez               pages['cerez-politikasi'].content
+    #kullanim-kosullari  pages['uygulama-kullanim-kosullari'].content
+
+  Boylece bir belge Ayarlar > Politikalar'da ya da sayfasinda
+  guncellenince bu sayfa da kendiliginden guncelleniyor; iki kopya
+  birbirinden kopamiyor. Surum satiri her belgenin icinde, burada
+  tekrar basilmiyor.
+
+  ------------------------------------------------------------------
+  HASH
+
+  Adresteki #... hangi sekmenin acik gelecegini belirliyor; hash yoksa
+  ya da tanimsizsa ilk sekme. Sekme degisince hash replaceState ile
+  guncelleniyor (geri tusu gecmisi sekme sekme doldurmasin, sayfa
+  ziplamasin). Panel id'leri hash ile AYNI DEGIL (tt-lh-panel-...):
+  ayni olsa tarayici acilista panele kaydirirdi.
+
+  Secim betigi isaretlemenin hemen arkasinda, satir ici ve senkron
+  calisiyor; hash'li acilista once ilk sekmenin gorunup sonra
+  degismesi (yanip sonme) olmuyor. JS yoksa noscript tum panelleri
+  alt alta acar.
+
+  ------------------------------------------------------------------
+  ERISILEBILIRLIK
+
+  role=tablist / tab / tabpanel, aria-selected, aria-controls,
+  aria-labelledby. Gezici tabindex: yalnizca secili sekme Tab
+  sirasinda. Sol/Sag ok, Home, End sekmeler arasinda dolasir ve
+  secer (otomatik etkinlestirme).
+
+  ------------------------------------------------------------------
+  MOBIL
+
+  Sekmeler tek satirda yatay kayiyor (sayfa tasmiyor); secilen sekme
+  serit icinde gorunur alana aliniyor -- scrollIntoView degil, serit
+  scrollLeft'i: scrollIntoView sayfayi da dikey kaydirabiliyor.
+  Belgelerdeki tablolar kendi kutularinda (.tt-yasal-tablo) yatay
+  kayiyor; hucreler 9em'den dar olmuyor, dort sutunlu tablo telefonda
+  ezilmek yerine kayiyor.
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+
+  assign b_adlar = 'Mesafeli Satış Sözleşmesi|Ön Bilgilendirme Formu|İade ve Cayma Politikası|Kargo ve Teslimat Politikası|Gizlilik Politikası (KVKK)|Çerez Politikası|Uygulama Kullanım Koşulları' | split: '|'
+  assign b_hashler = 'mesafeli-satis|on-bilgilendirme|iade|kargo|gizlilik|cerez|kullanim-kosullari' | split: '|'
+-%}
+
+<style>
+  #shopify-section-{{ sid }} {
+    --section-padding-top: {{ s.padding_top }}px;
+    --section-padding-bottom: {{ s.padding_bottom }}px;
+  }
+
+  .tt-lh {
+    --tt-lh-ink: #0a0a0a;
+    --tt-lh-ink-2: #5c5c57;
+    --tt-lh-cizgi: #d2d2cd;
+    --tt-lh-zemin-2: #f5f5f2;
+    color: var(--tt-lh-ink);
+  }
+
+  .tt-lh-sekmeler {
+    position: relative;
+    display: flex;
+    gap: 8px;
+    margin-top: 28px;
+    padding: 2px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tt-lh-sekmeler::-webkit-scrollbar { display: none; }
+
+  .tt-lh-sekme {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 1px solid var(--tt-lh-cizgi);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--tt-lh-ink);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .tt-lh-sekme:hover { border-color: var(--tt-lh-ink); }
+  .tt-lh-sekme[aria-selected="true"] {
+    background: var(--tt-lh-ink);
+    border-color: var(--tt-lh-ink);
+    color: #fff;
+  }
+  .tt-lh-sekme:focus-visible,
+  .tt-lh-panel:focus-visible {
+    outline: 2px solid var(--tt-lh-ink);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 990px) {
+    .tt-lh-sekmeler {
+      flex-wrap: wrap;
+      overflow: visible;
+    }
+  }
+
+  .tt-lh-panel { margin-top: 36px; }
+  .tt-lh-panel[hidden] { display: none; }
+
+  .tt-lh-belge-bas {
+    margin: 0 0 20px;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .tt-lh-metin {
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .tt-lh-metin p,
+  .tt-lh-metin li { overflow-wrap: anywhere; }
+  .tt-lh-metin p { margin: 0 0 1em; }
+  .tt-lh-metin em { color: var(--tt-lh-ink-2); }
+  .tt-lh-metin ul,
+  .tt-lh-metin ol {
+    margin: 0 0 1em;
+    padding-left: 1.25em;
+  }
+  .tt-lh-metin ul { list-style: disc; }
+  .tt-lh-metin ol { list-style: decimal; }
+  .tt-lh-metin li { margin: 0 0 .4em; }
+  .tt-lh-metin a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .tt-lh-metin .tt-yasal-tablo {
+    margin: 0 0 1.25em;
+    border: 1px solid var(--tt-lh-cizgi);
+    border-radius: 12px;
+  }
+  .tt-lh-metin table {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-collapse: collapse;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .tt-lh-metin th,
+  .tt-lh-metin td {
+    min-width: 9em;
+    padding: 10px 12px;
+    border: 0;
+    border-bottom: 1px solid var(--tt-lh-cizgi);
+    text-align: left;
+    vertical-align: top;
+  }
+  .tt-lh-metin th {
+    background: var(--tt-lh-zemin-2);
+    font-weight: 600;
+  }
+  .tt-lh-metin tbody tr:last-child td { border-bottom: 0; }
+
+  .tt-lh-iletisim {
+    margin: 48px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--tt-lh-cizgi);
+    color: var(--tt-lh-ink-2);
+    font-size: 15px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .tt-lh-iletisim a {
+    color: var(--tt-lh-ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  @media (min-width: 768px) {
+    .tt-lh-belge-bas { font-size: 26px; }
+  }
+</style>
+<noscript>
+  <style>#tt-lh-{{ sid }} .tt-lh-panel[hidden] { display: block; }</style>
+</noscript>
+
+<div class="section section--padding{% if s.divider %} section--divider{% endif %}">
+  <div class="tt-lh page-width{% if s.narrow %} page-width--narrow{% endif %} relative" id="tt-lh-{{ sid }}">
+    <div class="title-wrapper leading-none text-left">
+      <h1 class="heading title-xl tracking-heading">
+        {%- render 'heading-content', content: page.title, style: 'none' -%}
+      </h1>
+    </div>
+
+    <div class="tt-lh-sekmeler" role="tablist" aria-label="{{ s.sekme_etiketi | escape }}">
+      {%- for b_ad in b_adlar -%}
+        {%- assign b_hash = b_hashler[forloop.index0] -%}
+        <button
+          type="button"
+          class="tt-lh-sekme"
+          role="tab"
+          id="tt-lh-sekme-{{ b_hash }}"
+          aria-controls="tt-lh-panel-{{ b_hash }}"
+          aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+          tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+          data-hash="{{ b_hash }}"
+        >
+          {{- b_ad -}}
+        </button>
+      {%- endfor -%}
+    </div>
+
+    {%- for b_ad in b_adlar -%}
+      {%- liquid
+        assign b_hash = b_hashler[forloop.index0]
+        case forloop.index
+          when 1
+            assign b_govde = shop.terms_of_service.body
+          when 2
+            assign b_govde = pages['on-bilgilendirme-formu'].content
+          when 3
+            assign b_govde = shop.refund_policy.body
+          when 4
+            assign b_govde = shop.shipping_policy.body
+          when 5
+            assign b_govde = shop.privacy_policy.body
+          when 6
+            assign b_govde = pages['cerez-politikasi'].content
+          when 7
+            assign b_govde = pages['uygulama-kullanim-kosullari'].content
+        endcase
+      -%}
+      <div
+        class="tt-lh-panel"
+        role="tabpanel"
+        id="tt-lh-panel-{{ b_hash }}"
+        aria-labelledby="tt-lh-sekme-{{ b_hash }}"
+        tabindex="0"
+        {% unless forloop.first %}hidden{% endunless %}
+      >
+        <h2 class="tt-lh-belge-bas">{{ b_ad }}</h2>
+        <div class="tt-lh-metin">{{ b_govde }}</div>
+      </div>
+    {%- endfor -%}
+
+    {%- if s.iletisim != blank -%}
+      <p class="tt-lh-iletisim">{{ s.iletisim }}</p>
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+  (function () {
+    var kok = document.getElementById('tt-lh-{{ sid }}');
+    if (!kok) return;
+    var liste = kok.querySelector('[role="tablist"]');
+    var sekmeler = Array.prototype.slice.call(liste.querySelectorAll('[role="tab"]'));
+    var paneller = sekmeler.map(function (t) {
+      return document.getElementById(t.getAttribute('aria-controls'));
+    });
+
+    function bul(hash) {
+      for (var i = 0; i < sekmeler.length; i++) {
+        if (sekmeler[i].getAttribute('data-hash') === hash) return i;
+      }
+      return -1;
+    }
+
+    function gorunurYap(t) {
+      if (liste.scrollWidth <= liste.clientWidth) return;
+      var pay = 16;
+      var sol = t.offsetLeft;
+      var sag = sol + t.offsetWidth;
+      if (sol - pay < liste.scrollLeft) {
+        liste.scrollLeft = Math.max(0, sol - pay);
+      } else if (sag + pay > liste.scrollLeft + liste.clientWidth) {
+        liste.scrollLeft = sag + pay - liste.clientWidth;
+      }
+    }
+
+    function sec(i, odakla, hashYaz) {
+      sekmeler.forEach(function (t, j) {
+        var acik = j === i;
+        t.setAttribute('aria-selected', acik ? 'true' : 'false');
+        t.tabIndex = acik ? 0 : -1;
+        paneller[j].hidden = !acik;
+      });
+      var t = sekmeler[i];
+      gorunurYap(t);
+      if (odakla) t.focus();
+      if (hashYaz && window.history && history.replaceState) {
+        history.replaceState(history.state, '', '#' + t.getAttribute('data-hash'));
+      }
+    }
+
+    function hashtenSec() {
+      var i = bul(decodeURIComponent(location.hash.slice(1)));
+      sec(i < 0 ? 0 : i, false, false);
+    }
+
+    hashtenSec();
+    window.addEventListener('hashchange', hashtenSec);
+
+    sekmeler.forEach(function (t, i) {
+      t.addEventListener('click', function () {
+        sec(i, false, true);
+      });
+    });
+
+    liste.addEventListener('keydown', function (e) {
+      var simdi = sekmeler.indexOf(document.activeElement);
+      if (simdi < 0) return;
+      var yeni = -1;
+      switch (e.key) {
+        case 'ArrowRight': yeni = (simdi + 1) % sekmeler.length; break;
+        case 'ArrowLeft': yeni = (simdi - 1 + sekmeler.length) % sekmeler.length; break;
+        case 'Home': yeni = 0; break;
+        case 'End': yeni = sekmeler.length - 1; break;
+      }
+      if (yeni < 0) return;
+      e.preventDefault();
+      sec(yeni, true, true);
+    });
+
+    {%- comment -%} Serit genisligi degisince (dondurme, pencere) secili sekme gorunur kalsin. {%- endcomment -%}
+    window.addEventListener('resize', function () {
+      var i = sekmeler.findIndex ? sekmeler.findIndex(function (t) { return t.getAttribute('aria-selected') === 'true'; }) : 0;
+      if (i >= 0) gorunurYap(sekmeler[i]);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Sözleşmeler ve politikalar",
+  "tag": "section",
+  "class": "section-legal-hub",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Belge metinleri burada düzenlenmez. Mesafeli Satış, İade, Kargo ve Gizlilik: Ayarlar > Politikalar. Ön Bilgilendirme, Çerez ve Uygulama Kullanım Koşulları: Online Mağaza > Sayfalar."
+    },
+    {
+      "type": "text",
+      "id": "sekme_etiketi",
+      "label": "Sekme listesi etiketi (ekran okuyucu)",
+      "default": "Belgeler"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "iletisim",
+      "label": "Alt iletişim satırı",
+      "default": "Sorularınız için: <a href=\"mailto:info@texttonext.com\">info@texttonext.com</a> · KEP: texttonext@hs06.kep.tr"
+    },
+    {
+      "type": "checkbox",
+      "id": "narrow",
+      "label": "Dar içerik",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Üst boşluk",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Alt boşluk",
+      "default": 100
+    },
+    {
+      "type": "checkbox",
+      "id": "divider",
+      "label": "Ayırıcı çizgi",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

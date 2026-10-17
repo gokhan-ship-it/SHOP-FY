@@ -131,7 +131,20 @@
     },
     "footer": {
       "type": "footer",
-      "disabled": true,
+      "blocks": {
+        "link_list_yasal": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Yasal",
+            "menu": "footer-yasal",
+            "container_width": 50,
+            "opened": true
+          }
+        }
+      },
+      "block_order": [
+        "link_list_yasal"
+      ],
       "settings": {
         "invert_newsletter_others": false,
         "enable_newsletter": false,
