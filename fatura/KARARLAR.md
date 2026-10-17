@@ -40,6 +40,12 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
 24. **Telafi çalıştırması (04.10.2026):** Elle kesilen 10 fatura eşleştirildi: #13577–#13584 + #13565 (Ecem Doğaner) ve #13566 (Mehmet Yılmaz). Son ikisi programla da kesilmişti → mükerrer; kullanıcı "boşver" dedi, iptal kararı kullanıcıda. `--tarih 2026-09-23:2026-10-04` → 107 taslak, 0 red. Atlanan: 20 önceden kesilmiş, #13626 iptal, #13669 couple seti (elle kesilecek). 28.09'daki tek Paraşüt faturası Delano Turizm (Shopify dışı). Doğru klasör: `~/Downloads/SHOP-FY-claude-new-session-5q510d/fatura` (numarasız).
 25. **Yeni çelik kolye seçenekleri (17.10.2026):** White, Gold, Rose Pink, Ocean Blue ve Couple sürümlerine "316L Çelik" seçeneği eklenmiş (8 varyant) → KLY. Eşleme 86 varyant.
 26. **17.10.2026 çalıştırması:** 91 taslak. #13820 (charm + kolye) Paraşüt'te 5.898,51 çıktı (Shopify 5.898,50): Paraşüt ara toplamı birim fiyatları yuvarlamadan topluyor (61,4417 + 184,3333 = 245,775 → 245,78). Kod artık bu durumu önceden yakalayıp siparişi atlıyor. #13820 taslağı kullanıcı tarafından elle düzeltilecek. Couple setleri (Astor+Chloe 23, Noir+Chloe Charm 8, Nova+Chloe 5) içerik teyidi bekliyor. `urun-kodlari.json` kullanıcıda güncellenmedi (7 çelik kolye siparişi atlandı).
+27. **Fatura Paneli (17.10.2026, kullanıcı talebi):** Terminal'siz, masaüstü simgesiyle açılan yerel panel (`panel.js` + `panel.html`, `kurulum.js`).
+    - Tarih aralığı varsayılanı: son kesilen siparişin tarihinden bugüne (birkaç gün ara verilse de kaldığı yerden).
+    - Yeni ürün/seçenek algılama: Shopify kataloğunda eşlenmemiş seçenekler listelenir, kategori önerilir (setlerde içindeki ürünlerin kategorisinden), kullanıcı onaylar. `ELLE` kategorisi = program kesmez.
+    - İl/ilçe: `adres.js` + `il-ilce.json` (81 il, 973 ilçe, posta kodu, il-içi tekil mahalle). Bulunamazsa uyarı, fatura yine oluşur.
+    - Güncelleme: İndirilenler'deki en yeni SHOP-FY klasöründen program dosyaları kopyalanır, `urun-kodlari.json` birleştirilir (kullanıcı ataması korunur), kayıt dosyaları dokunulmaz.
+    - Güvenlik: 127.0.0.1, oturum anahtarı, Host kontrolü; yazma sadece önizlenmiş + onaylanmış plan için (30 dk geçerli, tek kullanımlık).
 
 Henüz cevaplanmadı (bu siparişler şimdilik otomatik atlanıp raporlanıyor):
 - Kısmi iade / sonradan değiştirilmiş sipariş
