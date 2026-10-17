@@ -6,7 +6,7 @@
 // Kullanım:
 //   node musteri-kesif.js
 
-const { hata, envOku, tokenAl, getir } = require('./ortak');
+const { hata, hataBasVeCik, envOku, tokenAl, getir } = require('./ortak');
 
 const ORNEK_FATURA_ID = '1097888536'; // NX02026000000177
 
@@ -49,4 +49,4 @@ async function main() {
   console.log('\nBu çıktıyı Claude\'a gönderebilirsiniz.\n');
 }
 
-main().catch((e) => hata(e.message));
+main().catch(hataBasVeCik);

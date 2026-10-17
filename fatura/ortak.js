@@ -6,8 +6,14 @@ const path = require('path');
 
 const BEKLEME_MS = 1200; // 10 saniyede 10 istek limiti
 
+// Kullanıcıya gösterilecek hata. Programı kapatmaz; komut satırı betikleri yakalayıp
+// basar, panel ise ekranda gösterir.
+class KullaniciHatasi extends Error {}
 function hata(mesaj) {
-  console.error('\nHATA: ' + mesaj + '\n');
+  throw new KullaniciHatasi(mesaj);
+}
+function hataBasVeCik(e) {
+  console.error('\nHATA: ' + (e && e.message ? e.message : e) + '\n');
   process.exit(1);
 }
 
@@ -103,4 +109,4 @@ async function gonder(token, url, govde) {
   return { reddedildi: true, mesaj: 'art arda hız limiti hatası' };
 }
 
-module.exports = { hata, envOku, tokenAl, getir, gonder };
+module.exports = { hata, hataBasVeCik, KullaniciHatasi, envOku, tokenAl, getir, gonder };

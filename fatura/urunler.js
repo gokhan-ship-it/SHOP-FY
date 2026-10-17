@@ -5,7 +5,7 @@
 // Kullanım:
 //   node urunler.js
 
-const { hata, envOku, tokenAl, getir } = require('./ortak');
+const { hata, hataBasVeCik, envOku, tokenAl, getir } = require('./ortak');
 
 const GEREKEN_KODLAR = {
   'BLK-01': { ad: 'Bileklik işçilik', kdv: 20 },
@@ -68,4 +68,4 @@ async function main() {
     : '\nYedi kodun hepsi hazır.\n');
 }
 
-main().catch((e) => hata(e.message));
+main().catch(hataBasVeCik);

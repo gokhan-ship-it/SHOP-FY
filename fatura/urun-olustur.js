@@ -9,7 +9,7 @@
 //   node urun-olustur.js
 
 const readline = require('readline/promises');
-const { hata, envOku, tokenAl, getir } = require('./ortak');
+const { hata, hataBasVeCik, envOku, tokenAl, getir } = require('./ortak');
 
 // Alan adları (code, name, vat_rate, unit, currency, inventory_tracking)
 // Paraşüt'ten okunan gerçek ürün kartlarında görüldü (KESIF-SONUCU.md).
@@ -120,4 +120,4 @@ async function main() {
   console.log(sorunVar ? '\nBazı kartlarda sorun var, bu ekranı Claude\'a gönderin.\n' : '\nYedi kartın hepsi hazır.\n');
 }
 
-main().catch((e) => hata(e.message));
+main().catch(hataBasVeCik);

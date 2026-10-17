@@ -1,98 +1,48 @@
 #!/usr/bin/env node
-// Shopify siparişlerinden Paraşüt TASLAK satış faturası oluşturur.
-// Resmileştirme YAPMAZ (e-arşiv / e-fatura çağrısı yok). Mevcut faturaya dokunmaz.
-// Paraşüt'e yazmadan önce ne yapacağını gösterir ve onay ister.
+// Shopify siparişlerinden Paraşüt TASLAK satış faturası oluşturur (komut satırı).
+// Aynı işi panel de yapar (panel.js); ikisi de motor.js'i kullanır.
+// Resmileştirme YAPMAZ. Mevcut faturaya dokunmaz. Yazmadan önce onay ister.
 //
 // Kullanım:
-//   node fatura.js --dry-run                    son 10 sipariş, hiçbir şey yazmaz
-//   node fatura.js --dry-run --adet 20
-//   node fatura.js --siparis 13575              tek sipariş için taslak fatura
-//   node fatura.js --siparis 13575,13576        birden fazla sipariş
-//   node fatura.js --siparis 13575 --dry-run    tek siparişin denemesi
-//   node fatura.js --dun                        dünün tüm siparişleri
-//   node fatura.js --tarih 2026-09-24           o günün tüm siparişleri
+//   node fatura.js --dun                           dünün tüm siparişleri
+//   node fatura.js --tarih 2026-09-24              o günün tüm siparişleri
 //   node fatura.js --tarih 2026-09-19:2026-09-22   birden fazla gün
-//   node fatura.js --tarih 2026-09-24 --dry-run
-//   node fatura.js --elle-kesildi 13565,13566   bu siparişleri elle kestim, program atlasın
-//   node fatura.js --elle-kesildi 13577-13584   aralık olarak
+//   node fatura.js --siparis 13575,13576           belirli siparişler
+//   node fatura.js --dry-run                       son 10 sipariş, hiçbir şey yazmaz
+//   (her komutun sonuna --dry-run eklenirse hiçbir şey yazmadan dener)
+//   node fatura.js --elle-kesildi 13565,13577-13584   elle kesilenleri bildir
 
-const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
-const { hata, envOku, tokenAl, getir, gonder } = require('./ortak');
-const { shopifyTokenAl, sonSiparisler, siparisGetir, gunSiparisleri } = require('./shopify');
+const { hata, hataBasVeCik, envOku } = require('./ortak');
 const H = require('./hesap');
-const { ilIlce } = require('./iller');
-
-const CIKTI_DOSYASI = path.join(__dirname, 'deneme-cikti.json');
-const KAYIT_DOSYASI = path.join(__dirname, 'invoices.json');
-// Shopify e-postası → Paraşüt müşteri no. E-posta Paraşüt'e yazılmadığı için (müşteriye
-// fatura e-postası gitmesin) mükerrer müşteri kartını bu yerel dosya önler. E-postanın
-// kendisi değil, özeti (SHA-256) saklanır.
-const MUSTERI_DOSYASI = path.join(__dirname, 'musteriler.json');
-
-const KATEGORI = {
-  BLK: { ad: 'Bileklik', iscilik: 'BLK-01', gumus: 'BLK-02' },
-  KLY: { ad: 'Kolye', iscilik: 'KLY-01', gumus: 'KLY-02' },
-  CRM: { ad: 'Charm', iscilik: 'CRM-01', gumus: 'CRM-02' },
-  KZK: { ad: 'Klasik Zaman Kapsülü', tek: 'KZK-01' },
-};
-const URUN_KODLARI = ['BLK-01', 'BLK-02', 'KLY-01', 'KLY-02', 'CRM-01', 'CRM-02', 'KZK-01'];
-const TCKN_BIREYSEL = '11111111111';
-// Elle kesilen son fatura #13539'a ait (19.09.2026). Program #13540 ve sonrasını keser;
-// öncesine hiçbir koşulda fatura kesmez.
-const BASLANGIC_SIPARIS = 13540;
-const BASLANGIC_TARIHI = '2026-09-19';
-const siparisNo = (ad) => Number(String(ad).replace(/\D/g, ''));
-
-const turkiyeTarihi = (iso) =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(new Date(iso));
-const tarihGoster = (t) => t.split('-').reverse().join('.');
-const tutar = (para) => H.tlKurus(para.shopMoney.amount);
-const oranGoster = (o) => (o / 100).toString().replace('.', ',');
+const M = require('./motor');
 
 function argumanlar() {
   const a = process.argv.slice(2);
+  const deger = (ad) => { const i = a.indexOf(ad); return i >= 0 ? a[i + 1] || '' : null; };
   const deneme = a.includes('--dry-run');
-  let siparisler = null;
-  const s = a.indexOf('--siparis');
-  if (s >= 0) {
-    const liste = (a[s + 1] || '').split(',').map((x) => x.trim().replace(/^#/, '')).filter(Boolean);
-    if (!liste.length || liste.some((x) => !/^\d+$/.test(x))) hata('--siparis sonrasına sipariş numarası yazın. Örnek: --siparis 13575');
-    if (liste.length > 20) hata('Şimdilik en fazla 20 sipariş birden işlenebilir.');
-    siparisler = liste.map((x) => `#${x}`);
+  const elle = deger('--elle-kesildi');
+  if (elle !== null) return { elle: M.siparisListesiCoz(elle) };
+
+  let kaynak = null;
+  if (deger('--siparis') !== null) {
+    const liste = M.siparisListesiCoz(deger('--siparis'));
+    if (liste.length > 50) hata('En fazla 50 sipariş birden işlenebilir.');
+    kaynak = { siparisler: liste };
   }
-  let tarih = null; // { bas, bit }
-  const t = a.indexOf('--tarih');
-  if (t >= 0) {
-    const [bas, bit = bas] = (a[t + 1] || '').split(':');
-    const gecerli = (x) => /^\d{4}-\d{2}-\d{2}$/.test(x) && !Number.isNaN(Date.parse(x));
-    if (!gecerli(bas) || !gecerli(bit)) hata('Tarihi yıl-ay-gün yazın. Örnek: --tarih 2026-09-24 veya --tarih 2026-09-19:2026-09-22');
-    if (bit < bas) hata('Bitiş tarihi başlangıçtan önce olamaz.');
-    tarih = { bas, bit };
+  if (deger('--tarih') !== null) {
+    const [bas, bit = bas] = deger('--tarih').split(':');
+    kaynak = { bas, bit };
   }
-  if (a.includes('--dun')) {
-    const bugun = turkiyeTarihi(new Date().toISOString());
-    const dun = turkiyeTarihi(new Date(Date.parse(bugun + 'T12:00:00+03:00') - 86400000).toISOString());
-    tarih = { bas: dun, bit: dun };
+  if (a.includes('--dun')) { const d = M.gunEkle(M.bugun(), -1); kaynak = { bas: d, bit: d }; }
+  if (!kaynak) {
+    if (!deneme) hata('Nasıl çalıştırılır:\n  node fatura.js --dun\n  node fatura.js --tarih 2026-09-24\n  node fatura.js --siparis 13575\n  Sonuna --dry-run eklerseniz hiçbir şey yazmadan dener.');
+    kaynak = { adet: Number(deger('--adet') || 10) };
   }
-  if (tarih && siparisler) hata('--tarih/--dun ile --siparis birlikte kullanılamaz.');
-  if (tarih) {
-    if (tarih.bas < BASLANGIC_TARIHI) hata(`${tarihGoster(tarih.bas)} başlangıç tarihinden (${tarihGoster(BASLANGIC_TARIHI)}) önce. O günlerin faturaları elle kesildi, program kesmez.`);
-    if (tarih.bit > turkiyeTarihi(new Date().toISOString())) hata(`${tarihGoster(tarih.bit)} henüz gelmedi.`);
-    if ((Date.parse(tarih.bit) - Date.parse(tarih.bas)) / 86400000 > 31) hata('En fazla 31 günlük aralık işlenebilir.');
-  }
-  if (!deneme && !siparisler && !tarih) {
-    hata('Nasıl çalıştırılır:\n  node fatura.js --dun                 (dünün siparişleri)\n  node fatura.js --tarih 2026-09-24    (o günün siparişleri)\n  node fatura.js --siparis 13575       (tek sipariş)\n  Sonuna --dry-run eklerseniz hiçbir şey yazmadan dener.');
-  }
-  let adet = 10;
-  const i = a.indexOf('--adet');
-  if (i >= 0) {
-    adet = Number(a[i + 1]);
-    if (!Number.isInteger(adet) || adet < 1 || adet > 250) hata('--adet 1 ile 250 arasında bir sayı olmalı.');
-  }
-  return { deneme, siparisler, adet, tarih };
+  if (kaynak.bas) M.tarihAraligiDogrula(kaynak.bas, kaynak.bit);
+  return { deneme, kaynak };
 }
 
 // Tüm çalıştırma boyunca tek bir okuyucu (yapıştırılan cevaplar kaybolmasın diye).
@@ -109,409 +59,110 @@ async function oranSor() {
   for (;;) {
     const oran = H.oranOku(await sor('Bu çalıştırmada uygulanacak işçilik oranı (%)? Örnek: 5 veya 4,5 → '));
     if (oran === null) { console.log('  Geçerli bir oran yazın (örnek: 5 veya 4,5).'); continue; }
-    if ((await sor(`  Oran %${oranGoster(oran)} olarak uygulanacak. Doğru mu? [e/h] `)).toLowerCase() === 'e') return oran;
+    if ((await sor(`  Oran %${M.oranGoster(oran)} olarak uygulanacak. Doğru mu? [e/h] `)).toLowerCase() === 'e') return oran;
   }
 }
 
-// Kayıt defteri (Katman 1). Her yazmada dosya baştan, güvenli şekilde yazılır.
-function kayitOku() {
-  return fs.existsSync(KAYIT_DOSYASI) ? JSON.parse(fs.readFileSync(KAYIT_DOSYASI, 'utf8')) : {};
-}
-function guvenliYaz(dosya, veri) {
-  const gecici = dosya + '.yeni';
-  fs.writeFileSync(gecici, JSON.stringify(veri, null, 2));
-  fs.renameSync(gecici, dosya);
-}
-const kayitYaz = (kayit) => guvenliYaz(KAYIT_DOSYASI, kayit);
-const musteriOku = () => (fs.existsSync(MUSTERI_DOSYASI) ? JSON.parse(fs.readFileSync(MUSTERI_DOSYASI, 'utf8')) : {});
-const epostaAnahtari = (e) => crypto.createHash('sha256').update(String(e).trim().toLowerCase()).digest('hex');
-
-// Bir siparişi fatura taslağına çevirir. Atlanacaksa { atla: 'sebep' } döner.
-function siparisiHesapla(s, eslesme, oran) {
-  if (s.cancelledAt) return { atla: 'iptal edilmiş' };
-  if (s.test) return { atla: 'test siparişi' };
-  if (s.displayFinancialStatus === 'REFUNDED' || s.displayFinancialStatus === 'PARTIALLY_REFUNDED' || tutar(s.totalRefundedSet) > 0) {
-    return { atla: 'iade var' };
-  }
-  if (s.displayFinancialStatus !== 'PAID') return { atla: `ödeme durumu: ${s.displayFinancialStatus}` };
-  if (s.currencyCode !== 'TRY') return { atla: `para birimi ${s.currencyCode}` };
-  const ulke = (s.shippingAddress || s.billingAddress || {}).countryCodeV2;
-  if (ulke !== 'TR') return { atla: `yurt dışı (${ulke || 'adres yok'})` };
-
-  const gruplar = {};
-  const bilinmeyen = [];
-  for (const k of s.lineItems.nodes) {
-    if (k.currentQuantity !== k.quantity) return { atla: `sipariş sonradan değiştirilmiş (${k.name})` };
-    const vid = k.variant && k.variant.legacyResourceId;
-    const kat = vid && eslesme[vid];
-    if (!kat) { bilinmeyen.push(k.name); continue; }
-    const net = tutar(k.originalTotalSet) - k.discountAllocations.reduce((t, d) => t + tutar(d.allocatedAmountSet), 0);
-    if (!gruplar[kat]) gruplar[kat] = { kurus: 0, adet: 0, urunler: [] };
-    gruplar[kat].kurus += net;
-    gruplar[kat].adet += k.quantity;
-    gruplar[kat].urunler.push(k.name);
-  }
-  if (bilinmeyen.length) return { atla: `eşleme tablosunda olmayan ürün: ${bilinmeyen.join(', ')}` };
-
-  const kargo = s.shippingLines.nodes.reduce((t, k) => t + tutar(k.discountedPriceSet), 0);
-  const kategoriler = Object.keys(gruplar);
-  if (kargo > 0) {
-    if (kategoriler.length > 1) return { atla: `kargo (${H.tlGoster(kargo)} TL) birden fazla kategoriye nasıl dağıtılacak belli değil` };
-    gruplar[kategoriler[0]].kurus += kargo;
-    gruplar[kategoriler[0]].kargo = kargo;
-  }
-
-  const siparisToplam = tutar(s.currentTotalPriceSet);
-  const satirlar = [];
-  for (const kat of ['BLK', 'KLY', 'CRM', 'KZK']) {
-    const g = gruplar[kat];
-    if (!g) continue;
-    if (g.kurus <= 0) return { atla: `${KATEGORI[kat].ad} tutarı 0 TL` };
-    if (kat === 'KZK') {
-      const t = H.tamKdvli(g.kurus);
-      if (t.kdvKurus !== t.parasutKdvKurus) return { atla: 'Paraşüt KDV yuvarlaması 1 kuruş farklı çıkabilir' };
-      if (t.matrahKurus + t.kdvKurus !== g.kurus) return { atla: `Klasik satırı ${H.tlGoster(g.kurus)} TL'yi kuruşu kuruşuna tutmuyor` };
-      satirlar.push({ grup: kat, kod: KATEGORI[kat].tek, birimOnbinde: t.matrahOnbinde, kdv: 20, netKurus: t.matrahKurus, kdvKurus: t.kdvKurus });
-    } else {
-      const a = H.ozelMatrahAyir(g.kurus, oran);
-      if (a.kdvKurus !== a.parasutKdvKurus) return { atla: 'Paraşüt KDV yuvarlaması 1 kuruş farklı çıkabilir' };
-      satirlar.push({ grup: kat, kod: KATEGORI[kat].iscilik, birimOnbinde: a.matrahOnbinde, kdv: 20, netKurus: a.matrahKurus, kdvKurus: a.kdvKurus });
-      satirlar.push({ grup: kat, kod: KATEGORI[kat].gumus, birimOnbinde: a.gumusKurus * 100, kdv: 0, netKurus: a.gumusKurus, kdvKurus: 0 });
+function planiBas(plan, ayrinti) {
+  const satir = (p) => `[${p.no}] ${M.tarihGoster(p.tarih)} — ${H.tlGoster(p.tutar)} TL`;
+  for (const p of plan.hazir) {
+    if (!ayrinti) {
+      const ilce = p.musteri.mevcut ? '' : p.musteri.eksik.length ? `  ⚠ ${p.musteri.eksik.join(' ve ')} boş` : '';
+      console.log(`  ✓ ${satir(p)}  ${p.kategoriler.join(' + ')}${p.musteri.mevcut ? '' : ' — yeni müşteri'}${ilce}`);
+      continue;
     }
+    console.log('─'.repeat(70));
+    console.log(satir(p));
+    for (const [ad, g] of Object.entries(p.gruplar)) {
+      console.log(`  ${ad}: ${H.tlGoster(g.kurus)} TL${g.kargo ? ` (${H.tlGoster(g.kargo)} TL kargo dahil)` : ''} ← ${g.urunler.join(' + ')}`);
+    }
+    for (const x of p.satirlar) {
+      console.log(`    ${x.kod}  birim fiyat ${x.birim.replace('.', ',')}  KDV %${x.kdv}  → ${H.tlGoster(x.net)}${x.kdv ? ` + ${H.tlGoster(x.kdvTutar)} KDV` : ''}`);
+    }
+    console.log(`  Fatura toplamı: ${H.tlGoster(p.tutar)} TL = Shopify tutarı ✓`);
+    const m = p.musteri;
+    console.log(m.mevcut ? `  Müşteri: daha önce bu program açmış (Paraşüt no: ${m.id})`
+      : `  Müşteri: YENİ — il: ${m.il || '(boş)'}, ilçe: ${m.ilce || '(boş)'}${m.eksik.length ? '  ⚠ resmileştirirken seçin' : ''}`);
   }
+  for (const a of plan.atlanan) console.log(`  – [${a.no}] ${M.tarihGoster(a.tarih)} — ${H.tlGoster(a.tutar)} TL  ATLANDI: ${a.sebep}`);
 
-  // Paraşüt ara toplamı satır birim fiyatlarını yuvarlamadan toplayıp sonra yuvarlıyor
-  // (#13820: 61,4417 + 184,3333 = 245,775 → 245,78; satır satır 245,77). İki işçilik
-  // satırının küsuratları böyle denk gelirse fatura 1 kuruş şaşar → sipariş atlanır.
-  const yuvarlanmamisNet = Math.floor((2 * satirlar.reduce((t, x) => t + x.birimOnbinde, 0) + 100) / 200);
-  if (yuvarlanmamisNet !== satirlar.reduce((t, x) => t + x.netKurus, 0)) {
-    return { atla: 'Paraşüt toplamı 1 kuruş farklı çıkar (iki işçilik satırının küsuratı denk geliyor), elle kesin' };
+  console.log('═'.repeat(70));
+  console.log(`${plan.siparisSayisi} sipariş bulundu`);
+  console.log(`Uygulanacak oran: %${M.oranGoster(plan.oran)}`);
+  for (const [t, n] of Object.entries(plan.gunluk)) console.log(`${M.tarihGoster(t)} tarihinde Paraşüt'te zaten ${n} fatura var`);
+  const sayac = {};
+  for (const a of plan.atlanan) {
+    const kisa = a.sebep.replace(/\(.*?\)/g, '').replace(/:.*$/, '').replace(/\s+/g, ' ').trim();
+    sayac[kisa] = (sayac[kisa] || 0) + 1;
   }
-
-  const faturaToplam = satirlar.reduce((t, x) => t + x.netKurus + x.kdvKurus, 0);
-  if (faturaToplam !== siparisToplam) {
-    return { atla: `fatura toplamı (${H.tlGoster(faturaToplam)}) sipariş tutarını (${H.tlGoster(siparisToplam)}) tutmuyor` };
-  }
-  return { gruplar, satirlar, kargo, siparisToplam, faturaToplam, tarih: turkiyeTarihi(s.createdAt) };
-}
-
-function faturaJson(s, h, urunId, musteriId) {
-  return {
-    data: {
-      type: 'sales_invoices',
-      attributes: {
-        item_type: 'invoice',
-        description: `Shopify ${s.name}`,
-        issue_date: h.tarih,
-        due_date: h.tarih,
-        currency: 'TRL',
-      },
-      relationships: {
-        contact: { data: { type: 'contacts', id: musteriId } },
-        details: {
-          data: h.satirlar.map((x) => ({
-            type: 'sales_invoice_details',
-            attributes: { quantity: 1, unit_price: H.onbindeYaz(x.birimOnbinde), vat_rate: x.kdv },
-            relationships: { product: { data: { type: 'products', id: urunId[x.kod] } } },
-          })),
-        },
-      },
-    },
-  };
-}
-
-// Shopify fatura adresinden Paraşüt müşteri kartı. Alan adları gerçek bir Paraşüt
-// müşteri kaydından doğrulandı (musteri-kesif.js). İl/ilçe için iller.js'e bakın.
-function musteriJson(s) {
-  const b = s.billingAddress || {};
-  const ad = [b.firstName, b.lastName].filter(Boolean).join(' ').trim() || b.company;
-  const { il, ilce } = ilIlce(b.city, b.province);
-  const adres = [b.address1, b.address2, b.zip].filter(Boolean).join(' ').trim();
-  return {
-    data: {
-      type: 'contacts',
-      attributes: {
-        name: ad,
-        // Müşterinin gerçek e-postası bilerek yazılmaz: müşteriye fatura e-postası gitmesin.
-        // example.com e-posta almak için hiçbir zaman kullanılamayan, ayrılmış bir alan adıdır
-        // (RFC 2606); bu adrese giden e-posta kimseye ulaşmaz.
-        email: `siparis-${siparisNo(s.name)}@example.com`,
-        contact_type: 'person',
-        account_type: 'customer',
-        tax_number: TCKN_BIREYSEL,
-        city: il,
-        district: ilce,
-        address: adres,
-        phone: b.phone || s.phone || null,
-        is_abroad: false,
-      },
-    },
-  };
-}
-
-// Elle faturalanan siparişleri yerel kayda "elle" olarak ekler. Paraşüt'e bağlanmaz.
-function elleKesildiIsaretle() {
-  const a = process.argv.slice(2);
-  const i = a.indexOf('--elle-kesildi');
-  if (i < 0) return false;
-  // "13565,13566" veya aralık "13577-13584" (ikisi karışık da olabilir)
-  const liste = [];
-  for (const parca of (a[i + 1] || '').split(',').map((x) => x.trim().replace(/#/g, '')).filter(Boolean)) {
-    const m = parca.match(/^(\d+)(?:-(\d+))?$/);
-    if (!m) hata('Örnek: node fatura.js --elle-kesildi 13565,13566  veya  --elle-kesildi 13577-13584');
-    const bas = Number(m[1]), bit = Number(m[2] || m[1]);
-    if (bit < bas || bit - bas > 500) hata(`Aralık hatalı: ${parca}`);
-    for (let n = bas; n <= bit; n++) liste.push(String(n));
-  }
-  if (!liste.length) hata('Örnek: node fatura.js --elle-kesildi 13577-13584');
-  const kayit = kayitOku();
-  for (const x of liste) {
-    const no = `#${x}`;
-    if (kayit[no]) { console.log(`  ${no}: zaten kayıtlı (durum: ${kayit[no].durum}), değiştirilmedi`); continue; }
-    kayit[no] = { durum: 'elle', zaman: new Date().toISOString() };
-    console.log(`  ${no}: elle kesildi olarak işaretlendi, program bu siparişi atlayacak`);
-  }
-  kayitYaz(kayit);
-  return true;
+  console.log(`Atlanacak: ${plan.atlanan.length}${plan.atlanan.length ? ' — ' + Object.entries(sayac).map(([k, v]) => `${v} sipariş (${k})`).join(', ') : ''}`);
+  console.log(`Kesilecek taslak fatura: ${plan.hazir.length}`);
+  if (plan.yeniMusteriSayisi) console.log(`Açılacak yeni müşteri kartı: ${plan.yeniMusteriSayisi}`);
+  const ilcesiz = plan.hazir.filter((p) => !p.musteri.mevcut && p.musteri.eksik.length).map((p) => p.no);
+  if (ilcesiz.length) console.log(`İl/ilçesi bulunamayan (resmileştirirken seçin): ${ilcesiz.join(', ')}`);
 }
 
 async function main() {
-  if (elleKesildiIsaretle()) { rl.close(); return; }
-  const { deneme, siparisler: istenen, adet, tarih } = argumanlar();
-  const ayrinti = !tarih; // toplu çalıştırmada her sipariş tek satır
-  H.kendiniSina();
-  console.log('Hesap testi geçti (1.898 / 2.199 / 2.299 TL örnekleri).');
-  console.log(deneme ? 'MOD: DENEME — Paraşüt\'e hiçbir şey yazılmayacak.\n' : 'MOD: GERÇEK — onayınızdan sonra Paraşüt\'te TASLAK fatura oluşturulacak.\n');
-
-  const env = envOku();
-  const eslesme = JSON.parse(fs.readFileSync(path.join(__dirname, 'urun-kodlari.json'), 'utf8'));
-  const kayit = kayitOku();
-  const musteriler = musteriOku();
-
-  // Katman 1: yarıda kalmış kayıt varsa hiçbir şey yapma, kullanıcıya göster.
-  const takili = Object.entries(kayit).filter(([, v]) => v.durum === 'isleniyor');
-  if (takili.length && !deneme) {
-    console.log('DİKKAT: Önceki bir çalıştırmada yarıda kalmış siparişler var:');
-    for (const [no, v] of takili) console.log(`  ${no} (${v.zaman}) — ${v.not || 'fatura oluşup oluşmadığı bilinmiyor'}`);
-    console.log('\nBu siparişlerin Paraşüt\'te faturası oluşmuş mu, elle kontrol edin.');
-    console.log('Kontrol ettikten sonra invoices.json dosyasında bu satırları Claude ile birlikte düzeltin.\n');
-    hata('Yarıda kalmış kayıtlar çözülmeden gerçek fatura kesilmez.');
-  }
-
-  const oran = await oranSor();
-
-  console.log('\nParaşüt\'e giriş yapılıyor...');
-  const ptoken = await tokenAl(env);
-  const firma = env.PARASUT_COMPANY_ID;
-  const urunId = {};
-  for (const kod of URUN_KODLARI) {
-    const v = await getir(ptoken, `https://api.parasut.com/v4/${firma}/products?filter[code]=${encodeURIComponent(kod)}`);
-    const bulunan = v.data.filter((u) => u.attributes.code === kod);
-    if (bulunan.length !== 1) hata(`Paraşüt'te ${kod} kodlu ürün kartı ${bulunan.length === 0 ? 'bulunamadı' : 'birden fazla'}. Hiçbir şey yapılmadı.`);
-    urunId[kod] = bulunan[0].id;
-  }
-  console.log('7 ürün kartı bulundu.');
-
-  console.log('Shopify\'a giriş yapılıyor...');
-  const stoken = await shopifyTokenAl(env);
-  let siparisler;
-  if (istenen) {
-    siparisler = [];
-    for (const no of istenen) {
-      const s = await siparisGetir(env, stoken, no);
-      if (!s) hata(`Shopify'da ${no} numaralı sipariş bulunamadı. Hiçbir şey yapılmadı.`);
-      siparisler.push(s);
+  const arg = argumanlar();
+  if (arg.elle) {
+    for (const r of M.elleKesildiIsaretle(arg.elle)) {
+      console.log(r.durum === 'işaretlendi' ? `  ${r.no}: elle kesildi olarak işaretlendi, program bu siparişi atlayacak` : `  ${r.no}: zaten kayıtlı (durum: ${r.onceki}), değiştirilmedi`);
     }
-  } else if (tarih) {
-    siparisler = [];
-    for (let g = tarih.bas; g <= tarih.bit; g = turkiyeTarihi(new Date(Date.parse(g + 'T12:00:00+03:00') + 86400000).toISOString())) {
-      siparisler.push(...(await gunSiparisleri(env, stoken, g)).filter((s) => turkiyeTarihi(s.createdAt) === g));
-    }
-  } else {
-    siparisler = await sonSiparisler(env, stoken, adet);
-  }
-  console.log(`${siparisler.length} sipariş okundu.\n`);
-
-  // Katman 2: bu tarihlerde Paraşüt'teki faturaların açıklamalarını oku.
-  const tarihler = [...new Set(siparisler.map((s) => turkiyeTarihi(s.createdAt)))];
-  const parasutAciklamalar = [];
-  const gunlukFatura = {};
-  for (const t of tarihler) {
-    let sayfa = 1, toplamSayfa = 1;
-    gunlukFatura[t] = 0;
-    do {
-      const v = await getir(ptoken, `https://api.parasut.com/v4/${firma}/sales_invoices?filter[issue_date]=${t}&page[size]=25&page[number]=${sayfa}`);
-      toplamSayfa = (v.meta && v.meta.total_pages) || 1;
-      for (const f of v.data) {
-        gunlukFatura[t]++;
-        if (f.attributes.description) parasutAciklamalar.push(f.attributes.description);
-      }
-      sayfa++;
-    } while (sayfa <= toplamSayfa);
-  }
-
-  // Her sipariş için planı hazırla (henüz hiçbir şey yazılmaz).
-  const plan = [];
-  const atlanan = [];
-  let sira = 0;
-  for (const s of siparisler) {
-    sira++;
-    const baslik = `[${sira}/${siparisler.length}] ${s.name} — ${tarihGoster(turkiyeTarihi(s.createdAt))} — ${H.tlGoster(tutar(s.currentTotalPriceSet))} TL`;
-    const detay = (m) => { if (ayrinti) console.log(m); };
-    if (ayrinti) { console.log('─'.repeat(70)); console.log(baslik); }
-    const atla = (sebep) => {
-      console.log(ayrinti ? `  ATLANDI: ${sebep}` : `  – ${baslik}  ATLANDI: ${sebep}`);
-      atlanan.push({ siparis: s.name, sebep });
-    };
-
-    if (siparisNo(s.name) < BASLANGIC_SIPARIS || turkiyeTarihi(s.createdAt) < BASLANGIC_TARIHI) { atla(`#${BASLANGIC_SIPARIS - 1} ve öncesi elle faturalandı`); continue; }
-    if (kayit[s.name]) { atla(`yerel kayıtta var (durum: ${kayit[s.name].durum}${kayit[s.name].fatura_id ? ', fatura no ' + kayit[s.name].fatura_id : ''})`); continue; }
-    const noDeseni = new RegExp(`${s.name.replace(/[^\w#]/g, '')}(?!\\d)`);
-    if (parasutAciklamalar.some((a) => noDeseni.test(a))) { atla('Paraşüt\'te açıklamasında bu sipariş no geçen fatura var'); continue; }
-
-    const h = siparisiHesapla(s, eslesme, oran);
-    if (h.atla) { atla(h.atla); continue; }
-
-    for (const kat of Object.keys(h.gruplar)) {
-      const g = h.gruplar[kat];
-      const kargoNot = g.kargo ? ` (${H.tlGoster(g.kargo)} TL kargo dahil)` : '';
-      detay(`  ${KATEGORI[kat].ad}: ${H.tlGoster(g.kurus)} TL${kargoNot} ← ${g.urunler.join(' + ')}`);
-    }
-    for (const x of h.satirlar) {
-      const kdvNot = x.kdv ? ` + ${H.tlGoster(x.kdvKurus)} KDV` : '';
-      detay(`    ${x.kod}  birim fiyat ${H.onbindeYaz(x.birimOnbinde).replace('.', ',')}  KDV %${x.kdv}  → ${H.tlGoster(x.netKurus)}${kdvNot}`);
-    }
-    detay(`  Fatura toplamı: ${H.tlGoster(h.faturaToplam)} TL = Shopify tutarı ✓`);
-
-    if (!s.email) { atla('siparişte e-posta yok, müşteri eşleştirilemez'); continue; }
-    const musteriAnahtar = epostaAnahtari(s.email);
-    const musteriId = musteriler[musteriAnahtar] || null;
-    let yeniMusteri = null;
-    if (musteriId) {
-      detay(`  Müşteri: daha önce bu program açmış (Paraşüt no: ${musteriId})`);
-    } else {
-      yeniMusteri = musteriJson(s);
-      if (!yeniMusteri.data.attributes.name) { atla('siparişte müşteri adı yok'); continue; }
-      const m = yeniMusteri.data.attributes;
-      detay(`  Müşteri: YENİ açılacak — TCKN ${m.tax_number}, il: ${m.city || '(boş)'}, ilçe: ${m.district || '(boş)'}, e-posta: ${m.email}`);
-    }
-    if (!ayrinti) {
-      const kats = Object.keys(h.gruplar).map((k) => KATEGORI[k].ad).join(' + ');
-      console.log(`  ✓ ${baslik}  ${kats}${yeniMusteri ? ' — yeni müşteri' : ''}`);
-    }
-    plan.push({ s, h, musteriId, musteriAnahtar, yeniMusteri });
-  }
-
-  console.log('═'.repeat(70));
-  if (tarih) console.log(`${tarihGoster(tarih.bas)}${tarih.bit !== tarih.bas ? ' – ' + tarihGoster(tarih.bit) : ''} tarihli ${siparisler.length} sipariş bulundu`);
-  console.log(`Uygulanacak oran: %${oranGoster(oran)}`);
-  for (const t of tarihler) console.log(`${tarihGoster(t)} tarihinde Paraşüt'te zaten ${gunlukFatura[t]} fatura var`);
-  const sebepSayilari = {};
-  for (const a of atlanan) {
-    const kisa = a.sebep.replace(/\(.*?\)/g, '').replace(/:.*$/, '').replace(/\s+/g, ' ').trim();
-    sebepSayilari[kisa] = (sebepSayilari[kisa] || 0) + 1;
-  }
-  console.log(`Atlanacak: ${atlanan.length}${atlanan.length ? ' — ' + Object.entries(sebepSayilari).map(([k, v]) => `${v} sipariş (${k})`).join(', ') : ''}`);
-  console.log(`Kesilecek taslak fatura: ${plan.length}`);
-  const yeniSayisi = new Set(plan.filter((p) => p.yeniMusteri).map((p) => p.musteriAnahtar)).size;
-  if (yeniSayisi) console.log(`Açılacak yeni müşteri kartı: ${yeniSayisi}`);
-
-  if (deneme) {
-    const hazir = plan.map((p) => ({ siparis: p.s.name, tutar: H.kurusYaz(p.h.siparisToplam), fatura: faturaJson(p.s, p.h, urunId, p.musteriId || '(yeni müşteri)') }));
-    fs.writeFileSync(CIKTI_DOSYASI, JSON.stringify({ oran: oran / 100, hazir, atlanan }, null, 2));
-    console.log(`\nDENEME — Paraşüt'e hiçbir şey yazılmadı. Ayrıntılar: ${CIKTI_DOSYASI}\n`);
     rl.close();
     return;
   }
-  if (!plan.length) { console.log('\nKesilecek fatura yok.\n'); rl.close(); return; }
+  const { deneme, kaynak } = arg;
+  console.log(deneme ? 'MOD: DENEME — Paraşüt\'e hiçbir şey yazılmayacak.\n' : 'MOD: GERÇEK — onayınızdan sonra Paraşüt\'te TASLAK fatura oluşturulacak.\n');
 
-  const saniye = Math.ceil((plan.length + yeniSayisi) * 1.4);
+  const takili = M.takiliKayitlar(M.kayitOku());
+  if (takili.length && !deneme) {
+    console.log('DİKKAT: Önceki bir çalıştırmada yarıda kalmış siparişler var:');
+    for (const t of takili) console.log(`  ${t.no} (${t.zaman}) — ${t.not}`);
+    hata('Yarıda kalmış kayıtlar çözülmeden gerçek fatura kesilmez. Paraşüt\'te kontrol edip Claude\'a haber verin.');
+  }
+
+  const oran = await oranSor();
+  console.log('\nParaşüt ve Shopify\'a bağlanılıyor...');
+  const b = await M.baglan(envOku());
+  const siparisler = await M.siparisleriGetir(b, kaynak);
+  console.log(`${siparisler.length} sipariş okundu.\n`);
+  const plan = await M.planla(b, siparisler, oran);
+  planiBas(plan, !kaynak.bas);
+
+  if (deneme) {
+    const dosya = path.join(__dirname, 'deneme-cikti.json');
+    fs.writeFileSync(dosya, JSON.stringify(M.planOzeti(plan), null, 2));
+    console.log(`\nDENEME — Paraşüt'e hiçbir şey yazılmadı. Ayrıntılar: ${dosya}\n`);
+    rl.close();
+    return;
+  }
+  if (!plan.hazir.length) { console.log('\nKesilecek fatura yok.\n'); rl.close(); return; }
+
+  const saniye = Math.ceil((plan.hazir.length + plan.yeniMusteriSayisi) * 1.4);
   console.log(`Tahmini süre: ~${saniye < 90 ? saniye + ' saniye' : Math.ceil(saniye / 60) + ' dakika'}`);
-  const onay = await sor(`\n${plan.length} TASLAK fatura Paraşüt'te oluşturulsun mu? (Resmileştirme yapılmaz.) [e/h] `);
+  const onay = await sor(`\n${plan.hazir.length} TASLAK fatura Paraşüt'te oluşturulsun mu? (Resmileştirme yapılmaz.) [e/h] `);
   rl.close();
   if (onay.toLowerCase() !== 'e') { console.log('\nİptal edildi. Paraşüt\'e hiçbir şey yazılmadı.\n'); return; }
 
-  const sonuc = { tamam: [], hata: [], belirsiz: [] };
-  let i = 0;
-  for (const p of plan) {
-    i++;
-    const no = p.s.name;
-    process.stdout.write(`${i} / ${plan.length} — ${no}... `);
-
-    // Önce "isleniyor" olarak kaydet, sonra yaz (kopan bağlantıda mükerrer fatura olmasın).
-    kayit[no] = { durum: 'isleniyor', zaman: new Date().toISOString(), tutar: H.kurusYaz(p.h.siparisToplam) };
-    kayitYaz(kayit);
-
-    // Aynı müşterinin bu çalıştırmada ikinci siparişi varsa az önce açılan kartı kullan.
-    let musteriId = p.musteriId || musteriler[p.musteriAnahtar];
-    if (!musteriId) {
-      const r = await gonder(ptoken, `https://api.parasut.com/v4/${firma}/contacts`, p.yeniMusteri);
-      if (r.reddedildi) {
-        delete kayit[no]; kayitYaz(kayit);
-        console.log('HATA (müşteri açılamadı)'); console.log(`   ${r.mesaj}`);
-        sonuc.hata.push({ no, sebep: 'müşteri açılamadı' });
-        continue;
-      }
-      if (r.belirsiz) {
-        kayit[no].not = 'müşteri kartı açılırken bağlantı koptu, fatura oluşturulmadı';
-        kayitYaz(kayit);
-        console.log('BELİRSİZ (bağlantı sorunu)');
-        sonuc.belirsiz.push({ no, sebep: r.mesaj });
-        continue;
-      }
-      musteriId = r.veri.data.id;
-      musteriler[p.musteriAnahtar] = musteriId;
-      guvenliYaz(MUSTERI_DOSYASI, musteriler);
-      kayit[no].musteri_id = musteriId;
-      kayitYaz(kayit);
-    }
-
-    const r = await gonder(ptoken, `https://api.parasut.com/v4/${firma}/sales_invoices`, faturaJson(p.s, p.h, urunId, musteriId));
-    if (r.reddedildi) {
-      delete kayit[no]; kayitYaz(kayit);
-      console.log('HATA (Paraşüt faturayı kabul etmedi)'); console.log(`   ${r.mesaj}`);
-      sonuc.hata.push({ no, sebep: 'Paraşüt faturayı kabul etmedi' });
-      continue;
-    }
-    if (r.belirsiz) {
-      kayit[no].not = 'fatura gönderilirken bağlantı koptu — Paraşüt\'te oluşmuş olabilir';
-      kayitYaz(kayit);
-      console.log('BELİRSİZ (bağlantı sorunu)');
-      sonuc.belirsiz.push({ no, sebep: r.mesaj });
-      continue;
-    }
-
-    const f = r.veri.data;
-    const parasutToplam = H.tlKurus(Number(f.attributes.net_total).toFixed(2));
-    kayit[no] = { ...kayit[no], durum: 'tamam', fatura_id: f.id, parasut_toplam: H.kurusYaz(parasutToplam) };
-    delete kayit[no].not;
-    kayitYaz(kayit);
-    if (parasutToplam !== p.h.siparisToplam) {
-      console.log(`tamam AMA TUTAR FARKLI: Paraşüt ${H.tlGoster(parasutToplam)} / Shopify ${H.tlGoster(p.h.siparisToplam)} — taslağı kontrol edin (fatura no ${f.id})`);
-      sonuc.tamam.push({ no, id: f.id, uyari: true });
-    } else {
-      console.log(`tamam (Paraşüt no ${f.id}, ${H.tlGoster(parasutToplam)} TL)`);
-      sonuc.tamam.push({ no, id: f.id });
-    }
-  }
+  const sonuc = await M.uygula(b, plan, ({ i, n, no, durum, mesaj }) => {
+    console.log(`${i} / ${n} — ${no}... ${durum === 'tamam' ? 'tamam' : durum.toUpperCase()} (${mesaj})`);
+  });
+  M.ayarYaz({ sonOran: oran / 100, sonCalisma: new Date().toISOString() });
 
   console.log('═'.repeat(70));
   console.log('ÖZET');
   console.log(`  Oluşturulan taslak fatura: ${sonuc.tamam.length}`);
   const uyarili = sonuc.tamam.filter((x) => x.uyari);
-  if (uyarili.length) console.log(`  Tutarı farklı çıkan (kontrol edin): ${uyarili.map((x) => x.no).join(', ')}`);
-  console.log(`  Paraşüt'ün kabul etmediği: ${sonuc.hata.length}${sonuc.hata.length ? ' — ' + sonuc.hata.map((x) => x.no).join(', ') : ''}`);
-  if (sonuc.belirsiz.length) {
-    console.log(`  BELİRSİZ (Paraşüt'te elle kontrol edin): ${sonuc.belirsiz.map((x) => x.no).join(', ')}`);
-  }
-  console.log(`  Atlanan: ${atlanan.length}`);
-  for (const a of atlanan) console.log(`    ${a.siparis}: ${a.sebep}`);
-  const raporKlasoru = path.join(__dirname, 'raporlar');
-  fs.mkdirSync(raporKlasoru, { recursive: true });
-  const raporDosyasi = path.join(raporKlasoru, `${new Date().toISOString().replace(/[:T]/g, '-').slice(0, 16)}.json`);
-  fs.writeFileSync(raporDosyasi, JSON.stringify({ tarih, oran: oran / 100, ...sonuc, atlanan }, null, 2));
-  console.log(`\nRapor: ${raporDosyasi}`);
+  if (uyarili.length) console.log(`  Tutarı farklı çıkan (kontrol edin): ${uyarili.map((x) => `${x.no} (${x.uyari})`).join(', ')}`);
+  const ilcesiz = sonuc.tamam.filter((x) => x.ilceEksik).map((x) => x.no);
+  if (ilcesiz.length) console.log(`  İl/ilçesi boş (resmileştirirken seçin): ${ilcesiz.join(', ')}`);
+  console.log(`  Paraşüt'ün kabul etmediği: ${sonuc.hata.length}${sonuc.hata.length ? ' — ' + sonuc.hata.map((x) => `${x.no}: ${x.mesaj}`).join(' | ') : ''}`);
+  if (sonuc.belirsiz.length) console.log(`  BELİRSİZ (Paraşüt'te elle kontrol edin): ${sonuc.belirsiz.map((x) => x.no).join(', ')}`);
+  console.log(`  Atlanan: ${plan.atlanan.length}`);
+  for (const a of plan.atlanan) console.log(`    ${a.no}: ${a.sebep}`);
+  const rapor = M.raporYaz({ kaynak, oran: oran / 100, ...sonuc, atlanan: plan.atlanan });
+  console.log(`\nRapor: ${rapor}`);
   console.log('Taslaklar Paraşüt\'te "Satışlar > Faturalar" altında. Resmileştirmeyi oradan elle yapın.\n');
 }
 
-main().catch((e) => hata(e.message));
+main().catch((e) => { rl.close(); hataBasVeCik(e); });
