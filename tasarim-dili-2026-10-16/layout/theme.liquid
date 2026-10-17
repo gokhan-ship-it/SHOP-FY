@@ -280,10 +280,46 @@
 
       Sablondaki eski apple-local-nav kapatildi; onun yerini bu aliyor.
     {%- endcomment -%}
+    {%- comment -%}
+      GENEL BASLIK CUBUGU (17.10.2026)
+
+      Anasayfa ve urun sayfalari disinda kalan her sayfada (merkez sayfa,
+      yasal sayfalar, /policies, iletisim, sepet, arama, 404, hesap,
+      varsayilan koleksiyon/urun sablonlari, GemPages sayfalari) temanin
+      beyaz header'i yerine ayni siyah TT Baslik cikiyor. Bolum grubu:
+      sections/tt-baslik-genel.json; temanin header'i orada
+      header_secici ile CSS'ten gizleniyor, header-group.json'a
+      dokunulmadi. Geri almak icin asagidaki elsif dalini silmek yeter.
+
+      Sablonun kendi icinde zaten TT Baslik olan sayfalarda bu grup
+      basilmiyor; yoksa ayni yerde iki sabit cubuk ust uste biner.
+      Liste: koleksiyon celik-kolyeler, couple-urunler,
+      zaman-kapsulu-bileklik, zaman-kapsulu-kolyeler; sayfa
+      couple-daha-fazla-bilgial, hediye-daha-fazla-bilgial. Anasayfanin
+      cubugu yukarida (tt-anasayfa-cubuk).
+    {%- endcomment -%}
+    {%- liquid
+      assign tt_baslik_sablonda = false
+      if template.name == 'index'
+        assign tt_baslik_sablonda = true
+      elsif template.name == 'collection'
+        case template.suffix
+          when 'celik-kolyeler', 'couple-urunler', 'zaman-kapsulu-bileklik', 'zaman-kapsulu-kolyeler'
+            assign tt_baslik_sablonda = true
+        endcase
+      elsif template.name == 'page'
+        case template.suffix
+          when 'couple-daha-fazla-bilgial', 'hediye-daha-fazla-bilgial'
+            assign tt_baslik_sablonda = true
+        endcase
+      endif
+    -%}
     {%- if template.name == 'product' and template.suffix == 'zaman-kapsulu-couple' -%}
       {% sections 'tt-couple-urun' %}
     {%- elsif tt_urun_sayfa -%}
       {% sections 'tt-urun-cubuk' %}
+    {%- elsif tt_baslik_sablonda == false -%}
+      {% sections 'tt-baslik-genel' %}
     {%- endif -%}
 
     <div class="page-container" id="PageContainer">
