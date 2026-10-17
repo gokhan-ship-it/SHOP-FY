@@ -1,0 +1,116 @@
+{%- comment -%}
+  SEPET IKONU CEKMECEYI ACSIN
+
+  ------------------------------------------------------------------
+  ISTEK
+
+  "Sepet sayfasina yonlendirmesin, alttan sepeti acsin."
+
+  ------------------------------------------------------------------
+  SURUM GECMISI VE BU SURUMUN SEBEBI
+
+  1. surum yalnizca aria-controls="CartDrawer" tasiyan ogeleri
+     yakaliyordu. Yetmedi: magazada header'i yeniden yazan uygulama
+     gomulusu var, oge degistirildiginde bu isaret kaybolabiliyor ve
+     tiklama baglantinin href'ine dusuyordu.
+
+  2. surum bunu cozmek icin kurali "adresi sepet sayfasi olan HER
+     baglanti" seklinde genislettti. Cozdu ama COK GENISTI: sayfadaki
+     ucuncu taraf uygulamalarin (cark, sohbet, kampanya pencereleri)
+     kendi sepet baglantilarini da yakaliyordu. Yakalama evresinde
+     stopPropagation cagirdigimiz icin o uygulamalarin kendi tiklama
+     islevi hic calismiyordu.
+
+  3. surum (bu dosya): kural yeniden daraltildi ama 1. surumun acigi
+     kapatilarak. Artik SADECE temanin kendi sepet kontrolleri
+     yakalaniyor, uc ayri isaretten HERHANGI BIRI yeterli:
+
+       [aria-controls="CartDrawer"]  temanin standart toggle'i
+       a.cart-drawer-button          header'daki sepet ikonu
+                                     (snippets/header-icons.liquid)
+       [data-aln-sepet]              yapiskan urun cubugundaki sepet
+                                     (sections/apple-local-nav.liquid)
+
+     Uc isaretin ayni anda kaybolmasi beklenmiyor; biri gitse digeri
+     yakaliyor. Ve hicbiri uygulama pencerelerinde bulunmadigi icin
+     onlarin islerine karismiyoruz.
+
+  ------------------------------------------------------------------
+  SINIRLAR
+
+  - Ctrl/Cmd/Shift/Alt ile ya da orta tusla tiklama: tarayicinin
+    kendi davranisi korunuyor.
+  - Cekmece DOM'da yoksa (sepet sayfasinin kendisi, ya da
+    settings.cart_type "drawer" degilse) hicbir sey yapilmiyor;
+    baglanti kendi href'ine gidiyor. JS kapaliysa da ayni.
+
+  ------------------------------------------------------------------
+  NASIL
+
+  Dinleyici dugume degil BELGEYE, yakalama evresinde takili; boylece
+  dugme kac kez degistirilirse degistirilsin tiklama yakalaniyor.
+  Temanin kendi dinleyicisi hala duruyorsa cift tetikleme olmasin
+  diye stopPropagation cagriliyor.
+
+  Yapilan is temanin yaptiginin aynisi -- ayni ogenin ayni metotlari:
+
+      onButtonClick(event) {
+        event.preventDefault();
+        this.open ? this.hide() : this.show(event.currentTarget);
+      }
+
+  YUKSELTME BEKLENIYOR: ozel oge tanimlanmadan once tiklanirsa
+  cekmecenin show/hide metotlari henuz yoktur. 2 saniyeye kadar 50ms
+  araliklarla bekleniyor; o sure icinde hazir olmazsa sepet sayfasina
+  gidiliyor.
+
+  Cekmece once kimlikle (#CartDrawer), bulunamazsa etiket adiyla
+  (<cart-drawer>) araniyor.
+
+  sections/header.liquid, snippets/header-icons.liquid ve
+  sections/cart-drawer.liquid dosyalarina DOKUNULMADI.
+{%- endcomment -%}
+<script>
+  (function () {
+    'use strict';
+
+    var YEDEK = {{ routes.cart_url | json }};
+    var SECICI = '[aria-controls="CartDrawer"], a.cart-drawer-button, [data-aln-sepet]';
+
+    function cekmeceyiBul() {
+      return document.getElementById('CartDrawer') ||
+             document.querySelector('cart-drawer');
+    }
+
+    document.addEventListener('click', function (e) {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (e.button !== 0) return;
+
+      var hedef = e.target;
+      if (!hedef || !hedef.closest) return;
+
+      var dugme = hedef.closest(SECICI);
+      if (!dugme) return;
+
+      var cekmece = cekmeceyiBul();
+      if (!cekmece) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      var deneme = 0;
+      (function ac() {
+        if (typeof cekmece.show === 'function') {
+          if (cekmece.hasAttribute('open')) cekmece.hide();
+          else cekmece.show(dugme);
+          return;
+        }
+        if (deneme++ > 40) {
+          window.location.href = dugme.getAttribute('href') || YEDEK;
+          return;
+        }
+        window.setTimeout(ac, 50);
+      })();
+    }, true);
+  })();
+</script>
