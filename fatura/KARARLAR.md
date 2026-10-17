@@ -38,6 +38,7 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
 22. **Resmileştirme (23.09.2026):** Kullanıcı 37 taslağın hepsini e-Arşiv olarak resmileştirdi (Paraşüt: "GÖNDERİLDİ (ENTEGRATÖR)"). Program günlük kullanıma geçti; kılavuz `KULLANIM.md`.
 23. **Program 24.09–04.10 arası kullanılmadı (04.10.2026):** Eleman #13577–#13584'ü elle kesti (son: NX22026000000220, Aylin Barzegar = #13584, 24.09). #13585'ten itibaren ~90 sipariş kesilmedi. `--elle-kesildi` aralık kabul ediyor (`13577-13584`). Açık soru: 7 günden eski siparişlerin fatura tarihi (sipariş tarihi mi, bugün mü) — mali müşavire soruluyor.
 24. **Telafi çalıştırması (04.10.2026):** Elle kesilen 10 fatura eşleştirildi: #13577–#13584 + #13565 (Ecem Doğaner) ve #13566 (Mehmet Yılmaz). Son ikisi programla da kesilmişti → mükerrer; kullanıcı "boşver" dedi, iptal kararı kullanıcıda. `--tarih 2026-09-23:2026-10-04` → 107 taslak, 0 red. Atlanan: 20 önceden kesilmiş, #13626 iptal, #13669 couple seti (elle kesilecek). 28.09'daki tek Paraşüt faturası Delano Turizm (Shopify dışı). Doğru klasör: `~/Downloads/SHOP-FY-claude-new-session-5q510d/fatura` (numarasız).
+25. **Yeni çelik kolye seçenekleri (17.10.2026):** White, Gold, Rose Pink, Ocean Blue ve Couple sürümlerine "316L Çelik" seçeneği eklenmiş (8 varyant) → KLY. Eşleme 86 varyant.
 
 Henüz cevaplanmadı (bu siparişler şimdilik otomatik atlanıp raporlanıyor):
 - Kısmi iade / sonradan değiştirilmiş sipariş
