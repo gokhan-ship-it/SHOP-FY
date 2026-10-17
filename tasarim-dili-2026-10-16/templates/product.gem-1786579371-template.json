@@ -1,0 +1,1559 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "1785341675bc410b78": {
+      "type": "_blocks",
+      "settings": {}
+    },
+    "17820467353ecb21fa": {
+      "type": "_blocks",
+      "settings": {}
+    },
+    "178204677029bcc614": {
+      "type": "_blocks",
+      "settings": {}
+    },
+    "17820468921c079b12": {
+      "type": "_blocks",
+      "settings": {}
+    },
+    "main-product": {
+      "type": "main-product",
+      "blocks": {
+        "badges_BtYbYi": {
+          "type": "badges",
+          "settings": {
+            "show_sold_out": false,
+            "show_save_amount": true,
+            "save_type": "percent"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "title_size": "product-title-md",
+            "title_size_mobile": "product-title-md",
+            "title_tag": "h1",
+            "show_price": true,
+            "show_rating": true
+          }
+        },
+        "liquid_7iEzqH": {
+          "type": "liquid",
+          "settings": {
+            "liquid": "{% render 'tt-akis-seridi',\n   a1: 'Çiple yükle',           i1: 'nfc',\n   a2: 'Zamanı belirle',        i2: 'calendar',\n   a3: 'Vakti gelince açılsın', i3: 'lock-open' %}"
+          }
+        },
+        "size_popup": {
+          "type": "liquid",
+          "settings": {
+            "liquid": "<style>\n  .size-popup-link {\n    font-size: 14px;\n    font-weight: 500;\n    color: inherit;\n    text-decoration: underline;\n    text-underline-offset: 3px;\n    cursor: pointer;\n    white-space: nowrap;\n    line-height: 1;\n  }\n  .size-popup-dialog {\n    border: 0;\n    border-radius: 16px;\n    padding: 0;\n    max-width: 480px;\n    width: calc(100vw - 32px);\n    box-shadow: 0 10px 40px rgba(0,0,0,.2);\n  }\n  .size-popup-dialog::backdrop { background: rgba(0,0,0,.6); }\n  .size-popup-inner { padding: 24px; position: relative; }\n  .size-popup-inner h3 { margin: 0 0 14px; font-size: 18px; }\n  .size-popup-close {\n    position: absolute; top: 12px; right: 12px;\n    border: 0; background: #f2f2f2; color: #171717;\n    border-radius: 50%; width: 30px; height: 30px;\n    cursor: pointer; font-size: 14px; line-height: 1;\n  }\n  @media (max-width: 767px) {\n    .size-popup-link { margin-left: auto; }\n  }\n<\/style>\n{%- assign popup_label = pages['boyutlar'].title | default: 'Boyutlar' -%}\n<a href=\"#\" id=\"SizePopupLink\" class=\"size-popup-link\" style=\"display:none\">{{ popup_label }}<\/a>\n<dialog id=\"SizePopupDialog\" class=\"size-popup-dialog\">\n  <div class=\"size-popup-inner\">\n    <button type=\"button\" id=\"SizePopupClose\" class=\"size-popup-close\" aria-label=\"Kapat\">✕<\/button>\n    <h3>{{ popup_label }}<\/h3>\n    <div class=\"rte\">\n      {%- assign size_mf = product.metafields.custom.boyutlar -%}\n      {% if size_mf != blank %}\n        {{ size_mf | metafield_tag }}\n      {% elsif pages['boyutlar'].content != blank %}\n        {{ pages['boyutlar'].content }}\n      {% else %}\n        <p>Boyut bilgisi yakında eklenecek.<\/p>\n      {% endif %}\n    <\/div>\n  <\/div>\n<\/dialog>\n<script>\n  (function () {\n    var link = document.getElementById('SizePopupLink');\n    var dialog = document.getElementById('SizePopupDialog');\n    if (!link || !dialog) return;\n    var closeBtn = document.getElementById('SizePopupClose');\n    var title = document.querySelector('.product__title .heading');\n    if (title) {\n      title.style.display = 'flex';\n      title.style.alignItems = 'baseline';\n      title.style.flexWrap = 'wrap';\n      title.style.columnGap = '12px';\n      title.appendChild(link);\n    }\n    link.style.display = '';\n    link.addEventListener('click', function (e) { e.preventDefault(); dialog.showModal(); });\n    if (closeBtn) closeBtn.addEventListener('click', function () { dialog.close(); });\n    dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });\n  })();\n<\/script>"
+          }
+        },
+        "vendor": {
+          "type": "text",
+          "disabled": true,
+          "settings": {
+            "icon": "none",
+            "iwidth": "custom",
+            "icon_width": 20,
+            "text": "{{ product.vendor }}",
+            "text_size": "text-base"
+          }
+        },
+        "countdown": {
+          "type": "countdown",
+          "settings": {
+            "heading": "Acele et",
+            "subheading": "İndirimin bitimine kalan süre:",
+            "color_text": "#e11d48",
+            "color_background": "#fff1f2",
+            "gradient_background": ""
+          }
+        },
+        "variant_picker": {
+          "type": "variant_picker",
+          "settings": {
+            "enable_dynamic_variants": true,
+            "show_variant_labels": true,
+            "picker_type": "button",
+            "enable_color_swatches": true,
+            "color_swatch_type": "variant",
+            "size_chart": ""
+          }
+        },
+        "inventory": {
+          "type": "inventory",
+          "disabled": true,
+          "settings": {
+            "inventory_threshold": 15,
+            "show_inventory_transfer": true,
+            "show_inventory_quantity": "low",
+            "color_scheme": "accent-1"
+          }
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_quantity_selector": true,
+            "show_price": true,
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": true,
+            "enable_back_in_stock": true,
+            "show_back_in_stock_name": true,
+            "show_back_in_stock_phone": true
+          }
+        },
+        "payment_trust": {
+          "type": "liquid",
+          "settings": {
+            "liquid": "<style>\n  .payment-trust { display: none; }\n  div.rte:has(.payment-trust) + .product__text,\n  div.rte:has(.payment-trust) + .product__text + .product__text,\n  div.rte:has(.payment-trust) + .product__text + .product__text + .product__text {\n    background: none !important;\n    border: 0 !important;\n    border-radius: 0 !important;\n    padding: 0 !important;\n    margin: 0 0 8px !important;\n  }\n  div.rte:has(.payment-trust) + .product__text .product__text-inner,\n  div.rte:has(.payment-trust) + .product__text + .product__text .product__text-inner,\n  div.rte:has(.payment-trust) + .product__text + .product__text + .product__text .product__text-inner {\n    padding: 0 !important;\n  }\n  div.rte:has(.payment-trust) + .product__text p.rte { color: #15803d; }\n  div.rte:has(.payment-trust) ~ .product__text p.rte:has(a) { display: flex; align-items: baseline; flex: 1; column-gap: 8px; }\n  div.rte:has(.payment-trust) ~ .product__text p.rte a { margin-left: auto; text-decoration: underline; text-underline-offset: 3px; color: inherit; white-space: nowrap; }\n  .tt-sticky-atc { display: none; }\n  @media (max-width: 767px) {\n    .product-sticky-form { display: none !important; }\n    .tt-sticky-atc.is-visible {\n      display: block;\n      position: fixed;\n      left: 12px;\n      right: 12px;\n      bottom: calc(12px + env(safe-area-inset-bottom));\n      z-index: 40;\n    }\n    .tt-sticky-atc button {\n      width: 100%;\n      min-height: 56px;\n      border-radius: 999px;\n      background: #171717;\n      color: #ffffff;\n      font-size: 16px;\n      font-weight: 600;\n      border: 0;\n      box-shadow: 0 8px 28px rgba(0,0,0,.28);\n      cursor: pointer;\n    }\n  }\n<\/style>\n<div class=\"payment-trust\"><\/div>\n<div class=\"tt-sticky-atc\" id=\"TTStickyATC\">\n  <button type=\"button\" id=\"TTStickyATCBtn\">Sepete Ekle<\/button>\n<\/div>\n<script>\n  (function () {\n    var bar = document.getElementById('TTStickyATC');\n    var btn = document.getElementById('TTStickyATCBtn');\n    if (!bar || !btn) return;\n    document.body.appendChild(bar);\n    function realBtn() {\n      var list = document.querySelectorAll('button[name=\"add\"]');\n      for (var i = 0; i < list.length; i++) {\n        if (!list[i].closest('.product-sticky-form') && !list[i].closest('.tt-sticky-atc')) return list[i];\n      }\n      return null;\n    }\n    function update() {\n      var target = realBtn();\n      if (!target) { bar.classList.remove('is-visible'); return; }\n      var r = target.getBoundingClientRect();\n      if (r.bottom < 0) bar.classList.add('is-visible');\n      else bar.classList.remove('is-visible');\n    }\n    btn.addEventListener('click', function () {\n      var target = realBtn();\n      if (target) target.click();\n    });\n    window.addEventListener('scroll', update, { passive: true });\n    window.addEventListener('resize', update);\n    setInterval(update, 400);\n    update();\n  })();\n<\/script>"
+          }
+        },
+        "tick_stock": {
+          "type": "text",
+          "settings": {
+            "icon": "check_mark",
+            "iwidth": "custom",
+            "icon_width": 18,
+            "text": "3 Taksit ile Satın al. (Ödeme adımında seçiniz)",
+            "text_size": "text-sm"
+          }
+        },
+        "text-4": {
+          "type": "text",
+          "settings": {
+            "icon": "check_mark",
+            "iwidth": "custom",
+            "icon_width": 18,
+            "text": "2499₺ üzeri Ücretsiz Kargo",
+            "text_size": "text-sm"
+          }
+        },
+        "text_Rn8tTW": {
+          "type": "text",
+          "settings": {
+            "icon": "check_mark",
+            "iwidth": "custom",
+            "icon_width": 18,
+            "text": "Kolay İade & Değişim <a href=\"\/policies\/refund-policy\">İade Koşulları<\/a>",
+            "text_size": "text-sm"
+          }
+        },
+        "pickup_availability": {
+          "type": "pickup_availability",
+          "settings": {}
+        },
+        "share": {
+          "type": "share",
+          "disabled": true,
+          "settings": {
+            "share_label": "Share",
+            "show_help_desk": true,
+            "help_label": "Need help?",
+            "help_type": "drawer",
+            "help_page": "",
+            "help_page_external": false
+          }
+        },
+        "complementary": {
+          "type": "complementary",
+          "disabled": true,
+          "settings": {
+            "heading": "Birlikte tercih edilenler",
+            "product_limit": 4,
+            "show_vendor": false,
+            "show_price": true
+          }
+        },
+        "sticky_buy_button": {
+          "type": "sticky_buy_button",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "badges_BtYbYi",
+        "title",
+        "liquid_7iEzqH",
+        "size_popup",
+        "vendor",
+        "countdown",
+        "variant_picker",
+        "inventory",
+        "buy_buttons",
+        "payment_trust",
+        "tick_stock",
+        "text-4",
+        "text_Rn8tTW",
+        "pickup_availability",
+        "share",
+        "complementary",
+        "sticky_buy_button"
+      ],
+      "settings": {
+        "enable_sticky_info": true,
+        "media_size": 66,
+        "gallery_layout": "scroll",
+        "thumbnail_position": "beside",
+        "image_ratio": "adapt_first",
+        "image_zoom": "lightbox",
+        "hide_variants": false,
+        "enable_video_autoplay": true,
+        "enable_video_looping": true,
+        "mobile_layout": "full_width",
+        "image_ratio_mobile": "square",
+        "mobile_thumbnail": true,
+        "padding_top": 0,
+        "padding_bottom": 12,
+        "divider": false,
+        "full_width": true,
+        "rounded": false
+      }
+    },
+    "1782046908b16a45cc": {
+      "type": "_blocks",
+      "settings": {}
+    },
+    "device_compat_bar_DwPnVd": {
+      "type": "device-compat-bar",
+      "name": "Cihaz Uyumluluk Şeridi",
+      "settings": {
+        "show_apple": true,
+        "show_android": true,
+        "apple_label": "iOS",
+        "android_label": "Android",
+        "brand_label_gap": 6,
+        "brand_color": "#171717",
+        "brand_size_m": 20,
+        "brand_size_d": 24,
+        "logo_h_m": 18,
+        "logo_h_d": 22,
+        "logo_gap": 10,
+        "text": "",
+        "text_color": "#171717",
+        "text_weight": "500",
+        "text_size_m": 13,
+        "text_size_d": 15,
+        "orta_yazi": "",
+        "mid_icon": "users",
+        "mid_icon_color": "#171717",
+        "mid_icon_size": 20,
+        "mid_gap": 8,
+        "mid_color": "#171717",
+        "mid_weight": "500",
+        "mid_size_m": 13,
+        "mid_size_d": 15,
+        "btn_label": "Cihaz uyumluluğu",
+        "btn_icon_style": "question",
+        "btn_arrow": true,
+        "btn_bg": "#ebebeb",
+        "btn_color": "#171717",
+        "btn_border": false,
+        "btn_border_color": "#d9d9d9",
+        "btn_radius": 10,
+        "btn_pad_x": 14,
+        "btn_pad_y": 9,
+        "btn_gap": 8,
+        "btn_icon_size": 17,
+        "btn_weight": "500",
+        "btn_size_m": 13,
+        "btn_size_d": 15,
+        "pop_title": "Hangi telefonlar uyumlu?",
+        "pop_content": "<p><strong>iPhone:<\/strong> iPhone 7 ve sonrası (iOS 13+) NFC etiketlerini uygulamasız okur.<\/p><p><strong>Android:<\/strong> NFC özelliği olan tüm modeller. Telefonun ayarlarından NFC'nin açık olması yeterlidir.<\/p><p>Cihazınızda NFC olup olmadığını ayarlar bölümünde <strong>NFC<\/strong> araması yaparak kontrol edebilirsiniz.<\/p>",
+        "pop_bg": "#ffffff",
+        "pop_title_color": "#171717",
+        "pop_text_color": "#4b4b4b",
+        "pop_title_size": 19,
+        "pop_text_size": 15,
+        "pop_width": 480,
+        "pop_radius": 16,
+        "pop_pad": 24,
+        "bg": "#ffffff",
+        "border_top": true,
+        "border_bottom": true,
+        "border_color": "#e8e8e8",
+        "gap_m": 10,
+        "gap_d": 20,
+        "max_w_m": 760,
+        "max_w_d": 1240,
+        "edge_m": 16,
+        "edge_d": 32,
+        "p_top_m": 12,
+        "p_bot_m": 12,
+        "p_top_d": 14,
+        "p_bot_d": 14
+      }
+    },
+    "material-features": {
+      "type": "feature-highlights",
+      "blocks": {
+        "feature-1": {
+          "type": "feature",
+          "settings": {
+            "icon": "shield",
+            "title": "316L Cerrahi Çelik & 925 Ayar Gümüş",
+            "text": "<p>Premium malzemelerimiz, takmanızın yıllarca ilk günkü gibi kalmasını sağlar.<\/p>"
+          }
+        },
+        "feature-2": {
+          "type": "feature",
+          "settings": {
+            "icon": "wash",
+            "title": "Suya, Isıya ve Tere Dayanıklı",
+            "text": "<p>Spor yapın, koşun, hatta duş alın — çıkarmanıza gerek yok.<\/p>"
+          }
+        },
+        "feature-3": {
+          "type": "feature",
+          "settings": {
+            "icon": "organic",
+            "title": "Ciltle Dost (Kararma Yapmaz)",
+            "text": "<p>316L çelik paslanmaz ve hassas ciltler için uygundur.<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "feature-1",
+        "feature-2",
+        "feature-3"
+      ],
+      "settings": {
+        "heading": "<strong>Ömür boyu kullanım için<\/strong> tasarlandı.",
+        "heading_color": "#171717",
+        "head_m": 22,
+        "head_gap": 16,
+        "title_color": "#171717",
+        "t_size_m": 15,
+        "text_color": "#4b4b4b",
+        "x_size_m": 13,
+        "ic_size_m": 34,
+        "ic_gap": 12,
+        "r_gap_m": 16,
+        "background_color": "#f7f7f8",
+        "max_width": 760,
+        "p_top_m": 16,
+        "p_bot_m": 8,
+        "desktop_layout": "split",
+        "heading_align_desktop": "left",
+        "head_d": 28,
+        "heading_max_width": 0,
+        "split_ratio": 0.9,
+        "columns_desktop": "1",
+        "stack_icon_desktop": false,
+        "ic_size_d": 40,
+        "t_size_d": 16,
+        "x_size_d": 14,
+        "r_gap_d": 20,
+        "column_gap": 56,
+        "max_width_desktop": 1120,
+        "p_top_d": 40,
+        "p_bot_d": 24
+      }
+    },
+    "product-accordion": {
+      "type": "accordion-cards",
+      "blocks": {
+        "row-1": {
+          "type": "row",
+          "settings": {
+            "title": "Ürün Detayları",
+            "content": "<p>Zincir uzunluğu: 60 cm<br\/>Boyunda duruşu: yaklaşık 32 cm<br\/>316L Cerrahi Çelik veya 925 Ayar Gümüş seçenekleriyle üretilir.<\/p>",
+            "open_by_default": false
+          }
+        },
+        "row-2": {
+          "type": "row",
+          "settings": {
+            "title": "Malzemelerimiz",
+            "content": "<ul><li><strong>316L Cerrahi Çelik<\/strong><\/li><li><strong>925 Ayar Gümüş<\/strong><\/li><li><strong>Suya, ısıya ve tere dayanıklı<\/strong><\/li><li><strong>Ciltle dost (kararma yapmaz)<\/strong><\/li><\/ul><p>316L çelik kararmaz ve paslanmaz, hassas ciltler için uygundur. 925 Ayar Gümüş ürünler kullanım koşullarına bağlı olarak zamanla karakter kazanabilir.<\/p>",
+            "open_by_default": false
+          }
+        },
+        "row-3": {
+          "type": "row",
+          "settings": {
+            "title": "Ömür Boyu Garanti",
+            "content": "<p>316L Çelik ürünlerimiz kararmaz ve paslanmaz, <strong>ömür boyu garantilidir.<\/strong><\/p><p>925 Ayar Gümüş ürünler kullanım koşullarına bağlı olarak zamanla karakter kazanabilir.<\/p>",
+            "open_by_default": false
+          }
+        },
+        "row-4": {
+          "type": "row",
+          "settings": {
+            "title": "Kargo & İade",
+            "content": "<ul><li><strong>2499₺ üzeri ücretsiz kargo<\/strong><\/li><li>Siparişiniz 1-3 iş günü içinde kargoya teslim edilir<\/li><li><strong>14 gün içinde kolay iade<\/strong><\/li><\/ul><p>Ürünü kullanılmamış ve orijinal ambalajında bize ulaştırmanız yeterlidir.<\/p>",
+            "open_by_default": false
+          }
+        }
+      },
+      "block_order": [
+        "row-1",
+        "row-2",
+        "row-3",
+        "row-4"
+      ],
+      "settings": {
+        "heading": "",
+        "heading_color": "#171717",
+        "heading_align": "left",
+        "head_m": 20,
+        "head_d": 26,
+        "head_gap": 16,
+        "card_background": "#ffffff",
+        "card_radius": 16,
+        "c_gap_m": 8,
+        "c_gap_d": 10,
+        "c_pad_x_m": 16,
+        "c_pad_y_m": 14,
+        "c_pad_x_d": 22,
+        "c_pad_y_d": 18,
+        "card_border": false,
+        "card_border_color": "#e5e5e5",
+        "card_shadow": false,
+        "title_color": "#171717",
+        "t_size_m": 15,
+        "t_size_d": 16,
+        "title_weight": "500",
+        "text_color": "#4b4b4b",
+        "x_size_m": 13,
+        "x_size_d": 14,
+        "icon_style": "plus",
+        "icon_color": "#171717",
+        "ic_size": 20,
+        "icon_thickness": 1.5,
+        "one_at_a_time": true,
+        "background_color": "#f7f7f8",
+        "max_width": 760,
+        "max_width_desktop": 900,
+        "p_top_m": 8,
+        "p_bot_m": 20,
+        "p_top_d": 16,
+        "p_bot_d": 40
+      }
+    },
+    "media-story": {
+      "type": "media-feature-card",
+      "blocks": {
+        "feature-1": {
+          "type": "feature",
+          "settings": {
+            "icon": "lock",
+            "title": "Şifreli ve Tamamen Size Özel",
+            "text": "<p>Kapsülünüz yalnızca sizin ve paylaştığınız kişi arasında şifrelenir. Üçüncü kişiler görüntüleyemez.<\/p>"
+          }
+        },
+        "feature-2": {
+          "type": "feature",
+          "settings": {
+            "icon": "devices",
+            "title": "Telefonla Tek Dokunuş",
+            "text": "<p>NFC çipine dokunmanız yeterli. Uygulama indirmeye gerek kalmadan anılarınız anında açılır.<\/p>"
+          }
+        },
+        "feature-3": {
+          "type": "feature",
+          "settings": {
+            "icon": "time",
+            "title": "Dilediğiniz Zaman Açın",
+            "text": "<p>Kapsülü kilitleyin, özel bir güne kadar saklayın; istediğiniz anda yeniden açın.<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "feature-1",
+        "feature-2",
+        "feature-3"
+      ],
+      "settings": {
+        "video": "shopify:\/\/files\/videos\/final.mp4",
+        "autoplay": true,
+        "loop": true,
+        "show_controls": false,
+        "ratio_m": "16 \/ 9",
+        "ratio_d": "16 \/ 9",
+        "media_fit": "cover",
+        "media_background": "#eeeeee",
+        "media_inset": 0,
+        "media_radius": 20,
+        "heading": "Hediye 2.0 ile tanışın",
+        "heading_color": "#171717",
+        "heading_weight": "700",
+        "heading_size_m": 22,
+        "heading_size_d": 30,
+        "gap_heading": 10,
+        "text": "<p>Zaman Kapsülü Kolye, sevdiklerinizle paylaştığınız en özel anıları güvenle saklamanızı sağlar. Fotoğraf, ses ya da mesaj — istediğiniz anıyı kilitleyin, doğru zamanda yeniden açın.<\/p>",
+        "text_color": "#4b4b4b",
+        "text_size_m": 14,
+        "text_size_d": 15,
+        "gap_text": 18,
+        "icon_color": "#171717",
+        "icon_size_m": 34,
+        "icon_size_d": 38,
+        "gap_icon": 12,
+        "row_gap_m": 16,
+        "row_gap_d": 16,
+        "title_color": "#171717",
+        "title_weight": "500",
+        "title_size_m": 15,
+        "title_size_d": 16,
+        "desc_color": "#4b4b4b",
+        "desc_size_m": 13,
+        "desc_size_d": 14,
+        "desktop_layout": "side",
+        "media_position_desktop": "left",
+        "split_ratio_desktop": 55,
+        "media_height_desktop": "ratio",
+        "media_min_height_desktop": 340,
+        "media_inset_desktop": 10,
+        "card_background": "#ffffff",
+        "card_radius": 20,
+        "card_outline": true,
+        "card_border_color": "#e5e5e5",
+        "card_shadow": false,
+        "pad_x_m": 18,
+        "pad_y_m": 20,
+        "pad_x_d": 32,
+        "pad_y_d": 28,
+        "background_color": "#ffffff",
+        "max_width": 760,
+        "max_w_d": 1200,
+        "pad_top_m": 16,
+        "pad_bot_m": 16,
+        "pad_top_d": 32,
+        "pad_bot_d": 32
+      }
+    },
+    "use-cases": {
+      "type": "use-case-cards",
+      "blocks": {
+        "card-1": {
+          "type": "card",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/hf_20260623_083303_c87a7417-52e6-4279-9baf-fde1983b120f.png",
+            "nav_label": "1. Gün",
+            "title": "İlk Gün",
+            "value": "%94",
+            "text": "İlk 24 saat içinde ilk anısını yüklüyor."
+          }
+        },
+        "card-2": {
+          "type": "card",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/hf_20260623_090201_f2c0e8a7-6893-4b15-8a71-e188ddc0f4c8.jpg",
+            "nav_label": "6. Ay",
+            "title": "İlk 6 Ay",
+            "value": "%91",
+            "text": "Ortalama 3 günde bir yeni anı ekliyor."
+          }
+        },
+        "card-3": {
+          "type": "card",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/hf_20260623_062120_aba944f1-a241-44c3-8679-981b5a3cefec.png",
+            "nav_label": "1. Yıl",
+            "title": "İlk 1 Yıl",
+            "value": "%76",
+            "text": "İlk kapsülünü açtıktan sonra yeni bir tarih için tekrar kilitliyor."
+          }
+        },
+        "card-4": {
+          "type": "card",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/hf_20260623_065055_a5b526a4-33ff-436f-82ee-88cd107fb27d.png",
+            "nav_label": "3. Yıl",
+            "title": "İlk 3 Yıl",
+            "value": "%69",
+            "text": "Zaman Kapsülü'ne yeni anılar eklemeye devam ediyor."
+          }
+        }
+      },
+      "block_order": [
+        "card-1",
+        "card-2",
+        "card-3",
+        "card-4"
+      ],
+      "settings": {
+        "eyebrow": "Neden Uzun Ömürlü?",
+        "eyebrow_color": "#9a9a9a",
+        "eyebrow_weight": "500",
+        "eyebrow_upper": false,
+        "eyebrow_ls": 0,
+        "eyebrow_size_m": 13,
+        "eyebrow_size_d": 15,
+        "eyebrow_gap": 10,
+        "heading": "İlk Günden Yıllar Sonraya",
+        "head_color": "#ffffff",
+        "head_weight": "700",
+        "head_align": "center",
+        "head_m": 24,
+        "head_d": 36,
+        "head_gap": 20,
+        "nav_goster": true,
+        "nav_gorunum": "all",
+        "nav_dot": 10,
+        "nav_dot_color": "#5a5e63",
+        "nav_dot_active": "#ffffff",
+        "nav_dot_border": 0,
+        "nav_dot_border_color": "#ffffff",
+        "nav_line": 2,
+        "nav_line_color": "#3a3d41",
+        "nav_label_color": "#9a9a9a",
+        "nav_label_active": "#ffffff",
+        "nav_size_m": 12,
+        "nav_size_d": 14,
+        "nav_label_gap": 8,
+        "nav_gap": 18,
+        "card_w_m": 76,
+        "card_w_d": 32,
+        "desktop_mode": "grid",
+        "columns_d": 4,
+        "gap_m": 12,
+        "gap_d": 16,
+        "edge_m": 16,
+        "edge_d": 32,
+        "card_bg": "#ffffff",
+        "card_radius": 20,
+        "card_pad": 14,
+        "card_border": true,
+        "card_border_color": "#e5e5e5",
+        "card_shadow": false,
+        "show_scrollbar": false,
+        "img_ratio": "1 \/ 1",
+        "img_radius": 14,
+        "img_background": "#eeeeee",
+        "title_color": "#171717",
+        "title_weight": "400",
+        "title_size_m": 19,
+        "title_size_d": 20,
+        "title_gap": 14,
+        "stat_gap_top": 12,
+        "stat_bg": "#f5f5f5",
+        "stat_radius": 12,
+        "stat_pad_x": 14,
+        "stat_pad_y": 14,
+        "stat_align": "center",
+        "stat_gap": 12,
+        "value_color": "#171717",
+        "value_weight": "500",
+        "value_size_m": 22,
+        "value_size_d": 24,
+        "desc_color": "#4b4b4b",
+        "desc_size_m": 13,
+        "desc_size_d": 14,
+        "background_color": "#181B1E",
+        "max_w_m": 760,
+        "max_w_d": 1280,
+        "p_top_m": 24,
+        "p_bot_m": 24,
+        "p_top_d": 48,
+        "p_bot_d": 48
+      }
+    },
+    "product-details": {
+      "type": "product-details",
+      "blocks": {
+        "collapsible_tab-1": {
+          "type": "collapsible_tab",
+          "settings": {
+            "icon": "none",
+            "iwidth": "custom",
+            "icon_width": 24,
+            "heading": "Boyutlar",
+            "content": "<p>Zincir uzunluğu: 60 cm<br\/>Boyunda duruşu: yaklaşık 32 cm<br\/>316L Cerrahi Çelik veya 925 Ayar Gümüş seçenekleriyle üretilir.<\/p>",
+            "metafields": "",
+            "text_size": "text-base"
+          }
+        },
+        "collapsible_tab-2": {
+          "type": "collapsible_tab",
+          "settings": {
+            "icon": "none",
+            "iwidth": "custom",
+            "icon_width": 24,
+            "heading": "Kargo & Teslimat",
+            "content": "<p>2499₺ üzeri siparişlerde kargo ücretsizdir.<br\/>Siparişiniz 1-3 iş günü içinde kargoya teslim edilir.<\/p>",
+            "metafields": "",
+            "text_size": "text-base"
+          }
+        },
+        "collapsible_tab-3": {
+          "type": "collapsible_tab",
+          "settings": {
+            "icon": "none",
+            "iwidth": "custom",
+            "icon_width": 24,
+            "heading": "İade & Değişim",
+            "content": "<p>14 gün içinde kolay iade hakkınız bulunur.<br\/>Ürünü kullanılmamış ve orijinal ambalajında bize ulaştırmanız yeterlidir.<\/p>",
+            "metafields": "",
+            "text_size": "text-base"
+          }
+        },
+        "collapsible_tab-4": {
+          "type": "collapsible_tab",
+          "settings": {
+            "icon": "none",
+            "iwidth": "custom",
+            "icon_width": 24,
+            "heading": "Garanti",
+            "content": "<p>316L Çelik kararmaz ve paslanmaz, ömür boyu garantilidir.<br\/>925 Ayar Gümüş ürünler kullanım koşullarına bağlı olarak zamanla karakter kazanabilir.<\/p>",
+            "metafields": "",
+            "text_size": "text-base"
+          }
+        },
+        "specification": {
+          "type": "specification",
+          "disabled": true,
+          "settings": {
+            "heading": "",
+            "text_size": "text-sm"
+          }
+        }
+      },
+      "block_order": [
+        "collapsible_tab-1",
+        "collapsible_tab-2",
+        "collapsible_tab-3",
+        "collapsible_tab-4",
+        "specification"
+      ],
+      "disabled": true,
+      "settings": {
+        "style": "with-border",
+        "open_first_row": true,
+        "specifications_heading": "Included in the Box",
+        "heading": "Ürün detayları",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "button_label": "",
+        "button_link": "",
+        "button_external": false,
+        "button_icon": true,
+        "highlighted_text": "none",
+        "highlighted_scribble": "circle",
+        "highlighted_reveal": false,
+        "color_text": "",
+        "color_background": "",
+        "gradient_background": "",
+        "color_highlight": "",
+        "gradient_highlight": "",
+        "color_button_text": "",
+        "color_button_background": "",
+        "color_button_gradient": "",
+        "padding_top": 28,
+        "padding_bottom": 28,
+        "divider": false,
+        "full_width": false,
+        "rounded": false
+      }
+    },
+    "custom-ugc-gallery": {
+      "type": "ugc-video-gallery",
+      "blocks": {
+        "video-1": {
+          "type": "video",
+          "settings": {
+            "video": "shopify:\/\/files\/videos\/068ce7c9371a4120961d8749e909009a.mp4",
+            "poster": "shopify:\/\/shop_images\/couplecss_oyk.jpg",
+            "text": ""
+          }
+        },
+        "video-2": {
+          "type": "video",
+          "settings": {
+            "video": "shopify:\/\/files\/videos\/7320ea4b17dd49618a0b570e59b7a2b9.mp4",
+            "text": ""
+          }
+        },
+        "video-3": {
+          "type": "video",
+          "settings": {
+            "video": "shopify:\/\/files\/videos\/Beyza Kararasul Uzun.mp4",
+            "text": ""
+          }
+        },
+        "video-4": {
+          "type": "video",
+          "settings": {
+            "text": ""
+          }
+        },
+        "video-5": {
+          "type": "video",
+          "settings": {
+            "text": ""
+          }
+        },
+        "video-6": {
+          "type": "video",
+          "settings": {
+            "text": ""
+          }
+        }
+      },
+      "block_order": [
+        "video-1",
+        "video-2",
+        "video-3",
+        "video-4",
+        "video-5",
+        "video-6"
+      ],
+      "settings": {
+        "show_rating": true,
+        "rating_number": "4.9",
+        "rating_text": "100.000'den fazla kişi Zaman Kapsülü kullanıyor",
+        "star_color": "#f5a623",
+        "rating_text_color": "#4b4b4b",
+        "heading": "Müşterilerimizden Gerçek Anlar",
+        "heading_color": "#171717",
+        "background_color": "#ffffff",
+        "caption_color": "#4b4b4b",
+        "show_scrollbar": true,
+        "scrollbar_track_color": "#e5e5e5",
+        "scrollbar_thumb_color": "#171717",
+        "scrollbar_thumb_gradient": "linear-gradient(54deg, rgba(114, 255, 179, 1) 14%, rgba(255, 250, 99, 1) 85%)"
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "question-1": {
+          "type": "question",
+          "settings": {
+            "title": "Zaman Kapsülüne başkaları erişebilir mi?",
+            "text": "<p><strong>Hayır.<\/strong><br\/><br\/>Zaman kapsülünüz yalnızca sizin ve paylaştığınız kişi arasında şifrelenir. Üçüncü kişiler tarafından görüntülenemez.<\/p>",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle"
+          }
+        },
+        "question-2": {
+          "type": "question",
+          "settings": {
+            "title": "Çipler sudan etkilenir mi?",
+            "text": "<p><strong>Hayır.<\/strong><br\/><br\/>Kullandığımız çipler suya ve dış etkenlere karşı dayanıklıdır. Günlük kullanımda güvenle kullanılabilir.<\/p>",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle"
+          }
+        },
+        "question-3": {
+          "type": "question",
+          "settings": {
+            "title": "Ürün kilitliyken içerik yüklenebilir mi?",
+            "text": "<p><strong>Evet.<\/strong><br\/><br\/>Kapsül kilitli olsa bile içerik eklemeye devam edebilirsiniz. Tüm içerikler, kapsül açıldığında görüntülenir.<\/p>",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle"
+          }
+        },
+        "question-4": {
+          "type": "question",
+          "settings": {
+            "title": "Tek kullanımlık mı?",
+            "text": "<p><strong>Hayır.<\/strong><br\/><br\/>Kapsül açıldıktan sonra yeniden kilitlenebilir ve tekrar kullanılabilir. Her seferinde yeni bir deneyim sunar.<\/p>",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle"
+          }
+        },
+        "question-5": {
+          "type": "question",
+          "disabled": true,
+          "settings": {
+            "title": "Frequently asked question",
+            "text": "<p>Use this text to answer questions in as much detail as possible for your customers.<\/p>",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle"
+          }
+        },
+        "contact": {
+          "type": "contact",
+          "disabled": true,
+          "settings": {
+            "heading": "Didn’t find your answer?",
+            "text": "<p>Don't hestitate to contact us<\/p>",
+            "show_phone": false,
+            "avatar_height": 60,
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle"
+          }
+        }
+      },
+      "block_order": [
+        "question-1",
+        "question-2",
+        "question-3",
+        "question-4",
+        "question-5",
+        "contact"
+      ],
+      "settings": {
+        "style": "with-background",
+        "heading": "Sıkça Sorulan Sorular",
+        "heading_size": "title-lg tracking-heading",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "<p>Daha fazlası için lütfen <a href=\"#\" title=\"FAQ's\">Destek <\/a>sayfasını ziyaret edin.<\/p>",
+        "button_label": "",
+        "button_link": "",
+        "button_external": false,
+        "button_icon": true,
+        "highlighted_text": "none",
+        "highlighted_scribble": "circle",
+        "highlighted_reveal": false,
+        "color_text": "#ffffff",
+        "color_background": "#171717",
+        "gradient_background": "",
+        "color_highlight": "",
+        "gradient_highlight": "",
+        "color_button_text": "#171717",
+        "color_button_background": "#ffffff",
+        "color_button_gradient": "",
+        "color_overlay": "#ffffff",
+        "overlay_opacity": 4,
+        "padding_top": 84,
+        "padding_bottom": 84,
+        "divider": false,
+        "narrow": false,
+        "rounded": false
+      }
+    },
+    "product-recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "product_limit": 6,
+        "columns": 4,
+        "carousel_on_desktop": true,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "heading": "Bunları da beğenebilirsiniz",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "highlighted_text": "none",
+        "highlighted_scribble": "circle",
+        "highlighted_reveal": false,
+        "color_text": "",
+        "color_background": "",
+        "gradient_background": "",
+        "color_highlight": "",
+        "gradient_highlight": "",
+        "color_button_text": "",
+        "color_button_background": "",
+        "color_button_gradient": "",
+        "padding_top": 0,
+        "padding_bottom": 72,
+        "divider": false,
+        "full_width": false,
+        "rounded": true
+      }
+    },
+    "help-drawer": {
+      "type": "help-drawer",
+      "blocks": {
+        "content-2": {
+          "type": "content",
+          "settings": {
+            "icon": "headphone",
+            "heading": "Canlı Destek",
+            "text": "<p>Anında yanıt alın, beklemeden çözüm bulun.<\/p>",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle",
+            "color_text": "#282828",
+            "color_background": "#f5f5f7",
+            "gradient_background": "",
+            "color_highlight": "#ffddbf",
+            "gradient_highlight": ""
+          }
+        },
+        "content-4": {
+          "type": "content",
+          "settings": {
+            "icon": "phone",
+            "heading": "Telefon ile ulaşın",
+            "text": "<p><\/p><p>Hafta içi 09:30 – 18:00<br\/>0216 606 14 15<br\/><\/p>",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle",
+            "color_text": "#282828",
+            "color_background": "#f5f5f7",
+            "gradient_background": "",
+            "color_highlight": "#ffddbf",
+            "gradient_highlight": ""
+          }
+        },
+        "content-1": {
+          "type": "content",
+          "disabled": true,
+          "settings": {
+            "icon": "rocket",
+            "heading": "Shipping Information",
+            "text": "<p>Use this text to answer questions in as much detail as possible for your customers.<\/p>",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle",
+            "color_text": "#1d1d1d",
+            "color_background": "#f5f5f7",
+            "gradient_background": "",
+            "color_highlight": "#e7e7e7",
+            "gradient_highlight": ""
+          }
+        },
+        "content-3": {
+          "type": "content",
+          "disabled": true,
+          "settings": {
+            "icon": "chat_bubble",
+            "heading": "FAQ’s",
+            "text": "<p>Use this text to answer questions in as much detail as possible for your customers.<\/p>",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle",
+            "color_text": "#fbfbfb",
+            "color_background": "#171717",
+            "gradient_background": "",
+            "color_highlight": "#ffddbf",
+            "gradient_highlight": ""
+          }
+        }
+      },
+      "block_order": [
+        "content-2",
+        "content-4",
+        "content-1",
+        "content-3"
+      ],
+      "settings": {
+        "heading": "Destek, ihtiyacınız olduğunda hazır",
+        "description": "<p>Yardıma ihtiyaç duyduğunuz anda buradayız. Canlı destek üzerinden anında yanıt alabilir veya bizimle doğrudan iletişime geçebilirsiniz.<br\/><\/p>"
+      }
+    },
+    "video-hero": {
+      "type": "video-hero",
+      "blocks": {
+        "slide-1": {
+          "type": "slide",
+          "settings": {
+            "heading": "Video slide 1",
+            "heading_size": "title-lg tracking-heading",
+            "heading_tag": "h2",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle",
+            "highlighted_reveal": false
+          }
+        },
+        "slide-2": {
+          "type": "slide",
+          "settings": {
+            "heading": "Video slide 2",
+            "heading_size": "title-lg tracking-heading",
+            "heading_tag": "h2",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle",
+            "highlighted_reveal": false
+          }
+        },
+        "slide-3": {
+          "type": "slide",
+          "settings": {
+            "heading": "Video slide 3",
+            "heading_size": "title-lg tracking-heading",
+            "heading_tag": "h2",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle",
+            "highlighted_reveal": false
+          }
+        },
+        "slide-4": {
+          "type": "slide",
+          "settings": {
+            "heading": "Video slide 4",
+            "heading_size": "title-lg tracking-heading",
+            "heading_tag": "h2",
+            "highlighted_text": "none",
+            "highlighted_scribble": "circle",
+            "highlighted_reveal": false
+          }
+        }
+      },
+      "block_order": [
+        "slide-1",
+        "slide-2",
+        "slide-3",
+        "slide-4"
+      ],
+      "disabled": true,
+      "settings": {
+        "transparent_header": false,
+        "video_url": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc",
+        "description": "",
+        "enable_video_autoplay": true,
+        "enable_video_looping": true,
+        "content_width": "medium",
+        "video_url_mobile": "",
+        "color_text": "#ffffff",
+        "color_background": "",
+        "gradient_background": "",
+        "color_highlight": "",
+        "gradient_highlight": "",
+        "color_overlay": "#171717",
+        "overlay_opacity": 30,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "divider": false,
+        "full_width": true,
+        "rounded": false
+      }
+    },
+    "recently-viewed": {
+      "type": "recently-viewed",
+      "disabled": true,
+      "settings": {
+        "product_limit": 6,
+        "columns": 4,
+        "carousel_on_desktop": true,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "heading": "Recently Viewed",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "highlighted_text": "none",
+        "highlighted_scribble": "circle",
+        "highlighted_reveal": false,
+        "color_text": "",
+        "color_background": "",
+        "gradient_background": "",
+        "color_highlight": "",
+        "gradient_highlight": "",
+        "color_button_text": "",
+        "color_button_background": "",
+        "color_button_gradient": "",
+        "padding_top": 72,
+        "padding_bottom": 72,
+        "divider": false,
+        "full_width": false,
+        "rounded": false
+      }
+    },
+    "how_it_works_timeline_HbEggP": {
+      "type": "how-it-works-timeline",
+      "blocks": {
+        "step_JCDzcn": {
+          "type": "step",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/gorsel2.png",
+            "title": "Telefonuna dokundur ve bağlan.",
+            "text": "<p>Ürünü telefonuna dokundur ve bir kapsül oluştur.<\/p>"
+          }
+        },
+        "step_7BpyAL": {
+          "type": "step",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/gorsel7.png",
+            "title": "Anılarını yükle.",
+            "text": "<p>Dilediğin kadar fotoğraf, video, ses kaydı ve not ekleyebilirsin.<\/p>"
+          }
+        },
+        "step_YMndDt": {
+          "type": "step",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/gorsel6.png",
+            "title": "Zamanı belirle, kilitle ve hediye et.",
+            "text": "<p>Belirlediğin tarih ve saate kadar geri sayım başlasın.<\/p>"
+          }
+        },
+        "step_JtFyqi": {
+          "type": "step",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/gorsel5.png",
+            "title": "Tam zamanında açılsın.",
+            "text": "<p>Geri sayım sona erdiğinde çipi telefonuna dokundurarak kapsülü açsın.<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "step_JCDzcn",
+        "step_7BpyAL",
+        "step_YMndDt",
+        "step_JtFyqi"
+      ],
+      "name": "Nasıl Çalışır (Akış)",
+      "settings": {
+        "tema": "koyu",
+        "tema_bg": "#181b1e",
+        "tema_eyebrow": "#9a9a9a",
+        "tema_head": "#ffffff",
+        "tema_title": "#ffffff",
+        "tema_text": "#c9c9c9",
+        "tema_dot_bg": "#ffffff",
+        "tema_dot_fg": "#171717",
+        "tema_line": "#3a3d41",
+        "tema_kutu_bg": "#242628",
+        "tema_kutu_border": "#33363a",
+        "tema_media_bg": "#ffffff",
+        "eyebrow": "Zaman Kapsülü",
+        "eyebrow_color": "#8a8a8a",
+        "eyebrow_size": 12,
+        "heading": "Nasıl Çalışır?",
+        "head_color": "#171717",
+        "head_weight": "700",
+        "head_align": "center",
+        "head_m": 26,
+        "head_d": 34,
+        "head_gap": 20,
+        "title_color": "#171717",
+        "title_weight": "600",
+        "title_size_m": 15,
+        "title_size_d": 17,
+        "text_color": "#4b4b4b",
+        "text_size_m": 13,
+        "text_size_d": 15,
+        "show_numbers": true,
+        "dot_bg": "#171717",
+        "dot_color": "#ffffff",
+        "dot_size_m": 26,
+        "dot_size_d": 32,
+        "dot_font_size": 13,
+        "line_color": "#e5e5e5",
+        "line_width": 2,
+        "show_media": true,
+        "media_position": "right",
+        "media_size_m": 88,
+        "media_size_d": 160,
+        "media_ratio": "1 \/ 1",
+        "media_fit": "cover",
+        "media_radius": 12,
+        "media_bg": "#f5f5f5",
+        "desktop_layout": "columns",
+        "columns_d": 4,
+        "row_gap_m": 18,
+        "row_gap_d": 22,
+        "col_gap_m": 12,
+        "col_gap_d": 10,
+        "row_card": false,
+        "row_bg": "#ffffff",
+        "row_radius": 16,
+        "row_pad": 14,
+        "row_border": true,
+        "row_border_color": "#e5e5e5",
+        "background_color": "#ffffff",
+        "max_w_m": 760,
+        "max_w_d": 1080,
+        "edge_m": 16,
+        "edge_d": 32,
+        "p_top_m": 20,
+        "p_bot_m": 20,
+        "p_top_d": 40,
+        "p_bot_d": 40
+      }
+    },
+    "video_slider_kapsul_P4MECP": {
+      "type": "video-slider-kapsul",
+      "blocks": {
+        "slayt_Vyfyaa": {
+          "type": "slayt",
+          "settings": {
+            "video": "shopify:\/\/files\/videos\/hf_20260320_081641_5c9bcd25-fc22-4dc9-a043-a31b657cda8e.mp4",
+            "bos_yazi": "video: 1. slayt",
+            "baslik": "Şifreli ve size özel",
+            "metin": "<p>Kapsülünüz yalnızca sizin ve paylaştığınız kişi arasında şifrelenir.<\/p>"
+          }
+        },
+        "slayt_N9bPkG": {
+          "type": "slayt",
+          "settings": {
+            "video": "shopify:\/\/files\/videos\/hf_20260320_080657_6192cb91-a416-47d4-b2e8-84acd6ceedbe.mp4",
+            "bos_yazi": "video: 2. slayt",
+            "baslik": "Tek dokunuş yeter",
+            "metin": "<p>NFC çipine dokunun, anılarınız uygulama gerekmeden açılsın.<\/p>"
+          }
+        },
+        "slayt_WcYjkR": {
+          "type": "slayt",
+          "settings": {
+            "bos_yazi": "video: 3. slayt",
+            "baslik": "Zamanı siz seçin",
+            "metin": "<p>Kapsülü kilitleyin, belirlediğiniz tarihte açılsın.<\/p>"
+          }
+        },
+        "slayt_3dXjym": {
+          "type": "slayt",
+          "settings": {
+            "bos_yazi": "video: 4. slayt",
+            "baslik": "Ömür boyu dayanıklı",
+            "metin": "<p>316L cerrahi çelik gövde suya, ısıya ve tere dayanıklıdır.<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "slayt_Vyfyaa",
+        "slayt_N9bPkG",
+        "slayt_WcYjkR",
+        "slayt_3dXjym"
+      ],
+      "name": "Videolu Slayt",
+      "settings": {
+        "baslik": "Her gün, her anyanında",
+        "baslik_etiketi": "h2",
+        "hizalama": "center",
+        "baslik_rengi": "#ffffff",
+        "baslik_kalinligi": "700",
+        "baslik_bosluk": 24,
+        "d_yerlesim": "yan",
+        "d_kolon": 46,
+        "d_kolon_arasi": 56,
+        "d_dikey": "center",
+        "d_oran_yan": "1 \/ 1",
+        "d_satir_ic": 16,
+        "d_satir_sol": 24,
+        "cizgi_kalinlik": 2,
+        "cizgi_pasif": "#3a3a3a",
+        "cizgi_aktif": "#ffffff",
+        "d_pasif_renk": "#7b7b7b",
+        "d_aktif_renk": "#ffffff",
+        "d_baslik_pasif": 22,
+        "d_baslik_aktif": 27,
+        "d_metin": 17,
+        "d_metin_renk": "#d5d5d5",
+        "d_nokta_gizle": true,
+        "d_cta_hiza": "left",
+        "d_cta_bosluk": 36,
+        "otomatik_gecis": "masaustu",
+        "bekleme": 6,
+        "ilerleme_goster": true,
+        "oran": "1 \/ 1",
+        "oran_d": "16 \/ 9",
+        "doldurma": "cover",
+        "sahne_arkaplan": "#101010",
+        "video_kose": 20,
+        "gecis_suresi": 300,
+        "otomatik_oynat": true,
+        "oynat_goster": true,
+        "oynat_etiket": "Videoyu oynat veya durdur",
+        "oynat_arkaplan": "#ffffff",
+        "oynat_renk": "#101010",
+        "oynat_boyut": 56,
+        "buton_kenar": 16,
+        "sahne_bosluk": 20,
+        "kart_genislik_m": 78,
+        "kart_genislik_d": 30,
+        "kart_arasi_m": 12,
+        "kart_arasi_d": 16,
+        "kart_arkaplan": "#161616",
+        "kart_kose": 16,
+        "kart_ic_m": 20,
+        "kart_ic_d": 26,
+        "kart_kenarlik": false,
+        "kart_kenarlik_rengi": "#2a2a2a",
+        "kart_baslik_rengi": "#ffffff",
+        "kart_baslik_kalinlik": "700",
+        "kart_baslik_m": 17,
+        "kart_baslik_d": 19,
+        "kart_baslik_bosluk": 10,
+        "metin_rengi": "#c9c9c9",
+        "kart_metin_m": 15,
+        "kart_metin_d": 16,
+        "nokta_goster": true,
+        "nokta_renk": "#4a4a4a",
+        "nokta_aktif": "#ffffff",
+        "nokta_boyut": 9,
+        "nokta_arasi": 10,
+        "nokta_bosluk": 22,
+        "cta_yazi": "",
+        "cta_link": "",
+        "cta_arkaplan": "#ffffff",
+        "cta_yazi_rengi": "#101010",
+        "cta_kenarlik": false,
+        "cta_kenarlik_rengi": "#ffffff",
+        "cta_yuvarlak": true,
+        "cta_kose": 10,
+        "cta_kalinlik": "700",
+        "cta_harf_araligi": 1,
+        "cta_boyut_m": 14,
+        "cta_boyut_d": 15,
+        "cta_yatay": 46,
+        "cta_dikey": 18,
+        "cta_bosluk": 28,
+        "arkaplan": "#000000",
+        "max_w": 1200,
+        "edge_m": 16,
+        "edge_d": 32,
+        "p_top_m": 40,
+        "p_bot_m": 40,
+        "p_top_d": 72,
+        "p_bot_d": 72
+      }
+    },
+    "hediye_omru_4cjEHU": {
+      "type": "hediye-omru",
+      "blocks": {
+        "hediye_tJJCL6": {
+          "type": "hediye",
+          "settings": {
+            "ad": "Çiçek",
+            "omur_ay": "0,5",
+            "durumlar": "0|Yepyeni\n0,3|Kullanılıyor\n0,5|Soldu"
+          }
+        },
+        "hediye_mNqypa": {
+          "type": "hediye",
+          "settings": {
+            "ad": "Parfüm",
+            "gorsel_yeni": "shopify:\/\/shop_images\/hf_20260803_081647_32ef9801-7805-45b1-bb8a-d12e1dbe5b3f_2.png",
+            "gorsel_eski": "shopify:\/\/shop_images\/hf_20260803_082840_897b791c-5b3e-403a-8029-0b8d3796cd91.png",
+            "omur_ay": "6",
+            "durumlar": "0|Yepyeni\n1|Kullanılıyor\n6|Bitti"
+          }
+        },
+        "hediye_BUWWTG": {
+          "type": "hediye",
+          "settings": {
+            "ad": "Cüzdan",
+            "gorsel_yeni": "shopify:\/\/shop_images\/hf_20260803_083609_85051ca3-f532-4ac5-8cb3-30af55b30458_1.png",
+            "gorsel_eski": "shopify:\/\/shop_images\/hf_20260803_083837_cd56e10f-9b7d-470e-9559-1a3e7e05765f_2.png",
+            "omur_ay": "15",
+            "durumlar": "0|Yepyeni\n1|Kullanılıyor\n9|Yıprandı\n12|Çok eskidi"
+          }
+        },
+        "kapsul_7Xjh4z": {
+          "type": "kapsul",
+          "settings": {
+            "ad": "Zaman Kapsülü",
+            "durumlar": "0  | Kilitlendi\n4  | Açılacağı günü bekliyor\n12 | İlk kez açıldı\n18 | Tekrar kilitlendi\n24 | Yeni anılar eklendi\n30 | Anıları büyüyor\n36 | Bir ömür saklanacak"
+          }
+        }
+      },
+      "block_order": [
+        "hediye_tJJCL6",
+        "hediye_mNqypa",
+        "hediye_BUWWTG",
+        "kapsul_7Xjh4z"
+      ],
+      "name": "Hediye Ömrü",
+      "settings": {
+        "baslik": "Çoğu hediye biter. Bu, birikir.",
+        "alt_yazi": "Zaman hediyelere aynı davranmıyor.",
+        "baslik_etiketi": "h2",
+        "hizalama": "left",
+        "baslik_kalinligi": "700",
+        "baslik_rengi": "#ffffff",
+        "alt_rengi": "#b9b9b9",
+        "baslik_bosluk": 32,
+        "max_ay": 36,
+        "slider_etiketi": "Hediyeni aldıktan sonra geçen süre",
+        "sifir_yazi": "1. Gün",
+        "ay_kalibi": "{deger}. Ay",
+        "yil_kalibi": "{deger}. Yıl",
+        "okuma_boyut": 18,
+        "okuma_rengi": "#ffffff",
+        "ray_kalinlik": 6,
+        "ray_rengi": "#333333",
+        "topuz_boyut": 22,
+        "topuz_rengi": "#ffffff",
+        "eksen_rengi": "#7d7d7d",
+        "eksen_boyut": 12,
+        "ipucu_goster": true,
+        "ipucu_yazi": "Kaydır",
+        "ipucu_hiz": 1400,
+        "ipucu_rengi": "#ffffff",
+        "ipucu_boyut": 13,
+        "ipucu_hedef": 25,
+        "kapsul_parla": true,
+        "kapsul_baslangic": 40,
+        "kapsul_artis": 1.7,
+        "vurgu_rengi": "#4ade80",
+        "cubuk_rengi": "#e6e6e6",
+        "cubuk_zemin": "#2b2b2b",
+        "bitti_rengi": "#e5484d",
+        "cubuk_yukseklik": 6,
+        "gecis_suresi": 120,
+        "gorsel_boyut_m": 64,
+        "gorsel_boyut_d": 88,
+        "gorsel_kose": 12,
+        "gorsel_zemin": "#1a1a1a",
+        "ad_rengi": "#ffffff",
+        "ad_boyut_m": 16,
+        "ad_boyut_d": 18,
+        "durum_rengi": "#9a9a9a",
+        "durum_boyut": 14,
+        "durum_genislik": 150,
+        "satir_zemin": "#141414",
+        "satir_kenarlik": false,
+        "satir_kenarlik_rengi": "#2a2a2a",
+        "satir_kose": 14,
+        "satir_dolgu": 12,
+        "satir_ic": 16,
+        "satir_arasi": 10,
+        "liste_bosluk": 28,
+        "final_metin": "",
+        "final_esik": 85,
+        "final_renk": "#ffffff",
+        "final_boyut": 19,
+        "final_bosluk": 24,
+        "mobil_olcek": 80,
+        "masaustu_olcek": 80,
+        "zemin_rengi": "#000000",
+        "max_w": 900,
+        "edge_m": 16,
+        "edge_d": 32,
+        "p_top_m": 40,
+        "p_bot_m": 40,
+        "p_top_d": 72,
+        "p_bot_d": 72
+      }
+    },
+    "urun_alt_cta": {
+      "type": "urun-alt-cta",
+      "name": "Ürün Alt CTA",
+      "settings": {
+        "aktif": true,
+        "etiket": "ZAMAN KAPSÜLÜ",
+        "baslik": "Aklında soru mu kaldı?",
+        "aciklama": "Nasıl çalıştığını, neler yükleyebileceğini ve o gün nasıl açıldığını tek sayfada anlattık.",
+        "bag_metni": "Ürünü öğren",
+        "hedef": "\/pages\/hediye-daha-fazla-bilgi-al",
+        "zemin": "#F5F5F7",
+        "etiket_renk": "#86868B",
+        "baslik_renk": "#1D1D1F",
+        "metin_renk": "#6E6E73",
+        "bag_renk": "#0071E3"
+      }
+    }
+  },
+  "order": [
+    "1785341675bc410b78",
+    "17820467353ecb21fa",
+    "178204677029bcc614",
+    "17820468921c079b12",
+    "main-product",
+    "1782046908b16a45cc",
+    "device_compat_bar_DwPnVd",
+    "material-features",
+    "product-accordion",
+    "media-story",
+    "use-cases",
+    "product-details",
+    "custom-ugc-gallery",
+    "faq",
+    "product-recommendations",
+    "help-drawer",
+    "video-hero",
+    "recently-viewed",
+    "how_it_works_timeline_HbEggP",
+    "video_slider_kapsul_P4MECP",
+    "hediye_omru_4cjEHU",
+    "urun_alt_cta"
+  ]
+}
