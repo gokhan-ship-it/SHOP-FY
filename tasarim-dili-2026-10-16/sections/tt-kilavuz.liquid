@@ -164,8 +164,13 @@
   .ttk-{{ sid }} .ttk-video video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000000; }
 </style>
 
+{%- comment -%}
+  "relative" sart: tema .section zeminini konumlu bir ::before katmaniyla
+  ciziyor; icerik konumlu degilse bu katmanin altinda kalip gorunmuyor.
+  Temanin kendi bolumleri de ic sarmalayicida "relative" kullaniyor.
+{%- endcomment -%}
 <div class="section section--padding">
-  <div class="ttk-{{ sid }}" id="ttk-{{ sid }}">
+  <div class="ttk-{{ sid }} relative" id="ttk-{{ sid }}">
     <div class="ttk-ic">
       {%- for block in section.blocks -%}
         {%- assign b = block.settings -%}
