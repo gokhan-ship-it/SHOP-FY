@@ -1,0 +1,46 @@
+{%- comment -%}
+  TT YASAL STIL -- page.yasal sablonundaki tek tek yasal sayfalar icin
+  tablo gorunumu. Belgelerdeki tablolar .tt-yasal-tablo kutusunda
+  (kendi icinde yatay kayan) geliyor; temanin genel .rte tablo stili
+  hucreleri dikeyde ortalayip daraltiyor. Burada sections/legal-hub
+  ile ayni gorunum veriliyor: hucreler 9em'den dar olmuyor, ustten
+  hizali, kutu cerceveli. Hicbir sey basmiyor, yalnizca stil.
+{%- endcomment -%}
+<style>
+  .page.rte .tt-yasal-tablo {
+    margin: 0 0 1.25em;
+    border: 1px solid #d2d2cd;
+    border-radius: 12px;
+  }
+  .page.rte .tt-yasal-tablo table {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-collapse: collapse;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .page.rte .tt-yasal-tablo th,
+  .page.rte .tt-yasal-tablo td {
+    min-width: 9em;
+    padding: 10px 12px;
+    border: 0;
+    border-bottom: 1px solid #d2d2cd;
+    text-align: left;
+    vertical-align: top;
+  }
+  .page.rte .tt-yasal-tablo th {
+    background: #f5f5f2;
+    font-weight: 600;
+  }
+  .page.rte .tt-yasal-tablo tbody tr:last-child td { border-bottom: 0; }
+  .page.rte p,
+  .page.rte li { overflow-wrap: anywhere; }
+</style>
+
+{% schema %}
+{
+  "name": "Yasal sayfa stili",
+  "settings": []
+}
+{% endschema %}

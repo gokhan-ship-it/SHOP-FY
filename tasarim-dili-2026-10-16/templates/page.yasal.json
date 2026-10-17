@@ -13,9 +13,14 @@
         "narrow": true,
         "rounded": false
       }
+    },
+    "stil": {
+      "type": "tt-yasal-stil",
+      "settings": {}
     }
   },
   "order": [
+    "stil",
     "main-page"
   ]
 }
