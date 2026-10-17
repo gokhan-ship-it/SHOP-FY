@@ -1,0 +1,44 @@
+{
+  "sections": {
+    "liste": {
+      "type": "tt-belge-listesi",
+      "blocks": {
+        "pdf_1": {
+          "type": "pdf",
+          "settings": {
+            "ad": "KVKK ve Açık Rıza",
+            "bag": "https://cdn.shopify.com/s/files/1/0864/8953/0688/files/kvkk_acik_riza.pdf?v=1770927592",
+            "tarih": "14.04.2023"
+          }
+        },
+        "pdf_2": {
+          "type": "pdf",
+          "settings": {
+            "ad": "Üyelik Sözleşmesi",
+            "bag": "https://cdn.shopify.com/s/files/1/0864/8953/0688/files/uyelik_sozlesmesi.pdf?v=1770927723",
+            "tarih": "14.04.2023"
+          }
+        }
+      },
+      "block_order": [
+        "pdf_1",
+        "pdf_2"
+      ],
+      "settings": {
+        "baslik": "Sözleşmeler",
+        "aciklama": "<p>Yürürlükteki sözleşme ve politikalarımıza aşağıdan ulaşabilirsiniz.</p>",
+        "menu": "footer-yasal",
+        "arsiv_baslik": "Önceki sürümler (arşiv, yürürlükte değildir)",
+        "arsiv_not": "<p>Bu belgeler yalnızca kayıt amacıyla saklanmaktadır ve yürürlükte değildir. Güncel metinler yukarıdaki listededir.</p>",
+        "icerik_genislik": 640,
+        "ust_bosluk_m": 32,
+        "alt_bosluk_m": 56,
+        "ust_bosluk_d": 64,
+        "alt_bosluk_d": 96
+      }
+    }
+  },
+  "order": [
+    "liste"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "sections": {
+    "kilavuz": {
+      "type": "tt-kilavuz",
+      "blocks": {
+        "baslik_1": {
+          "type": "baslik",
+          "settings": {
+            "metin": "Couple Kullanım Kılavuzu"
+          }
+        },
+        "metin_2": {
+          "type": "metin",
+          "settings": {
+            "metin": "<p>Kurulumu eksiksiz tamamlamak için videoyu<br/>baştan sona kadar izleyin.</p>"
+          }
+        },
+        "uyari_3": {
+          "type": "uyari",
+          "settings": {
+            "baslik": "Önemli Bilgilendirme",
+            "metin": "<p>Kurulum aşamasında iki ürünün de aynı telefondan kurulması gerekir.</p>"
+          }
+        },
+        "video_4": {
+          "type": "video",
+          "settings": {
+            "video_url": "https://cdn.shopify.com/videos/c/o/v/0701d72e7b724cd89f0dd5e3e6132b9f.mp4",
+            "baslik": "Couple kurulum videosu"
+          }
+        }
+      },
+      "block_order": [
+        "baslik_1",
+        "metin_2",
+        "uyari_3",
+        "video_4"
+      ],
+      "settings": {
+        "icerik_genislik": 560,
+        "govde_font": "inter_n4",
+        "zemin": "#ffffff",
+        "yazi_rengi": "#181b1e",
+        "soluk_renk": "#4d4d4d",
+        "kart_zemin": "#141414",
+        "vurgu_rengi": "#d6ff00",
+        "uyari_zemin": "#d32017",
+        "ust_bosluk_m": 32,
+        "alt_bosluk_m": 48,
+        "ust_bosluk_d": 64,
+        "alt_bosluk_d": 88
+      }
+    }
+  },
+  "order": [
+    "kilavuz"
+  ]
+}

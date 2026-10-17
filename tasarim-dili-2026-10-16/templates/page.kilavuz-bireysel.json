@@ -1,0 +1,95 @@
+{
+  "sections": {
+    "kilavuz": {
+      "type": "tt-kilavuz",
+      "blocks": {
+        "baslik_1": {
+          "type": "baslik",
+          "settings": {
+            "metin": "Bireysel Hediye Kullanım Kılavuzu"
+          }
+        },
+        "metin_2": {
+          "type": "metin",
+          "settings": {
+            "metin": "<p>Kurulumu eksiksiz tamamlamak için bütün videoları baştan sona kadar izleyin.</p>"
+          }
+        },
+        "ara_baslik_3": {
+          "type": "ara_baslik",
+          "settings": {
+            "metin": "1-Satın alan kişinin yapması gerekenler"
+          }
+        },
+        "video_4": {
+          "type": "video",
+          "settings": {
+            "video_url": "https://cdn.shopify.com/videos/c/o/v/401e3fcbb44e46dca459138dc42d9b63.mp4",
+            "baslik": "Satın alan kişinin yapması gerekenler"
+          }
+        },
+        "ara_baslik_5": {
+          "type": "ara_baslik",
+          "settings": {
+            "metin": "2-Hediye edilen kişinin yapması gerekenler"
+          }
+        },
+        "uyari_6": {
+          "type": "uyari",
+          "settings": {
+            "baslik": "Önemli Bilgilendirme",
+            "metin": "<p>Hediye ettiğiniz kişi kapsülün süresi dolmadan <strong>Alıcı Hesabı oluşturmalıdır</strong>.</p>"
+          }
+        },
+        "video_7": {
+          "type": "video",
+          "settings": {
+            "video_url": "https://cdn.shopify.com/videos/c/o/v/4794196263954e63bb1590c84f8fa50b.mp4",
+            "baslik": "Hediye edilen kişinin yapması gerekenler"
+          }
+        },
+        "ara_baslik_8": {
+          "type": "ara_baslik",
+          "settings": {
+            "metin": "3-Çip Nasıl Okutulur"
+          }
+        },
+        "video_9": {
+          "type": "video",
+          "settings": {
+            "video_url": "https://cdn.shopify.com/videos/c/o/v/cd901f3791fa491faa999071da859809.mp4",
+            "baslik": "Çip nasıl okutulur"
+          }
+        }
+      },
+      "block_order": [
+        "baslik_1",
+        "metin_2",
+        "ara_baslik_3",
+        "video_4",
+        "ara_baslik_5",
+        "uyari_6",
+        "video_7",
+        "ara_baslik_8",
+        "video_9"
+      ],
+      "settings": {
+        "icerik_genislik": 560,
+        "govde_font": "inter_n4",
+        "zemin": "#ffffff",
+        "yazi_rengi": "#181b1e",
+        "soluk_renk": "#4d4d4d",
+        "kart_zemin": "#141414",
+        "vurgu_rengi": "#d6ff00",
+        "uyari_zemin": "#d32017",
+        "ust_bosluk_m": 32,
+        "alt_bosluk_m": 48,
+        "ust_bosluk_d": 64,
+        "alt_bosluk_d": 88
+      }
+    }
+  },
+  "order": [
+    "kilavuz"
+  ]
+}

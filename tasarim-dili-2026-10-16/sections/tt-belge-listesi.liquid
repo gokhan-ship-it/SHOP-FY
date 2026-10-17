@@ -1,0 +1,137 @@
+{%- comment -%}
+  TT BELGE LISTESI -- /pages/sozlesmeler (17.10.2026)
+
+  GemPages'teki "Sozlesmeler" sayfasinin yerine gecen sade liste.
+  Sablon: templates/page.sozlesmeler-liste.json. Sayfanin adresi ve
+  handle'i ayni kaliyor; yalnizca sablonu degisiyor.
+
+  Ust kisim bir menuyu listeliyor (varsayilan footer-yasal: merkez
+  sayfa + 7 yasal metin). Boylece footer'daki Yasal sutunu ile bu
+  sayfa hep ayni kalir; menuye eklenen belge burada da gorunur.
+
+  Alttaki "Onceki surumler" bloklari eski PDF'ler icin. PDF'ler
+  Shopify Files'ta duruyor ve silinmiyor; yanlarinda yururlukte
+  olmadiklari aciklaniyor.
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+  assign menu = linklists[s.menu]
+-%}
+
+<style>
+  .ttb-{{ sid }} {
+    padding: {{ s.ust_bosluk_m }}px 20px {{ s.alt_bosluk_m }}px;
+    background: #fff;
+    color: #181b1e;
+  }
+  .ttb-ic-{{ sid }} { max-width: {{ s.icerik_genislik }}px; margin: 0 auto; }
+  .ttb-{{ sid }} h1 {
+    font-family: var(--font-heading-family, inherit);
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 12px;
+  }
+  .ttb-{{ sid }} .ttb-aciklama { color: #4d4d4d; font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
+  .ttb-{{ sid }} .ttb-aciklama p { margin: 0; }
+  .ttb-{{ sid }} ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid #e3e3df; }
+  .ttb-{{ sid }} li { border-bottom: 1px solid #e3e3df; }
+  .ttb-{{ sid }} li a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 4px;
+    color: inherit;
+    text-decoration: none;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+  .ttb-{{ sid }} li a:hover .ttb-ad { text-decoration: underline; }
+  .ttb-{{ sid }} li a:focus-visible { outline: 2px solid #181b1e; outline-offset: 2px; }
+  .ttb-{{ sid }} .ttb-ok { flex: 0 0 auto; width: 18px; height: 18px; }
+  .ttb-{{ sid }} .ttb-ilk .ttb-ad { font-weight: 600; }
+  .ttb-{{ sid }} h2 {
+    font-family: var(--font-heading-family, inherit);
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.3;
+    margin: 40px 0 8px;
+  }
+  .ttb-{{ sid }} .ttb-not { color: #6b6b66; font-size: 14px; line-height: 1.55; margin-bottom: 12px; }
+  .ttb-{{ sid }} .ttb-not p { margin: 0; }
+  .ttb-{{ sid }} .ttb-tarih { color: #6b6b66; font-size: 13px; white-space: nowrap; }
+  @media (min-width: 750px) {
+    .ttb-{{ sid }} { padding: {{ s.ust_bosluk_d }}px 40px {{ s.alt_bosluk_d }}px; }
+    .ttb-{{ sid }} h1 { font-size: 40px; }
+  }
+</style>
+
+<div class="ttb-{{ sid }}">
+  <div class="ttb-ic-{{ sid }}">
+    {%- if s.baslik != blank -%}<h1>{{ s.baslik }}</h1>{%- endif -%}
+    {%- if s.aciklama != blank -%}<div class="ttb-aciklama">{{ s.aciklama }}</div>{%- endif -%}
+
+    {%- if menu.links.size > 0 -%}
+      <ul>
+        {%- for link in menu.links -%}
+          <li{% if forloop.first %} class="ttb-ilk"{% endif %}>
+            <a href="{{ link.url }}">
+              <span class="ttb-ad">{{ link.title }}</span>
+              <svg class="ttb-ok" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      {%- if s.arsiv_baslik != blank -%}<h2>{{ s.arsiv_baslik }}</h2>{%- endif -%}
+      {%- if s.arsiv_not != blank -%}<div class="ttb-not">{{ s.arsiv_not }}</div>{%- endif -%}
+      <ul>
+        {%- for block in section.blocks -%}
+          <li {{ block.shopify_attributes }}>
+            <a href="{{ block.settings.bag }}" target="_blank" rel="noopener">
+              <span class="ttb-ad">{{ block.settings.ad }} (PDF)</span>
+              {%- if block.settings.tarih != blank -%}<span class="ttb-tarih">{{ block.settings.tarih }}</span>{%- endif -%}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Belge listesi",
+  "tag": "section",
+  "class": "tt-belge-listesi",
+  "settings": [
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Sözleşmeler" },
+    { "type": "richtext", "id": "aciklama", "label": "Açıklama" },
+    { "type": "link_list", "id": "menu", "label": "Belgeler (menü)", "default": "footer" },
+    { "type": "text", "id": "arsiv_baslik", "label": "Arşiv başlığı", "default": "Önceki sürümler (arşiv, yürürlükte değildir)" },
+    { "type": "richtext", "id": "arsiv_not", "label": "Arşiv notu" },
+    { "type": "range", "id": "icerik_genislik", "label": "İçerik genişliği", "min": 400, "max": 900, "step": 20, "unit": "px", "default": 640 },
+    { "type": "range", "id": "ust_bosluk_m", "label": "Üst boşluk (telefon)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 32 },
+    { "type": "range", "id": "alt_bosluk_m", "label": "Alt boşluk (telefon)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 56 },
+    { "type": "range", "id": "ust_bosluk_d", "label": "Üst boşluk (masaüstü)", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "alt_bosluk_d", "label": "Alt boşluk (masaüstü)", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "blocks": [
+    {
+      "type": "pdf",
+      "name": "Arşiv PDF",
+      "settings": [
+        { "type": "text", "id": "ad", "label": "Belge adı" },
+        { "type": "url", "id": "bag", "label": "PDF bağlantısı" },
+        { "type": "text", "id": "tarih", "label": "Tarih notu" }
+      ]
+    }
+  ]
+}
+{% endschema %}

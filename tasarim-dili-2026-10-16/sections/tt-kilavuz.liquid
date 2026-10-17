@@ -1,0 +1,290 @@
+{%- comment -%}
+  TT KILAVUZ -- kullanim kilavuzu sayfalari (17.10.2026)
+
+  GemPages'ten tasinan uc sayfanin ortak bolumu:
+    /pages/kullanim-kilavuzu              -> templates/page.kilavuz.json
+    /pages/bireysel-hediye-kullanim-kilavuzu -> templates/page.kilavuz-bireysel.json
+    /pages/couple-hediye-kullanim-kilavuzu   -> templates/page.kilavuz-couple.json
+  Metinler GemPages surumundeki ile birebir (bkz.
+  gempages-cikis/KULLANIM-KILAVUZU.md). Basili kilavuzdaki QR bu
+  adrese gidiyor; sayfalarin adresi ve handle'i degismiyor, yalnizca
+  sablonlari.
+
+  GemPages surumunden farklari:
+  - Icerik her ekran boyutunda gorunuyor. Eskisi yalnizca 767 px ve
+    alti genislikte goruntuleniyordu; masaustu ve tablet bos kaliyordu.
+  - Masaustunde de telefondaki gibi dar, ortalanmis tek sutun
+    (icerik_genislik, varsayilan 560 px).
+  - Kartlar resim degil metin: yazilar ekran okuyuculara ve aramaya
+    aciliyor. Ikonlar asagidaki satir ici SVG'ler.
+  - Resim ve videolar JavaScript beklemeden yukleniyor; GemPages
+    kaldirilinca bozulacak bir sey yok.
+  - Basliklar temanin baslik fontu (Poppins), govde Inter (govde_font).
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+  assign govde_font = s.govde_font
+  assign govde_font_kalin = govde_font | font_modify: 'weight', '600'
+-%}
+
+<style>
+  {{ govde_font | font_face: font_display: 'swap' }}
+  {%- if govde_font_kalin %}
+  {{ govde_font_kalin | font_face: font_display: 'swap' }}
+  {%- endif %}
+
+  .ttk-{{ sid }} {
+    --ttk-yazi: {{ s.yazi_rengi }};
+    --ttk-soluk: {{ s.soluk_renk }};
+    --ttk-kart: {{ s.kart_zemin }};
+    --ttk-vurgu: {{ s.vurgu_rengi }};
+    --ttk-uyari: {{ s.uyari_zemin }};
+    background: {{ s.zemin }};
+    color: var(--ttk-yazi);
+    padding: {{ s.ust_bosluk_m }}px 20px {{ s.alt_bosluk_m }}px;
+    font-family: {{ govde_font.family }}, {{ govde_font.fallback_families }};
+    font-weight: {{ govde_font.weight }};
+  }
+  .ttk-ic-{{ sid }} {
+    max-width: {{ s.icerik_genislik }}px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  .ttk-{{ sid }} .ttk-h1,
+  .ttk-{{ sid }} .ttk-h2,
+  .ttk-{{ sid }} .ttk-kart-baslik,
+  .ttk-{{ sid }} .ttk-uyari-baslik {
+    font-family: var(--font-heading-family, inherit);
+    font-weight: 700;
+    color: inherit;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+  .ttk-{{ sid }} .ttk-h1 {
+    font-size: 30px;
+    line-height: 1.1;
+  }
+  .ttk-{{ sid }} .ttk-h2 {
+    font-size: 18px;
+    line-height: 1.3;
+    margin-top: 16px;
+  }
+  .ttk-{{ sid }} .ttk-metin {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ttk-soluk);
+  }
+  .ttk-{{ sid }} .ttk-metin p { margin: 0; }
+  .ttk-{{ sid }} .ttk-metin strong,
+  .ttk-{{ sid }} .ttk-metin a { color: var(--ttk-yazi); font-weight: 600; }
+  .ttk-{{ sid }} .ttk-metin a { text-decoration: none; }
+
+  /* Kart: GemPages'teki gorsel kartlarin metin hali. */
+  .ttk-{{ sid }} .ttk-kart {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px 12px 12px;
+    border-radius: 16px;
+    background: var(--ttk-kart);
+    color: #fff;
+    text-decoration: none;
+    text-align: left;
+    box-shadow: 0 9px 0 -3px #8f8f8f;
+    margin-bottom: 8px;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .ttk-{{ sid }} .ttk-kart:hover { transform: translateY(-2px); }
+  .ttk-{{ sid }} .ttk-kart:focus-visible { outline: 3px solid var(--ttk-vurgu); outline-offset: 3px; }
+  .ttk-{{ sid }} .ttk-ikon {
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+    background: #000;
+    display: grid;
+    place-items: center;
+  }
+  .ttk-{{ sid }} .ttk-ikon svg { width: 40px; height: 40px; }
+  .ttk-{{ sid }} .ttk-kart-yazi { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .ttk-{{ sid }} .ttk-etiket { font-size: 13px; color: var(--ttk-vurgu); line-height: 1.3; }
+  .ttk-{{ sid }} .ttk-kart-baslik { font-size: 16px; line-height: 1.25; }
+  .ttk-{{ sid }} .ttk-kart-alt { font-size: 14px; color: #d4d4d0; line-height: 1.35; }
+  .ttk-{{ sid }} .ttk-kart-alt strong { color: #fff; font-weight: 600; }
+
+  .ttk-{{ sid }} .ttk-uyari {
+    background: var(--ttk-uyari);
+    color: #fff;
+    border-radius: 16px;
+    padding: 16px 18px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .ttk-{{ sid }} .ttk-uyari p { margin: 0; }
+  .ttk-{{ sid }} .ttk-uyari-baslik { font-size: 17px; margin-bottom: 4px; }
+
+  .ttk-{{ sid }} .ttk-video {
+    margin: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+  }
+  .ttk-{{ sid }} .ttk-video video {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+
+  @media (min-width: 750px) {
+    .ttk-{{ sid }} { padding: {{ s.ust_bosluk_d }}px 40px {{ s.alt_bosluk_d }}px; }
+    .ttk-{{ sid }} .ttk-h1 { font-size: 40px; }
+    .ttk-{{ sid }} .ttk-h2 { font-size: 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ttk-{{ sid }} .ttk-kart { transition: none; }
+    .ttk-{{ sid }} .ttk-kart:hover { transform: none; }
+  }
+</style>
+
+<div class="ttk-{{ sid }}">
+  <div class="ttk-ic-{{ sid }}">
+    {%- for block in section.blocks -%}
+      {%- assign b = block.settings -%}
+      {%- case block.type -%}
+        {%- when 'baslik' -%}
+          {%- if b.metin != blank -%}
+            <h1 class="ttk-h1" {{ block.shopify_attributes }}>{{ b.metin }}</h1>
+          {%- endif -%}
+
+        {%- when 'ara_baslik' -%}
+          {%- if b.metin != blank -%}
+            <h2 class="ttk-h2" {{ block.shopify_attributes }}>{{ b.metin }}</h2>
+          {%- endif -%}
+
+        {%- when 'metin' -%}
+          {%- if b.metin != blank -%}
+            <div class="ttk-metin" {{ block.shopify_attributes }}>{{ b.metin }}</div>
+          {%- endif -%}
+
+        {%- when 'kart' -%}
+          <a class="ttk-kart" href="{{ b.bag | default: '#' }}" {{ block.shopify_attributes }}>
+            <span class="ttk-ikon" aria-hidden="true">
+              {%- case b.ikon -%}
+                {%- when 'couple' -%}
+                  <svg viewBox="0 0 40 40" fill="none"><path d="M14 31.5 6.4 24C3.9 21.5 3.9 17.5 6.4 15c2.4-2.4 6.2-2.4 8.6 0l-1 1 1-1c2.4-2.4 6.2-2.4 8.6 0" stroke="{{ s.vurgu_rengi }}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="m26 34-7.6-7.5c-2.5-2.5-2.5-6.5 0-9 2.4-2.4 6.2-2.4 8.6 0l-1 1 1-1c2.4-2.4 6.2-2.4 8.6 0 2.5 2.5 2.5 6.5 0 9L26 34Z" fill="#e8423b"/></svg>
+                {%- when 'nfc' -%}
+                  <svg viewBox="0 0 40 40" fill="none"><circle cx="10" cy="30" r="3" fill="{{ s.vurgu_rengi }}"/><path d="M10 21a9 9 0 0 1 9 9M10 13a17 17 0 0 1 17 17M10 5a25 25 0 0 1 25 25" stroke="{{ s.vurgu_rengi }}" stroke-width="3" stroke-linecap="round"/></svg>
+                {%- else -%}
+                  <svg viewBox="0 0 40 40" fill="none"><path d="M20 33 9.6 22.7c-3.1-3.1-3.1-8 0-11 3-3 7.8-3 10.4 0 2.6-3 7.4-3 10.4 0 3.1 3 3.1 7.9 0 11L20 33Z" fill="{{ s.vurgu_rengi }}"/><path d="M3 21h10m21 0h3m-6-4 4 4-4 4" stroke="{{ s.vurgu_rengi }}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              {%- endcase -%}
+            </span>
+            <span class="ttk-kart-yazi">
+              {%- if b.etiket != blank -%}<span class="ttk-etiket">{{ b.etiket }}</span>{%- endif -%}
+              <span class="ttk-kart-baslik">{{ b.baslik }}</span>
+              {%- if b.alt_metin != blank -%}<span class="ttk-kart-alt">{{ b.alt_metin }}</span>{%- endif -%}
+            </span>
+          </a>
+
+        {%- when 'uyari' -%}
+          <div class="ttk-uyari" role="note" {{ block.shopify_attributes }}>
+            {%- if b.baslik != blank -%}<p class="ttk-uyari-baslik">{{ b.baslik }}</p>{%- endif -%}
+            {{ b.metin }}
+          </div>
+
+        {%- when 'video' -%}
+          {%- if b.video_url != blank -%}
+            <figure class="ttk-video" {{ block.shopify_attributes }}>
+              {%- comment -%}
+                #t=0.1: kapak gorseli verilmediginde iOS Safari'nin ilk
+                kareyi gostermesi icin. preload=metadata yalnizca ilk
+                kareyi ve sureyi indiriyor, videonun tamamini degil.
+              {%- endcomment -%}
+              <video
+                src="{{ b.video_url }}{% if b.kapak == blank %}#t=0.1{% endif %}"
+                {% if b.kapak != blank %}poster="{{ b.kapak | image_url: width: 1200 }}"{% endif %}
+                controls
+                playsinline
+                preload="metadata"
+                {% if b.baslik != blank %}aria-label="{{ b.baslik | escape }}"{% endif %}
+              ></video>
+            </figure>
+          {%- endif -%}
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Kullanım kılavuzu",
+  "tag": "section",
+  "class": "tt-kilavuz",
+  "settings": [
+    { "type": "range", "id": "icerik_genislik", "label": "İçerik genişliği", "min": 400, "max": 900, "step": 20, "unit": "px", "default": 560 },
+    { "type": "font_picker", "id": "govde_font", "label": "Gövde fontu", "default": "inter_n4" },
+    { "type": "color", "id": "zemin", "label": "Zemin", "default": "#ffffff" },
+    { "type": "color", "id": "yazi_rengi", "label": "Başlık rengi", "default": "#181b1e" },
+    { "type": "color", "id": "soluk_renk", "label": "Metin rengi", "default": "#4d4d4d" },
+    { "type": "color", "id": "kart_zemin", "label": "Kart zemini", "default": "#141414" },
+    { "type": "color", "id": "vurgu_rengi", "label": "Vurgu rengi", "default": "#d6ff00" },
+    { "type": "color", "id": "uyari_zemin", "label": "Uyarı kutusu zemini", "default": "#d32017" },
+    { "type": "range", "id": "ust_bosluk_m", "label": "Üst boşluk (telefon)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 32 },
+    { "type": "range", "id": "alt_bosluk_m", "label": "Alt boşluk (telefon)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 48 },
+    { "type": "range", "id": "ust_bosluk_d", "label": "Üst boşluk (masaüstü)", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "alt_bosluk_d", "label": "Alt boşluk (masaüstü)", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 88 }
+  ],
+  "blocks": [
+    {
+      "type": "baslik",
+      "name": "Sayfa başlığı",
+      "limit": 1,
+      "settings": [ { "type": "text", "id": "metin", "label": "Metin" } ]
+    },
+    {
+      "type": "ara_baslik",
+      "name": "Adım başlığı",
+      "settings": [ { "type": "text", "id": "metin", "label": "Metin" } ]
+    },
+    {
+      "type": "metin",
+      "name": "Metin",
+      "settings": [ { "type": "richtext", "id": "metin", "label": "Metin" } ]
+    },
+    {
+      "type": "kart",
+      "name": "Kart (bağlantı)",
+      "settings": [
+        { "type": "select", "id": "ikon", "label": "İkon", "default": "hediye", "options": [ { "value": "hediye", "label": "Hediye (kalp)" }, { "value": "couple", "label": "Couple (iki kalp)" }, { "value": "nfc", "label": "Çip (NFC)" } ] },
+        { "type": "text", "id": "etiket", "label": "Üst etiket" },
+        { "type": "text", "id": "baslik", "label": "Başlık" },
+        { "type": "inline_richtext", "id": "alt_metin", "label": "Alt metin" },
+        { "type": "url", "id": "bag", "label": "Bağlantı" }
+      ]
+    },
+    {
+      "type": "uyari",
+      "name": "Uyarı kutusu",
+      "settings": [
+        { "type": "text", "id": "baslik", "label": "Başlık" },
+        { "type": "richtext", "id": "metin", "label": "Metin" }
+      ]
+    },
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        { "type": "text", "id": "video_url", "label": "Video adresi (mp4)", "info": "Shopify'a yüklenmiş videonun cdn.shopify.com adresi." },
+        { "type": "text", "id": "baslik", "label": "Erişilebilirlik adı" },
+        { "type": "image_picker", "id": "kapak", "label": "Kapak görseli" }
+      ]
+    }
+  ]
+}
+{% endschema %}
