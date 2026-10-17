@@ -21,7 +21,7 @@
         "heading": {
           "type": "heading",
           "settings": {
-            "heading": "Contact Us",
+            "heading": "İletişim",
             "heading_size": "title-xl tracking-heading",
             "heading_tag": "h1",
             "highlighted_text": "none",
@@ -31,7 +31,7 @@
         "text": {
           "type": "text",
           "settings": {
-            "text": "<p>We'd love to hear from you. Our team is here to help. <br\/>Let your customers get in touch with you by filling out the email form below.</p>",
+            "text": "<p>Sorularınız için bize yazın; formu doldurduğunuzda ekibimiz size e-postayla dönüş yapar.</p>",
             "text_size": "subtext-lg",
             "text_max_size": 32,
             "text_font": "body",
@@ -91,35 +91,35 @@
         "contact-1": {
           "type": "contact",
           "settings": {
-            "heading": "Address",
-            "text": "<p>620 King St W, Toronto, ON M5V 1M7, Canada</p>"
+            "heading": "Adres",
+            "text": "<p><a href=\"https://www.google.com/maps/search/?api=1&query=Ikar+%C4%B0%C5%9F+Merkezi%2C+G%C3%B6ztepe+Mah.+Tepeg%C3%B6z+Sk.+No%3A1%2C+Kad%C4%B1k%C3%B6y%2C+%C4%B0stanbul\" target=\"_blank\" rel=\"noopener\">Göztepe Mah. Tepegöz Sk. Ikar İş Merkezi No:1 İç Kapı No:8 Kadıköy/İstanbul</a></p>"
           }
         },
         "contact-2": {
           "type": "contact",
           "settings": {
-            "heading": "Email",
-            "text": "<p><a href=\"#\" title=\"mailto:contact@yourstore.com\">contact@yourstore.com</a><br\/><a href=\"#\" title=\"mailto:sales@yourstore.com\">sales@yourstore.com</a></p>"
+            "heading": "E-posta",
+            "text": "<p><a href=\"mailto:info@texttonext.com\">info@texttonext.com</a></p>"
           }
         },
         "contact-3": {
           "type": "contact",
           "settings": {
-            "heading": "Phone",
-            "text": "<p><a href=\"#\" title=\"tel:+33 (0) 31-305-210\">+33 (0) 31-305-210<br\/></a>mo – fri: 09:00 – 17:00</p>"
+            "heading": "Telefon",
+            "text": "<p><a href=\"tel:+902166061415\">0216 606 14 15</a><br/>Hafta içi 10:00 – 18:00</p>"
           }
         },
         "media": {
           "type": "media",
           "settings": {
-            "heading": "Follow us"
+            "heading": "Bizi takip edin"
           }
         },
         "custom_field-1": {
           "type": "custom_field",
           "settings": {
             "type": "text",
-            "title": "Phone number",
+            "title": "Telefon numarası",
             "required": false,
             "full_width": false,
             "checked_value": "Yes",
@@ -132,13 +132,13 @@
           "type": "custom_field",
           "settings": {
             "type": "select",
-            "title": "Subject",
+            "title": "Konu",
             "required": false,
             "full_width": false,
             "checked_value": "Yes",
             "unchecked_value": "No",
             "radio_options": "",
-            "select_options": "Product, Order, Press, Other"
+            "select_options": "Ürün, Sipariş, Kapsül ve uygulama, Diğer"
           }
         }
       },
