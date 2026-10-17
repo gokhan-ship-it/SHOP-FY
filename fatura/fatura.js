@@ -180,6 +180,14 @@ function siparisiHesapla(s, eslesme, oran) {
     }
   }
 
+  // Paraşüt ara toplamı satır birim fiyatlarını yuvarlamadan toplayıp sonra yuvarlıyor
+  // (#13820: 61,4417 + 184,3333 = 245,775 → 245,78; satır satır 245,77). İki işçilik
+  // satırının küsuratları böyle denk gelirse fatura 1 kuruş şaşar → sipariş atlanır.
+  const yuvarlanmamisNet = Math.floor((2 * satirlar.reduce((t, x) => t + x.birimOnbinde, 0) + 100) / 200);
+  if (yuvarlanmamisNet !== satirlar.reduce((t, x) => t + x.netKurus, 0)) {
+    return { atla: 'Paraşüt toplamı 1 kuruş farklı çıkar (iki işçilik satırının küsuratı denk geliyor), elle kesin' };
+  }
+
   const faturaToplam = satirlar.reduce((t, x) => t + x.netKurus + x.kdvKurus, 0);
   if (faturaToplam !== siparisToplam) {
     return { atla: `fatura toplamı (${H.tlGoster(faturaToplam)}) sipariş tutarını (${H.tlGoster(siparisToplam)}) tutmuyor` };
