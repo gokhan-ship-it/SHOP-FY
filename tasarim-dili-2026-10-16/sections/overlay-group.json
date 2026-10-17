@@ -288,7 +288,8 @@
         "color_drawer_button_text": "#ffffff",
         "color_drawer_button_background": "#0a0a0a",
         "color_drawer_button_gradient": ""
-      }
+      },
+      "disabled": true
     },
     "mobile-dock": {
       "type": "mobile-dock",
@@ -358,9 +359,14 @@
         "divider": true,
         "rounded": true
       }
+    },
+    "tt_cerez": {
+      "type": "tt-cerez",
+      "settings": {}
     }
   },
   "order": [
+    "tt_cerez",
     "cart-drawer",
     "search-drawer",
     "newsletter-popup",
