@@ -40,13 +40,30 @@ const SIPARISLER = [
   siparis('#13539', '2026-09-19T08:00:00Z', '2399.0', '0.0', [kalem('Noir', '52718833467712', '2399.0')]),
 ];
 
+// Gerçek katalogdan kısaltılmış örnek (ürün no'ları gerçek).
+const urun = (title, status, ...v) => ({ legacyResourceId: title, title, status, variants: { nodes: v.map(([id, t, price]) => ({ legacyResourceId: id, title: t, price })) } });
+const KATALOG = [
+  urun('Astor', 'ACTIVE', ['52718845329728', '316L Cerrahi Çelik', '2299.00']),
+  urun('Chloe', 'ACTIVE', ['52719202238784', '316L Cerrahi Çelik', '2099.00']),
+  urun('Noir', 'ACTIVE', ['52718833467712', '316L Cerrahi Çelik', '2399.00']),
+  urun('Luna', 'ACTIVE', ['52718585610560', '316L Çelik', '2299.00']),
+  urun('Aurora', 'ACTIVE', ['52718870888768', '316L Cerrahi Çelik', '2699.00']),
+  urun('White', 'ACTIVE', ['67749162910016', '316L Çelik', '2699.00'], ['52718929019200', '925 Ayar Gümüş', '3899.00']),
+  urun('Astor + Chloe Couple Zaman Kapsülü', 'ACTIVE', ['51270168052032', 'Default Title', '2898.00']),
+  urun('Noir + Chloe Charm Couple Zaman Kapsülü', 'ACTIVE', ['51270251348288', 'Default Title', '3398.00']),
+  urun('Luna + Aurora Couple Zaman Kapsülü', 'ACTIVE', ['67663049392448', '316L Cerrahi Çelik', '3499.00']),
+  urun('Rose Pink + Nova Couple Zaman Kapsülü', 'DRAFT', ['67782524961088', 'Default Title', '3299.00']),
+];
+
 function sahteFetch(kayit) {
   return async (url, opt = {}) => {
     const cevap = (d, st = 200) => ({ ok: st < 400, status: st, json: async () => d, text: async () => JSON.stringify(d) });
     if (url.includes('api.parasut.com/oauth')) return cevap({ access_token: 'p' });
     if (url.includes('/admin/oauth/access_token')) return cevap({ access_token: 's' });
     if (url.includes('graphql.json')) {
-      const v = JSON.parse(opt.body).variables;
+      const govde = JSON.parse(opt.body);
+      if (govde.query.includes('products(')) return cevap({ data: { products: { pageInfo: { hasNextPage: false }, nodes: KATALOG } } });
+      const v = govde.variables;
       if (v.q && v.q.startsWith('name:')) return cevap({ data: { orders: { nodes: SIPARISLER.filter((s) => s.name === v.q.slice(5)) } } });
       const m = v.q.match(/>='(.{25})' AND created_at:<'(.{25})'/);
       const a = Date.parse(m[1]), b = Date.parse(m[2]);
@@ -147,4 +164,29 @@ test('güvenlik: resmileştirme ve güncelleme engelli', async () => {
     await assert.rejects(gonder('t', `https://api.parasut.com/v4/598490/${u}`, { data: {} }), /GÜVENLİK/);
   }
   await assert.rejects(gonder('t', 'https://api.parasut.com/v4/598490/sales_invoices', { data: { id: '5' } }), /GÜVENLİK/);
+});
+
+test('yeni ürün: eşlenmemişleri bulur, kategori önerir, atama kaydeder', async () => {
+  const dir = ortamKur();
+  const e = JSON.parse(fs.readFileSync(path.join(dir, 'urun-kodlari.json'), 'utf8'));
+  delete e['67749162910016']; // White çelik "yeni" olsun
+  fs.writeFileSync(path.join(dir, 'urun-kodlari.json'), JSON.stringify(e));
+  const { M, b } = await hazirla(dir, { musteri: [], fatura: [] });
+  const yeni = Object.fromEntries((await M.yeniUrunleriBul(b)).map((u) => [u.urun + (u.secenek ? ' / ' + u.secenek : ''), u]));
+  assert.deepStrictEqual(Object.keys(yeni).sort(), ['Astor + Chloe Couple Zaman Kapsülü', 'Luna + Aurora Couple Zaman Kapsülü / 316L Cerrahi Çelik', 'Noir + Chloe Charm Couple Zaman Kapsülü', 'White / 316L Çelik']);
+  assert.strictEqual(yeni['Astor + Chloe Couple Zaman Kapsülü'].oneri, 'BLK');
+  assert.strictEqual(yeni['Noir + Chloe Charm Couple Zaman Kapsülü'].oneri, 'BLK');
+  assert.strictEqual(yeni['Luna + Aurora Couple Zaman Kapsülü / 316L Cerrahi Çelik'].oneri, 'ELLE');
+  assert.strictEqual(yeni['White / 316L Çelik'].oneri, 'KLY');
+  // Taslak ürün siparişte görüldüyse listelenir
+  assert.ok((await M.yeniUrunleriBul(b, new Set(['67782524961088']))).some((u) => u.vid === '67782524961088'));
+
+  const sonuc = M.kategoriAta([{ vid: '51270168052032', kategori: 'BLK', ad: 'Astor + Chloe' }, { vid: '52718845329728', kategori: 'KLY' }]);
+  assert.deepStrictEqual(sonuc.map((x) => x.durum), ['eklendi', 'zaten eşli']);
+  assert.strictEqual(M.eslesmeOku()['52718845329728'], 'BLK', 'mevcut eşleme değişmemeli');
+  assert.throws(() => M.kategoriAta([{ vid: '1', kategori: 'XYZ' }]), /Geçersiz kategori/);
+  // Atanan set artık plana giriyor: 2.898 TL tek bileklik çifti
+  const plan = await M.planla(b, await M.siparisleriGetir(b, { siparisler: ['#13700'] }), 500);
+  assert.strictEqual(plan.hazir.length, 1);
+  assert.deepStrictEqual(plan.hazir[0].kategoriler, ['Bileklik']);
 });

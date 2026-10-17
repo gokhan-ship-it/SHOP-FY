@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { hata, tokenAl, getir, gonder } = require('./ortak');
-const { shopifyTokenAl, sonSiparisler, siparisGetir, gunSiparisleri } = require('./shopify');
+const { shopifyTokenAl, sonSiparisler, siparisGetir, gunSiparisleri, katalog } = require('./shopify');
 const H = require('./hesap');
 const { ilIlceBul } = require('./adres');
 
@@ -20,6 +20,7 @@ const DOSYA = {
   kayit: path.join(KLASOR, 'invoices.json'),
   musteri: path.join(KLASOR, 'musteriler.json'),
   eslesme: path.join(KLASOR, 'urun-kodlari.json'),
+  urunNot: path.join(KLASOR, 'urun-notlari.json'),
   ayar: path.join(KLASOR, 'ayarlar.json'),
   raporlar: path.join(KLASOR, 'raporlar'),
 };
@@ -157,20 +158,21 @@ function siparisiHesapla(s, eslesme, oran) {
 
   const gruplar = {};
   const bilinmeyen = [];
+  const bilinmeyenVid = [];
   const elle = [];
   for (const k of s.lineItems.nodes) {
     if (k.currentQuantity !== k.quantity) return { atla: `sipariş sonradan değiştirilmiş (${k.name})` };
     const vid = k.variant && k.variant.legacyResourceId;
     const kat = vid && eslesme[vid];
     if (kat === 'ELLE') { elle.push(k.name); continue; }
-    if (!kat) { bilinmeyen.push(k.name); continue; }
+    if (!kat) { bilinmeyen.push(k.name); if (vid) bilinmeyenVid.push(vid); continue; }
     const net = tutar(k.originalTotalSet) - k.discountAllocations.reduce((t, d) => t + tutar(d.allocatedAmountSet), 0);
     if (!gruplar[kat]) gruplar[kat] = { kurus: 0, adet: 0, urunler: [] };
     gruplar[kat].kurus += net;
     gruplar[kat].adet += k.quantity;
     gruplar[kat].urunler.push(k.name);
   }
-  if (bilinmeyen.length) return { atla: `eşleme tablosunda olmayan ürün: ${bilinmeyen.join(', ')}`, bilinmeyen: true };
+  if (bilinmeyen.length) return { atla: `eşleme tablosunda olmayan ürün: ${bilinmeyen.join(', ')}`, bilinmeyen: true, vidler: bilinmeyenVid };
   if (elle.length) return { atla: `elle kesilecek ürün: ${elle.join(', ')}` };
 
   const kargo = s.shippingLines.nodes.reduce((t, k) => t + tutar(k.discountedPriceSet), 0);
@@ -320,7 +322,7 @@ async function planla(b, siparisler, oran, ilerleme = () => {}) {
     if (aciklamalar.some((a) => noDeseni.test(a))) { atla('Paraşüt\'te bu sipariş no ile fatura var', { tur: 'kesildi' }); continue; }
 
     const h = siparisiHesapla(s, eslesme, oran);
-    if (h.atla) { atla(h.atla, { tur: h.bilinmeyen ? 'yeni-urun' : 'kontrol' }); continue; }
+    if (h.atla) { atla(h.atla, h.bilinmeyen ? { tur: 'yeni-urun', vidler: h.vidler } : { tur: 'kontrol' }); continue; }
     if (!s.email) { atla('siparişte e-posta yok, müşteri eşleştirilemez', { tur: 'kontrol' }); continue; }
 
     const musteriAnahtar = epostaAnahtari(s.email);
@@ -348,6 +350,85 @@ async function planla(b, siparisler, oran, ilerleme = () => {}) {
 
 // Planı istemciye göndermek için iç alanlardan arındırır.
 const planOzeti = (plan) => ({ ...plan, hazir: plan.hazir.map(({ _ic, ...p }) => p) });
+
+// ---------------------------------------------------------------- yeni ürün
+
+const KATEGORI_SECENEKLERI = {
+  BLK: 'Bileklik (işçilik %20 + gümüş %0)',
+  KLY: 'Kolye (işçilik %20 + gümüş %0)',
+  CRM: 'Charm (işçilik %20 + gümüş %0)',
+  KZK: 'Klasik Zaman Kapsülü (tek satır, %20)',
+  ELLE: 'Program kesmesin, elle keseceğim',
+};
+
+// Ürün adından kategori önerisi. Sadece öneri; son karar kullanıcının.
+function kategoriOner(urun, katalogListesi, eslesme) {
+  const ad = urun.title;
+  const urununKategorisi = (baslik) => {
+    const bulunan = katalogListesi.find((p) => p.title.trim().toLocaleLowerCase('tr-TR') === baslik.trim().toLocaleLowerCase('tr-TR'));
+    if (!bulunan) return null;
+    const kats = new Set(bulunan.variants.nodes.map((v) => eslesme[v.legacyResourceId]).filter((k) => k && k !== 'ELLE'));
+    return kats.size === 1 ? [...kats][0] : null;
+  };
+  if (ad.includes('+')) {
+    // "Astor + Chloe Couple Zaman Kapsülü" → ["Astor", "Chloe"]; "Noir + Chloe Charm ..." → "Chloe Charm" / "Chloe"
+    const parcalar = ad.split('+').map((x) => x.replace(/couple.*$/i, '').replace(/zaman kaps[uü]l[uü].*$/i, '').trim());
+    const kats = parcalar.map((p) => urununKategorisi(p) || urununKategorisi(p.split(' ')[0]));
+    if (kats.every(Boolean) && new Set(kats).size === 1) return { kategori: kats[0], neden: `setteki iki ürün de ${KATEGORI[kats[0]].ad.toLocaleLowerCase('tr-TR')}` };
+    return { kategori: 'ELLE', neden: kats.every(Boolean) ? 'set farklı kategorilerden ürün içeriyor' : 'setin içeriği tanınamadı' };
+  }
+  // Aynı ürünün başka seçeneği eşlenmişse onu öner ("Rose Pink - 316L Çelik" → Rose Pink'in gümüşü KLY)
+  const kardes = new Set(urun.variants.nodes.map((v) => eslesme[v.legacyResourceId]).filter(Boolean));
+  if (kardes.size === 1) return { kategori: [...kardes][0], neden: 'aynı ürünün diğer seçeneğiyle aynı' };
+  const kucuk = ad.toLocaleLowerCase('tr-TR');
+  if (/klasik zaman kaps/.test(kucuk)) return { kategori: 'KZK', neden: 'ürün adı' };
+  if (/bileklik|zincir/.test(kucuk)) return { kategori: 'BLK', neden: 'ürün adı' };
+  if (/kolye/.test(kucuk)) return { kategori: 'KLY', neden: 'ürün adı' };
+  if (/charm/.test(kucuk)) return { kategori: 'CRM', neden: 'ürün adı' };
+  const tekKelime = urununKategorisi(ad.replace(/couple/i, '').trim());
+  if (tekKelime) return { kategori: tekKelime, neden: 'aynı adlı ürünle aynı' };
+  return { kategori: null, neden: 'öneri yok' };
+}
+
+// Shopify kataloğunda eşleme tablosunda olmayan seçenekler.
+// Taslak/arşivdeki ürünler sadece siparişlerde görüldüyse listelenir (gorulenler: Set(vid)).
+async function yeniUrunleriBul(b, gorulenler = new Set()) {
+  const eslesme = eslesmeOku();
+  const liste = await katalog(b.env, b.stoken);
+  const yeni = [];
+  for (const urun of liste) {
+    for (const v of urun.variants.nodes) {
+      const vid = v.legacyResourceId;
+      if (eslesme[vid]) continue;
+      if (urun.status !== 'ACTIVE' && !gorulenler.has(vid)) continue;
+      const oneri = kategoriOner(urun, liste, eslesme);
+      yeni.push({
+        vid, urun: urun.title, secenek: v.title === 'Default Title' ? '' : v.title, fiyat: v.price,
+        durum: urun.status, siparisteGoruldu: gorulenler.has(vid), oneri: oneri.kategori, oneriNedeni: oneri.neden,
+      });
+    }
+  }
+  return yeni;
+}
+
+// atamalar: [{ vid, kategori, ad }]. Sadece eşlenmemiş seçenekler atanabilir;
+// mevcut eşlemeyi değiştirmek bilinçli bir karar olduğu için burada yapılmaz.
+function kategoriAta(atamalar) {
+  const eslesme = eslesmeOku();
+  const notlar = jsonOku(DOSYA.urunNot, {});
+  const sonuc = [];
+  for (const { vid, kategori, ad } of atamalar) {
+    if (!/^\d+$/.test(String(vid))) hata(`Geçersiz ürün no: ${vid}`);
+    if (!KATEGORI_SECENEKLERI[kategori]) hata(`Geçersiz kategori: ${kategori}`);
+    if (eslesme[vid]) { sonuc.push({ vid, durum: 'zaten eşli', kategori: eslesme[vid] }); continue; }
+    eslesme[vid] = kategori;
+    notlar[vid] = { ad: String(ad || '').slice(0, 200), kategori, zaman: new Date().toISOString() };
+    sonuc.push({ vid, durum: 'eklendi', kategori });
+  }
+  guvenliYaz(DOSYA.eslesme, eslesme);
+  guvenliYaz(DOSYA.urunNot, notlar);
+  return sonuc;
+}
 
 // ---------------------------------------------------------------- yazma
 
@@ -438,9 +519,10 @@ function raporYaz(veri) {
 }
 
 module.exports = {
-  KATEGORI, BASLANGIC_SIPARIS, BASLANGIC_TARIHI, DOSYA,
+  KATEGORI, KATEGORI_SECENEKLERI, BASLANGIC_SIPARIS, BASLANGIC_TARIHI, DOSYA,
   siparisNo, turkiyeTarihi, bugun, gunEkle, tarihGoster, oranGoster,
   kayitOku, kayitYaz, musteriOku, eslesmeOku, ayarOku, ayarYaz, guvenliYaz, jsonOku,
   takiliKayitlar, siparisListesiCoz, elleKesildiIsaretle, tarihAraligiDogrula,
+  yeniUrunleriBul, kategoriAta, kategoriOner,
   baglan, siparisleriGetir, siparisiHesapla, planla, planOzeti, uygula, raporYaz,
 };

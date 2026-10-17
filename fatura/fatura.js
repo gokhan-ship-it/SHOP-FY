@@ -92,7 +92,7 @@ function planiBas(plan, ayrinti) {
   for (const [t, n] of Object.entries(plan.gunluk)) console.log(`${M.tarihGoster(t)} tarihinde Paraşüt'te zaten ${n} fatura var`);
   const sayac = {};
   for (const a of plan.atlanan) {
-    const kisa = a.sebep.replace(/\(.*?\)/g, '').replace(/:.*$/, '').replace(/\s+/g, ' ').trim();
+    const kisa = a.sebep.replace(/\s*\(.*?\)/g, '').replace(/:.*$/, '').replace(/\s+/g, ' ').trim();
     sayac[kisa] = (sayac[kisa] || 0) + 1;
   }
   console.log(`Atlanacak: ${plan.atlanan.length}${plan.atlanan.length ? ' — ' + Object.entries(sayac).map(([k, v]) => `${v} sipariş (${k})`).join(', ') : ''}`);

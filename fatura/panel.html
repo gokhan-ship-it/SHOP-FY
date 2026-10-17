@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="panel-anahtar" content="__ANAHTAR__">
+<title>Fatura Paneli</title>
+<style>
+:root {
+  --zemin: #f4f5f7; --kart: #ffffff; --yazi: #1d2433; --soluk: #6b7385; --cizgi: #e3e6ec;
+  --ana: #2457d6; --ana-acik: #e8eefc; --yesil: #1c8a4f; --yesil-acik: #e4f5ec;
+  --sari: #a86400; --sari-acik: #fff4df; --kirmizi: #c23030; --kirmizi-acik: #fde9e9;
+  --golge: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --zemin: #12151c; --kart: #1b1f29; --yazi: #e6e8ee; --soluk: #9aa2b5; --cizgi: #2b3140;
+    --ana: #6f95ff; --ana-acik: #1f2a48; --yesil: #4cc88a; --yesil-acik: #15301f;
+    --sari: #f0b44c; --sari-acik: #352a14; --kirmizi: #ff7b7b; --kirmizi-acik: #3a1c1c;
+    --golge: none;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--zemin); color: var(--yazi); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+header { background: var(--kart); border-bottom: 1px solid var(--cizgi); padding: 14px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 5; }
+header h1 { font-size: 18px; margin: 0; font-weight: 650; }
+header .alt { color: var(--soluk); font-size: 13px; }
+header .bosluk { flex: 1; }
+main { max-width: 1080px; margin: 0 auto; padding: 20px 16px 60px; display: grid; gap: 16px; }
+.kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 12px; padding: 18px 20px; box-shadow: var(--golge); }
+.kart h2 { font-size: 16px; margin: 0 0 12px; font-weight: 650; }
+.kart h2 .rozet { margin-left: 8px; }
+.ipucu { color: var(--soluk); font-size: 13px; }
+.satir { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+label { display: grid; gap: 4px; font-size: 13px; color: var(--soluk); }
+input, select { font: inherit; color: var(--yazi); background: var(--kart); border: 1px solid var(--cizgi); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+input:focus, select:focus { outline: 2px solid var(--ana); outline-offset: 1px; }
+input[type=date] { min-width: 150px; }
+#oran { width: 90px; }
+button { font: inherit; font-weight: 600; border: 1px solid var(--cizgi); background: var(--kart); color: var(--yazi); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+button:hover { border-color: var(--soluk); }
+button.ana { background: var(--ana); border-color: var(--ana); color: #fff; }
+button.ana:hover { filter: brightness(1.08); }
+button.tehlike { background: var(--yesil); border-color: var(--yesil); color: #fff; font-size: 16px; padding: 12px 20px; }
+button.kucuk { padding: 4px 10px; font-size: 13px; font-weight: 500; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.uyari { border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+.uyari.sari { background: var(--sari-acik); color: var(--sari); }
+.uyari.kirmizi { background: var(--kirmizi-acik); color: var(--kirmizi); }
+.uyari.yesil { background: var(--yesil-acik); color: var(--yesil); }
+.uyari.mavi { background: var(--ana-acik); color: var(--ana); }
+.uyari b { color: inherit; }
+.durumlar { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.kutu { border: 1px solid var(--cizgi); border-radius: 10px; padding: 10px 12px; }
+.kutu .deger { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kutu .ad { color: var(--soluk); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+.kutu.yesil .deger { color: var(--yesil); } .kutu.sari .deger { color: var(--sari); } .kutu.kirmizi .deger { color: var(--kirmizi); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-weight: 600; color: var(--soluk); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; padding: 6px 8px; border-bottom: 1px solid var(--cizgi); }
+td { padding: 7px 8px; border-bottom: 1px solid var(--cizgi); vertical-align: top; }
+td.sayi, th.sayi { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.acilir { cursor: pointer; } tr.acilir:hover td { background: var(--zemin); }
+tr.detay td { background: var(--zemin); font-size: 13px; color: var(--soluk); }
+.rozet { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 1px 8px; background: var(--zemin); color: var(--soluk); border: 1px solid var(--cizgi); white-space: nowrap; }
+.rozet.sari { background: var(--sari-acik); color: var(--sari); border-color: transparent; }
+.rozet.kirmizi { background: var(--kirmizi-acik); color: var(--kirmizi); border-color: transparent; }
+.rozet.yesil { background: var(--yesil-acik); color: var(--yesil); border-color: transparent; }
+details { border: 1px solid var(--cizgi); border-radius: 10px; padding: 8px 12px; margin-top: 8px; }
+details summary { cursor: pointer; font-weight: 600; }
+details ul { margin: 8px 0 4px; padding-left: 18px; font-size: 14px; }
+.tablo-kap { overflow-x: auto; }
+.ilerleme { height: 10px; background: var(--zemin); border-radius: 999px; overflow: hidden; border: 1px solid var(--cizgi); }
+.ilerleme div { height: 100%; background: var(--yesil); width: 0; transition: width .3s; }
+.gunluk { font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--soluk); max-height: 180px; overflow-y: auto; margin-top: 8px; white-space: pre-wrap; }
+.donen { width: 16px; height: 16px; border: 2px solid var(--cizgi); border-top-color: var(--ana); border-radius: 50%; display: inline-block; animation: don 0.8s linear infinite; vertical-align: -3px; margin-right: 6px; }
+@keyframes don { to { transform: rotate(360deg); } }
+.gizli { display: none !important; }
+.iki-kolon { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .iki-kolon { grid-template-columns: 1fr; } header { flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Fatura Paneli</h1>
+    <div class="alt">Shopify → Paraşüt taslak fatura · Text To Next</div>
+  </div>
+  <div class="bosluk"></div>
+  <span id="ust-durum" class="ipucu"></span>
+  <button class="kucuk" id="kapat-dugme" title="Paneli kapatır. Masaüstündeki simgeyle tekrar açabilirsiniz.">Paneli kapat</button>
+</header>
+
+<main>
+  <div id="genel-hata" class="uyari kirmizi gizli"></div>
+  <div id="takili" class="uyari kirmizi gizli"></div>
+  <div id="guncelleme" class="uyari mavi gizli"></div>
+
+  <div class="iki-kolon">
+    <section class="kart">
+      <h2>1. Faturalanacak siparişleri getir</h2>
+      <p class="ipucu" id="son-kesilen">Son kesilen sipariş kontrol ediliyor…</p>
+      <div class="satir">
+        <label>Başlangıç tarihi<input type="date" id="bas"></label>
+        <label>Bitiş tarihi<input type="date" id="bit"></label>
+        <label>İşçilik oranı (%)<input id="oran" inputmode="decimal" placeholder="örn. 5"></label>
+        <button class="ana" id="onizle-dugme">Siparişleri getir ve önizle</button>
+      </div>
+      <p class="ipucu" id="oran-ipucu"></p>
+      <p class="ipucu">Önizleme Paraşüt'e hiçbir şey yazmaz. Tarih aralığı kesilmiş siparişlerle çakışsa da sorun olmaz, program onları tanıyıp atlar.</p>
+    </section>
+
+    <section class="kart">
+      <h2>Elle kestiğim siparişler</h2>
+      <p class="ipucu">Paraşüt'te elle fatura kestiğiniz siparişleri buraya yazın, program onlara tekrar kesmesin.</p>
+      <div class="satir">
+        <label style="flex:1">Sipariş no<input id="elle-metin" placeholder="13669 veya 13700-13705"></label>
+        <button id="elle-dugme">Bildir</button>
+      </div>
+      <p class="ipucu" id="elle-sonuc"></p>
+    </section>
+  </div>
+
+  <section class="kart gizli" id="calisiyor">
+    <h2><span class="donen"></span><span id="calisiyor-baslik">Çalışıyor…</span></h2>
+    <div class="ilerleme gizli" id="ilerleme"><div></div></div>
+    <div class="gunluk" id="gunluk"></div>
+  </section>
+
+  <section class="kart gizli" id="yeni-urunler">
+    <h2>Yeni ürün veya seçenek bulundu <span class="rozet sari" id="yeni-sayi"></span></h2>
+    <p class="ipucu">Bu ürünler henüz programın listesinde yok, o yüzden bunları içeren siparişler atlanıyor. Her biri için faturada nasıl yazılacağını seçin. Program bir öneri yaptı, kontrol edip kaydedin. Emin olmadıklarınızı "elle keseceğim" olarak bırakın.</p>
+    <div class="tablo-kap"><table>
+      <thead><tr><th>Ürün</th><th>Seçenek</th><th class="sayi">Fiyat</th><th>Faturada nasıl yazılsın?</th></tr></thead>
+      <tbody id="yeni-tablo"></tbody>
+    </table></div>
+    <div class="satir" style="margin-top:12px"><button class="ana" id="kategori-dugme">Seçimleri kaydet ve yeniden önizle</button></div>
+  </section>
+
+  <section class="kart gizli" id="onizleme">
+    <h2>2. Önizleme <span class="ipucu" id="onizleme-aralik"></span></h2>
+    <div class="durumlar" id="ozet-kutular"></div>
+    <div id="onizleme-uyarilar" style="display:grid;gap:8px;margin-top:12px"></div>
+
+    <h2 style="margin-top:18px">Kesilecek faturalar</h2>
+    <p class="ipucu">Ayrıntısını görmek için satıra tıklayın.</p>
+    <div class="tablo-kap"><table>
+      <thead><tr><th>Sipariş</th><th>Tarih</th><th class="sayi">Tutar</th><th>İçerik</th><th>İl / İlçe</th></tr></thead>
+      <tbody id="hazir-tablo"></tbody>
+    </table></div>
+
+    <h2 style="margin-top:18px">Atlanacak siparişler</h2>
+    <div id="atlanan-liste"></div>
+
+    <div class="satir" style="margin-top:18px; justify-content: space-between; align-items: center">
+      <span class="ipucu">Taslaklar oluşturulur, <b>resmileştirme yapılmaz</b>. Resmileştirmeyi Paraşüt'ten siz yaparsınız.</span>
+      <button class="tehlike" id="kes-dugme">Taslakları oluştur</button>
+    </div>
+  </section>
+
+  <section class="kart gizli" id="sonuc">
+    <h2>3. Sonuç</h2>
+    <div class="durumlar" id="sonuc-kutular"></div>
+    <div id="sonuc-uyarilar" style="display:grid;gap:8px;margin-top:12px"></div>
+  </section>
+</main>
+
+<script>
+'use strict';
+const ANAHTAR = document.querySelector('meta[name=panel-anahtar]').content;
+const $ = (id) => document.getElementById(id);
+const TL = (kurus) => (kurus / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const TARIH = (t) => t ? t.split('-').reverse().join('.') : '—';
+let durumBilgi = null;
+let sonOnizleme = null;
+
+// Tüm metinler textContent ile basılır (sipariş verisi müşteriden gelir).
+function el(etiket, ozellik = {}, ...cocuklar) {
+  const e = document.createElement(etiket);
+  for (const [k, v] of Object.entries(ozellik)) {
+    if (k === 'class') e.className = v; else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v);
+  }
+  for (const c of cocuklar.flat()) if (c !== null && c !== undefined && c !== false) e.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  return e;
+}
+const temizle = (e) => { e.replaceChildren(); return e; };
+const goster = (id, var_ = true) => $(id).classList.toggle('gizli', !var_);
+
+async function istek(yol, govde) {
+  const r = await fetch(yol, {
+    method: govde === undefined ? 'GET' : 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Panel-Anahtar': ANAHTAR },
+    body: govde === undefined ? undefined : JSON.stringify(govde),
+  });
+  const veri = await r.json().catch(() => ({ hata: 'Panelden cevap alınamadı.' }));
+  if (!r.ok) throw new Error(veri.hata || 'Bilinmeyen hata');
+  return veri;
+}
+
+function hataGoster(mesaj) {
+  $('genel-hata').textContent = mesaj;
+  goster('genel-hata', !!mesaj);
+  if (mesaj) window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function isIzle(baslik, ilerlemeVar) {
+  return new Promise((coz, reddet) => {
+    $('calisiyor-baslik').textContent = baslik;
+    temizle($('gunluk'));
+    goster('ilerleme', ilerlemeVar);
+    $('ilerleme').firstElementChild.style.width = '0';
+    goster('calisiyor');
+    const zamanlayici = setInterval(async () => {
+      try {
+        const { is } = await istek('/api/is');
+        if (!is) return;
+        $('gunluk').textContent = is.adimlar.join('\n');
+        $('gunluk').scrollTop = 1e9;
+        if (is.ilerleme) {
+          $('ilerleme').firstElementChild.style.width = `${Math.round((is.ilerleme.i / is.ilerleme.n) * 100)}%`;
+          $('calisiyor-baslik').textContent = `${baslik} (${is.ilerleme.i} / ${is.ilerleme.n})`;
+        }
+        if (is.durum === 'calisiyor') return;
+        clearInterval(zamanlayici);
+        goster('calisiyor', false);
+        is.durum === 'bitti' ? coz(is.sonuc) : reddet(new Error(is.hata));
+      } catch (e) { clearInterval(zamanlayici); goster('calisiyor', false); reddet(e); }
+    }, 700);
+  });
+}
+
+function dugmeler(acik) {
+  for (const id of ['onizle-dugme', 'kes-dugme', 'kategori-dugme', 'elle-dugme']) $(id).disabled = !acik;
+}
+
+// ---------------------------------------------------------------- açılış
+
+async function durumYukle() {
+  durumBilgi = await istek('/api/durum');
+  $('bit').value = durumBilgi.bugun;
+  $('bas').min = durumBilgi.baslangic.tarih;
+  $('bit').max = durumBilgi.bugun;
+  if (durumBilgi.sonOran) {
+    $('oran-ipucu').replaceChildren('Son kullanılan oran: %' + String(durumBilgi.sonOran).replace('.', ',') + ' ',
+      el('button', { class: 'kucuk', onclick: () => { $('oran').value = String(durumBilgi.sonOran).replace('.', ','); } }, 'Aynısını kullan'));
+  }
+  $('ust-durum').textContent = durumBilgi.sonCalisma ? `Son çalışma: ${new Date(durumBilgi.sonCalisma).toLocaleString('tr-TR')}` : '';
+
+  if (durumBilgi.takili.length) {
+    temizle($('takili')).append(el('b', {}, 'Yarıda kalmış işlem var. '),
+      'Önceki bir çalıştırmada bağlantı koptu. Şu siparişlerin Paraşüt\'te faturası oluşmuş olabilir: ',
+      durumBilgi.takili.map((t) => t.no).join(', '),
+      '. Paraşüt\'te kontrol edip Claude\'a haber verin. Bu çözülene kadar yeni fatura kesilemez.');
+    goster('takili');
+  }
+  if (durumBilgi.guncelleme) {
+    temizle($('guncelleme')).append(el('b', {}, 'Yeni sürüm bulundu. '),
+      `İndirilenler klasöründe "${durumBilgi.guncelleme.klasor}" var. `,
+      el('button', { class: 'kucuk', onclick: guncelle }, 'Güncellemeyi yükle'));
+    goster('guncelleme');
+  }
+
+  try {
+    const { sonKesilen } = await istek('/api/son-kesilen');
+    if (sonKesilen && sonKesilen.tarih) {
+      $('son-kesilen').replaceChildren('Son kesilen sipariş: ', el('b', {}, `${sonKesilen.no}`), ` (${TARIH(sonKesilen.tarih)}). Tarih aralığı oradan bugüne ayarlandı.`);
+      $('bas').value = sonKesilen.tarih;
+    } else if (sonKesilen) {
+      $('son-kesilen').textContent = `Son kesilen sipariş: ${sonKesilen.no}. Başlangıç tarihini seçin.`;
+    } else {
+      $('son-kesilen').textContent = 'Henüz programla kesilmiş sipariş yok.';
+      $('bas').value = durumBilgi.baslangic.tarih;
+    }
+  } catch (e) {
+    $('son-kesilen').textContent = 'Son kesilen sipariş okunamadı: ' + e.message;
+  }
+  if (!$('bas').value) $('bas').value = durumBilgi.bugun;
+}
+
+// ---------------------------------------------------------------- önizleme
+
+async function onizle() {
+  hataGoster('');
+  goster('sonuc', false);
+  goster('onizleme', false);
+  goster('yeni-urunler', false);
+  sonOnizleme = null;
+  dugmeler(false);
+  try {
+    await istek('/api/onizle', { bas: $('bas').value, bit: $('bit').value, oran: $('oran').value });
+    sonOnizleme = await isIzle('Siparişler okunuyor ve fatura planı hazırlanıyor', false);
+    onizlemeGoster(sonOnizleme);
+  } catch (e) { hataGoster(e.message); }
+  finally { dugmeler(true); }
+}
+
+function sebepGrubu(a) {
+  if (a.tur === 'kesildi' || a.tur === 'once') return { ad: 'Zaten faturalanmış', renk: '', acik: false };
+  if (a.tur === 'yeni-urun') return { ad: 'Yeni ürün — kategorisi seçilmeli', renk: 'sari', acik: true };
+  const kisa = a.sebep.replace(/\s*\(.*?\)/g, '').replace(/:.*$/, '').trim();
+  return { ad: kisa.charAt(0).toUpperCase() + kisa.slice(1), renk: 'kirmizi', acik: true };
+}
+
+function onizlemeGoster(p) {
+  $('onizleme-aralik').textContent = `${TARIH(p.aralik.bas)} – ${TARIH(p.aralik.bit)} · oran %${String(p.oran / 100).replace('.', ',')}`;
+  const ilcesiz = p.hazir.filter((h) => !h.musteri.mevcut && h.musteri.eksik.length);
+  const yeniUrunSiparis = p.atlanan.filter((a) => a.tur === 'yeni-urun').length;
+  const kontrol = p.atlanan.filter((a) => a.tur === 'kontrol').length;
+  const kutu = (ad, deger, renk = '') => el('div', { class: `kutu ${renk}` }, el('div', { class: 'deger' }, deger), el('div', { class: 'ad' }, ad));
+  temizle($('ozet-kutular')).append(
+    kutu('Bulunan sipariş', p.siparisSayisi),
+    kutu('Kesilecek fatura', p.hazir.length, 'yesil'),
+    kutu('Zaten faturalı', p.atlanan.length - yeniUrunSiparis - kontrol),
+    kutu('Yeni ürün yüzünden bekleyen', yeniUrunSiparis, yeniUrunSiparis ? 'sari' : ''),
+    kutu('Elle bakılacak', kontrol, kontrol ? 'kirmizi' : ''),
+    kutu('İl/ilçesi boş', ilcesiz.length, ilcesiz.length ? 'sari' : ''),
+  );
+
+  const uyarilar = temizle($('onizleme-uyarilar'));
+  for (const [t, n] of Object.entries(p.gunluk)) if (n) uyarilar.append(el('div', { class: 'ipucu' }, `${TARIH(t)} tarihinde Paraşüt'te ${n} fatura var.`));
+  if (ilcesiz.length) uyarilar.append(el('div', { class: 'uyari sari' }, el('b', {}, 'İl/ilçesi adresten bulunamayanlar: '), ilcesiz.map((h) => h.no).join(', '), '. Faturalar yine oluşturulur; resmileştirirken Paraşüt sorarsa ilçeyi seçin.'));
+
+  // Yeni ürünler
+  yeniUrunleriGoster(p.yeniUrunler || []);
+
+  // Kesilecekler
+  const tb = temizle($('hazir-tablo'));
+  if (!p.hazir.length) tb.append(el('tr', {}, el('td', { colspan: 5, class: 'ipucu' }, 'Kesilecek fatura yok.')));
+  for (const h of p.hazir) {
+    const m = h.musteri;
+    const yer = m.mevcut ? el('span', { class: 'ipucu' }, 'kayıtlı müşteri') :
+      m.eksik.length ? el('span', {}, `${m.il || '?'} / ${m.ilce || '?'} `, el('span', { class: 'rozet sari' }, `${m.eksik.join(' ve ')} boş`)) : `${m.il} / ${m.ilce}`;
+    const detay = el('tr', { class: 'detay gizli' }, el('td', { colspan: 5 },
+      h.urunler.join(' + '), el('br'),
+      h.satirlar.map((x) => `${x.kod}: birim ${x.birim.replace('.', ',')} · KDV %${x.kdv} → ${TL(x.net)}${x.kdv ? ' + ' + TL(x.kdvTutar) + ' KDV' : ''}`).join('   |   '),
+      Object.values(h.gruplar).some((g) => g.kargo) ? el('div', {}, `Kargo ${TL(Object.values(h.gruplar).find((g) => g.kargo).kargo)} TL ürün tutarına dahil.`) : null,
+      m.mevcut ? null : el('div', {}, `İl: ${m.ilKaynak || '—'} · İlçe: ${m.ilceKaynak || '—'} kaynağından bulundu.`)));
+    tb.append(
+      el('tr', { class: 'acilir', onclick: () => detay.classList.toggle('gizli') },
+        el('td', {}, h.no), el('td', {}, TARIH(h.tarih)), el('td', { class: 'sayi' }, TL(h.tutar) + ' TL'),
+        el('td', {}, h.kategoriler.join(' + ')), el('td', {}, yer)),
+      detay);
+  }
+
+  // Atlananlar
+  const gruplar = new Map();
+  for (const a of p.atlanan) {
+    const g = sebepGrubu(a);
+    if (!gruplar.has(g.ad)) gruplar.set(g.ad, { ...g, liste: [] });
+    gruplar.get(g.ad).liste.push(a);
+  }
+  const al = temizle($('atlanan-liste'));
+  if (!p.atlanan.length) al.append(el('p', { class: 'ipucu' }, 'Atlanan sipariş yok.'));
+  for (const g of gruplar.values()) {
+    const d = el('details', g.acik ? { open: '' } : {},
+      el('summary', {}, g.ad, ' ', el('span', { class: `rozet ${g.renk}` }, g.liste.length)),
+      el('ul', {}, g.liste.map((a) => el('li', {}, `${a.no} · ${TARIH(a.tarih)} · ${TL(a.tutar)} TL — ${a.sebep}`))));
+    al.append(d);
+  }
+  if (p.atlanan.some((a) => a.tur === 'kontrol')) al.append(el('p', { class: 'ipucu' }, '“Elle bakılacak” siparişleri Paraşüt\'te elle kesin, sonra sağ üstteki “Elle kestiğim siparişler” kutusundan bildirin.'));
+
+  $('kes-dugme').textContent = `${p.hazir.length} taslak faturayı Paraşüt'te oluştur`;
+  goster('kes-dugme', p.hazir.length > 0);
+  goster('onizleme');
+  $('onizleme').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function yeniUrunleriGoster(liste) {
+  goster('yeni-urunler', liste.length > 0);
+  if (!liste.length) return;
+  $('yeni-sayi').textContent = liste.length;
+  const kategoriler = durumBilgi.kategoriler;
+  const tb = temizle($('yeni-tablo'));
+  for (const u of liste) {
+    const sec = el('select', { 'data-vid': u.vid, 'data-ad': `${u.urun}${u.secenek ? ' - ' + u.secenek : ''}` },
+      el('option', { value: '' }, '— seçin —'),
+      Object.entries(kategoriler).map(([k, ad]) => el('option', u.oneri === k ? { value: k, selected: '' } : { value: k }, ad)));
+    tb.append(el('tr', {},
+      el('td', {}, u.urun, ' ', u.siparisteGoruldu ? el('span', { class: 'rozet sari' }, 'siparişte var') : null, u.durum !== 'ACTIVE' ? el('span', { class: 'rozet' }, 'taslak') : null),
+      el('td', {}, u.secenek || '—'),
+      el('td', { class: 'sayi' }, Number(u.fiyat).toLocaleString('tr-TR') + ' TL'),
+      el('td', {}, sec, u.oneri ? el('div', { class: 'ipucu' }, `Öneri: ${u.oneriNedeni}`) : null)));
+  }
+}
+
+async function kategoriKaydet() {
+  const atamalar = [...document.querySelectorAll('#yeni-tablo select')].filter((s) => s.value).map((s) => ({ vid: s.dataset.vid, kategori: s.value, ad: s.dataset.ad }));
+  if (!atamalar.length) return hataGoster('Kaydetmek için en az bir ürünün kategorisini seçin.');
+  const metin = atamalar.map((a) => `• ${a.ad} → ${durumBilgi.kategoriler[a.kategori]}`).join('\n');
+  if (!confirm(`Şu ürünler kaydedilecek:\n\n${metin}\n\nOnaylıyor musunuz?`)) return;
+  try {
+    await istek('/api/kategori', { atamalar });
+    await onizle();
+  } catch (e) { hataGoster(e.message); }
+}
+
+// ---------------------------------------------------------------- kesme
+
+async function kes() {
+  if (!sonOnizleme || !sonOnizleme.hazir.length) return;
+  const n = sonOnizleme.hazir.length;
+  if (!confirm(`${n} taslak fatura Paraşüt'te oluşturulacak.\n\nResmileştirme yapılmaz. Devam edilsin mi?`)) return;
+  hataGoster('');
+  dugmeler(false);
+  try {
+    await istek('/api/kes', { planId: sonOnizleme.planId });
+    const s = await isIzle('Taslak faturalar oluşturuluyor', true);
+    sonucGoster(s);
+    goster('onizleme', false);
+    sonOnizleme = null;
+    durumYukle().catch(() => {});
+  } catch (e) { hataGoster(e.message); }
+  finally { dugmeler(true); }
+}
+
+function sonucGoster(s) {
+  const kutu = (ad, deger, renk = '') => el('div', { class: `kutu ${renk}` }, el('div', { class: 'deger' }, deger), el('div', { class: 'ad' }, ad));
+  temizle($('sonuc-kutular')).append(
+    kutu('Oluşturulan taslak', s.tamam.length, 'yesil'),
+    kutu('Paraşüt kabul etmedi', s.hata.length, s.hata.length ? 'kirmizi' : ''),
+    kutu('Belirsiz', s.belirsiz.length, s.belirsiz.length ? 'kirmizi' : ''),
+  );
+  const u = temizle($('sonuc-uyarilar'));
+  u.append(el('div', { class: 'uyari yesil' }, 'Taslaklar Paraşüt\'te “Satışlar → Faturalar” altında. Kontrol edip resmileştirebilirsiniz.'));
+  const farkli = s.tamam.filter((x) => x.uyari);
+  if (farkli.length) u.append(el('div', { class: 'uyari kirmizi' }, el('b', {}, 'Tutarı farklı çıkan (resmileştirmeden önce düzeltin): '), farkli.map((x) => `${x.no} (${x.uyari})`).join(', ')));
+  const ilcesiz = s.tamam.filter((x) => x.ilceEksik);
+  if (ilcesiz.length) u.append(el('div', { class: 'uyari sari' }, el('b', {}, 'İl/ilçesi boş, resmileştirirken seçin: '), ilcesiz.map((x) => x.no).join(', ')));
+  for (const h of s.hata) u.append(el('div', { class: 'uyari kirmizi' }, el('b', {}, `${h.no}: ${h.sebep}. `), 'Bu sipariş kesilmedi, tekrar denenebilir. Ayrıntı: ', h.mesaj || ''));
+  if (s.belirsiz.length) u.append(el('div', { class: 'uyari kirmizi' }, el('b', {}, 'Bağlantı koptu: '), s.belirsiz.map((x) => x.no).join(', '), '. Bu siparişlerin faturası Paraşüt\'te oluşmuş olabilir. Kontrol edip Claude\'a haber verin.'));
+  if (s.rapor) u.append(el('div', { class: 'ipucu' }, `Rapor dosyası: raporlar/${s.rapor}`));
+  goster('sonuc');
+  $('sonuc').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ---------------------------------------------------------------- diğer
+
+async function elleBildir() {
+  const metin = $('elle-metin').value.trim();
+  if (!metin) return;
+  try {
+    const { sonuc } = await istek('/api/elle', { metin });
+    const isaretli = sonuc.filter((r) => r.durum === 'işaretlendi').map((r) => r.no);
+    const zaten = sonuc.filter((r) => r.durum !== 'işaretlendi').map((r) => r.no);
+    $('elle-sonuc').textContent = [isaretli.length ? `İşaretlendi: ${isaretli.join(', ')}` : '', zaten.length ? `Zaten kayıtlıydı: ${zaten.join(', ')}` : ''].filter(Boolean).join(' · ');
+    $('elle-metin').value = '';
+  } catch (e) { $('elle-sonuc').textContent = e.message; }
+}
+
+async function guncelle() {
+  if (!confirm('İndirilenler klasöründeki yeni sürüm yüklenecek ve panel yeniden başlayacak. Kayıtlarınız (kesilen faturalar, müşteriler, ürün seçimleriniz) korunur. Devam edilsin mi?')) return;
+  try {
+    const r = await istek('/api/guncelle', {});
+    temizle($('guncelleme')).append(`Güncellendi (${r.kopyalanan.length} dosya${r.eklenenUrun ? ', ' + r.eklenenUrun + ' yeni ürün eşlemesi' : ''}). Panel yeniden başlıyor…`);
+    setTimeout(() => location.reload(), 2500);
+  } catch (e) { hataGoster(e.message); }
+}
+
+$('onizle-dugme').addEventListener('click', onizle);
+$('kes-dugme').addEventListener('click', kes);
+$('kategori-dugme').addEventListener('click', kategoriKaydet);
+$('elle-dugme').addEventListener('click', elleBildir);
+$('kapat-dugme').addEventListener('click', async () => {
+  if (!confirm('Panel kapatılsın mı? Masaüstündeki simgeyle tekrar açabilirsiniz.')) return;
+  await istek('/api/kapat', {}).catch(() => {});
+  document.body.replaceChildren(el('main', {}, el('div', { class: 'kart' }, el('h2', {}, 'Panel kapatıldı'), el('p', { class: 'ipucu' }, 'Bu sekmeyi kapatabilirsiniz.'))));
+});
+durumYukle().catch((e) => hataGoster(e.message));
+</script>
+</body>
+</html>
