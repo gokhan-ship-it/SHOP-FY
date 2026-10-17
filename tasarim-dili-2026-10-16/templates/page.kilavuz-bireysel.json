@@ -6,7 +6,8 @@
         "baslik_1": {
           "type": "baslik",
           "settings": {
-            "metin": "Bireysel Hediye Kullanım Kılavuzu"
+            "metin": "Bireysel Hediye",
+            "ikinci_satir": "Kullanım Kılavuzu"
           }
         },
         "metin_2": {
@@ -74,18 +75,8 @@
         "video_9"
       ],
       "settings": {
-        "icerik_genislik": 560,
-        "govde_font": "inter_n4",
-        "zemin": "#ffffff",
-        "yazi_rengi": "#181b1e",
-        "soluk_renk": "#4d4d4d",
-        "kart_zemin": "#141414",
-        "vurgu_rengi": "#d6ff00",
-        "uyari_zemin": "#d32017",
-        "ust_bosluk_m": 32,
-        "alt_bosluk_m": 48,
-        "ust_bosluk_d": 64,
-        "alt_bosluk_d": 88
+        "padding_top": 72,
+        "padding_bottom": 120
       }
     }
   },

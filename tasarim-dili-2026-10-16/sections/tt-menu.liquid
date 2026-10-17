@@ -29,7 +29,7 @@
   assign k1 = s.kart_1_bag | default: '/pages/hediye-daha-fazla-bilgi-al'
   assign k2 = s.kart_2_bag | default: '/pages/couple-daha-fazla-bilgi-al'
   assign a1 = s.alt_1_bag | default: '/pages/event-daha-fazla-bilgi-al'
-  assign a2 = s.alt_2_bag | default: '/pages/iletisimsayfasi'
+  assign a2 = s.alt_2_bag | default: '/pages/iletisim'
 -%}
 {%- if s.aktif -%}
 <style>
@@ -590,7 +590,7 @@
     { "type": "text", "id": "alt_1_metin", "label": "1. bağlantı", "default": "Etkinlik" },
     { "type": "url", "id": "alt_1_bag", "label": "1. bağlantı adresi", "info": "Boşsa /pages/event-daha-fazla-bilgi-al" },
     { "type": "text", "id": "alt_2_metin", "label": "2. bağlantı", "default": "İletişim" },
-    { "type": "url", "id": "alt_2_bag", "label": "2. bağlantı adresi", "info": "Boşsa /pages/iletisimsayfasi" },
+    { "type": "url", "id": "alt_2_bag", "label": "2. bağlantı adresi", "info": "Boşsa /pages/iletisim" },
     { "type": "text", "id": "destek_metni", "label": "Destek satırı", "default": "Hafta içi 10.00–18.00" },
     { "type": "text", "id": "destek_tel_metni", "label": "Telefon (görünen)", "default": "0216 606 14 15" },
     { "type": "text", "id": "destek_tel", "label": "Telefon (arama numarası)", "default": "+902166061415" }

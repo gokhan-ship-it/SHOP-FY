@@ -106,13 +106,7 @@
           "type": "contact",
           "settings": {
             "heading": "Telefon",
-            "text": "<p><a href=\"tel:+902166061415\">0216 606 14 15</a><br/>Hafta içi 10:00 – 18:00</p>"
-          }
-        },
-        "media": {
-          "type": "media",
-          "settings": {
-            "heading": "Bizi takip edin"
+            "text": "<p><a href=\"tel:+902166061415\">0216 606 14 15</a><br/>Hafta içi 10.00–18.00</p>"
           }
         },
         "custom_field-1": {
@@ -146,7 +140,6 @@
         "contact-1",
         "contact-2",
         "contact-3",
-        "media",
         "custom_field-1",
         "custom_field-2"
       ],
@@ -177,9 +170,14 @@
         "narrow": false,
         "rounded": false
       }
+    },
+    "stil": {
+      "type": "tt-iletisim-stil",
+      "settings": {}
     }
   },
   "order": [
+    "stil",
     "main",
     "rich-text",
     "empty-space",

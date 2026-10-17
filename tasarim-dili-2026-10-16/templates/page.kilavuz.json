@@ -6,23 +6,25 @@
         "baslik_1": {
           "type": "baslik",
           "settings": {
-            "metin": "Kullanım Kılavuzu"
+            "metin": "Kullanım Kılavuzu",
+            "ikinci_satir": ""
           }
         },
         "metin_2": {
           "type": "metin",
           "settings": {
-            "metin": "<p>Ürününüz için hazırlanan kullanım videosunu izleyin.</p><p>Müşteri destek merkezi Hafta içi 10:00-18:00</p><p><a href=\"tel:+902166061415\"><strong>0216 606 14 15</strong></a></p>"
+            "metin": "<p>Ürününüz için hazırlanan kullanım videosunu izleyin.</p><p>Müşteri destek merkezi Hafta içi 10.00–18.00</p><p><a href=\"tel:+902166061415\"><strong>0216 606 14 15</strong></a></p>"
           }
         },
         "kart_3": {
           "type": "kart",
           "settings": {
-            "ikon": "hediye",
+            "ikon": "single",
             "etiket": "1 Ürün gerekir",
             "baslik": "Bireysel Hediye Kullanım Kılavuzu",
             "alt_metin": "Kullanım kılavuzu için <strong>tıklayın.</strong>",
-            "bag": "/pages/bireysel-hediye-kullanim-kilavuzu"
+            "bag": "/pages/bireysel-hediye-kullanim-kilavuzu",
+            "onizleme_view": "kilavuz-bireysel"
           }
         },
         "kart_4": {
@@ -32,7 +34,8 @@
             "etiket": "2 Ürün gerekir",
             "baslik": "Couple Kullanım Kılavuzu",
             "alt_metin": "Kullanım kılavuzu için <strong>tıklayın.</strong>",
-            "bag": "/pages/couple-hediye-kullanim-kilavuzu"
+            "bag": "/pages/couple-hediye-kullanim-kilavuzu",
+            "onizleme_view": "kilavuz-couple"
           }
         },
         "kart_5": {
@@ -42,7 +45,8 @@
             "etiket": "",
             "baslik": "Çip nasıl okutulur?",
             "alt_metin": "Kullanım kılavuzu için <strong>tıklayın.</strong>",
-            "bag": "https://cdn.shopify.com/videos/c/o/v/cd901f3791fa491faa999071da859809.mp4"
+            "bag": "https://cdn.shopify.com/videos/c/o/v/cd901f3791fa491faa999071da859809.mp4",
+            "onizleme_view": ""
           }
         }
       },
@@ -54,18 +58,8 @@
         "kart_5"
       ],
       "settings": {
-        "icerik_genislik": 560,
-        "govde_font": "inter_n4",
-        "zemin": "#ffffff",
-        "yazi_rengi": "#181b1e",
-        "soluk_renk": "#4d4d4d",
-        "kart_zemin": "#141414",
-        "vurgu_rengi": "#d6ff00",
-        "uyari_zemin": "#d32017",
-        "ust_bosluk_m": 32,
-        "alt_bosluk_m": 48,
-        "ust_bosluk_d": 64,
-        "alt_bosluk_d": 88
+        "padding_top": 72,
+        "padding_bottom": 120
       }
     }
   },

@@ -1,0 +1,58 @@
+{%- comment -%}
+  TT ILETISIM STIL -- templates/page.contact.json (/pages/iletisim)
+
+  Sayfa temanin kendi bolumlerini kullaniyor (rich-text + contact-form).
+  Bu bolum hicbir sey basmiyor; yalnizca bu sablonda, tasarim diline
+  (TEXT-TO-NEXT-TASARIM-DILI.md) aykiri olan yerleri duzeltiyor:
+  - Baslik harf araligi: 28px ve ustu -1px (tema -0.04em veriyordu).
+  - "Adres / E-posta / Telefon" etiketleri: tema %50 saydam ink
+    veriyordu (palet disi); label olcegi 11px 600 +1.3px, acik zeminde
+    #5C5C57 (#8A8A85 acik zeminde 24px altinda kullanilmaz).
+  - Linkler: tema alt cizgiyi degrade arka planla ciziyordu; duz
+    text-decoration (ink, alti cizili). Tek basina duran linkler 44px.
+  - Form alanlari: tema %2.4 saydam ink zemin ve 6px kose veriyordu.
+    Beyaz zemin + 1px #D2D2CD kenar + 12px kose. NOT: form alani stili
+    tasarim dilinde ayrica tanimli degil; kenar rengi "secili olmayan
+    cip/kart kenarligi", kose radius-sm'den alindi.
+{%- endcomment -%}
+<style>
+  #MainContent .rich-text h1.heading { letter-spacing: -1px; }
+
+  #MainContent .contact .subtitle {
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 1.3px;
+    color: #5c5c57;
+    opacity: 1;
+  }
+
+  #MainContent .contact .rte a,
+  #MainContent .contact [data-spam-detection-disclaimer] a {
+    color: #0a0a0a;
+    background-image: none;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  #MainContent .contact__sidebar .rte p > a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  #MainContent .contact :is(.input, .select, .textarea) {
+    background-color: #ffffff;
+    border: 1px solid #d2d2cd;
+    border-radius: 12px;
+    color: #0a0a0a;
+  }
+  #MainContent .contact :is(.input, .select, .textarea):focus { border-color: #0a0a0a; }
+  #MainContent .contact .label { color: #5c5c57; opacity: 1; }
+</style>
+
+{% schema %}
+{
+  "name": "İletişim stili",
+  "settings": []
+}
+{% endschema %}

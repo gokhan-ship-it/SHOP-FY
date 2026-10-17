@@ -58,10 +58,17 @@
                   <ul class="drawer__empty-collections grid gap-3">
                     {%- if section.settings.empty_cart_collections == blank -%}
                       <li>
-                        <a class="flex items-center justify-between" href="{{ routes.all_products_collection_url }}">
+                        {%- comment -%}
+                          17.10.2026: "Alisverise devam" artik bir sayfaya gitmiyor; yalnizca
+                          cekmeceyi kapatiyor, kullanici bulundugu sayfada kaliyor. Link degil
+                          buton. Kapatma X dugmesiyle ayni yoldan (cekmecenin hide() metodu):
+                          odak cekmeceyi acan ogeye doner. Dinleyici asagidaki betikte, belgeye
+                          bagli; sepet yeniden cizildiginde de calisir.
+                        {%- endcomment -%}
+                        <button type="button" class="tt-cekmece-devam flex items-center justify-between w-full" data-tt-cekmece-kapat>
                           <span class="flex items-center">{{ 'cart.general.continue_shopping' | t }}</span>
                           {%- render 'icon', icon: 'arrow-right', size: 'sm', class: 'transform' -%}
-                        </a>
+                        </button>
                       </li>
                     {%- else -%}
                       {%- for item in section.settings.empty_cart_collections -%}
@@ -804,6 +811,23 @@
     </div>
   </cart-drawer>
 {%- endif -%}
+
+<style>
+  .tt-cekmece-devam { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; min-height: 44px; }
+</style>
+<script>
+  (function () {
+    if (window.ttCekmeceKapatBagli) return;
+    window.ttCekmeceKapatBagli = true;
+    document.addEventListener('click', function (olay) {
+      var dugme = olay.target.closest && olay.target.closest('[data-tt-cekmece-kapat]');
+      if (!dugme) return;
+      olay.preventDefault();
+      var cekmece = dugme.closest('#CartDrawer') || document.getElementById('CartDrawer');
+      if (cekmece && typeof cekmece.hide === 'function') cekmece.hide();
+    });
+  })();
+</script>
 
 {% schema %}
 {
