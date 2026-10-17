@@ -33,7 +33,7 @@ Text To Next ürünleri, içinde NFC çip bulunan bir takı (bileklik, kolye ve 
 
 **4. Teslimat**
 
-Ürün DHL aracılığıyla Alıcının belirttiği adrese, sipariş tarihinden itibaren en geç 30 gün içinde teslim edilir. 2.000 TL ve üzeri siparişlerde kargo ücretsizdir; altındaki siparişlerde kargo bedeli sipariş özetinde gösterilir.
+Ürün DHL aracılığıyla Alıcının belirttiği adrese, sipariş tarihinden itibaren en geç 30 gün içinde teslim edilir. 2.499 TL ve üzeri siparişlerde kargo ücretsizdir; altındaki siparişlerde kargo bedeli sipariş özetinde gösterilir.
 
 **5. Cayma Hakkı**
 
@@ -80,7 +80,7 @@ Bu Sözleşme, Alıcının texttonext.com üzerinden elektronik ortamda sipariş
 
 5.1. Ürün, DHL aracılığıyla Alıcının belirttiği adrese ve kişiye, sipariş tarihinden itibaren en geç 30 gün içinde teslim edilir.
 
-5.2. 2.000 TL ve üzeri siparişlerde kargo ücretsizdir. Altındaki siparişlerde kargo bedeli Alıcıya aittir ve sipariş özetinde gösterilir.
+5.2. 2.499 TL ve üzeri siparişlerde kargo ücretsizdir. Altındaki siparişlerde kargo bedeli Alıcıya aittir ve sipariş özetinde gösterilir.
 
 5.3. Ürün'ün Alıcı dışında bir kişiye teslim edilecek olması halinde, o kişinin teslimatı kabul etmemesinden Satıcı sorumlu tutulamaz.
 
@@ -184,11 +184,11 @@ Ayrıntılı hükümler için Mesafeli Satış Sözleşmesi'ne bakabilirsin.
 
 *Sürüm 1.0 · Son güncelleme: 17 Ekim 2026 · Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.*
 
-Siparişler DHL ile Türkiye'nin her yerine gönderilir; 2.000 TL ve üzeri siparişlerde kargo ücretsizdir.
+Siparişler DHL ile Türkiye'nin her yerine gönderilir; 2.499 TL ve üzeri siparişlerde kargo ücretsizdir.
 
 **Teslimat bölgesi:** Şu anda yalnızca Türkiye içindeki adreslere gönderim yapıyoruz.
 
-**Kargo ücreti:** 2.000 TL ve üzeri siparişlerde kargo ücretsizdir. Altındaki siparişlerde kargo ücreti ödeme adımında gösterilir ve toplam tutara eklenir.
+**Kargo ücreti:** 2.499 TL ve üzeri siparişlerde kargo ücretsizdir. Altındaki siparişlerde kargo ücreti ödeme adımında gösterilir ve toplam tutara eklenir.
 
 **Hazırlama ve teslim süresi:** Tahmini kargoya veriliş süresi ürün sayfasında belirtilir. Siparişin kargoya verildiğinde takip numarası e-posta veya SMS ile gönderilir. Her durumda teslimat, sipariş tarihinden itibaren en geç 30 gün içinde yapılır.
 
