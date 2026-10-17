@@ -416,10 +416,15 @@
       }
     });
 
-    /* Cerez Politikasi sayfasi: metnin sonuna "Cerez Tercihleri" linki */
-    var sablon = document.getElementById('TtCerezPolitikaLink');
-    var metin = document.querySelector('#MainContent .rte');
-    if (sablon && metin) metin.appendChild(sablon.content.cloneNode(true));
+    /* Cerez Politikasi sayfasi: metnin sonuna "Cerez Tercihleri" linki.
+       Bu bolum ana icerikten once yuklenir; metin DOM hazir olunca bulunur. */
+    function politikaLinki() {
+      var sablon = document.getElementById('TtCerezPolitikaLink');
+      var metin = document.querySelector('#MainContent .rte');
+      if (sablon && metin) metin.appendChild(sablon.content.cloneNode(true));
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', politikaLinki);
+    else politikaLinki();
 
     if (tasarim) { bantGoster(); return; }
     yukle(function () { if (kararYok()) bantGoster(); });
