@@ -1,0 +1,225 @@
+{
+ "A_secimYok": {
+  "durum": {
+   "bant": true,
+   "html": true,
+   "onay": {
+    "marketing": "",
+    "analytics": "",
+    "preferences": "",
+    "sale_of_data": ""
+   },
+   "analytics": true,
+   "marketing": true,
+   "eskiBant": "yok",
+   "sohbet": "visible",
+   "ncDugme": "hidden",
+   "carkBar": "hidden",
+   "stickyForm": "yok"
+  },
+  "istekler": {
+   "gtag-yukleme": 10,
+   "meta": 7,
+   "google-analytics": 6,
+   "google-ads": 15,
+   "tiktok": 9,
+   "trueprofit": 4
+  },
+  "gaGcs": [
+   "G111",
+   "gcs-yok"
+  ],
+  "bolge": "US"
+ },
+ "B_kabul": {
+  "tiklamadanOnce": {
+   "meta": 5,
+   "gtag-yukleme": 5,
+   "google-analytics": 3,
+   "trueprofit": 2,
+   "tiktok": 5,
+   "google-ads": 10
+  },
+  "tiklamaSonrasiDurum": {
+   "bant": false,
+   "html": false,
+   "onay": {
+    "marketing": "yes",
+    "analytics": "yes",
+    "preferences": "yes",
+    "sale_of_data": "yes"
+   },
+   "analytics": true,
+   "marketing": true,
+   "eskiBant": "yok",
+   "sohbet": "visible",
+   "ncDugme": "yok",
+   "carkBar": "visible",
+   "stickyForm": "visible"
+  },
+  "sonrakiSayfaDurum": {
+   "bant": false,
+   "html": false,
+   "onay": {
+    "marketing": "yes",
+    "analytics": "yes",
+    "preferences": "yes",
+    "sale_of_data": "yes"
+   },
+   "analytics": true,
+   "marketing": true,
+   "eskiBant": "yok",
+   "sohbet": "visible",
+   "ncDugme": "visible",
+   "carkBar": "visible",
+   "stickyForm": "yok"
+  },
+  "sonrakiSayfaIstekler": {
+   "google-analytics": 3,
+   "gtag-yukleme": 5,
+   "meta": 3,
+   "tiktok": 4,
+   "trueprofit": 2,
+   "google-ads": 5
+  },
+  "gaGcs": [
+   "G111"
+  ]
+ },
+ "C_ret": {
+  "tiklamadanOnce": {
+   "gtag-yukleme": 5,
+   "meta": 4,
+   "google-analytics": 3,
+   "google-ads": 10,
+   "tiktok": 5,
+   "trueprofit": 2
+  },
+  "tiklamaSonrasiDurum": {
+   "bant": false,
+   "html": false,
+   "onay": {
+    "marketing": "no",
+    "analytics": "no",
+    "preferences": "no",
+    "sale_of_data": "no"
+   },
+   "analytics": false,
+   "marketing": false,
+   "eskiBant": "yok",
+   "sohbet": "visible",
+   "ncDugme": "yok",
+   "carkBar": "visible",
+   "stickyForm": "visible"
+  },
+  "sonrakiSayfaDurum": {
+   "bant": false,
+   "html": false,
+   "onay": {
+    "marketing": "no",
+    "analytics": "no",
+    "preferences": "no",
+    "sale_of_data": "no"
+   },
+   "analytics": false,
+   "marketing": false,
+   "eskiBant": "yok",
+   "sohbet": "visible",
+   "ncDugme": "visible",
+   "carkBar": "visible",
+   "stickyForm": "yok"
+  },
+  "sonrakiSayfaIstekler": {
+   "google-analytics": 1
+  },
+  "gaGcs": [
+   "G100"
+  ],
+  "ornek": [
+   "https://www.google-analytics.com/g/collect?v=2&tid=G-X7489V6WBM&gtm=45je6ae1v9100920013za200zd9100920013xf1&_p=1792249393792&gcs=G100&gcd=13u3u3-3u5l1&npa=1&dma"
+  ]
+ },
+ "D_klavye": {
+  "pencereAcik": true,
+  "odak1": "Kapat",
+  "escSonrasiAcik": false,
+  "escSonrasiOdak": "ttc-yonet",
+  "analitikteOdak": "analytics",
+  "analitikSecili": true,
+  "zorunluKilitli": true,
+  "kayitSonrasi": {
+   "bant": false,
+   "html": false,
+   "onay": {
+    "marketing": "no",
+    "analytics": "yes",
+    "preferences": "no",
+    "sale_of_data": "no"
+   },
+   "analytics": true,
+   "marketing": false,
+   "eskiBant": "yok",
+   "sohbet": "visible",
+   "ncDugme": "yok",
+   "carkBar": "visible",
+   "stickyForm": "visible"
+  },
+  "kayitSonrasiPencere": false,
+  "footerLinkVar": true,
+  "footerdenAcildi": true,
+  "footerdenAcilincaSecimler": "zorunlu:true analytics:true marketing:false preferences:false",
+  "politikaLinki": "yok"
+ },
+ "E_telefon": {
+  "kart": [
+   12,
+   12,
+   12,
+   366
+  ],
+  "zemin": "rgb(20, 20, 20)",
+  "metin": "Sitemizin çalışması için zorunlu çerezler kullanıyoruz. Onay verirsen, siteyi geliştirmek için analitik çerezleri (Google Analytics) ve reklamlarımızın etkisini ölçmek için pazarlama çerezlerini (Meta Pixel) de kullanırız. Bu çerezlerle toplanan veriler yurt dışındaki sunucularda işlenebilir. Ayrıntılar Çerez Politikası'nda.",
+  "link": "/pages/cerez-politikasi rgb(255, 255, 255) underline",
+  "kabul": [
+   162,
+   44,
+   "rgb(214, 255, 0)"
+  ],
+  "ret": [
+   162,
+   44,
+   "rgb(255, 255, 255)"
+  ],
+  "yanYana": true,
+  "yonet": [
+   44,
+   "rgb(255, 255, 255)"
+  ]
+ },
+ "E_masaustu": {
+  "kart": [
+   24,
+   996,
+   24,
+   420
+  ],
+  "zemin": "rgb(20, 20, 20)",
+  "metin": "Sitemizin çalışması için zorunlu çerezler kullanıyoruz. Onay verirsen, siteyi geliştirmek için analitik çerezleri (Google Analytics) ve reklamlarımızın etkisini ölçmek için pazarlama çerezlerini (Meta Pixel) de kullanırız. Bu çerezlerle toplanan veriler yurt dışındaki sunucularda işlenebilir. Ayrıntılar Çerez Politikası'nda.",
+  "link": "/pages/cerez-politikasi rgb(255, 255, 255) underline",
+  "kabul": [
+   189,
+   44,
+   "rgb(214, 255, 0)"
+  ],
+  "ret": [
+   189,
+   44,
+   "rgb(255, 255, 255)"
+  ],
+  "yanYana": true,
+  "yonet": [
+   44,
+   "rgb(255, 255, 255)"
+  ]
+ }
+}
