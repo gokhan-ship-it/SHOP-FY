@@ -52,11 +52,14 @@
   html.tt-cerez-acik .tt-sc-cubuk,
   html.tt-cerez-acik product-sticky-form,
   html.tt-cerez-acik .ttn-cark-bar,
-  html.tt-cerez-acik .tt-nc-dugme,
-  html.tt-cerez-acik shopify-chat {
+  html.tt-cerez-acik .tt-nc-dugme {
     visibility: hidden !important;
     pointer-events: none !important;
   }
+  /* Sohbet ogesi golge DOM'unda kendi gorunurlugunu ve tiklanabilirligini
+     tanimliyor; visibility/pointer-events icine islemiyor ve bandin
+     butonlarinin ustunde tiklamayi yakaliyordu. Tamamen kaldiriliyor. */
+  html.tt-cerez-acik shopify-chat { display: none !important; }
 
   .ttc {
     position: fixed;
