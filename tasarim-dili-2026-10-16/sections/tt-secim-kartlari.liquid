@@ -99,6 +99,16 @@
   assign tekil_kol = collection
 
   comment
+    /collections/all (tum urunler, 17.10.2026): sayfanin kendi koleksiyonu
+    butun katalog; ek paketler, event urunleri ve Couple ikizleri de icinde.
+    Bu sayfada "kendi koleksiyon" dongusu atlanir; yalnizca Kadin + Erkek
+    koleksiyonlari basilir.
+  endcomment
+  if collection.handle == 'all'
+    assign tekil_kol = nil
+  endif
+
+  comment
     "Nasil calisir?" karti (izgarada) ve penceresi. nk_n: kartin
     gorunen listedeki sirasi (1 = ilk hucre). nk_esik: kartin
     ONUNDE kac urun duracagi.

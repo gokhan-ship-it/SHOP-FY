@@ -189,10 +189,22 @@
         "rounded": true,
         "enable_parallax": true
       }
+    },
+    "tt_footer_yasal": {
+      "type": "tt-footer-yasal",
+      "settings": {
+        "duzen": "a",
+        "menu": "footer-yasal",
+        "etiket": "Yasal",
+        "iletisim_metin": "İletişim",
+        "iletisim_bag": "/pages/iletisim",
+        "telif": "© 2026 Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti."
+      }
     }
   },
   "order": [
     "newsletter_P9N9HX",
+    "tt_footer_yasal",
     "footer",
     "footer-copyright"
   ]

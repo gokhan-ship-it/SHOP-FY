@@ -125,7 +125,9 @@
   .tt-lh-panel[hidden] { display: none; }
 
   /* Harf araligi kurali: 28px ve ustu -1px, 20-27px -0.8px, 16-19px -0.3px. */
-  .tt-lh h1.heading { letter-spacing: -1px; }
+  /* Buyuk baslik: telefonda title-xl 32px, 768px ve ustunde 40px (17.10.2026 karari). */
+  .tt-lh h1.heading { font-size: 32px; line-height: 1.08; letter-spacing: -1px; }
+  @media screen and (min-width: 768px) { .tt-lh h1.heading { font-size: 40px; } }
   .tt-lh-belge-bas {
     margin: 0 0 20px;
     font-size: 21px;

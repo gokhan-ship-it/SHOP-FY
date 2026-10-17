@@ -190,7 +190,7 @@
             "icon": "check_mark",
             "iwidth": "custom",
             "icon_width": 18,
-            "text": "2.000₺ üzeri Ücretsiz Kargo",
+            "text": "2.000₺ ve üzeri Ücretsiz Kargo",
             "text_size": "text-sm"
           }
         },
@@ -200,7 +200,7 @@
             "icon": "check_mark",
             "iwidth": "custom",
             "icon_width": 18,
-            "text": "Kolay İade & Değişim <a href=\"/policies/refund-policy\">İade Koşulları</a>",
+            "text": "14 gün içinde kolay iade (kapsül oluşturulmadıysa) · <a href=\"/policies/refund-policy\">İade Koşulları</a>",
             "text_size": "text-sm"
           }
         },
@@ -483,7 +483,7 @@
           "type": "row",
           "settings": {
             "title": "İade edebilir miyim?",
-            "content": "<p>Elbette. Ürününüzü teslim aldıktan sonra <strong>henüz bir Zaman Kapsülü oluşturmadıysanız ve ürünü kişiselleştirmediyseniz 14 gün içinde iade edebilirsiniz.</strong></p><p>Zaman Kapsülü oluşturduğunuzda; <strong>kapsülünüze isim verilir, ürün hesabınızla eşleştirilir ve size özel olarak kişiselleştirilir.</strong> Bu aşamadan sonra ürün aktif olarak kullanılmaya başladığı ve kişiye özel hale geldiği için <strong>iade süreci tamamlanamaz.</strong></p><p>Kısacası, <strong>kapsülünüzü oluşturmadan önce 14 gün içinde iade edebilirsiniz. Kapsül oluşturulduktan sonra ise ürün kişiselleştirilip kullanıma açıldığı için iade kapsamı dışında kalır.</strong></p>",
+            "content": "<p>Kapsül oluşturmadıysanız teslimden itibaren 14 gün içinde iade edebilirsiniz. Kapsül oluşturulduğunda dijital kapsül hizmeti başlar ve cayma hakkı sona erer; kapsülü hediye alan kişinin oluşturması da aynı sonucu doğurur. Üretim hatası olan ürünlerde, kapsül oluşturulmuş olsa bile yasal haklarınız geçerlidir.</p>",
             "open_by_default": false
           }
         },
@@ -491,7 +491,7 @@
           "type": "row",
           "settings": {
             "title": "Kargom Ne Zaman Ulaşır?",
-            "content": "<p>Siparişiniz <strong>24 saat içinde özenle hazırlanır ve DHL Kargo’ya teslim edilir.</strong> Kargoya verildikten sonra siparişiniz, <strong>hafta sonu ve resmi tatiller hariç 1–3 iş günü içerisinde adresinize ulaştırılır.</strong></p><p>Siparişiniz kargoya teslim edildiğinde <strong>takip bilgileriniz sizinle paylaşılır</strong> ve gönderinizin durumunu kolayca takip edebilirsiniz.</p>",
+            "content": "<p>Siparişiniz genellikle 24 saat içinde hazırlanıp DHL'e verilir ve hafta sonu ile resmi tatiller hariç 1–3 iş günü içinde ulaşır. Teslimat her durumda sipariş tarihinden itibaren en geç 30 gün içinde yapılır. Kargoya verildiğinde takip bilgileriniz paylaşılır.</p>",
             "open_by_default": false
           }
         }
@@ -790,7 +790,7 @@
             "iwidth": "custom",
             "icon_width": 24,
             "heading": "Kargo & Teslimat",
-            "content": "<p>2.000₺ üzeri siparişlerde kargo ücretsizdir.<br/>Siparişiniz 1-3 iş günü içinde kargoya teslim edilir.</p>",
+            "content": "<p>2.000₺ ve üzeri siparişlerde kargo ücretsizdir. Siparişiniz genellikle 1-3 iş günü içinde kargoya verilir; teslimat her durumda sipariş tarihinden itibaren en geç 30 gün içinde DHL ile yapılır.</p>",
             "metafields": "",
             "text_size": "text-base"
           }
@@ -801,8 +801,8 @@
             "icon": "none",
             "iwidth": "custom",
             "icon_width": 24,
-            "heading": "İade & Değişim",
-            "content": "<p>14 gün içinde kolay iade hakkınız bulunur.<br/>Ürünü kullanılmamış ve orijinal ambalajında bize ulaştırmanız yeterlidir.</p>",
+            "heading": "İade",
+            "content": "<p>Kapsül oluşturmadıysanız, teslimden itibaren 14 gün içinde gerekçe göstermeden iade edebilirsiniz; ürünü incelemek için kutuyu açmanız iade hakkınızı etkilemez. Kapsül oluşturulduğunda dijital kapsül hizmeti başlar ve iade hakkı sona erer. DHL iade koduyla gönderim ücretsizdir.</p>",
             "metafields": "",
             "text_size": "text-base"
           }
@@ -814,7 +814,7 @@
             "iwidth": "custom",
             "icon_width": 24,
             "heading": "Garanti",
-            "content": "<p>316L Çelik kararmaz ve paslanmaz, ömür boyu garantilidir.<br/>925 Ayar Gümüş ürünler kullanım koşullarına bağlı olarak zamanla karakter kazanabilir.</p>",
+            "content": "<p>Ürün içindeki çip süresiz garantilidir; çip çalışmazsa ücretsiz değiştiririz. Üretim hatalarında teslimden itibaren 2 yıl boyunca yasal haklarınız geçerlidir. 925 ayar gümüşte zamanla oluşan kararma metalin doğal özelliğidir. Kopma, kırılma, yamulma, ezilme ve çizilme gibi kullanım kaynaklı hasarlar garanti kapsamı dışındadır.</p>",
             "metafields": "",
             "text_size": "text-base"
           }
@@ -1107,13 +1107,13 @@
           "settings": {
             "ikon": "kargo",
             "ikon_renk": "#ffffff",
-            "baslik": "2.000₺ üzeri ücretsiz kargo.",
+            "baslik": "2.000₺ ve üzeri ücretsiz kargo.",
             "metin": "2.000₺ ve üzerindeki siparişlerinizde ücretsiz kargo avantajından yararlanın.",
             "eylem": "popup",
             "bag": "",
             "pop_etiket": "Gönderim",
             "pop_baslik": "Kargo Bizden",
-            "pop_metin": "<p>2.000 ₺ ve üzeri siparişlerinizde <strong>kargo ücretsizdir.</strong> Cumartesi ve pazar günleri hariç, <strong>saat 12.00’ye kadar verilen siparişler aynı gün kargoya teslim edilir.</strong> Siparişiniz, DHL Kargo ile <strong>ortalama 2 iş günü içinde</strong> adresinize ulaşır.</p>",
+            "pop_metin": "<p>2.000 ₺ ve üzeri siparişlerinizde <strong>kargo ücretsizdir.</strong> Hafta içi saat 12.00'ye kadar verilen siparişler genellikle aynı gün kargoya verilir ve DHL ile ortalama 2 iş günü içinde ulaşır. Yasal azami teslim süresi sipariş tarihinden itibaren 30 gündür.</p>",
             "pop_bag_metni": "",
             "pop_bag": ""
           }

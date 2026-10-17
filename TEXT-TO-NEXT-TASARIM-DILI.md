@@ -38,6 +38,16 @@ Sürüm: Ekim 2026. Kaynak: Text To Next tasarım sistemi (claude.ai Design Syst
 | `line` | `#D2D2CD` | Açık zeminde ince çizgiler: adım bağlantı çizgisi, ayraçlar, seçili olmayan çip/kart kenarlığı, ikincil buton kenarlığı, ilerleme çubuğunun boş kısmı, pasif galeri noktası. |
 | `line-dark` | `#262624` | Koyu zeminde ince çizgiler ve kart kenarlıkları, pasif nokta göstergeleri (koyu zeminde). |
 
+### Onaylı çizimlerden gelen renk istisnaları (17 Ekim 2026)
+
+Aşağıdaki üç renk paletin dışında ama onaylanmış çizimlerden geliyor; yalnızca yazılı oldukları bileşende kullanılır, başka yerde palet geçerlidir. Eşleştirme tablosundaki `#BDBDB8` → `#A3A39E` satırı bu bileşen için uygulanmaz.
+
+| HEX | Yalnızca şurada |
+|---|---|
+| `#F2F2EF` | "Nasıl çalışır?" kartının adım satırı metni |
+| `#BDBDB8` | "Nasıl çalışır?" kartının alt satırı ("4 adımda gör") |
+| `#CFCFCB` | Alttan açılan pencerenin tutamacı (40×5px) |
+
 ### Rol bazında özet
 
 - **Arka plan:** açık `#FFFFFF` / `#F4F4F4`; koyu `#000000`; koyu üstü kart `#141414`.
@@ -275,7 +285,7 @@ Numaralı daireler (`#0A0A0A` + beyaz numara), aralarında 2px `#D2D2CD` dikey �
 - Açık zeminde `#0A0A0A`, koyu zeminde `#FFFFFF`. Dolgulu ikon ve emoji yok. Çok renkli ikon yok.
 - Yıldızlar: açık zeminde `#0A0A0A`, koyu zeminde `#FFFFFF`.
 - **Marka simgeleri:**
-  - Single (kilitli halka): `<svg viewBox="-15 -15 30 30" fill="none"><circle r="12.5" stroke="#3A3A38" stroke-width="1.6"/><path d="M0 -12.5 A12.5 12.5 0 1 1 -10.8 6.25" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/><circle cx="-10.8" cy="6.25" r="2.4" fill="#D6FF00"/><path d="M-2.6 -1v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke="#FFFFFF" stroke-width="1.4"/><rect x="-4.2" y="-1.2" width="8.4" height="6.4" rx="1.5" fill="#FFFFFF"/></svg>` (menüde halka rengi `#262624`'e çekildi).
+  - Single (kilitli halka): `<svg viewBox="-15 -15 30 30" fill="none"><circle r="12.5" stroke="#262624" stroke-width="1.6"/><path d="M0 -12.5 A12.5 12.5 0 1 1 -10.8 6.25" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/><circle cx="-10.8" cy="6.25" r="2.4" fill="#D6FF00"/><path d="M-2.6 -1v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke="#FFFFFF" stroke-width="1.4"/><rect x="-4.2" y="-1.2" width="8.4" height="6.4" rx="1.5" fill="#FFFFFF"/></svg>` (halka rengi `#262624`; 17 Ekim 2026'da `#3A3A38`'den güncellendi, menü ve kılavuzla aynı).
   - Couple (iç içe halkalar, kesişim lime): `<svg viewBox="-17 -12 34 24" fill="none"><defs><clipPath id="BENZERSIZ"><circle cx="-5.5" r="9.5"/></clipPath></defs><circle cx="5.5" r="9.5" fill="#D6FF00" clip-path="url(#BENZERSIZ)"/><circle cx="-5.5" r="9.5" stroke="#FFFFFF" stroke-width="1.6"/><circle cx="5.5" r="9.5" stroke="#FFFFFF" stroke-width="1.6"/></svg>` (clipPath ID sayfada benzersiz olmalı).
 - Bilgi kutusu ikonları (viewBox 0 0 30 30, stroke ink 2px): bulut-yükleme (uzaktan yükle), açık kilit (tekrar kullan), sonsuzluk (sınırsız yükle), onaylı kalkan (garanti), onaylı takvim (gelecek inşa edin), iç içe halkalar (otomatik kilitlenir), kilit (sadece ikiniz). Path'ler "Nasıl çalışır" talimatında.
 
@@ -314,7 +324,7 @@ Tam ekran, `#000000` zemin. Yukarıdan aşağıya:
 3. **"NASIL ÇALIŞIR?"** etiketi (32px altta). İki kart yan yana (10px aralık): `#141414` zemin, 1px `#262624` kenar, 18px köşe, iç boşluk 16px, en az 132px yükseklik; üstte simge + çapraz ok (14px `#8A8A85`), altta başlık + açıklama:
    - Single – "Belirlediğin tarihte açılır." → `/pages/hediye-daha-fazla-bilgi-al`
    - Couple – "Buluşunca açılır." → `/pages/couple-daha-fazla-bilgi-al`
-4. **En alt:** "Etkinlik" → `/pages/event-daha-fazla-bilgi-al`, "İletişim" → `/pages/iletisimsayfasi` (48px, 17px 500 beyaz); 1px `#262624` çizgi; "Hafta içi 10.00–18.00 · 0216 606 14 15" (12.5px `#A3A39E`, tel: linki). "Satın alma sonrası desteğimiz süresizdir" metni menüde YOK.
+4. **En alt:** "Etkinlik" → `/pages/event-daha-fazla-bilgi-al`, "İletişim" → `/pages/iletisim` (48px, 17px 500 beyaz); 1px `#262624` çizgi; "Hafta içi 10.00–18.00 · 0216 606 14 15" (12.5px `#A3A39E`, tel: linki). "Satın alma sonrası desteğimiz süresizdir" metni menüde YOK.
 
 Davranış: `aria-expanded`/`aria-controls`, odak içeride döner, Esc ile kapanır, odak hamburger'e döner, arka sayfa kayması kilitli, içerik uzunsa menü kendi içinde kayar, animasyon 200–250ms (prefers-reduced-motion'da yok). Masaüstü: soldan 420px panel + `rgba(0,0,0,0.5)` karartma. Metin ve linkler tema editöründen düzenlenebilir.
 
@@ -394,7 +404,7 @@ Tema: "Tasarim dili - 2026-10-16" (ID 189140861248), "Calisma kopyasi - 2026-10-
 
 ## 10. Kontrol listesi (yeni bir bileşen bu dile uyuyor mu?)
 
-1. Sadece paletteki renkler mi var (`#0A0A0A`, `#D6FF00`, `#F4F4F4`, `#FFFFFF`, `#000000`, `#141414`, `#5C5C57`, `#8A8A85`, `#A3A39E`, `#D2D2CD`, `#262624`)? Mavi, yeşil, bordo, mor, turuncu, degrade yok mu?
+1. Sadece paletteki renkler mi var (bölüm 2'deki üç onaylı istisna hariç; `#0A0A0A`, `#D6FF00`, `#F4F4F4`, `#FFFFFF`, `#000000`, `#141414`, `#5C5C57`, `#8A8A85`, `#A3A39E`, `#D2D2CD`, `#262624`)? Mavi, yeşil, bordo, mor, turuncu, degrade yok mu?
 2. Neon yeşil sadece küçük bir öğede mi, ekranda en fazla 1-2 yerde mi, üzerinde ink yazı mı? Açık zeminde neon yazı yok mu?
 3. Font Poppins mi, başlıklar 700 ve negatif harf aralıklı mı? Yeni font yüklenmiyor mu?
 4. Başlıkta vurgu gerekiyorsa iki satırlı kural mı (ilk kısım ink/white, ikinci kısım 24px+ `#8A8A85`, altında `#5C5C57`)?
