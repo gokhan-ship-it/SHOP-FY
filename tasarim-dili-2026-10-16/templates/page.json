@@ -1,0 +1,127 @@
+{
+  "sections": {
+    "main-page": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "heading_size": "title-xl tracking-heading",
+        "heading_alignment": "text-left",
+        "heading_tag": "h1",
+        "text_size": "text-base",
+        "padding_top": 72,
+        "padding_bottom": 120,
+        "divider": false,
+        "narrow": true,
+        "rounded": false
+      }
+    },
+    "video_hero_rjhjrU": {
+      "type": "video-hero",
+      "blocks": {
+        "slide_4cAcgK": {
+          "type": "slide",
+          "settings": {
+            "heading": "Couple Zaman Kapsülü ile <em>unutulmaz ol</em>.",
+            "heading_size": "title-md",
+            "heading_tag": "h2",
+            "highlighted_text": "stencil",
+            "highlighted_scribble": "circle",
+            "highlighted_reveal": true
+          }
+        },
+        "slide_cKRBfw": {
+          "type": "slide",
+          "settings": {
+            "heading": "En özel anlar için <em>tasarlandı</em>.",
+            "heading_size": "title-md",
+            "heading_tag": "h2",
+            "highlighted_text": "stencil",
+            "highlighted_scribble": "circle",
+            "highlighted_reveal": false
+          }
+        }
+      },
+      "block_order": [
+        "slide_4cAcgK",
+        "slide_cKRBfw"
+      ],
+      "name": "t:sections.video-hero.name",
+      "settings": {
+        "transparent_header": true,
+        "video": "shopify://files/videos/hf_20260318_181640_17317f0c-95bd-474d-945e-2b08708cc138.mp4",
+        "video_url": "",
+        "description": "",
+        "enable_video_autoplay": true,
+        "enable_video_looping": true,
+        "content_width": "small",
+        "video_mobile": "shopify://files/videos/hf_20260318_181640_17317f0c-95bd-474d-945e-2b08708cc138.mp4",
+        "video_url_mobile": "",
+        "color_text": "#ffffff",
+        "color_background": "",
+        "gradient_background": "",
+        "color_highlight": "",
+        "gradient_highlight": "",
+        "color_overlay": "#000000",
+        "overlay_opacity": 40,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "divider": false,
+        "full_width": true,
+        "rounded": false
+      }
+    },
+    "featured_collection_Mw73Uf": {
+      "type": "featured-collection",
+      "name": "t:sections.featured-collection.name",
+      "settings": {
+        "collection": "",
+        "products": [
+          "luna-aurora-couple-zaman-kapsulu-kopya",
+          "vantablack-tasli-kilit-couple-zaman-kapsulu-kisi-2639-kopya",
+          "kral-classic-ocean-blue-couple-zaman-kapsulu-kisi-2399-kopya",
+          "zaman-kapsulu-kolye-classic-white-925-ayar-gumus-couple-kopya",
+          "kral-infinity-charm-couple-zaman-kapsulu-kisi-2519-kopya",
+          "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+          "luna-infinity-charm-couple-zaman-kapsulu-kisi-2279-kopya",
+          "nora-vera-couple-zaman-kapsulu-kopya",
+          "astor-chloe-couple-zaman-kapsulu-kisi-1639-kopya",
+          "vantablack-vera-couple-zaman-kapsulu-kisi-2199-kopya",
+          "nora-vera-couple-zaman-kapsulu-kisi-1759-kopya"
+        ],
+        "product_limit": 6,
+        "columns": 4,
+        "carousel_on_desktop": true,
+        "show_view_all": false,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "heading": "Sizin için Seçtiklerimiz",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "highlighted_text": "none",
+        "highlighted_scribble": "circle",
+        "highlighted_reveal": false,
+        "color_text": "",
+        "color_background": "",
+        "gradient_background": "",
+        "color_highlight": "",
+        "gradient_highlight": "",
+        "color_button_text": "",
+        "color_button_background": "",
+        "color_button_gradient": "",
+        "padding_top": 72,
+        "padding_bottom": 72,
+        "divider": false,
+        "full_width": false,
+        "rounded": false
+      }
+    }
+  },
+  "order": [
+    "main-page",
+    "video_hero_rjhjrU",
+    "featured_collection_Mw73Uf"
+  ]
+}
