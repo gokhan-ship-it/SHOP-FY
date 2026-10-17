@@ -24,6 +24,7 @@
   assign sid = section.id
   assign s = section.settings
   assign menu = linklists[s.menu]
+  assign haric = s.haric | remove: ' ' | split: ','
 -%}
 
 <style>
@@ -83,6 +84,7 @@
     {%- if menu.links.size > 0 -%}
       <ul>
         {%- for link in menu.links -%}
+          {%- if haric contains link.url -%}{%- continue -%}{%- endif -%}
           <li>
             <a href="{{ link.url }}">
               <span>{{ link.title }}</span>
@@ -122,6 +124,7 @@
     { "type": "text", "id": "baslik", "label": "Başlık", "default": "Sözleşmeler" },
     { "type": "richtext", "id": "aciklama", "label": "Açıklama" },
     { "type": "link_list", "id": "menu", "label": "Belgeler (menü)", "default": "footer" },
+    { "type": "text", "id": "haric", "label": "Listede gösterilmeyecek adresler", "default": "/pages/siparis-ve-iade", "info": "Virgülle ayır. Menüde olup sözleşme olmayan sayfalar için (ör. yardım sayfası)." },
     { "type": "text", "id": "arsiv_baslik", "label": "Arşiv başlığı", "default": "Önceki sürümler (arşiv, yürürlükte değildir)" },
     { "type": "richtext", "id": "arsiv_not", "label": "Arşiv notu" },
     { "type": "range", "id": "padding_top", "label": "Üst boşluk", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 72 },

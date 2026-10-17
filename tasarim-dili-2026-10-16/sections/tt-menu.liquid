@@ -28,6 +28,7 @@
   assign b3 = s.satir_3_bag | default: '/collections/couple-urunler'
   assign k1 = s.kart_1_bag | default: '/pages/hediye-daha-fazla-bilgi-al'
   assign k2 = s.kart_2_bag | default: '/pages/couple-daha-fazla-bilgi-al'
+  assign a0 = s.alt_0_bag | default: '/pages/siparis-ve-iade'
   assign a1 = s.alt_1_bag | default: '/pages/event-daha-fazla-bilgi-al'
   assign a2 = s.alt_2_bag | default: '/pages/iletisim'
 -%}
@@ -409,8 +410,10 @@
 
         <div class="ttm-dip">
           <ul class="ttm-kucuk">
+            {%- assign a0_yol = a0 | split: '?' | first | remove: shop.url -%}
             {%- assign a1_yol = a1 | split: '?' | first | remove: shop.url -%}
             {%- assign a2_yol = a2 | split: '?' | first | remove: shop.url -%}
+            {%- if s.alt_0_metin != blank -%}<li><a href="{{ a0 }}"{% if a0_yol == yol %} aria-current="page"{% endif %}>{{ s.alt_0_metin }}</a></li>{%- endif -%}
             {%- if s.alt_1_metin != blank -%}<li><a href="{{ a1 }}"{% if a1_yol == yol %} aria-current="page"{% endif %}>{{ s.alt_1_metin }}</a></li>{%- endif -%}
             {%- if s.alt_2_metin != blank -%}<li><a href="{{ a2 }}"{% if a2_yol == yol %} aria-current="page"{% endif %}>{{ s.alt_2_metin }}</a></li>{%- endif -%}
           </ul>
@@ -587,6 +590,8 @@
     { "type": "url", "id": "kart_2_bag", "label": "Sağ kart bağlantısı", "info": "Boşsa /pages/couple-daha-fazla-bilgi-al" },
 
     { "type": "header", "content": "Alt kısım" },
+    { "type": "text", "id": "alt_0_metin", "label": "Üst bağlantı (yardım)", "default": "Sipariş ve İade" },
+    { "type": "url", "id": "alt_0_bag", "label": "Üst bağlantı adresi", "info": "Boşsa /pages/siparis-ve-iade" },
     { "type": "text", "id": "alt_1_metin", "label": "1. bağlantı", "default": "Etkinlik" },
     { "type": "url", "id": "alt_1_bag", "label": "1. bağlantı adresi", "info": "Boşsa /pages/event-daha-fazla-bilgi-al" },
     { "type": "text", "id": "alt_2_metin", "label": "2. bağlantı", "default": "İletişim" },

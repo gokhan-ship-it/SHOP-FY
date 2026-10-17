@@ -278,6 +278,18 @@ Uygulanmış/onaylanmış özel değerler:
 - **Anahtar (aç/kapa):** 44×26 tam yuvarlak iz, 20px beyaz topuz; açık `#0A0A0A`, kapalı `#D2D2CD`, kilitli (zorunlu) `#5C5C57`. Dokunma alanı en az 44px. (Anahtar stili ilk kez burada tanımlandı; renkler mevcut token'lardan.)
 - **Alt yüzen öğeler:** band açıkken "Sepete ekle" çubukları, çark sayacı, "Nasıl çalışır?" ve "Sohbet" gizlenir; seçim yapılınca geri gelir.
 
+### SSS sayfası (akordiyon) (17 Ekim 2026)
+
+Yardım sayfası `/pages/siparis-ve-iade`. Bölüm: `sections/tt-sss.liquid`, şablon: `templates/page.siparis-ve-iade.json`.
+
+- **İçerik kaynağı:** sayfanın kendi içeriği (Sayfalar > Sipariş ve İade). Her soru bir Başlık 2 (`<h2 id="...">`); id sorunun #adresi. Cevaptaki Başlık 3'ler ara başlık olur. Yatay çizgiden (`<hr>`) sonrası alttaki küçük link satırı. Bu şablonu bilmeyen tema aynı içeriği düz sayfa olarak, aynı #adreslerle gösterir.
+- **Zemin ve kartlar:** bölüm zemini `#F4F4F4`; her soru `#FFFFFF` kart, 16px köşe, kartlar arası 8px, kenarlık ve gölge yok.
+- **Başlık:** title-xl 32px (768px ve üstünde 40px) 700 -1px; giriş 15px `#5C5C57`.
+- **Soru satırı:** 17px 700 -0.3px ink, iç boşluk 16px (masaüstünde 20px), en az 56px yükseklik; sağda ince çizgi artı (20px, 2px, ink), açıkken eksi.
+- **Cevap:** 15px satır 1.45 `#5C5C57`; ara başlık 15px 700 ink; liste işaretleri ink; linkler ink altı çizili.
+- **Alt link satırı:** 13.5px, linkler ink altı çizili, ayraç " · " `#5C5C57`, üstte 1px `#D2D2CD`, satır yüksekliği 44px.
+- **Davranış:** native `<details>`/`<summary>`; birden fazla soru açık kalabilir. Adres `#id` ile açılırsa (ilk yükleme veya sayfa içi link) o soru açık gelir ve sabit üst çubuğun altına (76px boşluk) kayar. Açılan sorunun adresi kaydırmadan adres çubuğuna yazılır. Odak halkası 2px ink.
+
 ### Rozetler
 
 - Neon: `#D6FF00` zemin, `#0A0A0A` yazı, 11.5px 600, tam yuvarlak, iç boşluk 5px 10px ("İkincisi yarı fiyatına", "%50", "2'li set").
@@ -336,13 +348,14 @@ Tam ekran, `#000000` zemin. Yukarıdan aşağıya:
 3. **"NASIL ÇALIŞIR?"** etiketi (32px altta). İki kart yan yana (10px aralık): `#141414` zemin, 1px `#262624` kenar, 18px köşe, iç boşluk 16px, en az 132px yükseklik; üstte simge + çapraz ok (14px `#8A8A85`), altta başlık + açıklama:
    - Single – "Belirlediğin tarihte açılır." → `/pages/hediye-daha-fazla-bilgi-al`
    - Couple – "Buluşunca açılır." → `/pages/couple-daha-fazla-bilgi-al`
-4. **En alt:** "Etkinlik" → `/pages/event-daha-fazla-bilgi-al`, "İletişim" → `/pages/iletisim` (48px, 17px 500 beyaz); 1px `#262624` çizgi; "Hafta içi 10.00–18.00 · 0216 606 14 15" (12.5px `#A3A39E`, tel: linki). "Satın alma sonrası desteğimiz süresizdir" metni menüde YOK.
+4. **En alt:** "Sipariş ve İade" → `/pages/siparis-ve-iade`, "Etkinlik" → `/pages/event-daha-fazla-bilgi-al`, "İletişim" → `/pages/iletisim` (48px, 17px 500 beyaz); 1px `#262624` çizgi; "Hafta içi 10.00–18.00 · 0216 606 14 15" (12.5px `#A3A39E`, tel: linki). "Satın alma sonrası desteğimiz süresizdir" metni menüde YOK.
 
 Davranış: `aria-expanded`/`aria-controls`, odak içeride döner, Esc ile kapanır, odak hamburger'e döner, arka sayfa kayması kilitli, içerik uzunsa menü kendi içinde kayar, animasyon 200–250ms (prefers-reduced-motion'da yok). Masaüstü: soldan 420px panel + `rgba(0,0,0,0.5)` karartma. Metin ve linkler tema editöründen düzenlenebilir.
 
 ### Footer
 
 - **Belirlenmedi.** Footer tasarımı bu çalışmada konuşulmadı.
+- Yasal link sütunu `footer-yasal` menüsünden gelir; en üstte "Sipariş ve İade" (17 Ekim 2026). `/pages/sozlesmeler` listesi aynı menüyü kullanır ama bu yardım linkini göstermez (`tt-belge-listesi` "Listede gösterilmeyecek adresler" ayarı).
 - Mevcut durum (Claude Code raporu): footer grubunda yalnızca newsletter bölümü açık; footer ve telif satırı bölümleri kapalı.
 - Newsletter kuralı (uygulandı): zemin `#000000`, giriş alanı `#141414`, gönder butonu beyaz zemin + ink ok, başlık beyaz Poppins 700, açıklama `#A3A39E`.
 
@@ -362,6 +375,7 @@ Tema: "Tasarim dili - 2026-10-16" (ID 189140861248), "Calisma kopyasi - 2026-10-
 | `layout/theme.liquid` | Ürün sayfası CSS katmanlarının yüklenme koşulu (`couple` son eki de normal ürün sayfası katmanlarını alıyor). |
 | `sections/tt-baslik` (+ `sections/tt-couple-urun.json` header grubu) | Üst bar. |
 | `sections/tt-menu.liquid` | Hamburger menü. |
+| `sections/tt-sss.liquid` + `templates/page.siparis-ve-iade.json` | "Sipariş ve İade" yardım sayfası (SSS akordiyonu, #adresler). |
 | `sections/tt-secim-kartlari.liquid` + `assets/tt-secim-kartlari.js` | Koleksiyon üstündeki Single/Couple seçim kartları, set oluşturma kutusu, "Nasıl çalışır?" kartı ve pencereleri, mod geçişi (`?mod=couple`, `data-sc-aktif-mod`, bölüm kökü `[data-tt-sc]`), `setler_adet` ayarı (Kampanyalı Couple Setler şeridi). |
 | `snippets/tt-uk-kart.liquid` + `assets/tt-uk-kart.js` | Koleksiyon ürün kartı (4:5, sadece fotoğraf filtresi, kaydırıcı, `uk_gorsel_sayisi`). |
 | `snippets/tt-urun-dil.liquid` | Yalnızca ürün sayfalarında yüklenen tasarım dili katmanı (galeri çerçevesi/noktalar, ad harf aralığı, fiyat 600, adım şeridi renkleri, malzeme hapı, adet kutusu, güven kutusu, SSS, UGC, öneri kartları, pencere kapat butonları). Kurallar `body.template-product` kapsamında. |

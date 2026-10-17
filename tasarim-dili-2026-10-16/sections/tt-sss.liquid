@@ -1,0 +1,238 @@
+{%- comment -%}
+  TT SSS -- yardim sayfasi (/pages/siparis-ve-iade)
+
+  Sablon: templates/page.siparis-ve-iade.json. Metinler bolum
+  ayarlarinda DEGIL, sayfanin kendi icerigindedir (Shopify yonetici >
+  Sayfalar > Siparis ve Iade); boylece metin tek yerde durur ve bu
+  sablonu bilmeyen tema (yayindaki tema) da ayni icerigi duz sayfa
+  olarak, ayni #adreslerle gosterir.
+
+  Icerik bicimi (bolum bunu okuyup akordiyona cevirir):
+    <p>Giris</p>
+    <h2 id="siparis">Soru</h2> ...cevap (p, ul, ol, h3, a)...
+    <h2 id="iade">Soru</h2> ...
+    <hr>
+    <p>Alttaki kucuk linkler</p>
+  - Her <h2> bir sorudur; id'si sorunun #adresidir (id yoksa sorudan
+    turetilir). Cevaptaki <h3>'ler ara baslik olarak gosterilir.
+  - <hr>'dan sonrasi sayfanin altindaki kucuk link satiri.
+
+  Davranis: sorular <details>/<summary>. Adres #id ile acilirsa (ilk
+  yukleme veya sayfa icinde #id linki) o soru acik gelir ve oraya
+  kaydirilir. Bir soru acilinca adres cubugu #id'ye guncellenir
+  (kaydirma olmadan), link kopyalanip paylasilabilir.
+
+  Tasarim dili (TEXT-TO-NEXT-TASARIM-DILI.md):
+  - Zemin surface #F4F4F4 ("SSS kartlari bolumu"), kartlar #FFFFFF,
+    16px kose (radius-md), aralik 8px (space-2), ic bosluk 16px
+    (masaustunde 20px), golge ve kenarlik yok.
+  - Baslik title-xl 32/700/1.08/-1px; 768px ve ustunde 40px (17.10.2026).
+  - Giris body 15px #5C5C57. Soru title-md 17/700/-0.3px ink; dokunma
+    alani en az 56px. Cevap body 15px/1.45 #5C5C57; ara baslik 15px 700
+    ink; linkler ink alti cizili.
+  - Ikon: ince cizgi arti (20px, 2px, ink), acikken eksi. Odak halkasi
+    2px ink. Hover yok (belirlenmedi).
+  - Alt link satiri small 13.5px; linkler ink alti cizili, ayrac
+    #5C5C57; ust cizgi 1px #D2D2CD; satir yuksekligi 44px.
+  - Genislik ve bolum bosluklari temanin sayfa duzeni (page-width
+    --narrow, section--padding).
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+
+  assign icerik = page.content
+  assign alt_satir = ''
+  if icerik contains '<hr'
+    assign hr_parca = icerik | split: '<hr'
+    assign ana = hr_parca | first
+    assign kalan = icerik | remove_first: ana | remove_first: '<hr'
+    assign hr_kuyruk = kalan | split: '>' | first
+    assign alt_satir = kalan | remove_first: hr_kuyruk | remove_first: '>' | strip
+  else
+    assign ana = icerik
+  endif
+
+  assign sorular = ana | split: '<h2'
+  assign giris = sorular | first | strip
+-%}
+
+<style>
+  #shopify-section-{{ sid }} {
+    --section-padding-top: {{ s.padding_top }}px;
+    --section-padding-bottom: {{ s.padding_bottom }}px;
+    background: #f4f4f4;
+  }
+  .tts-{{ sid }} { color: #0a0a0a; }
+  .tts-{{ sid }} h1 {
+    margin: 0 0 12px;
+    font-family: var(--font-heading-family);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -1px;
+  }
+  @media screen and (min-width: 768px) { .tts-{{ sid }} h1 { font-size: 40px; } }
+  .tts-{{ sid }} .tts-giris { margin-bottom: 24px; color: #5c5c57; font-size: 15px; line-height: 1.45; }
+  .tts-{{ sid }} .tts-giris p { margin: 0; }
+  .tts-{{ sid }} .tts-liste { display: grid; gap: 8px; }
+  .tts-{{ sid }} .tts-soru {
+    background: #ffffff;
+    border-radius: 16px;
+    /* Sabit ust cubugun altinda kalmasin */
+    scroll-margin-top: 76px;
+  }
+  .tts-{{ sid }} .tts-soru > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 56px;
+    padding: 16px;
+    box-sizing: border-box;
+    cursor: pointer;
+    list-style: none;
+    border-radius: 16px;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.3px;
+    color: #0a0a0a;
+  }
+  .tts-{{ sid }} .tts-soru > summary::-webkit-details-marker { display: none; }
+  .tts-{{ sid }} .tts-soru > summary::marker { content: ''; }
+  .tts-{{ sid }} .tts-soru > summary:focus-visible { outline: 2px solid #0a0a0a; outline-offset: 2px; }
+  .tts-{{ sid }} .tts-ikon { flex: 0 0 auto; width: 20px; height: 20px; color: #0a0a0a; }
+  .tts-{{ sid }} .tts-ikon svg { display: block; width: 100%; height: 100%; }
+  .tts-{{ sid }} .tts-ikon .tts-dikey { transform-origin: center; transition: transform .2s ease, opacity .2s ease; }
+  .tts-{{ sid }} .tts-soru[open] .tts-ikon .tts-dikey { transform: rotate(90deg); opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { .tts-{{ sid }} .tts-ikon .tts-dikey { transition: none; } }
+  .tts-{{ sid }} .tts-cevap {
+    padding: 0 16px 16px;
+    color: #5c5c57;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .tts-{{ sid }} .tts-cevap > :first-child { margin-top: 0; }
+  .tts-{{ sid }} .tts-cevap > :last-child { margin-bottom: 0; }
+  .tts-{{ sid }} .tts-cevap p { margin: 0 0 12px; }
+  .tts-{{ sid }} .tts-cevap ul,
+  .tts-{{ sid }} .tts-cevap ol { margin: 0 0 12px; padding-left: 20px; }
+  .tts-{{ sid }} .tts-cevap li { margin-bottom: 6px; }
+  .tts-{{ sid }} .tts-cevap li::marker { color: #0a0a0a; }
+  .tts-{{ sid }} .tts-cevap .tts-ara { margin: 16px 0 6px; color: #0a0a0a; font-weight: 700; }
+  .tts-{{ sid }} .tts-cevap strong { color: #0a0a0a; }
+  .tts-{{ sid }} :is(.tts-cevap, .tts-alt) a { color: #0a0a0a; text-decoration: underline; text-underline-offset: 2px; }
+  .tts-{{ sid }} :is(.tts-cevap, .tts-alt) a:focus-visible { outline: 2px solid #0a0a0a; outline-offset: 2px; border-radius: 2px; }
+  .tts-{{ sid }} .tts-alt {
+    margin-top: 32px;
+    padding-top: 8px;
+    border-top: 1px solid #d2d2cd;
+    color: #5c5c57;
+    font-size: 13.5px;
+    line-height: 44px;
+  }
+  .tts-{{ sid }} .tts-alt p { margin: 0; }
+  .tts-{{ sid }} .tts-alt a { display: inline-block; white-space: nowrap; }
+  @media screen and (min-width: 768px) {
+    .tts-{{ sid }} .tts-soru > summary { padding: 20px; }
+    .tts-{{ sid }} .tts-cevap { padding: 0 20px 20px; }
+  }
+</style>
+
+<div class="section section--padding">
+  <div class="tts-{{ sid }} page-width page-width--narrow relative" id="TtSss-{{ sid }}">
+    <h1>{{ page.title | escape }}</h1>
+    {%- if giris != blank -%}<div class="tts-giris">{{ giris }}</div>{%- endif -%}
+
+    {%- if sorular.size > 1 -%}
+      <div class="tts-liste">
+        {%- for parca in sorular offset: 1 -%}
+          {%- liquid
+            assign bas = parca | split: '</h2>' | first
+            assign baslik_ic = bas | split: '>' | first
+            assign soru = bas | remove_first: baslik_ic | remove_first: '>' | strip_html | strip
+            assign kimlik = ''
+            if baslik_ic contains 'id="'
+              assign kimlik = baslik_ic | split: 'id="' | last | split: '"' | first
+            endif
+            if kimlik == blank
+              assign kimlik = soru | handleize
+            endif
+            assign cevap = parca | remove_first: bas | remove_first: '</h2>' | replace: '<h3>', '<p class="tts-ara">' | replace: '</h3>', '</p>' | strip
+          -%}
+          <details class="tts-soru" id="{{ kimlik | escape }}">
+            <summary>
+              <span>{{ soru }}</span>
+              <span class="tts-ikon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10h14"/><path class="tts-dikey" d="M10 3v14"/></svg>
+              </span>
+            </summary>
+            {%- if cevap != blank -%}<div class="tts-cevap">{{ cevap }}</div>{%- endif -%}
+          </details>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if alt_satir != blank -%}
+      <nav class="tts-alt" aria-label="{{ s.alt_etiket | escape }}">{{ alt_satir }}</nav>
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+  (function () {
+    var kok = document.getElementById('TtSss-{{ sid }}');
+    if (!kok) return;
+    var kullaniciKaydirdi = false;
+
+    function hedef(hash) {
+      if (!hash || hash.length < 2) return null;
+      var id = hash.slice(1);
+      try { id = decodeURIComponent(id); } catch (e) {}
+      var d = document.getElementById(id);
+      return d && d.tagName === 'DETAILS' && kok.contains(d) ? d : null;
+    }
+    function acVeKaydir(hash) {
+      var d = hedef(hash);
+      if (!d) return false;
+      d.open = true;
+      d.scrollIntoView({ block: 'start' });
+      return true;
+    }
+
+    if (acVeKaydir(location.hash)) {
+      /* Gorseller/fontlar yuklenince yerlesim kayarsa, kullanici kaydirmadiysa tekrar hizala */
+      ['wheel', 'touchmove', 'keydown'].forEach(function (t) {
+        window.addEventListener(t, function () { kullaniciKaydirdi = true; }, { once: true, passive: true });
+      });
+      window.addEventListener('load', function () { if (!kullaniciKaydirdi) acVeKaydir(location.hash); });
+    }
+    window.addEventListener('hashchange', function () { acVeKaydir(location.hash); });
+
+    /* Acilan sorunun adresi paylasilabilsin (kaydirmadan) */
+    kok.addEventListener('toggle', function (e) {
+      var d = e.target;
+      if (!d || !d.classList || !d.classList.contains('tts-soru') || !d.open || !d.id) return;
+      if (location.hash !== '#' + d.id && window.history && history.replaceState) {
+        history.replaceState(history.state, '', '#' + d.id);
+      }
+    }, true);
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "SSS (yardım sayfası)",
+  "tag": "section",
+  "class": "tt-sss",
+  "settings": [
+    { "type": "paragraph", "content": "Başlık, giriş, sorular ve alttaki linkler sayfanın kendi içeriğinden gelir (Sayfalar > ilgili sayfa). Her soru bir Başlık 2'dir; #adresi başlığın id'sidir. Alt link satırı yatay çizgiden sonra gelir." },
+    { "type": "text", "id": "alt_etiket", "label": "Alt link satırı (ekran okuyucu etiketi)", "default": "İlgili sözleşme ve politikalar" },
+    { "type": "range", "id": "padding_top", "label": "Üst boşluk", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 72 },
+    { "type": "range", "id": "padding_bottom", "label": "Alt boşluk", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 120 }
+  ],
+  "presets": [{ "name": "SSS (yardım sayfası)" }]
+}
+{% endschema %}
