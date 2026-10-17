@@ -1,0 +1,27 @@
+HTTP/1.1 200 Connection Established
+
+HTTP/2 200 
+date: Sat, 17 Oct 2026 10:42:03 GMT
+content-type: application/pdf
+content-length: 583352
+access-control-allow-origin: *
+access-control-expose-headers: *
+cache-control: public, max-age=31557600
+last-modified: Sat, 17 Oct 2026 10:42:03 GMT
+link: <https://cdn.shopify.com/s/files/1/0864/8953/0688/files/uyelik_sozlesmesi.pdf>; rel="canonical"
+server-timing: imagery;dur=84.039, imageryFetch;dur=83.706
+timing-allow-origin: *
+x-content-type-options: nosniff
+x-robots-tag: none
+x-xss-protection: 1; mode=block
+strict-transport-security: max-age=15552000; includeSubDomains; preload
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=xNpeGmVdmRKAxVoOUx8oJJpwkTmV3c46l8fGN5xdZabA4%2F%2BEjJwDKdko53jKWPKgHoYjb6cttrWJQ8PJaMnkSCF98VluX3zKqWQMvdBxlbenZ5gJbnjcclyxCdxajLQJWw%3D%3D"}]}
+x-dc: gcp-us-central1,gcp-us-central1
+x-request-id: 8716a7df-306f-4699-8f79-a8f74f430784-1792160511
+server: cloudflare
+accept-ranges: bytes
+nel: {"report_to":"cf-nel","success_fraction":0.01,"max_age":604800}
+cf-cache-status: HIT
+cf-ray: a4beb1c3788420d6-IAD
+alt-svc: h3=":443"; ma=86400
+
