@@ -1,0 +1,233 @@
+{
+ "alinma": "2026-10-17 (garanti metni degisikliginden once)",
+ "magaza": {
+  "name": "Text To Next",
+  "myshopifyDomain": "52ae29-e0.myshopify.com"
+ },
+ "kaynak": "Shopify Admin GraphQL (salt okunur sorgu); ham yanitlar ham/ klasorunde birebir",
+ "sorgu": "query($first: Int!, $after: String) { collections(first: $first, after: $after, sortKey: ID) { pageInfo { hasNextPage endCursor } nodes { id handle title descriptionHtml seo { title description } image { altText url } } } }",
+ "collectionsCount": {
+  "count": 17,
+  "precision": "EXACT"
+ },
+ "cekilen": 17,
+ "sayfalama": [
+  {
+   "hasNextPage": false,
+   "endCursor": "eyJsYXN0X2lkIjo1MjAyMzQxMDcyMDAsImxhc3RfdmFsdWUiOiI1MjAyMzQxMDcyMDAifQ=="
+  }
+ ],
+ "collections": [
+  {
+   "id": "gid://shopify/Collection/472387879232",
+   "handle": "frontpage",
+   "title": "Home page",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": null
+  },
+  {
+   "id": "gid://shopify/Collection/472433557824",
+   "handle": "zaman-kapsulu-bileklik",
+   "title": "Erkekler İçin Zaman Kapsülleri",
+   "descriptionHtml": "<!---->",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": {
+    "altText": "Erkekler İçin Zaman Kapsülleri - Text To Next",
+    "url": "https://cdn.shopify.com/s/files/1/0864/8953/0688/collections/GOURMET-127324.png?v=1734990658"
+   }
+  },
+  {
+   "id": "gid://shopify/Collection/472435327296",
+   "handle": "klasik-zaman-kapsulu",
+   "title": "Klasik Zaman Kapsülü",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": {
+    "altText": "Klasik Zaman Kapsülü - Text To Next",
+    "url": "https://cdn.shopify.com/s/files/1/0864/8953/0688/collections/k1-543228.png?v=1734990664"
+   }
+  },
+  {
+   "id": "gid://shopify/Collection/472435654976",
+   "handle": "zaman-kapsulu-kolyeler",
+   "title": "Kadınlar İçin Zaman Kapsülleri",
+   "descriptionHtml": "<!---->",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": {
+    "altText": "Zaman Kapsülü Kolyeler - Text To Next",
+    "url": "https://cdn.shopify.com/s/files/1/0864/8953/0688/collections/1-892175.png?v=1736460747"
+   }
+  },
+  {
+   "id": "gid://shopify/Collection/472435687744",
+   "handle": "event-zaman-kapsulu",
+   "title": "Event Zaman Kapsülü",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": {
+    "altText": "Event Zaman Kapsülü - Text To Next",
+    "url": "https://cdn.shopify.com/s/files/1/0864/8953/0688/collections/ev1-510541.png?v=1734990661"
+   }
+  },
+  {
+   "id": "gid://shopify/Collection/472454758720",
+   "handle": "reelup-do-not-delete",
+   "title": "REELUP (DO NOT DELETE)",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": null
+  },
+  {
+   "id": "gid://shopify/Collection/473364889920",
+   "handle": "zaman-tuneli-fotograflar",
+   "title": "Zaman Tüneli Fotoğraflar",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": {
+    "altText": "Zaman Tüneli Fotoğraflar - Text To Next",
+    "url": "https://cdn.shopify.com/s/files/1/0864/8953/0688/collections/photo_upload-678223.png?v=1734990698"
+   }
+  },
+  {
+   "id": "gid://shopify/Collection/481835811136",
+   "handle": "zaman-kapsulu-erkek-kolye",
+   "title": "Zaman Kapsülü Erkek Kolye",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": {
+    "altText": "Zaman Kapsülü Erkek Kolye - Text To Next",
+    "url": "https://cdn.shopify.com/s/files/1/0864/8953/0688/collections/Sequence_02.00_00_57_11.Still004-877473.jpg?v=1734990666"
+   }
+  },
+  {
+   "id": "gid://shopify/Collection/483837641024",
+   "handle": "zaman-kapsulu-kunyeler",
+   "title": "Zaman Kapsülü Künyeler",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": {
+    "altText": "Zaman Kapsülü Künyeler - Text To Next",
+    "url": "https://cdn.shopify.com/s/files/1/0864/8953/0688/collections/Baby_Tag.1691-713004.png?v=1734990697"
+   }
+  },
+  {
+   "id": "gid://shopify/Collection/492006932800",
+   "handle": "zaman-kapsulu-charmlar",
+   "title": "Zaman Kapsülü Charm'lar",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": {
+    "altText": "Zaman Kapsülü Charm'lar - Text To Next",
+    "url": "https://cdn.shopify.com/s/files/1/0864/8953/0688/collections/charm1_urun_fotografi2-897180.jpg?v=1737190178"
+   }
+  },
+  {
+   "id": "gid://shopify/Collection/504636145984",
+   "handle": "omur-boyu-garantili-celik-zaman-kapsulleri",
+   "title": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": null
+  },
+  {
+   "id": "gid://shopify/Collection/506003718464",
+   "handle": "couple",
+   "title": "Couple",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": null
+  },
+  {
+   "id": "gid://shopify/Collection/506039501120",
+   "handle": "couple-collection",
+   "title": "Couple Collection",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": null
+  },
+  {
+   "id": "gid://shopify/Collection/511335203136",
+   "handle": "couple-zaman-kapsulleri",
+   "title": "Couple Zaman Kapsülleri",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": null
+  },
+  {
+   "id": "gid://shopify/Collection/515410526528",
+   "handle": "couple-urunler",
+   "title": "Couple Ürünler",
+   "descriptionHtml": "",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": null
+  },
+  {
+   "id": "gid://shopify/Collection/519914520896",
+   "handle": "1-al-1-bedava-celik",
+   "title": "1 Al 1 Bedava — Çelik",
+   "descriptionHtml": "1 Al 1 Bedava kampanyasına dahil olan 316L çelik ürünler (tekli ve Couple listelemeleri). Otomatik indirimin kapsamı bu koleksiyondur.",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": null
+  },
+  {
+   "id": "gid://shopify/Collection/520234107200",
+   "handle": "kampanyali-couple-setler",
+   "title": "Kampanyalı Couple Setler",
+   "descriptionHtml": "<p>Koleksiyon sayfasındaki \"Kampanyalı Couple Setler\" bloğunu besler. Sıra bu koleksiyondaki sıradır; ürün ekleyip çıkararak bloğu yönetebilirsiniz.</p>",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "image": null
+  }
+ ]
+}

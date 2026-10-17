@@ -1,0 +1,294 @@
+{
+ "alinma": "2026-10-17 (garanti metni degisikliginden once)",
+ "magaza": {
+  "name": "Text To Next",
+  "myshopifyDomain": "52ae29-e0.myshopify.com"
+ },
+ "kaynak": "Shopify Admin GraphQL (salt okunur sorgu); ham yanitlar ham/ klasorunde birebir",
+ "sorgu": "query($first: Int!, $after: String) { pages(first: $first, after: $after, sortKey: ID) { pageInfo { hasNextPage endCursor } nodes { id handle title isPublished templateSuffix body } } }",
+ "pagesCount": {
+  "count": 34,
+  "precision": "EXACT"
+ },
+ "cekilen": 34,
+ "sayfalama": [
+  {
+   "hasNextPage": false,
+   "endCursor": "eyJsYXN0X2lkIjoxNjcyNzY1NzcwODgsImxhc3RfdmFsdWUiOiIxNjcyNzY1NzcwODgifQ=="
+  }
+ ],
+ "pages": [
+  {
+   "id": "gid://shopify/Page/134276710720",
+   "handle": "contact",
+   "title": "Contact",
+   "isPublished": true,
+   "templateSuffix": "contact",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/134431506752",
+   "handle": "mesafeli-satis-sozlesmesi",
+   "title": "Mesafeli Satış Sözleşmesi",
+   "isPublished": true,
+   "templateSuffix": "yasal",
+   "body": "<p><em>Sürüm 1.0 · Son güncelleme: 17 Ekim 2026 · Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.</em></p>\n<p><strong>Madde 1 – Taraflar</strong></p>\n<p>Satıcı: Text To Next Mücevherat Sanayi ve Ticaret Limited Şirketi, Göztepe Mah. Tepegöz Sk. Ikar İş Merkezi No:1 İç Kapı No:8 Kadıköy/İstanbul. Vergi Dairesi / No: Göztepe / 8411045302. MERSİS No: 0841104530200001. Telefon: 0216 606 14 15. E-posta: info@texttonext.com. KEP: texttonext@hs06.kep.tr.</p>\n<p>Alıcı: Sipariş sırasında adı, soyadı, adresi, telefonu ve e-posta adresi bildirilen kişidir. Bu bilgiler sipariş özetinde yer alır.</p>\n<p><strong>Madde 2 – Tanımlar</strong></p>\n<ul>\n<li>Ürün: Satıcının texttonext.com üzerinden sattığı, içinde NFC çip bulunan takı ile bu takı üzerinden erişilen Dijital Kapsül Hizmeti'nin birlikte oluşturduğu bütündür.</li>\n<li>Dijital Kapsül Hizmeti: Çip aracılığıyla Text To Next uygulamasında erişilen; fotoğraf, video, ses kaydı ve not yüklenmesine, saklanmasına, kilitlenmesine ve belirlenen tarihte açılmasına imkan veren yazılım hizmetidir.</li>\n<li>Kapsül Oluşturma: Ürünün uygulamada bir hesapla eşleştirilmesi, kapsüle isim verilmesi ve Dijital Kapsül Hizmeti'nin kullanıma açılmasıdır.</li>\n<li>Yönetmelik: 27.11.2014 tarihli ve 29188 sayılı Resmî Gazete'de yayımlanan Mesafeli Sözleşmeler Yönetmeliği'dir.</li>\n</ul>\n<p><strong>Madde 3 – Konu</strong></p>\n<p>Bu Sözleşme, Alıcının texttonext.com üzerinden elektronik ortamda siparişini verdiği Ürün'ün satışı, teslimi ve Dijital Kapsül Hizmeti'nin sunulmasına ilişkin olarak tarafların hak ve yükümlülüklerini 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Yönetmelik hükümleri çerçevesinde düzenler.</p>\n<p><strong>Madde 4 – Ürün, Fiyat ve Ödeme</strong></p>\n<p>Ürün'ün adı, modeli, malzemesi, adedi, birim fiyatı, kargo bedeli, indirimler, toplam tutar ve ödeme yöntemi sipariş özetinde yer alır. Sipariş özeti, sipariş onayıyla Alıcının e-posta adresine gönderilir ve bu Sözleşmenin ayrılmaz parçasıdır. Fiyatlara uygulanan vergiler faturada gösterilir. Ödeme PayTR altyapısıyla alınır; Satıcı kart bilgilerini saklamaz.</p>\n<p><strong>Madde 5 – Teslimat</strong></p>\n<p>5.1. Ürün, DHL aracılığıyla Alıcının belirttiği adrese ve kişiye, sipariş tarihinden itibaren en geç 30 gün içinde teslim edilir.</p>\n<p>5.2. 2.499 TL ve üzeri siparişlerde kargo ücretsizdir. Altındaki siparişlerde kargo bedeli Alıcıya aittir ve sipariş özetinde gösterilir.</p>\n<p>5.3. Ürün'ün Alıcı dışında bir kişiye teslim edilecek olması halinde, o kişinin teslimatı kabul etmemesinden Satıcı sorumlu tutulamaz.</p>\n<p>5.4. Satıcı, Ürün'ü süresinde teslim edemeyeceğini öğrenirse durumu Alıcıya bildirir. Alıcı bu durumda siparişi iptal edebilir; ödenen tutar 14 gün içinde iade edilir.</p>\n<p>5.5. Alıcının teslim sırasında paketi kontrol etmesi, hasarlı paketlerde kargo görevlisine tutanak tutturması tavsiye edilir.</p>\n<p><strong>Madde 6 – Cayma Hakkı</strong></p>\n<p>6.1. Alıcı, Kapsül Oluşturma gerçekleşmemiş olmak şartıyla, Ürün'ü teslim aldığı tarihten itibaren 14 gün içinde herhangi bir gerekçe göstermeden ve cezai şart ödemeden cayma hakkını kullanabilir.</p>\n<p>6.2. Cayma bildirimi, süre içinde info@texttonext.com adresine veya sitedeki iletişim kanallarına sipariş numarası belirtilerek yapılır.</p>\n<p>6.3. Satıcı, bildirim üzerine Alıcıya DHL iade kodu iletir. Alıcı, cayma bildiriminden itibaren 10 gün içinde Ürün'ü kutusu, kullanım kılavuzu kartı ve varsa hediye edilen ürünlerle birlikte bu kodla DHL'e teslim eder.</p>\n<p>6.4. İade, Satıcının belirlediği taşıyıcı olan DHL ile ve iletilen iade koduyla gönderilirse iade kargo bedeli Satıcıya aittir. Başka bir kargo firmasıyla gönderilirse iade kargo bedeli Alıcıya aittir.</p>\n<p>6.5. Satıcı, cayma bildiriminin kendisine ulaştığı tarihten itibaren 14 gün içinde, teslim masrafları dahil Alıcıdan tahsil ettiği tüm ödemeleri, ödeme yöntemine uygun şekilde iade eder. Satıcı, Ürün kendisine ulaşıncaya veya Alıcı Ürün'ü geri gönderdiğini ispat edinceye kadar iadeyi bekletebilir.</p>\n<p>6.6. Alıcı, cayma süresi içinde Ürün'ü işleyişine, teknik özelliklerine ve kullanım talimatlarına uygun kullandığı sürece oluşan değişikliklerden sorumlu değildir.</p>\n<p><strong>Madde 7 – Cayma Hakkının Kullanılamayacağı Haller</strong></p>\n<p>7.1. Kapsül Oluşturma ile birlikte Dijital Kapsül Hizmeti'nin ifasına Alıcının onayıyla başlanır ve dijital içerik anında teslim edilmiş olur. Bu nedenle Kapsül Oluşturma gerçekleştikten sonra, cayma süresi dolmamış olsa dahi Ürün için cayma hakkı kullanılamaz. Bu hüküm, Yönetmeliğin 15. maddesinde sayılan şu hallere dayanır:</p>\n<ul>\n<li>Tesliminden sonra koruyucu unsurları açılmış olması şartıyla maddi ortamda sunulan yazılım programları ve dijital içerikler,</li>\n<li>Cayma süresi sona ermeden önce tüketicinin onayıyla ifasına başlanan hizmetler,</li>\n<li>Elektronik ortamda anında ifa edilen hizmetler ve tüketiciye anında teslim edilen gayrimaddi mallar.</li>\n</ul>\n<p>7.2. Kapsül Oluşturmanın Ürün'ü hediye olarak alan kişi tarafından yapılması bu sonucu değiştirmez. Uygulama, Kapsül Oluşturma sırasında bu sonuç hakkında ayrıca açık onay alır ve onayın tarih, saat ve ürün kimliğini kayıt altına alır.</p>\n<p>7.3. Alıcının isteği doğrultusunda kişiye özel hazırlanan ürünlerde (isim, tarih veya mesaj kazınmış ürünler gibi) cayma hakkı kullanılamaz.</p>\n<p><strong>Madde 8 – Ayıplı Ürün ve Garanti</strong></p>\n<p>8.1. Alıcının 6502 sayılı Kanun'dan doğan ayıplı mala ilişkin hakları (ücretsiz onarım, ayıpsız misliyle değişim, bedel indirimi veya sözleşmeden dönme), cayma hakkının kullanılamadığı hallerde de saklıdır. Bu haklar teslimden itibaren 2 yıl içinde kullanılabilir.</p>\n<p>8.2. Ürün içindeki çip için süresiz garanti verilir; çipin çalışmaması halinde Satıcı çipi ücretsiz değiştirir.</p>\n<p>8.3. 925 ayar gümüş ürünlerde ve gümüşten üretilen charm/uç parçalarında zamanla oluşan kararma, metalin doğal özelliğidir ve ayıp sayılmaz.</p>\n<p>8.4. Kopma, kırılma, yamulma, ezilme, çizilme ve benzeri kullanıcı kaynaklı hasarlar garanti kapsamı dışındadır. Üretim hatasından kaynaklanan durumlarda Alıcının 8.1'deki yasal hakları saklıdır.</p>\n<p><strong>Madde 9 – Kişisel Veriler</strong></p>\n<p>Alıcının kişisel verileri, sitede yayımlanan Gizlilik Politikası ve KVKK Aydınlatma Metni çerçevesinde işlenir.</p>\n<p><strong>Madde 10 – Uyuşmazlıkların Çözümü</strong></p>\n<p>Bu Sözleşmeden doğan uyuşmazlıklarda, Ticaret Bakanlığınca her yıl ilan edilen parasal sınırlar dahilinde Alıcının veya Satıcının yerleşim yerindeki Tüketici Hakem Heyetleri, bu sınırları aşan durumlarda Tüketici Mahkemeleri görevlidir.</p>\n<p><strong>Madde 11 – Yürürlük</strong></p>\n<p>Alıcı, siparişi vermeden önce Ön Bilgilendirme Formu'nu ve bu Sözleşmeyi okuduğunu, özellikle Madde 6 ve Madde 7'deki cayma hakkı koşullarını anladığını elektronik ortamda onaylar. Sözleşme bu onayla yürürlüğe girer. Sözleşmenin ve sipariş özetinin bir kopyası Alıcının e-posta adresine gönderilir.</p>"
+  },
+  {
+   "id": "gid://shopify/Page/134431539520",
+   "handle": "gizlilik-sozlesmesi",
+   "title": "Gizlilik Sözleşmesi",
+   "isPublished": true,
+   "templateSuffix": "yasal",
+   "body": "<p><em>Sürüm 1.0 · Son güncelleme: 17 Ekim 2026 · Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.</em></p>\n<p>Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu'nun (KVKK) 10. maddesi uyarınca, texttonext.com ve Text To Next uygulaması kullanıcılarını bilgilendirmek için hazırlanmıştır.</p>\n<p><strong>1. Veri Sorumlusu</strong></p>\n<p>Text To Next Mücevherat Sanayi ve Ticaret Limited Şirketi (\"Text To Next\"). Adres: Göztepe Mah. Tepegöz Sk. Ikar İş Merkezi No:1 İç Kapı No:8 Kadıköy/İstanbul. E-posta: info@texttonext.com. KEP: texttonext@hs06.kep.tr. Telefon: 0216 606 14 15.</p>\n<p><strong>2. İşlenen Kişisel Veriler, Amaçları ve Hukuki Sebepleri</strong></p>\n<div class=\"tt-yasal-tablo\" style=\"overflow-x:auto;-webkit-overflow-scrolling:touch\"><table>\n<thead><tr>\n<th>Veri kategorisi</th>\n<th>Örnekler</th>\n<th>İşleme amacı</th>\n<th>Hukuki sebep (KVKK m.5)</th>\n</tr></thead>\n<tbody>\n<tr>\n<td>Kimlik ve iletişim</td>\n<td>Ad, soyad, telefon, e-posta, teslimat ve fatura adresi</td>\n<td>Siparişin alınması, teslimat, faturalandırma, destek</td>\n<td>Sözleşmenin ifası; hukuki yükümlülük</td>\n</tr>\n<tr>\n<td>Müşteri işlem</td>\n<td>Sipariş geçmişi, iade ve şikayet kayıtları, destek yazışmaları</td>\n<td>Satış sonrası hizmet, talep ve şikayetlerin yönetimi</td>\n<td>Sözleşmenin ifası; meşru menfaat</td>\n</tr>\n<tr>\n<td>Finansal</td>\n<td>Ödeme tutarı, işlem kimliği, taksit bilgisi</td>\n<td>Tahsilat ve muhasebe</td>\n<td>Sözleşmenin ifası; hukuki yükümlülük</td>\n</tr>\n<tr>\n<td>Uygulama hesabı</td>\n<td>E-posta, şifre (şifrelenmiş), ürün kimliği, kapsül adı, kilit tarihi</td>\n<td>Dijital Kapsül Hizmeti'nin sunulması</td>\n<td>Sözleşmenin ifası</td>\n</tr>\n<tr>\n<td>Kapsül içerikleri</td>\n<td>Yüklenen fotoğraf, video, ses kaydı ve notlar</td>\n<td>İçeriğin saklanması ve belirlenen tarihte erişime açılması</td>\n<td>Sözleşmenin ifası</td>\n</tr>\n<tr>\n<td>Onay kayıtları</td>\n<td>Onaylanan metin ve sürümü, tarih, saat, ürün kimliği</td>\n<td>Onayların ispatı</td>\n<td>Hukuki yükümlülük; bir hakkın tesisi ve korunması</td>\n</tr>\n<tr>\n<td>İşlem güvenliği</td>\n<td>IP adresi, oturum ve giriş kayıtları</td>\n<td>Güvenlik, dolandırıcılığın önlenmesi</td>\n<td>Hukuki yükümlülük (5651 sayılı Kanun); meşru menfaat</td>\n</tr>\n<tr>\n<td>Pazarlama</td>\n<td>Çerez kimlikleri, site içi davranış, ticari ileti tercihleri</td>\n<td>Reklam ölçümü, kampanya bildirimleri</td>\n<td>Açık rıza</td>\n</tr>\n</tbody>\n</table></div>\n<p>Kart bilgileri Text To Next tarafından görülmez ve saklanmaz; ödemeler PayTR tarafından işlenir.</p>\n<p>Kapsül içerikleri kullanıcının kendi yüklediği içeriklerdir. Text To Next bu içerikleri hizmetin sunulması dışında incelemez, analiz etmez, reklam veya yapay zeka eğitimi amacıyla kullanmaz. Kullanıcı, başkalarına ait görüntü ve sesleri yüklerken gerekli izinleri almaktan sorumludur. Sağlık bilgisi gibi özel nitelikli kişisel verilerin kapsüle yüklenmemesini öneririz.</p>\n<p><strong>3. Verilerin Toplanma Yöntemi</strong></p>\n<p>Veriler; site, uygulama, ödeme ekranı, çerezler, e-posta ve mesajlaşma kanalları (Instagram mesajları dahil) aracılığıyla, kısmen veya tamamen otomatik yollarla elektronik ortamda toplanır.</p>\n<p><strong>4. Yurt İçi Aktarımlar</strong></p>\n<ul>\n<li>Kargo şirketi (DHL): teslimat için ad, adres, telefon</li>\n<li>Ödeme kuruluşu (PayTR): tahsilat için işlem bilgileri</li>\n<li>E-fatura hizmet sağlayıcısı (Paraşüt) ve mali müşavir: faturalandırma ve muhasebe</li>\n<li>SMS hizmet sağlayıcısı (NetGSM): sipariş bildirimleri ve, onay verilmişse, kampanya SMS'leri için ad ve telefon</li>\n<li>İleti Yönetim Sistemi (İYS): ticari ileti onaylarının kaydı</li>\n<li>Yetkili kamu kurumları ve mahkemeler: yasal talep halinde</li>\n</ul>\n<p><strong>5. Yurt Dışı Aktarımlar</strong></p>\n<p>Hizmetin sunulması için bazı veriler yurt dışındaki hizmet sağlayıcıların sunucularında işlenir. Bu aktarımlar KVKK'nın 9. maddesi ve Kişisel Verilerin Yurt Dışına Aktarılmasına İlişkin Usul ve Esaslar Hakkında Yönetmelik uyarınca, Kurul tarafından ilan edilen standart sözleşmeler ve diğer uygun güvenceler çerçevesinde yapılır.</p>\n<div class=\"tt-yasal-tablo\" style=\"overflow-x:auto;-webkit-overflow-scrolling:touch\"><table>\n<thead><tr>\n<th>Alıcı</th>\n<th>Konum</th>\n<th>Aktarılan veri</th>\n<th>Amaç</th>\n</tr></thead>\n<tbody>\n<tr>\n<td>Amazon Web Services</td>\n<td>Almanya (Frankfurt)</td>\n<td>Uygulama hesabı, kapsül içerikleri, onay kayıtları</td>\n<td>Uygulama altyapısı ve depolama</td>\n</tr>\n<tr>\n<td>Shopify</td>\n<td>Kanada, ABD, İrlanda</td>\n<td>Sipariş, kimlik ve iletişim bilgileri</td>\n<td>Online mağaza altyapısı ve sipariş e-postaları</td>\n</tr>\n<tr>\n<td>Meta Platforms</td>\n<td>İrlanda, ABD</td>\n<td>Çerez kimlikleri, site içi davranış</td>\n<td>Reklam ölçümü (yalnızca çerez onayı ile)</td>\n</tr>\n<tr>\n<td>Google</td>\n<td>İrlanda, ABD</td>\n<td>Çerez kimlikleri, sayfa görüntülemeleri</td>\n<td>Site istatistiği (yalnızca çerez onayı ile)</td>\n</tr>\n<tr>\n<td>ManyChat</td>\n<td>ABD</td>\n<td>Instagram kullanıcı adı, mesaj içerikleri</td>\n<td>Müşteri desteği</td>\n</tr>\n</tbody>\n</table></div>\n<p><strong>6. Saklama Süreleri</strong></p>\n<div class=\"tt-yasal-tablo\" style=\"overflow-x:auto;-webkit-overflow-scrolling:touch\"><table>\n<thead><tr>\n<th>Veri</th>\n<th>Süre</th>\n</tr></thead>\n<tbody>\n<tr>\n<td>Sipariş, fatura ve muhasebe kayıtları</td>\n<td>10 yıl (Vergi Usul Kanunu ve Türk Ticaret Kanunu)</td>\n</tr>\n<tr>\n<td>Müşteri işlem ve destek kayıtları</td>\n<td>Son işlemden itibaren 10 yıl (zamanaşımı süresi)</td>\n</tr>\n<tr>\n<td>İşlem güvenliği kayıtları</td>\n<td>2 yıl (5651 sayılı Kanun)</td>\n</tr>\n<tr>\n<td>Onay kayıtları</td>\n<td>Zamanaşımı süresince; hesap silinse de ispat amacıyla saklanır</td>\n</tr>\n<tr>\n<td>Pazarlama izinleri</td>\n<td>İzin geri çekilene kadar</td>\n</tr>\n<tr>\n<td>Uygulama hesabı ve kapsül içerikleri</td>\n<td>Aşağıdaki kapsül saklama kurallarına göre</td>\n</tr>\n</tbody>\n</table></div>\n<p><strong>Kapsül saklama kuralları:</strong></p>\n<ul>\n<li>Kapsül içerikleri hesap aktif olduğu sürece, süre sınırı olmaksızın saklanır.</li>\n<li>Kilitli bir kapsül, kilidi açılana kadar hareketsizlik nedeniyle hiçbir şekilde silinmez.</li>\n<li>Kilidi açılmış bir kapsülün bağlı olduğu hesaba 5 yıl boyunca hiç giriş yapılmazsa kayıtlı e-posta adresine iki kez bildirim gönderilir. Son bildirimden itibaren 90 gün içinde giriş yapılmazsa içerik silinir.</li>\n<li>Dijital Kapsül Hizmeti herhangi bir nedenle sona erecekse, kullanıcılara en az 90 gün önceden e-posta ile bildirim yapılır ve bu süre içinde tüm içeriklerin indirilmesine imkan tanınır.</li>\n<li>Kullanıcı, kapsülünü veya hesabını uygulama içinden dilediği zaman silebilir. Silinen içerikler 30 gün içinde tüm sistemlerden kaldırılır; yedeklerdeki kopyalar yedekleme döngüsünün sonunda silinir.</li>\n</ul>\n<p>Süresi dolan veriler silinir, yok edilir veya anonim hale getirilir.</p>\n<p><strong>7. Veri Güvenliği</strong></p>\n<p>Veriler, cihaz ile sunucular arasında şifreli bağlantıyla aktarılır ve bulut sağlayıcının depolama şifrelemesi etkin sistemlerde saklanır. Verilere erişim yetkilendirme kurallarıyla sınırlandırılmıştır. Bir veri ihlali oluşması halinde Kişisel Verileri Koruma Kurulu'na ve etkilenen kişilere 72 saat içinde bildirim yapılır.</p>\n<p><strong>8. Yaş</strong></p>\n<p>Uygulama 16 yaş ve üzeri kullanıcılar içindir; 16 yaşından küçükler veli veya vasilerinin onayıyla kullanabilir. Bu onay olmadan açıldığı anlaşılan hesaplar, veli veya vasinin talebi üzerine kapatılır ve verileri silinir.</p>\n<p><strong>9. Haklarınız (KVKK m.11)</strong></p>\n<p>Kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, işlenme amacını ve amaca uygun kullanılıp kullanılmadığını öğrenme, yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme, eksik veya yanlış işlenmişse düzeltilmesini isteme, silinmesini veya yok edilmesini isteme, bu işlemlerin aktarılan üçüncü kişilere bildirilmesini isteme, otomatik sistemlerle analiz sonucu aleyhinize bir sonuç çıkmasına itiraz etme ve kanuna aykırı işleme nedeniyle zararın giderilmesini talep etme haklarına sahipsiniz.</p>\n<p><strong>10. Başvuru</strong></p>\n<p>Taleplerinizi yazılı olarak yukarıdaki adrese, KEP adresine veya sistemimizde kayıtlı e-posta adresinizden info@texttonext.com adresine iletebilirsiniz. Başvurular en geç 30 gün içinde ücretsiz sonuçlandırılır. Hesap ve kapsül silme işlemlerini uygulama içinden doğrudan yapabilirsiniz. Başvurunuz reddedilirse veya yanıtsız kalırsa Kişisel Verileri Koruma Kurulu'na şikayette bulunabilirsiniz.</p>\n<p><strong>11. Değişiklikler</strong></p>\n<p>Bu metin güncellenebilir. Esaslı değişikliklerde kullanıcılar e-posta veya uygulama içi bildirimle bilgilendirilir.</p>"
+  },
+  {
+   "id": "gid://shopify/Page/134431572288",
+   "handle": "i̇ade-kosullari",
+   "title": "İade Koşulları",
+   "isPublished": true,
+   "templateSuffix": "yasal",
+   "body": "<p><em>Sürüm 1.0 · Son güncelleme: 17 Ekim 2026 · Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.</em></p>\n<p>Ürününü kapsül oluşturmadan önce, teslimden itibaren 14 gün içinde gerekçe göstermeden iade edebilirsin. Kapsül oluşturulduğunda dijital kapsül hizmeti başlar ve iade hakkı sona erer.</p>\n<p><strong>Kimler iade edebilir?</strong></p>\n<p>Ürünü teslim aldığın tarihten itibaren 14 gün geçmemişse ve ürün uygulamada bir hesapla eşleştirilip kapsül oluşturulmamışsa iade edebilirsin. Ürünü incelemek için kutusunu açman iade hakkını etkilemez.</p>\n<p><strong>Hangi durumda iade yapılamaz?</strong></p>\n<p>Kapsül oluşturulduğunda, yani ürün uygulamada bir hesapla eşleştirilip kapsüle isim verildiğinde, dijital kapsül hizmeti senin onayınla başlar ve dijital içerik sana teslim edilmiş olur. Mesafeli Sözleşmeler Yönetmeliği'nin 15. maddesi uyarınca bu andan itibaren cayma hakkı kullanılamaz. Kapsülü ürünü hediye olarak alan kişinin oluşturması da aynı sonucu doğurur. Bu nedenle ürünü hediye edecek ve iade ihtimalin varsa, kapsül oluşturulmadan önce karar vermeni öneririz.</p>\n<p>Kişiye özel hazırlanan ürünlerde (isim, tarih veya mesaj kazınmış ürünler) de iade yapılamaz.</p>\n<p><strong>Nasıl iade ederim?</strong></p>\n<ol>\n<li>14 gün içinde info@texttonext.com adresine veya sitedeki sohbet kanalına sipariş numaranı yazarak iade talebini ilet.</li>\n<li>Sana bir DHL iade kodu göndereceğiz.</li>\n<li>Ürünü kutusu, kullanım kılavuzu kartı ve varsa hediye edilen ürünlerle birlikte, talebinden itibaren 10 gün içinde bu kodla DHL'e teslim et.</li>\n</ol>\n<p>DHL iade koduyla yapılan gönderimler ücretsizdir. Ürünü başka bir kargo firmasıyla gönderirsen iade kargo ücreti sana aittir.</p>\n<p><strong>Param ne zaman iade edilir?</strong></p>\n<p>Kargo ücreti dahil ödediğin tüm tutar, iade talebinin bize ulaştığı tarihten itibaren 14 gün içinde ödeme yaptığın kartına iade edilir. Ürün bize ulaşıncaya veya gönderdiğini kargo kaydıyla gösterinceye kadar iadeyi bekletebiliriz. Tutarın kartına yansıma süresi bankana göre değişir.</p>\n<p><strong>Ürünümde sorun varsa?</strong></p>\n<p>Üretim hatası olan ürünlerde, kapsül oluşturulmuş olsa bile, teslimden itibaren 2 yıl boyunca yasal hakların geçerlidir: ücretsiz onarım, değişim, bedel indirimi veya iade isteyebilirsin. Çip için süresiz garanti veriyoruz; çip çalışmazsa ücretsiz değiştiriyoruz.</p>\n<p>Gümüş ürünlerde ve gümüş charm/uç parçalarında zamanla oluşan kararma metalin doğal özelliğidir, kusur sayılmaz. Kopma, kırılma, yamulma, ezilme ve çizilme gibi kullanım kaynaklı hasarlar garanti kapsamı dışındadır.</p>\n<p><strong>Siparişimi iptal edebilir miyim?</strong></p>\n<p>Siparişin kargoya verilmeden önce iptal için bize ulaşabilirsin; ödemen aynı yöntemle iade edilir. Kargoya verildikten sonra yukarıdaki iade adımları geçerlidir.</p>\n<p>Ayrıntılı hükümler için Mesafeli Satış Sözleşmesi'ne bakabilirsin.</p>"
+  },
+  {
+   "id": "gid://shopify/Page/134497337664",
+   "handle": "iletisim",
+   "title": "İletişim",
+   "isPublished": true,
+   "templateSuffix": "",
+   "body": "<p><strong>İstanbul Ofis</strong></p>\n<p><a href=\"https://www.google.com/maps/search/?api=1&amp;query=Ikar+%C4%B0%C5%9F+Merkezi%2C+G%C3%B6ztepe+Mah.+Tepeg%C3%B6z+Sk.+No%3A1%2C+Kad%C4%B1k%C3%B6y%2C+%C4%B0stanbul\" target=\"_blank\" rel=\"noopener\">Göztepe Mah. Tepegöz Sk. Ikar İş Merkezi No:1 İç Kapı No:8 Kadıköy/İstanbul</a></p>\n<p><strong>Destek Hattı</strong></p>\n<p><a href=\"tel:+902166061415\">0216 606 14 15</a></p>\n<p><a href=\"mailto:info@texttonext.com\">info@texttonext.com</a></p>\n<p><strong>Hafta içi 10.00–18.00</strong></p>"
+  },
+  {
+   "id": "gid://shopify/Page/134690210112",
+   "handle": "ar",
+   "title": "AR",
+   "isPublished": false,
+   "templateSuffix": "ecom-ar",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/135022412096",
+   "handle": "hesap-silme-talebi",
+   "title": "Hesap Silme Talebi",
+   "isPublished": true,
+   "templateSuffix": "hesap-silme-talebi",
+   "body": "<p>Text To Next uygulamasındaki kapsüllerinizi ve hesabınızı dilediğiniz zaman silebilirsiniz. Silme işlemi geri alınamaz; saklamak istediğiniz fotoğraf, video, ses kaydı ve notları silmeden önce indirin.</p>\n<h2>Uygulama içinden silme</h2>\n<ol>\n<li>Text To Next uygulamasını açın ve hesabınıza giriş yapın.</li>\n<li>Bir kapsülü silmek için kapsülü açın ve kapsülün ayarlarından silme işlemini başlatın.</li>\n<li>Hesabınızı silmek için uygulamadaki hesap ayarlarından silme işlemini başlatın.</li>\n<li>Ekrandaki onayı vererek işlemi tamamlayın.</li>\n</ol>\n<h2>E-postayla talep</h2>\n<p>Uygulamaya erişemiyorsanız, hesabınızda kayıtlı e-posta adresinden <a href=\"mailto:info@texttonext.com?subject=Hesap%20silme%20talebi\">info@texttonext.com</a> adresine \"Hesap silme talebi\" konulu bir e-posta gönderin. Talebiniz en geç 30 gün içinde ücretsiz olarak sonuçlandırılır.</p>\n<h2>Silme işleminden sonra</h2>\n<ul>\n<li>Silinen içerikler 30 gün içinde tüm sistemlerimizden kaldırılır; yedeklerdeki kopyalar yedekleme döngüsünün sonunda silinir.</li>\n<li>Sipariş, fatura ve muhasebe kayıtları yasal yükümlülük nedeniyle 10 yıl; onay kayıtları ise ispat amacıyla zamanaşımı süresince, hesabınız silinse de saklanır.</li>\n</ul>\n<p>Ayrıntılar için <a href=\"/policies/privacy-policy\">Gizlilik Politikası (KVKK)</a> ve <a href=\"/pages/uygulama-kullanim-kosullari\">Uygulama Kullanım Koşulları</a>.</p>"
+  },
+  {
+   "id": "gid://shopify/Page/145695572288",
+   "handle": "rewards-program-page",
+   "title": "Rewards Program Page",
+   "isPublished": false,
+   "templateSuffix": "rise-full-page-template",
+   "body": "<div class=\"Rise-rewards-page-placeholder\"></div>"
+  },
+  {
+   "id": "gid://shopify/Page/146846875968",
+   "handle": "landing-page-dec-12-23-44-18",
+   "title": "Ana Sayfa",
+   "isPublished": true,
+   "templateSuffix": "gp-template-544431830779036655",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/146847957312",
+   "handle": "ana-sayfa",
+   "title": "Ana Sayfa",
+   "isPublished": false,
+   "templateSuffix": "gp-template-544431830779036655",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/149124284736",
+   "handle": "text-to-next-pro-1",
+   "title": "Landing Page - Feb 16, 11:03:09",
+   "isPublished": true,
+   "templateSuffix": "gp-template-553922254656766857",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/149125103936",
+   "handle": "iletisimsayfasi",
+   "title": "İletişim",
+   "isPublished": true,
+   "templateSuffix": "gp-template-556461893263295681",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/151097540928",
+   "handle": "event-zaman-kapsulu",
+   "title": "Event Zaman Kapsülü",
+   "isPublished": false,
+   "templateSuffix": "gp-template-562089975860954304",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/157454893376",
+   "handle": "landing-page-apr-7-16-02-03",
+   "title": "Landing Page - Apr 7, 16:02:03",
+   "isPublished": true,
+   "templateSuffix": "gp-template-561200095932974170",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/158307811648",
+   "handle": "collection-bundle",
+   "title": "Mix and Match",
+   "isPublished": true,
+   "templateSuffix": null,
+   "body": "<div class=\"rbrBundleBuilder\"></div>"
+  },
+  {
+   "id": "gid://shopify/Page/158338023744",
+   "handle": "couplezamankapsulleri",
+   "title": "Couple Landing Page",
+   "isPublished": true,
+   "templateSuffix": "gp-template-593136672170836500",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/159765332288",
+   "handle": "kullanim-kilavuzu",
+   "title": "Kullanım Kılavuzu",
+   "isPublished": true,
+   "templateSuffix": "gp-template-600755391629886309",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/159765496128",
+   "handle": "bireysel-hediye-kullanim-kilavuzu",
+   "title": "Bireysel Hediye Kullanım Kılavuzu",
+   "isPublished": true,
+   "templateSuffix": "gp-template-600758654311858837",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/159765528896",
+   "handle": "couple-hediye-kullanim-kilavuzu",
+   "title": "Couple Hediye Kullanım Kılavuzu",
+   "isPublished": true,
+   "templateSuffix": "gp-template-600760696552030795",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/159984779584",
+   "handle": "couplekapsuldahafazlabilgial",
+   "title": "Landing COUPLE Kapsül Daha Fazla Bilgi Al V2",
+   "isPublished": true,
+   "templateSuffix": "gp-template-601917426203886298",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/159985074496",
+   "handle": "hediyekapsuldahafazlabilgial",
+   "title": "Landing Bireysel Kapsül Daha Fazla Bilgi Al",
+   "isPublished": true,
+   "templateSuffix": "gp-template-601918380005393114",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/160782123328",
+   "handle": "sozlesmeler",
+   "title": "Sözleşmeler",
+   "isPublished": true,
+   "templateSuffix": "gp-template-606324753770218070",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/161698709824",
+   "handle": "couple-zaman-kapsulu-yeni",
+   "title": "Couple Zaman Kapsülü Yeni",
+   "isPublished": false,
+   "templateSuffix": "page",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/164142285120",
+   "handle": "bundles",
+   "title": "Bundles",
+   "isPublished": true,
+   "templateSuffix": null,
+   "body": "<div class=\"rbrFastBundlePage\"></div>"
+  },
+  {
+   "id": "gid://shopify/Page/164143399232",
+   "handle": "couple-daha-fazla-bilgi-al",
+   "title": "Couple Daha Fazla Bilgi Al",
+   "isPublished": true,
+   "templateSuffix": "couple-daha-fazla-bilgial",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/164143432000",
+   "handle": "hediye-daha-fazla-bilgi-al",
+   "title": "Hediye Daha Fazla Bilgi Al",
+   "isPublished": true,
+   "templateSuffix": "hediye-daha-fazla-bilgial",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/164143497536",
+   "handle": "event-daha-fazla-bilgi-al",
+   "title": "Event Daha Fazla Bilgi Al",
+   "isPublished": true,
+   "templateSuffix": "event-daha-fazla-bilgial",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/164143923520",
+   "handle": "hediye-zaman-kapsulu-urunleri-gor",
+   "title": "Hediye Zaman Kapsülü Ürünleri Gör",
+   "isPublished": true,
+   "templateSuffix": "hediye-urunleri-gor",
+   "body": ""
+  },
+  {
+   "id": "gid://shopify/Page/165033378112",
+   "handle": "boyutlar",
+   "title": "Boyutlar",
+   "isPublished": true,
+   "templateSuffix": null,
+   "body": "<p>Boyut belirtilmemiştir.</p>"
+  },
+  {
+   "id": "gid://shopify/Page/167271006528",
+   "handle": "on-bilgilendirme-formu",
+   "title": "Ön Bilgilendirme Formu",
+   "isPublished": true,
+   "templateSuffix": "yasal",
+   "body": "<p><em>Sürüm 1.0 · Son güncelleme: 17 Ekim 2026 · Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.</em></p>\n<p>Bu form, 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği uyarınca, sipariş verilmeden önce Alıcının bilgilendirilmesi amacıyla hazırlanmıştır.</p>\n<p><strong>1. Satıcı Bilgileri</strong></p>\n<ul>\n<li>Unvan: Text To Next Mücevherat Sanayi ve Ticaret Limited Şirketi</li>\n<li>Adres: Göztepe Mah. Tepegöz Sk. Ikar İş Merkezi No:1 İç Kapı No:8 Kadıköy/İstanbul</li>\n<li>Vergi Dairesi / No: Göztepe / 8411045302</li>\n<li>MERSİS No: 0841104530200001</li>\n<li>Telefon: 0216 606 14 15</li>\n<li>E-posta: info@texttonext.com</li>\n<li>KEP: texttonext@hs06.kep.tr</li>\n<li>Web: texttonext.com</li>\n</ul>\n<p><strong>2. Ürünün Temel Nitelikleri</strong></p>\n<p>Text To Next ürünleri, içinde NFC çip bulunan bir takı (bileklik, kolye ve benzeri) ile bu takı üzerinden erişilen Dijital Kapsül Hizmeti'nden oluşur. Dijital Kapsül Hizmeti; fotoğraf, video, ses kaydı ve not yüklenmesine, bunların saklanmasına, belirlenen tarihe kadar kilitlenmesine ve o tarihte açılmasına imkan veren yazılım hizmetidir. Ürünün temel işlevi Dijital Kapsül Hizmeti'dir.</p>\n<p>Ürünün adı, modeli, malzemesi (316L cerrahi çelik veya 925 ayar gümüş), adedi ve fiyatı sipariş özetinde gösterilir.</p>\n<p><strong>3. Fiyat ve Ödeme</strong></p>\n<p>Ürün bedeli, kargo bedeli, indirimler ve toplam ödeme tutarı sipariş özetinde gösterilir. Fiyatlara uygulanan vergiler faturada belirtilir. Ödeme kredi kartı veya banka kartı ile PayTR altyapısı üzerinden yapılır. Taksitli ödemelerde taksit sayısı ve vade farkı ödeme ekranında gösterilir.</p>\n<p><strong>4. Teslimat</strong></p>\n<p>Ürün DHL aracılığıyla Alıcının belirttiği adrese, sipariş tarihinden itibaren en geç 30 gün içinde teslim edilir. 2.499 TL ve üzeri siparişlerde kargo ücretsizdir; altındaki siparişlerde kargo bedeli sipariş özetinde gösterilir.</p>\n<p><strong>5. Cayma Hakkı</strong></p>\n<p>Alıcı, Kapsül Oluşturma gerçekleşmemiş olmak şartıyla, ürünü teslim aldığı tarihten itibaren 14 gün içinde herhangi bir gerekçe göstermeden ve cezai şart ödemeden cayma hakkını kullanabilir. Cayma bildirimi info@texttonext.com adresine veya sitedeki iletişim kanallarına yapılır.</p>\n<p>İade, Satıcının ilettiği DHL iade koduyla ücretsiz gönderilir. Başka bir kargo firmasıyla gönderilmesi halinde iade kargo bedeli Alıcıya aittir. Satıcı, cayma bildiriminin kendisine ulaştığı tarihten itibaren 14 gün içinde, teslim masrafları dahil tahsil ettiği tüm ödemeleri iade eder.</p>\n<p><strong>6. Cayma Hakkının Kullanılamayacağı Hal</strong></p>\n<p>Ürün uygulamada bir hesapla eşleştirilip kapsüle isim verilerek Dijital Kapsül Hizmeti kullanıma açıldığında (Kapsül Oluşturma), dijital içerik Alıcıya anında teslim edilmiş ve hizmetin ifasına Alıcının onayıyla başlanmış olur. Bu andan itibaren, cayma süresi dolmamış olsa dahi cayma hakkı kullanılamaz. Kapsül Oluşturmanın ürünü hediye olarak alan kişi tarafından yapılması bu sonucu değiştirmez. Uygulama, Kapsül Oluşturma sırasında bu sonuç hakkında ayrıca onay alır.</p>\n<p><strong>7. Ayıplı Ürün ve Şikayet</strong></p>\n<p>Alıcının ayıplı mala ilişkin kanuni hakları, cayma hakkının kullanılamadığı hallerde de saklıdır. Şikayetler için yukarıdaki iletişim bilgileri kullanılabilir. Uyuşmazlıklarda Ticaret Bakanlığınca her yıl ilan edilen parasal sınırlar dahilinde Tüketici Hakem Heyetleri, bu sınırları aşan durumlarda Tüketici Mahkemeleri görevlidir.</p>"
+  },
+  {
+   "id": "gid://shopify/Page/167271039296",
+   "handle": "cerez-politikasi",
+   "title": "Çerez Politikası",
+   "isPublished": true,
+   "templateSuffix": "yasal",
+   "body": "<p><em>Sürüm 1.0 · Son güncelleme: 17 Ekim 2026 · Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.</em></p>\n<p>texttonext.com, zorunlu çerezler dışındaki tüm çerezleri yalnızca senin onayınla kullanır. Bu politika yalnızca web sitesi için geçerlidir.</p>\n<p><strong>Çerez nedir?</strong> Siteyi ziyaret ettiğinde tarayıcın aracılığıyla cihazına kaydedilen küçük metin dosyalarıdır.</p>\n<div class=\"tt-yasal-tablo\" style=\"overflow-x:auto;-webkit-overflow-scrolling:touch\"><table>\n<thead><tr>\n<th>Kategori</th>\n<th>Ne için?</th>\n<th>Örnek sağlayıcı</th>\n<th>Onay gerekir mi?</th>\n</tr></thead>\n<tbody>\n<tr>\n<td>Zorunlu</td>\n<td>Sepet, ödeme, oturum ve güvenlik</td>\n<td>Shopify</td>\n<td>Hayır</td>\n</tr>\n<tr>\n<td>Analitik</td>\n<td>Sitenin nasıl kullanıldığını toplu olarak ölçmek</td>\n<td>Google Analytics</td>\n<td>Evet</td>\n</tr>\n<tr>\n<td>Pazarlama</td>\n<td>Reklamların etkisini ölçmek, ilgi alanına uygun reklam göstermek</td>\n<td>Meta Pixel</td>\n<td>Evet</td>\n</tr>\n</tbody>\n</table></div>\n<p><strong>Onay ve geri çekme:</strong> Siteyi ilk ziyaretinde bir çerez bildirimi görürsün. Analitik ve pazarlama çerezleri, sen onay verene kadar çalışmaz. Tercihlerini sayfanın altındaki \"Çerez Tercihleri\" bağlantısından dilediğin zaman değiştirebilirsin. Çerezleri tarayıcı ayarlarından da silebilir veya engelleyebilirsin; zorunlu çerezleri engellersen sepet ve ödeme çalışmayabilir.</p>\n<p><strong>Yurt dışı aktarım:</strong> Analitik ve pazarlama çerezleriyle toplanan veriler Google ve Meta'nın İrlanda ve ABD'deki sunucularında işlenebilir. Ayrıntılar Gizlilik Politikası'nda yer alır.</p>\n<p><strong>İletişim:</strong> info@texttonext.com</p>"
+  },
+  {
+   "id": "gid://shopify/Page/167271072064",
+   "handle": "uygulama-kullanim-kosullari",
+   "title": "Uygulama Kullanım Koşulları",
+   "isPublished": true,
+   "templateSuffix": "yasal",
+   "body": "<p><em>Sürüm 1.0 · Son güncelleme: 17 Ekim 2026 · Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.</em></p>\n<p>Bu koşullar, Text To Next Mücevherat Sanayi ve Ticaret Limited Şirketi (\"Text To Next\") ile Text To Next uygulamasını ve Dijital Kapsül Hizmeti'ni kullanan kişi (\"Kullanıcı\") arasındaki ilişkiyi düzenler. Kullanıcı, kayıt sırasında onay kutucuğunu işaretleyerek bu koşulları kabul eder.</p>\n<p><strong>1. Hizmet</strong></p>\n<p>Dijital Kapsül Hizmeti, Text To Next ürünlerindeki NFC çip aracılığıyla erişilen; fotoğraf, video, ses kaydı ve not yüklenmesine, bunların belirlenen tarihe kadar kilitlenmesine ve o tarihte açılmasına imkan veren yazılım hizmetidir. Kapsül açıldıktan sonra yeniden kilitlenebilir ve kullanılmaya devam edilebilir.</p>\n<p><strong>2. Hesap ve Yaş</strong></p>\n<p>2.1. Ürünü satın alan kişi de, ürünü hediye olarak alan kişi de hesap açabilir. Kapsül, onu oluşturan hesapla eşleşir.</p>\n<p>2.2. Uygulama 16 yaş ve üzeri kullanıcılar içindir. 16 yaşından küçükler uygulamayı veli veya vasilerinin onayıyla kullanabilir. Kullanıcı, kayıt sırasında bu koşulu sağladığını beyan eder.</p>\n<p>2.3. Kullanıcı, hesap bilgilerinin gizliliğinden sorumludur. Hesabının izinsiz kullanıldığını fark ederse derhal info@texttonext.com adresine bildirir.</p>\n<p><strong>3. Kapsül Oluşturma ve Cayma Hakkı</strong></p>\n<p>Ürünün uygulamada bir hesapla eşleştirilip kapsüle isim verilmesiyle Dijital Kapsül Hizmeti'nin ifasına başlanır. Bu andan itibaren ürün için cayma hakkı kullanılamaz. Kapsülü hediye alan kişinin oluşturması da aynı sonucu doğurur. Uygulama, kapsül oluşturulmadan önce bu konuda ayrıca onay alır.</p>\n<p><strong>4. İçerik ve Sorumluluk</strong></p>\n<p>4.1. Kapsüle yüklenen içeriklerin tüm hakları Kullanıcıya aittir. Kullanıcı, Text To Next'e bu içerikleri yalnızca saklama, şifreli iletim ve kendisine gösterme amacıyla işleme yetkisi verir. Text To Next içerikleri incelemez, paylaşmaz ve reklam veya yapay zeka eğitimi amacıyla kullanmaz.</p>\n<p>4.2. Kullanıcı; hukuka aykırı, müstehcen, şiddet içeren, nefret söylemi barındıran, çocukların istismarına ilişkin, başkasının kişilik veya fikri mülkiyet haklarını ihlal eden içerik yüklememeyi kabul eder. Başkalarına ait görüntü ve sesleri yüklerken gerekli izinleri almak Kullanıcının sorumluluğundadır.</p>\n<p>4.3. Hukuka aykırı içerik bildirimi veya yetkili makam talebi halinde Text To Next ilgili içeriğe erişimi engelleyebilir ve hesabı askıya alabilir; gerekçesini Kullanıcıya bildirir.</p>\n<p><strong>5. Saklama ve Silme</strong></p>\n<p>5.1. Kapsül içerikleri hesap aktif olduğu sürece süre sınırı olmaksızın saklanır. Kilitli kapsüller, kilidi açılana kadar hareketsizlik nedeniyle silinmez.</p>\n<p>5.2. Kilidi açılmış bir kapsülün bağlı olduğu hesaba 5 yıl boyunca hiç giriş yapılmazsa kayıtlı e-posta adresine iki kez bildirim gönderilir; son bildirimden itibaren 90 gün içinde giriş yapılmazsa içerik silinir.</p>\n<p>5.3. Kullanıcı, kapsülünü veya hesabını uygulama içinden dilediği zaman silebilir. Silme işlemi geri alınamaz.</p>\n<p>5.4. Dijital Kapsül Hizmeti herhangi bir nedenle sona erecekse Kullanıcılara en az 90 gün önceden e-posta ile bildirim yapılır ve tüm içeriklerin indirilmesine imkan tanınır.</p>\n<p><strong>6. Hizmetin Kesintisizliği</strong></p>\n<p>Text To Next, hizmetin sürekli ve güvenli çalışması için makul özeni gösterir. Planlı bakım, internet altyapısı sorunları ve mücbir sebepler nedeniyle geçici kesintiler yaşanabilir. Çip arızaları süresiz garanti kapsamında ücretsiz giderilir.</p>\n<p><strong>7. Fikri Mülkiyet</strong></p>\n<p>Uygulamanın yazılımı, tasarımı, Text To Next markası ve logosu Text To Next'e aittir. Kullanıcıya uygulamayı kişisel ve ticari olmayan amaçlarla kullanması için devredilemez ve münhasır olmayan bir kullanım hakkı verilir. Uygulamanın kopyalanması, tersine mühendislik yapılması veya izinsiz otomatik veri toplanması yasaktır.</p>\n<p><strong>8. Sorumluluk</strong></p>\n<p>Text To Next, kendi kusurundan kaynaklanmayan veri kayıplarından ve Kullanıcının hesap bilgilerini korumamasından doğan zararlardan sorumlu tutulamaz. Bu koşulların hiçbir hükmü, tüketicinin 6502 sayılı Kanun'dan ve diğer emredici mevzuattan doğan haklarını sınırlamaz.</p>\n<p><strong>9. Değişiklikler</strong></p>\n<p>Bu koşullar güncellenebilir. Esaslı değişikliklerde Kullanıcıya uygulama içinde yeniden onay ekranı gösterilir. Değişikliği kabul etmeyen Kullanıcı, içeriklerini indirip hesabını silebilir.</p>\n<p><strong>10. Uygulanacak Hukuk ve Uyuşmazlıklar</strong></p>\n<p>Bu koşullar Türkiye Cumhuriyeti hukukuna tabidir. Tüketici sıfatıyla hareket eden Kullanıcılar, Ticaret Bakanlığınca ilan edilen parasal sınırlar dahilinde yerleşim yerlerindeki Tüketici Hakem Heyetlerine, bu sınırları aşan durumlarda Tüketici Mahkemelerine başvurabilir.</p>\n<p><strong>11. İletişim</strong></p>\n<p>Text To Next Mücevherat Sanayi ve Ticaret Limited Şirketi, Göztepe Mah. Tepegöz Sk. Ikar İş Merkezi No:1 İç Kapı No:8 Kadıköy/İstanbul. E-posta: info@texttonext.com. Telefon: 0216 606 14 15. KEP: texttonext@hs06.kep.tr.</p>"
+  },
+  {
+   "id": "gid://shopify/Page/167271104832",
+   "handle": "sozlesmeler-ve-politikalar",
+   "title": "Sözleşmeler ve Politikalar",
+   "isPublished": true,
+   "templateSuffix": "sozlesmeler",
+   "body": "<ul>\n<li><a href=\"/policies/terms-of-service\">Mesafeli Satış Sözleşmesi</a></li>\n<li><a href=\"/pages/on-bilgilendirme-formu\">Ön Bilgilendirme Formu</a></li>\n<li><a href=\"/policies/refund-policy\">İade ve Cayma Politikası</a></li>\n<li><a href=\"/policies/shipping-policy\">Kargo ve Teslimat Politikası</a></li>\n<li><a href=\"/policies/privacy-policy\">Gizlilik Politikası (KVKK)</a></li>\n<li><a href=\"/pages/cerez-politikasi\">Çerez Politikası</a></li>\n<li><a href=\"/pages/uygulama-kullanim-kosullari\">Uygulama Kullanım Koşulları</a></li>\n</ul>"
+  },
+  {
+   "id": "gid://shopify/Page/167276577088",
+   "handle": "data-sharing-opt-out",
+   "title": "Gizlilik tercihleriniz",
+   "isPublished": false,
+   "templateSuffix": null,
+   "body": "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdn.shopify.com/shopifycloud/privacy-banner/data-sale-opt-out.css\">\n<meta charset=\"utf-8\"> <p>Gizlilik Politikamızda açıklandığı üzere, bizimle ve web sitemizle olan etkileşimlerinizden çerezler ve benzer teknolojiler dahil olmak üzere çeşitli yöntemler aracılığıyla kişisel bilgiler topluyoruz. Bu kişisel bilgileri reklam iş ortakları dahil olmak üzere üçüncü taraflarla da paylaşabiliriz. Bunu size diğer web sitelerinde ilgi alanlarınıza daha uygun reklamlar göstermek için ve gizlilik politikamızda belirtilen diğer nedenlerle yapıyoruz.</p> <p>Farklı web sitelerindeki etkileşiminize dayalı olarak hedefli reklamlar için kişisel bilgilerin paylaşılması, belirli ABD eyaletlerinin gizlilik yasaları kapsamında &quot;satış&quot;, &quot;paylaşım&quot; veya &quot;hedefli reklam&quot; olarak değerlendirilebilir. Yaşadığınız yere bağlı olarak bu etkinlikleri devre dışı bırakma hakkına sahip olabilirsiniz. Bu devre dışı bırakma hakkını kullanmak istiyorsanız lütfen aşağıdaki talimatları uygulayın.</p> <p>Web sitemizi Küresel Gizlilik Kontrolü devre dışı bırakma tercih sinyali etkinken ziyaret ederseniz, bulunduğunuz yere bağlı olarak bu sinyali kişisel bilgilerin &quot;satışı&quot; veya &quot;paylaşımı&quot; olarak değerlendirilebilecek etkinlikleri veya web sitemizi ziyaret etmek için kullandığınız cihaz ve tarayıcıya yönelik hedefli reklam olarak değerlendirilebilecek diğer kullanımları devre dışı bırakma isteği olarak kabul edeceğiz.</p>\n<div id=\"pc--optOutFormContainer\" data-not-applicable='Yukarıda açıklandığı gibi çerezler ve diğer cihaz tabanlı tanımlayıcılar kullanılarak toplanan kişisel bilgilerinizin &quot;satışını&quot; veya &quot;paylaşımını&quot; devre dışı bırakmak için yukarıda belirtilen geçerli ABD eyaletlerinin birinden web sitemize göz atıyor olmanız gerekir.' data-description='&quot;Satış&quot;, &quot;paylaşım&quot; veya &quot;hedefli reklam&quot; olarak kabul edilebilecek etkinlikleri devre dışı bırakmak istiyorsanız lütfen e-posta adresinizi gönderin.' data-email-label='E-posta' data-success='Başarıyla devre dışı bırakıldı' data-error='Bir sorun oluştu, e-posta adresinizi tekrar göndermeyi deneyin' data-form-description='“Devre dışı bırak“ seçeneğine tıkladığınızda bu cihazdaki tarayıcıda kişisel verilerin paylaşılması devre dışı bırakılır. Onay kutusunu seçip bir e-posta adresi girerseniz ilgili müşteri hesabı da devre dışı bırakılır.' data-form-email-label='E-posta' data-form-opt-out-account-label=\"Hesabımdan veri paylaşma (isteğe bağlı)\" data-form-button-text='Devre dışı bırak' data-form-opted-out='Bu cihazdaki tarayıcıda ilgili işlem devre dışı bırakılır' data-form-success='İlgili işlemi başarıyla devre dışı bıraktınız' data-form-error='Bir sorun oluştu, lütfen tekrar deneyin' ></div>\n<script src=\"https://cdn.shopify.com/shopifycloud/privacy-banner/data-sale-opt-out.js\" defer></script> <script src=\"https://js.hcaptcha.com/1/api.js?onload=optOutOnLoad\" defer></script>"
+  }
+ ]
+}

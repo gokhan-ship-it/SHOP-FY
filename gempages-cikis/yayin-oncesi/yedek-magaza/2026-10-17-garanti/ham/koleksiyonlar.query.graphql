@@ -1,0 +1,1 @@
+query($first: Int!, $after: String) { collections(first: $first, after: $after, sortKey: ID) { pageInfo { hasNextPage endCursor } nodes { id handle title descriptionHtml seo { title description } image { altText url } } } }

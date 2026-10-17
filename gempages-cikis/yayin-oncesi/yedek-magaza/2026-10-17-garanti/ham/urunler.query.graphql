@@ -1,0 +1,1 @@
+query($first: Int!, $after: String) { products(first: $first, after: $after, sortKey: ID) { pageInfo { hasNextPage endCursor } nodes { id handle title status descriptionHtml seo { title description } media(first: 50) { pageInfo { hasNextPage endCursor } nodes { id alt mediaContentType ... on MediaImage { image { url } } } } } } }

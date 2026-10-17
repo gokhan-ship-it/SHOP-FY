@@ -1,0 +1,1 @@
+query { productsCount(limit: null) { count precision } collectionsCount { count precision } pagesCount { count precision } shop { name myshopifyDomain } }

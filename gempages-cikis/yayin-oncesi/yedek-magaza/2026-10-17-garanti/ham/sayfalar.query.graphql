@@ -1,0 +1,1 @@
+query($first: Int!, $after: String) { pages(first: $first, after: $after, sortKey: ID) { pageInfo { hasNextPage endCursor } nodes { id handle title isPublished templateSuffix body } } }

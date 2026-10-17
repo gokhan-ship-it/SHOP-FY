@@ -1,0 +1,2917 @@
+{
+ "sayimlar": {
+  "products": {
+   "count": 81,
+   "precision": "EXACT"
+  },
+  "products_by_status": {
+   "ACTIVE": 65,
+   "DRAFT": 9,
+   "ARCHIVED": 1,
+   "UNLISTED": 6
+  },
+  "collections": {
+   "count": 17,
+   "precision": "EXACT"
+  },
+  "pages": {
+   "count": 34,
+   "precision": "EXACT"
+  },
+  "pages_published": 28,
+  "media_nodes": 614
+ },
+ "taranan_alanlar": [
+  "product.title",
+  "product.descriptionHtml",
+  "product.seo.title",
+  "product.seo.description",
+  "product.media[].alt",
+  "collection.title",
+  "collection.descriptionHtml",
+  "collection.seo.title",
+  "collection.seo.description",
+  "collection.image.altText",
+  "page.title",
+  "page.body",
+  "(+ descriptionHtml/body icindeki HTML attribute degerleri)",
+  "(+ ASCII-katlanmis kontrol ve handle kontrolu)"
+ ],
+ "normalizasyon": "Turkce: replace('İ','i').replace('I','ı').lower(); ayrica duz .lower() (I->i) ile ikinci gecis; &nbsp;/U+00A0 -> bosluk; HTML etiketleri soyulmus metinde arama (blok etiketleri satir sonu, inline etiketler bos), eslesme ham HTML ofsetine geri eslenir. raw_span = ham HTML'de eslesmenin ilk-son karakteri arasi (aradaki etiketler dahil).",
+ "desen_sayilari": {
+  "süresiz": 17,
+  "ömür boyu": 30,
+  "garanti": 42
+ },
+ "gruplar": [
+  {
+   "aile": "ömür boyu",
+   "raw_span": "Ömür boyu garantilidir",
+   "type": "product",
+   "field": "descriptionHtml",
+   "adet": 10,
+   "nesne_sayisi": 10,
+   "durumlar": {
+    "ACTIVE": 10
+   },
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Product/9564915433792",
+     "handle": "diamond-vantablack-zaman-kapsulu-erkek-kolye",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9565334012224",
+     "handle": "lumin-zaman-kapsulu-kolye",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9566844354880",
+     "handle": "full-tasli-kapsul-zaman-kapsulu-kolye",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9704071299392",
+     "handle": "zaman-kapsulu-charm-beyaz",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9912495014208",
+     "handle": "zaman-kapsulu-full-tasli-white",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976365089088",
+     "handle": "zaman-kapsulu-charm-infinity-glow-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976375476544",
+     "handle": "zaman-kapsulu-charm-eight-stars-white-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976378786112",
+     "handle": "zaman-kapsulu-kolye-aurora-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976379932992",
+     "handle": "zaman-kapsulu-kolye-lumin-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976381178176",
+     "handle": "zaman-kapsulu-kolye-vantablack-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "ömür boyu",
+   "raw_span": "Ömür Boyu Garantili",
+   "type": "product",
+   "field": "descriptionHtml",
+   "adet": 17,
+   "nesne_sayisi": 17,
+   "durumlar": {
+    "ACTIVE": 17
+   },
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Product/9934873461056",
+     "handle": "zaman-kapsulu-bileklik-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9934879686976",
+     "handle": "auron-zaman-kapsulu-bileklik",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975510827328",
+     "handle": "astor-zaman-kapsulu-bileklik-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975513645376",
+     "handle": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975518593344",
+     "handle": "vera-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975519117632",
+     "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975519215936",
+     "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975519478080",
+     "handle": "santorin-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975577739584",
+     "handle": "noir-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976339497280",
+     "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976343920960",
+     "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-couple-1",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976344805696",
+     "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976356110656",
+     "handle": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976359223616",
+     "handle": "auron-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976361976128",
+     "handle": "nora-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/10024681210176",
+     "handle": "nova-zaman-kapsulu-bileklik316l-paslanmaz-celik",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/10024684454208",
+     "handle": "nova-zaman-kapsulu-bileklik-couple-316l-paslanmaz-celik",
+     "status": "ACTIVE",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "ömür boyu",
+   "raw_span": "Ömür Boyu Garantili",
+   "type": "product",
+   "field": "descriptionHtml",
+   "adet": 2,
+   "nesne_sayisi": 2,
+   "durumlar": {
+    "ACTIVE": 2
+   },
+   "raw_line": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_line_prev_tag": "<br>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Product/10282182967616",
+     "handle": "santorin-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/10282183262528",
+     "handle": "santorin-gold-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "ömür boyu",
+   "raw_span": "Ömür Boyu Garantili",
+   "type": "collection",
+   "field": "title",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "-": 1
+   },
+   "raw_line": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Collection/504636145984",
+     "handle": "omur-boyu-garantili-celik-zaman-kapsulleri",
+     "status": null,
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "süresiz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "type": "product",
+   "field": "seo.description",
+   "adet": 13,
+   "nesne_sayisi": 13,
+   "durumlar": {
+    "ACTIVE": 12,
+    "DRAFT": 1
+   },
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Product/9100357206336",
+     "handle": "zaman-kapsul-kolye",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975577280832",
+     "handle": "zaman-kapsulu-kolye-classic-white-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976621793600",
+     "handle": "zaman-kapsulu-kolye-classic-white-925-ayar-gumus-couple-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976644862272",
+     "handle": "luna-aurora-couple-zaman-kapsulu-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976670126400",
+     "handle": "nora-vera-couple-zaman-kapsulu-kisi-1759-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976678449472",
+     "handle": "vantablack-vera-couple-zaman-kapsulu-kisi-2199-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976685953344",
+     "handle": "vantablack-tasli-kilit-couple-zaman-kapsulu-kisi-2639-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976695882048",
+     "handle": "kral-classic-ocean-blue-couple-zaman-kapsulu-kisi-2399-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976703680832",
+     "handle": "kral-infinity-charm-couple-zaman-kapsulu-kisi-2519-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976722260288",
+     "handle": "luna-infinity-charm-couple-zaman-kapsulu-kisi-2279-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/10040852316480",
+     "handle": "nora-vera-couple-zaman-kapsulu-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/10173333668160",
+     "handle": "lumin-charm",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/15429346296128",
+     "handle": "rose-pink-nova-couple-zaman-kapsulu",
+     "status": "DRAFT",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "süresiz",
+   "raw_span": "süresiz çip",
+   "type": "product",
+   "field": "media.alt",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "DRAFT": 1
+   },
+   "raw_line": "Rose Pink + Nova Couple Zaman Kapsülü – Couple set – süresiz çip garantisi",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Product/15429346296128",
+     "handle": "rose-pink-nova-couple-zaman-kapsulu",
+     "status": "DRAFT",
+     "media_id": "gid://shopify/MediaImage/46306674147648"
+    }
+   ]
+  },
+  {
+   "aile": "süresiz",
+   "raw_span": "süresiz garanti",
+   "type": "page",
+   "field": "body",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "published": 1
+   },
+   "raw_line": "8.2. Ürün içindeki çip için süresiz garanti verilir; çipin çalışmaması halinde Satıcı çipi ücretsiz değiştirir.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Page/134431506752",
+     "handle": "mesafeli-satis-sozlesmesi",
+     "status": "published",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "süresiz",
+   "raw_span": "süresiz garanti",
+   "type": "page",
+   "field": "body",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "published": 1
+   },
+   "raw_line": "Üretim hatası olan ürünlerde, kapsül oluşturulmuş olsa bile, teslimden itibaren 2 yıl boyunca yasal hakların geçerlidir: ücretsiz onarım, değişim, bedel indirimi veya iade isteyebilirsin. Çip için süresiz garanti veriyoruz; çip çalışmazsa ücretsiz değiştiriyoruz.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Page/134431572288",
+     "handle": "i̇ade-kosullari",
+     "status": "published",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "süresiz",
+   "raw_span": "süresiz garanti",
+   "type": "page",
+   "field": "body",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "published": 1
+   },
+   "raw_line": "Text To Next, hizmetin sürekli ve güvenli çalışması için makul özeni gösterir. Planlı bakım, internet altyapısı sorunları ve mücbir sebepler nedeniyle geçici kesintiler yaşanabilir. Çip arızaları süresiz garanti kapsamında ücretsiz giderilir.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Page/167271072064",
+     "handle": "uygulama-kullanim-kosullari",
+     "status": "published",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "garantilidir",
+   "type": "product",
+   "field": "descriptionHtml",
+   "adet": 10,
+   "nesne_sayisi": 10,
+   "durumlar": {
+    "ACTIVE": 10
+   },
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir",
+   "nesneler": [
+    {
+     "id": "gid://shopify/Product/9564915433792",
+     "handle": "diamond-vantablack-zaman-kapsulu-erkek-kolye",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9565334012224",
+     "handle": "lumin-zaman-kapsulu-kolye",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9566844354880",
+     "handle": "full-tasli-kapsul-zaman-kapsulu-kolye",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9704071299392",
+     "handle": "zaman-kapsulu-charm-beyaz",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9912495014208",
+     "handle": "zaman-kapsulu-full-tasli-white",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976365089088",
+     "handle": "zaman-kapsulu-charm-infinity-glow-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976375476544",
+     "handle": "zaman-kapsulu-charm-eight-stars-white-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976378786112",
+     "handle": "zaman-kapsulu-kolye-aurora-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976379932992",
+     "handle": "zaman-kapsulu-kolye-lumin-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976381178176",
+     "handle": "zaman-kapsulu-kolye-vantablack-925-ayar-gumus-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "Garantili",
+   "type": "product",
+   "field": "descriptionHtml",
+   "adet": 17,
+   "nesne_sayisi": 17,
+   "durumlar": {
+    "ACTIVE": 17
+   },
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili",
+   "nesneler": [
+    {
+     "id": "gid://shopify/Product/9934873461056",
+     "handle": "zaman-kapsulu-bileklik-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9934879686976",
+     "handle": "auron-zaman-kapsulu-bileklik",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975510827328",
+     "handle": "astor-zaman-kapsulu-bileklik-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975513645376",
+     "handle": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975518593344",
+     "handle": "vera-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975519117632",
+     "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975519215936",
+     "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975519478080",
+     "handle": "santorin-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9975577739584",
+     "handle": "noir-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976339497280",
+     "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976343920960",
+     "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-couple-1",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976344805696",
+     "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976356110656",
+     "handle": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976359223616",
+     "handle": "auron-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976361976128",
+     "handle": "nora-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/10024681210176",
+     "handle": "nova-zaman-kapsulu-bileklik316l-paslanmaz-celik",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/10024684454208",
+     "handle": "nova-zaman-kapsulu-bileklik-couple-316l-paslanmaz-celik",
+     "status": "ACTIVE",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "Garantili",
+   "type": "product",
+   "field": "descriptionHtml",
+   "adet": 2,
+   "nesne_sayisi": 2,
+   "durumlar": {
+    "ACTIVE": 2
+   },
+   "raw_line": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_line_prev_tag": "<br>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili",
+   "nesneler": [
+    {
+     "id": "gid://shopify/Product/10282182967616",
+     "handle": "santorin-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/10282183262528",
+     "handle": "santorin-gold-couple",
+     "status": "ACTIVE",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "Garantili",
+   "type": "collection",
+   "field": "title",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "-": 1
+   },
+   "raw_line": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili",
+   "nesneler": [
+    {
+     "id": "gid://shopify/Collection/504636145984",
+     "handle": "omur-boyu-garantili-celik-zaman-kapsulleri",
+     "status": null,
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "garantili",
+   "type": "product",
+   "field": "descriptionHtml",
+   "adet": 5,
+   "nesne_sayisi": 5,
+   "durumlar": {
+    "ACTIVE": 4,
+    "DRAFT": 1
+   },
+   "raw_line": "✔ Kararmaya karşı garantili",
+   "raw_line_prev_tag": "<div>",
+   "raw_line_next_tag": "</div>",
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Product/9976644862272",
+     "handle": "luna-aurora-couple-zaman-kapsulu-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/9976722260288",
+     "handle": "luna-infinity-charm-couple-zaman-kapsulu-kisi-2279-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/10040852316480",
+     "handle": "nora-vera-couple-zaman-kapsulu-kopya",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/15422634656064",
+     "handle": "white-luna-couple-zaman-kapsulu",
+     "status": "ACTIVE",
+     "media_id": null
+    },
+    {
+     "id": "gid://shopify/Product/15429346296128",
+     "handle": "rose-pink-nova-couple-zaman-kapsulu",
+     "status": "DRAFT",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "garantisi",
+   "type": "product",
+   "field": "media.alt",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "DRAFT": 1
+   },
+   "raw_line": "Rose Pink + Nova Couple Zaman Kapsülü – Couple set – süresiz çip garantisi",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Product/15429346296128",
+     "handle": "rose-pink-nova-couple-zaman-kapsulu",
+     "status": "DRAFT",
+     "media_id": "gid://shopify/MediaImage/46306674147648"
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "Garanti",
+   "type": "page",
+   "field": "body",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "published": 1
+   },
+   "raw_line": "<strong>Madde 8 – Ayıplı Ürün ve Garanti</strong>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Page/134431506752",
+     "handle": "mesafeli-satis-sozlesmesi",
+     "status": "published",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "garanti",
+   "type": "page",
+   "field": "body",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "published": 1
+   },
+   "raw_line": "8.2. Ürün içindeki çip için süresiz garanti verilir; çipin çalışmaması halinde Satıcı çipi ücretsiz değiştirir.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "süresiz: süresiz garanti",
+   "nesneler": [
+    {
+     "id": "gid://shopify/Page/134431506752",
+     "handle": "mesafeli-satis-sozlesmesi",
+     "status": "published",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "garanti",
+   "type": "page",
+   "field": "body",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "published": 1
+   },
+   "raw_line": "8.4. Kopma, kırılma, yamulma, ezilme, çizilme ve benzeri kullanıcı kaynaklı hasarlar garanti kapsamı dışındadır. Üretim hatasından kaynaklanan durumlarda Alıcının 8.1'deki yasal hakları saklıdır.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Page/134431506752",
+     "handle": "mesafeli-satis-sozlesmesi",
+     "status": "published",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "garanti",
+   "type": "page",
+   "field": "body",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "published": 1
+   },
+   "raw_line": "Üretim hatası olan ürünlerde, kapsül oluşturulmuş olsa bile, teslimden itibaren 2 yıl boyunca yasal hakların geçerlidir: ücretsiz onarım, değişim, bedel indirimi veya iade isteyebilirsin. Çip için süresiz garanti veriyoruz; çip çalışmazsa ücretsiz değiştiriyoruz.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "süresiz: süresiz garanti",
+   "nesneler": [
+    {
+     "id": "gid://shopify/Page/134431572288",
+     "handle": "i̇ade-kosullari",
+     "status": "published",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "garanti",
+   "type": "page",
+   "field": "body",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "published": 1
+   },
+   "raw_line": "Gümüş ürünlerde ve gümüş charm/uç parçalarında zamanla oluşan kararma metalin doğal özelliğidir, kusur sayılmaz. Kopma, kırılma, yamulma, ezilme ve çizilme gibi kullanım kaynaklı hasarlar garanti kapsamı dışındadır.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null,
+   "nesneler": [
+    {
+     "id": "gid://shopify/Page/134431572288",
+     "handle": "i̇ade-kosullari",
+     "status": "published",
+     "media_id": null
+    }
+   ]
+  },
+  {
+   "aile": "garanti",
+   "raw_span": "garanti",
+   "type": "page",
+   "field": "body",
+   "adet": 1,
+   "nesne_sayisi": 1,
+   "durumlar": {
+    "published": 1
+   },
+   "raw_line": "Text To Next, hizmetin sürekli ve güvenli çalışması için makul özeni gösterir. Planlı bakım, internet altyapısı sorunları ve mücbir sebepler nedeniyle geçici kesintiler yaşanabilir. Çip arızaları süresiz garanti kapsamında ücretsiz giderilir.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "süresiz: süresiz garanti",
+   "nesneler": [
+    {
+     "id": "gid://shopify/Page/167271072064",
+     "handle": "uygulama-kullanim-kosullari",
+     "status": "published",
+     "media_id": null
+    }
+   ]
+  }
+ ],
+ "garanti_cumleleri": [
+  {
+   "cumle": "Ömür boyu garantilidir.",
+   "type": "product",
+   "field": "descriptionHtml",
+   "adet": 10
+  },
+  {
+   "cumle": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "type": "product",
+   "field": "descriptionHtml",
+   "adet": 19
+  },
+  {
+   "cumle": "✔ Kararmaya karşı garantili",
+   "type": "product",
+   "field": "descriptionHtml",
+   "adet": 5
+  },
+  {
+   "cumle": "Rose Pink + Nova Couple Zaman Kapsülü – Couple set – süresiz çip garantisi",
+   "type": "product",
+   "field": "media.alt",
+   "adet": 1
+  },
+  {
+   "cumle": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "type": "collection",
+   "field": "title",
+   "adet": 1
+  },
+  {
+   "cumle": "Madde 8 – Ayıplı Ürün ve Garanti",
+   "type": "page",
+   "field": "body",
+   "adet": 1
+  },
+  {
+   "cumle": "8.2. Ürün içindeki çip için süresiz garanti verilir; çipin çalışmaması halinde Satıcı çipi ücretsiz değiştirir.",
+   "type": "page",
+   "field": "body",
+   "adet": 1
+  },
+  {
+   "cumle": "8.4. Kopma, kırılma, yamulma, ezilme, çizilme ve benzeri kullanıcı kaynaklı hasarlar garanti kapsamı dışındadır.",
+   "type": "page",
+   "field": "body",
+   "adet": 1
+  },
+  {
+   "cumle": "Çip için süresiz garanti veriyoruz; çip çalışmazsa ücretsiz değiştiriyoruz.",
+   "type": "page",
+   "field": "body",
+   "adet": 1
+  },
+  {
+   "cumle": "Kopma, kırılma, yamulma, ezilme ve çizilme gibi kullanım kaynaklı hasarlar garanti kapsamı dışındadır.",
+   "type": "page",
+   "field": "body",
+   "adet": 1
+  },
+  {
+   "cumle": "Çip arızaları süresiz garanti kapsamında ücretsiz giderilir.",
+   "type": "page",
+   "field": "body",
+   "adet": 1
+  }
+ ],
+ "ascii_katlama_ek_bulgular": [
+  {
+   "type": "collection",
+   "id": "gid://shopify/Collection/504636145984",
+   "handle": "omur-boyu-garantili-celik-zaman-kapsulleri",
+   "status": null,
+   "obj_title": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "field": "handle",
+   "pattern": "[fold] omur boyu",
+   "raw_span": "omur-boyu",
+   "raw_context": "omur-boyu-garantili-celik-zaman-kapsulleri"
+  },
+  {
+   "type": "collection",
+   "id": "gid://shopify/Collection/504636145984",
+   "handle": "omur-boyu-garantili-celik-zaman-kapsulleri",
+   "status": null,
+   "obj_title": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "field": "handle",
+   "pattern": "[fold] garanti",
+   "raw_span": "garanti",
+   "raw_context": "omur-boyu-garantili-celik-zaman-kapsulleri"
+  }
+ ],
+ "hits": [
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9100357206336",
+   "handle": "zaman-kapsul-kolye",
+   "status": "ACTIVE",
+   "obj_title": "White",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9564915433792",
+   "handle": "diamond-vantablack-zaman-kapsulu-erkek-kolye",
+   "status": "ACTIVE",
+   "obj_title": "Vantablack",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür boyu garantilidir",
+   "raw_span": "Ömür boyu garantilidir",
+   "raw_context": "ng>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    343,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9564915433792",
+   "handle": "diamond-vantablack-zaman-kapsulu-erkek-kolye",
+   "status": "ACTIVE",
+   "obj_title": "Vantablack",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantilidir",
+   "raw_span": "garantilidir",
+   "raw_context": "z</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    353,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9565334012224",
+   "handle": "lumin-zaman-kapsulu-kolye",
+   "status": "ACTIVE",
+   "obj_title": "Lumin",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür boyu garantilidir",
+   "raw_span": "Ömür boyu garantilidir",
+   "raw_context": "ng>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    343,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9565334012224",
+   "handle": "lumin-zaman-kapsulu-kolye",
+   "status": "ACTIVE",
+   "obj_title": "Lumin",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantilidir",
+   "raw_span": "garantilidir",
+   "raw_context": "z</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    353,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9566844354880",
+   "handle": "full-tasli-kapsul-zaman-kapsulu-kolye",
+   "status": "ACTIVE",
+   "obj_title": "Aurora",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür boyu garantilidir",
+   "raw_span": "Ömür boyu garantilidir",
+   "raw_context": "ng>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    343,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9566844354880",
+   "handle": "full-tasli-kapsul-zaman-kapsulu-kolye",
+   "status": "ACTIVE",
+   "obj_title": "Aurora",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantilidir",
+   "raw_span": "garantilidir",
+   "raw_context": "z</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    353,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9704071299392",
+   "handle": "zaman-kapsulu-charm-beyaz",
+   "status": "ACTIVE",
+   "obj_title": "Eight Stars White",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür boyu garantilidir",
+   "raw_span": "Ömür boyu garantilidir",
+   "raw_context": "ng>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    115,
+    137
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9704071299392",
+   "handle": "zaman-kapsulu-charm-beyaz",
+   "status": "ACTIVE",
+   "obj_title": "Eight Stars White",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantilidir",
+   "raw_span": "garantilidir",
+   "raw_context": "z</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    125,
+    137
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9912495014208",
+   "handle": "zaman-kapsulu-full-tasli-white",
+   "status": "ACTIVE",
+   "obj_title": "Infinity Glow",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür boyu garantilidir",
+   "raw_span": "Ömür boyu garantilidir",
+   "raw_context": "ng>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    115,
+    137
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9912495014208",
+   "handle": "zaman-kapsulu-full-tasli-white",
+   "status": "ACTIVE",
+   "obj_title": "Infinity Glow",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantilidir",
+   "raw_span": "garantilidir",
+   "raw_context": "z</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    125,
+    137
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9934873461056",
+   "handle": "zaman-kapsulu-bileklik-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Nora",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9934873461056",
+   "handle": "zaman-kapsulu-bileklik-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Nora",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9934879686976",
+   "handle": "auron-zaman-kapsulu-bileklik",
+   "status": "ACTIVE",
+   "obj_title": "Auron",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9934879686976",
+   "handle": "auron-zaman-kapsulu-bileklik",
+   "status": "ACTIVE",
+   "obj_title": "Auron",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975510827328",
+   "handle": "astor-zaman-kapsulu-bileklik-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Luna",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "=\"97\"></strong><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    223,
+    242
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975510827328",
+   "handle": "astor-zaman-kapsulu-bileklik-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Luna",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "rong><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    233,
+    242
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975513645376",
+   "handle": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Noir",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    196,
+    215
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975513645376",
+   "handle": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Noir",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    206,
+    215
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975518593344",
+   "handle": "vera-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Chloe",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975518593344",
+   "handle": "vera-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Chloe",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975519117632",
+   "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold",
+   "status": "ACTIVE",
+   "obj_title": "Chloe Gold",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975519117632",
+   "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold",
+   "status": "ACTIVE",
+   "obj_title": "Chloe Gold",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975519215936",
+   "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Santorin",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975519215936",
+   "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Santorin",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975519478080",
+   "handle": "santorin-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Santorin Gold",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975519478080",
+   "handle": "santorin-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Santorin Gold",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975577280832",
+   "handle": "zaman-kapsulu-kolye-classic-white-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "White Couple",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975577739584",
+   "handle": "noir-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+   "status": "ACTIVE",
+   "obj_title": "Noir Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    196,
+    215
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9975577739584",
+   "handle": "noir-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+   "status": "ACTIVE",
+   "obj_title": "Noir Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    206,
+    215
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976339497280",
+   "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-couple",
+   "status": "ACTIVE",
+   "obj_title": "Chloe Gold Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976339497280",
+   "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-couple",
+   "status": "ACTIVE",
+   "obj_title": "Chloe Gold Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976343920960",
+   "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-couple-1",
+   "status": "ACTIVE",
+   "obj_title": "Chloe Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976343920960",
+   "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-couple-1",
+   "status": "ACTIVE",
+   "obj_title": "Chloe Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976344805696",
+   "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+   "status": "ACTIVE",
+   "obj_title": "Chloe Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976344805696",
+   "handle": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+   "status": "ACTIVE",
+   "obj_title": "Chloe Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976356110656",
+   "handle": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+   "status": "ACTIVE",
+   "obj_title": "Luna Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "=\"97\"></strong><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    223,
+    242
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976356110656",
+   "handle": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+   "status": "ACTIVE",
+   "obj_title": "Luna Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "rong><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    233,
+    242
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976359223616",
+   "handle": "auron-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+   "status": "ACTIVE",
+   "obj_title": "Auron Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976359223616",
+   "handle": "auron-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+   "status": "ACTIVE",
+   "obj_title": "Auron Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976361976128",
+   "handle": "nora-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+   "status": "ACTIVE",
+   "obj_title": "Nora Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976361976128",
+   "handle": "nora-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+   "status": "ACTIVE",
+   "obj_title": "Nora Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976365089088",
+   "handle": "zaman-kapsulu-charm-infinity-glow-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "Infinity Glow Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür boyu garantilidir",
+   "raw_span": "Ömür boyu garantilidir",
+   "raw_context": "ng>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    115,
+    137
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976365089088",
+   "handle": "zaman-kapsulu-charm-infinity-glow-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "Infinity Glow Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantilidir",
+   "raw_span": "garantilidir",
+   "raw_context": "z</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    125,
+    137
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976375476544",
+   "handle": "zaman-kapsulu-charm-eight-stars-white-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "Eight Stars White Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür boyu garantilidir",
+   "raw_span": "Ömür boyu garantilidir",
+   "raw_context": "ng>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    115,
+    137
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976375476544",
+   "handle": "zaman-kapsulu-charm-eight-stars-white-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "Eight Stars White Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantilidir",
+   "raw_span": "garantilidir",
+   "raw_context": "z</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    125,
+    137
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976378786112",
+   "handle": "zaman-kapsulu-kolye-aurora-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "Aurora Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür boyu garantilidir",
+   "raw_span": "Ömür boyu garantilidir",
+   "raw_context": "ng>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    343,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976378786112",
+   "handle": "zaman-kapsulu-kolye-aurora-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "Aurora Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantilidir",
+   "raw_span": "garantilidir",
+   "raw_context": "z</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    353,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976379932992",
+   "handle": "zaman-kapsulu-kolye-lumin-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "Lumin Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür boyu garantilidir",
+   "raw_span": "Ömür boyu garantilidir",
+   "raw_context": "ng>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    343,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976379932992",
+   "handle": "zaman-kapsulu-kolye-lumin-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "Lumin Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantilidir",
+   "raw_span": "garantilidir",
+   "raw_context": "z</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    353,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976381178176",
+   "handle": "zaman-kapsulu-kolye-vantablack-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "Vantablack Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür boyu garantilidir",
+   "raw_span": "Ömür boyu garantilidir",
+   "raw_context": "ng>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    343,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976381178176",
+   "handle": "zaman-kapsulu-kolye-vantablack-925-ayar-gumus-couple",
+   "status": "ACTIVE",
+   "obj_title": "Vantablack Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantilidir",
+   "raw_span": "garantilidir",
+   "raw_context": "z</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span></p>\n<p><span role=\"text\"><strong>925 Ayar ",
+   "sentence": "Ömür boyu garantilidir.",
+   "raw_offset": [
+    353,
+    365
+   ],
+   "raw_line": "<span role=\"text\"><strong>316L Çelik:</strong> <strong>Kararmaz</strong> ve <strong>paslanmaz</strong>. <strong>Ömür boyu garantilidir.</strong></span>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür boyu garantilidir"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976621793600",
+   "handle": "zaman-kapsulu-kolye-classic-white-925-ayar-gumus-couple-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Luna + Aurora Couple Zaman Kapsülü",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976644862272",
+   "handle": "luna-aurora-couple-zaman-kapsulu-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Astor + Chloe Couple Zaman Kapsülü",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantili",
+   "raw_span": "garantili",
+   "raw_context": "sızlık vermez.</div>\n<div><br></div>\n<div>✔ Kararmaya karşı garantili</div>\n<div>316L paslanmaz çelik yapısı sayesinde kararma, s",
+   "sentence": "✔ Kararmaya karşı garantili",
+   "raw_offset": [
+    919,
+    928
+   ],
+   "raw_line": "✔ Kararmaya karşı garantili",
+   "raw_line_prev_tag": "<div>",
+   "raw_line_next_tag": "</div>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976644862272",
+   "handle": "luna-aurora-couple-zaman-kapsulu-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Astor + Chloe Couple Zaman Kapsülü",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976670126400",
+   "handle": "nora-vera-couple-zaman-kapsulu-kisi-1759-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Vantablack + Vera Couple Zaman Kapsülü Kişi/2199₺",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976678449472",
+   "handle": "vantablack-vera-couple-zaman-kapsulu-kisi-2199-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Vantablack + Taşlı Kilit Couple Zaman Kapsülü",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976685953344",
+   "handle": "vantablack-tasli-kilit-couple-zaman-kapsulu-kisi-2639-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Kral + Classic Ocean Blue Couple Zaman Kapsülü Kişi/2399",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976695882048",
+   "handle": "kral-classic-ocean-blue-couple-zaman-kapsulu-kisi-2399-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Kral + Infinity Charm Couple Zaman Kapsülü Kişi/2519",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976703680832",
+   "handle": "kral-infinity-charm-couple-zaman-kapsulu-kisi-2519-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Luna + Infinity Charm Couple Zaman Kapsülü Kişi/2279",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976722260288",
+   "handle": "luna-infinity-charm-couple-zaman-kapsulu-kisi-2279-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Noir + Chloe Charm Couple Zaman Kapsülü",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantili",
+   "raw_span": "garantili",
+   "raw_context": "sızlık vermez.</div>\n<div><br></div>\n<div>✔ Kararmaya karşı garantili</div>\n<div>316L paslanmaz çelik yapısı sayesinde kararma, s",
+   "sentence": "✔ Kararmaya karşı garantili",
+   "raw_offset": [
+    916,
+    925
+   ],
+   "raw_line": "✔ Kararmaya karşı garantili",
+   "raw_line_prev_tag": "<div>",
+   "raw_line_next_tag": "</div>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/9976722260288",
+   "handle": "luna-infinity-charm-couple-zaman-kapsulu-kisi-2279-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Noir + Chloe Charm Couple Zaman Kapsülü",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10024681210176",
+   "handle": "nova-zaman-kapsulu-bileklik316l-paslanmaz-celik",
+   "status": "ACTIVE",
+   "obj_title": "Nova",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10024681210176",
+   "handle": "nova-zaman-kapsulu-bileklik316l-paslanmaz-celik",
+   "status": "ACTIVE",
+   "obj_title": "Nova",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10024684454208",
+   "handle": "nova-zaman-kapsulu-bileklik-couple-316l-paslanmaz-celik",
+   "status": "ACTIVE",
+   "obj_title": "Nova Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "an role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    193,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10024684454208",
+   "handle": "nova-zaman-kapsulu-bileklik-couple-316l-paslanmaz-celik",
+   "status": "ACTIVE",
+   "obj_title": "Nova Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "ext\"><br></span></p>\n<p><span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>p",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    203,
+    212
+   ],
+   "raw_line": "<span role=\"text\"><strong>Ömür Boyu Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10040852316480",
+   "handle": "nora-vera-couple-zaman-kapsulu-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Nova + Chloe Couple Zaman Kapsülü",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantili",
+   "raw_span": "garantili",
+   "raw_context": "sızlık vermez.</div>\n<div><br></div>\n<div>✔ Kararmaya karşı garantili</div>\n<div>316L paslanmaz çelik yapısı sayesinde kararma, s",
+   "sentence": "✔ Kararmaya karşı garantili",
+   "raw_offset": [
+    918,
+    927
+   ],
+   "raw_line": "✔ Kararmaya karşı garantili",
+   "raw_line_prev_tag": "<div>",
+   "raw_line_next_tag": "</div>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10040852316480",
+   "handle": "nora-vera-couple-zaman-kapsulu-kopya",
+   "status": "ACTIVE",
+   "obj_title": "Nova + Chloe Couple Zaman Kapsülü",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10173333668160",
+   "handle": "lumin-charm",
+   "status": "ACTIVE",
+   "obj_title": "Lumin + Charm Couple Zaman Kapsülü",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10282182967616",
+   "handle": "santorin-couple",
+   "status": "ACTIVE",
+   "obj_title": "Santorin Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "Ölçü: 16+5 Ayarlanabilir Ölçü<br>Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.<br>Su geçirmez. Günlük k",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    33,
+    52
+   ],
+   "raw_line": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_line_prev_tag": "<br>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10282182967616",
+   "handle": "santorin-couple",
+   "status": "ACTIVE",
+   "obj_title": "Santorin Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "Ölçü: 16+5 Ayarlanabilir Ölçü<br>Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.<br>Su geçirmez. Günlük k",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    43,
+    52
+   ],
+   "raw_line": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_line_prev_tag": "<br>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10282183262528",
+   "handle": "santorin-gold-couple",
+   "status": "ACTIVE",
+   "obj_title": "Santorin Gold Couple",
+   "field": "descriptionHtml",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "Ölçü: 16+5 Ayarlanabilir Ölçü<br>Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.<br>Su geçirmez. Günlük k",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    33,
+    52
+   ],
+   "raw_line": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_line_prev_tag": "<br>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/10282183262528",
+   "handle": "santorin-gold-couple",
+   "status": "ACTIVE",
+   "obj_title": "Santorin Gold Couple",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "Ölçü: 16+5 Ayarlanabilir Ölçü<br>Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.<br>Su geçirmez. Günlük k",
+   "sentence": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_offset": [
+    43,
+    52
+   ],
+   "raw_line": "Ömür Boyu Garantili: 316L çelik kararmaz ve paslanmaz.",
+   "raw_line_prev_tag": "<br>",
+   "raw_line_next_tag": "<br>",
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/15422634656064",
+   "handle": "white-luna-couple-zaman-kapsulu",
+   "status": "ACTIVE",
+   "obj_title": "White + Luna Couple Zaman Kapsülü",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantili",
+   "raw_span": "garantili",
+   "raw_context": "sızlık vermez.</div>\n<div><br></div>\n<div>✔ Kararmaya karşı garantili</div>\n<div>316L paslanmaz çelik yapısı sayesinde kararma, s",
+   "sentence": "✔ Kararmaya karşı garantili",
+   "raw_offset": [
+    730,
+    739
+   ],
+   "raw_line": "✔ Kararmaya karşı garantili",
+   "raw_line_prev_tag": "<div>",
+   "raw_line_next_tag": "</div>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/15429346296128",
+   "handle": "rose-pink-nova-couple-zaman-kapsulu",
+   "status": "DRAFT",
+   "obj_title": "Rose Pink + Nova Couple Zaman Kapsülü",
+   "field": "descriptionHtml",
+   "pattern": "garanti",
+   "match_text": "garantili",
+   "raw_span": "garantili",
+   "raw_context": "sızlık vermez.</div>\n<div><br></div>\n<div>✔ Kararmaya karşı garantili</div>\n<div>316L paslanmaz çelik yapısı sayesinde kararma, s",
+   "sentence": "✔ Kararmaya karşı garantili",
+   "raw_offset": [
+    916,
+    925
+   ],
+   "raw_line": "✔ Kararmaya karşı garantili",
+   "raw_line_prev_tag": "<div>",
+   "raw_line_next_tag": "</div>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/15429346296128",
+   "handle": "rose-pink-nova-couple-zaman-kapsulu",
+   "status": "DRAFT",
+   "obj_title": "Rose Pink + Nova Couple Zaman Kapsülü",
+   "field": "seo.description",
+   "pattern": "süresiz",
+   "match_text": "süresiz görüntüleyebilirsiniz",
+   "raw_span": "süresiz görüntüleyebilirsiniz",
+   "raw_context": "cek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında ş",
+   "sentence": "Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz.",
+   "raw_offset": [
+    430,
+    459
+   ],
+   "raw_line": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/15429346296128",
+   "handle": "rose-pink-nova-couple-zaman-kapsulu",
+   "status": "DRAFT",
+   "obj_title": "Rose Pink + Nova Couple Zaman Kapsülü",
+   "media_id": "gid://shopify/MediaImage/46306674147648",
+   "media_url": "https://cdn.shopify.com/s/files/1/0864/8953/0688/files/rose-pink-nova-07-garanti.jpg?v=1792169362",
+   "field": "media.alt",
+   "pattern": "süresiz",
+   "match_text": "süresiz çip",
+   "raw_span": "süresiz çip",
+   "raw_context": "Rose Pink + Nova Couple Zaman Kapsülü – Couple set – süresiz çip garantisi",
+   "sentence": "Rose Pink + Nova Couple Zaman Kapsülü – Couple set – süresiz çip garantisi",
+   "raw_offset": [
+    53,
+    64
+   ],
+   "raw_line": "Rose Pink + Nova Couple Zaman Kapsülü – Couple set – süresiz çip garantisi",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "product",
+   "id": "gid://shopify/Product/15429346296128",
+   "handle": "rose-pink-nova-couple-zaman-kapsulu",
+   "status": "DRAFT",
+   "obj_title": "Rose Pink + Nova Couple Zaman Kapsülü",
+   "media_id": "gid://shopify/MediaImage/46306674147648",
+   "media_url": "https://cdn.shopify.com/s/files/1/0864/8953/0688/files/rose-pink-nova-07-garanti.jpg?v=1792169362",
+   "field": "media.alt",
+   "pattern": "garanti",
+   "match_text": "garantisi",
+   "raw_span": "garantisi",
+   "raw_context": "Pink + Nova Couple Zaman Kapsülü – Couple set – süresiz çip garantisi",
+   "sentence": "Rose Pink + Nova Couple Zaman Kapsülü – Couple set – süresiz çip garantisi",
+   "raw_offset": [
+    65,
+    74
+   ],
+   "raw_line": "Rose Pink + Nova Couple Zaman Kapsülü – Couple set – süresiz çip garantisi",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "collection",
+   "id": "gid://shopify/Collection/504636145984",
+   "handle": "omur-boyu-garantili-celik-zaman-kapsulleri",
+   "status": null,
+   "obj_title": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "field": "title",
+   "pattern": "ömür boyu",
+   "match_text": "Ömür Boyu Garantili",
+   "raw_span": "Ömür Boyu Garantili",
+   "raw_context": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "sentence": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "raw_offset": [
+    0,
+    19
+   ],
+   "raw_line": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "collection",
+   "id": "gid://shopify/Collection/504636145984",
+   "handle": "omur-boyu-garantili-celik-zaman-kapsulleri",
+   "status": null,
+   "obj_title": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "field": "title",
+   "pattern": "garanti",
+   "match_text": "Garantili",
+   "raw_span": "Garantili",
+   "raw_context": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "sentence": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "raw_offset": [
+    10,
+    19
+   ],
+   "raw_line": "Ömür Boyu Garantili Çelik Zaman Kapsülleri",
+   "raw_line_prev_tag": null,
+   "raw_line_next_tag": null,
+   "parca_oldugu_ifade": "ömür boyu: Ömür Boyu Garantili"
+  },
+  {
+   "type": "page",
+   "id": "gid://shopify/Page/134431506752",
+   "handle": "mesafeli-satis-sozlesmesi",
+   "status": "published",
+   "obj_title": "Mesafeli Satış Sözleşmesi",
+   "templateSuffix": "yasal",
+   "field": "body",
+   "pattern": "süresiz",
+   "match_text": "süresiz garanti",
+   "raw_span": "süresiz garanti",
+   "raw_context": "l içinde kullanılabilir.</p>\n<p>8.2. Ürün içindeki çip için süresiz garanti verilir; çipin çalışmaması halinde Satıcı çipi ücretsiz değ",
+   "sentence": "8.2. Ürün içindeki çip için süresiz garanti verilir; çipin çalışmaması halinde Satıcı çipi ücretsiz değiştirir.",
+   "raw_offset": [
+    5679,
+    5694
+   ],
+   "raw_line": "8.2. Ürün içindeki çip için süresiz garanti verilir; çipin çalışmaması halinde Satıcı çipi ücretsiz değiştirir.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "page",
+   "id": "gid://shopify/Page/134431506752",
+   "handle": "mesafeli-satis-sozlesmesi",
+   "status": "published",
+   "obj_title": "Mesafeli Satış Sözleşmesi",
+   "templateSuffix": "yasal",
+   "field": "body",
+   "pattern": "garanti",
+   "match_text": "Garanti",
+   "raw_span": "Garanti",
+   "raw_context": "hakkı kullanılamaz.</p>\n<p><strong>Madde 8 – Ayıplı Ürün ve Garanti</strong></p>\n<p>8.1. Alıcının 6502 sayılı Kanun'dan doğan a",
+   "sentence": "Madde 8 – Ayıplı Ürün ve Garanti",
+   "raw_offset": [
+    5355,
+    5362
+   ],
+   "raw_line": "<strong>Madde 8 – Ayıplı Ürün ve Garanti</strong>",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "page",
+   "id": "gid://shopify/Page/134431506752",
+   "handle": "mesafeli-satis-sozlesmesi",
+   "status": "published",
+   "obj_title": "Mesafeli Satış Sözleşmesi",
+   "templateSuffix": "yasal",
+   "field": "body",
+   "pattern": "garanti",
+   "match_text": "garanti",
+   "raw_span": "garanti",
+   "raw_context": " kullanılabilir.</p>\n<p>8.2. Ürün içindeki çip için süresiz garanti verilir; çipin çalışmaması halinde Satıcı çipi ücretsiz değ",
+   "sentence": "8.2. Ürün içindeki çip için süresiz garanti verilir; çipin çalışmaması halinde Satıcı çipi ücretsiz değiştirir.",
+   "raw_offset": [
+    5687,
+    5694
+   ],
+   "raw_line": "8.2. Ürün içindeki çip için süresiz garanti verilir; çipin çalışmaması halinde Satıcı çipi ücretsiz değiştirir.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "süresiz: süresiz garanti"
+  },
+  {
+   "type": "page",
+   "id": "gid://shopify/Page/134431506752",
+   "handle": "mesafeli-satis-sozlesmesi",
+   "status": "published",
+   "obj_title": "Mesafeli Satış Sözleşmesi",
+   "templateSuffix": "yasal",
+   "field": "body",
+   "pattern": "garanti",
+   "match_text": "garanti",
+   "raw_span": "garanti",
+   "raw_context": "lma, ezilme, çizilme ve benzeri kullanıcı kaynaklı hasarlar garanti kapsamı dışındadır. Üretim hatasından kaynaklanan durumlard",
+   "sentence": "8.4. Kopma, kırılma, yamulma, ezilme, çizilme ve benzeri kullanıcı kaynaklı hasarlar garanti kapsamı dışındadır.",
+   "raw_offset": [
+    6003,
+    6010
+   ],
+   "raw_line": "8.4. Kopma, kırılma, yamulma, ezilme, çizilme ve benzeri kullanıcı kaynaklı hasarlar garanti kapsamı dışındadır. Üretim hatasından kaynaklanan durumlarda Alıcının 8.1'deki yasal hakları saklıdır.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "page",
+   "id": "gid://shopify/Page/134431572288",
+   "handle": "i̇ade-kosullari",
+   "status": "published",
+   "obj_title": "İade Koşulları",
+   "templateSuffix": "yasal",
+   "field": "body",
+   "pattern": "süresiz",
+   "match_text": "süresiz garanti",
+   "raw_span": "süresiz garanti",
+   "raw_context": " değişim, bedel indirimi veya iade isteyebilirsin. Çip için süresiz garanti veriyoruz; çip çalışmazsa ücretsiz değiştiriyoruz.</p>\n<p>G",
+   "sentence": "Çip için süresiz garanti veriyoruz; çip çalışmazsa ücretsiz değiştiriyoruz.",
+   "raw_offset": [
+    2293,
+    2308
+   ],
+   "raw_line": "Üretim hatası olan ürünlerde, kapsül oluşturulmuş olsa bile, teslimden itibaren 2 yıl boyunca yasal hakların geçerlidir: ücretsiz onarım, değişim, bedel indirimi veya iade isteyebilirsin. Çip için süresiz garanti veriyoruz; çip çalışmazsa ücretsiz değiştiriyoruz.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "page",
+   "id": "gid://shopify/Page/134431572288",
+   "handle": "i̇ade-kosullari",
+   "status": "published",
+   "obj_title": "İade Koşulları",
+   "templateSuffix": "yasal",
+   "field": "body",
+   "pattern": "garanti",
+   "match_text": "garanti",
+   "raw_span": "garanti",
+   "raw_context": ", bedel indirimi veya iade isteyebilirsin. Çip için süresiz garanti veriyoruz; çip çalışmazsa ücretsiz değiştiriyoruz.</p>\n<p>G",
+   "sentence": "Çip için süresiz garanti veriyoruz; çip çalışmazsa ücretsiz değiştiriyoruz.",
+   "raw_offset": [
+    2301,
+    2308
+   ],
+   "raw_line": "Üretim hatası olan ürünlerde, kapsül oluşturulmuş olsa bile, teslimden itibaren 2 yıl boyunca yasal hakların geçerlidir: ücretsiz onarım, değişim, bedel indirimi veya iade isteyebilirsin. Çip için süresiz garanti veriyoruz; çip çalışmazsa ücretsiz değiştiriyoruz.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "süresiz: süresiz garanti"
+  },
+  {
+   "type": "page",
+   "id": "gid://shopify/Page/134431572288",
+   "handle": "i̇ade-kosullari",
+   "status": "published",
+   "obj_title": "İade Koşulları",
+   "templateSuffix": "yasal",
+   "field": "body",
+   "pattern": "garanti",
+   "match_text": "garanti",
+   "raw_span": "garanti",
+   "raw_context": " yamulma, ezilme ve çizilme gibi kullanım kaynaklı hasarlar garanti kapsamı dışındadır.</p>\n<p><strong>Siparişimi iptal edebili",
+   "sentence": "Kopma, kırılma, yamulma, ezilme ve çizilme gibi kullanım kaynaklı hasarlar garanti kapsamı dışındadır.",
+   "raw_offset": [
+    2555,
+    2562
+   ],
+   "raw_line": "Gümüş ürünlerde ve gümüş charm/uç parçalarında zamanla oluşan kararma metalin doğal özelliğidir, kusur sayılmaz. Kopma, kırılma, yamulma, ezilme ve çizilme gibi kullanım kaynaklı hasarlar garanti kapsamı dışındadır.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "page",
+   "id": "gid://shopify/Page/167271072064",
+   "handle": "uygulama-kullanim-kosullari",
+   "status": "published",
+   "obj_title": "Uygulama Kullanım Koşulları",
+   "templateSuffix": "yasal",
+   "field": "body",
+   "pattern": "süresiz",
+   "match_text": "süresiz garanti",
+   "raw_span": "süresiz garanti",
+   "raw_context": "pler nedeniyle geçici kesintiler yaşanabilir. Çip arızaları süresiz garanti kapsamında ücretsiz giderilir.</p>\n<p><strong>7. Fikri Mülk",
+   "sentence": "Çip arızaları süresiz garanti kapsamında ücretsiz giderilir.",
+   "raw_offset": [
+    3473,
+    3488
+   ],
+   "raw_line": "Text To Next, hizmetin sürekli ve güvenli çalışması için makul özeni gösterir. Planlı bakım, internet altyapısı sorunları ve mücbir sebepler nedeniyle geçici kesintiler yaşanabilir. Çip arızaları süresiz garanti kapsamında ücretsiz giderilir.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": null
+  },
+  {
+   "type": "page",
+   "id": "gid://shopify/Page/167271072064",
+   "handle": "uygulama-kullanim-kosullari",
+   "status": "published",
+   "obj_title": "Uygulama Kullanım Koşulları",
+   "templateSuffix": "yasal",
+   "field": "body",
+   "pattern": "garanti",
+   "match_text": "garanti",
+   "raw_span": "garanti",
+   "raw_context": "eniyle geçici kesintiler yaşanabilir. Çip arızaları süresiz garanti kapsamında ücretsiz giderilir.</p>\n<p><strong>7. Fikri Mülk",
+   "sentence": "Çip arızaları süresiz garanti kapsamında ücretsiz giderilir.",
+   "raw_offset": [
+    3481,
+    3488
+   ],
+   "raw_line": "Text To Next, hizmetin sürekli ve güvenli çalışması için makul özeni gösterir. Planlı bakım, internet altyapısı sorunları ve mücbir sebepler nedeniyle geçici kesintiler yaşanabilir. Çip arızaları süresiz garanti kapsamında ücretsiz giderilir.",
+   "raw_line_prev_tag": "<p>",
+   "raw_line_next_tag": "</p>",
+   "parca_oldugu_ifade": "süresiz: süresiz garanti"
+  }
+ ]
+}
