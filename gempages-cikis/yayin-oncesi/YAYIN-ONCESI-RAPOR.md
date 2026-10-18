@@ -82,6 +82,8 @@ Değişiklik öncesi kopyalar git geçmişinde (commit `a2141e1`). Bir dosyayı 
 
 ## 5. Yayından sonra yapılacak şablon değişiklikleri (C/D bölümü, onayla)
 
+**18 Ekim 2026: yapıldı.** Yeni tema 20:04 UTC'de yayına alındı; tablodaki 7 sayfanın suffix'i 20:05 UTC'de yeni değere çevrildi, ana menüdeki İletişim `/pages/iletisim` yapıldı. Önceki değerler: `yedek-magaza/2026-10-18-yayin/once.json`. Geri almak için o dosyadaki suffix'ler yazılır.
+
 Bu değişiklikler taslak tema yayına alınmadan yapılırsa sayfalar yayındaki sitede boş görünür. Bu yüzden bekletiliyor. Hepsinde adres ve handle aynı kalır; yalnızca sayfanın template suffix alanı değişir.
 
 | Sayfa | Şu anki suffix | Yeni suffix | Önizleme (bugün) |
