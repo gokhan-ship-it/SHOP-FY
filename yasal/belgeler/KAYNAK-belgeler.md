@@ -299,19 +299,20 @@ Bu metin güncellenebilir. Esaslı değişikliklerde kullanıcılar e-posta veya
 
 ## BELGE 6 — Çerez Politikası
 
-*Sürüm 1.0 · Son güncelleme: 17 Ekim 2026 · Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.*
+*Sürüm 1.1 · Son güncelleme: 18 Ekim 2026 · Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.*
 
-texttonext.com, zorunlu çerezler dışındaki tüm çerezleri yalnızca senin onayınla kullanır. Bu politika yalnızca web sitesi için geçerlidir.
+Bu politika yalnızca web sitesi için geçerlidir.
 
 **Çerez nedir?** Siteyi ziyaret ettiğinde tarayıcın aracılığıyla cihazına kaydedilen küçük metin dosyalarıdır.
 
-| Kategori | Ne için? | Örnek sağlayıcı | Onay gerekir mi? |
-| --- | --- | --- | --- |
-| Zorunlu | Sepet, ödeme, oturum ve güvenlik | Shopify | Hayır |
-| Analitik | Sitenin nasıl kullanıldığını toplu olarak ölçmek | Google Analytics | Evet |
-| Pazarlama | Reklamların etkisini ölçmek, ilgi alanına uygun reklam göstermek | Meta Pixel | Evet |
+| Kategori | Ne için? | Örnek sağlayıcı |
+| --- | --- | --- |
+| Zorunlu | Sepet, ödeme, oturum ve güvenlik | Shopify |
+| Analitik | Sitenin nasıl kullanıldığını toplu olarak ölçmek | Google Analytics |
+| Pazarlama | Reklamların etkisini ölçmek, ilgi alanına uygun reklam göstermek | Meta Pixel |
+| Pazarlama | Reklamların etkisini ölçmek, ilgi alanına uygun reklam göstermek | TikTok |
 
-**Onay ve geri çekme:** Siteyi ilk ziyaretinde bir çerez bildirimi görürsün. Analitik ve pazarlama çerezleri, sen onay verene kadar çalışmaz. Tercihlerini sayfanın altındaki "Çerez Tercihleri" bağlantısından dilediğin zaman değiştirebilirsin. Çerezleri tarayıcı ayarlarından da silebilir veya engelleyebilirsin; zorunlu çerezleri engellersen sepet ve ödeme çalışmayabilir.
+Sitemizde zorunlu, analitik (Google Analytics) ve pazarlama (Meta Pixel, TikTok) çerezleri kullanılır. Çerezleri tarayıcı ayarlarından dilediğin zaman silebilir veya engelleyebilirsin; zorunlu çerezleri engellersen sepet ve ödeme çalışmayabilir.
 
 **Yurt dışı aktarım:** Analitik ve pazarlama çerezleriyle toplanan veriler Google ve Meta'nın İrlanda ve ABD'deki sunucularında işlenebilir. Ayrıntılar Gizlilik Politikası'nda yer alır.
 

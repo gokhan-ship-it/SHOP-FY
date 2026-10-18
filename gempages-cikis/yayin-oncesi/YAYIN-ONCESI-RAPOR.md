@@ -90,6 +90,7 @@ Bu değişiklikler taslak tema yayına alınmadan yapılırsa sayfalar yayındak
 | `/pages/bireysel-hediye-kullanim-kilavuzu` | `gp-template-600758654311858837` | `kilavuz-bireysel` | `?view=kilavuz-bireysel` |
 | `/pages/couple-hediye-kullanim-kilavuzu` | `gp-template-600760696552030795` | `kilavuz-couple` | `?view=kilavuz-couple` |
 | `/pages/iletisim` | (boş, varsayılan) | `contact` | `?view=contact` |
+| `/pages/iletisimsayfasi` (18 Ekim 2026) | `gp-template-556461893263295681` | `contact` | `?view=contact` |
 | `/pages/sozlesmeler` | `gp-template-606324753770218070` | `sozlesmeler-liste` | `?view=sozlesmeler-liste` |
 | `/pages/couplekapsuldahafazlabilgial` (K18) | `gp-template-601917426203886298` | `couple-daha-fazla-bilgial` | `?view=couple-daha-fazla-bilgial` |
 | `/pages/hediyekapsuldahafazlabilgial` (K18) | `gp-template-601918380005393114` | `hediye-daha-fazla-bilgial` | `?view=hediye-daha-fazla-bilgial` |

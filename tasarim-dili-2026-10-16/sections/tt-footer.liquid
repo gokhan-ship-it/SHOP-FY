@@ -1,0 +1,345 @@
+{%- comment -%}
+  TT FOOTER -- site altbilgisi (18.10.2026)
+
+  Footer grubunda newsletter bolumunun hemen altinda gelir; ikisi tek
+  parca siyah (#000000) blok gibi gorunur. Eski "Footer (yasal)"
+  bolumunun yerine gecti.
+
+  Icerik tema editorunden bloklarla duzenlenir:
+    - "Baslik": yeni bir grup baslatir (ÜRÜNLER, NASIL ÇALIŞIR ...).
+    - "Link": gruba tek link ekler (metin, adres, istege bagli rozet).
+    - "Menu": bir menunun tum linklerini gruba ekler (YASAL ->
+      footer-yasal). "Gosterilmeyecek adresler" baska grupta zaten
+      olan linkleri atlar (Siparis ve Iade YARDIM'da).
+  Gruplar blok sirasina gore olusur.
+
+  Davranis: telefonda (768px alti) basliklar acilir-kapanir, hepsi
+  kapali baslar; 768px ve ustunde basliklar duz etiket, listeler acik
+  (768-1023px iki sutun, 1024px ve ustu dort sutun). JavaScript yoksa
+  telefonda da listeler acik gorunur.
+
+  Tasarim dili (TEXT-TO-NEXT-TASARIM-DILI.md):
+  - Zemin #000000, ayraclar 1px #262624.
+  - Baslik: 11px 600 +1.3px BUYUK HARF #8A8A85. Linkler beyaz Poppins
+    500 15px, satir en az 44px. Couple rozeti menu rozetinin aynisi
+    (#D6FF00 + ink, 11.5px 600, tam yuvarlak).
+  - Iletisim butonlari: 1px #262624 kenar, tam yuvarlak, beyaz ikon ve
+    yazi, en az 44px. Destek satiri ve telif 12.5px #A3A39E.
+  - Ikonlar ince cizgi (1.8px), beyaz, 44x44 dokunma alani. Odak
+    halkasi koyu zeminde #FFFFFF. Hover yok (belirlenmedi).
+  - Odeme ikonlari temanin hazir ikonlari (payment_type_svg_tag);
+    yalnizca magazada acik olan ve ayarda yazan turler, gri tonlu.
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+  assign yol = request.path
+  assign acik_grup = false
+-%}
+
+<style>
+  .ttft-{{ sid }} {
+    background: #000000;
+    color: #ffffff;
+    font-family: var(--font-body-family);
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+  .ttft-{{ sid }} ul { list-style: none; margin: 0; padding: 0; }
+  .ttft-{{ sid }} a { color: inherit; text-decoration: none; }
+  .ttft-{{ sid }} :is(a, button):focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; border-radius: 4px; }
+  .ttft-{{ sid }} svg { display: block; flex: 0 0 auto; }
+
+  .ttft-{{ sid }} .ttft-gruplar { border-top: 1px solid #262624; }
+  .ttft-{{ sid }} .ttft-grup { border-bottom: 1px solid #262624; }
+  .ttft-{{ sid }} .ttft-baslik { margin: 0; }
+  .ttft-{{ sid }} .ttft-etiket {
+    font-family: var(--font-body-family);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: #8a8a85;
+  }
+  .ttft-{{ sid }} .ttft-ac {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 56px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+  }
+  .ttft-{{ sid }} .ttft-masa { display: none; }
+  .ttft-{{ sid }} .ttft-ikon { width: 16px; height: 16px; color: #ffffff; }
+  .ttft-{{ sid }} .ttft-ikon .ttft-dikey { transform-origin: center; transition: transform .2s ease, opacity .2s ease; }
+  .ttft-{{ sid }} .ttft-grup.acik .ttft-ikon .ttft-dikey { transform: rotate(90deg); opacity: 0; }
+  .ttft-{{ sid }} .ttft-liste { padding-bottom: 12px; }
+  html.js .ttft-{{ sid }} .ttft-grup:not(.acik) .ttft-liste { display: none; }
+  .ttft-{{ sid }} .ttft-liste a {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #ffffff;
+  }
+  .ttft-{{ sid }} .ttft-rozet {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #d6ff00;
+    color: #0a0a0a;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .ttft-{{ sid }} .ttft-iletisim { padding-top: 24px; }
+  .ttft-{{ sid }} .ttft-butonlar { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ttft-{{ sid }} .ttft-buton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid #262624;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1;
+    color: #ffffff;
+  }
+  .ttft-{{ sid }} .ttft-buton svg { width: 18px; height: 18px; }
+  .ttft-{{ sid }} .ttft-destek { margin: 12px 0 0; font-size: 12.5px; line-height: 1.4; color: #a3a39e; }
+  .ttft-{{ sid }} .ttft-sosyal { display: flex; gap: 4px; margin: 12px 0 0 -11px; }
+  .ttft-{{ sid }} .ttft-sosyal a { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #ffffff; }
+  .ttft-{{ sid }} .ttft-sosyal svg { width: 22px; height: 22px; }
+
+  .ttft-{{ sid }} .ttft-alt {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #262624;
+  }
+  .ttft-{{ sid }} .ttft-telif { margin: 0; font-size: 12.5px; line-height: 1.4; color: #a3a39e; }
+  .ttft-{{ sid }} .ttft-odeme { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ttft-{{ sid }} .ttft-odeme svg { width: 38px; height: 24px; filter: grayscale(1); }
+
+  @media (prefers-reduced-motion: reduce) { .ttft-{{ sid }} .ttft-ikon .ttft-dikey { transition: none; } }
+
+  @media screen and (min-width: 768px) {
+    .ttft-{{ sid }} .ttft-gruplar {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 24px;
+      row-gap: 32px;
+      padding-top: 32px;
+    }
+    .ttft-{{ sid }} .ttft-grup { border-bottom: 0; }
+    .ttft-{{ sid }} .ttft-ac { display: none; }
+    .ttft-{{ sid }} .ttft-masa { display: block; margin-bottom: 8px; }
+    html.js .ttft-{{ sid }} .ttft-grup:not(.acik) .ttft-liste,
+    .ttft-{{ sid }} .ttft-liste { display: block; padding-bottom: 0; }
+    .ttft-{{ sid }} .ttft-iletisim {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 1px solid #262624;
+    }
+    .ttft-{{ sid }} .ttft-sosyal { margin: 0 -11px 0 0; }
+    .ttft-{{ sid }} .ttft-alt { flex-direction: row; align-items: center; justify-content: space-between; }
+  }
+  @media screen and (min-width: 1024px) {
+    .ttft-{{ sid }} .ttft-gruplar { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+</style>
+
+<div class="ttft-{{ sid }}" id="TtFooter-{{ sid }}">
+  <div class="page-width page-width--narrow">
+    <div class="ttft-gruplar">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'baslik' -%}
+            {%- if acik_grup -%}</ul></div>{%- endif -%}
+            {%- assign gid = 'TtFooter-' | append: sid | append: '-' | append: forloop.index -%}
+            <div class="ttft-grup" data-ttft-grup {{ block.shopify_attributes }}>
+              <h2 class="ttft-baslik">
+                <button type="button" class="ttft-ac ttft-etiket" aria-expanded="false" aria-controls="{{ gid }}">
+                  {{- block.settings.metin | escape -}}
+                  <svg class="ttft-ikon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 8h12"/><path class="ttft-dikey" d="M8 2v12"/></svg>
+                </button>
+                <span class="ttft-masa ttft-etiket">{{ block.settings.metin | escape }}</span>
+              </h2>
+              <ul class="ttft-liste" id="{{ gid }}">
+            {%- assign acik_grup = true -%}
+          {%- when 'link' -%}
+            {%- if acik_grup and block.settings.metin != blank -%}
+              {%- assign bag = block.settings.bag | default: '#' -%}
+              {%- assign bag_yol = bag | split: '?' | first | split: '#' | first -%}
+              <li {{ block.shopify_attributes }}>
+                <a href="{{ bag }}"{% if bag_yol == yol %} aria-current="page"{% endif %}>
+                  {{- block.settings.metin | escape -}}
+                  {%- if block.settings.rozet != blank %} <span class="ttft-rozet">{{ block.settings.rozet | escape }}</span>{%- endif -%}
+                </a>
+              </li>
+            {%- endif -%}
+          {%- when 'menu' -%}
+            {%- assign menu = linklists[block.settings.menu] -%}
+            {%- assign haric = block.settings.haric | remove: ' ' | split: ',' -%}
+            {%- if acik_grup and menu.links.size > 0 -%}
+              {%- for link in menu.links -%}
+                {%- if haric contains link.url -%}{%- continue -%}{%- endif -%}
+                <li><a href="{{ link.url }}"{% if link.url == yol %} aria-current="page"{% endif %}>{{ link.title }}</a></li>
+              {%- endfor -%}
+            {%- endif -%}
+        {%- endcase -%}
+      {%- endfor -%}
+      {%- if acik_grup -%}</ul></div>{%- endif -%}
+    </div>
+
+    <div class="ttft-iletisim">
+      <div>
+        <ul class="ttft-butonlar">
+          {%- if s.wa_bag != blank -%}
+            <li>
+              <a class="ttft-buton" href="{{ s.wa_bag }}" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>
+                {{- s.wa_metin | escape -}}
+              </a>
+            </li>
+          {%- endif -%}
+          {%- if s.ara_bag != blank -%}
+            <li>
+              <a class="ttft-buton" href="{{ s.ara_bag }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+                {{- s.ara_metin | escape -}}
+              </a>
+            </li>
+          {%- endif -%}
+          {%- if s.eposta_bag != blank -%}
+            <li>
+              <a class="ttft-buton" href="{{ s.eposta_bag }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+                {{- s.eposta_metin | escape -}}
+              </a>
+            </li>
+          {%- endif -%}
+        </ul>
+        {%- if s.destek_metni != blank -%}<p class="ttft-destek">{{ s.destek_metni | escape }}</p>{%- endif -%}
+      </div>
+      {%- if s.instagram_bag != blank or s.tiktok_bag != blank -%}
+        <ul class="ttft-sosyal">
+          {%- if s.instagram_bag != blank -%}
+            <li>
+              <a href="{{ s.instagram_bag }}" target="_blank" rel="noopener" aria-label="Instagram (yeni sekmede açılır)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="12" r="3.2"/><path d="M16.5 7.5v.01"/></svg>
+              </a>
+            </li>
+          {%- endif -%}
+          {%- if s.tiktok_bag != blank -%}
+            <li>
+              <a href="{{ s.tiktok_bag }}" target="_blank" rel="noopener" aria-label="TikTok (yeni sekmede açılır)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7.9v4a9.9 9.9 0 0 1-5-1.9v4.5a6.5 6.5 0 1 1-8-6.3v4.3a2.5 2.5 0 1 0 4 2V3h4.1A6 6 0 0 0 21 7.9z"/></svg>
+              </a>
+            </li>
+          {%- endif -%}
+        </ul>
+      {%- endif -%}
+    </div>
+
+    <div class="ttft-alt">
+      {%- if s.telif != blank -%}<p class="ttft-telif">{{ s.telif | escape }}</p>{%- endif -%}
+      {%- if s.odeme_goster -%}
+        {%- assign izinli = s.odeme_turleri | remove: ' ' | split: ',' -%}
+        {%- capture odeme -%}
+          {%- for tur in shop.enabled_payment_types -%}
+            {%- if izinli contains tur -%}<li>{{ tur | payment_type_svg_tag }}</li>{%- endif -%}
+          {%- endfor -%}
+        {%- endcapture -%}
+        {%- if odeme != blank -%}<ul class="ttft-odeme" aria-label="{{ s.odeme_etiket | escape }}">{{ odeme }}</ul>{%- endif -%}
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var kok = document.getElementById('TtFooter-{{ sid }}');
+    if (!kok) return;
+    kok.addEventListener('click', function (e) {
+      var b = e.target.closest('.ttft-ac');
+      if (!b || !kok.contains(b)) return;
+      var g = b.closest('[data-ttft-grup]');
+      var acik = g.classList.toggle('acik');
+      b.setAttribute('aria-expanded', acik ? 'true' : 'false');
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "TT Footer",
+  "tag": "div",
+  "class": "tt-footer",
+  "max_blocks": 50,
+  "settings": [
+    { "type": "header", "content": "İletişim satırı" },
+    { "type": "text", "id": "wa_metin", "label": "WhatsApp butonu", "default": "WhatsApp" },
+    { "type": "text", "id": "wa_bag", "label": "WhatsApp adresi", "default": "https://wa.me/902166061415?text=Merhaba%2C%20bilgi%20almak%20istiyorum." },
+    { "type": "text", "id": "ara_metin", "label": "Ara butonu", "default": "Ara" },
+    { "type": "text", "id": "ara_bag", "label": "Telefon adresi", "default": "tel:+902166061415" },
+    { "type": "text", "id": "eposta_metin", "label": "E-posta butonu", "default": "E-posta" },
+    { "type": "text", "id": "eposta_bag", "label": "E-posta adresi", "default": "mailto:info@texttonext.com" },
+    { "type": "text", "id": "destek_metni", "label": "Destek satırı", "default": "Hafta içi 10.00–18.00" },
+    { "type": "header", "content": "Sosyal medya" },
+    { "type": "url", "id": "instagram_bag", "label": "Instagram", "default": "https://www.instagram.com/texttonext.tr/" },
+    { "type": "url", "id": "tiktok_bag", "label": "TikTok", "default": "https://www.tiktok.com/@texttonext" },
+    { "type": "header", "content": "Alt satır" },
+    { "type": "text", "id": "telif", "label": "Telif / unvan satırı", "default": "© 2026 Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti." },
+    { "type": "checkbox", "id": "odeme_goster", "label": "Ödeme ikonlarını göster", "default": true, "info": "Temanın hazır ikonları; yalnızca mağazada açık olan türler görünür." },
+    { "type": "text", "id": "odeme_turleri", "label": "Gösterilecek türler", "default": "visa,master,troy", "info": "Virgülle ayır." },
+    { "type": "text", "id": "odeme_etiket", "label": "Ödeme ikonları (ekran okuyucu etiketi)", "default": "Ödeme yöntemleri" }
+  ],
+  "blocks": [
+    {
+      "type": "baslik",
+      "name": "Başlık (yeni grup)",
+      "settings": [
+        { "type": "text", "id": "metin", "label": "Başlık", "default": "BAŞLIK" }
+      ]
+    },
+    {
+      "type": "link",
+      "name": "Link",
+      "settings": [
+        { "type": "text", "id": "metin", "label": "Metin" },
+        { "type": "url", "id": "bag", "label": "Adres" },
+        { "type": "text", "id": "rozet", "label": "Rozet", "info": "Boşsa rozet görünmez." }
+      ]
+    },
+    {
+      "type": "menu",
+      "name": "Menü linkleri",
+      "settings": [
+        { "type": "link_list", "id": "menu", "label": "Menü", "default": "footer" },
+        { "type": "text", "id": "haric", "label": "Gösterilmeyecek adresler", "info": "Virgülle ayır. Başka grupta zaten olan linkler için." }
+      ]
+    }
+  ],
+  "presets": [{ "name": "TT Footer" }]
+}
+{% endschema %}

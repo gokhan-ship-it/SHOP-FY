@@ -594,8 +594,11 @@
   <div class="tth-menu-ic-{{ sid }}">
     <ul>
       {%- for baglanti in menu.links -%}
+        {%- comment -%} Sitedeki tum Iletisim linkleri /pages/iletisim'e gider (18.10.2026). {%- endcomment -%}
+        {%- assign b_bag = baglanti.url -%}
+        {%- if b_bag == '/pages/iletisimsayfasi' -%}{%- assign b_bag = '/pages/iletisim' -%}{%- endif -%}
         <li>
-          <a href="{{ baglanti.url }}">{{ baglanti.title }}</a>
+          <a href="{{ b_bag }}">{{ baglanti.title }}</a>
           {%- if baglanti.links.size > 0 -%}
             <ul class="tth-alt-{{ sid }}">
               {%- for alt in baglanti.links -%}

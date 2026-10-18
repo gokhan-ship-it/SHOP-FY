@@ -1,0 +1,272 @@
+{%- comment -%}
+  TT ILETISIM -- iletisim sayfasi (18.10.2026)
+
+  Sablon: templates/page.contact.json. /pages/iletisim ve yayindan
+  sonra /pages/iletisimsayfasi bu sablonu kullanir. Iletisim formu yok.
+
+  Yapi: iki satirli baslik, tam genislik WhatsApp butonu, 2x2 kart
+  (blok: Ara, E-posta, Instagram, Sohbet), "HIZLI YARDIM" listesi
+  (blok), en altta sirket bilgisi ve harita linki.
+
+  "Sohbet" karti sitedeki Shopify sohbet penceresini acar
+  (shopify-chat elementinin show() yontemi). Sohbet sayfada yoksa
+  WhatsApp adresine gider.
+
+  Tasarim dili (TEXT-TO-NEXT-TASARIM-DILI.md):
+  - Zemin surface #F4F4F4; kartlar #FFFFFF, 16px kose, 8px aralik,
+    16px ic bosluk, golge ve kenarlik yok.
+  - Baslik title-xl 32px (768px ve ustu 40px) 700 -1px; ikinci satir
+    24px ve ustunde #8A8A85, altinda #5C5C57 (baslik her iki boyda da
+    24px ustunde oldugu icin #8A8A85).
+  - Birincil buton: #0A0A0A zemin, beyaz yazi, 600, tam yuvarlak, 50px.
+    Yesil yok.
+  - Kart: ikon (22px, ince cizgi, ink) + kalin baslik yan yana, altinda
+    tek satir #5C5C57 aciklama (bilgi kutusu kurali).
+  - "HIZLI YARDIM": etiket 11px 600 +1.3px BUYUK HARF; acik zeminde
+    #5C5C57 (#8A8A85 24px alti acik zeminde kullanilmaz). Satirlar 17px
+    500 ink, en az 56px, aralarinda 1px #D2D2CD, sagda menu oku
+    (10x16, 2px, #5C5C57).
+  - Sirket bilgisi 13.5px #5C5C57; link ink alti cizili.
+  - Odak halkasi 2px ink. Hover yok (belirlenmedi).
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign s = section.settings
+-%}
+{%- capture harita -%}https://www.google.com/maps/search/?api=1&query={{ s.harita_sorgu | url_encode }}{%- endcapture -%}
+
+<style>
+  #shopify-section-{{ sid }} {
+    --section-padding-top: {{ s.padding_top }}px;
+    --section-padding-bottom: {{ s.padding_bottom }}px;
+    background: #f4f4f4;
+  }
+  .tti-{{ sid }} { color: #0a0a0a; }
+  .tti-{{ sid }} ul { list-style: none; margin: 0; padding: 0; }
+  .tti-{{ sid }} a { color: inherit; text-decoration: none; }
+  .tti-{{ sid }} :is(a, button):focus-visible { outline: 2px solid #0a0a0a; outline-offset: 2px; }
+  .tti-{{ sid }} svg { display: block; flex: 0 0 auto; }
+  .tti-{{ sid }} h1 {
+    margin: 0 0 24px;
+    font-family: var(--font-heading-family);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -1px;
+  }
+  .tti-{{ sid }} h1 span { display: block; }
+  .tti-{{ sid }} .tti-ikinci { color: #8a8a85; }
+  @media screen and (min-width: 768px) { .tti-{{ sid }} h1 { font-size: 40px; } }
+
+  .tti-{{ sid }} .tti-wa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 50px;
+    padding: 0 20px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    background: #0a0a0a;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .tti-{{ sid }} .tti-wa svg { width: 20px; height: 20px; }
+
+  .tti-{{ sid }} .tti-kartlar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .tti-{{ sid }} .tti-kart {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    min-height: 88px;
+    padding: 16px;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 16px;
+    background: #ffffff;
+    color: #0a0a0a;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .tti-{{ sid }} .tti-kart-ust { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; line-height: 1.2; }
+  .tti-{{ sid }} .tti-kart-ust svg { width: 22px; height: 22px; }
+  .tti-{{ sid }} .tti-kart-alt { font-size: 13.5px; line-height: 1.35; color: #5c5c57; overflow-wrap: anywhere; }
+
+  .tti-{{ sid }} .tti-etiket {
+    margin: 32px 0 12px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: #5c5c57;
+  }
+  .tti-{{ sid }} .tti-yardim { border-radius: 16px; background: #ffffff; }
+  .tti-{{ sid }} .tti-yardim li + li { border-top: 1px solid #d2d2cd; }
+  .tti-{{ sid }} .tti-yardim a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 56px;
+    padding: 8px 16px;
+    box-sizing: border-box;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  .tti-{{ sid }} .tti-ok { width: 10px; height: 16px; color: #5c5c57; }
+
+  .tti-{{ sid }} .tti-sirket { margin-top: 32px; font-size: 13.5px; line-height: 1.5; color: #5c5c57; }
+  .tti-{{ sid }} .tti-sirket p { margin: 0; }
+  .tti-{{ sid }} .tti-sirket a { color: #0a0a0a; text-decoration: underline; text-underline-offset: 2px; display: inline-block; padding: 12px 0; }
+</style>
+
+<div class="section section--padding">
+  <div class="tti-{{ sid }} page-width page-width--narrow relative" id="TtIletisim-{{ sid }}">
+    <h1>
+      <span>{{ s.baslik_1 | escape }}</span>
+      {%- if s.baslik_2 != blank %} <span class="tti-ikinci">{{ s.baslik_2 | escape }}</span>{%- endif -%}
+    </h1>
+
+    {%- if s.wa_bag != blank -%}
+      <a class="tti-wa" href="{{ s.wa_bag }}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>
+        {{- s.wa_metin | escape -}}
+      </a>
+    {%- endif -%}
+
+    {%- assign kartlar = section.blocks | where: 'type', 'kart' -%}
+    {%- if kartlar.size > 0 -%}
+      <ul class="tti-kartlar">
+        {%- for block in kartlar -%}
+          {%- capture ikon -%}
+            {%- case block.settings.ikon -%}
+              {%- when 'telefon' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+              {%- when 'eposta' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+              {%- when 'instagram' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="12" r="3.2"/><path d="M16.5 7.5v.01"/></svg>
+              {%- else -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l1.3-3.9a9 8 0 1 1 3.4 2.9L3 20"/></svg>
+            {%- endcase -%}
+          {%- endcapture -%}
+          <li {{ block.shopify_attributes }}>
+            {%- if block.settings.ikon == 'sohbet' -%}
+              <button type="button" class="tti-kart" data-tti-sohbet data-yedek="{{ s.wa_bag | escape }}">
+                <span class="tti-kart-ust">{{ ikon }}{{ block.settings.baslik | escape }}</span>
+                <span class="tti-kart-alt">{{ block.settings.deger | escape }}</span>
+              </button>
+            {%- else -%}
+              <a class="tti-kart" href="{{ block.settings.bag }}"{% if block.settings.yeni_sekme %} target="_blank" rel="noopener"{% endif %}>
+                <span class="tti-kart-ust">{{ ikon }}{{ block.settings.baslik | escape }}</span>
+                <span class="tti-kart-alt">{{ block.settings.deger | escape }}</span>
+              </a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- assign yardimlar = section.blocks | where: 'type', 'yardim' -%}
+    {%- if yardimlar.size > 0 -%}
+      {%- if s.yardim_etiket != blank -%}<p class="tti-etiket" id="TtIletisim-{{ sid }}-yardim">{{ s.yardim_etiket | escape }}</p>{%- endif -%}
+      <ul class="tti-yardim"{% if s.yardim_etiket != blank %} aria-labelledby="TtIletisim-{{ sid }}-yardim"{% endif %}>
+        {%- for block in yardimlar -%}
+          <li {{ block.shopify_attributes }}>
+            <a href="{{ block.settings.bag }}">
+              <span>{{ block.settings.metin | escape }}</span>
+              <svg class="tti-ok" viewBox="0 0 10 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 2l6 6-6 6"/></svg>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    <div class="tti-sirket">
+      {%- if s.unvan != blank -%}<p>{{ s.unvan | escape }}</p>{%- endif -%}
+      {%- if s.adres != blank -%}<p>{{ s.adres | escape }}</p>{%- endif -%}
+      {%- if s.kep != blank -%}<p>{{ s.kep | escape }}</p>{%- endif -%}
+      {%- if s.harita_metin != blank and s.harita_sorgu != blank -%}
+        <a href="{{ harita }}" target="_blank" rel="noopener">{{ s.harita_metin | escape }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var kok = document.getElementById('TtIletisim-{{ sid }}');
+    if (!kok) return;
+    kok.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-tti-sohbet]');
+      if (!b || !kok.contains(b)) return;
+      var sohbet = document.querySelector('shopify-chat');
+      if (sohbet && typeof sohbet.show === 'function') {
+        sohbet.show();
+      } else if (b.getAttribute('data-yedek')) {
+        window.open(b.getAttribute('data-yedek'), '_blank', 'noopener');
+      }
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "TT İletişim",
+  "tag": "section",
+  "class": "tt-iletisim",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "text", "id": "baslik_1", "label": "Başlık (1. satır)", "default": "Bize ulaşın." },
+    { "type": "text", "id": "baslik_2", "label": "Başlık (2. satır, gri)", "default": "Hafta içi 10.00–18.00" },
+    { "type": "text", "id": "wa_metin", "label": "WhatsApp butonu", "default": "WhatsApp ile yaz" },
+    { "type": "text", "id": "wa_bag", "label": "WhatsApp adresi", "default": "https://wa.me/902166061415?text=Merhaba%2C%20bilgi%20almak%20istiyorum." },
+    { "type": "text", "id": "yardim_etiket", "label": "Hızlı yardım etiketi", "default": "HIZLI YARDIM" },
+    { "type": "header", "content": "Şirket bilgisi" },
+    { "type": "text", "id": "unvan", "label": "Unvan", "default": "Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti." },
+    { "type": "text", "id": "adres", "label": "Adres", "default": "Göztepe Mah. Tepegöz Sk. Ikar İş Merkezi No:1 İç Kapı No:8 Kadıköy/İstanbul" },
+    { "type": "text", "id": "kep", "label": "KEP satırı", "default": "KEP: texttonext@hs06.kep.tr" },
+    { "type": "text", "id": "harita_metin", "label": "Harita linki metni", "default": "Haritada aç" },
+    { "type": "text", "id": "harita_sorgu", "label": "Harita araması", "default": "Ikar İş Merkezi, Göztepe Mah. Tepegöz Sk. No:1, Kadıköy/İstanbul", "info": "Google Haritalar'da aranacak adres." },
+    { "type": "range", "id": "padding_top", "label": "Üst boşluk", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 72 },
+    { "type": "range", "id": "padding_bottom", "label": "Alt boşluk", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "blocks": [
+    {
+      "type": "kart",
+      "name": "Kart",
+      "settings": [
+        { "type": "select", "id": "ikon", "label": "Tür", "options": [
+          { "value": "telefon", "label": "Telefon" },
+          { "value": "eposta", "label": "E-posta" },
+          { "value": "instagram", "label": "Instagram" },
+          { "value": "sohbet", "label": "Sohbet (sitedeki sohbet penceresini açar)" }
+        ], "default": "telefon" },
+        { "type": "text", "id": "baslik", "label": "Başlık", "default": "Ara" },
+        { "type": "text", "id": "deger", "label": "Alt satır", "default": "0216 606 14 15" },
+        { "type": "text", "id": "bag", "label": "Adres", "info": "tel:, mailto: veya https:// (Sohbet türünde kullanılmaz)." },
+        { "type": "checkbox", "id": "yeni_sekme", "label": "Yeni sekmede aç", "default": false }
+      ]
+    },
+    {
+      "type": "yardim",
+      "name": "Hızlı yardım satırı",
+      "settings": [
+        { "type": "text", "id": "metin", "label": "Metin", "default": "Siparişim nerede?" },
+        { "type": "text", "id": "bag", "label": "Adres", "info": "Örn. /pages/siparis-ve-iade#siparis" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "TT İletişim" }]
+}
+{% endschema %}

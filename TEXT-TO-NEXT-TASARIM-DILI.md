@@ -246,7 +246,7 @@ Uygulanmış/onaylanmış özel değerler:
 | Metin | `#0A0A0A`, altı çizili ya da yanında ok ("Ürünü öğren →", "İade Koşulları"). Mavi link yok. |
 | Ok dairesi | 34px `#D6FF00` daire içinde `#0A0A0A` sağ ok (çizgi 2px). Kartın tamamı tıklanabilirken yön gösterir. |
 | Kapat | 44×44 beyaz daire içinde X (14px, ink, çizgi 2px); bütün açılır pencerelerde en az 44×44. |
-| Büyük neon buton | YOK. İstisnalar: çark kartındaki "Çevir" butonu (`#D6FF00` + ink) ve çerez bandındaki "Kabul et" butonu (bkz. "Çerez bandı istisnası"). |
+| Büyük neon buton | YOK. İstisna: çark kartındaki "Çevir" butonu (`#D6FF00` + ink). |
 
 **Hover / aktif:** belirlenmedi. Odak halkası: açık zeminde `#0A0A0A`, koyu zeminde `#FFFFFF`. Pasif buton durumu (ör. "Sepete ekle (0/2)", "(1/2)") var, görünümü belirlenmedi.
 
@@ -266,17 +266,16 @@ Uygulanmış/onaylanmış özel değerler:
 
 `#F4F4F4` zemin, üst köşeler 24px, ortada 40×5px `#CFCFCB` tutamaç, sağ üstte beyaz daire X, iki satırlı başlık, adım listesi (30px daireler: normal `#0A0A0A` + beyaz numara, vurgulu `#D6FF00` + ink; aralarında 2px `#D2D2CD` çizgi), bölüm etiketi + 2×2 bilgi kutuları, en altta tam genişlik birincil "Anladım" butonu (50px). En fazla 90dvh; sığmazsa kendi içinde kayar, buton sabit kalır. Masaüstünde ortalanmış, en fazla 440px. Native `<dialog>`; Esc, X, karartma ve "Anladım" ile kapanır, odak tetikleyiciye döner.
 
-### Çerez bandı istisnası (17 Ekim 2026)
+### İletişim sayfası (18 Ekim 2026)
 
-Çerez bandı, "neon sadece küçük vurgu" kuralının bilerek yapılan istisnasıdır. Bölüm: `sections/tt-cerez.liquid`.
+Bölüm: `sections/tt-iletisim.liquid`, şablon: `templates/page.contact.json` (`/pages/iletisim`; yayından sonra `/pages/iletisimsayfasi` da). İletişim formu yok.
 
-- **Kart:** `#141414` zemin, 1px `#262624` kenar, 16px köşe, 16px iç boşluk. Telefonda ekranın altında, kenarlardan 12px boşluklu tam genişlik; 768px ve üstünde sol alt köşede (24px), en fazla 420px.
-- **Metin:** 13.5px `#A3A39E`; linkler `#FFFFFF` altı çizili.
-- **Butonlar:** "Kabul et" `#D6FF00` zemin + `#0A0A0A` yazı; "Reddet" `#FFFFFF` zemin + `#0A0A0A` yazı. İkisi aynı boyutta ve yan yana, tam yuvarlak, en az 44px, 15px 600.
-- **"Tercihleri yönet":** metin link, beyaz altı çizili, en az 44px dokunma alanı.
-- **Tercih penceresi:** alttan açılan pencere kuralları (`#F4F4F4`, üst köşeler 24px, 40×5 tutamaç, 44×44 beyaz daire X, 50px birincil "Seçimleri kaydet", en fazla 90dvh, masaüstünde ortada en fazla 440px). Kategoriler `#FFFFFF` satırlarda (16px köşe): ad 17px 700 -0.3px, açıklama 13.5px `#5C5C57`.
-- **Anahtar (aç/kapa):** 44×26 tam yuvarlak iz, 20px beyaz topuz; açık `#0A0A0A`, kapalı `#D2D2CD`, kilitli (zorunlu) `#5C5C57`. Dokunma alanı en az 44px. (Anahtar stili ilk kez burada tanımlandı; renkler mevcut token'lardan.)
-- **Alt yüzen öğeler:** band açıkken "Sepete ekle" çubukları, çark sayacı, "Nasıl çalışır?" ve "Sohbet" gizlenir; seçim yapılınca geri gelir.
+- **Zemin:** `#F4F4F4`; üstte koyu header (tt-baslik), altta footer.
+- **Başlık:** iki satırlı, title-xl 32px (768px ve üstünde 40px) 700 -1px: "Bize ulaşın." `#0A0A0A` + "Hafta içi 10.00–18.00" (24px ve üstünde `#8A8A85`, altında `#5C5C57`).
+- **WhatsApp:** tam genişlik birincil buton (`#0A0A0A` zemin, beyaz yazı ve ince çizgi WhatsApp ikonu, 600, tam yuvarlak, 50px). Yeşil yok.
+- **2×2 kart:** `#FFFFFF`, 16px köşe, 8px aralık, 16px iç boşluk; ikon (22px ink) + kalın başlık yan yana, altında `#5C5C57` tek satır: Ara, E-posta, Instagram ("DM gönder"), Sohbet ("Sitede yaz", sitedeki sohbet penceresini açar).
+- **HIZLI YARDIM:** etiket 11px 600 +1.3px BÜYÜK HARF `#5C5C57` (açık zeminde); beyaz kart içinde satırlar 17px 500 ink, en az 56px, aralarında 1px `#D2D2CD`, sağda menü oku (10×16, 2px, `#5C5C57`).
+- **Şirket bilgisi:** 13.5px `#5C5C57`; "Haritada aç" ink altı çizili.
 
 ### SSS sayfası (akordiyon) (17 Ekim 2026)
 
@@ -352,13 +351,19 @@ Tam ekran, `#000000` zemin. Yukarıdan aşağıya:
 
 Davranış: `aria-expanded`/`aria-controls`, odak içeride döner, Esc ile kapanır, odak hamburger'e döner, arka sayfa kayması kilitli, içerik uzunsa menü kendi içinde kayar, animasyon 200–250ms (prefers-reduced-motion'da yok). Masaüstü: soldan 420px panel + `rgba(0,0,0,0.5)` karartma. Metin ve linkler tema editöründen düzenlenebilir.
 
-### Footer
+### Footer (18 Ekim 2026)
 
-- **Belirlenmedi.** Footer tasarımı bu çalışmada konuşulmadı.
-- Yasal link sütunu `footer-yasal` menüsünden gelir; en üstte "Sipariş ve İade" (17 Ekim 2026). `/pages/sozlesmeler` listesi aynı menüyü kullanır ama bu yardım linkini göstermez (`tt-belge-listesi` "Listede gösterilmeyecek adresler" ayarı).
-- Mevcut durum (Claude Code raporu): footer grubunda yalnızca newsletter bölümü açık; footer ve telif satırı bölümleri kapalı.
+Bölüm: `sections/tt-footer.liquid` (footer grubunda newsletter'ın hemen altında). Newsletter ile tek parça siyah blok gibi görünür; ayrı bir "Yasal" bloğu yok.
+
+- **Zemin ve çizgi:** `#000000`; ayraçlar 1px `#262624`. Genişlik newsletter ile aynı (temanın page-width--narrow'u, telefonda 20px kenar).
+- **Dört grup:** ÜRÜNLER (Kadın, Erkek, Couple + lime rozet "İkincisi yarı fiyatına", Tüm ürünler), NASIL ÇALIŞIR (Single, Couple, Kullanım Kılavuzu, Etkinlik), YARDIM (Sipariş ve İade, İletişim, Hesap Silme), YASAL (`footer-yasal` menüsü; Sipariş ve İade YARDIM'da olduğu için burada atlanır).
+- **Telefon (768px altı):** başlıklar açılır-kapanır, hepsi kapalı başlar; satır en az 56px, sağda ince artı (açıkken eksi), gruplar arasında 1px `#262624`.
+- **768px ve üstü:** başlıklar düz etiket, listeler açık; 768–1023px iki sütun, 1024px ve üstü dört sütun yan yana.
+- **Başlık:** 11px 600 +1.3px BÜYÜK HARF `#8A8A85`. **Linkler:** beyaz Poppins 500 15px, en az 44px.
+- **İletişim satırı:** "WhatsApp", "Ara", "E-posta" yuvarlak çerçeveli butonlar (1px `#262624` kenar, beyaz ince çizgi ikon ve yazı, en az 44px); altında "Hafta içi 10.00–18.00" 12.5px `#A3A39E`. Sağda (telefonda altta) Instagram ve TikTok ikonları (beyaz, ince çizgi, 44×44, yeni sekmede).
+- **Alt satır:** 1px `#262624` çizgi, telif 12.5px `#A3A39E`; temanın hazır ödeme ikonları (Visa, Mastercard, Troy; yalnızca mağazada açık olanlar) gri tonlu.
+- Linkler tema editöründen bloklarla düzenlenir (Başlık / Link / Menü linkleri).
 - Newsletter kuralı (uygulandı): zemin `#000000`, giriş alanı `#141414`, gönder butonu beyaz zemin + ink ok, başlık beyaz Poppins 700, açıklama `#A3A39E`.
-
 ### Alt yüzen öğeler (telefon)
 
 Alttan yukarıya: "Sepete ekle (…)" çubuğu (birincil buton) → çark sayaç çubuğu ("500 TL indirim aktif" + lime sayaç) → solda "Nasıl çalışır?" yüzen butonu (`#0A0A0A` zemin, beyaz yazı, 2px lime çerçeve), sağda "Sohbet" butonu; aralarında en az 12px, birbirine binmez. (Son talimatla istendi; uygulama raporu bekleniyor.) "Sepete ekle (0/2)" çubuğu Couple modunda, "Kendi setini oluştur" kutusu ekrana girince çıkar; en az 1 ürün seçiliyse her yerde görünür kalır.
@@ -375,6 +380,8 @@ Tema: "Tasarim dili - 2026-10-16" (ID 189140861248), "Calisma kopyasi - 2026-10-
 | `layout/theme.liquid` | Ürün sayfası CSS katmanlarının yüklenme koşulu (`couple` son eki de normal ürün sayfası katmanlarını alıyor). |
 | `sections/tt-baslik` (+ `sections/tt-couple-urun.json` header grubu) | Üst bar. |
 | `sections/tt-menu.liquid` | Hamburger menü. |
+| `sections/tt-footer.liquid` (footer grubu) | Site altbilgisi (newsletter ile tek siyah blok, 4 grup, iletişim butonları, sosyal, telif, ödeme ikonları). |
+| `sections/tt-iletisim.liquid` + `templates/page.contact.json` | İletişim sayfası (`/pages/iletisim`, yayından sonra `/pages/iletisimsayfasi`). |
 | `sections/tt-sss.liquid` + `templates/page.siparis-ve-iade.json` | "Sipariş ve İade" yardım sayfası (SSS akordiyonu, #adresler). |
 | `sections/tt-secim-kartlari.liquid` + `assets/tt-secim-kartlari.js` | Koleksiyon üstündeki Single/Couple seçim kartları, set oluşturma kutusu, "Nasıl çalışır?" kartı ve pencereleri, mod geçişi (`?mod=couple`, `data-sc-aktif-mod`, bölüm kökü `[data-tt-sc]`), `setler_adet` ayarı (Kampanyalı Couple Setler şeridi). |
 | `snippets/tt-uk-kart.liquid` + `assets/tt-uk-kart.js` | Koleksiyon ürün kartı (4:5, sadece fotoğraf filtresi, kaydırıcı, `uk_gorsel_sayisi`). |
@@ -431,7 +438,7 @@ Tema: "Tasarim dili - 2026-10-16" (ID 189140861248), "Calisma kopyasi - 2026-10-
 ## 10. Kontrol listesi (yeni bir bileşen bu dile uyuyor mu?)
 
 1. Sadece paletteki renkler mi var (bölüm 2'deki üç onaylı istisna hariç; `#0A0A0A`, `#D6FF00`, `#F4F4F4`, `#FFFFFF`, `#000000`, `#141414`, `#5C5C57`, `#8A8A85`, `#A3A39E`, `#D2D2CD`, `#262624`)? Mavi, yeşil, bordo, mor, turuncu, degrade yok mu?
-2. Neon yeşil sadece küçük bir öğede mi, ekranda en fazla 1-2 yerde mi, üzerinde ink yazı mı? Açık zeminde neon yazı yok mu? (İstisna: çerez bandındaki "Kabul et" butonu.)
+2. Neon yeşil sadece küçük bir öğede mi, ekranda en fazla 1-2 yerde mi, üzerinde ink yazı mı? Açık zeminde neon yazı yok mu?
 3. Font Poppins mi, başlıklar 700 ve negatif harf aralıklı mı? Yeni font yüklenmiyor mu?
 4. Başlıkta vurgu gerekiyorsa iki satırlı kural mı (ilk kısım ink/white, ikinci kısım 24px+ `#8A8A85`, altında `#5C5C57`)?
 5. Butonlar tam yuvarlak mı; birincil ink + white (koyu zeminde ters), ikincil white + 1px `#D2D2CD`? Mavi link yok mu?

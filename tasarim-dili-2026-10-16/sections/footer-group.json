@@ -190,21 +190,167 @@
         "enable_parallax": true
       }
     },
-    "tt_footer_yasal": {
-      "type": "tt-footer-yasal",
+    "tt_footer": {
+      "type": "tt-footer",
+      "blocks": {
+        "baslik_urunler": {
+          "type": "baslik",
+          "settings": {
+            "metin": "ÜRÜNLER"
+          }
+        },
+        "link_kadin": {
+          "type": "link",
+          "settings": {
+            "metin": "Kadın",
+            "bag": "/collections/zaman-kapsulu-kolyeler",
+            "rozet": ""
+          }
+        },
+        "link_erkek": {
+          "type": "link",
+          "settings": {
+            "metin": "Erkek",
+            "bag": "/collections/zaman-kapsulu-bileklik",
+            "rozet": ""
+          }
+        },
+        "link_couple": {
+          "type": "link",
+          "settings": {
+            "metin": "Couple",
+            "bag": "/collections/couple-urunler",
+            "rozet": "İkincisi yarı fiyatına"
+          }
+        },
+        "link_tum": {
+          "type": "link",
+          "settings": {
+            "metin": "Tüm ürünler",
+            "bag": "/collections/all",
+            "rozet": ""
+          }
+        },
+        "baslik_nasil": {
+          "type": "baslik",
+          "settings": {
+            "metin": "NASIL ÇALIŞIR"
+          }
+        },
+        "link_single": {
+          "type": "link",
+          "settings": {
+            "metin": "Single",
+            "bag": "/pages/hediye-daha-fazla-bilgi-al",
+            "rozet": ""
+          }
+        },
+        "link_couple_nasil": {
+          "type": "link",
+          "settings": {
+            "metin": "Couple",
+            "bag": "/pages/couple-daha-fazla-bilgi-al",
+            "rozet": ""
+          }
+        },
+        "link_kilavuz": {
+          "type": "link",
+          "settings": {
+            "metin": "Kullanım Kılavuzu",
+            "bag": "/pages/kullanim-kilavuzu",
+            "rozet": ""
+          }
+        },
+        "link_etkinlik": {
+          "type": "link",
+          "settings": {
+            "metin": "Etkinlik",
+            "bag": "/pages/event-daha-fazla-bilgi-al",
+            "rozet": ""
+          }
+        },
+        "baslik_yardim": {
+          "type": "baslik",
+          "settings": {
+            "metin": "YARDIM"
+          }
+        },
+        "link_siparis": {
+          "type": "link",
+          "settings": {
+            "metin": "Sipariş ve İade",
+            "bag": "/pages/siparis-ve-iade",
+            "rozet": ""
+          }
+        },
+        "link_iletisim": {
+          "type": "link",
+          "settings": {
+            "metin": "İletişim",
+            "bag": "/pages/iletisim",
+            "rozet": ""
+          }
+        },
+        "link_hesap": {
+          "type": "link",
+          "settings": {
+            "metin": "Hesap Silme",
+            "bag": "/pages/hesap-silme-talebi",
+            "rozet": ""
+          }
+        },
+        "baslik_yasal": {
+          "type": "baslik",
+          "settings": {
+            "metin": "YASAL"
+          }
+        },
+        "menu_yasal": {
+          "type": "menu",
+          "settings": {
+            "menu": "footer-yasal",
+            "haric": "/pages/siparis-ve-iade"
+          }
+        }
+      },
+      "block_order": [
+        "baslik_urunler",
+        "link_kadin",
+        "link_erkek",
+        "link_couple",
+        "link_tum",
+        "baslik_nasil",
+        "link_single",
+        "link_couple_nasil",
+        "link_kilavuz",
+        "link_etkinlik",
+        "baslik_yardim",
+        "link_siparis",
+        "link_iletisim",
+        "link_hesap",
+        "baslik_yasal",
+        "menu_yasal"
+      ],
       "settings": {
-        "duzen": "a",
-        "menu": "footer-yasal",
-        "etiket": "Yasal",
-        "iletisim_metin": "İletişim",
-        "iletisim_bag": "/pages/iletisim",
-        "telif": "© 2026 Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti."
+        "wa_metin": "WhatsApp",
+        "wa_bag": "https://wa.me/902166061415?text=Merhaba%2C%20bilgi%20almak%20istiyorum.",
+        "ara_metin": "Ara",
+        "ara_bag": "tel:+902166061415",
+        "eposta_metin": "E-posta",
+        "eposta_bag": "mailto:info@texttonext.com",
+        "destek_metni": "Hafta içi 10.00–18.00",
+        "instagram_bag": "https://www.instagram.com/texttonext.tr/",
+        "tiktok_bag": "https://www.tiktok.com/@texttonext",
+        "telif": "© 2026 Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.",
+        "odeme_goster": true,
+        "odeme_turleri": "visa,master,troy",
+        "odeme_etiket": "Ödeme yöntemleri"
       }
     }
   },
   "order": [
     "newsletter_P9N9HX",
-    "tt_footer_yasal",
+    "tt_footer",
     "footer",
     "footer-copyright"
   ]
