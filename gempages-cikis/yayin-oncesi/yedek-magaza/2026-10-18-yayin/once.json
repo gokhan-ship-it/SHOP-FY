@@ -1,0 +1,24 @@
+{
+  "tarih": "2026-10-18T20:05Z",
+  "not": "Yeni tema (189140861248) 20:04 UTC'de yayina alindi. Asagidakiler suffix ve menu degisikliginden ONCEKI degerler; geri almak icin bunlar yazilir.",
+  "sayfalar": {
+    "gid://shopify/Page/159765332288": { "handle": "kullanim-kilavuzu", "templateSuffix": "gp-template-600755391629886309" },
+    "gid://shopify/Page/159765496128": { "handle": "bireysel-hediye-kullanim-kilavuzu", "templateSuffix": "gp-template-600758654311858837" },
+    "gid://shopify/Page/159765528896": { "handle": "couple-hediye-kullanim-kilavuzu", "templateSuffix": "gp-template-600760696552030795" },
+    "gid://shopify/Page/149125103936": { "handle": "iletisimsayfasi", "templateSuffix": "gp-template-556461893263295681" },
+    "gid://shopify/Page/160782123328": { "handle": "sozlesmeler", "templateSuffix": "gp-template-606324753770218070" },
+    "gid://shopify/Page/159984779584": { "handle": "couplekapsuldahafazlabilgial", "templateSuffix": "gp-template-601917426203886298" },
+    "gid://shopify/Page/159985074496": { "handle": "hediyekapsuldahafazlabilgial", "templateSuffix": "gp-template-601918380005393114" }
+  },
+  "main_menu": {
+    "id": "gid://shopify/Menu/251030044992",
+    "title": "Ana Menü",
+    "items": [
+      { "id": "gid://shopify/MenuItem/758992961856", "title": "Couple", "type": "COLLECTION", "url": "/collections/couple-urunler", "resourceId": "gid://shopify/Collection/515410526528" },
+      { "id": "gid://shopify/MenuItem/591192981824", "title": "Kadın", "type": "COLLECTION", "url": "/collections/zaman-kapsulu-kolyeler", "resourceId": "gid://shopify/Collection/472435654976" },
+      { "id": "gid://shopify/MenuItem/591696363840", "title": "Erkek", "type": "COLLECTION", "url": "/collections/zaman-kapsulu-bileklik", "resourceId": "gid://shopify/Collection/472433557824" },
+      { "id": "gid://shopify/MenuItem/591192949056", "title": "Etkinlik", "type": "HTTP", "url": "https://texttonext.com/pages/event-daha-fazla-bilgi-al", "resourceId": null },
+      { "id": "gid://shopify/MenuItem/591901327680", "title": "İletişim", "type": "PAGE", "url": "/pages/iletisimsayfasi", "resourceId": "gid://shopify/Page/149125103936" }
+    ]
+  }
+}

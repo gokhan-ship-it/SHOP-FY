@@ -203,7 +203,6 @@
             <a
               class="ttk-kart"
               href="{{ b.bag | default: '#' }}"
-              {% if b.onizleme_view != blank %}data-ttk-view="{{ b.onizleme_view | escape }}"{% endif %}
               {{ block.shopify_attributes }}
             >
               <span class="ttk-simge{% if b.ikon == 'nfc' %} ttk-simge--nfc{% endif %}" aria-hidden="true">
@@ -259,32 +258,6 @@
   </div>
 </div>
 
-{%- comment -%}
-  ONIZLEME YARDIMCISI -- GECICI.
-
-  Kartlarin linkleri her zaman TEMIZ (/pages/bireysel-hediye-kullanim-
-  kilavuzu, /pages/couple-hediye-kullanim-kilavuzu). Sayfa ?view=kilavuz
-  ile acildiysa (yani sablon henuz sayfaya baglanmadan onizleniyorsa) bu
-  betik data-ttk-view tasiyan kartlarin linkine ?view=... ekler; boylece
-  onizlemede alt kilavuzlarin da yeni sablonu acilir. Normal ziyarette
-  (view yokken) hicbir sey yapmaz. preview_theme_id hicbir zaman eklenmez.
-
-  SUFFIX DEGISIKLIGINDEN SONRA KALDIRILACAK: bu <script> blogu ve
-  kart blogundaki "onizleme_view" ayari ile data-ttk-view niteligi.
-{%- endcomment -%}
-<script>
-  (function () {
-    if (new URLSearchParams(location.search).get('view') !== 'kilavuz') return;
-    var kok = document.getElementById('ttk-{{ sid }}');
-    if (!kok) return;
-    kok.querySelectorAll('a[data-ttk-view]').forEach(function (a) {
-      var u = new URL(a.getAttribute('href'), location.origin);
-      u.searchParams.set('view', a.getAttribute('data-ttk-view'));
-      a.setAttribute('href', u.pathname + u.search + u.hash);
-    });
-  })();
-</script>
-
 {% schema %}
 {
   "name": "Kullanım kılavuzu",
@@ -322,8 +295,7 @@
         { "type": "text", "id": "etiket", "label": "Üst etiket" },
         { "type": "text", "id": "baslik", "label": "Başlık" },
         { "type": "inline_richtext", "id": "alt_metin", "label": "Alt metin" },
-        { "type": "url", "id": "bag", "label": "Bağlantı", "info": "Temiz adres yazın; ?view= veya preview_theme_id eklemeyin." },
-        { "type": "text", "id": "onizleme_view", "label": "Önizleme şablonu (geçici)", "info": "Yalnızca sayfa ?view=kilavuz ile açıldığında linke eklenir. Şablon değişikliğinden sonra silinecek." }
+        { "type": "url", "id": "bag", "label": "Bağlantı", "info": "Temiz adres yazın; ?view= veya preview_theme_id eklemeyin." }
       ]
     },
     {
