@@ -268,7 +268,7 @@ Uygulanmış/onaylanmış özel değerler:
 
 ### İletişim sayfası (18 Ekim 2026)
 
-Bölüm: `sections/tt-iletisim.liquid`, şablon: `templates/page.contact.json` (`/pages/iletisim`; yayından sonra `/pages/iletisimsayfasi` da). İletişim formu yok.
+Bölüm: `sections/tt-iletisim.liquid`, şablon: `templates/page.iletisim.json` (`/pages/iletisim` bu şablona bağlı; yayından sonra `/pages/iletisimsayfasi` da). `templates/page.contact.json` aynı içeriğin kopyası, yalnızca `/pages/contact` için. İletişim formu yok.
 
 - **Zemin:** `#F4F4F4`; üstte koyu header (tt-baslik), altta footer.
 - **Başlık:** iki satırlı, title-xl 32px (768px ve üstünde 40px) 700 -1px: "Bize ulaşın." `#0A0A0A` + "Hafta içi 10.00–18.00" (24px ve üstünde `#8A8A85`, altında `#5C5C57`).
@@ -381,7 +381,7 @@ Tema: "Tasarim dili - 2026-10-16" (ID 189140861248), "Calisma kopyasi - 2026-10-
 | `sections/tt-baslik` (+ `sections/tt-couple-urun.json` header grubu) | Üst bar. |
 | `sections/tt-menu.liquid` | Hamburger menü. |
 | `sections/tt-footer.liquid` (footer grubu) | Site altbilgisi (newsletter ile tek siyah blok, 4 grup, iletişim butonları, sosyal, telif, ödeme ikonları). |
-| `sections/tt-iletisim.liquid` + `templates/page.contact.json` | İletişim sayfası (`/pages/iletisim`, yayından sonra `/pages/iletisimsayfasi`). |
+| `sections/tt-iletisim.liquid` + `templates/page.iletisim.json` | İletişim sayfası (`/pages/iletisim`, yayından sonra `/pages/iletisimsayfasi`). |
 | `sections/tt-sss.liquid` + `templates/page.siparis-ve-iade.json` | "Sipariş ve İade" yardım sayfası (SSS akordiyonu, #adresler). |
 | `sections/tt-secim-kartlari.liquid` + `assets/tt-secim-kartlari.js` | Koleksiyon üstündeki Single/Couple seçim kartları, set oluşturma kutusu, "Nasıl çalışır?" kartı ve pencereleri, mod geçişi (`?mod=couple`, `data-sc-aktif-mod`, bölüm kökü `[data-tt-sc]`), `setler_adet` ayarı (Kampanyalı Couple Setler şeridi). |
 | `snippets/tt-uk-kart.liquid` + `assets/tt-uk-kart.js` | Koleksiyon ürün kartı (4:5, sadece fotoğraf filtresi, kaydırıcı, `uk_gorsel_sayisi`). |

@@ -1,0 +1,96 @@
+{
+  "sections": {
+    "iletisim": {
+      "type": "tt-iletisim",
+      "blocks": {
+        "kart_ara": {
+          "type": "kart",
+          "settings": {
+            "ikon": "telefon",
+            "baslik": "Ara",
+            "deger": "0216 606 14 15",
+            "bag": "tel:+902166061415",
+            "yeni_sekme": false
+          }
+        },
+        "kart_eposta": {
+          "type": "kart",
+          "settings": {
+            "ikon": "eposta",
+            "baslik": "E-posta",
+            "deger": "info@texttonext.com",
+            "bag": "mailto:info@texttonext.com",
+            "yeni_sekme": false
+          }
+        },
+        "kart_instagram": {
+          "type": "kart",
+          "settings": {
+            "ikon": "instagram",
+            "baslik": "Instagram",
+            "deger": "DM gönder",
+            "bag": "https://www.instagram.com/texttonext.tr/",
+            "yeni_sekme": true
+          }
+        },
+        "kart_sohbet": {
+          "type": "kart",
+          "settings": {
+            "ikon": "sohbet",
+            "baslik": "Sohbet",
+            "deger": "Sitede yaz",
+            "bag": "",
+            "yeni_sekme": false
+          }
+        },
+        "yardim_siparis": {
+          "type": "yardim",
+          "settings": {
+            "metin": "Siparişim nerede?",
+            "bag": "/pages/siparis-ve-iade#siparis"
+          }
+        },
+        "yardim_iade": {
+          "type": "yardim",
+          "settings": {
+            "metin": "İade şartları",
+            "bag": "/pages/siparis-ve-iade#iade"
+          }
+        },
+        "yardim_cip": {
+          "type": "yardim",
+          "settings": {
+            "metin": "Çip okumuyor",
+            "bag": "/pages/siparis-ve-iade#cip"
+          }
+        }
+      },
+      "block_order": [
+        "kart_ara",
+        "kart_eposta",
+        "kart_instagram",
+        "kart_sohbet",
+        "yardim_siparis",
+        "yardim_iade",
+        "yardim_cip"
+      ],
+      "settings": {
+        "baslik_1": "Bize ulaşın.",
+        "baslik_2": "Hafta içi 10.00–18.00",
+        "wa_metin": "WhatsApp ile yaz",
+        "wa_bag": "https://wa.me/902166061415?text=Merhaba%2C%20bilgi%20almak%20istiyorum.",
+        "yardim_etiket": "HIZLI YARDIM",
+        "unvan": "Text To Next Mücevherat Sanayi ve Ticaret Ltd. Şti.",
+        "adres": "Göztepe Mah. Tepegöz Sk. Ikar İş Merkezi No:1 İç Kapı No:8 Kadıköy/İstanbul",
+        "kep": "KEP: texttonext@hs06.kep.tr",
+        "harita_metin": "Haritada aç",
+        "harita_sorgu": "Ikar İş Merkezi, Göztepe Mah. Tepegöz Sk. No:1, Kadıköy/İstanbul",
+        "padding_top": 72,
+        "padding_bottom": 96
+      }
+    }
+  },
+  "order": [
+    "iletisim"
+  ]
+}
