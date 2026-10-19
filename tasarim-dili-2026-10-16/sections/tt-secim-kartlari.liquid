@@ -631,6 +631,9 @@
     #shopify-section-{{ sid }} .tt-sc-setkart-fiyat--kod .tt-sc-setkart-satis {
       color: var(--tt-sc-set-kod);
     }
+    {%- comment -%} 19.10.2026: cark rozetiyle indirimli fiyat 700 #0A0A0A, normal fiyat 400 #5C5C57 cizili. {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyat--kod .tt-sc-setkart-satis { font-weight: 700; color: #0a0a0a; }
+    #shopify-section-{{ sid }} .tt-sc-setkart-fiyat--kod .tt-sc-setkart-eski { font-weight: 400; color: #5c5c57; }
     #shopify-section-{{ sid }} .tt-sc-setkart-etiket {
       margin-top: 10px;
       font-size: 10px;
@@ -1555,9 +1558,8 @@
                       {%- endcomment -%}
                       <span class="tt-sc-setkart-fiyat tt-sc-setkart-fiyat--kod"
                             data-tt-kart-fb data-tt-kart-fiyat="{{ sfiyat }}" hidden>
-                        {%- if s.setler_kod_etiket != blank -%}
-                          <span class="tt-sc-setkart-etiket">{{ s.setler_kod_etiket }}</span>
-                        {%- endif -%}
+                        {%- comment -%} 19.10.2026: setler_kod_etiket metni yerine cark rozeti (snippets/tt-cark-rozet.liquid). {%- endcomment -%}
+                        <span class="tt-sc-setkart-etiket">{%- render 'tt-cark-rozet' -%}</span>
                         <span class="tt-sc-setkart-satir">
                           <span class="tt-sc-setkart-satis">{{ s_kod_m }}</span>
                           <s class="tt-sc-setkart-eski">{{ s_fiyat_m }}</s>
@@ -2273,7 +2275,7 @@
     { "type": "text", "id": "setler_kisi_etiket", "label": "Kişi başı satırı", "default": "Kişi başı [tutar]",
       "info": "[tutar] set fiyatının yarısıyla değişir. Çark kodu geçerliyken indirimli fiyatın yarısına döner. Boş bırakırsanız satır hiç çıkmaz." },
     { "type": "text", "id": "setler_kod_etiket", "label": "Çark kodu geçerliyken küçük etiket", "default": "İNDİRİM KODU İLE",
-      "info": "Kod geçerliyken kartın fiyat alanı bu satırla birlikte indirimli tutara ve indirimli kişi başı tutara geçer; süre dolunca kendiliğinden geri döner. Tutar Tema ayarları → \"İndirim tutarı\" değerinden gelir — koleksiyon kartlarıyla aynı kaynak." },
+      "info": "Metin artık kullanılmıyor (19.10.2026): yerine çark rozeti gösteriliyor. Kod geçerliyken kartın fiyat alanı bu satırla birlikte indirimli tutara ve indirimli kişi başı tutara geçer; süre dolunca kendiliğinden geri döner. Tutar Tema ayarları → \"İndirim tutarı\" değerinden gelir — koleksiyon kartlarıyla aynı kaynak." },
     { "type": "color", "id": "setler_kod_renk", "label": "Çark kodu geçerliyken fiyat rengi", "default": "#0A0A0A" },
     { "type": "text", "id": "setler_rozet", "label": "Sol üst rozet", "default": "2'li set",
       "info": "Her kartta aynı yazar, hesap yapmaz. Boş bırakırsanız rozet hiç çıkmaz." },

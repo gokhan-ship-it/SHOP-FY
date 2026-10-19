@@ -14,7 +14,7 @@
 {%- endcomment -%}
 {%- comment -%}
   16.10.2026 -- URUN SAYFASI FIYATI, KARTLARLA AYNI BICIM
-  Ustte kucuk "INDIRIM KODU ILE", altinda koyu indirimli tutar
+  Ustte cark rozeti (19.10.2026; once "INDIRIM KODU ILE"), altinda koyu indirimli tutar
   (#0A0A0A), yaninda ustu cizili normal fiyat (#5C5C57).
 
   Blok Liquid'de hesaplanip [hidden] basiliyor ve kartlardaki blokla
@@ -39,7 +39,7 @@
 -%}
 {%- if tt_uf_var -%}
   <p class="tt-uf" data-tt-uf data-tt-kart-fb data-tt-kart-fiyat="{{ tt_uf_fiyat }}" hidden>
-    <span class="tt-uf-etiket">{{ settings.tt_kart_etiket | default: 'İndirim kodu ile' }}</span>
+    <span class="tt-uf-etiket">{%- render 'tt-cark-rozet' -%}</span>
     <span class="tt-uf-satir">
       <span class="tt-uf-yeni" data-tt-uf-yeni>{%- render 'tt-para', kurus: tt_uf_net -%}</span>
       <s class="tt-uf-eski" data-tt-uf-eski>{%- render 'tt-para', kurus: tt_uf_fiyat -%}</s>

@@ -472,6 +472,9 @@
     #shopify-section-{{ sid }} .tt-cs-fiyat--kod .tt-cs-satis {
       color: var(--tt-cs-kod);
     }
+    {%- comment -%} 19.10.2026: cark rozetiyle indirimli fiyat 700 #0A0A0A, normal fiyat 400 #5C5C57 cizili. {%- endcomment -%}
+    #shopify-section-{{ sid }} .tt-cs-fiyat--kod .tt-cs-satis { font-weight: 700; color: #0a0a0a; }
+    #shopify-section-{{ sid }} .tt-cs-fiyat--kod .tt-cs-eski { font-weight: 400; color: #5c5c57; }
     #shopify-section-{{ sid }} .tt-cs-etiket {
       margin-top: 0;
       font-size: 10px;
@@ -864,9 +867,8 @@
                   {%- endcomment -%}
                   <span class="tt-cs-fiyat tt-cs-fiyat--kod"
                         data-tt-kart-fb data-tt-kart-fiyat="{{ fiyat }}" hidden>
-                    {%- if s.kod_etiket != blank -%}
-                      <span class="tt-cs-etiket">{{ s.kod_etiket }}</span>
-                    {%- endif -%}
+                    {%- comment -%} 19.10.2026: kod_etiket metni yerine cark rozeti (snippets/tt-cark-rozet.liquid). {%- endcomment -%}
+                    <span class="tt-cs-etiket">{%- render 'tt-cark-rozet' -%}</span>
                     <span class="tt-cs-satir">
                       <span class="tt-cs-satis">{{ kod_m }}</span>
                       <s class="tt-cs-eski">{{ fiyat_m }}</s>
@@ -980,7 +982,7 @@
       "info": "Üst etiket her zaman tek satır. Daha uzun bir metin yazarsanız sonu noktalanır; puntoyu küçültünce sığar." },
     { "type": "text", "id": "etiket_normal", "label": "Fiyatın üstündeki küçük etiket",
       "info": "Çark kodu yokken görünen satır. Boş bırakılırsa etiket çıkmaz." },
-    { "type": "text", "id": "kod_etiket", "label": "Çark kodu geçerliyken küçük etiket", "default": "İNDİRİM KODU İLE" },
+    { "type": "text", "id": "kod_etiket", "label": "Çark kodu geçerliyken küçük etiket", "default": "İNDİRİM KODU İLE", "info": "Kullanılmıyor (19.10.2026): yerine çark rozeti gösteriliyor; tutar tema ayarındaki indirim tutarından gelir." },
     { "type": "text", "id": "kisi_etiket", "label": "Couple kartında kesikli çizgi altı", "default": "Kişi başı [tutar]",
       "info": "[tutar] kişi başı tutarla değişir. Boş bırakılırsa satır çıkmaz." },
     { "type": "text", "id": "kadin_metin", "label": "Kadın kartında kesikli çizgi altı", "default": "Kadın koleksiyonunu gör" },

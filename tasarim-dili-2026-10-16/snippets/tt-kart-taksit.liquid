@@ -49,9 +49,9 @@
   endif
 -%}
 {%- if tt_goster -%}
-  {%- assign tt_etiket = settings.tt_kart_etiket | default: 'İndirim kodu ile' -%}
+  {%- comment -%} 19.10.2026: "Indirim kodu ile" yerine cark rozeti (snippets/tt-cark-rozet.liquid). {%- endcomment -%}
   <p class="tt-kart-fiyat" data-tt-kart-fb data-tt-kart-fiyat="{{ tt_taban }}" hidden>
-    <span class="tt-kart-etiket">{{ tt_etiket }}</span>
+    <span class="tt-kart-etiket">{%- render 'tt-cark-rozet' -%}</span>
     {%- comment -%}
       16.10.2026: indirimli tutar ile ustu cizili normal fiyat AYNI
       satirda (yan yana, sigmazsa alta sariyor). Cok satanlar ve set

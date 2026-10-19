@@ -919,18 +919,22 @@ body.tt-sc-cubuk-acik { padding-bottom: var(--tt-sc-cubuk-yuk, 210px); }
   gap: 1px;
   text-align: right;
 }
-.tt-sc-varyant-kod-etiket {
-  font-size: 10.5px;
-  font-weight: 500;
-  line-height: 1.3;
-  color: var(--tt-sc-yesil);
+/* 19.10.2026: etiket yerine cark rozeti (.tt-rozet, bicimi
+   snippets/tt-yapilandirma.liquid). Rozet indirimli fiyatin 6px ustunde;
+   indirimli fiyat ink 700, normal fiyat yaninda #5C5C57 cizili. */
+.tt-sc-varyant-fiyat[data-sc-indirimli] .tt-rozet { margin: 0 0 5px; } /* + kapsayicinin 1px gap'i = 6px */
+.tt-sc-varyant-satir {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  column-gap: 6px;
 }
 .tt-sc-varyant-yeni {
   font-size: 15px;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -.01em;
-  color: var(--tt-sc-yesil);
+  color: #0a0a0a;
 }
 .tt-sc-varyant-eski {
   font-size: 11.5px;

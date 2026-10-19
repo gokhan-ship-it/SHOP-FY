@@ -1,0 +1,35 @@
+{%- comment -%}
+  CARK ROZETI (19.10.2026)
+
+  Cark kodu gecerliyken indirimli fiyatin ustunde gorunen rozet:
+  "✓ 500 TL indirim aktif". Eski "INDIRIM KODU ILE" etiketinin yerini
+  aliyor; kullanildigi her yerde (koleksiyon karti, oneri karti, cok
+  satanlar, set seridi, urun sayfasi ana fiyat, set seciminin varyant
+  penceresi) ayni isaretleme.
+
+  Tutar sabit yazilmiyor: carkin kendisi de (sections/ttn-cark-genel)
+  indirimli fiyatlar da ayni tema ayarini (settings.tt_indirim_tutar)
+  okuyor. Ayar okunamazsa / 0 ise metin "Indirim aktif".
+
+  Gorunurluk bu snippet'in isi degil: rozet, carkin acip kapadigi
+  [data-tt-kart-fb] / [data-tt-uf] blogunun icinde duruyor. Cark
+  cevrilmemisken blok [hidden], sayac bitince blok sayfa yenilenmeden
+  yeniden [hidden] oluyor; rozet de onunla gidiyor.
+
+  Bicim: snippets/tt-yapilandirma.liquid (.tt-rozet).
+{%- endcomment -%}
+{%- liquid
+  assign tt_rz_tl = settings.tt_indirim_tutar | plus: 0 | round
+  if tt_rz_tl > 0
+    if tt_rz_tl >= 1000
+      assign tt_rz_bin = tt_rz_tl | divided_by: 1000
+      assign tt_rz_kalan = tt_rz_tl | modulo: 1000 | prepend: '00' | slice: -3, 3
+      assign tt_rz_metin = tt_rz_bin | append: '.' | append: tt_rz_kalan | append: ' TL indirim aktif'
+    else
+      assign tt_rz_metin = tt_rz_tl | append: ' TL indirim aktif'
+    endif
+  else
+    assign tt_rz_metin = 'İndirim aktif'
+  endif
+-%}
+<span class="tt-rozet"><svg class="tt-rozet-ikon" viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2.5 6.3 4.9 8.6 9.5 3.5"/></svg><span class="tt-rozet-metin">{{ tt_rz_metin }}</span></span>

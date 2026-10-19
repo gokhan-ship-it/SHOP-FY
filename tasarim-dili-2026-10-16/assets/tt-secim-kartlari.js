@@ -991,13 +991,25 @@
        degisiyor. Blok gizliyken de metni tasiyor, gorunur olmasi
        gerekmiyor. Blok hic yoksa KOD_KURUS da o urunde 0 oluyor,
        yani etikete zaten ihtiyac kalmiyor. */
-    var kodEtiket = null;
-    function kodEtiketi() {
-      if (kodEtiket === null) {
-        var el = KOK.querySelector('[data-tt-kart-fb] .tt-kart-etiket');
-        kodEtiket = el ? el.textContent.trim() : '';
+    /* 19.10.2026: etiket metni yerine karttaki CARK ROZETI kopyalaniyor
+       (snippets/tt-cark-rozet.liquid; ikon + "500 TL indirim aktif").
+       Ayni ilke: rozet karttan okunuyor, iki yer ayrisamaz. Kartta rozet
+       yoksa (eski onbellek) duz "Indirim aktif" rozeti. */
+    var kodRozet = null;
+    function kodRozeti() {
+      if (kodRozet === null) {
+        kodRozet = KOK.querySelector('[data-tt-kart-fb] .tt-rozet') || false;
       }
-      return kodEtiket;
+      var r;
+      if (kodRozet) {
+        r = kodRozet.cloneNode(true);
+      } else {
+        r = document.createElement('span');
+        r.className = 'tt-rozet';
+        r.textContent = 'İndirim aktif';
+      }
+      r.classList.add('tt-sc-varyant-kod-etiket');
+      return r;
     }
 
     function varyantFiyatYaz(f, v) {
@@ -1006,18 +1018,19 @@
       f.toggleAttribute('data-sc-indirimli', !!ind);
       if (!ind) { f.textContent = para(v.fiyat); return; }
 
-      var et = document.createElement('span');
-      et.className = 'tt-sc-varyant-kod-etiket';
-      et.textContent = kodEtiketi();
       var yeni = document.createElement('span');
       yeni.className = 'tt-sc-varyant-yeni';
       yeni.textContent = para(v.fiyat - ind);
       var eski = document.createElement('s');
       eski.className = 'tt-sc-varyant-eski';
       eski.textContent = para(v.fiyat);
-      f.appendChild(et);
-      f.appendChild(yeni);
-      f.appendChild(eski);
+      /* Indirimli fiyat ile normal fiyat yan yana (kartlarla ayni). */
+      var satir = document.createElement('span');
+      satir.className = 'tt-sc-varyant-satir';
+      satir.appendChild(yeni);
+      satir.appendChild(eski);
+      f.appendChild(kodRozeti());
+      f.appendChild(satir);
     }
 
     /* Kupon secici ACIKKEN suresi dolabilir; o zaman listedeki rakamlar

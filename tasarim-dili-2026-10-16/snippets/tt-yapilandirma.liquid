@@ -74,6 +74,53 @@
   {%- endcomment -%}
   .tt-gizli { display: none !important; }
 
+  {%- comment -%}
+    19.10.2026 -- CARK ROZETI (snippets/tt-cark-rozet.liquid)
+    "INDIRIM KODU ILE" etiketinin yerine: lime zemin, ink yazi, tam
+    yuvarlak, solda 12px onay. Etiket ogeleri (karti, urun sayfasi, cok
+    satanlar, set seridi) artik yalnizca rozetin sarmalayicisi: kendi
+    punto/harf araligi/BUYUK HARF kurallari rozete gecmesin diye
+    sarmalayici sifirlaniyor; rozet indirimli fiyatin 6px ustunde.
+    Dar kartta rozet tek satirda kalsin diye punto 10.5px'e iniyor
+    (sarmalayici konteyner; olcu kart genisligi, ekran degil).
+  {%- endcomment -%}
+  .tt-rozet {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: fit-content;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #d6ff00;
+    color: #0a0a0a;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+  }
+  .tt-rozet-ikon { display: block; flex: 0 0 12px; width: 12px; height: 12px; }
+  .tt-rozet-metin { overflow: hidden; }
+  :is(.tt-kart-etiket, .tt-uf-etiket, .tt-cs-etiket, .tt-sc-setkart-etiket):has(> .tt-rozet) {
+    display: block !important;
+    margin-bottom: 6px !important;
+    font-size: 11.5px !important;
+    line-height: 0 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    container-type: inline-size;
+  }
+  :is(.tt-kart-etiket, .tt-uf-etiket, .tt-cs-etiket, .tt-sc-setkart-etiket):has(> .tt-rozet) + * {
+    margin-top: 0 !important;
+  }
+  @container (max-width: 165px) {
+    .tt-rozet { gap: 4px; padding: 4px 8px; font-size: 10.5px; }
+  }
+
   {%- comment -%} Dar kartlarda (karusel, 4 sutunlu izgara) sarmasin {%- endcomment -%}
   @media (max-width: 480px) {
     .tt-kart-yeni { font-size: 15px; }
