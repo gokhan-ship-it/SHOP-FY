@@ -91,3 +91,62 @@ Sıkıştırma: 400 KB üstü 17 görsel, benzerlik ≥ %98,5 korunarak; prizma-
 setler_adet: 10 (değişmedi). Çarkın kendisine, tutarına ve kod mantığına dokunulmadı.
 Yapışkan sepete ekle çubuğu bugün çark indirimini göstermiyor (normal fiyat); orada değiştirilecek etiket yok.
 Couple "Sepete ekle" çubuğu indirimi ayrı "Çark indirimi −500 TL" satırıyla gösteriyor; etiket değil, değişmedi.
+
+## Otomatik kontroller (kopya tema, önizleme)
+- Çark çevrilmeden: ana sayfa, Erkek koleksiyonu, ürün sayfası → görünür rozet 0.
+- Çark çevrildikten sonra (390 / 360 / 1440 px): rozet metni her yerde "500 TL indirim aktif".
+  - Çok satanlar: 16 kart.
+  - Erkek koleksiyonu: 11 kart.
+  - Couple Ürünler: 22 kart + set şeridinde 9 kart.
+  - Ürün sayfası: ana fiyat.
+  - Öneri kartları: 4–6.
+  - Varyant penceresi (Lumin): 2 satır.
+- Stil, ikon (12px, 5px aralık), fiyata 6px uzaklık, taşma: sorun yok. Dar kartlarda 10.5px, geniş alanlarda 11.5px.
+- İndirimli fiyat 700 #0A0A0A, normal fiyat 400 #5C5C57 çizili.
+  - Not: telefonda dar kartlarda normal fiyat yer kalmayınca indirimli fiyatın altına kayıyor (mevcut davranış, değişmedi).
+- Sayaç bitişi (saat 31 dk ileri sarıldı): rozetler sayfa yenilenmeden kalktı (31 → 0), normal fiyatlar geri geldi.
+- Yeni JS hatası yok. Ana sayfadaki eski sepet hatası canlıda da aynı.
+
+## B hazırlık (uygulanmadı)
+Son 90 gün (Shopify):
+| Ürün | Sipariş | Adet | İade adedi | İade tutarı |
+|---|---|---|---|---|
+| Noir | 132 | 135 | 5 | 9.695 TL |
+| Noir Couple | 44 | 48 | 2 | 3.820,38 TL |
+| Noir + Chloe | 14 | 14 | 0 | 0 |
+| (ek) Noir Zaman Kapsülü Bileklik (316L Paslanmaz Çelik) Couple, 9976354734400 | 1 | 1 | 0 | 0 |
+
+Kullanım yerleri ve B'de yapılacaklar:
+- **Noir**
+  - zaman-kapsulu-bileklik ve 1-al-1-bedava-celik koleksiyonlarından çıkar.
+  - Ana sayfa Çok satanlar k6 kartını kaldır (kopya temada).
+  - sezin15 indirim kodunun ürün listesinde var: arşivlenince etkisiz kalır; Prizma eklensin mi?
+- **Noir Couple**
+  - couple, couple-collection, couple-zaman-kapsulleri ve couple-urunler koleksiyonlarından çıkar.
+  - Ona bağlanan tek ürün Noir (o da arşivlenecek).
+  - sezin15 listesinde.
+- **Noir + Chloe**
+  - couple-collection ve kampanyali-couple-setler koleksiyonlarından çıkar (setler 10'a iner).
+  - Ana sayfa Çok satanlar k4 kartını kaldır.
+  - Yayındaki GemPages sayfası /pages/couplezamankapsulleri'de ürün öğesi ve buton linkleri var. GemPages düzenleyicisinden Prizma + Chloe'ye çevrilmeli; yalnızca yönlendirmeyle buton linkleri Prizma + Chloe'ye gider.
+  - Kapalı (disabled) featured-collection bölümlerinde ve gösterilmeyen page.json listesinde handle'ı var; etkisi yok.
+- Menülerde, metaobjelerde, yönlendirmelerde ve diğer ürünlerin metafield'larında Noir referansı yok.
+  - Tek referans Noir'in kendi couple_urun bağı; Noir arşivlenince sorun değil.
+- Fazladan bir kayıt var: **Noir Zaman Kapsülü Bileklik (316L Paslanmaz Çelik) Couple** (9976354734400, ACTIVE, couple-collection'da, 90 günde 1 sipariş). Listede yok; arşivlensin ve Prizma'ya yönlendirilsin mi?
+
+Meta:
+- Dört ürün de erişilebilen Meta kataloglarının hiçbirinde yok (Shopify kataloğu bu ürünlerden önce güncellenmeyi bırakmış).
+- Aktif reklamların hiçbiri katalog/Advantage+ reklamı değil. Adında ya da metninde Noir/Chloe geçen reklam yok.
+- 5 aktif "Video 9 - Couple Ürün" reklamının gittiği adres Meta'dan okunamadı.
+  - Son 30 günde bu ürün sayfalarına sosyal medyadan gelen giriş toplam 11 oturum.
+  - Kesinlik için bu 5 reklamın web sitesi adresi Reklam Yöneticisi'nden kontrol edilmeli.
+
+Kurulacak 301'ler:
+| Eski | Yeni |
+|---|---|
+| /products/luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya (Noir) | /products/prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik |
+| /products/noir-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple (Noir Couple) | /products/prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik |
+| /products/luna-infinity-charm-couple-zaman-kapsulu-kisi-2279-kopya (Noir + Chloe) | /products/prizma-chloe-couple-zaman-kapsulu |
+| (onaylarsanız) /products/noir-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple-1 | /products/prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik |
+
+/collections/<koleksiyon>/products/<eski> biçimi kurulumdan hemen sonra test edilecek. Kapsanmıyorsa ürünlerin bulunduğu koleksiyonlar için ayrı 301'ler eklenecek: zaman-kapsulu-bileklik, 1-al-1-bedava-celik, couple, couple-collection, couple-zaman-kapsulleri, couple-urunler, kampanyali-couple-setler, all.
