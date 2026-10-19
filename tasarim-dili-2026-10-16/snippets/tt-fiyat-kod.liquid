@@ -91,6 +91,7 @@
     olmasin). Kapsam product-info: sayfanin altindaki oneriler ve
     yapiskan cubuk etkilenmiyor. :has desteklemeyen tarayicida tema
     satiri da kalir -- bozulma degil, yalnizca fazladan bir satir.
+    Yapiskan cubugun kendi kurali en altta.
   {%- endcomment -%}
   product-info:has([data-tt-uf]:not([hidden])) .product__price,
   product-info:has([data-tt-uf]:not([hidden])) .tt-fb-serit-metin {
@@ -107,4 +108,75 @@
   product-info:has([data-tt-uf]:not([hidden])) .tt-fb-serit-saat [data-tt-tk-sayac] {
     min-width: 0;
   }
+
+  {%- comment -%}
+    YAPISKAN SEPETE EKLE CUBUGU (19.10.2026)
+    Temanin cubugu (main-product > product-sticky-form) kendi fiyat
+    satirini (#StickyPrice-...) basiyor ve cark indirimini bilmiyordu.
+    Asagidaki betik yukaridaki blogun KOPYASINI o satirin yanina koyuyor
+    (main-product.liquid'e dokunulmadi). Kopya ayni sozlesmeyi tasidigi
+    icin ayrica kod yok: kolCiz sure dolunca gizliyor, fbCiz varyant
+    degisince tutarlari yaziyor.
+    Duzen: rozet fiyatin solunda; sigmazsa (290px'lik telefon sutununda
+    da, 263px'lik masaustu sutununda da sigmiyor) fiyatin hemen ustunde
+    tek satir. Rozet <=165px kapta 10.5px'e iniyor (tt-yapilandirma).
+    Dugme sutunu degismiyor.
+  {%- endcomment -%}
+  .tt-uf.tt-uf--yapiskan {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 6px;
+    margin: 0;
+    container-type: inline-size;
+  }
+  .tt-uf.tt-uf--yapiskan[hidden] { display: none; }
+  {%- comment -%}
+    Etiketin genel kurali (tt-yapilandirma) onu blok + inline-size kap
+    yapiyor; flex ogesinde bu genisligi sifira indirirdi.
+  {%- endcomment -%}
+  .tt-uf.tt-uf--yapiskan .tt-uf-etiket {
+    flex: 0 1 auto;
+    max-width: 100%;
+    margin: 0 !important;
+    container-type: normal !important;
+  }
+  .tt-uf.tt-uf--yapiskan .tt-uf-satir {
+    flex-wrap: nowrap;
+    column-gap: 6px;
+    margin: 0 !important;
+  }
+  .tt-uf.tt-uf--yapiskan .tt-uf-yeni {
+    font-size: 16px;
+    line-height: 1.25;
+    letter-spacing: normal;
+  }
+  .tt-uf.tt-uf--yapiskan .tt-uf-eski {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+  div:has(> .tt-uf--yapiskan:not([hidden])) > [id^="StickyPrice-"] {
+    display: none !important;
+  }
 </style>
+{%- if tt_uf_var -%}
+<script>
+  (function () {
+    'use strict';
+    var bolum = document.currentScript && document.currentScript.closest('.shopify-section');
+    if (!bolum) return;
+    function kur() {
+      var ana = bolum.querySelector('product-info [data-tt-uf]:not([data-tt-uf-yapiskan])');
+      var yuva = bolum.querySelector('product-sticky-form [id^="StickyPrice-"]');
+      if (!ana || !yuva || yuva.parentNode.querySelector('[data-tt-uf-yapiskan]')) return;
+      var k = ana.cloneNode(true);
+      k.classList.add('tt-uf--yapiskan');
+      k.setAttribute('data-tt-uf-yapiskan', '');
+      yuva.parentNode.insertBefore(k, yuva.nextSibling);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', kur);
+    else kur();
+  })();
+</script>
+{%- endif -%}
