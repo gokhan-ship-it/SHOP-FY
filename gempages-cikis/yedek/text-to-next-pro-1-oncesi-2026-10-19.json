@@ -1,0 +1,12 @@
+{
+  "alinma": "2026-10-19 (gizleme ve 301 oncesi), Admin GraphQL page(id) sonucu",
+  "page": {"id":"gid://shopify/Page/149124284736","handle":"text-to-next-pro-1","title":"Landing Page - Feb 16, 11:03:09","body":"","isPublished":true,"publishedAt":"2025-03-05T20:08:59Z","templateSuffix":"gp-template-553922254656766857","createdAt":"2025-03-05T20:08:59Z","updatedAt":"2025-03-06T07:19:12Z","metafields":[{"namespace":"global","key":"description_tag","type":"string","value":"Zaman Kapsülü artık işinde de yanında\nKüçük, orta, büyük ölçekli&nbsp;etkinlik ve fotoğraf profesyonelleri&nbsp;için geliştirildi.Müşteri memnuniyetini ve&nbsp;marka bilinirliğini arttır. Yüksek kar oranları ile&nbsp;ekstra kazanç sağla."}]},
+  "yonlendirmeler_oncesi": [
+    {"id":"gid://shopify/UrlRedirect/475452866880","path":"/pages/i%cc%87letisim","target":"/pages/iletisim"},
+    {"id":"gid://shopify/UrlRedirect/502545187136","path":"/pages/landing-page-feb-16-11-03-09","target":"/pages/text-to-next-pro-1"},
+    {"id":"gid://shopify/UrlRedirect/502545318208","path":"/pages/contact-page-mar-5-21-32-02","target":"/pages/iletisimsayfasi"},
+    {"id":"gid://shopify/UrlRedirect/560383099200","path":"/pages/landing-page-dec-12-23-44-18","target":"/"},
+    {"id":"gid://shopify/UrlRedirect/560383131968","path":"/pages/landing-page-apr-7-16-02-03","target":"/"}
+  ],
+  "geri_alma": "pageUpdate(id, page:{isPublished:true}) ve yeni eklenen /pages/text-to-next-pro-1 yonlendirmesini urlRedirectDelete ile kaldirmak"
+}
