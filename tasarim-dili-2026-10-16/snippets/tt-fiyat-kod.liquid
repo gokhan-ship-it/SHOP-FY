@@ -117,9 +117,13 @@
     (main-product.liquid'e dokunulmadi). Kopya ayni sozlesmeyi tasidigi
     icin ayrica kod yok: kolCiz sure dolunca gizliyor, fbCiz varyant
     degisince tutarlari yaziyor.
-    Duzen: rozet fiyatin solunda; sigmazsa (290px'lik telefon sutununda
-    da, 263px'lik masaustu sutununda da sigmiyor) fiyatin hemen ustunde
-    tek satir. Rozet <=165px kapta 10.5px'e iniyor (tt-yapilandirma).
+
+    Duzen: tek satir, rozet fiyatin solunda; cubugun yuksekligi kodsuz
+    haliyle ayni. Tutarlar kisa bicimde ("1.899 TL"; kurus sifirsa ",00"
+    yok -- tt-para'nin "sade" kurali, JS'te bicimKisa). Satir 390px
+    telefonun 290px'lik sutununa 11.5px rozetle sigiyor; 360px telefonda
+    ve masaustunde (260-263px) rozet 10.5px'e, fiyatlar 15/12px'e iniyor.
+    Yine sigmazsa (cok uzun tutar) fiyat alt satira kayar, tasmaz.
     Dugme sutunu degismiyor.
   {%- endcomment -%}
   .tt-uf.tt-uf--yapiskan {
@@ -127,7 +131,7 @@
     flex-wrap: wrap;
     align-items: center;
     column-gap: 8px;
-    row-gap: 6px;
+    row-gap: 4px;
     margin: 0;
     container-type: inline-size;
   }
@@ -137,8 +141,7 @@
     yapiyor; flex ogesinde bu genisligi sifira indirirdi.
   {%- endcomment -%}
   .tt-uf.tt-uf--yapiskan .tt-uf-etiket {
-    flex: 0 1 auto;
-    max-width: 100%;
+    flex: 0 0 auto;
     margin: 0 !important;
     container-type: normal !important;
   }
@@ -155,6 +158,13 @@
   .tt-uf.tt-uf--yapiskan .tt-uf-eski {
     font-size: 13px;
     line-height: 1.25;
+  }
+  @container (max-width: 287px) {
+    .tt-uf--yapiskan { column-gap: 6px; }
+    .tt-uf--yapiskan .tt-rozet { gap: 4px; padding: 4px 8px; font-size: 10.5px; }
+    .tt-uf.tt-uf--yapiskan .tt-uf-satir { column-gap: 5px; }
+    .tt-uf.tt-uf--yapiskan .tt-uf-yeni { font-size: 15px; }
+    .tt-uf.tt-uf--yapiskan .tt-uf-eski { font-size: 12px; }
   }
   div:has(> .tt-uf--yapiskan:not([hidden])) > [id^="StickyPrice-"] {
     display: none !important;
@@ -173,6 +183,9 @@
       var k = ana.cloneNode(true);
       k.classList.add('tt-uf--yapiskan');
       k.setAttribute('data-tt-uf-yapiskan', '');
+      /* Kisa bicim: yalnizca sifir kurus dusuyor (bicimKisa ile ayni). */
+      var t = k.querySelectorAll('[data-tt-uf-yeni], [data-tt-uf-eski]');
+      for (var i = 0; i < t.length; i++) t[i].textContent = t[i].textContent.replace(/,00(?=\s|$)/, '');
       yuva.parentNode.insertBefore(k, yuva.nextSibling);
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', kur);

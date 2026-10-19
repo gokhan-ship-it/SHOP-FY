@@ -723,8 +723,10 @@
       if (acik) {
         var ye = uf[u].querySelector('[data-tt-uf-yeni]');
         var es = uf[u].querySelector('[data-tt-uf-eski]');
-        if (ye) ye.textContent = bicim(V, ind.netKurus / 100);
-        if (es) es.textContent = bicim(V, tamKurus / 100);
+        /* Yapiskan cubuktaki kopya (tt-fiyat-kod) dar: kisa bicim. */
+        var bc = uf[u].hasAttribute('data-tt-uf-yapiskan') ? bicimKisa : bicim;
+        if (ye) ye.textContent = bc(V, ind.netKurus / 100);
+        if (es) es.textContent = bc(V, tamKurus / 100);
       }
       uf[u].hidden = !acik;
     }
