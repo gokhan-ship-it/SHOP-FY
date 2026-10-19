@@ -32,11 +32,16 @@
     background-color: #0a0a0a;
     box-shadow: none;
   }
-  /* "Buyut" dugmesi: beyaz zemin, ink ikon */
-  .tt-urun-page .product__media > button[is^="media-"]:has(.icon-zoom) {
-    background-color: #ffffff !important;
-    border-color: #d2d2cd !important;
-    color: #0a0a0a;
+  /* "Buyut" dugmesi: beyaz zemin, ink ikon. Yalnizca 1023px ve alti:
+     orada dugme kosedeki 40px yuvarlak; 1024px ve ustunde ayni dugme
+     gorselin tamamini kaplayan seffaf katman (theme.css), zemin verilirse
+     gorseli ortuyor (19.10.2026 masaustu galeri hatasi). */
+  @media screen and (max-width: 1023px) {
+    .tt-urun-page .product__media > button[is^="media-"]:has(.icon-zoom) {
+      background-color: #ffffff !important;
+      border-color: #d2d2cd !important;
+      color: #0a0a0a;
+    }
   }
 
   /* ---------- 02 main-product: ad, fiyat ---------- */
@@ -149,10 +154,12 @@
   }
   /* Gorsel buyutme (PhotoSwipe body'ye ekleniyor) ve Hizli Bakis galerisi */
   body.template-product .pswp button { background-color: #ffffff; border-color: #d2d2cd; color: #0a0a0a; }
-  body.template-product button[is^="media-"]:has(.icon-zoom) {
-    background-color: #ffffff !important;
-    border-color: #d2d2cd !important;
-    color: #0a0a0a;
+  @media screen and (max-width: 1023px) {
+    body.template-product button[is^="media-"]:has(.icon-zoom) {
+      background-color: #ffffff !important;
+      border-color: #d2d2cd !important;
+      color: #0a0a0a;
+    }
   }
   /* Hizli Bakis: basliklar 700 */
   body.template-product .quick-view :is(h1, h2, h3, .heading, .recommend__title) { font-weight: 700; color: #0a0a0a; }
