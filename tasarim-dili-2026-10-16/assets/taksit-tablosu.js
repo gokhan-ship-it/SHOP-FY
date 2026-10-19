@@ -784,6 +784,11 @@
     });
     for (var i = 0; i < hedef.length; i++) {
       g.observe(hedef[i], { childList: true, characterData: true, subtree: true });
+      /* Tema varyant degisince fiyat kabinin (#Price-..., #StickyPrice-...)
+         icini bastan yaziyor: izlenen .price DOM'dan cikiyor, gozlemci bir
+         daha tetiklenmiyordu ve cark varken kodlu tutar eski varyantta
+         kaliyordu (19.10.2026). Kabin kendisi de izleniyor. */
+      if (hedef[i].parentNode) g.observe(hedef[i].parentNode, { childList: true });
     }
   }
 
