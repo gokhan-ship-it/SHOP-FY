@@ -30,15 +30,12 @@ Adım 1–4 tamam (ayrıntı: `docs/degisiklik-kaydi.md`, 2026-10-20 satırları
 - Kullanıcı isteğiyle (commit 56ab3a1, yalnızca kopya tema): pencere diğer ürünler gibi kare, Velcro'ya yakın görünüm +
   "Tüm ürünü gör", ipucu "Görsel'den", tek patch'te "N patch daha ekle" önerisi yok. Kullanıcı birkaç ek istek getirecek.
 
-## Kalan adımlar
-5. Kullanıcı önizleme linkinde telefonda dener:
-   `https://jantifox.com/products/cok-amacli-mini-canta-kirmizi-beyaz-zikzak?preview_theme_id=207301280030`
-   **Yayından hemen önce** canlı temanın `updatedAt` değeri 2026-10-14T10:15:59Z mi diye bakılır; değiştiyse
-   (Admin'den yapılan bir düzenleme) kopya yayınlanınca o düzenleme kaybolur, önce kopyaya taşınır.
-   Yayını kullanıcı Admin'den yapar (API tema yayınlamayı engelliyor).
-6. **Yayından sonra:** 6 ürün "Kendin Tasarla" koleksiyonunun çanta grubuna (`collectionAddProductsV2` +
-   `collectionReorderProducts`); bu adım canlıda hemen görünür, yayından önce yapılmaz. Sonra liste-kontrol çıkış 0.
-   Yayından önce geri dönmek gerekirse: 6 üründe `aktif = false` yeterli (kopya tema kartı kapatır, canlıda zaten yok).
+## Tamamlandı (2026-10-20)
+- Kopya tema "Kişiselleştirme DEV - mini çanta" (207301280030) kullanıcı tarafından yayınlandı (20:34Z); önceki canlı
+  tema 207025864990 yedek.
+- 6 mini çanta "Kendin Tasarla" koleksiyonunda, çanta grubunun sonunda (Tote'tan sonra). liste-kontrol çıkış 0.
+- Aynı oturumda ayrıca: kalemlik Velcro alanı 20 × 10 cm, Adventurer ve Daymaker alt cep, Piramit 6,5 cm,
+  Always Curious 8 × 5,5, Donut Planet → Oyun & Macera, masaüstünde "İndir" (ayrıntı: değişiklik kaydı).
 
 ## Açık konular
 - 4, 5, 6 numaralı görsellerde Velcro dairesi çantaya göre büyük çizilmiş (ön yüz daireden 19,1 / 16,5 / 14,7 cm,
