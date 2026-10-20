@@ -3,8 +3,8 @@
   splide-carousel, card-product, oklar, tema boşlukları). Ürünler tema düzenleyicisinde seçilen sırayla gelir.
   Kart görseli: ürünün kisisellestirme.kart_gorseli alanı (galerideki düz ürün fotoğrafı) varsa o, yoksa ana görsel.
   Filtreler temanın sekme stili (tabs-component / tab-button / indicator), yalnızca içinde kişiselleştirilebilir ürün
-  olan tipler. Kişiselleştirmesi açık kartlarda (ürün sayfasındaki kartla aynı koşul: patch-notice etiketi,
-  kisisellestirme.aktif = true, harita) sol üstte "✎ Kişiselleştirilebilir" etiketi ve fiyatın altında "Kişiselleştir"
+  olan tipler. Kişiselleştirmesi açık kartlarda (ürün sayfasındaki kartla aynı koşul, kisisel-acik-mi: patch-notice etiketi
+  ya da haritada tek_patch, kisisellestirme.aktif = true, harita) sol üstte "✎ Kişiselleştirilebilir" etiketi ve fiyatın altında "Kişiselleştir"
   butonu (kisisel-koleksiyon.js, sade kart). Örnek tasarım temanın ikinci görsel katmanı (product-secondary-image)
   olarak çizilir: masaüstünde üzerine gelince, mobilde sabit (kisisel-cok-satanlar.js). Mobilde (640 px ve altı)
   kaydırıcı JS ile sürüklenmez: Splide kapanır, liste tarayıcının kendi yatay kaydırmasıyla (scroll-snap) kayar.
@@ -32,7 +32,10 @@
   assign toplam = 0
   for p in urunler limit: adet
     assign toplam = toplam | plus: 1
-    if katalog != blank and p.tags contains 'patch-notice' and p.metafields.kisisellestirme.aktif.value == true and p.metafields.kisisellestirme.harita.value != blank
+    capture kp_acik
+      render 'kisisel-acik-mi', p: p
+    endcapture
+    if katalog != blank and kp_acik == '1'
       if p.tags contains 'kıyafet'
         assign tur_kiyafet = tur_kiyafet | plus: 1
       elsif p.tags contains 'şapka' or p.tags contains 'hat'
@@ -183,7 +186,8 @@
     {"urunler":{
     {%- assign ilk = true -%}
     {%- for p in urunler limit: adet -%}
-      {%- unless katalog != blank and p.tags contains 'patch-notice' and p.metafields.kisisellestirme.aktif.value == true and p.metafields.kisisellestirme.harita.value != blank -%}{%- continue -%}{%- endunless -%}
+      {%- capture kp_acik -%}{%- render 'kisisel-acik-mi', p: p -%}{%- endcapture -%}
+      {%- unless katalog != blank and kp_acik == '1' -%}{%- continue -%}{%- endunless -%}
       {%- unless ilk %},{% endunless -%}{%- assign ilk = false -%}
       {{- p.handle | json }}:{"u":{{ p.url | json }},"b":{{ p.title | json }},"v":[
       {%- for v in p.variants -%}{%- unless forloop.first %},{% endunless -%}{"id":{{ v.id }},"t":{{ v.title | json }},"a":{{ v.available }}}{%- endfor -%}
@@ -199,7 +203,8 @@
       "urunler": {
       {%- assign ilk = true -%}
       {%- for p in urunler limit: adet -%}
-        {%- unless katalog != blank and p.tags contains 'patch-notice' and p.metafields.kisisellestirme.aktif.value == true and p.metafields.kisisellestirme.harita.value != blank -%}{%- continue -%}{%- endunless -%}
+        {%- capture kp_acik -%}{%- render 'kisisel-acik-mi', p: p -%}{%- endcapture -%}
+      {%- unless katalog != blank and kp_acik == '1' -%}{%- continue -%}{%- endunless -%}
         {%- liquid
           assign foto = p.metafields.kisisellestirme.ornek_gorsel.value
           assign onizleme = p.metafields.kisisellestirme.onizleme_gorseli_png.value | default: p.metafields.kisisellestirme.onizleme_gorseli.value | default: p.featured_media

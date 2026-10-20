@@ -84,8 +84,10 @@ def main(veri_kok, cikti_kok):
     for gi, g in enumerate(plan['gruplar']):
         canta = any(k in g['ad'] for k in CANTA_GRUPLARI)
         coklu = any(k in g['ad'] for k in COKLU_ALAN)
+        # tek_patch: tek patch'lik grup (ör. mini çanta); set ve aksesuar kapalı, harf sığma denetimi yok
+        tek = bool(g.get('tek_patch'))
         gruplar.append({'ad': g['ad'], 'velcro': g.get('velcro'), 'urun_olcu': g.get('urun_olcu'),
-                        'not': g.get('not', ''), 'cokluAlan': coklu})
+                        'not': g.get('not', ''), 'cokluAlan': coklu, 'tekPatch': tek})
         for u in g['urunler']:
             h = u['handle']
             m = mevcut.get(h)
@@ -95,7 +97,7 @@ def main(veri_kok, cikti_kok):
                 'not': u.get('not', ''), 'png': None, 'gorsel': None, 'mevcut': None,
                 'sekiller': od.get('sekiller', []), 'cizgi': od.get('cizgi'), 'onDolguKaynak': od.get('kaynak', ''),
                 'ayar': {'metinSiniri': None, 'kapali': False,
-                         'izinler': {'harf': True, 'rakam': True, 'ikon': True, 'set': True, 'aksesuar': canta}},
+                         'izinler': {'harf': True, 'rakam': True, 'ikon': True, 'set': not tek, 'aksesuar': canta and not tek}},
             }
             durum = {'cizilecek': 'cizilecek', 'hazir': 'hazir', 'kopyalanabilir': 'hazir',
                      'patch_alani_yok': 'atlandi'}.get(u['durum'], 'cizilecek')

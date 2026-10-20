@@ -96,13 +96,28 @@ Editör patch'in dışbükey zarfının çokgenin tamamen içinde olmasını ist
 Haritaya panelin eklediği alanlar:
 - `izinler: {set, aksesuar}` (ürün düzeyinde set ve aksesuar izni);
 - `olcu_tahmini: true` (ölçek tahmindeyse);
-- `yukseklik_cm` (ölçek yükseklikten alındıysa, kayıt için).
+- `yukseklik_cm` (ölçek yükseklikten alındıysa, kayıt için);
+- `tek_patch: true` (grubu `plan.json`'da `tek_patch` olan ürünler, ör. Çok Amaçlı Mini Çanta).
 
 Editör ölçeği ilk alanın `cap_cm` / `genislik_cm` değerinden okur. Panel, yükseklikten ya da çizgiden gelen ölçeği bu değere çevirip yazar.
 
+### Tek patch'lik ürünler (`tek_patch`)
+
+Küçük Velcro'lu ürünler (ör. 5 cm daireli Çok Amaçlı Mini Çanta) için kural: bir harf, bir rakam ya da bir ikon; boyut
+sınırı yok, en küçükten en büyüğe her patch Velcro'nun ortasına takılır; hazır set ve aksesuar yok.
+- `plan.json`'da grup `"tek_patch": true`. Panel bu gruptaki ürünlere set ve aksesuar iznini kapalı açar, harf sığma
+  denetimini atlar ve haritaya `tek_patch: true` yazar. Alan Velcro'nun kendisi çizilir (gerçek çapıyla).
+- Editör: metin en fazla 1 karakter; yeni patch (harf, rakam ya da ikon) öncekinin yerine geçer ve bildirim çıkar; sığma
+  denetimi Velcro'yla aynı merkezli 16 cm'lik dairede yapılır (önizlemede çizgi Velcro'nun kendisi); patch sürüklenmez,
+  döndürülebilir; Aksesuar adımı ve hazır setler görünmez. Ürün kartının metinleri tek patch'e göre.
+- `patch-notice` etiketi gerekmez ve verilmez (etiket ürün sayfasına "Değiştirilebilir patchler ayrı olarak satılmaktadır"
+  yazısını da koyar). Kart, kategori etiketi ve Çok satanlar koşulu `snippets/kisisel-acik-mi.liquid`: (etiket ya da
+  `tek_patch`) + `aktif = true` + harita. liste-kontrol.py de aynı koşulu kullanır; etiketsiz ürünler sorguya aday
+  listesinden (`acikListe`) gelir.
+
 ## Yeni ürün ekleme (hazırlık)
 
-1. Ürüne Shopify'da `patch-notice` etiketi verilir.
+1. Ürüne Shopify'da `patch-notice` etiketi verilir (tek patch'lik ürünlerde verilmez, yukarıya bak).
 2. `veri/urunler/urunler.json`'a ürünün vitrin verisi (`/products/<handle>.js`) eklenir.
 3. `veri/urunler/secim.json`'a önden, patch'siz görselin sırası yazılır. Gerekirse temizleme ayarı da eklenir:
    - `bosluk_doldur`: açık renkli gövde parçaları arka plan sanılıyorsa;

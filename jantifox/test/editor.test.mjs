@@ -1374,3 +1374,69 @@ test('örnek tasarım (ana sayfa çok satanlar): Cool Alfabe ile sığan ilk isi
   // Hiçbiri olmazsa null
   assert.equal(ic.ornekTasarim(ham, ['ÇĞŞ'], []), null);
 });
+
+// Çok Amaçlı Mini Çanta: karşıdan görsel 1600 × 735, 5 cm Velcro dairesi (harita.tek_patch)
+const miniCanta = (v = ornekVeri()) => {
+  v.gorsel = { en: 1600, boy: 735, kucuk: 'k', buyuk: 'b' };
+  v.urun.metin_siniri = null;
+  v.harita = { surum: 2, kalibre: true, gorsel: { en: 1600, boy: 735 }, tek_patch: true, izinler: { set: false, aksesuar: false },
+    zones: [{ id: 'velcro', ad: 'Velcro', shape: 'circle', x: 47.806, y: 26.803, w: 17.45, h: 37.986, cap_cm: 5, allowed_types: ['letter', 'number', 'icon'] }], forbidden: [] };
+  return v;
+};
+
+test('tek patch: ölçek 5 cm Velcro\'dan, çizim Velcro, denetim büyük daire; karakter sınırı 1, set ve aksesuar yok', () => {
+  const { m } = kur(miniCanta());
+  assert.equal(m.tekPatch, true);
+  assert.equal(m.metinSiniri, 1);
+  assert.ok(Math.abs(m.alanlar[0].cizim.r * 2 - 5) < 0.01, 'Velcro çapı ' + m.alanlar[0].cizim.r * 2);
+  assert.ok(Math.abs(m.Wcm - 1600 / (279.2 / 5)) < 0.05, 'görsel ' + m.Wcm + ' cm');
+  assert.equal(m.alanlar[0].sekil.t, 'circle');
+  assert.equal(m.alanlar[0].sekil.cx, m.alanlar[0].cizim.cx);
+  assert.equal(m.alanlar[0].sekil.cy, m.alanlar[0].cizim.cy);
+  assert.ok(m.alanlar[0].sekil.r >= 8);
+  assert.equal(m.hazirSetler.length, 0);
+  assert.equal(m.aksesuarlar.length, 0);
+  // Normal üründe değişmez
+  const n = kur().m;
+  assert.equal(n.tekPatch, false);
+  assert.equal(n.alanlar[0].cizim, undefined);
+  assert.ok(n.hazirSetler.length > 0 && n.aksesuarlar.length > 0);
+});
+
+test('tek patch: tek harf ya da rakam sığar ve Velcro\'nun ortasına oturur; iki karakter sığmaz', () => {
+  const { m, y } = kur(miniCanta());
+  const v = m.alanlar[0].cizim;
+  ['A', '7'].forEach((h) => {
+    const t = tasarim(m, h);
+    const a = ic.isimAnaliz(m, y, t);
+    assert.equal(a.engel, false, h);
+    const d = ic.duzenle(m, y, t);
+    assert.equal(d.isimGecerli, true);
+    assert.equal(Object.keys(d.hatalar).length, 0);
+    const c = ic.geometri.merkez(d.parcalar[0].sekil);
+    assert.ok(Math.abs(c[0] - v.cx) < 0.05 && Math.abs(c[1] - v.cy) < 0.05, h + ' ortada: ' + c + ' / ' + [v.cx, v.cy]);
+  });
+  assert.equal(ic.isimAnaliz(m, y, tasarim(m, 'AB')).sigiyor, false);
+});
+
+test('tek patch: en büyük ikon (7,5 × 8 cm) Velcro\'nun ortasında geçerli, 45° döndürülünce de', () => {
+  const veri = miniCanta();
+  veri.ikonlar[2].varyantlar[0].stok = 5;
+  const { m, y } = kur(veri);
+  const v = m.alanlar[0].cizim;
+  [0, 45].forEach((aci) => {
+    const t = tasarim(m, '', [{ uid: 'i1', tip: 'icon', urunId: 3, varyantId: 3003, cx: v.cx, cy: v.cy, aci }]);
+    const d = ic.duzenle(m, y, t);
+    assert.equal(Object.keys(d.hatalar).length, 0, 'açı ' + aci);
+  });
+});
+
+test('tek patch: örnek tasarım ismin baş harfi', () => {
+  const ham = JSON.parse(readFileSync(new URL('./kisisel-veri-spor.json', import.meta.url), 'utf8'));
+  const mini = miniCanta(ham);
+  const a = duz(ic.ornekTasarim(mini, ['ATLAS', 'LEYLA'], []));
+  assert.equal(a.isim, 'A');
+  assert.equal(a.parcalar.length, 1);
+  const b = duz(ic.ornekTasarim(mini, ['ATLAS', 'LEYLA'], ['A']));
+  assert.equal(b.isim, 'L');
+});

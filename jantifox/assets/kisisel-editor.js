@@ -34,6 +34,10 @@
   // Piramit'te farklı adlı ama aynı görünen çiftler ΔE ≤ 4 (Mavi O–Antrasit, Haki L–Yeşil V);
   // gerçekten farklı en yakın çift ~18 (Beyaz–buz mavisi).
   var BENZER_RENK_ESIGI = 10;
+  // Tek patch'lik üründe sığma denetimi dairesinin en küçük yarıçapı (cm): en büyük patch (~9,6 cm boy, köşegen
+  // ~12,2 cm) Velcro'nun ortasında her açıda içinde kalır
+  var TEK_PATCH_YARICAP = 8;
+  var TEK_PATCH_NOTU = 'Bu çantaya tek patch takılır.';
   var labOnbellek = {};
 
   function renkLab(kod) {
@@ -978,6 +982,10 @@
     if (!harita || !harita.zones || !harita.zones.length) {
       throw new Error('Kişiselleştirme haritası eksik');
     }
+    // Tek patch'lik ürün (harita.tek_patch, ör. 5 cm Velcro'lu mini çanta): bir harf, bir rakam ya da bir ikon; boyut
+    // sınırı yok, patch Velcro'nun ortasına takılır. Hazır set ve aksesuar yok.
+    this.tekPatch = harita.tek_patch === true;
+    if (this.tekPatch) this.metinSiniri = 1;
     var W = Number(ham.gorsel.en);
     var H = Number(ham.gorsel.boy);
 
@@ -1039,12 +1047,21 @@
     }
 
     this.alanlar = harita.zones.map(function (z, i) {
-      return {
+      var alan = {
         id: z.id || 'alan-' + i,
         ad: z.ad || '',
         sekil: sekle(z),
         tipler: z.allowed_types && z.allowed_types.length ? z.allowed_types : ['letter', 'number', 'icon']
       };
+      // Tek patch'te sığma denetimi Velcro'yla aynı merkezli büyük dairede yapılır (en büyük patch döndürülse de sığar,
+      // patch ortaya yerleşir); önizlemede alan çizgisi Velcro'nun kendisi (cizim)
+      if (self.tekPatch) {
+        var c = merkez(alan.sekil);
+        var k = kutu(alan.sekil);
+        alan.cizim = alan.sekil;
+        alan.sekil = { t: 'circle', cx: c[0], cy: c[1], r: Math.max(TEK_PATCH_YARICAP, k.w / 2, k.h / 2) };
+      }
+      return alan;
     });
     this.yasaklar = (harita.forbidden || []).map(function (z) {
       return sekle(z);
@@ -1201,6 +1218,11 @@
         };
       })
       .filter(function (a) { return a && (a.stok == null || a.stok > 0); });
+    if (this.tekPatch) {
+      this.hazirSetler = [];
+      this.hazirSetHarita = {};
+      this.aksesuarlar = [];
+    }
     this.aksesuarHarita = {};
     this.aksesuarlar.forEach(function (a) { self.aksesuarHarita[a.id] = a; });
     this.aksModelleri = {};
@@ -2735,7 +2757,7 @@
     var g = m.gorsel;
     var alanSvg = m.alanlar
       .map(function (a) {
-        var s = a.sekil;
+        var s = a.cizim || a.sekil;
         if (s.t === 'cokgen') return '<path class="kp-alan" data-alan="' + kacis(a.id) + '" d="' + cokgenYolu(s.p) + '" />';
         if (s.t === 'rect') {
           return '<rect class="kp-alan" data-alan="' + kacis(a.id) + '" x="' + s.x + '" y="' + s.y + '" width="' + s.w + '" height="' + s.h + '" rx="' + (s.r || 0.4) + '" />';
@@ -3645,8 +3667,18 @@
       var temiz = Array.from(ham).filter(function (h) { return KARAKTER_DESENI.test(h); }).join('');
       // Patch'i olmayan karakter (emoji, noktalama, boşluk) yazılmaz; altta kısa not
       self.gecersizKarakter = (cok ? ham.replace(/\s/g, '') : ham) !== temiz;
+      // Tek patch: yeni yazılan karakter öncekinin yerine geçer (A yazılıyken B yazılınca B); yapıştırılan metnin ilki
+      if (self.m.tekPatch && Array.from(temiz).length > 1) {
+        var kar = Array.from(temiz);
+        var eskiSira = kar.indexOf(self.t.isim);
+        if (eskiSira !== -1) kar.splice(eskiSira, 1);
+        temiz = kar[0];
+      }
       // Ürünün karakter sınırından fazlası yazılamaz (çok alanlı üründe tüm alanların toplamı)
       if (self.m.metinSiniri) temiz = Array.from(temiz).slice(0, self.m.metinSiniri).join('');
+      // Tek patch: yazı eklenince takılı ikon çıkar
+      var yerineGecti = false;
+      if (self.m.tekPatch && temiz && self.t.parcalar.length) yerineGecti = !!self.tekPatchBosalt(false);
       if (temiz !== self.t.isim) self.t.bolSabit = false;
       karakterleriHizala(self.t, temiz);
       self.t.bosluk = bosluk && bosluk < Array.from(temiz).length ? bosluk : null;
@@ -3670,6 +3702,7 @@
       self.yaziIpucu = '';
       self.yaziZamani = Date.now();
       self.yenile();
+      if (yerineGecti) self.bildir(TEK_PATCH_NOTU + ' Yazı ikonun yerine geçti.', { sure: 4000 });
     });
     window.addEventListener('resize', function () {
       if (!self.el.hidden) {
@@ -4033,20 +4066,22 @@
 
   Editor.prototype.panelYaziKur = function () {
     var panel = this.el.querySelector('[data-kp-panel="yazi"]');
+    // Tek patch: yeni karakter yazılabilsin diye 2 (yazılan öncekinin yerine geçer)
+    var tek = this.m.tekPatch;
     panel.innerHTML =
       '<h3 id="kp-p-yazi" class="kp-gizli" tabindex="-1">Metin ekle</h3>' +
       '<div class="kp-alan-girdi">' +
       '<label for="kp-isim" class="kp-gizli">Yazı ve rakam</label>' +
       // Karakter sayacı yazı alanının içinde, sağda
       '<div class="kp-girdi-kap">' +
-      '<input id="kp-isim" class="kp-girdi" type="text" data-kp-isim autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" maxlength="' + (this.m.metinSiniri || 24) + '" enterkeyhint="done" placeholder="ör. ECE7" aria-describedby="kp-yazi-ipucu kp-kapasite kp-isim-uyari">' +
+      '<input id="kp-isim" class="kp-girdi" type="text" data-kp-isim autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" maxlength="' + (tek ? 2 : this.m.metinSiniri || 24) + '" enterkeyhint="done" placeholder="' + (tek ? 'ör. A ya da 7' : 'ör. ECE7') + '" aria-describedby="kp-yazi-ipucu kp-kapasite kp-isim-uyari">' +
       // Yazı alanının sağında, sayacın solunda: Ayır / Birleştir (2+ karakterde)
       '<button type="button" class="kp-harf-mod" data-kp-harf-mod aria-pressed="false" hidden></button>' +
       '<span id="kp-kapasite" class="kp-kapasite" data-kp-kapasite></span>' +
       '</div>' +
       this.yaziYeriHtml() +
       '<div class="kp-stil-secim" data-kp-stil-secim role="group" aria-label="Harflerin stili" hidden></div>' +
-      '<p id="kp-yazi-ipucu" class="kp-yazi-ipucu">Harflere dokunarak her birinin stilini ayrı seçebilirsin.</p>' +
+      '<p id="kp-yazi-ipucu" class="kp-yazi-ipucu">' + (tek ? TEK_PATCH_NOTU + ' Bir harf ya da bir rakam yaz, ya da İkon\'dan bir görsel seç.' : 'Harflere dokunarak her birinin stilini ayrı seçebilirsin.') + '</p>' +
       '<div class="kp-karakterler" data-kp-karakterler role="group" aria-label="Karakterler"></div>' +
       '<div class="kp-stil" data-kp-stil-panel hidden></div>' +
       '</div>' +
@@ -4179,6 +4214,7 @@
       '<div class="kp-ara"><svg class="kp-ara__simge" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
       '<input type="search" class="kp-ara__girdi" data-kp-gorsel-ara placeholder="Görsel ara: kalp, kedi, futbol…" aria-label="Görsel ara" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></div>' +
       '<p class="kp-gorsel-fiyat" data-kp-ikon-fiyat>' + kacis(this.ikonFiyatYazisi()) + '</p>' +
+      (this.m.tekPatch ? '<p class="kp-yazi-ipucu" data-kp-tek-patch-notu>' + TEK_PATCH_NOTU + ' Seçtiğin görsel yazının ya da önceki görselin yerine geçer.</p>' : '') +
       '<div class="kp-gorsel-icerik" data-kp-gorsel-icerik></div>';
     var ara = panel.querySelector('[data-kp-gorsel-ara]');
     ara.addEventListener('input', function () {
@@ -4570,10 +4606,53 @@
   Editor.prototype.ikonEkle = function (urunId) {
     var ikon = this.m.ikonHarita[urunId];
     if (!ikon) return;
+    // Tek patch: ikon, takılı yazının ya da ikonun yerine geçer (eklenemezse önceki tasarım geri gelir)
+    var onceki = this.m.tekPatch ? kopyala(this.t) : null;
+    var yerineGecti = onceki ? this.tekPatchBosalt(true) : null;
     if (this.parcaEkle('icon', ikon.id, ikon.varyant, ikon)) {
       this.sonIkon = ikon;
       olayYayinla('ikon_eklendi', { urun_id: this.m.urun.id, ikon_id: ikon.id, ikon_adi: ikon.ad });
+      if (yerineGecti) this.bildir(TEK_PATCH_NOTU + ' ' + ikon.ad + ', ' + yerineGecti + ' yerine geçti.', { sure: 4000 });
+    } else if (onceki) {
+      this.t = onceki;
+      this.isimGirdisiniEsitle();
+      this.yenile();
     }
+  };
+
+  // Tek patch'lik üründe yeni patch öncekinin yerine geçer: takılı ikon (ve ikon=true ise yazı) yenilemeden kaldırılır.
+  // Dönüş: kaldırılanın kısa adı ("A harfi", "Kalp") ya da null
+  Editor.prototype.tekPatchBosalt = function (ikon) {
+    var t = this.t;
+    var m = this.m;
+    var ad = null;
+    if (ikon && t.isim) {
+      var h = Array.from(t.isim)[0];
+      ad = h + (RAKAM_DESENI.test(h) ? ' rakamı' : ' harfi');
+      karakterleriHizala(t, '');
+      t.bolSabit = false;
+      t.bosluk = null;
+      t.isimMerkez = null;
+      this.seciliKarakter = null;
+      this.isimGirdisiniEsitle();
+    }
+    if (t.parcalar.length) {
+      var p = t.parcalar[0];
+      var tanim = p.tip === 'icon' ? m.ikonHarita[p.urunId] : null;
+      ad = ad || (tanim ? tanim.ad : 'önceki patch');
+      t.parcalar = [];
+      t.hazirSetler = [];
+    }
+    if (ad) {
+      this.durum = duzenle(m, this.yer, t);
+      if (this.secili) this.sec(null);
+    }
+    return ad;
+  };
+
+  Editor.prototype.isimGirdisiniEsitle = function () {
+    var girdi = this.el && this.el.querySelector('[data-kp-isim]');
+    if (girdi && girdi.value !== girdiDegeri(this.t)) girdi.value = girdiDegeri(this.t);
   };
 
   Editor.prototype.parcaKaldir = function (uid) {
@@ -5660,7 +5739,7 @@
     if (this.gecersizKarakter) {
       uyarilar.push('<p class="kp-yazi-notu" data-kp-gecersiz-notu>Bu karakterin patch\'i yok.</p>');
     }
-    if (this.m.metinSiniri && harfSayisi >= this.m.metinSiniri) {
+    if (this.m.metinSiniri && !this.m.tekPatch && harfSayisi >= this.m.metinSiniri) {
       uyarilar.push('<p class="kp-uyari kp-uyari--bilgi" data-kp-sinir-notu>Bu ürüne en fazla ' + this.m.metinSiniri + ' karakter yazılabilir.</p>');
     }
     a.yoklar.forEach(function (h) {
@@ -6846,6 +6925,8 @@
         aktif.sonGecerli = a2;
         return;
       }
+      // Tek patch'lik üründe patch Velcro'nun ortasında sabit (döndürülebilir, taşınmaz)
+      if (self.m.tekPatch) return;
       var d = cmCevir(e.clientX - aktif.x, e.clientY - aktif.y);
       if (!aktif.hareket && Math.abs(e.clientX - aktif.x) + Math.abs(e.clientY - aktif.y) < 3) return;
       if (!aktif.hareket) {
@@ -8338,7 +8419,8 @@
     var ornek = this.querySelector('[data-kisisel-ornek]');
     var set = m.setler.filter(function (s) { return s.karakterler.A && s.karakterler.A.png; })[0] || m.setler[0];
     if (ornek && set) {
-      ornek.innerHTML = ['A', 'B', 'C']
+      // Tek patch'lik üründe tek harf
+      ornek.innerHTML = (m.tekPatch ? ['A'] : ['A', 'B', 'C'])
         .map(function (h) {
           var v = set.karakterler[h];
           return v && v.gorsel ? '<img ' + gorselKaynak(v.gorsel, 16) + ' alt="" loading="lazy">' : '<span>' + h + '</span>';
@@ -8347,7 +8429,7 @@
     }
     var fiyatEl = this.querySelector('[data-kisisel-patch-fiyat]');
     var v0 = set && Object.keys(set.karakterler).map(function (k) { return set.karakterler[k]; })[0];
-    if (fiyatEl && v0 && v0.fiyat != null) fiyatEl.textContent = 'Her patch ' + paraBicimle(v0.fiyat);
+    if (fiyatEl && v0 && v0.fiyat != null) fiyatEl.textContent = (m.tekPatch ? 'Patch ' : 'Her patch ') + paraBicimle(v0.fiyat);
   };
 
   // "Sadece çantayı al": düz ürün akışı (temanın kendi sepete ekleme formu)
@@ -8890,6 +8972,8 @@
     if (!set) return null;
     for (var i = 0; i < isimler.length; i++) {
       var isim = buyukHarf(String(isimler[i] || ''));
+      // Tek patch'lik üründe örnek ismin baş harfi
+      if (m.tekPatch) isim = Array.from(isim)[0] || '';
       if (!isim || (kullanilan && kullanilan.indexOf(isim) !== -1)) continue;
       var t = { setId: set.id, isim: isim, isimMerkez: null, parcalar: [] };
       var a = isimAnaliz(m, yer, t);

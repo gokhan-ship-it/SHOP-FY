@@ -1,7 +1,14 @@
 # liste-kontrol.py girdisi için (Admin API, salt okunur). Sonuç "urunler" biçimine çevrilir:
-# id, handle, baslik = title, durum = status, etiketler = tags, aktif = aktif.value, harita_var = harita != null
+# id, handle, baslik = title, durum = status, etiketler = tags, aktif = aktif.value, harita_var = harita != null,
+# tek_patch = harita.jsonValue.tek_patch == true. "urunler": products (patch-notice etiketli) ile acikListe'deki ürünlerin
+# birleşimi (etiketsiz tek patch'lik ürünler yalnızca listeden gelir).
 {
   shop { metafield(namespace: "kisisellestirme", key: "acik_urunler") { value } }
+  acikListe: shop { metafield(namespace: "kisisellestirme", key: "acik_urunler") { references(first: 250) { nodes { ... on Product {
+    id handle title status tags
+    aktif: metafield(namespace: "kisisellestirme", key: "aktif") { value }
+    harita: metafield(namespace: "kisisellestirme", key: "harita") { id jsonValue }
+  } } } } }
   # "Kendin Tasarla" koleksiyonu → kendin_tasarla: [id]
   kendinTasarla: collectionByHandle(handle: "kendin-tasarla") { products(first: 250) { nodes { id } } }
   # Katalogdaki patch ürünleri → katalog_patchler: [{id, baslik = title, durum = status, etiketler = tags}]
@@ -12,7 +19,7 @@
     nodes {
       id handle title status tags
       aktif: metafield(namespace: "kisisellestirme", key: "aktif") { value }
-      harita: metafield(namespace: "kisisellestirme", key: "harita") { id }
+      harita: metafield(namespace: "kisisellestirme", key: "harita") { id jsonValue }
     }
   }
 }

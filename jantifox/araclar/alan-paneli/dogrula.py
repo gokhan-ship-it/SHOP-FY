@@ -222,10 +222,17 @@ def denetle(u, bilinen, magaza):
             v = g.get('velcro') or {}
             if v.get('cap_cm') and z0['shape'] == 'circle' and abs(cm - v['cap_cm']) / v['cap_cm'] > 0.1:
                 uyarilar.append('Çap %.1f cm, sitede %s cm' % (cm, v['cap_cm']))
-            for z in zones:
+            # Tek patch'lik üründe (harita.tek_patch) boyut denetimi yok: her patch Velcro'nun ortasına takılır
+            for z in ([] if hr.get('tek_patch') else zones):
                 zw, zh = z['w'] / 100 * en / px_cm, z['h'] / 100 * boy / px_cm
                 if not harf_sigar(z, zw, zh, en, boy, px_cm):
                     hatalar.append('Alan "%s" (%.1f × %.1f cm) %s × %s cm harfi almıyor' % (z.get('ad'), zw, zh, HARF[0], HARF[1]))
+    if g.get('tek_patch') and not hr.get('tek_patch'):
+        hatalar.append('Grup tek patch\'lik (plan.json tek_patch) ama haritada tek_patch yok')
+    if hr.get('tek_patch'):
+        hiz = hr.get('izinler') or {}
+        if hiz.get('set') or hiz.get('aksesuar'):
+            hatalar.append('Tek patch\'lik haritada set ya da aksesuar izni açık')
     if hr.get('olcu_tahmini') or (u.get('olcek') or {}).get('tahmini'):
         uyarilar.append('Ölçü tahmini (çanta genişliğinden); gerçek Velcro ölçüsü gelince güncellenmeli')
     for x in u.get('uyarilar') or []:

@@ -7,9 +7,12 @@ Kullanım (jantifox/ klasöründen):
 magaza-durum.json, liste-sorgu.graphql sorgusunun sonucundan üretilir:
     {"acik_urunler": [gid, ...],
      "urunler": [{"id": gid, "handle": ..., "baslik": ..., "durum": "ACTIVE", "etiketler": [...],
-                  "aktif": "true" | "false" | null, "harita_var": true | false}, ...]}
+                  "aktif": "true" | "false" | null, "harita_var": true | false, "tek_patch": true | false}, ...]}
+"urunler": sorgudaki patch-notice etiketli ürünler ile aday listesindeki (acikListe) ürünlerin birleşimi; tek_patch =
+haritada tek_patch (etiketsiz tek patch'lik ürünler, ör. mini çanta).
 
-Kartın koşuluyla aynı: patch-notice etiketi + aktif = true + harita. Fark varsa listeler, çıkış kodu 1.
+Kartın koşuluyla aynı (snippets/kisisel-acik-mi.liquid): (patch-notice etiketi ya da tek_patch) + aktif = true + harita.
+Fark varsa listeler, çıkış kodu 1.
 
 İsteğe bağlı "Kendin Tasarla" koleksiyonu denetimi (ana sayfadaki "Tüm kişiselleştirilebilir ürünler →" butonunun
 sayfası): girdide "kendin_tasarla" (koleksiyondaki ürün gid'leri) ve "katalog_patchler" (katalogdaki harf / rakam /
@@ -23,7 +26,8 @@ import sys
 
 
 def acik_mi(u):
-    return 'patch-notice' in (u.get('etiketler') or []) and str(u.get('aktif')).lower() == 'true' and bool(u.get('harita_var'))
+    etiketli = 'patch-notice' in (u.get('etiketler') or []) or u.get('tek_patch') is True
+    return etiketli and str(u.get('aktif')).lower() == 'true' and bool(u.get('harita_var'))
 
 
 def main(argv):

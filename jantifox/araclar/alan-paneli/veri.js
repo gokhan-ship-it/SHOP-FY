@@ -12,7 +12,8 @@ window.PANEL_VERI = {
    },
    "urun_olcu": null,
    "not": "Velcro daire görselde hafif seçiliyor (Pudra Pembe'de belirgin). Ürün genişliği açıklamada yok; ölçek daireden alınır.",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": false
   },
   {
    "ad": "Sweatshirt",
@@ -23,7 +24,8 @@ window.PANEL_VERI = {
    },
    "urun_olcu": null,
    "not": "Daire görselde hafif seçiliyor.",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": false
   },
   {
    "ad": "Sweatshirt (siyah daireli, typ2)",
@@ -34,7 +36,8 @@ window.PANEL_VERI = {
    },
    "urun_olcu": null,
    "not": "Ayrı model: etiket jantifox-sweatshirt-typ2, siyah Velcro daire, tek beden seçeneği. Görsel oranları farklı (1226×1077 / 1357×1078): grubun diğer rengine aktarılan alan kontrol edilmeli. Daire oranı 0,98–0,99 (perspektif yok).",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": false
   },
   {
    "ad": "Janti Şapka",
@@ -45,7 +48,8 @@ window.PANEL_VERI = {
    },
    "urun_olcu": null,
    "not": "Ön panel kavisli; önden görselde panel düz görünür ama kenarlara doğru daralır. Ölçü ürün üzerinde ölçülmeli.",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": false
   },
   {
    "ad": "Kanvas Tote Çanta",
@@ -59,7 +63,8 @@ window.PANEL_VERI = {
     "boy_cm": 39
    },
    "not": "Zaten çizili ve kopya temada çalışıyor.",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": false
   },
   {
    "ad": "Çizgili Spor Çanta",
@@ -74,7 +79,8 @@ window.PANEL_VERI = {
     "derinlik_cm": 24
    },
    "not": "Çanta yumuşak ve dönük çekilmiş; mavide beyaz çizgiler arka plan sanılıyordu, doldurularak düzeltildi.",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": false
   },
   {
    "ad": "Sırt Çantası (G30 × Y40 × D13)",
@@ -89,7 +95,8 @@ window.PANEL_VERI = {
     "derinlik_cm": 13
    },
    "not": "Aynı model, renk blokları farklı. Fermuar yasaklı bölge olmalı.",
-   "cokluAlan": true
+   "cokluAlan": true,
+   "tekPatch": false
   },
   {
    "ad": "Mini Sırt Çantası (G25 × Y30 × D10)",
@@ -104,7 +111,8 @@ window.PANEL_VERI = {
     "derinlik_cm": 10
    },
    "not": "",
-   "cokluAlan": true
+   "cokluAlan": true,
+   "tekPatch": false
   },
   {
    "ad": "Kalem Kutusu (G22 × Y12 × D5)",
@@ -119,7 +127,8 @@ window.PANEL_VERI = {
     "boy_cm": 12
    },
    "not": "Ürün görselleri açılı çekim; yapıştırılabilir sürümde yaptığımız perspektif düzeltmesi aynen kullanılabilir.",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": false
   },
   {
    "ad": "Zarf Kalemlik (G20 × Y9)",
@@ -129,7 +138,8 @@ window.PANEL_VERI = {
     "boy_cm": 9
    },
    "not": "Rozet: PATCH ALANI YOKTUR, ARKASINDA CIRT ALANI YOKTUR. Öneri: \"kişiselleştirme olmasın\".",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": false
   },
   {
    "ad": "Mini Yuvarlak Çanta (çap 10)",
@@ -138,7 +148,8 @@ window.PANEL_VERI = {
     "cap_cm": 10
    },
    "not": "Rozet: PATCH ALANI YOKTUR. Öneri: \"kişiselleştirme olmasın\".",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": false
   },
   {
    "ad": "Yapıştırılabilir Kalem Kutusu (G22 × Y12 × D5)",
@@ -154,7 +165,8 @@ window.PANEL_VERI = {
     "derinlik_cm": 5
    },
    "not": "Stick-on (yapıştırılabilir) kalem kutuları. Kırmızı ve Turuncu'nun görseli ve alanı mağazada hazır (perspektifi düzeltilmiş ön yüz); kontrol edip kaydetmen yeterli.",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": false
   },
   {
    "ad": "Çok Amaçlı Mini Çanta (G24 × Y16 × D10)",
@@ -169,7 +181,8 @@ window.PANEL_VERI = {
     "derinlik_cm": 10
    },
    "not": "Tek patch (kullanıcı kararı 2026-10-20): bir harf, bir rakam ya da bir ikon; boyut sınırı yok, en küçükten en büyüğe her patch Velcro'nun ortasına takılır. Hazır set ve aksesuar yok. Alan: 5 cm Velcro dairesi (karşıdan görselde otomatik bulundu). patch-notice etiketi yok; ürün kartı haritadaki tek_patch ile açılır (etiket eklenmez: canlı temada \"Değiştirilebilir patchler ayrı olarak satılmaktadır\" yazısını açardı).",
-   "cokluAlan": false
+   "cokluAlan": false,
+   "tekPatch": true
   }
  ],
  "urunler": [
@@ -1744,7 +1757,7 @@ window.PANEL_VERI = {
      "harf": true,
      "rakam": true,
      "ikon": true,
-     "set": true,
+     "set": false,
      "aksesuar": false
     }
    },
@@ -1785,7 +1798,7 @@ window.PANEL_VERI = {
      "harf": true,
      "rakam": true,
      "ikon": true,
-     "set": true,
+     "set": false,
      "aksesuar": false
     }
    },
@@ -1826,7 +1839,7 @@ window.PANEL_VERI = {
      "harf": true,
      "rakam": true,
      "ikon": true,
-     "set": true,
+     "set": false,
      "aksesuar": false
     }
    },
@@ -1867,7 +1880,7 @@ window.PANEL_VERI = {
      "harf": true,
      "rakam": true,
      "ikon": true,
-     "set": true,
+     "set": false,
      "aksesuar": false
     }
    },
@@ -1908,7 +1921,7 @@ window.PANEL_VERI = {
      "harf": true,
      "rakam": true,
      "ikon": true,
-     "set": true,
+     "set": false,
      "aksesuar": false
     }
    },
@@ -1949,7 +1962,7 @@ window.PANEL_VERI = {
      "harf": true,
      "rakam": true,
      "ikon": true,
-     "set": true,
+     "set": false,
      "aksesuar": false
     }
    },

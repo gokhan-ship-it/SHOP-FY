@@ -391,7 +391,8 @@
       alanlar.forEach(function (s) {
         // Yalnızca harf ya da rakama izin verilen alanda (ör. 5 cm Velcro'lu mini çantada alan yalnızca ikon olabilir)
         var yaziAlani = s.tipler.indexOf('letter') !== -1 || s.tipler.indexOf('number') !== -1;
-        if (yaziAlani && !harfSigar(s, o, lw, lh)) r.hatalar.push('"' + s.ad + '" alanına ' + lw + ' × ' + lh + ' cm harf sığmıyor (' + yuvarla(s.w / o.pxCm) + ' × ' + yuvarla(s.h / o.pxCm) + ' cm). Ölçek yanlış olabilir.');
+        // Tek patch'lik grupta boyut sınırı yok: her patch Velcro'nun ortasına takılır
+        if (yaziAlani && !g.tekPatch && !harfSigar(s, o, lw, lh)) r.hatalar.push('"' + s.ad + '" alanına ' + lw + ' × ' + lh + ' cm harf sığmıyor (' + yuvarla(s.w / o.pxCm) + ' × ' + yuvarla(s.h / o.pxCm) + ' cm). Ölçek yanlış olabilir.');
       });
       var enCm = u.png.en / o.pxCm;
       var uo = g.urun_olcu;
@@ -418,7 +419,10 @@
     if (g.cokluAlan && alanlar.length < 2) r.uyarilar.push('Bu grupta iki alan (üst panel ve alt cep) bekleniyor; şu an ' + alanlar.length + '.');
     if (d.kontrol) r.uyarilar.push('Gruptan / önceki üründen kopyalandı ve görsel oranı farklı: alanları kontrol edip kaydet.');
     if (u.mevcut && u.mevcut.harita) r.bilgiler.push('Mağazada bu ürünün haritası zaten var. Yazma adımında farklıysa ayrıca onay istenir.');
-    if (!d.ayar.metinSiniri) r.bilgiler.push('Metin karakter sınırı boş: yalnızca alanın sığdırdığı kadar.');
+    if (g.tekPatch) {
+      r.bilgiler.push('Tek patch: bir harf, bir rakam ya da bir ikon; boyut denetimi yok, patch Velcro\'nun ortasına takılır. Set ve aksesuar yok.');
+      if (izin.set || izin.aksesuar) r.hatalar.push('Tek patch\'lik üründe Set ve Aksesuar kapalı olmalı.');
+    } else if (!d.ayar.metinSiniri) r.bilgiler.push('Metin karakter sınırı boş: yalnızca alanın sığdırdığı kadar.');
     return r;
   }
 
@@ -1295,6 +1299,7 @@
       }),
       izinler: { set: !!iz.set, aksesuar: !!iz.aksesuar } };
     if (o.tahmini) harita.olcu_tahmini = true;
+    if (VERI.gruplar[u.grup].tekPatch) harita.tek_patch = true;
     return harita;
   }
   function disaAktar() {

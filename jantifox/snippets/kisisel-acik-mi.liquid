@@ -1,0 +1,17 @@
+{%- comment -%}
+  Ürünün kişiselleştirmesi açık mı: açıksa "1" yazar, değilse hiçbir şey. Ürün kartı, kategori sayfası ve
+  Çok satanlar aynı koşulu buradan okur:
+  (patch-notice etiketi ya da haritada tek_patch) + kisisellestirme.aktif = true + harita var.
+  tek_patch: etiketsiz tek patch'lik ürünler (ör. Çok Amaçlı Mini Çanta); patch-notice etiketi ürün sayfasına
+  "Değiştirilebilir patchler ayrı olarak satılmaktadır" yazısını da koyar, bu ürünlere eklenmez.
+
+  Kullanım: {% capture kp_acik %}{% render 'kisisel-acik-mi', p: product %}{% endcapture %} … kp_acik == '1'
+{%- endcomment -%}
+{%- liquid
+  assign h = p.metafields.kisisellestirme.harita.value
+  if p.tags contains 'patch-notice' or h.tek_patch == true
+    if p.metafields.kisisellestirme.aktif.value == true and h != blank
+      echo '1'
+    endif
+  endif
+-%}

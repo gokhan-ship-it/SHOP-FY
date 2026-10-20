@@ -4,8 +4,8 @@
   Temanın kart dosyasına (card-product.liquid) dokunmaz: kartlar sayfaya geldikten sonra JS ile işaretlenir.
 
   Hangi ürünlerin açık olduğu: shop.metafields.kisisellestirme.acik_urunler (ürün listesi) aday listesidir;
-  her aday için ürün sayfasındaki kartla aynı koşul burada da denetlenir (patch-notice etiketi,
-  kisisellestirme.aktif = true, haritası var). "Kişiselleştirme olmasın" seçilen ürün (aktif = false) listede olsa
+  her aday için ürün sayfasındaki kartla aynı koşul burada da denetlenir (kisisel-acik-mi: patch-notice etiketi ya da
+  haritada tek_patch, kisisellestirme.aktif = true, haritası var). "Kişiselleştirme olmasın" seçilen ürün (aktif = false) listede olsa
   bile kapalı sayılır. Bütün bilgi sayfayla gelir; kartlar için ek istek atılmaz.
 
   layout/theme.liquid içinden, koleksiyon sayfalarında render edilir:
@@ -22,7 +22,10 @@
     {"urunler":{
     {%- for p in adaylar -%}
       {%- liquid
-        unless p.tags contains 'patch-notice' and p.metafields.kisisellestirme.aktif.value == true and p.metafields.kisisellestirme.harita.value != blank
+        capture kp_acik
+          render 'kisisel-acik-mi', p: p
+        endcapture
+        unless kp_acik == '1'
           continue
         endunless
         assign burada = false

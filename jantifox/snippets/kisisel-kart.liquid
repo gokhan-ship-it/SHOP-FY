@@ -1,6 +1,7 @@
 {%- comment -%}
   Ürün sayfasındaki "Kişiselleştir" kartı.
-  Yalnızca patch-notice etiketli, kisisellestirme.aktif = true ve haritası olan ürünlerde görünür.
+  Yalnızca kişiselleştirmesi açık ürünlerde görünür (kisisel-acik-mi: patch-notice etiketi ya da haritada tek_patch,
+  kisisellestirme.aktif = true, harita).
   Kart "hidden" gelir; editör JS'i ve verisi sorunsuz yüklenirse görünür olur.
   JS yüklenemezse sayfa bugünkü gibi çalışır (düz ürün satılır).
 
@@ -9,7 +10,14 @@
 {%- endcomment -%}
 {%- liquid
   assign kisisel_aktif = false
-  if product.tags contains 'patch-notice' and product.metafields.kisisellestirme.aktif.value == true and product.metafields.kisisellestirme.harita.value != blank
+  capture kp_acik
+    render 'kisisel-acik-mi', p: product
+  endcapture
+  comment
+    Tek patch'lik ürün (haritada tek_patch, ör. mini çanta): kart metinleri tek patch'e göre
+  endcomment
+  assign kp_tek = product.metafields.kisisellestirme.harita.value.tek_patch
+  if kp_acik == '1'
     assign katalog = shop.metaobjects.kisisellestirme_katalog.ana
     if katalog != blank
       assign kisisel_aktif = true
@@ -38,7 +46,7 @@
     <div class="kisisel-kart__tekrar" data-kisisel-tekrar hidden>
       <div class="kisisel-kart__tekrar-metin">
         <p class="kisisel-kart__tekrar-baslik">Bir tane daha yapmak ister misin?</p>
-        <p class="kisisel-kart__tekrar-alt">Farklı bir isim ve patch'lerle ikinci çantanı tasarla.</p>
+        <p class="kisisel-kart__tekrar-alt">{% if kp_tek %}Farklı bir patch'le ikinci çantanı tasarla.{% else %}Farklı bir isim ve patch'lerle ikinci çantanı tasarla.{% endif %}</p>
       </div>
       <button type="button" class="btn kisisel-kart__buton--marka kisisel-kart__tekrar-buton" data-kisisel-yeni>Yeni tasarım</button>
     </div>
@@ -47,10 +55,10 @@
       {%- comment -%} (a) Tasarım yok: davet {%- endcomment -%}
       <div class="kisisel-kart__davet" data-kisisel-davet>
         <div class="kisisel-kart__davet-ust">
-          <span class="kisisel-kart__ornek" data-kisisel-ornek aria-hidden="true"><span>A</span><span>B</span><span>C</span></span>
+          <span class="kisisel-kart__ornek" data-kisisel-ornek aria-hidden="true">{% if kp_tek %}<span>A</span>{% else %}<span>A</span><span>B</span><span>C</span>{% endif %}</span>
           <div class="kisisel-kart__metin">
             <p class="kisisel-kart__baslik">Ürünü kişiselleştir</p>
-            <p class="kisisel-kart__aciklama">İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.</p>
+            <p class="kisisel-kart__aciklama">{% if kp_tek %}Bir harf, rakam ya da ikon patch'i seç, çantanın üzerinde canlı gör.{% else %}İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.{% endif %}</p>
           </div>
         </div>
         <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-ac>
@@ -58,7 +66,7 @@
         </button>
         <div class="kisisel-kart__alt">
           {%- assign kp_patch_fiyat = katalog.harf_setleri.value.first.selected_or_first_available_variant.price -%}
-          <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>{% if kp_patch_fiyat %}Her patch {{ kp_patch_fiyat | divided_by: 100 }} TL{% endif %}</span>
+          <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>{% if kp_patch_fiyat %}{% if kp_tek %}Patch{% else %}Her patch{% endif %} {{ kp_patch_fiyat | divided_by: 100 }} TL{% endif %}</span>
           <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
         </div>
       </div>
@@ -86,7 +94,7 @@
 
       <p class="kisisel-kart__cirt">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        <span>Ön yüzdeki Velcro yüzeye patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.</span>
+        <span>{% if kp_tek %}Ön yüzdeki Velcro'ya patch'i sen takarsın, istediğin zaman değiştirirsin.{% else %}Ön yüzdeki Velcro yüzeye patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.{% endif %}</span>
       </p>
     </div>
 
