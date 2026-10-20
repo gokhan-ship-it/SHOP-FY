@@ -20,25 +20,23 @@ Shopify bağlantısı gelince yapılacak. Kurallar: canlı temaya dokunma, ekran
 | Yeşil Pembe Çizgili | 15779978510622 | cok-amacli-mini-canta-yesil-pembe-cizgili |
 | Sarı Çizgili | 15779978608926 | cok-amacli-mini-canta-sari-cizgili |
 
-## Sıradaki adımlar
-1. **Kopya tema:** canlı tema (MAIN, şu an "Kişiselleştirme DEV - hız", 207025864990) `themeDuplicate` ile
-   "Kişiselleştirme DEV - mini çanta" adıyla kopyalanır. Önce kopyadaki bu 5 dosyanın (yeni snippet hariç) depodaki
-   bir önceki halle (commit 1f67e29) aynı olduğu doğrulanır; sonra `themeFilesUpsert` (kaynak: commit'e sabit ham
-   GitHub adresi) yalnızca kopyaya, `checksumMd5` ile doğrulanır.
-2. **Mağaza, okuma:** 6 ürünün `kisisellestirme` alanları (onizleme_gorseli, onizleme_gorseli_png, harita, aktif,
-   metin_karakter_siniri), etiketleri ve `shop.metafields.kisisellestirme.acik_urunler`. Dolu alan varsa yazmadan
-   önce kullanıcıya gösterilir. `dogrula.py ... --magaza --liste` yeniden çalıştırılır.
-3. **Mağaza, yazma** (canlıda görünmez: canlı tema kartı patch-notice etiketi olmadan açmaz):
-   - 6 PNG `fileCreate` (ham GitHub adresi, commit 1f67e29) → MediaImage → `kisisellestirme.onizleme_gorseli`.
-     PNG kaynak olduğu için `onizleme_gorseli_png` gerekmez. Ürün medyasına eklenmez, ürün görsellerine dokunulmaz.
-   - `metafieldsSet`: `harita`, `aktif = true`; `acik_urunler`'e 6 ürün eklenir. Etiket eklenmez.
-   - Sonra liste-sorgu.graphql + liste-kontrol.py (çıkış 0 beklenir; mini çantalar "Kendin Tasarla"da yok uyarısı
-     koleksiyon adımına kadar normal).
-4. **Önizleme kontrolü** (kopya tema, `preview_theme_id`): 6 ürün sayfasında kart açılıyor mu; editörde yazı / ikon
-   yer değiştirme, en büyük ikon, sepete ekleme. Canlı temada bu ürünlerde kart çıkmadığı da doğrulanır.
-5. Kullanıcıya önizleme linki ve telefonda denenecekler. Yayından hemen önce canlı temada değişiklik kontrolü.
+## Durum (2026-10-20 akşam)
+Adım 1–4 tamam (ayrıntı: `docs/degisiklik-kaydi.md`, 2026-10-20 satırları):
+- Kopya tema **"Kişiselleştirme DEV - mini çanta" (207301280030)**, 5 dosya commit 7588b7c ile yüklendi, MD5 doğrulandı.
+  Canlı tema 207025864990'a dokunulmadı (updatedAt 2026-10-14T10:15:59Z).
+- Mağaza: 6 PNG (MediaImage 72897702035742 … 72897702199582), `onizleme_gorseli`, `harita`, `aktif = true`;
+  `acik_urunler` 23 → 29. Liste güncel; liste-kontrol yalnızca "Kendin Tasarla"da yok uyarısı veriyor (adım 6).
+- Önizleme kontrolü `test/tarayici/canli-mini-canta.mjs <tema id>` ile geçti; canlıda bu ürünlerde kart yok.
+
+## Kalan adımlar
+5. Kullanıcı önizleme linkinde telefonda dener:
+   `https://jantifox.com/products/cok-amacli-mini-canta-kirmizi-beyaz-zikzak?preview_theme_id=207301280030`
+   **Yayından hemen önce** canlı temanın `updatedAt` değeri 2026-10-14T10:15:59Z mi diye bakılır; değiştiyse
+   (Admin'den yapılan bir düzenleme) kopya yayınlanınca o düzenleme kaybolur, önce kopyaya taşınır.
+   Yayını kullanıcı Admin'den yapar (API tema yayınlamayı engelliyor).
 6. **Yayından sonra:** 6 ürün "Kendin Tasarla" koleksiyonunun çanta grubuna (`collectionAddProductsV2` +
-   `collectionReorderProducts`); bu adım canlıda hemen görünür, yayından önce yapılmaz.
+   `collectionReorderProducts`); bu adım canlıda hemen görünür, yayından önce yapılmaz. Sonra liste-kontrol çıkış 0.
+   Yayından önce geri dönmek gerekirse: 6 üründe `aktif = false` yeterli (kopya tema kartı kapatır, canlıda zaten yok).
 
 ## Açık konular
 - 4, 5, 6 numaralı görsellerde Velcro dairesi çantaya göre büyük çizilmiş (ön yüz daireden 19,1 / 16,5 / 14,7 cm,
