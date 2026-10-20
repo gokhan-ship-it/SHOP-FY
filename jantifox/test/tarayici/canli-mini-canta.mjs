@@ -1,5 +1,6 @@
 // Önizleme linkinde 6 mini çanta (tek patch): kart açılıyor mu, adımlar Yazı / İkon, alan çizgisi Velcro kadar;
-// ilk üründe yazı → ikon → yazı yer değiştirme, stoktaki en büyük ikon, sepete ekleme (sonra sepet boşaltılır).
+// pencere kare ve açılışta Velcro'ya yakın ("Tüm ürünü gör"), stoktaki en büyük ikon pencerede ve hatasız;
+// ilk üründe yazı → ikon → yazı yer değiştirme, sepete ekleme (sonra sepet boşaltılır). Karşılaştırma için Tote'un penceresi.
 // Canlı temada (önizleme parametresi olmadan) aynı ürünlerde kartın görünmediği de denetlenir. Ekran görüntüsü almaz.
 // Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node canli-mini-canta.mjs <kopya tema id>
 import { createRequire } from 'node:module';
@@ -47,6 +48,23 @@ for (const [i, h] of URUNLER.entries()) {
   r.adimlar = await s.$$eval('.kp-arac-dugme[data-kp-adim]', (x) => x.map((e) => e.getAttribute('data-kp-adim')));
   r.alan_orani = await s.evaluate((q) => +(document.querySelector(q + '.kp-alan').getBoundingClientRect().width / document.querySelector(q + '.kp-sahne').getBoundingClientRect().width * 100).toFixed(2), O);
   r.ipucu = (await s.locator('#kp-yazi-ipucu').innerText()).trim();
+  const kutu = (q) => s.locator(q).first().boundingBox().then((b) => b && [b.x, b.y, b.width, b.height].map(Math.round));
+  r.pencere = await kutu('.kp-gorunum');
+  r.sahne = await kutu(O + '.kp-sahne');
+  r.gorunumDugmesi = (await s.locator('[data-kp-gorunum]').isVisible()) ? (await s.locator('[data-kp-gorunum]').innerText()).trim() : null;
+  const ikonlar = veri.ikonlar.filter((x) => x.varyantlar.some((v) => v.stok > 0)).map((x) => {
+    const en = parseFloat(x.png_en || x.en) || 0, boy = parseFloat(x.png_boy || x.boy) || en;
+    return { id: x.id, ad: x.baslik, en, boy, alan: en * boy };
+  }).sort((a, b) => b.alan - a.alan);
+  if (i > 0) {
+    await s.locator('[data-kp-adim="ikon"]').click();
+    await s.locator(`[data-kp-ikon="${ikonlar[0].id}"]`).first().click();
+    await s.waitForTimeout(400);
+    const p = await kutu(O + '.kp-sahne__parcalar > .kp-parca');
+    const w = r.pencere;
+    r.enBuyukIkon = { ad: ikonlar[0].ad, hatali: await s.locator(O + '.kp-parca--hatali').count(), merkez: await merkezFarki(),
+      pencerede: p[0] >= w[0] - 1 && p[1] >= w[1] - 1 && p[0] + p[2] <= w[0] + w[2] + 1 && p[1] + p[3] <= w[1] + w[3] + 1 };
+  }
   if (i === 0) {
     const girdi = s.locator('#kp-isim');
     await girdi.click();
@@ -57,20 +75,25 @@ for (const [i, h] of URUNLER.entries()) {
     r.yazi = { deger: await girdi.inputValue(), parcalar: await parcalar(), merkez: await merkezFarki() };
     await s.locator('[data-kp-adim="ikon"]').click();
     r.hazirSet = await s.locator('[data-kp-hazir-set]').count();
-    // Stokta olan ikonlar arasında en büyüğü (cm² olarak)
-    const ikonlar = veri.ikonlar.filter((x) => x.varyantlar.some((v) => v.stok > 0)).map((x) => {
-      const en = parseFloat(x.png_en || x.en) || 0, boy = parseFloat(x.png_boy || x.boy) || en;
-      return { id: x.id, ad: x.baslik, en, boy, alan: en * boy };
-    }).sort((a, b) => b.alan - a.alan);
+    // Stokta olan ikonlar arasında en küçüğü ve en büyüğü (cm² olarak)
     const kucuk = ikonlar[ikonlar.length - 1], buyuk = ikonlar[0];
     await s.locator(`[data-kp-ikon="${kucuk.id}"]`).first().click();
     await s.waitForTimeout(250);
     r.ikon1 = { ad: kucuk.ad, parcalar: await parcalar(), yazi: await girdi.inputValue(), bildirim: await bildirim() };
     await s.locator(`[data-kp-ikon="${buyuk.id}"]`).first().click();
     await s.waitForTimeout(250);
+    const p = await kutu(O + '.kp-sahne__parcalar > .kp-parca');
+    const w = r.pencere;
     r.enBuyukIkon = { ad: buyuk.ad, olcu: buyuk.en + ' × ' + buyuk.boy, parcalar: await parcalar(),
       hatali: await s.locator(O + '.kp-parca--hatali').count(), merkez: await merkezFarki(), bildirim: await bildirim(),
-      disabled: await s.locator(`[data-kp-ikon="${buyuk.id}"]`).first().isDisabled() };
+      disabled: await s.locator(`[data-kp-ikon="${buyuk.id}"]`).first().isDisabled(),
+      pencerede: p[0] >= w[0] - 1 && p[1] >= w[1] - 1 && p[0] + p[2] <= w[0] + w[2] + 1 && p[1] + p[3] <= w[1] + w[3] + 1 };
+    // Tüm ürünü gör → çantanın tamamı pencerede; Alana yakınlaş ile geri
+    await s.locator('[data-kp-gorunum]').click();
+    await s.waitForTimeout(700);
+    r.tumUrun = { sahne: await kutu(O + '.kp-sahne'), dugme: (await s.locator('[data-kp-gorunum]').innerText()).trim() };
+    await s.locator('[data-kp-gorunum]').click();
+    await s.waitForTimeout(700);
     await s.locator('[data-kp-adim="yazi"]').click();
     await girdi.click();
     await s.keyboard.type('7');
@@ -87,6 +110,14 @@ for (const [i, h] of URUNLER.entries()) {
   }
   sonuc.onizleme[h] = r;
 }
+
+// Karşılaştırma: Tote'un penceresi (aynı kopya tema)
+await hazirla(`https://jantifox.com/products/kanvas-lacivert-tote-canta?preview_theme_id=${TEMA}`);
+await s.locator('kisisel-kart [data-kisisel-ac]').first().dispatchEvent('click');
+await s.locator(O + '.kp-sahne').waitFor({ timeout: 20000 });
+await s.waitForTimeout(800);
+sonuc.tote = { pencere: await s.locator('.kp-gorunum').first().boundingBox().then((b) => [b.x, b.y, b.width, b.height].map(Math.round)),
+  gorunumDugmesi: (await s.locator('[data-kp-gorunum]').innerText()).trim() };
 
 // Canlı tema: aynı ürünlerde kart yok
 const c2 = await t.newContext({ ...devices['iPhone 13'], locale: 'tr-TR' });

@@ -27,6 +27,8 @@ Adım 1–4 tamam (ayrıntı: `docs/degisiklik-kaydi.md`, 2026-10-20 satırları
 - Mağaza: 6 PNG (MediaImage 72897702035742 … 72897702199582), `onizleme_gorseli`, `harita`, `aktif = true`;
   `acik_urunler` 23 → 29. Liste güncel; liste-kontrol yalnızca "Kendin Tasarla"da yok uyarısı veriyor (adım 6).
 - Önizleme kontrolü `test/tarayici/canli-mini-canta.mjs <tema id>` ile geçti; canlıda bu ürünlerde kart yok.
+- Kullanıcı isteğiyle (commit 56ab3a1, yalnızca kopya tema): pencere diğer ürünler gibi kare, Velcro'ya yakın görünüm +
+  "Tüm ürünü gör", ipucu "Görsel'den", tek patch'te "N patch daha ekle" önerisi yok. Kullanıcı birkaç ek istek getirecek.
 
 ## Kalan adımlar
 5. Kullanıcı önizleme linkinde telefonda dener:
