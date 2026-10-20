@@ -545,56 +545,88 @@
     "boy_cm": 16,
     "derinlik_cm": 10
    },
-   "not": "patch-notice etiketi yok (bu yüzden ilk listeye girmemişti). Velcro 5 cm: bir harf (5,5 × 6 cm) sığmaz; alanı Velcro kadar çizersen yalnız İkon bırak, ya da patch'in taşabileceği alanı çiz ve Velcro ölçüsünü ona göre gir.",
+   "not": "Tek patch (kullanıcı kararı 2026-10-20): bir harf, bir rakam ya da bir ikon; boyut sınırı yok, en küçükten en büyüğe her patch Velcro'nun ortasına takılır. Hazır set ve aksesuar yok. Alan: 5 cm Velcro dairesi (karşıdan görselde otomatik bulundu). patch-notice etiketi yok; ürün kartı haritadaki tek_patch ile açılır (etiket eklenmez: canlı temada \"Değiştirilebilir patchler ayrı olarak satılmaktadır\" yazısını açardı).",
    "urunler": [
     {
      "handle": "cok-amacli-mini-canta-kirmizi-beyaz-zikzak",
      "urun_id": 10088650473758,
      "baslik": "Çok Amaçlı Mini Çanta / Kırmızı Beyaz Zikzak",
-     "png": "cok-amacli-mini-canta-kirmizi-beyaz-zikzak-on.png",
-     "kaynak_gorsel": "cok-amacli-canta-zikzak-02.jpg",
+     "png": "cok-amacli-mini-canta-kirmizi-beyaz-zikzak.png",
+     "kaynak_gorsel": "kullanıcının gönderdiği karşıdan görsel (Arşiv.zip, 2026-10-20): hf_20261018_080658_ed497e31-cdcc-45ae-b8e4-4f5ab4d1b953.png",
      "durum": "cizilecek",
-     "not": "Ön yüz açılı fotoğraftan düzleştirildi (veri/urunler/duz/mini-canta-duzelt.py): 5 cm Velcro dairesi yuvarlak olacak şekilde, ölçek daireden (ön yüz yaklaşık 22 × 12 cm)."
+     "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya). Velcro dairesi görselden ölçüldü (çap 279 px); ölçek daireden (5 cm): ön yüz ~23,4 cm.",
+     "png_boyut": [
+      1600,
+      735
+     ]
     },
     {
      "handle": "cok-amacli-mini-canta-kirmizi-puantiyeli-1",
      "urun_id": 10088652046622,
      "baslik": "Çok Amaçlı Mini Çanta / Kırmızı Puantiyeli",
      "png": "cok-amacli-mini-canta-kirmizi-puantiyeli-1.png",
-     "kaynak_gorsel": "cok-amacli-canta-puantiye-02.jpg",
-     "durum": "cizilecek"
+     "kaynak_gorsel": "kullanıcının gönderdiği karşıdan görsel (Arşiv.zip, 2026-10-20): hf_20261018_080915_6647fe11-9dff-4e27-8143-e11507621ae0.png",
+     "durum": "cizilecek",
+     "png_boyut": [
+      1600,
+      725
+     ],
+     "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya). Velcro dairesi görselden ölçüldü (çap 282 px); ölçek daireden (5 cm): ön yüz ~23,6 cm."
     },
     {
      "handle": "cok-amacli-mini-canta-kirmizi-puantiyeli",
      "urun_id": 10088650047774,
      "baslik": "Çok Amaçlı Mini Çanta / Mavi Beyaz Çizgili",
      "png": "cok-amacli-mini-canta-kirmizi-puantiyeli.png",
-     "kaynak_gorsel": "cok-amacli-canta-02.jpg",
+     "kaynak_gorsel": "kullanıcının gönderdiği karşıdan görsel (Arşiv.zip, 2026-10-20): hf_20261018_081121_04cd5596-581a-4c6e-acc3-329fd046db87.png",
      "durum": "cizilecek",
-     "not": "Beyaz çizgiler arka planla aynı renk: boşluk doldurma (70 px) ve alt kenar tamamlama yapıldı."
+     "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya, bosluk_doldur 70). Velcro dairesi görselden ölçüldü (çap 279 px); ölçek daireden (5 cm): ön yüz ~23,4 cm.",
+     "png_boyut": [
+      1600,
+      754
+     ]
     },
     {
      "handle": "cok-amacli-mini-canta-kucuk-puantiyeli",
      "urun_id": 15779978314014,
      "baslik": "Çok Amaçlı Mini Çanta / Pembe Kırmızı Puantiyeli",
      "durum": "cizilecek",
-     "not": "Ön yüzündeki tek görsel patch takılı çekilmiş; boş Velcro'lu ön görsel gelince eklenir."
+     "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya). Velcro dairesi görselden ölçüldü (çap 346 px); ölçek daireden (5 cm): ön yüz ~19,1 cm. DİKKAT: görselde daire çantaya göre büyük çizilmiş (gerçekte ön yüz ~23,5 cm). Daireden ölçekte patch çantaya göre büyük görünür; görselin daire ~%21 genişlikte yeniden üretilmesi önerildi.",
+     "png": "cok-amacli-mini-canta-kucuk-puantiyeli.png",
+     "png_boyut": [
+      1600,
+      790
+     ],
+     "kaynak_gorsel": "kullanıcının gönderdiği karşıdan görsel (Arşiv.zip, 2026-10-20): hf_20261018_081540_fa9dd9ed-50a0-48c1-aaab-4ab7a9a31b61.png"
     },
     {
      "handle": "cok-amacli-mini-canta-yesil-pembe-cizgili",
      "urun_id": 15779978510622,
      "baslik": "Çok Amaçlı Mini Çanta / Yeşil Pembe Çizgili",
      "durum": "cizilecek",
-     "not": "Ön yüzündeki tek görsel patch takılı çekilmiş; boş Velcro'lu ön görsel gelince eklenir."
+     "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya, bosluk_doldur 70). Velcro dairesi görselden ölçüldü (çap 401 px); ölçek daireden (5 cm): ön yüz ~16,5 cm. DİKKAT: görselde daire çantaya göre büyük çizilmiş (gerçekte ön yüz ~23,5 cm). Daireden ölçekte patch çantaya göre büyük görünür; görselin daire ~%21 genişlikte yeniden üretilmesi önerildi.",
+     "png": "cok-amacli-mini-canta-yesil-pembe-cizgili.png",
+     "png_boyut": [
+      1600,
+      815
+     ],
+     "kaynak_gorsel": "kullanıcının gönderdiği karşıdan görsel (Arşiv.zip, 2026-10-20): hf_20261018_081846_6868c38b-53a5-45f2-9f09-a36ffdb6ed57.png"
     },
     {
      "handle": "cok-amacli-mini-canta-sari-cizgili",
      "urun_id": 15779978608926,
      "baslik": "Çok Amaçlı Mini Çanta / Sarı Çizgili",
      "durum": "cizilecek",
-     "not": "Ön yüzündeki tek görsel patch takılı çekilmiş; boş Velcro'lu ön görsel gelince eklenir."
+     "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya, bosluk_doldur 70). Velcro dairesi görselden ölçüldü (çap 454 px); ölçek daireden (5 cm): ön yüz ~14,7 cm. DİKKAT: görselde daire çantaya göre büyük çizilmiş (gerçekte ön yüz ~23,5 cm). Daireden ölçekte patch çantaya göre büyük görünür; görselin daire ~%21 genişlikte yeniden üretilmesi önerildi.",
+     "png": "cok-amacli-mini-canta-sari-cizgili.png",
+     "png_boyut": [
+      1600,
+      797
+     ],
+     "kaynak_gorsel": "kullanıcının gönderdiği karşıdan görsel (Arşiv.zip, 2026-10-20): hf_20261018_082046_7a19543a-dc22-4c24-aadc-9ef2febdcc20.png"
     }
-   ]
+   ],
+   "tek_patch": true
   }
  ]
 }

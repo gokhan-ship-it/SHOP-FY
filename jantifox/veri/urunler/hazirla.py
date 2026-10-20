@@ -3,6 +3,8 @@
 Kullanım: <venv>/bin/python -I hazirla.py <urunler.json> <secim.json> <cikti_klasoru>
   urunler.json: mağazanın /products/<handle>.js çıktıları ({handle: ürün})
   secim.json:   [{handle, gorsel: görsel sırası, delik_temizle?: true, bosluk_doldur?: px}]
+    dosya:         gorsel yerine yerel görsel yolu (ör. kullanıcının gönderdiği karşıdan çekim); ürünün urunler.json'da
+                   olması gerekmez (urun_id / baslik secim'den okunur).
     delik_temizle: görselin üst kısmında (oran, ör. 0.2 = üst %20) ürünün içinde kalan, arka plan renginde
                    kapalı boşlukları (ör. sap halkasının içi) şeffaf yapar. Beyaz fermuar gibi parçalar alt kısımda kalır.
     bosluk_doldur: arka planla aynı renkteki desenin (ör. beyaz çizgiler) silindiği gövdeyi kapatıp doldurur
@@ -81,9 +83,13 @@ def main():
     oturum = new_session('isnet-general-use')
     rapor = []
     for s in secim:
-        p = urunler[s['handle']]
-        url = p['images'][s['gorsel']]
-        im = indir(url)
+        p = urunler.get(s['handle']) or {'id': s.get('urun_id'), 'title': s.get('baslik')}
+        if s.get('dosya'):
+            url = s['dosya']
+            im = Image.open(url).convert('RGBA')
+        else:
+            url = p['images'][s['gorsel']]
+            im = indir(url)
         kirp, doluluk = temizle(im, oturum, s)
         kirp.thumbnail((EN_FAZLA, EN_FAZLA), Image.LANCZOS)
         yol = os.path.join(cikti, s['handle'] + '.png')

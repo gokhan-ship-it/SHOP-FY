@@ -168,7 +168,7 @@ window.PANEL_VERI = {
     "boy_cm": 16,
     "derinlik_cm": 10
    },
-   "not": "patch-notice etiketi yok (bu yüzden ilk listeye girmemişti). Velcro 5 cm: bir harf (5,5 × 6 cm) sığmaz; alanı Velcro kadar çizersen yalnız İkon bırak, ya da patch'in taşabileceği alanı çiz ve Velcro ölçüsünü ona göre gir.",
+   "not": "Tek patch (kullanıcı kararı 2026-10-20): bir harf, bir rakam ya da bir ikon; boyut sınırı yok, en küçükten en büyüğe her patch Velcro'nun ortasına takılır. Hazır set ve aksesuar yok. Alan: 5 cm Velcro dairesi (karşıdan görselde otomatik bulundu). patch-notice etiketi yok; ürün kartı haritadaki tek_patch ile açılır (etiket eklenmez: canlı temada \"Değiştirilebilir patchler ayrı olarak satılmaktadır\" yazısını açardı).",
    "cokluAlan": false
   }
  ],
@@ -1714,17 +1714,29 @@ window.PANEL_VERI = {
    "urunId": 10088650473758,
    "baslik": "Çok Amaçlı Mini Çanta / Kırmızı Beyaz Zikzak",
    "grup": 12,
-   "not": "Ön yüz açılı fotoğraftan düzleştirildi (veri/urunler/duz/mini-canta-duzelt.py): 5 cm Velcro dairesi yuvarlak olacak şekilde, ölçek daireden (ön yüz yaklaşık 22 × 12 cm).",
+   "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya). Velcro dairesi görselden ölçüldü (çap 279 px); ölçek daireden (5 cm): ön yüz ~23,4 cm.",
    "png": {
-    "dosya": "veri/urunler/png/cok-amacli-mini-canta-kirmizi-beyaz-zikzak-on.png",
-    "en": 1228,
-    "boy": 670
+    "dosya": "veri/urunler/png/cok-amacli-mini-canta-kirmizi-beyaz-zikzak.png",
+    "en": 1600,
+    "boy": 735
    },
    "gorsel": "gorseller/cok-amacli-mini-canta-kirmizi-beyaz-zikzak.webp",
    "mevcut": null,
-   "sekiller": [],
+   "sekiller": [
+    {
+     "tur": "alan",
+     "ad": "Velcro",
+     "shape": "circle",
+     "x": 764.9,
+     "y": 197.0,
+     "w": 279.2,
+     "h": 279.2,
+     "olcuCm": 5,
+     "olcuYon": "genislik"
+    }
+   ],
    "cizgi": null,
-   "onDolguKaynak": "",
+   "onDolguKaynak": "görselden otomatik bulunan keçe Velcro dairesi (renk eşiği + elips uydurma, scratchpad daire.py)",
    "ayar": {
     "metinSiniri": null,
     "kapali": false,
@@ -1743,17 +1755,29 @@ window.PANEL_VERI = {
    "urunId": 10088652046622,
    "baslik": "Çok Amaçlı Mini Çanta / Kırmızı Puantiyeli",
    "grup": 12,
-   "not": "",
+   "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya). Velcro dairesi görselden ölçüldü (çap 282 px); ölçek daireden (5 cm): ön yüz ~23,6 cm.",
    "png": {
     "dosya": "veri/urunler/png/cok-amacli-mini-canta-kirmizi-puantiyeli-1.png",
-    "en": 1075,
-    "boy": 599
+    "en": 1600,
+    "boy": 725
    },
    "gorsel": "gorseller/cok-amacli-mini-canta-kirmizi-puantiyeli-1.webp",
    "mevcut": null,
-   "sekiller": [],
+   "sekiller": [
+    {
+     "tur": "alan",
+     "ad": "Velcro",
+     "shape": "circle",
+     "x": 766.5,
+     "y": 202.6,
+     "w": 281.9,
+     "h": 281.9,
+     "olcuCm": 5,
+     "olcuYon": "genislik"
+    }
+   ],
    "cizgi": null,
-   "onDolguKaynak": "",
+   "onDolguKaynak": "görselden otomatik bulunan keçe Velcro dairesi (renk eşiği + elips uydurma, scratchpad daire.py)",
    "ayar": {
     "metinSiniri": null,
     "kapali": false,
@@ -1772,17 +1796,29 @@ window.PANEL_VERI = {
    "urunId": 10088650047774,
    "baslik": "Çok Amaçlı Mini Çanta / Mavi Beyaz Çizgili",
    "grup": 12,
-   "not": "Beyaz çizgiler arka planla aynı renk: boşluk doldurma (70 px) ve alt kenar tamamlama yapıldı.",
+   "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya, bosluk_doldur 70). Velcro dairesi görselden ölçüldü (çap 279 px); ölçek daireden (5 cm): ön yüz ~23,4 cm.",
    "png": {
     "dosya": "veri/urunler/png/cok-amacli-mini-canta-kirmizi-puantiyeli.png",
-    "en": 1060,
-    "boy": 694
+    "en": 1600,
+    "boy": 754
    },
    "gorsel": "gorseller/cok-amacli-mini-canta-kirmizi-puantiyeli.webp",
    "mevcut": null,
-   "sekiller": [],
+   "sekiller": [
+    {
+     "tur": "alan",
+     "ad": "Velcro",
+     "shape": "circle",
+     "x": 776.9,
+     "y": 292.4,
+     "w": 278.6,
+     "h": 278.6,
+     "olcuCm": 5,
+     "olcuYon": "genislik"
+    }
+   ],
    "cizgi": null,
-   "onDolguKaynak": "",
+   "onDolguKaynak": "görselden otomatik bulunan keçe Velcro dairesi (renk eşiği + elips uydurma, scratchpad daire.py)",
    "ayar": {
     "metinSiniri": null,
     "kapali": false,
@@ -1801,13 +1837,29 @@ window.PANEL_VERI = {
    "urunId": 15779978314014,
    "baslik": "Çok Amaçlı Mini Çanta / Pembe Kırmızı Puantiyeli",
    "grup": 12,
-   "not": "Ön yüzündeki tek görsel patch takılı çekilmiş; boş Velcro'lu ön görsel gelince eklenir.",
-   "png": null,
-   "gorsel": null,
+   "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya). Velcro dairesi görselden ölçüldü (çap 346 px); ölçek daireden (5 cm): ön yüz ~19,1 cm. DİKKAT: görselde daire çantaya göre büyük çizilmiş (gerçekte ön yüz ~23,5 cm). Daireden ölçekte patch çantaya göre büyük görünür; görselin daire ~%21 genişlikte yeniden üretilmesi önerildi.",
+   "png": {
+    "dosya": "veri/urunler/png/cok-amacli-mini-canta-kucuk-puantiyeli.png",
+    "en": 1600,
+    "boy": 790
+   },
+   "gorsel": "gorseller/cok-amacli-mini-canta-kucuk-puantiyeli.webp",
    "mevcut": null,
-   "sekiller": [],
+   "sekiller": [
+    {
+     "tur": "alan",
+     "ad": "Velcro",
+     "shape": "circle",
+     "x": 733.5,
+     "y": 249.9,
+     "w": 345.9,
+     "h": 345.9,
+     "olcuCm": 5,
+     "olcuYon": "genislik"
+    }
+   ],
    "cizgi": null,
-   "onDolguKaynak": "",
+   "onDolguKaynak": "görselden otomatik bulunan keçe Velcro dairesi (renk eşiği + elips uydurma, scratchpad daire.py)",
    "ayar": {
     "metinSiniri": null,
     "kapali": false,
@@ -1819,20 +1871,36 @@ window.PANEL_VERI = {
      "aksesuar": false
     }
    },
-   "durum": "gorsel_yok"
+   "durum": "cizilecek"
   },
   {
    "handle": "cok-amacli-mini-canta-yesil-pembe-cizgili",
    "urunId": 15779978510622,
    "baslik": "Çok Amaçlı Mini Çanta / Yeşil Pembe Çizgili",
    "grup": 12,
-   "not": "Ön yüzündeki tek görsel patch takılı çekilmiş; boş Velcro'lu ön görsel gelince eklenir.",
-   "png": null,
-   "gorsel": null,
+   "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya, bosluk_doldur 70). Velcro dairesi görselden ölçüldü (çap 401 px); ölçek daireden (5 cm): ön yüz ~16,5 cm. DİKKAT: görselde daire çantaya göre büyük çizilmiş (gerçekte ön yüz ~23,5 cm). Daireden ölçekte patch çantaya göre büyük görünür; görselin daire ~%21 genişlikte yeniden üretilmesi önerildi.",
+   "png": {
+    "dosya": "veri/urunler/png/cok-amacli-mini-canta-yesil-pembe-cizgili.png",
+    "en": 1600,
+    "boy": 815
+   },
+   "gorsel": "gorseller/cok-amacli-mini-canta-yesil-pembe-cizgili.webp",
    "mevcut": null,
-   "sekiller": [],
+   "sekiller": [
+    {
+     "tur": "alan",
+     "ad": "Velcro",
+     "shape": "circle",
+     "x": 710.8,
+     "y": 259.9,
+     "w": 400.7,
+     "h": 400.7,
+     "olcuCm": 5,
+     "olcuYon": "genislik"
+    }
+   ],
    "cizgi": null,
-   "onDolguKaynak": "",
+   "onDolguKaynak": "görselden otomatik bulunan keçe Velcro dairesi (renk eşiği + elips uydurma, scratchpad daire.py)",
    "ayar": {
     "metinSiniri": null,
     "kapali": false,
@@ -1844,20 +1912,36 @@ window.PANEL_VERI = {
      "aksesuar": false
     }
    },
-   "durum": "gorsel_yok"
+   "durum": "cizilecek"
   },
   {
    "handle": "cok-amacli-mini-canta-sari-cizgili",
    "urunId": 15779978608926,
    "baslik": "Çok Amaçlı Mini Çanta / Sarı Çizgili",
    "grup": 12,
-   "not": "Ön yüzündeki tek görsel patch takılı çekilmiş; boş Velcro'lu ön görsel gelince eklenir.",
-   "png": null,
-   "gorsel": null,
+   "not": "Karşıdan görsel (yapay zekâ ile üretilmiş, kullanıcıdan); arka plan hazirla.py ile (yerel dosya, bosluk_doldur 70). Velcro dairesi görselden ölçüldü (çap 454 px); ölçek daireden (5 cm): ön yüz ~14,7 cm. DİKKAT: görselde daire çantaya göre büyük çizilmiş (gerçekte ön yüz ~23,5 cm). Daireden ölçekte patch çantaya göre büyük görünür; görselin daire ~%21 genişlikte yeniden üretilmesi önerildi.",
+   "png": {
+    "dosya": "veri/urunler/png/cok-amacli-mini-canta-sari-cizgili.png",
+    "en": 1600,
+    "boy": 797
+   },
+   "gorsel": "gorseller/cok-amacli-mini-canta-sari-cizgili.webp",
    "mevcut": null,
-   "sekiller": [],
+   "sekiller": [
+    {
+     "tur": "alan",
+     "ad": "Velcro",
+     "shape": "circle",
+     "x": 679.8,
+     "y": 204.1,
+     "w": 454.2,
+     "h": 454.2,
+     "olcuCm": 5,
+     "olcuYon": "genislik"
+    }
+   ],
    "cizgi": null,
-   "onDolguKaynak": "",
+   "onDolguKaynak": "görselden otomatik bulunan keçe Velcro dairesi (renk eşiği + elips uydurma, scratchpad daire.py)",
    "ayar": {
     "metinSiniri": null,
     "kapali": false,
@@ -1869,7 +1953,7 @@ window.PANEL_VERI = {
      "aksesuar": false
     }
    },
-   "durum": "gorsel_yok"
+   "durum": "cizilecek"
   }
  ]
 };
