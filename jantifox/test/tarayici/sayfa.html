@@ -3570,6 +3570,26 @@ html.kp-kilit body {
   bottom: 0.6rem;
   right: 0.6rem;
 }
+/* "İndir": önizlemeyi alan çizgileri olmadan PNG olarak indirir; yalnızca masaüstünde, sol altta */
+.kp-onizleme__dugme--indir {
+  display: none;
+  top: auto;
+  right: auto;
+  bottom: 0.6rem;
+  left: 0.6rem;
+  min-height: 32px;
+  padding: 0.2rem 0.8rem;
+  font-size: 1.1rem;
+}
+.kp-onizleme__dugme--indir[aria-busy='true'] {
+  opacity: 0.55;
+  cursor: progress;
+}
+@media (min-width: 1024px) {
+  .kp-onizleme__dugme--indir {
+    display: inline-flex;
+  }
+}
 /* ---------- Tek satırlık alt çubuk (~64 px) ---------- */
 .kp-editor .kp-alt:not(.kp-alt--aks) {
   flex-wrap: nowrap;
@@ -8223,6 +8243,11 @@ html.kp-kilit body {
       '<button type="button" class="kp-gecmis__dugme" data-kp-yinele aria-label="Yinele" title="Yinele" disabled><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 14l5-5-5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
       '</div>' +
       '<button type="button" class="kp-onizleme__dugme kp-onizleme__dugme--gorunum" data-kp-gorunum aria-pressed="false">Tüm ürünü gör</button>' +
+      // Masaüstünde (CSS): önizlemeyi alan çizgileri ve adları olmadan PNG olarak indir
+      (this.alt ? '' :
+        '<button type="button" class="kp-onizleme__dugme kp-onizleme__dugme--indir" data-kp-indir title="Önizlemeyi indir (alan çizgileri olmadan)">' +
+        '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        '<span>İndir</span></button>') +
       '<span class="kp-aci" data-kp-aci aria-hidden="true" hidden></span>' +
       '<div class="kp-balon" data-kp-balon role="group" hidden></div>' +
       // Önizlemenin alt kısmında havada: uyarı kutusu
@@ -8508,6 +8533,7 @@ html.kp-kilit body {
         setTimeout(function () { self.sahne.cerceveSigdir(); self.yerlestirBalonCiz(); }, 330);
         return self.dugmeleriGuncelle();
       }
+      if (hedef.hasAttribute('data-kp-indir')) return self.onizlemeIndir(hedef);
       if (hedef.hasAttribute('data-kp-harf-mod')) return self.harfModDegistir(true);
       if (hedef.hasAttribute('data-kp-cerceve-harf')) return self.harfModDegistir();
       // Seçili alana sığmayan yazı: "İki alana böl" (Otomatik) ya da diğer alana taşı
@@ -10523,6 +10549,170 @@ html.kp-kilit body {
       depoYaz('kp-harf-ayir-bilgi', 1);
       this.bildir('Harfler ayrıldı, her birini tek tek taşıyabilirsin.', { sure: 3500 });
     }
+  };
+
+  /* ---------------- Önizlemeyi indir (masaüstü) ---------------- */
+
+  // Ürün görseli ve takılı patch'ler (aksesuarlar ve üzerlerindeki patch'ler dahil) tuvale önizlemedeki konum, boyut ve
+  // açıyla çizilir; alan çizgileri, alan adları, seçim çerçevesi ve kenardaki patch'ler yoktur. Görseller mağazanın
+  // kendi alan adından gelir (tuval kirlenmez); patch görselleri çıktı boyutuna göre daha büyük istenir.
+  var INDIR_GENISLIK = 1800;
+
+  function indirGorseli(url, px) {
+    if (!url) return url;
+    if (!px || !GENISLIK_DESENI.test(url)) return url;
+    return url.replace(GENISLIK_DESENI, '$1width=' + Math.min(1200, Math.max(300, Math.ceil(px / 100) * 100)));
+  }
+
+  function gorselYukle(url) {
+    return new Promise(function (tamam, hata) {
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function () { tamam(img); };
+      img.onerror = function () { hata(new Error('Görsel yüklenemedi: ' + url)); };
+      img.src = url;
+    });
+  }
+
+  // Görseli kutuya (w × h) orantısını koruyarak ortalar (CSS object-fit: contain)
+  function sigdirCiz(ctx, img, x, y, w, h) {
+    var o = Math.min(w / img.naturalWidth, h / img.naturalHeight);
+    var iw = img.naturalWidth * o;
+    var ih = img.naturalHeight * o;
+    ctx.drawImage(img, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih);
+  }
+
+  // Bir parça (patch ya da aksesuar), sahne koordinatlarında (cm) ve pxCm ölçeğinde; ctx sahnenin sol üstündedir
+  function parcaTuvaleCiz(ctx, m, p, pxCm, gorseller) {
+    var c = merkez(p.sekil);
+    var en = p.en;
+    var boy = p.boy;
+    if (p.sekil.t === 'circle') en = boy = p.sekil.r * 2;
+    if (!en || !boy) {
+      var k = kutu(p.sekil);
+      en = k.w;
+      boy = k.h;
+    }
+    var w = en * pxCm;
+    var h = boy * pxCm;
+    ctx.save();
+    ctx.translate(c[0] * pxCm, c[1] * pxCm);
+    if (p.aci) ctx.rotate((p.aci * Math.PI) / 180);
+    if (p.tip === 'aksesuar') {
+      // Aksesuar görseli dış ölçü kutusuna oturur (kanca vb. taşabilir); iç patch'ler görselin kendi ölçeğinde
+      var aks = p.tanim;
+      var d = aks.dis;
+      var gx = -w / 2 + (-d.x / d.w) * w;
+      var gy = -h / 2 + (-d.y / d.h) * h;
+      var gw = (w * 100) / d.w;
+      var gh = (h * 100) / d.h;
+      var ag = gorseller[aks.gorsel.buyuk || aks.gorsel.kucuk];
+      if (ag) ctx.drawImage(ag, gx, gy, gw, gh);
+      var am = p.icTasarim && m.aksesuarModeli && m.aksesuarModeli(aks.id);
+      if (am) {
+        ctx.translate(gx, gy);
+        am.yer.parcalar(p.icTasarim).filter(function (ip) { return !ip.kenar; }).forEach(function (ip) {
+          parcaTuvaleCiz(ctx, am.m, ip, gw / am.m.Wcm, gorseller);
+        });
+      }
+      ctx.restore();
+      return;
+    }
+    // Önizlemedeki gibi: köşeler hafif yuvarlak (daire patch'te daire), JPG patch beyaz zeminli
+    ctx.beginPath();
+    if (p.sekil.t === 'circle') ctx.arc(0, 0, w / 2, 0, Math.PI * 2);
+    else if (ctx.roundRect) ctx.roundRect(-w / 2, -h / 2, w, h, Math.min(w, h) * 0.06);
+    else ctx.rect(-w / 2, -h / 2, w, h);
+    ctx.clip();
+    if (p.varyant && !p.varyant.png) {
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(-w / 2, -h / 2, w, h);
+    }
+    var g = p.varyant && gorseller[p.varyant.gorsel];
+    if (g) sigdirCiz(ctx, g, -w / 2, -h / 2, w, h);
+    else if (p.etiket) {
+      ctx.fillStyle = '#1a1a1a';
+      ctx.font = '700 ' + Math.round(h * 0.6) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(p.etiket, 0, 0);
+    }
+    ctx.restore();
+  }
+
+  // Dosya adı: "Çok Amaçlı Mini Çanta / Sarı Çizgili" → jantifox-tasarim-cok-amacli-mini-canta-sari-cizgili.png
+  function indirDosyaAdi(baslik) {
+    var tr = { ç: 'c', ğ: 'g', ı: 'i', i: 'i', ö: 'o', ş: 's', ü: 'u' };
+    var ad = String(baslik || '').toLocaleLowerCase('tr-TR').replace(/[çğıiöşü]/g, function (h) { return tr[h]; })
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+    return 'jantifox-tasarim' + (ad ? '-' + ad : '') + '.png';
+  }
+
+  Editor.prototype.onizlemeIndir = function (dugme) {
+    var self = this;
+    var m = this.m;
+    if (!this.sahne || this.indiriliyor) return;
+    var parcalar = (this.sahne.cizilenler || []).filter(function (p) { return !p.kenar; });
+    var W = INDIR_GENISLIK;
+    var H = Math.round((W * m.gorsel.boy) / m.gorsel.en);
+    var pxCm = W / m.Wcm;
+    // Yüklenecek görseller: ürün, patch'ler (çıktıdaki genişliklerine göre), aksesuarlar ve üzerlerindeki patch'ler
+    var istek = {};
+    var urunUrl = m.gorsel.dev || m.gorsel.buyuk || m.gorsel.kucuk;
+    istek[urunUrl] = urunUrl;
+    var ekle = function (mm, p, olcek) {
+      if (p.tip === 'aksesuar') {
+        var aks = p.tanim;
+        var url = aks.gorsel.buyuk || aks.gorsel.kucuk;
+        istek[url] = url;
+        var am = p.icTasarim && mm.aksesuarModeli && mm.aksesuarModeli(aks.id);
+        if (am) {
+          var gw = ((p.en || 0) * olcek * 100) / aks.dis.w;
+          am.yer.parcalar(p.icTasarim).forEach(function (ip) { if (!ip.kenar) ekle(am.m, ip, gw / am.m.Wcm); });
+        }
+        return;
+      }
+      var g = p.varyant && p.varyant.gorsel;
+      if (g) istek[g] = indirGorseli(g, Math.max(p.en || 0, p.boy || 0) * olcek * 2);
+    };
+    parcalar.forEach(function (p) { ekle(m, p, pxCm); });
+    var anahtarlar = Object.keys(istek);
+    this.indiriliyor = true;
+    if (dugme) dugme.setAttribute('aria-busy', 'true');
+    var bitir = function () {
+      self.indiriliyor = false;
+      if (dugme) dugme.removeAttribute('aria-busy');
+    };
+    Promise.all(anahtarlar.map(function (k) {
+      // Büyük boyut yüklenemezse önizlemedeki adres denenir
+      return gorselYukle(istek[k]).catch(function () { return istek[k] !== k ? gorselYukle(k) : Promise.reject(); });
+    })).then(function (imgs) {
+      var gorseller = {};
+      anahtarlar.forEach(function (k, i) { gorseller[k] = imgs[i]; });
+      var tuval = document.createElement('canvas');
+      tuval.width = W;
+      tuval.height = H;
+      var ctx = tuval.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(gorseller[urunUrl], 0, 0, W, H);
+      parcalar.forEach(function (p) { parcaTuvaleCiz(ctx, m, p, pxCm, gorseller); });
+      tuval.toBlob(function (blob) {
+        bitir();
+        if (!blob) return self.bildir('Önizleme indirilemedi, lütfen tekrar dene.');
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = indirDosyaAdi(m.urun.baslik);
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+        olayYayinla('onizleme_indirildi', { urun_id: m.urun.id, patch: parcalar.length });
+      }, 'image/png');
+    }).catch(function () {
+      bitir();
+      self.bildir('Önizleme indirilemedi, lütfen tekrar dene.');
+    });
   };
 
   Editor.prototype.dugmeleriGuncelle = function () {

@@ -3567,6 +3567,26 @@ html.kp-kilit body {
   bottom: 0.6rem;
   right: 0.6rem;
 }
+/* "İndir": önizlemeyi alan çizgileri olmadan PNG olarak indirir; yalnızca masaüstünde, sol altta */
+.kp-onizleme__dugme--indir {
+  display: none;
+  top: auto;
+  right: auto;
+  bottom: 0.6rem;
+  left: 0.6rem;
+  min-height: 32px;
+  padding: 0.2rem 0.8rem;
+  font-size: 1.1rem;
+}
+.kp-onizleme__dugme--indir[aria-busy='true'] {
+  opacity: 0.55;
+  cursor: progress;
+}
+@media (min-width: 1024px) {
+  .kp-onizleme__dugme--indir {
+    display: inline-flex;
+  }
+}
 /* ---------- Tek satırlık alt çubuk (~64 px) ---------- */
 .kp-editor .kp-alt:not(.kp-alt--aks) {
   flex-wrap: nowrap;

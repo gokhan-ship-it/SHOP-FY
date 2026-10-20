@@ -738,8 +738,10 @@ test('kalem kutusu gerçek haritaları (Kırmızı, Turuncu): Velcro yüzeyi, yu
     const m = new ic.Model(v);
     assert.equal(m.aksesuarlar[0].tasarlanabilir, true, anahtar + ' tasarlanabilir');
     const am = m.aksesuarModeli(9101);
-    assert.ok(Math.abs(am.m.Wcm - 22) < 0.05, 'ölçek: görsel 22 cm, ' + am.m.Wcm);
+    // Velcro yüzeyi ölçülen 20 × 10 cm (2026-10-20; önce dış ölçü 22 cm'den 20,87 × 11,15): görsel ≈ 21,09 cm
     const alan = am.m.alanlar[0].sekil;
+    assert.ok(Math.abs(alan.w - 20) < 0.01 && Math.abs(alan.h - 10) < 0.01, 'alan 20 × 10 cm: ' + alan.w + ' × ' + alan.h);
+    assert.ok(Math.abs(am.m.Wcm - 21.09) < 0.05, 'ölçek: görsel 21,09 cm, ' + am.m.Wcm);
     assert.equal(alan.r, 2);
     // İsim ortada logoya çarpıyorsa ortaya en yakın sığdığı yere kayar: gerçek Cool harfiyle (4,49 × 6 cm) 3 harf tek satır
     assert.equal(am.yer.kapasite({ en: 4.49, boy: 6 }, 0), 3, anahtar + ': kapasite');
@@ -747,7 +749,7 @@ test('kalem kutusu gerçek haritaları (Kırmızı, Turuncu): Velcro yüzeyi, yu
     const pr = am.yer.parcalar(ic0);
     assert.ok(pr.every((p) => am.yer.alanaUygun(p.sekil, p.tip)), anahtar + ': AL sığar');
     assert.ok(Math.abs(pr[0].sekil.y - pr[1].sekil.y) < 1e-9, 'tek satır');
-    const pxCm = 1200 / 22;
+    const pxCm = 1200 / am.m.Wcm;
     const ikon = (cx, cy) => ({ t: 'rect', x: cx - 2, y: cy - 2, w: 4, h: 4 });
     assert.equal(am.yer.alanaUygun(ikon(6, 6), 'icon'), true, 'ortada sığar');
     assert.equal(am.yer.alanaUygun(ikon(logo[0] / pxCm, logo[1] / pxCm), 'icon'), false, anahtar + ': logonun üstüne konmaz');
