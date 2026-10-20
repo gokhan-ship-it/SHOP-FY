@@ -256,7 +256,209 @@
   "kaynak": "ölçek önerisi: açıklamadaki çanta genişliği (25 cm), gövdenin bu yükseklikteki genişliği"
  },
  "the-adventurer-sirt-cantasi-jantifox-x-le-koko-collectif": {
-  "sekiller": [],
+  "sekiller": [
+   {
+    "tur": "alan",
+    "ad": "Üst panel",
+    "shape": "poly",
+    "x": 239.27,
+    "y": 327.55,
+    "w": 942.95,
+    "h": 600.69,
+    "tipler": [
+     "letter",
+     "number",
+     "icon"
+    ],
+    "noktalar": [
+     [
+      239.27,
+      928.26
+     ],
+     [
+      267.21,
+      714.69
+     ],
+     [
+      287.89,
+      613.55
+     ],
+     [
+      338.95,
+      473.39
+     ],
+     [
+      433.69,
+      401.63
+     ],
+     [
+      510.19,
+      353.81
+     ],
+     [
+      571.79,
+      341.28
+     ],
+     [
+      645.17,
+      330.62
+     ],
+     [
+      765.67,
+      327.55
+     ],
+     [
+      917.5,
+      350.46
+     ],
+     [
+      1003.42,
+      390.77
+     ],
+     [
+      1061.23,
+      451.62
+     ],
+     [
+      1115.56,
+      537.65
+     ],
+     [
+      1146.64,
+      663.44
+     ],
+     [
+      1166.24,
+      782.06
+     ],
+     [
+      1176.92,
+      880.19
+     ],
+     [
+      1182.22,
+      922.85
+     ],
+     [
+      625.65,
+      923.17
+     ]
+    ],
+    "yumusat": 0,
+    "olcuCm": 24.71,
+    "olcuYon": "genislik"
+   },
+   {
+    "tur": "alan",
+    "ad": "Alt cep",
+    "shape": "poly",
+    "x": 195.0,
+    "y": 1000.0,
+    "w": 1015.99,
+    "h": 572.0,
+    "tipler": [
+     "letter",
+     "number",
+     "icon"
+    ],
+    "noktalar": [
+     [
+      250.01,
+      1018.0
+     ],
+     [
+      400.0,
+      1002.99
+     ],
+     [
+      600.0,
+      1006.0
+     ],
+     [
+      800.0,
+      1000.0
+     ],
+     [
+      1000.0,
+      1002.0
+     ],
+     [
+      1165.0,
+      1004.0
+     ],
+     [
+      1180.0,
+      1060.0
+     ],
+     [
+      1188.99,
+      1200.0
+     ],
+     [
+      1201.0,
+      1340.0
+     ],
+     [
+      1211.0,
+      1480.0
+     ],
+     [
+      1195.0,
+      1530.0
+     ],
+     [
+      1175.0,
+      1556.0
+     ],
+     [
+      1000.0,
+      1564.99
+     ],
+     [
+      700.0,
+      1572.0
+     ],
+     [
+      400.0,
+      1568.99
+     ],
+     [
+      250.01,
+      1558.0
+     ],
+     [
+      219.0,
+      1530.0
+     ],
+     [
+      207.0,
+      1420.0
+     ],
+     [
+      215.0,
+      1260.0
+     ],
+     [
+      195.0,
+      1120.0
+     ],
+     [
+      230.01,
+      1060.0
+     ]
+    ],
+    "yumusat": 0
+   },
+   {
+    "tur": "yasak",
+    "ad": "Bölge 1",
+    "shape": "ellipse",
+    "x": 972.0,
+    "y": 1374.0,
+    "w": 139.0,
+    "h": 142.0
+   }
+  ],
   "cizgi": {
    "x1": 239,
    "y1": 720,
@@ -264,7 +466,7 @@
    "y2": 720,
    "cm": 25
   },
-  "kaynak": "ölçek önerisi: açıklamadaki çanta genişliği (25 cm), gövdenin bu yükseklikteki genişliği"
+  "kaynak": "ölçek önerisi: açıklamadaki çanta genişliği (25 cm), gövdenin bu yükseklikteki genişliği; şekiller mağazadaki haritadan (2026-10-20: üst panel + alt cep + logo yasaklı)"
  },
  "cok-amacli-mini-canta-kirmizi-beyaz-zikzak": {
   "sekiller": [

@@ -118,9 +118,10 @@ window.PANEL_VERI = {
    "ad": "Kalem Kutusu (G22 × Y12 × D5)",
    "velcro": {
     "sekil": "yuvarlak köşeli dikdörtgen",
-    "genislik_cm": 20.87,
+    "genislik_cm": 20,
     "kose_cm": 2,
-    "kaynak": "yapıştırılabilir sürümün haritası"
+    "kaynak": "ölçüldü (2026-10-20): Velcro yüzeyi 20 × 10 cm",
+    "yukseklik_cm": 10
    },
    "urun_olcu": {
     "en_cm": 22,
@@ -155,9 +156,10 @@ window.PANEL_VERI = {
    "ad": "Yapıştırılabilir Kalem Kutusu (G22 × Y12 × D5)",
    "velcro": {
     "sekil": "yuvarlak köşeli dikdörtgen",
-    "genislik_cm": 20.87,
+    "genislik_cm": 20,
     "kose_cm": 2,
-    "kaynak": "aksesuar haritası"
+    "kaynak": "ölçüldü (2026-10-20): Velcro yüzeyi 20 × 10 cm",
+    "yukseklik_cm": 10
    },
    "urun_olcu": {
     "en_cm": 22,
@@ -959,7 +961,209 @@ window.PANEL_VERI = {
    },
    "gorsel": "gorseller/the-adventurer-sirt-cantasi-jantifox-x-le-koko-collectif.webp",
    "mevcut": null,
-   "sekiller": [],
+   "sekiller": [
+    {
+     "tur": "alan",
+     "ad": "Üst panel",
+     "shape": "poly",
+     "x": 239.27,
+     "y": 327.55,
+     "w": 942.95,
+     "h": 600.69,
+     "tipler": [
+      "letter",
+      "number",
+      "icon"
+     ],
+     "noktalar": [
+      [
+       239.27,
+       928.26
+      ],
+      [
+       267.21,
+       714.69
+      ],
+      [
+       287.89,
+       613.55
+      ],
+      [
+       338.95,
+       473.39
+      ],
+      [
+       433.69,
+       401.63
+      ],
+      [
+       510.19,
+       353.81
+      ],
+      [
+       571.79,
+       341.28
+      ],
+      [
+       645.17,
+       330.62
+      ],
+      [
+       765.67,
+       327.55
+      ],
+      [
+       917.5,
+       350.46
+      ],
+      [
+       1003.42,
+       390.77
+      ],
+      [
+       1061.23,
+       451.62
+      ],
+      [
+       1115.56,
+       537.65
+      ],
+      [
+       1146.64,
+       663.44
+      ],
+      [
+       1166.24,
+       782.06
+      ],
+      [
+       1176.92,
+       880.19
+      ],
+      [
+       1182.22,
+       922.85
+      ],
+      [
+       625.65,
+       923.17
+      ]
+     ],
+     "yumusat": 0,
+     "olcuCm": 24.71,
+     "olcuYon": "genislik"
+    },
+    {
+     "tur": "alan",
+     "ad": "Alt cep",
+     "shape": "poly",
+     "x": 195.0,
+     "y": 1000.0,
+     "w": 1015.99,
+     "h": 572.0,
+     "tipler": [
+      "letter",
+      "number",
+      "icon"
+     ],
+     "noktalar": [
+      [
+       250.01,
+       1018.0
+      ],
+      [
+       400.0,
+       1002.99
+      ],
+      [
+       600.0,
+       1006.0
+      ],
+      [
+       800.0,
+       1000.0
+      ],
+      [
+       1000.0,
+       1002.0
+      ],
+      [
+       1165.0,
+       1004.0
+      ],
+      [
+       1180.0,
+       1060.0
+      ],
+      [
+       1188.99,
+       1200.0
+      ],
+      [
+       1201.0,
+       1340.0
+      ],
+      [
+       1211.0,
+       1480.0
+      ],
+      [
+       1195.0,
+       1530.0
+      ],
+      [
+       1175.0,
+       1556.0
+      ],
+      [
+       1000.0,
+       1564.99
+      ],
+      [
+       700.0,
+       1572.0
+      ],
+      [
+       400.0,
+       1568.99
+      ],
+      [
+       250.01,
+       1558.0
+      ],
+      [
+       219.0,
+       1530.0
+      ],
+      [
+       207.0,
+       1420.0
+      ],
+      [
+       215.0,
+       1260.0
+      ],
+      [
+       195.0,
+       1120.0
+      ],
+      [
+       230.01,
+       1060.0
+      ]
+     ],
+     "yumusat": 0
+    },
+    {
+     "tur": "yasak",
+     "ad": "Bölge 1",
+     "shape": "ellipse",
+     "x": 972.0,
+     "y": 1374.0,
+     "w": 139.0,
+     "h": 142.0
+    }
+   ],
    "cizgi": {
     "x1": 239,
     "y1": 720,
@@ -967,7 +1171,7 @@ window.PANEL_VERI = {
     "y2": 720,
     "cm": 25
    },
-   "onDolguKaynak": "ölçek önerisi: açıklamadaki çanta genişliği (25 cm), gövdenin bu yükseklikteki genişliği",
+   "onDolguKaynak": "ölçek önerisi: açıklamadaki çanta genişliği (25 cm), gövdenin bu yükseklikteki genişliği; şekiller mağazadaki haritadan (2026-10-20: üst panel + alt cep + logo yasaklı)",
    "ayar": {
     "metinSiniri": null,
     "kapali": false,
@@ -1019,16 +1223,16 @@ window.PANEL_VERI = {
        "ad": "Velcro yüzeyi",
        "shape": "rect",
        "x": 2.556,
-       "y": 3.999,
+       "y": 7.009,
        "w": 94.851,
-       "h": 92.907,
+       "h": 86.886,
        "kose_cm": 2,
        "allowed_types": [
         "letter",
         "number",
         "icon"
        ],
-       "genislik_cm": 20.87
+       "genislik_cm": 20
       }
      ],
      "forbidden": [
@@ -1050,15 +1254,15 @@ window.PANEL_VERI = {
      "ad": "Velcro yüzeyi",
      "shape": "rect",
      "x": 30.67,
-     "y": 26.19,
+     "y": 45.91,
      "w": 1138.21,
-     "h": 608.54,
+     "h": 569.1,
      "tipler": [
       "letter",
       "number",
       "icon"
      ],
-     "olcuCm": 20.87,
+     "olcuCm": 20,
      "olcuYon": "genislik",
      "koseCm": 2
     },
@@ -1125,16 +1329,16 @@ window.PANEL_VERI = {
        "ad": "Velcro yüzeyi",
        "shape": "rect",
        "x": 2.556,
-       "y": 3.999,
+       "y": 7.009,
        "w": 94.851,
-       "h": 92.907,
+       "h": 86.886,
        "kose_cm": 2,
        "allowed_types": [
         "letter",
         "number",
         "icon"
        ],
-       "genislik_cm": 20.87
+       "genislik_cm": 20
       }
      ],
      "forbidden": [
@@ -1164,15 +1368,15 @@ window.PANEL_VERI = {
      "ad": "Velcro yüzeyi",
      "shape": "rect",
      "x": 30.67,
-     "y": 26.19,
+     "y": 45.91,
      "w": 1138.21,
-     "h": 608.54,
+     "h": 569.1,
      "tipler": [
       "letter",
       "number",
       "icon"
      ],
-     "olcuCm": 20.87,
+     "olcuCm": 20,
      "olcuYon": "genislik",
      "koseCm": 2
     },
@@ -1498,16 +1702,16 @@ window.PANEL_VERI = {
        "ad": "Velcro yüzeyi",
        "shape": "rect",
        "x": 2.556,
-       "y": 3.999,
+       "y": 7.009,
        "w": 94.851,
-       "h": 92.907,
+       "h": 86.886,
        "kose_cm": 2,
        "allowed_types": [
         "letter",
         "number",
         "icon"
        ],
-       "genislik_cm": 20.87
+       "genislik_cm": 20
       }
      ],
      "forbidden": [
@@ -1529,15 +1733,15 @@ window.PANEL_VERI = {
      "ad": "Velcro yüzeyi",
      "shape": "rect",
      "x": 30.67,
-     "y": 26.19,
+     "y": 45.91,
      "w": 1138.21,
-     "h": 608.54,
+     "h": 569.1,
      "tipler": [
       "letter",
       "number",
       "icon"
      ],
-     "olcuCm": 20.87,
+     "olcuCm": 20,
      "olcuYon": "genislik",
      "koseCm": 2
     },
@@ -1637,16 +1841,16 @@ window.PANEL_VERI = {
        "ad": "Velcro yüzeyi",
        "shape": "rect",
        "x": 2.556,
-       "y": 3.999,
+       "y": 7.009,
        "w": 94.851,
-       "h": 92.907,
+       "h": 86.886,
        "kose_cm": 2,
        "allowed_types": [
         "letter",
         "number",
         "icon"
        ],
-       "genislik_cm": 20.87
+       "genislik_cm": 20
       }
      ],
      "forbidden": [
@@ -1676,15 +1880,15 @@ window.PANEL_VERI = {
      "ad": "Velcro yüzeyi",
      "shape": "rect",
      "x": 30.67,
-     "y": 26.19,
+     "y": 45.91,
      "w": 1138.21,
-     "h": 608.54,
+     "h": 569.1,
      "tipler": [
       "letter",
       "number",
       "icon"
      ],
-     "olcuCm": 20.87,
+     "olcuCm": 20,
      "olcuYon": "genislik",
      "koseCm": 2
     },
