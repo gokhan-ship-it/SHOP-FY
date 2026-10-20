@@ -810,6 +810,14 @@ test('kampanya şeridi: sade iki satır, daha ucuz hedef, tümü; anlaşılır a
   assert.equal(d.sol, '1.001 TL indirim kazandın 🎉');
   assert.equal(d.sag, 'Bütün kampanyalar sepetinde');
   assert.equal(d.dolu, 1);
+  // Tek patch'lik ürün (mini çanta): bu tasarıma ikinci patch eklenemez; adet basamağı ve "1 patch daha ekle" önerilmez,
+  // tutar eşiği TL olarak
+  d = k.seritDurumu({ aktif: {}, sepetIndirim: 0, altToplam: 333000, uygunAdet: 1, ekler: { '+1': { aktif: { '2li patche indirim': 6000 }, sepetIndirim: 6000 } } }, merdiven, esikler, 33000, 33000, true);
+  assert.equal(d.sag, '1.670 TL daha ekle, tüm siparişe %10 indirim');
+  assert.equal(d.yakin, false);
+  d = k.seritDurumu({ aktif: { "4'lü patche indirim": 37000 }, sepetIndirim: 37000, altToplam: 489000, uygunAdet: 7, ekler: {} }, merdiven, esikler, 33000, 33000, true);
+  assert.equal(d.sag, '110 TL daha ekle, tüm siparişe %10 indirim');
+  assert.ok(!/patch daha/.test(d.sag));
   // Yerel hesap, Shopify simülasyonuyla aynı (çanta 3.000 + n harf × 330): eşik adet indirimi sonrası ara toplama bakar;
   // ikisi birlikte tutmazsa daha çok kazandıran seçilir
   const kural = { merdiven, uygun: { 9: true }, yuzde: { 'Ekstra %10 İndirim': 0.1 } };

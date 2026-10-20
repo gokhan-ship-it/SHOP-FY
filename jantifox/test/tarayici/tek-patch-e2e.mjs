@@ -68,7 +68,15 @@ const velcro = await s.locator(O + '.kp-alan').boundingBox();
 const sahne = await s.locator(O + '.kp-sahne').boundingBox();
 const oran = velcro.width / sahne.width;
 assert.ok(Math.abs(oran - od.w / EN) < 0.01, 'alan çizgisi Velcro kadar: ' + oran.toFixed(3));
-assert.match(await s.locator('#kp-yazi-ipucu').innerText(), /Bu çantaya tek patch takılır/);
+assert.match(await s.locator('#kp-yazi-ipucu').innerText(), /Bu çantaya tek patch takılır\. Bir harf ya da bir rakam yaz, ya da Görsel'den bir patch seç\./);
+// Pencere diğer ürünlerdeki gibi kare (ekranla sınırlı), açılışta Velcro'ya yakın; "Tüm ürünü gör" ile çantanın tamamı
+const pencere = await s.locator('.kp-gorunum').boundingBox();
+assert.ok(pencere.height > pencere.width * 0.6, 'pencere yatay ince değil: ' + pencere.width + 'x' + pencere.height);
+assert.ok(sahne.width > pencere.width * 1.5, 'açılışta yakın görünüm');
+assert.equal(await s.locator('[data-kp-gorunum]').isVisible(), true);
+assert.equal((await s.locator('[data-kp-gorunum]').innerText()).trim(), 'Tüm ürünü gör');
+const icinde = (b) => b.x >= pencere.x - 1 && b.y >= pencere.y - 1 && b.x + b.width <= pencere.x + pencere.width + 1 && b.y + b.height <= pencere.y + pencere.height + 1;
+assert.ok(icinde(velcro), 'Velcro pencerede');
 assert.equal(await s.locator('#kp-isim').getAttribute('placeholder'), 'ör. A ya da 7');
 
 // Tek harf ortada; yeni harf öncekinin yerine geçer; iki harf yazılamaz
@@ -119,6 +127,16 @@ assert.match(await bildirim(), /Sevimli Köpek, Futbol Topu yerine geçti/);
 assert.ok((await merkezFarki()) < 0.05, 'büyük ikon ortada');
 const buyuk = await s.locator(O + '.kp-sahne__parcalar > .kp-parca').boundingBox();
 assert.ok(buyuk.width > velcro.width * 1.3, 'büyük ikon Velcro\'dan büyük çizildi');
+assert.ok(icinde(buyuk), 'en büyük ikon yakın görünümde pencerede: ' + JSON.stringify([buyuk, pencere]));
+
+// Tüm ürünü gör: çantanın tamamı pencereye sığar; Alana yakınlaş ile geri
+await s.locator('[data-kp-gorunum]').click();
+await s.waitForTimeout(700);
+const tum = await s.locator(O + '.kp-sahne').boundingBox();
+assert.ok(tum.width <= pencere.width + 1 && tum.x >= pencere.x - 1, 'tüm çanta pencerede');
+assert.equal((await s.locator('[data-kp-gorunum]').innerText()).trim(), 'Alana yakınlaş');
+await s.locator('[data-kp-gorunum]').click();
+await s.waitForTimeout(700);
 
 // Sürükleme: patch yerinden oynamaz
 const cdp = await baglam.newCDPSession(s);

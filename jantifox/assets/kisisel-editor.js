@@ -37,6 +37,9 @@
   // Tek patch'lik üründe sığma denetimi dairesinin en küçük yarıçapı (cm): en büyük patch (~9,6 cm boy, köşegen
   // ~12,2 cm) Velcro'nun ortasında her açıda içinde kalır
   var TEK_PATCH_YARICAP = 8;
+  // Tek patch'lik üründe yakın görünüm Velcro'nun ortasında bu kenarlı kareye göre (cm): en büyük patch (~9,6 cm boy)
+  // pencerede görünür kalır
+  var TEK_PATCH_YAKIN = 10;
   var TEK_PATCH_NOTU = 'Bu çantaya tek patch takılır.';
   var labOnbellek = {};
 
@@ -2808,7 +2811,7 @@
     // Editörde sahne bir görünüm penceresi içinde durur; yakınlaştırma sahnenin
     // genişliği ve konumuyla yapılır (transform yok), böylece tüm hesaplar aynı kalır.
     this.kok.innerHTML = this.etkilesimli
-      ? '<div class="kp-gorunum" style="aspect-ratio:' + g.en + ' / ' + g.boy + '">' + sahneHtml + '</div>'
+      ? '<div class="kp-gorunum' + (m.tekPatch ? ' kp-gorunum--tek' : '') + '" style="aspect-ratio:' + g.en + ' / ' + g.boy + '">' + sahneHtml + '</div>'
       : sahneHtml;
     this.gorunum = this.kok.querySelector('.kp-gorunum');
     this.boyutGozlemci = null;
@@ -2858,6 +2861,16 @@
     return { olcek: olcek, sol: sol, ust: ust };
   }
 
+  // Yakın görünümde alanın kutusu (cm). Tek patch'lik üründe sığma dairesi (16 cm) çantadan büyük olduğundan ona göre
+  // yakınlaşılmaz: Velcro'nun ortasında TEK_PATCH_YAKIN kenarlı kare
+  function yakinKutu(m, a) {
+    if (!m.tekPatch || !a.cizim) return kutu(a.sekil);
+    var c = merkez(a.cizim);
+    var k = kutu(a.cizim);
+    var y = Math.max(TEK_PATCH_YAKIN, k.w, k.h) / 2;
+    return { x: c[0] - y, y: c[1] - y, w: y * 2, h: y * 2 };
+  }
+
   // Görünüm penceresi (W × H px) içinde sahnenin (ürün görseli, oranı r = en / boy) yeri.
   // Pencerenin oranı görselden farklı olabilir (mobilde önizleme ekran yüksekliğiyle sınırlı): tüm ürün pencereye sığar ve
   // ortalanır; yakın görünümde takılabilir alan pencerenin ~%80'ini kaplar. Birden çok alan varsa en büyüğüne yakınlaşılır
@@ -2878,7 +2891,7 @@
       }
       var x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
       alanlar.forEach(function (a) {
-        var k = kutu(a.sekil);
+        var k = yakinKutu(m, a);
         x1 = Math.min(x1, k.x);
         y1 = Math.min(y1, k.y);
         x2 = Math.max(x2, k.x + k.w);
@@ -4081,7 +4094,7 @@
       '</div>' +
       this.yaziYeriHtml() +
       '<div class="kp-stil-secim" data-kp-stil-secim role="group" aria-label="Harflerin stili" hidden></div>' +
-      '<p id="kp-yazi-ipucu" class="kp-yazi-ipucu">' + (tek ? TEK_PATCH_NOTU + ' Bir harf ya da bir rakam yaz, ya da İkon\'dan bir görsel seç.' : 'Harflere dokunarak her birinin stilini ayrı seçebilirsin.') + '</p>' +
+      '<p id="kp-yazi-ipucu" class="kp-yazi-ipucu">' + (tek ? TEK_PATCH_NOTU + ' Bir harf ya da bir rakam yaz, ya da Görsel\'den bir patch seç.' : 'Harflere dokunarak her birinin stilini ayrı seçebilirsin.') + '</p>' +
       '<div class="kp-karakterler" data-kp-karakterler role="group" aria-label="Karakterler"></div>' +
       '<div class="kp-stil" data-kp-stil-panel hidden></div>' +
       '</div>' +
@@ -6389,7 +6402,7 @@
     var kok = this.kok();
     var esikler = kok ? kok.m.ayar.kampanyaEsikleri : [];
     var kural = kurallariOku();
-    var d = k && !k.hata ? seritDurumu(k, kural ? kural.merdiven : [], esikler, kok ? ornekPatchFiyati(kok.m) : null, kok ? enUcuzPatchFiyati(kok.m) : null) : null;
+    var d = k && !k.hata ? seritDurumu(k, kural ? kural.merdiven : [], esikler, kok ? ornekPatchFiyati(kok.m) : null, kok ? enUcuzPatchFiyati(kok.m) : null, !!(kok && kok.m.tekPatch)) : null;
     this.kampanyaDurumu = d;
     var goster = !!d && this.adim !== 'ozet' && !!(d.sol || d.sag || d.duraklar.length);
     serit.hidden = !goster;
@@ -7750,7 +7763,8 @@
 
   // Kampanya şeridi (saf hesap), iki satır: 1) kazanılan toplam, 2) tek somut eylem ve sonucu.
   // Duraklar: adet basamakları (öğrenilen) + tutar eşikleri (ayarlar). Sıradaki hedeflerden daha az harcama gerektireni.
-  function seritDurumu(k, merdiven, esikler, ornekFiyat, enUcuz) {
+  // tekPatchli: tek patch'lik ürün (mini çanta); bu tasarıma ikinci patch eklenemez, "N patch daha ekle" önerilmez.
+  function seritDurumu(k, merdiven, esikler, ornekFiyat, enUcuz, tekPatchli) {
     var aktif = k.aktif || {};
     var adlar = Object.keys(aktif);
     var var_ = function (ad) { return adlar.indexOf(kampanyaAdi(ad)) !== -1; };
@@ -7766,7 +7780,7 @@
     var secenekler = [];
     // Patch: sıradaki adet basamağı
     var sonrakiAdet = duraklar.filter(function (d) { return d.tur === 'adet' && !d.ulasildi; })[0];
-    if (sonrakiAdet) {
+    if (sonrakiAdet && !tekPatchli) {
       var n = null;
       var yeni = null;
       for (var i = 1; i <= 6; i++) {
@@ -7798,7 +7812,7 @@
       var yuzde = yuzdeYazisi(esik.ad);
       var tekPatch = enUcuz || ornekFiyat;
       var birPatch = k.ekler && k.ekler['+1'];
-      if (tekPatch && kalan <= tekPatch && (!birPatch || (birPatch.aktif && birPatch.aktif[esik.ad]))) {
+      if (!tekPatchli && tekPatch && kalan <= tekPatch && (!birPatch || (birPatch.aktif && birPatch.aktif[esik.ad]))) {
         secenekler.push({
           maliyet: tekPatch,
           metin: '1 patch daha ekle, tüm siparişe ' + (yuzde ? yuzde + ' indirim gelsin' : 'indirim gelsin'),

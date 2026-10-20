@@ -4828,6 +4828,11 @@ html.kp-kilit body {
 .kp-editor--kucuk:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-gorunum {
   max-height: 140px;
 }
+/* Tek patch'lik ürün (mini çanta, görsel ~2:1 yatay): pencere diğer ürünlerdeki gibi kare (yüksekliği yukarıdaki
+   sınırlarla), görsel Velcro'ya yakınlaşır; "Tüm ürünü gör" ile çantanın tamamı. Satır içi aspect-ratio'yu ezer. */
+.kp-editor:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-gorunum--tek {
+  aspect-ratio: 1 / 1 !important;
+}
 @media (min-width: 1024px) {
   .kp-editor:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme__ic,
   .kp-editor--klavye:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme__ic,
