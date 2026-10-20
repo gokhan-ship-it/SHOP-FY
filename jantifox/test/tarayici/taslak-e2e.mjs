@@ -63,13 +63,14 @@ assert.equal(kayit.arac, 'ikon');
 assert.equal(kayit.yakin, false);
 assert.ok(Date.now() - kayit.zaman < 60000);
 assert.equal(kayit.t.isim, 'ECE');
-// Sayfa yenilenince de taslak; "Devam et" kaldığı yerden (Görsel aracı, tüm çanta görünümü)
+// Sayfa yenilenince de taslak; "Devam et" kaldığı araçtan (Görsel); görünüm açılışta her zaman alana yakın
+// (kayıtlı görünüm tercihi açılışta kullanılmaz, 8d7ece6)
 await s.reload();
 await s.locator('kisisel-kart').waitFor({ state: 'visible' });
 assert.match(await metin('[data-kisisel-taslak]'), /^Taslak · bugün \d\d:\d\d$/);
 await s.locator('[data-kisisel-govde] [data-kisisel-ac]').click();
 assert.equal(await gorunur(ana + ' [data-kp-panel="ikon"]'), true, 'kaldığı araç');
-assert.equal(await metin(ana + ' [data-kp-gorunum]'), 'Alana yakınlaş', 'kaldığı görünüm (tüm çanta)');
+assert.equal(await metin(ana + ' [data-kp-gorunum]'), 'Tüm ürünü gör', 'açılışta alana yakın');
 assert.equal(await s.locator('#kp-isim').inputValue(), 'ECE');
 
 // 4) "Kaydetmeden çık": taslak silinir, kartta "Tasarım silindi · Geri al"; Geri al taslağı geri getirir

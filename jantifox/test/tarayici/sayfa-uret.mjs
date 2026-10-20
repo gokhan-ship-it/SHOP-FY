@@ -42,11 +42,20 @@ const kod = readFileSync(new URL('../../assets/kisisel-editor.js', import.meta.u
 const css = readFileSync(new URL('../../assets/kisisel-editor.css', import.meta.url), 'utf8');
 const sepetKod = readFileSync(new URL('../../assets/kisisel-sepet.js', import.meta.url), 'utf8');
 const kart = readFileSync(new URL('../../snippets/kisisel-kart.liquid', import.meta.url), 'utf8');
-// Liquid kartının HTML kısmını basitçe çıkar
-const kartHtml = kart
+// Liquid kartının HTML kısmını basitçe çıkar: normal ürün (tek patch değil), patch fiyatı 330 TL.
+// if / else: else kolu; else'siz if: içi; kalan etiketler (assign) atılır.
+let kartHtml = kart
   .slice(kart.indexOf('<kisisel-kart'), kart.indexOf('</kisisel-kart>') + 15)
   .replace(/\{\{ section\.id \}\}/g, 'main')
+  .replace(/\{\{ kp_patch_fiyat \| divided_by: 100 \}\}/g, '330')
   .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '');
+const ICTEKI_IF = /\{%-?\s*if [^%]*-?%\}((?:(?!\{%-?\s*if )[\s\S])*?)\{%-?\s*endif\s*-?%\}/;
+for (let m; (m = ICTEKI_IF.exec(kartHtml)); ) {
+  const kollar = m[1].split(/\{%-?\s*else\s*-?%\}/);
+  kartHtml = kartHtml.slice(0, m.index) + (kollar.length > 1 ? kollar[1] : kollar[0]) + kartHtml.slice(m.index + m[0].length);
+}
+kartHtml = kartHtml.replace(/\{%-?[\s\S]*?-?%\}/g, '');
+if (/\{[{%]/.test(kartHtml)) throw new Error('kartta işlenmemiş Liquid kaldı');
 
 writeFileSync(new URL('sayfa.html', import.meta.url), `<!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

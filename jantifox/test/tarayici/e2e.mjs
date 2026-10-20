@@ -73,7 +73,15 @@ await sayfa.locator('[data-kp-gorunum]').tap();
 await sayfa.waitForTimeout(400);
 const uzakOran = await oran();
 console.log('tüm çanta daire oranı:', uzakOran.toFixed(3));
-assert.ok(Math.abs(uzakOran - 840 / 1344) < 0.01);
+// Tüm ürün pencereye sığar (pencere oranından bağımsız): daire görselin genişliğinin 840 / 1344'ü, görsel pencerenin içinde
+const tum = await sayfa.evaluate(() => {
+  const g = document.querySelector('.kp-gorunum').getBoundingClientRect();
+  const s = document.querySelector('.kp-gorunum .kp-sahne').getBoundingClientRect();
+  const e = document.querySelector('.kp-gorunum ellipse').getBoundingClientRect();
+  return { daire: e.width / s.width, icinde: s.left >= g.left - 1 && s.right <= g.right + 1 && s.top >= g.top - 1 && s.bottom <= g.bottom + 1 };
+});
+assert.ok(Math.abs(tum.daire - 840 / 1344) < 0.01, 'daire / görsel ' + tum.daire);
+assert.ok(tum.icinde, 'tüm ürün pencerede');
 assert.equal(await sayfa.locator('[data-kp-gorunum]').textContent(), 'Alana yakınlaş');
 await sayfa.screenshot({ path: cikti + '01b-tum-canta.png' });
 await sayfa.locator('[data-kp-gorunum]').tap();
@@ -171,7 +179,10 @@ const balon = await sayfa.evaluate(() => {
 assert.deepEqual({ ...balon, dokunma: balon.dokunma >= 36 }, { metin: '! Alana yerleştir', zemin: 'rgb(255, 255, 255)', ikon: 'rgb(255, 59, 48)', yakin: true, icinde: true, dokunma: true });
 await sayfa.locator('[data-kp-yerlestir-balon]').tap();
 hk = await kutular();
-assert.ok(!ust(hk[2], hk[0]) && !ust(hk[2], hk[1]), 'Alana yerleştir en yakın boş yere taşır');
+// Editör iki patch'in 0,2 cm (çakışma toleransı) kadar binmesine izin verir; açılış yakın görünümde bu birkaç piksel
+const ustPay = (a, b, p) => a.x < b.x + b.w - p && b.x < a.x + a.w - p && a.y < b.y + b.h - p && b.y < a.y + a.h - p;
+assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0, 'Alana yerleştir sonrası hatalı parça yok');
+assert.ok(!ustPay(hk[2], hk[0], 4) && !ustPay(hk[2], hk[1], 4), 'Alana yerleştir en yakın boş yere taşır');
 assert.equal(await sayfa.locator('.kp-parca--hatali').count(), 0);
 assert.equal(await sayfa.locator('[data-kp-yer-uyari]').isVisible(), false);
 // Daire dışına bırak → dışarıda kalır (kırmızı), Alana yerleştir ile içeri
