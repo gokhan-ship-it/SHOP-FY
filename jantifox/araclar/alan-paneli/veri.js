@@ -926,7 +926,193 @@ window.PANEL_VERI = {
    },
    "gorsel": "gorseller/the-daymaker-sirt-cantasi-jantifox-x-le-koko-collectif-copy.webp",
    "mevcut": null,
-   "sekiller": [],
+   "sekiller": [
+    {
+     "tur": "alan",
+     "ad": "Üst panel",
+     "shape": "poly",
+     "x": 195.08,
+     "y": 360.72,
+     "w": 947.58,
+     "h": 610.9,
+     "tipler": [
+      "letter",
+      "number",
+      "icon"
+     ],
+     "noktalar": [
+      [
+       195.08,
+       940.35
+      ],
+      [
+       207.14,
+       812.51
+      ],
+      [
+       227.3,
+       645.65
+      ],
+      [
+       276.06,
+       505.95
+      ],
+      [
+       349.09,
+       426.16
+      ],
+      [
+       490.3,
+       372.58
+      ],
+      [
+       700.32,
+       360.72
+      ],
+      [
+       820.73,
+       379.55
+      ],
+      [
+       859.22,
+       374.14
+      ],
+      [
+       968.7,
+       403.66
+      ],
+      [
+       1055.26,
+       475.02
+      ],
+      [
+       1114.2,
+       626.67
+      ],
+      [
+       1134.26,
+       829.84
+      ],
+      [
+       1142.24,
+       939.28
+      ],
+      [
+       1142.64,
+       969.31
+      ],
+      [
+       1132.37,
+       971.62
+      ]
+     ],
+     "yumusat": 0,
+     "olcuCm": 24.4,
+     "olcuYon": "genislik"
+    },
+    {
+     "tur": "alan",
+     "ad": "Alt cep",
+     "shape": "poly",
+     "x": 183.9,
+     "y": 1042.0,
+     "w": 968.09,
+     "h": 538.0,
+     "tipler": [
+      "letter",
+      "number",
+      "icon"
+     ],
+     "noktalar": [
+      [
+       256.0,
+       1042.0
+      ],
+      [
+       399.99,
+       1042.0
+      ],
+      [
+       600.0,
+       1042.0
+      ],
+      [
+       800.0,
+       1042.0
+      ],
+      [
+       1000.0,
+       1042.0
+      ],
+      [
+       1126.0,
+       1042.0
+      ],
+      [
+       1129.99,
+       1150.0
+      ],
+      [
+       1143.0,
+       1300.0
+      ],
+      [
+       1150.0,
+       1450.0
+      ],
+      [
+       1152.0,
+       1550.0
+      ],
+      [
+       1140.0,
+       1556.99
+      ],
+      [
+       1000.0,
+       1576.0
+      ],
+      [
+       700.0,
+       1580.0
+      ],
+      [
+       399.99,
+       1580.0
+      ],
+      [
+       200.0,
+       1568.0
+      ],
+      [
+       183.9,
+       1540.0
+      ],
+      [
+       204.19,
+       1400.0
+      ],
+      [
+       225.9,
+       1250.0
+      ],
+      [
+       244.71,
+       1120.0
+      ]
+     ],
+     "yumusat": 0
+    },
+    {
+     "tur": "yasak",
+     "ad": "Bölge 1",
+     "shape": "ellipse",
+     "x": 906.01,
+     "y": 1388.0,
+     "w": 140.0,
+     "h": 140.0
+    }
+   ],
    "cizgi": {
     "x1": 199,
     "y1": 720,
@@ -934,7 +1120,7 @@ window.PANEL_VERI = {
     "y2": 720,
     "cm": 25
    },
-   "onDolguKaynak": "ölçek önerisi: açıklamadaki çanta genişliği (25 cm), gövdenin bu yükseklikteki genişliği",
+   "onDolguKaynak": "ölçek önerisi: açıklamadaki çanta genişliği (25 cm), gövdenin bu yükseklikteki genişliği; şekiller mağazadaki haritadan (2026-10-20: üst panel + alt cep + logo yasaklı)",
    "ayar": {
     "metinSiniri": null,
     "kapali": false,
