@@ -29,4 +29,4 @@ GemPages kaldırılana kadar her tema yayına alımında aynı şey tekrar olur.
 
 ## Canlı kontrol (`betikler/kaldirma-sonrasi.js`, telefon 390 ve masaüstü 1440, sayfa ekleri geri alındıktan sonra)
 - 62 kontrolün 60'ı geçti. QR adresinin 12 biçimi, alt kılavuzlar, iletisimsayfasi, sozlesmeler, iki "daha fazla bilgi" sayfası, couplezamankapsulleri ve gizli sayfaların 301'leri doğru.
-- Kalan 2 hata ana sayfada (telefon ve masaüstü): açılan app embed, GemPages betiklerini (`gp-lazyload.v2.js`, `gp-global.js`) ve `files.gempages.net` yazı tiplerini yüklüyor. Sayfa 200 dönüyor, görünüm bozulmuyor. Embed elle kapatılınca bu iki kontrolün de geçmesi beklenir.
+- Kalan 2 hata ana sayfada (telefon ve masaüstü): açılan app embed, GemPages betiklerini (`gp-lazyload.v2.js`, `gp-global.js`) ve `files.gempages.net` yazı tiplerini yüklüyor. Sayfa 200 dönüyor; metin ve 5 videonun hepsi yükleniyor. Embed elle kapatılınca bu iki kontrolün de geçmesi beklenir.
