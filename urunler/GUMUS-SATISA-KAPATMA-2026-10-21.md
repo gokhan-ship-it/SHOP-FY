@@ -18,3 +18,11 @@
 
 - **Doğrulama:** 12 varyantın hepsinde `availableForSale: false`, `inventoryPolicy: DENY`.
 - **Erkek gümüş bileklikleri** hâlâ satışta, "devam et" açık.
+
+## Ek: Lumin gümüş fiyatı (21.10.2026)
+- **Sorun:** Lumin "925 Ayar Gümüş" fiyatı 0,00 TL'ydi (bu sabahki yedekte de 0,00). Koleksiyon kartı en düşük seçenek fiyatını gösterdiği için "0.00TL'dan" yazıyordu.
+- **Değişiklik:** Kullanıcının isteğiyle kart Vantablack'teki gibi çelik fiyatını gösterecek şekilde düzeltildi. Gümüş fiyatı, 19.10 testinde görülen fiyata (`gempages-cikis/ASAMA-2-RAPOR-2026-10-19.md`) geri alındı: 4.999 TL.
+- **Kontrol:**
+  - Ürün fiyat aralığı 2.699–4.999.
+  - Erkek koleksiyonunda Lumin kartı "2,699.00TL'dan", Vantablack ile aynı; yayında ve kopya temada.
+- Varyant hâlâ satışa kapalı (stok 0, devam et kapalı).
