@@ -26,3 +26,19 @@
   - Ürün fiyat aralığı 2.699–4.999.
   - Erkek koleksiyonunda Lumin kartı "2,699.00TL'dan", Vantablack ile aynı; yayında ve kopya temada.
 - Varyant hâlâ satışa kapalı (stok 0, devam et kapalı).
+
+## Ek: Kadın kolyeleri ve Lumin gümüş stoğu açıldı (21.10.2026, yayından sonra)
+- **İstek:** Kadın kolyelerinin ve Lumin'in gümüş varyantlarına 25'er stok.
+- **Değişiklik:** `inventorySetQuantities` ile "available" 25 yapıldı (Ogün Sokak, neden: correction). "Stokta yokken satmaya devam et" kapalı kaldı (DENY). Fiyatlar değişmedi.
+
+| Ürün (925 Ayar Gümüş) | Önce (available / on_hand) | Sonra (available / on_hand) |
+|---|---|---|
+| Aurora, Infinity Glow, Eight Stars White, Ocean Blue, Gold | 0 / 0 | 25 / 25 |
+| Rose Pink | -1 / 0 (1 bekleyen sipariş) | 25 / 26 |
+| White | 0 / 1 (1 bekleyen sipariş) | 25 / 26 |
+| Taşlıkilit Rose / Gold / White (listelenmemiş) | 0 / 0 | 25 / 25 |
+| Lumin (4.999 TL) | 0 / 0 | 25 / 25 |
+
+- **Doğrulama:** 11 varyantın hepsinde `availableForSale: true`, `inventoryPolicy: DENY`.
+- **Kapalı kalanlar:** Vantablack gümüş (istekte yok) ve taslak Rose ürünü.
+- **Stok notu:** Bu varyantlar artık satılabilir olduğu için "25 Kasım'da yeniden stokta" kutusu kendiliğinden gizleniyor. `custom.stok_tarihi` değerleri duruyor; 25 Kasım'dan önce stok yine 0'a inerse kutu yeniden görünür.
