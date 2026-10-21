@@ -159,6 +159,14 @@
       {%- render 'tt-koleksiyon-kart' -%}
     {%- endif -%}
 
+    {%- comment -%}
+      Urun sayfasi: tukenen varyantin yeniden stok tarihi notu
+      ("25 Kasım'da yeniden stokta."). Gerekce dosyanin icinde.
+    {%- endcomment -%}
+    {%- if template.name == 'product' -%}
+      {%- render 'tt-stok-notu' -%}
+    {%- endif -%}
+
     {{ content_for_header }}
 
     {%- comment -%}

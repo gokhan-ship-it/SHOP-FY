@@ -1,0 +1,152 @@
+{%- comment -%}
+  YENIDEN STOK NOTU (21.10.2026)
+
+  Tukenen bir varyantin "Yeniden stok tarihi" alani (varyant meta alani
+  custom.stok_tarihi, tur: tarih) doluysa ve tarih bugun ya da ileride
+  ise, o varyant secilince secim haplarinin altinda bilgi kutusu acilir:
+    "25 Kasım'da yeniden stokta."
+    "925 Ayar Gümüş şu an tükendi."
+  Hap ve buton temanin kendi tukendi gorunumunde kalir (ustu cizili,
+  "Urun Tukendi!"); kutu yalnizca tarihi soyler.
+
+  Kendiliginden kalkar: varyanta stok girilince (satilabilir olur) ya da
+  tarih gecince. Tarih sayfa basilirken Liquid'de, sayfa acilinca
+  tarayicida bir kez daha kontrol ediliyor (onbellekteki sayfa ertesi gun
+  eski notu gostermesin).
+
+  Kutu JS ile variant-picker'in hemen arkasina konuyor; main-product.liquid'e
+  dokunulmadi. Varyant degisince tema variant-picker'i ayni yere yeniden
+  basiyor; kutu product-info'nun dogrudan cocugu oldugu icin yerinde
+  kaliyor, yalnizca icerigi guncelleniyor. Secili varyant isaretli
+  hap(lar)dan ve variant-picker'daki varyant listesinden okunuyor.
+{%- endcomment -%}
+{%- liquid
+  assign tt_bugun = 'now' | date: '%Y%m%d' | plus: 0
+  assign tt_aylar = 'Ocak,Şubat,Mart,Nisan,Mayıs,Haziran,Temmuz,Ağustos,Eylül,Ekim,Kasım,Aralık' | split: ','
+  assign tt_ekler = "'ta,'ta,'ta,'da,'ta,'da,'da,'ta,'de,'de,'da,'ta" | split: ','
+-%}
+{%- capture tt_notlar -%}
+  {%- for v in product.variants -%}
+    {%- assign tt_t = v.metafields.custom.stok_tarihi.value -%}
+    {%- if tt_t == blank or v.available -%}{%- continue -%}{%- endif -%}
+    {%- assign tt_gun = tt_t | date: '%Y%m%d' | plus: 0 -%}
+    {%- if tt_gun < tt_bugun -%}{%- continue -%}{%- endif -%}
+    {%- assign tt_ay = tt_t | date: '%m' | plus: 0 | minus: 1 -%}
+    {%- capture tt_metin -%}{{ tt_t | date: '%-d' }} {{ tt_aylar[tt_ay] }}{{ tt_ekler[tt_ay] }} yeniden stokta.{%- endcapture -%}
+    {%- capture tt_alt -%}{{ v.title }} şu an tükendi.{%- endcapture -%}
+    <i data-v="{{ v.id }}" data-tarih="{{ tt_t | date: '%Y-%m-%d' }}" data-metin="{{ tt_metin | escape }}" data-alt="{{ tt_alt | escape }}"></i>
+  {%- endfor -%}
+{%- endcapture -%}
+{%- if tt_notlar != blank -%}
+<template id="tt-stok-notu-veri">{{ tt_notlar }}</template>
+<style>
+  .tt-stok-notu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f4f4f4;
+    color: #0a0a0a;
+  }
+  .tt-stok-notu[hidden] { display: none; }
+  .tt-stok-notu svg { flex: 0 0 auto; }
+  .tt-stok-notu-metin {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .tt-stok-notu-baslik {
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .tt-stok-notu-alt {
+    font-size: 12.5px;
+    line-height: 1.3;
+    color: #5c5c57;
+  }
+</style>
+<script>
+  (function () {
+    'use strict';
+    var kaynak = document.getElementById('tt-stok-notu-veri');
+    if (!kaynak || !kaynak.content) return;
+    var d = new Date();
+    var bugun = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    var notlar = {};
+    var sayi = 0;
+    var ogeler = kaynak.content.querySelectorAll('[data-v]');
+    for (var i = 0; i < ogeler.length; i++) {
+      if (ogeler[i].getAttribute('data-tarih') < bugun) continue;
+      notlar[ogeler[i].getAttribute('data-v')] = { metin: ogeler[i].getAttribute('data-metin'), alt: ogeler[i].getAttribute('data-alt') };
+      sayi++;
+    }
+    if (!sayi) return;
+
+    var IKON = '<svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>';
+    var kutu = null, baslik = null, alt = null;
+
+    function seciliVaryant(vp) {
+      var liste = vp.querySelector('script[data-variants]');
+      var isaretli = vp.querySelectorAll('input[type="radio"]:checked');
+      if (liste && isaretli.length) {
+        var varyantlar;
+        try { varyantlar = JSON.parse(liste.textContent); } catch (e) { varyantlar = null; }
+        if (varyantlar) {
+          var secim = [];
+          for (var i = 0; i < isaretli.length; i++) {
+            secim[(parseInt(isaretli[i].getAttribute('data-option-index'), 10) || i + 1) - 1] = isaretli[i].value;
+          }
+          for (var j = 0; j < varyantlar.length; j++) {
+            var uyar = true;
+            for (var k = 0; k < secim.length; k++) {
+              if (secim[k] !== undefined && varyantlar[j].options[k] !== secim[k]) { uyar = false; break; }
+            }
+            if (uyar) return varyantlar[j].id;
+          }
+        }
+      }
+      var secili = vp.querySelector('script[data-selected-variant]');
+      try { return secili ? JSON.parse(secili.textContent).id : null; } catch (e) { return null; }
+    }
+
+    function guncelle() {
+      var vp = document.querySelector('#MainContent product-info variant-picker');
+      if (!vp || !vp.parentNode) return;
+      if (!kutu) {
+        kutu = document.createElement('div');
+        kutu.className = 'tt-stok-notu';
+        kutu.setAttribute('role', 'status');
+        kutu.hidden = true;
+        kutu.innerHTML = IKON + '<span class="tt-stok-notu-metin"><span class="tt-stok-notu-baslik"></span><span class="tt-stok-notu-alt"></span></span>';
+        baslik = kutu.querySelector('.tt-stok-notu-baslik');
+        alt = kutu.querySelector('.tt-stok-notu-alt');
+      }
+      if (kutu.previousElementSibling !== vp) vp.parentNode.insertBefore(kutu, vp.nextSibling);
+      var not = notlar[String(seciliVaryant(vp))];
+      if (not) {
+        if (baslik.textContent !== not.metin) baslik.textContent = not.metin;
+        if (alt.textContent !== not.alt) alt.textContent = not.alt;
+      }
+      if (kutu.hidden !== !not) kutu.hidden = !not;
+    }
+
+    function kur() {
+      var vp = document.querySelector('#MainContent product-info variant-picker');
+      if (!vp) return;
+      guncelle();
+      /* Tema varyant degisince variant-picker'i yeniden basiyor: product-info'nun
+         dogrudan cocuklarini izle (alt agac degil; kutunun kendi metni dongu yaratmasin). */
+      new MutationObserver(guncelle).observe(vp.parentNode, { childList: true });
+      document.addEventListener('change', function (e) {
+        if (e.target && e.target.closest && e.target.closest('#MainContent product-info variant-picker')) guncelle();
+      });
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', kur);
+    else kur();
+  })();
+</script>
+{%- endif -%}
