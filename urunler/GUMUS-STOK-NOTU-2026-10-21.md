@@ -33,3 +33,8 @@ Onaylanan tasarım C'dir:
 | JS hatası | yok |
 
 Yayındaki tema (Prizma, `updatedAt` 2026-10-19T15:02:38Z) değişmedi.
+
+## Ek: dar telefonda haplar yan yana (21.10.2026)
+- **Sorun:** "316L Cerrahi Çelik" (163 px) + "925 Ayar Gümüş" (157 px) + 16 px aralık = 336 px. Seçenek alanı 375 px telefonda 335 px, 360 px'te 320 px olduğu için ikinci hap alta düşüyordu. Bu, yayındaki temada da böyle.
+- **Düzeltme (yalnızca kopya temada):** `snippets/tt-urun-dil.liquid` içinde, 399 px ve altında haplar arası 10 px, hap yan iç boşluğu 16 px. `custom-tt.css` iç boşluğu `20px !important` verdiği için kural da `!important`.
+- **Ölçüm:** Aurora ve Ocean Blue, 360 / 375 / 390 px genişlikte iki hap aynı satırda. Toplam 314 px, yatay taşma yok, JS hatası yok. Not kutusu görünür.

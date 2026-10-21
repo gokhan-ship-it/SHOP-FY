@@ -5,7 +5,8 @@
   sayfasi kapisi": product.zaman-kapsulu*, product.couple) yukleniyor;
   butun seciciler <main class="tt-urun-page"> ile sinirli. Yalnizca
   renk, kalinlik, harf araligi ve kenar/halka degisiyor: olcu, yerlesim,
-  metin ve JS davranisi ayni.
+  metin ve JS davranisi ayni. Tek istisna dar telefonda malzeme haplarinin
+  araligi (malzeme secici bolumunde, gerekcesi yaninda).
 
   Palet: ink #0A0A0A, lime #D6FF00, surface #F4F4F4, white #FFFFFF,
   black #000000, dark-raised #141414, muted #5C5C57, muted-strong
@@ -100,6 +101,19 @@
   }
   .tt-urun-page .swatches input:is([type=checkbox], [type=radio]):is(:disabled, .disabled) + .label-swatch::before {
     display: none;
+  }
+  /* Bu dosyadaki tek olcu kurali (21.10.2026): dar telefonda iki malzeme
+     hapi yan yana sigsin. "316L Cerrahi Celik" (163px) + "925 Ayar Gumus"
+     (157px) + 16px aralik = 336px; sutun 375px telefonda 335px, 360px'te
+     320px oldugu icin ikinci hap alta dusuyordu. 399px ve altinda aralik
+     10px, hapin yan ic boslugu 16px: toplam 314px. !important:
+     custom-tt.css hap ic boslugunu "20px !important" ile veriyor. */
+  @media screen and (max-width: 399px) {
+    .tt-urun-page variant-picker .swatches { column-gap: 10px; }
+    .tt-urun-page variant-picker .swatches .label-swatch {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
   }
 
   /* ---------- 02 main-product: adet, guven kutusu ---------- */
