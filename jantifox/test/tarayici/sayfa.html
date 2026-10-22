@@ -12454,6 +12454,41 @@ html.kp-kilit body {
   // simülasyonlardan öğrenilip saklanır; fiyat bu kurallarla anında yerel hesaplanır, Shopify arka planda doğrular,
   // fark çıkarsa fiyat sessizce düzeltilir ve kurallar güncellenir. Aynı sepetin sonucu önbellekten gelir.
   var KAMPANYA_API = '/api/2025-07/graphql.json';
+
+  // Simülasyon istekleri sayfanın fetch'i ile gönderilmez. Shopify'ın Web Pixels Manager'ı window.fetch ve
+  // XMLHttpRequest'i sarar; Storefront API yanıtındaki extensions.cart_changelog'u (oluşturulan her geçici sepetin
+  // satırları) "ürün sepete eklendi" olarak yayınlar ve bunlar Meta'ya Conversions API ile AddToCart olarak gider: her
+  // harf / ikon değişikliğinde sepete eklenmemiş ürünler için onlarca AddToCart (teşhis 2026-10-22). Gizli, aynı
+  // kökenli bir iframe'in kendi fetch'i izlenmez. Kurulamazsa simülasyon yapılmaz (liste fiyatı + "İndirimler sepette
+  // uygulanır"). Gerçek sepete ekleme (/cart/add.js) sayfanın fetch'iyle gider ve izlenmeye devam eder.
+  var izsizCerceve = null;
+  function izsizFetch() {
+    try {
+      if (!izsizCerceve || !izsizCerceve.isConnected || !izsizCerceve.contentWindow) {
+        izsizCerceve = document.createElement('iframe');
+        izsizCerceve.setAttribute('aria-hidden', 'true');
+        izsizCerceve.setAttribute('tabindex', '-1');
+        izsizCerceve.setAttribute('data-kp-izsiz', '');
+        izsizCerceve.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden';
+        (document.body || document.documentElement).appendChild(izsizCerceve);
+      }
+      var w = izsizCerceve.contentWindow;
+      return w && typeof w.fetch === 'function' && w.fetch !== window.fetch ? w.fetch.bind(w) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function kampanyaIstegi(sorgu) {
+    var f = izsizFetch();
+    if (!f) return Promise.reject(new Error('Kampanya simülasyonu için izlenmeyen istek yok'));
+    return f(window.location.origin + KAMPANYA_API, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(sorgu)
+    }).then(function (r) { return r.json(); });
+  }
   var kampanyaOnbellek = {}; // anahtar -> söz
   var kampanyaSonuclari = {}; // anahtar -> sonuç (anında kullanım)
   // v2: sonuçlar tasarımın payını da taşır
@@ -12815,9 +12850,7 @@ html.kp-kilit body {
       govde.push('m' + n + ': cartCreate(input: { lines: $m' + n + ' }) { cart { ...C } }');
       degiskenler['m' + n] = satirGirdisi([{ v: ornek, q: n }]);
     }
-    kuralSozu = fetch(KAMPANYA_API, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ query: 'mutation Kurallar(' + tanim.join(', ') + ') { ' + govde.join(' ') + ' } ' + SEPET_PARCASI, variables: degiskenler }) })
-      .then(function (r) { return r.json(); })
+    kuralSozu = kampanyaIstegi({ query: 'mutation Kurallar(' + tanim.join(', ') + ') { ' + govde.join(' ') + ' } ' + SEPET_PARCASI, variables: degiskenler })
       .then(function (j) {
         var d = j && j.data;
         if (!d) throw new Error('Kurallar alınamadı');
@@ -12864,8 +12897,7 @@ html.kp-kilit body {
         govde += ' e' + i + ': cartCreate(input: { lines: $e' + i + ' }) { cart { ...C } userErrors { message } }';
       });
       var sorgu = { query: 'mutation Simulasyon(' + tanim + ') { ' + govde + ' } ' + SEPET_PARCASI, variables: degiskenler };
-      var soz = fetch(KAMPANYA_API, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(sorgu) })
-        .then(function (r) { return r.json(); })
+      var soz = kampanyaIstegi(sorgu)
         .then(function (j) {
           var d = j && j.data;
           if (!d || !d.a || !d.b || !d.a.cart || !d.b.cart) throw new Error('Simülasyon başarısız');
