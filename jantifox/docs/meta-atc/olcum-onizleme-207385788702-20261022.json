@@ -1,0 +1,230 @@
+{
+ "tema": "207385788702",
+ "izin": {
+  "marketing": "yes",
+  "analytics": "yes",
+  "preferences": "yes",
+  "sale_of_data": "yes"
+ },
+ "parcaSayisi": 6,
+ "ozet": "Kanvas Lacivert Tote Çanta 3.500 TL Yazı ve rakam: ECEAB (5 patch) 2.500 TL İkonlar: Sarı Kalp (1 patch) 500 TL ✓ 4'lü patch indirimi −500 TL ✓ Ekstra %10 indirim −600 TL Toplam 6.500 TL 5.400 TL",
+ "sepetOzet": {
+  "satir": 6,
+  "adet": 7,
+  "toplam": 5400
+ },
+ "standartVar": true,
+ "sayac": {
+  "yukleme": {
+   "storefront cartCreate×7": 2,
+   "fbq:trackShopify:PageView": 1,
+   "fbq:trackShopify:ViewContent": 1,
+   "fbq:trackSingleCustom:enhencer_all": 1,
+   "fbq:trackSingleCustom:enhencer_baby": 1,
+   "fbq:trackSingleCustom:enhencer_apparel_access": 1,
+   "fbq:trackSingleCustom:view_content_enh": 1
+  },
+  "ara-adimlar": {
+   "storefront cartCreate×4": 7
+  },
+  "sepete-ekle": {
+   "cart/add": 1,
+   "cart/add satır:6": 1,
+   "storefront cartCreate×2": 1,
+   "shopify:product_added_to_cart": 6,
+   "fbq:trackCustom:enh_conv_rem": 1,
+   "fbq:trackSingleCustom:add_to_cart_enh": 1,
+   "fbq:trackShopify:AddToCart": 6
+  },
+  "standart-urun": {
+   "fbq:trackSingleCustom:enhencer_all": 1,
+   "fbq:trackSingleCustom:enhencer_baby": 1,
+   "fbq:trackSingleCustom:enhencer_apparel_access": 1,
+   "fbq:trackShopify:PageView": 1,
+   "fbq:trackShopify:ViewContent": 1,
+   "fbq:trackCustom:enh_conv_rem": 1,
+   "fbq:trackSingleCustom:view_content_enh": 1
+  },
+  "standart-sepete-ekle": {
+   "cart/add": 1,
+   "cart/add form": 1,
+   "shopify:product_added_to_cart": 1,
+   "fbq:trackCustom:enh_conv_rem": 1,
+   "fbq:trackSingleCustom:add_to_cart_enh": 1,
+   "fbq:trackShopify:AddToCart": 1
+  },
+  "temizlik": {
+   "cart/clear": 1
+  }
+ },
+ "kayit": [
+  {
+   "faz": "yukleme",
+   "fbq": "trackShopify",
+   "olay": "PageView",
+   "piksel": "3419060311599240",
+   "eventID": "sh-65275c58-5BB4-49D9-D8A3-C8BD6E6BC386"
+  },
+  {
+   "faz": "yukleme",
+   "fbq": "trackShopify",
+   "olay": "ViewContent",
+   "piksel": "3419060311599240",
+   "deger": 3500,
+   "para": "TRY",
+   "icerik": "Kanvas Lacivert Tote Çanta",
+   "eventID": "sh-65275d16-FA6C-4377-FE5C-2A2EBFD8DF2A"
+  },
+  {
+   "faz": "sepete-ekle",
+   "shopify": "product_added_to_cart",
+   "eventID": "sh-6528353e-FF08-4339-427C-63D010EBD113",
+   "deger": 3500,
+   "para": "TRY",
+   "capi": true,
+   "urun": "Kanvas Lacivert Tote Çanta"
+  },
+  {
+   "faz": "sepete-ekle",
+   "shopify": "product_added_to_cart",
+   "eventID": "sh-65283542-E0E2-45E7-B7CC-961AB0AA1975",
+   "deger": 500,
+   "para": "TRY",
+   "capi": true,
+   "urun": "Cool Alfabe Patch - E"
+  },
+  {
+   "faz": "sepete-ekle",
+   "shopify": "product_added_to_cart",
+   "eventID": "sh-65283544-CB23-47E3-3B5E-B26338006D1E",
+   "deger": 500,
+   "para": "TRY",
+   "capi": true,
+   "urun": "Cool Alfabe Patch - C"
+  },
+  {
+   "faz": "sepete-ekle",
+   "shopify": "product_added_to_cart",
+   "eventID": "sh-65283545-AE8B-44AA-F44A-9956AA028898",
+   "deger": 500,
+   "para": "TRY",
+   "capi": true,
+   "urun": "Cool Alfabe Patch - A"
+  },
+  {
+   "faz": "sepete-ekle",
+   "shopify": "product_added_to_cart",
+   "eventID": "sh-65283546-388A-4481-0866-FCAB1BE02006",
+   "deger": 500,
+   "para": "TRY",
+   "capi": true,
+   "urun": "Cool Alfabe Patch - B"
+  },
+  {
+   "faz": "sepete-ekle",
+   "shopify": "product_added_to_cart",
+   "eventID": "sh-65283548-AD6A-4E6E-D400-06D31FC169B8",
+   "deger": 500,
+   "para": "TRY",
+   "capi": true,
+   "urun": "Sarı Kalp Patch"
+  },
+  {
+   "faz": "sepete-ekle",
+   "fbq": "trackShopify",
+   "olay": "AddToCart",
+   "piksel": "3419060311599240",
+   "deger": 3500,
+   "para": "TRY",
+   "icerik": "Kanvas Lacivert Tote Çanta",
+   "eventID": "sh-6528353e-FF08-4339-427C-63D010EBD113"
+  },
+  {
+   "faz": "sepete-ekle",
+   "fbq": "trackShopify",
+   "olay": "AddToCart",
+   "piksel": "3419060311599240",
+   "deger": 500,
+   "para": "TRY",
+   "icerik": "Cool Alfabe Patch - E",
+   "eventID": "sh-65283542-E0E2-45E7-B7CC-961AB0AA1975"
+  },
+  {
+   "faz": "sepete-ekle",
+   "fbq": "trackShopify",
+   "olay": "AddToCart",
+   "piksel": "3419060311599240",
+   "deger": 500,
+   "para": "TRY",
+   "icerik": "Cool Alfabe Patch - C",
+   "eventID": "sh-65283544-CB23-47E3-3B5E-B26338006D1E"
+  },
+  {
+   "faz": "sepete-ekle",
+   "fbq": "trackShopify",
+   "olay": "AddToCart",
+   "piksel": "3419060311599240",
+   "deger": 500,
+   "para": "TRY",
+   "icerik": "Cool Alfabe Patch - A",
+   "eventID": "sh-65283545-AE8B-44AA-F44A-9956AA028898"
+  },
+  {
+   "faz": "sepete-ekle",
+   "fbq": "trackShopify",
+   "olay": "AddToCart",
+   "piksel": "3419060311599240",
+   "deger": 500,
+   "para": "TRY",
+   "icerik": "Cool Alfabe Patch - B",
+   "eventID": "sh-65283546-388A-4481-0866-FCAB1BE02006"
+  },
+  {
+   "faz": "sepete-ekle",
+   "fbq": "trackShopify",
+   "olay": "AddToCart",
+   "piksel": "3419060311599240",
+   "deger": 500,
+   "para": "TRY",
+   "icerik": "Sarı Kalp Patch",
+   "eventID": "sh-65283548-AD6A-4E6E-D400-06D31FC169B8"
+  },
+  {
+   "faz": "standart-urun",
+   "fbq": "trackShopify",
+   "olay": "PageView",
+   "piksel": "3419060311599240",
+   "eventID": "sh-6527ebaf-1BD1-49F7-7578-0CB0AEDDF9F0"
+  },
+  {
+   "faz": "standart-urun",
+   "fbq": "trackShopify",
+   "olay": "ViewContent",
+   "piksel": "3419060311599240",
+   "deger": 500,
+   "para": "TRY",
+   "icerik": "Futbol Topu Patch",
+   "eventID": "sh-6527ec11-FB2D-4EE3-E5A1-DDEBF3337ABE"
+  },
+  {
+   "faz": "standart-sepete-ekle",
+   "shopify": "product_added_to_cart",
+   "eventID": "sh-6528221f-236A-43E4-181A-6344C91077E7",
+   "deger": 500,
+   "para": "TRY",
+   "capi": true,
+   "urun": "Futbol Topu Patch"
+  },
+  {
+   "faz": "standart-sepete-ekle",
+   "fbq": "trackShopify",
+   "olay": "AddToCart",
+   "piksel": "3419060311599240",
+   "deger": 500,
+   "para": "TRY",
+   "icerik": "Futbol Topu Patch",
+   "eventID": "sh-6528221f-236A-43E4-181A-6344C91077E7"
+  }
+ ],
+ "hatalar": []
+}
