@@ -4,14 +4,14 @@
 // (3) ara adımlarda Shopify'ın olay akışında product_added_to_cart yok;
 // (4) Sepete ekle: sepet satırları, tasarım özellikleri, toplam editördekiyle aynı; (5) ödeme sayfası açılır
 // (sipariş verilmez); sonunda sepet boşaltılır. Meta'ya giden tarayıcı istekleri kesilir. Ekran görüntüsü almaz.
-// Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node onizleme-kampanya-sepet.mjs <tema id> [masaustu|mobil]
+// Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node onizleme-kampanya-sepet.mjs <tema id|canli> [masaustu|mobil]
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium, devices } = require('playwright');
 const TEMA = process.argv[2];
 const CIHAZ = process.argv[3] || 'masaustu';
 if (!TEMA) throw new Error('tema id gerekli');
-const URUN = 'https://jantifox.com/products/kanvas-lacivert-tote-canta?preview_theme_id=' + TEMA;
+const URUN = 'https://jantifox.com/products/kanvas-lacivert-tote-canta' + (TEMA === 'canli' ? '' : '?preview_theme_id=' + TEMA);
 const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 const c = await t.newContext(CIHAZ === 'mobil' ? { ...devices['iPhone 13'], locale: 'tr-TR' } : { viewport: { width: 1440, height: 900 }, locale: 'tr-TR' });
 await c.route(/facebook\.com\/tr[/?]/, (r) => r.fulfill({ status: 200, body: '' }));
