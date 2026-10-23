@@ -1,0 +1,53 @@
+Yayin oncesi kontrol - 2026-10-23T15:50:51Z
+
+1) Canli tema: Gumus stok notu - 2026-10-21 (189316038976), role MAIN, updatedAt 2026-10-21T10:26:55Z (degismedi).
+   Kopya: Hiz paketi 1 - 2026-10-23 (189388095808), UNPUBLISHED, updatedAt 2026-10-23T13:41:03Z.
+
+2) Saglama toplami: canli 701, kopya 703 dosya. Farkli 14 + yalniz kopyada 2 (bu paketin dosyalari), yalniz canlida 0.
+   Canlida kopya olusturulduktan (12:31:28Z) sonra degisen dosya: yok. 13:56'daki listelere gore iki temada da degisen dosya: yok.
+
+3) settings_data.json icerik farki (canli 25ed4697 / kopya 1e36b108):
+   - current.enable_page_transition: true -> false
+   - current.blocks Wheelio kaydi (disabled:true) yalniz canlida
+   - current.blocks GemPages embed-gp-script-head kaydi yalniz canlida
+   Baska fark yok.
+
+4) content_for_header on kaydi: canlida 7 sayfa x 2 indirme. Her istekte degisen alanlar (reqid, u, _su_rec) sabitlenince 14 indirme sayfa basina birebir ayni.
+   Kopya onizlemesiyle karsilastirma (python3 -I cfh-karsilastir.py once-cfh kopya-onizleme-cfh):
+   anasayfa             FARKLI (2+2 indirme, 14028 karakter)
+        replace 'main' -> 'unpublished'
+        insert '' -> ';\nShopify.previewMode = true'
+        insert '' -> '</script>\n<script id="hot-reload-client" src="/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js'
+        replace '\n\n' -> "\n<script type='text/javascript' defer='defer' src='https://cdn.shopify.com/shopifycloud/preview-bar/"
+   couple-landing       FARKLI (2+2 indirme, 14118 karakter)
+        replace 'main' -> 'unpublished'
+        insert '' -> ';\nShopify.previewMode = true'
+        insert '' -> '</script>\n<script id="hot-reload-client" src="/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js'
+        replace '\n\n' -> "\n<script type='text/javascript' defer='defer' src='https://cdn.shopify.com/shopifycloud/preview-bar/"
+   kunye                FARKLI (2+2 indirme, 14351 karakter)
+        replace 'main' -> 'unpublished'
+        insert '' -> ';\nShopify.previewMode = true'
+        insert '' -> '</script>\n<script id="hot-reload-client" src="/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js'
+        replace '\n\n' -> "\n<script type='text/javascript' defer='defer' src='https://cdn.shopify.com/shopifycloud/preview-bar/"
+   astor-chloe-couple   FARKLI (2+2 indirme, 14389 karakter)
+        replace 'main' -> 'unpublished'
+        insert '' -> ';\nShopify.previewMode = true'
+        insert '' -> '</script>\n<script id="hot-reload-client" src="/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js'
+        replace '\n\n' -> "\n<script type='text/javascript' defer='defer' src='https://cdn.shopify.com/shopifycloud/preview-bar/"
+   noir                 FARKLI (2+2 indirme, 14421 karakter)
+        replace 'main' -> 'unpublished'
+        insert '' -> ';\nShopify.previewMode = true'
+        insert '' -> '</script>\n<script id="hot-reload-client" src="/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js'
+        replace '\n\n' -> "\n<script type='text/javascript' defer='defer' src='https://cdn.shopify.com/shopifycloud/preview-bar/"
+   kral-zincir          FARKLI (2+2 indirme, 14367 karakter)
+        replace 'main' -> 'unpublished'
+        insert '' -> ';\nShopify.previewMode = true'
+        insert '' -> '</script>\n<script id="hot-reload-client" src="/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js'
+        replace '\n\n' -> "\n<script type='text/javascript' defer='defer' src='https://cdn.shopify.com/shopifycloud/preview-bar/"
+   couple-urunler       FARKLI (2+2 indirme, 14329 karakter)
+        replace 'main' -> 'unpublished'
+        insert '' -> ';\nShopify.previewMode = true'
+        insert '' -> '</script>\n<script id="hot-reload-client" src="/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js'
+        replace '\n\n' -> "\n<script type='text/javascript' defer='defer' src='https://cdn.shopify.com/shopifycloud/preview-bar/"
+   SONUC: fark var
+   Farklarin hepsi onizleme moduna ozgu (role unpublished, previewMode, preview-bar, hot-reload).
