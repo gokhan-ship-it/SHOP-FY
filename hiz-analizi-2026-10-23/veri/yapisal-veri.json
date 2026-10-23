@@ -1,0 +1,135 @@
+{
+ "olcum_zamani_utc": "2026-10-23T10:59:36Z",
+ "sayfalar": {
+  "anasayfa": {
+   "ld_json": [],
+   "microdata_itemtype": [
+    "http://schema.org/Organization"
+   ]
+  },
+  "astor-chloe-couple": {
+   "ld_json": [
+    {
+     "@type": "Product",
+     "name": "Astor + Chloe Couple Zaman Kapsülü",
+     "brand": "Text To Next",
+     "image_ust": true,
+     "varyant": [
+      {
+       "name": "Astor + Chloe Couple Zaman Kapsülü",
+       "image": true,
+       "price": "2898.00",
+       "priceCurrency": "TRY",
+       "availability": "http://schema.org/InStock",
+       "sku": null
+      }
+     ]
+    },
+    {
+     "@type": "FAQPage"
+    }
+   ],
+   "microdata_itemtype": [
+    "http://schema.org/Organization"
+   ]
+  },
+  "couple-landing": {
+   "ld_json": [],
+   "microdata_itemtype": [
+    "http://schema.org/Organization"
+   ]
+  },
+  "couple-urunler": {
+   "ld_json": [],
+   "microdata_itemtype": [
+    "http://schema.org/Organization"
+   ]
+  },
+  "kral-zincir": {
+   "ld_json": [
+    {
+     "@type": "ProductGroup",
+     "name": "Kral Zincir",
+     "brand": "Zaman Kapsülü Bileklik",
+     "image_ust": false,
+     "varyant": [
+      {
+       "name": "Kral Zincir - 925 Ayar Gümüş",
+       "image": true,
+       "price": "4299.00",
+       "priceCurrency": "TRY",
+       "availability": "http://schema.org/InStock",
+       "sku": null
+      }
+     ]
+    },
+    {
+     "@type": "FAQPage"
+    }
+   ],
+   "microdata_itemtype": [
+    "http://schema.org/Organization"
+   ]
+  },
+  "kunye": {
+   "ld_json": [
+    {
+     "@type": "ProductGroup",
+     "name": "Zaman Kapsülü Künye",
+     "brand": "Text To Next",
+     "image_ust": false,
+     "varyant": [
+      {
+       "name": "Zaman Kapsülü Künye - Gold",
+       "image": true,
+       "price": "2399.00",
+       "priceCurrency": "TRY",
+       "availability": "http://schema.org/InStock",
+       "sku": null
+      },
+      {
+       "name": "Zaman Kapsülü Künye - Silver",
+       "image": true,
+       "price": "1799.00",
+       "priceCurrency": "TRY",
+       "availability": "http://schema.org/InStock",
+       "sku": null
+      }
+     ]
+    },
+    {
+     "@type": "FAQPage"
+    }
+   ],
+   "microdata_itemtype": [
+    "http://schema.org/Organization"
+   ]
+  },
+  "noir": {
+   "ld_json": [
+    {
+     "@type": "ProductGroup",
+     "name": "Noir",
+     "brand": "Zaman Kapsülü Bileklik",
+     "image_ust": false,
+     "varyant": [
+      {
+       "name": "Noir - 316L Cerrahi Çelik",
+       "image": true,
+       "price": "2399.00",
+       "priceCurrency": "TRY",
+       "availability": "http://schema.org/InStock",
+       "sku": null
+      }
+     ]
+    },
+    {
+     "@type": "FAQPage"
+    }
+   ],
+   "microdata_itemtype": [
+    "http://schema.org/Organization"
+   ]
+  }
+ }
+}
