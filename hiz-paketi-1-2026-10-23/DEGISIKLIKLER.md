@@ -26,11 +26,10 @@ Bu dosyaların hiçbirinde takip kodu (fbq, gtag, ttq, dataLayer, Shopify.analyt
 | `sections/hero-video-kapsul.liquid:741-788` | Yeni betik: video kaynağı `load` + tarayıcı boşta kalınca atanır; telefona hafif sürüm, masaüstüne 3 Mbps; Save-Data veya 2g/3g'de video hiç inmez. |
 | `sections/video-slider-kapsul.liquid:11-27` | Kapak görseli için gerçek genişlikten `sizes` hesabı. |
 | `sections/video-slider-kapsul.liquid:132-137` | CSS: video kapak görselinin üstünde (absolute). |
-| `sections/video-slider-kapsul.liquid:433-445` | `video_tag` yerine: lazy kapak `<img>` (widths + sizes) + `preload="none"` kaynaksız `<video>`. |
-| `sections/video-slider-kapsul.liquid:534-550` | `telefon()`, `kaynakAta()`, `kaynakli()` yardımcıları. |
-| `sections/video-slider-kapsul.liquid:572-573, 591, 615, 664-665, 800` | Kaynak yalnızca oynatılacağı an atanır; kaynaksız videoya `pause()`/`currentTime` yapılmaz. |
-| `sections/video-slider-kapsul.liquid:682-684` | Bölüm ekrana girince kendiliğinden oynama kapatıldı (`vsWantPlay = false`); video ancak oynat düğmesiyle iner. |
-| `sections/video-slider-kapsul.liquid:820-828` | Betik DOMContentLoaded'ı beklemeden kurulur (bölüm HTML'i hazır; iki kez kurulmaya karşı korumalı). |
+| `sections/video-slider-kapsul.liquid:433-448` | `video_tag` yerine: lazy kapak `<img>` (widths + sizes) + `preload="none"` kaynaksız `<video>`. |
+| `sections/video-slider-kapsul.liquid:537-553` | `telefon()`, `kaynakAta()`, `kaynakli()` yardımcıları. |
+| `sections/video-slider-kapsul.liquid:575-576, 594, 618, 667-668, 801` | Kaynak yalnızca o slayt oynatılacağı an atanır (telefona hafif sürüm, masaüstüne bugünkü dosya); kaynaksız videoya `pause()`/`currentTime` yapılmaz. Otomatik oynatma eskisi gibi: bölüm ekrana girince aktif slayt kendiliğinden oynar (`vsWantPlay` satırı canlıdakiyle aynı). |
+| `sections/video-slider-kapsul.liquid:821-829` | Betik DOMContentLoaded'ı beklemeden kurulur (bölüm HTML'i hazır; iki kez kurulmaya karşı korumalı). |
 | `sections/mozaik-kartlar.liquid:113-118` | CSS: video kapak görselinin üstünde. |
 | `sections/mozaik-kartlar.liquid:605-615` | Kart genişliğinden `sizes` hesabı (kolon, kenar, aralık, ölçek ayarlarından). |
 | `sections/mozaik-kartlar.liquid:685-699` | `video_tag` yerine: lazy kapak `<img>` (widths + sizes) + `preload="none"` kaynaksız `<video>`. |
