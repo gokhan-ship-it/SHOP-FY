@@ -1,0 +1,115 @@
+{
+ "url": "https://texttonext.com/?preview_theme_id=189388095808",
+ "senaryo": "duz",
+ "engellenen": 17,
+ "toplamVideoMB": 0.97,
+ "acilistaVideoMB": 0.97,
+ "videoBaytlari": {
+  "a95d7952437d458cba4a5ea3386b4f1c.mp4": 1015047
+ },
+ "istekler": [
+  {
+   "url": "a95d7952437d458cba4a5ea3386b4f1c.mp4",
+   "range": "bytes=0-",
+   "t": 1699,
+   "govde": 1015047,
+   "kodlu": 935020,
+   "son": "bitti",
+   "durum": 206,
+   "protokol": "h2",
+   "icerikAraligi": "bytes 0-1015046/1015047",
+   "sonVeri": 1815,
+   "kodluSon": 1016940
+  }
+ ],
+ "asama": {
+  "yuklemeSonrasi": {
+   "17558.230": {
+    "url": "a95d7952437d458cba4a5ea3386b4f1c.mp4",
+    "range": "bytes=0-",
+    "t": 1699,
+    "govde": 1015047,
+    "kodlu": 935020,
+    "son": "bitti",
+    "durum": 206,
+    "protokol": "h2",
+    "icerikAraligi": "bytes 0-1015046/1015047",
+    "sonVeri": 1815,
+    "kodluSon": 1016940
+   }
+  }
+ },
+ "videolar": [
+  {
+   "src": "a95d7952437d458cba4a5ea3386b4f1c.mp4",
+   "preload": "none",
+   "autoplay": true,
+   "paused": false,
+   "rs": 4,
+   "ns": 1,
+   "buffered": 10.83,
+   "sure": 10.83,
+   "gorunur": true
+  },
+  {
+   "src": "",
+   "preload": "none",
+   "autoplay": false,
+   "paused": true,
+   "rs": 0,
+   "ns": 0,
+   "buffered": 0,
+   "sure": 0,
+   "gorunur": false
+  },
+  {
+   "src": "",
+   "preload": "none",
+   "autoplay": false,
+   "paused": true,
+   "rs": 0,
+   "ns": 0,
+   "buffered": 0,
+   "sure": 0,
+   "gorunur": false
+  },
+  {
+   "src": "",
+   "preload": "none",
+   "autoplay": false,
+   "paused": true,
+   "rs": 0,
+   "ns": 0,
+   "buffered": 0,
+   "sure": 0,
+   "gorunur": false
+  },
+  {
+   "src": "",
+   "preload": "none",
+   "autoplay": false,
+   "paused": true,
+   "rs": 0,
+   "ns": 0,
+   "buffered": 0,
+   "sure": 0,
+   "gorunur": false
+  }
+ ],
+ "vlog": [
+  {
+   "t": 1100,
+   "fn": "play",
+   "video": "a95d7952",
+   "preload": "none",
+   "ns": 3,
+   "rs": 0,
+   "yigin": "at baslat (https://texttonext.com/:1712:22) | at window.requestIdleCallback.timeout (https://texttonext.com/:1718:85)"
+  },
+  {
+   "t": 1192,
+   "olay": "playing",
+   "video": "a95d7952"
+  }
+ ]
+}

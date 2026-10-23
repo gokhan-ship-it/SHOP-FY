@@ -1,0 +1,162 @@
+{
+ "url": "https://texttonext.com/?preview_theme_id=189388095808",
+ "senaryo": "slider",
+ "engellenen": 18,
+ "toplamVideoMB": 2.1,
+ "acilistaVideoMB": 0.97,
+ "videoBaytlari": {
+  "a95d7952437d458cba4a5ea3386b4f1c.mp4": 1015047,
+  "cf1fb3137a55469bb0d183e5d97d5d47.mp4": 1185194
+ },
+ "istekler": [
+  {
+   "url": "a95d7952437d458cba4a5ea3386b4f1c.mp4",
+   "range": "bytes=0-",
+   "t": 1583,
+   "govde": 1015047,
+   "kodlu": 958783,
+   "son": "bitti",
+   "durum": 206,
+   "protokol": "h2",
+   "icerikAraligi": "bytes 0-1015046/1015047",
+   "sonVeri": 1680,
+   "kodluSon": 1016917
+  },
+  {
+   "url": "cf1fb3137a55469bb0d183e5d97d5d47.mp4",
+   "range": "bytes=0-",
+   "t": 10603,
+   "govde": 1185194,
+   "kodlu": 1170142,
+   "son": "bitti",
+   "durum": 206,
+   "protokol": "h2",
+   "icerikAraligi": "bytes 0-1185193/1185194",
+   "sonVeri": 10762,
+   "kodluSon": 1187301
+  }
+ ],
+ "asama": {
+  "yuklemeSonrasi": {
+   "18028.230": {
+    "url": "a95d7952437d458cba4a5ea3386b4f1c.mp4",
+    "range": "bytes=0-",
+    "t": 1583,
+    "govde": 1015047,
+    "kodlu": 958783,
+    "son": "bitti",
+    "durum": 206,
+    "protokol": "h2",
+    "icerikAraligi": "bytes 0-1015046/1015047",
+    "sonVeri": 1680,
+    "kodluSon": 1016917
+   }
+  }
+ },
+ "videolar": [
+  {
+   "src": "a95d7952437d458cba4a5ea3386b4f1c.mp4",
+   "preload": "none",
+   "autoplay": true,
+   "paused": false,
+   "rs": 4,
+   "ns": 1,
+   "buffered": 10.83,
+   "sure": 10.83,
+   "gorunur": false
+  },
+  {
+   "src": "cf1fb3137a55469bb0d183e5d97d5d47.mp4",
+   "preload": "none",
+   "autoplay": false,
+   "paused": false,
+   "rs": 4,
+   "ns": 1,
+   "buffered": 5.03,
+   "sure": 5.03,
+   "gorunur": true
+  },
+  {
+   "src": "",
+   "preload": "none",
+   "autoplay": false,
+   "paused": true,
+   "rs": 0,
+   "ns": 0,
+   "buffered": 0,
+   "sure": 0,
+   "gorunur": true
+  },
+  {
+   "src": "",
+   "preload": "none",
+   "autoplay": false,
+   "paused": true,
+   "rs": 0,
+   "ns": 0,
+   "buffered": 0,
+   "sure": 0,
+   "gorunur": true
+  },
+  {
+   "src": "",
+   "preload": "none",
+   "autoplay": false,
+   "paused": true,
+   "rs": 0,
+   "ns": 0,
+   "buffered": 0,
+   "sure": 0,
+   "gorunur": true
+  }
+ ],
+ "vlog": [
+  {
+   "t": 991,
+   "fn": "play",
+   "video": "a95d7952",
+   "preload": "none",
+   "ns": 3,
+   "rs": 0,
+   "yigin": "at baslat (https://texttonext.com/:1712:22) | at window.requestIdleCallback.timeout (https://texttonext.com/:1718:85)"
+  },
+  {
+   "t": 1097,
+   "olay": "playing",
+   "video": "a95d7952"
+  },
+  {
+   "t": 10005,
+   "fn": "currentTime=0",
+   "video": "cf1fb313",
+   "preload": "none",
+   "ns": 3,
+   "rs": 0,
+   "yigin": "at bastanOynat (https://texttonext.com/:4218:27) | at basla (https://texttonext.com/:4227:7) | at root.vsSeeGoz.IntersectionObserver.threshold (https://texttonext.com/:4370:26)"
+  },
+  {
+   "t": 10005,
+   "fn": "play",
+   "video": "cf1fb313",
+   "preload": "none",
+   "ns": 3,
+   "rs": 0,
+   "yigin": "at bastanOynat (https://texttonext.com/:4220:18) | at basla (https://texttonext.com/:4227:7) | at root.vsSeeGoz.IntersectionObserver.threshold (https://texttonext.com/:4370:26)"
+  },
+  {
+   "t": 10174,
+   "olay": "playing",
+   "video": "cf1fb313"
+  },
+  {
+   "t": 12050,
+   "olay": "playing",
+   "video": "a95d7952"
+  },
+  {
+   "t": 15259,
+   "olay": "playing",
+   "video": "cf1fb313"
+  }
+ ]
+}

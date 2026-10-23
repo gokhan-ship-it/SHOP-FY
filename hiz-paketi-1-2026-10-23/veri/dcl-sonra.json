@@ -1,0 +1,2045 @@
+{
+ "yol": "/pages/couple-daha-fazla-bilgi-al",
+ "tid": "189388095808",
+ "engellenen": 18,
+ "dcl": 4229,
+ "domInteractive": 2364,
+ "fcp": 1768,
+ "load": 5114,
+ "htmlBayt": 577758,
+ "satirIciJsAdet": 55,
+ "satirIciJsBayt": 185146,
+ "dclOncesiOzet": {
+  "Document": {
+   "adet": 2,
+   "govdeKB": 550
+  },
+  "Stylesheet": {
+   "adet": 4,
+   "govdeKB": 354
+  },
+  "Image": {
+   "adet": 7,
+   "govdeKB": 208
+  },
+  "Font": {
+   "adet": 4,
+   "govdeKB": 38
+  },
+  "Script": {
+   "adet": 51,
+   "govdeKB": 1095
+  },
+  "Ping": {
+   "adet": 8,
+   "govdeKB": 0
+  },
+  "Fetch": {
+   "adet": 6,
+   "govdeKB": 2
+  },
+  "Other": {
+   "adet": 2,
+   "govdeKB": 0
+  }
+ },
+ "dclOncesiUzunGorevMs": 523,
+ "uzunGorevler": [
+  {
+   "bas": 1624,
+   "sure": 65,
+   "kaynak": ""
+  },
+  {
+   "bas": 1992,
+   "sure": 64,
+   "kaynak": ""
+  },
+  {
+   "bas": 2810,
+   "sure": 54,
+   "kaynak": ""
+  },
+  {
+   "bas": 3807,
+   "sure": 52,
+   "kaynak": ""
+  },
+  {
+   "bas": 3947,
+   "sure": 53,
+   "kaynak": ""
+  },
+  {
+   "bas": 4008,
+   "sure": 138,
+   "kaynak": ""
+  },
+  {
+   "bas": 4227,
+   "sure": 97,
+   "kaynak": ""
+  },
+  {
+   "bas": 4681,
+   "sure": 72,
+   "kaynak": ""
+  },
+  {
+   "bas": 5825,
+   "sure": 161,
+   "kaynak": ""
+  },
+  {
+   "bas": 5999,
+   "sure": 64,
+   "kaynak": ""
+  }
+ ],
+ "betikler": [
+  {
+   "src": "https://texttonext.com/cdn/s/trekkie.storefront.6efba1340ec6769622eb0d10b5cb070d43fb8d55.min.js",
+   "defer": false,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/checkouts/internal/preloads.js?locale=tr-TR",
+   "defer": false,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/loader.init-shop-cart-sync.tr.esm.js",
+   "defer": true,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js",
+   "defer": true,
+   "async": false,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shopifycloud/storefront/assets/storefront/load_feature-ed94c51f.js",
+   "defer": true,
+   "async": false,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shopifycloud/storefront/assets/storefront/autosizes-84416378.js",
+   "defer": false,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://cdn.shopify.com/shopifycloud/storefront/assets/storefront/origin_trials-318ab40a.js",
+   "defer": false,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://cdn.shopify.com/shopifycloud/preview-bar/preview-bar-modules.js",
+   "defer": true,
+   "async": false,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shop/t/35/assets/vendor.js?v=83836565987576270061792758692",
+   "defer": true,
+   "async": false,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shop/t/35/assets/theme.js?v=75801048943575296341792758692",
+   "defer": true,
+   "async": false,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shop/t/35/assets/custom-tt.js?v=184447107898414036681792758692",
+   "defer": true,
+   "async": false,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shop/t/35/assets/tt-sepet-toplam.js?v=68080074519434929521792758692",
+   "defer": true,
+   "async": false,
+   "head": true
+  },
+  {
+   "src": "https://cdn.shopify.com/storefront/web-components/chat.js",
+   "defer": false,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/wpm/b49d3b31aw169a7c20pfc9cb2c9m68241e55m.js",
+   "defer": false,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shopifycloud/storefront/assets/shop_events_listener-4e26a9ce.js",
+   "defer": false,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shopifycloud/perf-kit/shopify-perf-kit-3.11.0.min.js",
+   "defer": true,
+   "async": false,
+   "head": true
+  },
+  {
+   "src": "https://cdn.shopify.com/storefront/web-components/account.js",
+   "defer": false,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/wpm/b49d3b31aw169a7c20pfc9cb2c9m68241e55m.js",
+   "defer": false,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shopifycloud/storefront/assets/storefront/webmcp-23c12384.js",
+   "defer": false,
+   "async": true,
+   "head": true
+  },
+  {
+   "src": "https://texttonext.com/cdn/shop/t/35/assets/cart.js?v=94432527196190294371792758692",
+   "defer": true,
+   "async": false,
+   "head": false
+  },
+  {
+   "src": "https://texttonext.com/cdn/shop/t/35/assets/search.js?v=6305371176491887341792758692",
+   "defer": true,
+   "async": false,
+   "head": false
+  },
+  {
+   "src": "https://texttonext.com/cdn/shop/t/35/assets/ttn-cark.js?v=133743058591422455371792758692",
+   "defer": true,
+   "async": false,
+   "head": false
+  },
+  {
+   "src": "https://texttonext.com/cdn/shop/t/35/assets/instant-page.js?v=99963444960178710701792758692",
+   "defer": true,
+   "async": false,
+   "head": false
+  },
+  {
+   "src": "https://texttonext.com/cdn/shop/t/35/assets/taksit-tablosu.js?v=95825475027669818151792758692",
+   "defer": true,
+   "async": false,
+   "head": false
+  },
+  {
+   "src": "https://cdn.shopify.com/storefront/standard-actions.js",
+   "defer": false,
+   "async": false,
+   "head": false
+  }
+ ],
+ "ekranDisiEager": [
+  {
+   "tag": "IMG",
+   "src": "pp1.jpg",
+   "top": 3470,
+   "preload": null,
+   "loading": null
+  }
+ ],
+ "yoklama": [
+  {
+   "t": 1030,
+   "readyState": "loading",
+   "sliderElement": false,
+   "productForm": false,
+   "vsKurulu": false,
+   "mkKurulu": false,
+   "cbVar": false
+  },
+  {
+   "t": 1532,
+   "readyState": "loading",
+   "sliderElement": false,
+   "productForm": false,
+   "vsKurulu": false,
+   "mkKurulu": false,
+   "cbVar": false
+  },
+  {
+   "t": 2095,
+   "readyState": "loading",
+   "sliderElement": false,
+   "productForm": false,
+   "vsKurulu": false,
+   "mkKurulu": false,
+   "cbVar": true
+  },
+  {
+   "t": 2599,
+   "readyState": "interactive",
+   "sliderElement": false,
+   "productForm": false,
+   "vsKurulu": true,
+   "mkKurulu": true,
+   "cbVar": true
+  },
+  {
+   "t": 3102,
+   "readyState": "interactive",
+   "sliderElement": false,
+   "productForm": false,
+   "vsKurulu": true,
+   "mkKurulu": true,
+   "cbVar": true
+  },
+  {
+   "t": 3623,
+   "readyState": "interactive",
+   "sliderElement": false,
+   "productForm": false,
+   "vsKurulu": true,
+   "mkKurulu": true,
+   "cbVar": true
+  }
+ ],
+ "istekler": [
+  {
+   "url": "/pages/couple-daha-fazla-bilgi-al",
+   "tur": "Document",
+   "oncelik": "VeryHigh",
+   "bas": 475,
+   "ilkBayt": 705,
+   "son": 1734,
+   "govde": 562946,
+   "aktarim": 114041,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/theme.css",
+   "tur": "Stylesheet",
+   "oncelik": "VeryHigh",
+   "bas": 719,
+   "ilkBayt": 899,
+   "son": 1589,
+   "govde": 296049,
+   "aktarim": 43198,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/custom-tt.css",
+   "tur": "Stylesheet",
+   "oncelik": "VeryHigh",
+   "bas": 720,
+   "ilkBayt": 912,
+   "son": 945,
+   "govde": 4067,
+   "aktarim": 1947,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/files/logo-final_313d45dc-f613-4e0f-8d5e-9e8a15cf7316.png",
+   "tur": "Image",
+   "oncelik": "Low",
+   "bas": 728,
+   "ilkBayt": 1055,
+   "son": 1174,
+   "govde": 4748,
+   "aktarim": 5384,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/fonts/poppins/poppins_n4.0ba78fa5af9b0e1a374041b3ceaadf0a43b41362.woff2",
+   "tur": "Font",
+   "oncelik": "High",
+   "bas": 743,
+   "ilkBayt": 1149,
+   "son": 1145,
+   "govde": 9716,
+   "aktarim": 10475,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/fonts/poppins/poppins_n7.56758dcf284489feb014a026f3727f2f20a54626.woff2",
+   "tur": "Font",
+   "oncelik": "High",
+   "bas": 743,
+   "ilkBayt": 1157,
+   "son": 1153,
+   "govde": 9532,
+   "aktarim": 9986,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/apps.css",
+   "tur": "Stylesheet",
+   "oncelik": "VeryLow",
+   "bas": 744,
+   "ilkBayt": 1967,
+   "son": 2633,
+   "govde": 56426,
+   "aktarim": 7126,
+   "hata": ""
+  },
+  {
+   "url": "/checkouts/internal/preloads.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 768,
+   "ilkBayt": 1877,
+   "son": 1768,
+   "govde": 13773,
+   "aktarim": 3782,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/loader.init-shop-cart-sync.tr.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 768,
+   "ilkBayt": 964,
+   "son": 960,
+   "govde": 751,
+   "aktarim": 1101,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 768,
+   "ilkBayt": 1884,
+   "son": 1789,
+   "govde": 14849,
+   "aktarim": 4501,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/storefront/assets/storefront/load_feature-ed94c51f.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 774,
+   "ilkBayt": 2372,
+   "son": 2320,
+   "govde": 14007,
+   "aktarim": 3899,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/storefront/assets/storefront/origin_trials-318ab40a.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 782,
+   "ilkBayt": 1953,
+   "son": 1898,
+   "govde": 1679,
+   "aktarim": 1480,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/preview-bar/preview-bar-modules.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 790,
+   "ilkBayt": 2493,
+   "son": 2483,
+   "govde": 12755,
+   "aktarim": 5224,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/vendor.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 790,
+   "ilkBayt": 3694,
+   "son": 3691,
+   "govde": 89661,
+   "aktarim": 27838,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/theme.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 790,
+   "ilkBayt": 3944,
+   "son": 3942,
+   "govde": 195575,
+   "aktarim": 36922,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/custom-tt.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 790,
+   "ilkBayt": 2228,
+   "son": 2211,
+   "govde": 5387,
+   "aktarim": 2546,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/tt-sepet-toplam.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 792,
+   "ilkBayt": 2284,
+   "son": 2233,
+   "govde": 3107,
+   "aktarim": 1882,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/chat.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 796,
+   "ilkBayt": 3530,
+   "son": 3527,
+   "govde": 80659,
+   "aktarim": 23586,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/perf-kit/shopify-perf-kit-3.11.0.min.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 825,
+   "ilkBayt": 3712,
+   "son": 3706,
+   "govde": 86766,
+   "aktarim": 27457,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/account.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 826,
+   "ilkBayt": 2803,
+   "son": 2797,
+   "govde": 32241,
+   "aktarim": 10243,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/cart.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 875,
+   "ilkBayt": 2414,
+   "son": 2362,
+   "govde": 16562,
+   "aktarim": 4283,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/search.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 903,
+   "ilkBayt": 2282,
+   "son": 2226,
+   "govde": 4333,
+   "aktarim": 1901,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/ttn-cark.css",
+   "tur": "Stylesheet",
+   "oncelik": "Medium",
+   "bas": 905,
+   "ilkBayt": 1098,
+   "son": 1140,
+   "govde": 6389,
+   "aktarim": 2394,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/ttn-cark.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 939,
+   "ilkBayt": 2411,
+   "son": 2354,
+   "govde": 11957,
+   "aktarim": 4517,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/files/ii2.jpg",
+   "tur": "Image",
+   "oncelik": "High",
+   "bas": 1042,
+   "ilkBayt": 1220,
+   "son": 1603,
+   "govde": 27738,
+   "aktarim": 28228,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/storefront/assets/storefront/autosizes-84416378.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 1646,
+   "ilkBayt": 2204,
+   "son": 2183,
+   "govde": 3327,
+   "aktarim": 1782,
+   "hata": ""
+  },
+  {
+   "url": "/.well-known/shopify/monorail/unstable/produce_batch",
+   "tur": "Ping",
+   "oncelik": "VeryLow",
+   "bas": 1676,
+   "ilkBayt": null,
+   "son": 1731,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "/cdn/wpm/b49d3b31aw169a7c20pfc9cb2c9m68241e55m.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 1679,
+   "ilkBayt": null,
+   "son": 1759,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "/.well-known/shopify/monorail/unstable/produce_batch",
+   "tur": "Ping",
+   "oncelik": "VeryLow",
+   "bas": 1681,
+   "ilkBayt": null,
+   "son": 1758,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "/cdn/s/trekkie.storefront.6efba1340ec6769622eb0d10b5cb070d43fb8d55.min.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 1686,
+   "ilkBayt": 3803,
+   "son": 3799,
+   "govde": 128286,
+   "aktarim": 33038,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/storefront/assets/shop_events_listener-4e26a9ce.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 1687,
+   "ilkBayt": 2416,
+   "son": 2390,
+   "govde": 13482,
+   "aktarim": 4060,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/client.init-shop-cart-sync_BY_vZJsD.tr.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1708,
+   "ilkBayt": 2110,
+   "son": 2076,
+   "govde": 1757,
+   "aktarim": 1315,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.document_DMcRsBXN.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1708,
+   "ilkBayt": 2069,
+   "son": 2026,
+   "govde": 543,
+   "aktarim": 752,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.window_CAbVMZox.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1709,
+   "ilkBayt": 2098,
+   "son": 2061,
+   "govde": 1264,
+   "aktarim": 994,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.init_nGEMFljJ.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1709,
+   "ilkBayt": 2065,
+   "son": 2018,
+   "govde": 656,
+   "aktarim": 905,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.register_BK1wmFlx.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1710,
+   "ilkBayt": 3264,
+   "son": 3262,
+   "govde": 46754,
+   "aktarim": 15021,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.networkErrorMessages_DIkDbO6W.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1710,
+   "ilkBayt": 2072,
+   "son": 2040,
+   "govde": 349,
+   "aktarim": 716,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/client.shop-cart-sync_DNv0FZve.tr.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1711,
+   "ilkBayt": 2444,
+   "son": 2440,
+   "govde": 7889,
+   "aktarim": 3286,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.defineInitFunction_CIjOjzsO.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1711,
+   "ilkBayt": 2074,
+   "son": 2048,
+   "govde": 289,
+   "aktarim": 643,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.casing_U_9x-Om3.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1711,
+   "ilkBayt": 2550,
+   "son": 2548,
+   "govde": 11655,
+   "aktarim": 5146,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.utils_K8y2k-BJ.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1711,
+   "ilkBayt": 2430,
+   "son": 2426,
+   "govde": 9535,
+   "aktarim": 3689,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.v4_C3N_0s0v.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1711,
+   "ilkBayt": 2138,
+   "son": 2090,
+   "govde": 1197,
+   "aktarim": 1300,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.useUserRecognitionSignal_DzeL7kzX.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1711,
+   "ilkBayt": 2142,
+   "son": 2098,
+   "govde": 793,
+   "aktarim": 906,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.storage_DQF5v-OM.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1711,
+   "ilkBayt": 2145,
+   "son": 2105,
+   "govde": 569,
+   "aktarim": 728,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.hooks_CxK9kmB_.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1711,
+   "ilkBayt": 2160,
+   "son": 2116,
+   "govde": 140,
+   "aktarim": 607,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.authorize_DINGMyE5.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1712,
+   "ilkBayt": 2158,
+   "son": 2118,
+   "govde": 315,
+   "aktarim": 717,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.useEventListener_U2SBfutp.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1712,
+   "ilkBayt": 2161,
+   "son": 2126,
+   "govde": 1325,
+   "aktarim": 1161,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.validators_09U1U9sZ.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 1712,
+   "ilkBayt": 2162,
+   "son": 2133,
+   "govde": 1047,
+   "aktarim": 963,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/fonts/poppins/poppins_n6.aa29d4918bc243723d56b59572e18228ed0786f6.woff2",
+   "tur": "Font",
+   "oncelik": "VeryHigh",
+   "bas": 1771,
+   "ilkBayt": 3080,
+   "son": 3077,
+   "govde": 9860,
+   "aktarim": 10629,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/wpm/b49d3b31aw169a7c20pfc9cb2c9m68241e55m.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 1847,
+   "ilkBayt": null,
+   "son": 1900,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "/cdn/fonts/poppins/poppins_n5.ad5b4b72b59a00358afc706450c864c3c8323842.woff2",
+   "tur": "Font",
+   "oncelik": "VeryHigh",
+   "bas": 1916,
+   "ilkBayt": 3022,
+   "son": 3019,
+   "govde": 9480,
+   "aktarim": 9915,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/files/logo2.png",
+   "tur": "Image",
+   "oncelik": "Low",
+   "bas": 1945,
+   "ilkBayt": 2308,
+   "son": 3200,
+   "govde": 11658,
+   "aktarim": 12253,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/files/hf_20260622_085703_17ca3ea4-f610-4089-a720-769b2fb04696.png",
+   "tur": "Image",
+   "oncelik": "Low",
+   "bas": 1947,
+   "ilkBayt": 2310,
+   "son": 4750,
+   "govde": 81456,
+   "aktarim": 81995,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/files/hf_20260622_094337_8ac09c77-3e59-4141-9b00-16a1cf4bfd4b_1.png",
+   "tur": "Image",
+   "oncelik": "Low",
+   "bas": 1947,
+   "ilkBayt": 2342,
+   "son": 4721,
+   "govde": 78742,
+   "aktarim": 79211,
+   "hata": ""
+  },
+  {
+   "url": "/.well-known/shopify/monorail/unstable/produce_batch",
+   "tur": "Ping",
+   "oncelik": "VeryLow",
+   "bas": 1971,
+   "ilkBayt": null,
+   "son": 2056,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "/cdn/shop/files/pp1.jpg",
+   "tur": "Image",
+   "oncelik": "Low",
+   "bas": 2054,
+   "ilkBayt": 2410,
+   "son": 2769,
+   "govde": 4113,
+   "aktarim": 4611,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/files/beyazlogo_9fa2a926-6b56-4ae6-808d-220f37a4f807.png",
+   "tur": "Image",
+   "oncelik": "Low",
+   "bas": 2257,
+   "ilkBayt": 2558,
+   "son": 2912,
+   "govde": 4682,
+   "aktarim": 5155,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/instant-page.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 2297,
+   "ilkBayt": 2722,
+   "son": 2719,
+   "govde": 3051,
+   "aktarim": 1776,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/t/35/assets/taksit-tablosu.js",
+   "tur": "Script",
+   "oncelik": "Low",
+   "bas": 2302,
+   "ilkBayt": 3132,
+   "son": 3127,
+   "govde": 23265,
+   "aktarim": 7963,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/standard-actions.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 2359,
+   "ilkBayt": 2994,
+   "son": 2991,
+   "govde": 11389,
+   "aktarim": 4911,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/preview-bar/index.html",
+   "tur": "Document",
+   "oncelik": "VeryHigh",
+   "bas": 2531,
+   "ilkBayt": 2857,
+   "son": null,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/account/observe-logger-impl-CvnPPqr9.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 2861,
+   "ilkBayt": 3299,
+   "son": 3277,
+   "govde": 9002,
+   "aktarim": 3180,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/account/account-dialog-WF45V3jv.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 2948,
+   "ilkBayt": 3554,
+   "son": 3536,
+   "govde": 28974,
+   "aktarim": 8188,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/account/store-DT2mumoI.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 3004,
+   "ilkBayt": 3592,
+   "son": 3584,
+   "govde": 25286,
+   "aktarim": 8720,
+   "hata": ""
+  },
+  {
+   "url": "/api/2026-01/graphql.json",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 3615,
+   "ilkBayt": 3867,
+   "son": 3849,
+   "govde": 876,
+   "aktarim": 1259,
+   "hata": ""
+  },
+  {
+   "url": "/api/2026-01/graphql.json",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 3619,
+   "ilkBayt": 3863,
+   "son": 3884,
+   "govde": 876,
+   "aktarim": 1675,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/login-form.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 3641,
+   "ilkBayt": 4343,
+   "son": 4107,
+   "govde": 38379,
+   "aktarim": 11421,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/chat/agent-runtime-CHlNXBGM.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 3667,
+   "ilkBayt": 4672,
+   "son": 4664,
+   "govde": 158043,
+   "aktarim": 42947,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/chat/shopify-chat-telemetry-CCNEH5ZV.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 3670,
+   "ilkBayt": 4332,
+   "son": 3963,
+   "govde": 2941,
+   "aktarim": 1609,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/chat/host-monorail-BSwvZxld.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 3670,
+   "ilkBayt": 3922,
+   "son": 3900,
+   "govde": 2010,
+   "aktarim": 1337,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/chat/search-results-page-CvyDvEsB.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 3672,
+   "ilkBayt": 4334,
+   "son": 3971,
+   "govde": 3127,
+   "aktarim": 1824,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/chat/history-events-Rx0lCXfB.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 3672,
+   "ilkBayt": 3927,
+   "son": 3925,
+   "govde": 494,
+   "aktarim": 557,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/storefront/web-components/chat/icon-submit-Ck2fSUVy.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 3673,
+   "ilkBayt": 3925,
+   "son": 3907,
+   "govde": 242,
+   "aktarim": 527,
+   "hata": ""
+  },
+  {
+   "url": "/.well-known/shopify/monorail/unstable/produce_batch",
+   "tur": "Ping",
+   "oncelik": "VeryLow",
+   "bas": 3848,
+   "ilkBayt": null,
+   "son": 3914,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "/.well-known/shopify/monorail/unstable/produce_batch",
+   "tur": "Ping",
+   "oncelik": "VeryLow",
+   "bas": 3893,
+   "ilkBayt": null,
+   "son": 3922,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "/.well-known/shopify/monorail/unstable/produce_batch",
+   "tur": "Ping",
+   "oncelik": "VeryLow",
+   "bas": 3896,
+   "ilkBayt": null,
+   "son": 3924,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "/.well-known/shopify/monorail/unstable/produce_batch",
+   "tur": "Ping",
+   "oncelik": "VeryLow",
+   "bas": 3900,
+   "ilkBayt": null,
+   "son": 3925,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "/.well-known/shopify/monorail/unstable/produce_batch",
+   "tur": "Ping",
+   "oncelik": "VeryLow",
+   "bas": 3902,
+   "ilkBayt": null,
+   "son": 3925,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/logs",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 3907,
+   "ilkBayt": 4423,
+   "son": 4422,
+   "govde": 21,
+   "aktarim": 172,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/logs",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 3910,
+   "ilkBayt": 3912,
+   "son": 3912,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 3910,
+   "ilkBayt": 4472,
+   "son": 4468,
+   "govde": 21,
+   "aktarim": 72,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 3912,
+   "ilkBayt": 3913,
+   "son": 3913,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "/cart.js",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 4004,
+   "ilkBayt": 4344,
+   "son": 4186,
+   "govde": 303,
+   "aktarim": 1015,
+   "hata": ""
+  },
+  {
+   "url": "/api/collect",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 4142,
+   "ilkBayt": 4358,
+   "son": 4394,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_ABORTED"
+  },
+  {
+   "url": "/cdn/shopifycloud/storefront/assets/storefront/webmcp-23c12384.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4348,
+   "ilkBayt": 5075,
+   "son": 5072,
+   "govde": 86494,
+   "aktarim": 25657,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Ping",
+   "oncelik": "VeryLow",
+   "bas": 4365,
+   "ilkBayt": 4989,
+   "son": 4987,
+   "govde": 21,
+   "aktarim": 72,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "VeryLow",
+   "bas": 4368,
+   "ilkBayt": 4369,
+   "son": 4369,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/logs",
+   "tur": "Ping",
+   "oncelik": "VeryLow",
+   "bas": 4369,
+   "ilkBayt": 4969,
+   "son": 4965,
+   "govde": 21,
+   "aktarim": 172,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/logs",
+   "tur": "Other",
+   "oncelik": "VeryLow",
+   "bas": 4371,
+   "ilkBayt": 4372,
+   "son": 4372,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/loader.shop-login.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4401,
+   "ilkBayt": 4589,
+   "son": 4586,
+   "govde": 1446,
+   "aktarim": 1007,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 4430,
+   "ilkBayt": 4633,
+   "son": 4629,
+   "govde": 21,
+   "aktarim": 72,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 4438,
+   "ilkBayt": 4440,
+   "son": 4440,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/client.shop-login_C4wajUgw.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4594,
+   "ilkBayt": 5045,
+   "son": 5043,
+   "govde": 14784,
+   "aktarim": 5528,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.hooks_CMt9jLOl.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4595,
+   "ilkBayt": 4789,
+   "son": 4786,
+   "govde": 1078,
+   "aktarim": 1059,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.useElementEventListener_rlpBqqCH.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4595,
+   "ilkBayt": 4796,
+   "son": 4793,
+   "govde": 512,
+   "aktarim": 832,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.toast_Cb7xlk_A.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4596,
+   "ilkBayt": 4817,
+   "son": 4815,
+   "govde": 1005,
+   "aktarim": 985,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.StyleProvider_DI9IOSrK.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4597,
+   "ilkBayt": 4825,
+   "son": 4823,
+   "govde": 1575,
+   "aktarim": 1170,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.useDispatchEvent_ybVk3ib-.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4597,
+   "ilkBayt": 4831,
+   "son": 4829,
+   "govde": 548,
+   "aktarim": 858,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.BrandedButtonIcon_Se8l4bTa.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4597,
+   "ilkBayt": 4838,
+   "son": 4836,
+   "govde": 906,
+   "aktarim": 960,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.I18n_C_WZzTv0.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4599,
+   "ilkBayt": 4959,
+   "son": 4957,
+   "govde": 6663,
+   "aktarim": 2506,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.useWindoidMessageHandler_BnM6fYFW.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4601,
+   "ilkBayt": 4867,
+   "son": 4865,
+   "govde": 1262,
+   "aktarim": 1125,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.buildUrlSearchParams_BVuCkT0r.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4603,
+   "ilkBayt": 4973,
+   "son": 4972,
+   "govde": 2529,
+   "aktarim": 1713,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.useCompleteLogin_BZDa8Thp.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4605,
+   "ilkBayt": 4860,
+   "son": 4858,
+   "govde": 608,
+   "aktarim": 881,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.zoom_Bb7l8jwz.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4606,
+   "ilkBayt": 4874,
+   "son": 4873,
+   "govde": 585,
+   "aktarim": 828,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.windoid_BkiqS_xQ.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4607,
+   "ilkBayt": 4896,
+   "son": 4893,
+   "govde": 1507,
+   "aktarim": 1143,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.ShopLogin_BQOwF1qA.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4608,
+   "ilkBayt": 5066,
+   "son": 5065,
+   "govde": 15915,
+   "aktarim": 5715,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.colors_CaG6LKvC.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4608,
+   "ilkBayt": 5003,
+   "son": 5000,
+   "govde": 3230,
+   "aktarim": 1919,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.context_IZTYG4gY.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4608,
+   "ilkBayt": 4881,
+   "son": 4880,
+   "govde": 603,
+   "aktarim": 850,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.css_BkL6HXn4.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4610,
+   "ilkBayt": 5110,
+   "son": 5093,
+   "govde": 35186,
+   "aktarim": 9393,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.ShopIcon_Easp8aP2.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4611,
+   "ilkBayt": 4904,
+   "son": 4901,
+   "govde": 2075,
+   "aktarim": 1494,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.Button_CCqYoP0c.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4612,
+   "ilkBayt": 4910,
+   "son": 4908,
+   "govde": 678,
+   "aktarim": 831,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.debounce_C-IIq26m.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4612,
+   "ilkBayt": 4935,
+   "son": 4929,
+   "govde": 237,
+   "aktarim": 648,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.utils_CgJ7G6Ji.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 4613,
+   "ilkBayt": 4994,
+   "son": 4993,
+   "govde": 3411,
+   "aktarim": 2048,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/chunk.reportAssetMetrics_LYtbRIa1.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 5126,
+   "ilkBayt": 5311,
+   "son": 5301,
+   "govde": 3179,
+   "aktarim": 1743,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shop/files/apple-touch-icon.png",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 5189,
+   "ilkBayt": 5357,
+   "son": 5357,
+   "govde": 892,
+   "aktarim": 1733,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/translations/chunk.tr_DlVlP_Cj.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 5228,
+   "ilkBayt": 5400,
+   "son": 5394,
+   "govde": 118,
+   "aktarim": 589,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/checkout-web/assets/c1/polyfills.Cm4XMvKf.js",
+   "tur": "Other",
+   "oncelik": "VeryLow",
+   "bas": 5237,
+   "ilkBayt": 5412,
+   "son": 5486,
+   "govde": 0,
+   "aktarim": 18518,
+   "hata": ""
+  },
+  {
+   "url": "https://monorail-edge.shopifysvc.com/v1/produce",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 5305,
+   "ilkBayt": null,
+   "son": 5325,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "https://monorail-edge.shopifysvc.com/v1/produce",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 5307,
+   "ilkBayt": 5308,
+   "son": 5308,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://monorail-edge.shopifysvc.com/v1/produce",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 5316,
+   "ilkBayt": null,
+   "son": 5326,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "https://monorail-edge.shopifysvc.com/v1/produce",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 5318,
+   "ilkBayt": 5319,
+   "son": 5319,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://monorail-edge.shopifysvc.com/v1/produce",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 5320,
+   "ilkBayt": null,
+   "son": 5350,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "https://monorail-edge.shopifysvc.com/v1/produce",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 5324,
+   "ilkBayt": 5325,
+   "son": 5325,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 5345,
+   "ilkBayt": null,
+   "son": null,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 5356,
+   "ilkBayt": 5357,
+   "son": 5357,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/translations/chunk.tr_LKp5ZxRA.esm.js",
+   "tur": "Script",
+   "oncelik": "High",
+   "bas": 5407,
+   "ilkBayt": 5570,
+   "son": 5566,
+   "govde": 384,
+   "aktarim": 736,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/checkout-web/assets/c1/app.DDubGnuQ.js",
+   "tur": "Other",
+   "oncelik": "VeryLow",
+   "bas": 5500,
+   "ilkBayt": 5662,
+   "son": 5694,
+   "govde": 0,
+   "aktarim": 8602,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/checkout-web/assets/c1/2c1ab0fe.DUcPHPrJ.js",
+   "tur": "Other",
+   "oncelik": "VeryLow",
+   "bas": 5700,
+   "ilkBayt": 5995,
+   "son": 6052,
+   "govde": 0,
+   "aktarim": 40802,
+   "hata": ""
+  },
+  {
+   "url": "/services/login_with_shop/authorize",
+   "tur": "Document",
+   "oncelik": "VeryHigh",
+   "bas": 5906,
+   "ilkBayt": null,
+   "son": 5998,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_ABORTED"
+  },
+  {
+   "url": "/services/login_with_shop/authorize",
+   "tur": "Document",
+   "oncelik": "VeryHigh",
+   "bas": 5950,
+   "ilkBayt": null,
+   "son": 6013,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_ABORTED"
+  },
+  {
+   "url": "/services/login_with_shop/authorize",
+   "tur": "Document",
+   "oncelik": "VeryHigh",
+   "bas": 5985,
+   "ilkBayt": null,
+   "son": 6020,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_ABORTED"
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 6010,
+   "ilkBayt": 6551,
+   "son": 6546,
+   "govde": 21,
+   "aktarim": 72,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 6012,
+   "ilkBayt": 6017,
+   "son": 6017,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 6014,
+   "ilkBayt": 6214,
+   "son": 6210,
+   "govde": 21,
+   "aktarim": 72,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 6017,
+   "ilkBayt": 6026,
+   "son": 6024,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 6019,
+   "ilkBayt": 6236,
+   "son": 6231,
+   "govde": 21,
+   "aktarim": 72,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 6027,
+   "ilkBayt": 6028,
+   "son": 6028,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/checkout-web/assets/c1/6a2fc6d6.Dw_oQ0G3.js",
+   "tur": "Other",
+   "oncelik": "VeryLow",
+   "bas": 6083,
+   "ilkBayt": 6251,
+   "son": 6786,
+   "govde": 0,
+   "aktarim": 103409,
+   "hata": ""
+  },
+  {
+   "url": "https://shop.app/accounts/pre_auth",
+   "tur": "Document",
+   "oncelik": "VeryHigh",
+   "bas": 6332,
+   "ilkBayt": 6794,
+   "son": null,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://shop.app/accounts/pre_auth",
+   "tur": "Document",
+   "oncelik": "VeryHigh",
+   "bas": 6341,
+   "ilkBayt": 6781,
+   "son": null,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/checkout-web/assets/c1/3d539943.C4c1KdTN.js",
+   "tur": "Other",
+   "oncelik": "VeryLow",
+   "bas": 6797,
+   "ilkBayt": 7013,
+   "son": 7660,
+   "govde": 0,
+   "aktarim": 87261,
+   "hata": ""
+  },
+  {
+   "url": "https://shop.app/accounts/pre_auth",
+   "tur": "Document",
+   "oncelik": "VeryHigh",
+   "bas": 6816,
+   "ilkBayt": 7050,
+   "son": null,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 7359,
+   "ilkBayt": 7544,
+   "son": 7533,
+   "govde": 21,
+   "aktarim": 72,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 7361,
+   "ilkBayt": 7364,
+   "son": 7364,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 7391,
+   "ilkBayt": 7577,
+   "son": 7575,
+   "govde": 21,
+   "aktarim": 72,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 7392,
+   "ilkBayt": 7396,
+   "son": 7394,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://monorail-edge.shopifysvc.com/v1/produce",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 7403,
+   "ilkBayt": null,
+   "son": 7413,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "https://monorail-edge.shopifysvc.com/v1/produce",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 7405,
+   "ilkBayt": 7408,
+   "son": 7407,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 7520,
+   "ilkBayt": 7712,
+   "son": 7711,
+   "govde": 21,
+   "aktarim": 72,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 7523,
+   "ilkBayt": 7524,
+   "son": 7524,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://monorail-edge.shopifysvc.com/v1/produce",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 7536,
+   "ilkBayt": null,
+   "son": 7550,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": "net::ERR_FAILED"
+  },
+  {
+   "url": "https://monorail-edge.shopifysvc.com/v1/produce",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 7538,
+   "ilkBayt": 7539,
+   "son": 7539,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/checkout-web/assets/c1/bf3ecc32.B-OPZA77.js",
+   "tur": "Other",
+   "oncelik": "VeryLow",
+   "bas": 7683,
+   "ilkBayt": 7850,
+   "son": 7855,
+   "govde": 0,
+   "aktarim": 2298,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/checkout-web/assets/c1/bfe75f31.BZ8Zd_MI.js",
+   "tur": "Other",
+   "oncelik": "VeryLow",
+   "bas": 7867,
+   "ilkBayt": 8031,
+   "son": 8033,
+   "govde": 0,
+   "aktarim": 2132,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Fetch",
+   "oncelik": "High",
+   "bas": 8048,
+   "ilkBayt": null,
+   "son": null,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "https://otlp-http-production.shopifysvc.com/v1/metrics",
+   "tur": "Other",
+   "oncelik": "High",
+   "bas": 8050,
+   "ilkBayt": 8051,
+   "son": 8051,
+   "govde": 0,
+   "aktarim": 0,
+   "hata": ""
+  },
+  {
+   "url": "/cdn/shopifycloud/checkout-web/assets/c1/6f2620f5.CpS4ZldU.js",
+   "tur": "Other",
+   "oncelik": "VeryLow",
+   "bas": 8052,
+   "ilkBayt": 8266,
+   "son": 8212,
+   "govde": 0,
+   "aktarim": 1313,
+   "hata": ""
+  }
+ ]
+}

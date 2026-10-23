@@ -1,0 +1,264 @@
+{
+ "url": "https://texttonext.com/?preview_theme_id=189316038976",
+ "senaryo": "slider",
+ "engellenen": 17,
+ "toplamVideoMB": 12.84,
+ "acilistaVideoMB": 9.36,
+ "videoBaytlari": {
+  "d1f80cbb7fe44742a62534720b04641b.HD-1080p-7.2Mbps-90212974.mp4": 9809704,
+  "cba988e54fb04410952597d063359260.HD-1080p-4.8Mbps-90805872.mp4": 3041526,
+  "0f7a5969f84b471ea9627201014f757a.HD-1080p-3.3Mbps-90812719.mp4": 131072,
+  "31aa942e33a2410eb2f0f59c98d6ec0c.HD-1080p-3.3Mbps-90812860.mp4": 233152,
+  "480d1c54ad1840b2937ea0a31f7d5b1a.HD-1080p-4.8Mbps-90828569.mp4": 248096
+ },
+ "istekler": [
+  {
+   "url": "d1f80cbb7fe44742a62534720b04641b.HD-1080p-7.2Mbps-90212974.mp4",
+   "range": "bytes=0-",
+   "t": 656,
+   "govde": 9809704,
+   "kodlu": 9205301,
+   "son": "bitti",
+   "durum": 206,
+   "protokol": "h2",
+   "icerikAraligi": "bytes 0-9809703/9809704",
+   "sonVeri": 1125,
+   "kodluSon": 9821813
+  },
+  {
+   "url": "cba988e54fb04410952597d063359260.HD-1080p-4.8Mbps-90805872.mp4",
+   "range": "bytes=0-",
+   "t": 9611,
+   "govde": 3041526,
+   "kodlu": 2880917,
+   "son": "bitti",
+   "durum": 206,
+   "protokol": "h2",
+   "icerikAraligi": "bytes 0-3041525/3041526",
+   "sonVeri": 9765,
+   "kodluSon": 3045590
+  },
+  {
+   "url": "0f7a5969f84b471ea9627201014f757a.HD-1080p-3.3Mbps-90812719.mp4",
+   "range": "bytes=0-",
+   "t": 9611,
+   "govde": 131072,
+   "kodlu": 0,
+   "son": "iptal:net::ERR_ABORTED",
+   "durum": 206,
+   "protokol": "h2",
+   "icerikAraligi": "bytes 0-2133222/2133223",
+   "sonVeri": 9692
+  },
+  {
+   "url": "31aa942e33a2410eb2f0f59c98d6ec0c.HD-1080p-3.3Mbps-90812860.mp4",
+   "range": "bytes=0-",
+   "t": 9611,
+   "govde": 233152,
+   "kodlu": 0,
+   "son": "iptal:net::ERR_ABORTED",
+   "durum": 206,
+   "protokol": "h2",
+   "icerikAraligi": "bytes 0-2220195/2220196",
+   "sonVeri": 9686
+  },
+  {
+   "url": "480d1c54ad1840b2937ea0a31f7d5b1a.HD-1080p-4.8Mbps-90828569.mp4",
+   "range": "bytes=0-",
+   "t": 9611,
+   "govde": 248096,
+   "kodlu": 65608,
+   "son": "iptal:net::ERR_ABORTED",
+   "durum": 206,
+   "protokol": "h2",
+   "icerikAraligi": "bytes 0-3067212/3067213",
+   "sonVeri": 9732
+  }
+ ],
+ "asama": {
+  "yuklemeSonrasi": {
+   "16885.132": {
+    "url": "d1f80cbb7fe44742a62534720b04641b.HD-1080p-7.2Mbps-90212974.mp4",
+    "range": "bytes=0-",
+    "t": 656,
+    "govde": 9809704,
+    "kodlu": 9205301,
+    "son": "bitti",
+    "durum": 206,
+    "protokol": "h2",
+    "icerikAraligi": "bytes 0-9809703/9809704",
+    "sonVeri": 1125,
+    "kodluSon": 9821813
+   }
+  }
+ },
+ "videolar": [
+  {
+   "src": "d1f80cbb7fe44742a62534720b04641b.HD-1080p-7.2Mbps-90212974.mp4",
+   "preload": "metadata",
+   "autoplay": true,
+   "paused": false,
+   "rs": 4,
+   "ns": 1,
+   "buffered": 10.84,
+   "sure": 10.84,
+   "gorunur": false
+  },
+  {
+   "src": "cba988e54fb04410952597d063359260.HD-1080p-4.8Mbps-90805872.mp4",
+   "preload": "metadata",
+   "autoplay": false,
+   "paused": false,
+   "rs": 4,
+   "ns": 1,
+   "buffered": 5.03,
+   "sure": 5.03,
+   "gorunur": true
+  },
+  {
+   "src": "0f7a5969f84b471ea9627201014f757a.HD-1080p-3.3Mbps-90812719.mp4",
+   "preload": "metadata",
+   "autoplay": false,
+   "paused": true,
+   "rs": 4,
+   "ns": 1,
+   "buffered": 0.31,
+   "sure": 5.03,
+   "gorunur": true
+  },
+  {
+   "src": "31aa942e33a2410eb2f0f59c98d6ec0c.HD-1080p-3.3Mbps-90812860.mp4",
+   "preload": "metadata",
+   "autoplay": false,
+   "paused": true,
+   "rs": 4,
+   "ns": 1,
+   "buffered": 0.53,
+   "sure": 5.03,
+   "gorunur": true
+  },
+  {
+   "src": "480d1c54ad1840b2937ea0a31f7d5b1a.HD-1080p-4.8Mbps-90828569.mp4",
+   "preload": "metadata",
+   "autoplay": false,
+   "paused": true,
+   "rs": 4,
+   "ns": 1,
+   "buffered": 0.41,
+   "sure": 5.03,
+   "gorunur": true
+  }
+ ],
+ "vlog": [
+  {
+   "t": 467,
+   "fn": "currentTime=0",
+   "video": "cba988e5",
+   "preload": "metadata",
+   "ns": 1,
+   "rs": 0,
+   "yigin": "at bastanOynat (https://texttonext.com/:4108:27) | at show (https://texttonext.com/:4148:11) | at setup (https://texttonext.com/:4250:7)"
+  },
+  {
+   "t": 467,
+   "fn": "pause",
+   "video": "cba988e5",
+   "preload": "metadata",
+   "ns": 1,
+   "rs": 0,
+   "yigin": "at bastanOynat (https://texttonext.com/:4109:25) | at show (https://texttonext.com/:4148:11) | at setup (https://texttonext.com/:4250:7)"
+  },
+  {
+   "t": 467,
+   "fn": "pause",
+   "video": "0f7a5969",
+   "preload": "metadata",
+   "ns": 1,
+   "rs": 0,
+   "yigin": "at show (https://texttonext.com/:4150:13) | at setup (https://texttonext.com/:4250:7) | at window.vsKapsulInit (https://texttonext.com/:4322:45)"
+  },
+  {
+   "t": 467,
+   "fn": "currentTime=0",
+   "video": "0f7a5969",
+   "preload": "metadata",
+   "ns": 1,
+   "rs": 0,
+   "yigin": "at show (https://texttonext.com/:4151:31) | at setup (https://texttonext.com/:4250:7) | at window.vsKapsulInit (https://texttonext.com/:4322:45)"
+  },
+  {
+   "t": 467,
+   "fn": "pause",
+   "video": "31aa942e",
+   "preload": "metadata",
+   "ns": 1,
+   "rs": 0,
+   "yigin": "at show (https://texttonext.com/:4150:13) | at setup (https://texttonext.com/:4250:7) | at window.vsKapsulInit (https://texttonext.com/:4322:45)"
+  },
+  {
+   "t": 467,
+   "fn": "currentTime=0",
+   "video": "31aa942e",
+   "preload": "metadata",
+   "ns": 1,
+   "rs": 0,
+   "yigin": "at show (https://texttonext.com/:4151:31) | at setup (https://texttonext.com/:4250:7) | at window.vsKapsulInit (https://texttonext.com/:4322:45)"
+  },
+  {
+   "t": 467,
+   "fn": "pause",
+   "video": "480d1c54",
+   "preload": "metadata",
+   "ns": 1,
+   "rs": 0,
+   "yigin": "at show (https://texttonext.com/:4150:13) | at setup (https://texttonext.com/:4250:7) | at window.vsKapsulInit (https://texttonext.com/:4322:45)"
+  },
+  {
+   "t": 467,
+   "fn": "currentTime=0",
+   "video": "480d1c54",
+   "preload": "metadata",
+   "ns": 1,
+   "rs": 0,
+   "yigin": "at show (https://texttonext.com/:4151:31) | at setup (https://texttonext.com/:4250:7) | at window.vsKapsulInit (https://texttonext.com/:4322:45)"
+  },
+  {
+   "t": 619,
+   "olay": "playing",
+   "video": "d1f80cbb"
+  },
+  {
+   "t": 9088,
+   "fn": "currentTime=0",
+   "video": "cba988e5",
+   "preload": "metadata",
+   "ns": 2,
+   "rs": 0,
+   "yigin": "at bastanOynat (https://texttonext.com/:4108:27) | at basla (https://texttonext.com/:4117:7) | at root.vsSeeGoz.IntersectionObserver.threshold (https://texttonext.com/:4260:26)"
+  },
+  {
+   "t": 9088,
+   "fn": "play",
+   "video": "cba988e5",
+   "preload": "metadata",
+   "ns": 2,
+   "rs": 0,
+   "yigin": "at bastanOynat (https://texttonext.com/:4110:18) | at basla (https://texttonext.com/:4117:7) | at root.vsSeeGoz.IntersectionObserver.threshold (https://texttonext.com/:4260:26)"
+  },
+  {
+   "t": 9218,
+   "olay": "playing",
+   "video": "cba988e5"
+  },
+  {
+   "t": 11647,
+   "olay": "playing",
+   "video": "d1f80cbb"
+  },
+  {
+   "t": 14323,
+   "olay": "playing",
+   "video": "cba988e5"
+  }
+ ]
+}
