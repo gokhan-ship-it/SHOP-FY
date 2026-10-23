@@ -3,8 +3,8 @@
 **Kısa özet**
 - **Mevcut setler:** reklamdaki 3 mevcut set ACTIVE ve fiyatları listeyle aynı. Hiçbirine dokunulmadı.
 - **Yeni setler:** iki set DRAFT olarak oluşturuldu.
-  - Rose Pink + Prizma'nın galerisi hazır (12 görsel).
-  - Gold + Nova'nın galerisi boş; görselleri ayrıca göndereceksin.
+  - Rose Pink + Prizma'nın galerisi hazır (12 görsel). Ürünü sonradan sen ACTIVE yaptın.
+  - Gold + Nova'nın galerisi gold-nova-set.zip ile kuruldu (11 görsel, 4b bölümü). Ürün hâlâ DRAFT.
 - **Çark kodu:** tüm ürünlere uygulanıyor, beş set de kapsamda. İndirimde değişiklik gerekmedi, yapılmadı.
 - **İndirim testleri:**
   - Gerçek sepette (3 aktif set): 2.898 / 3.099 / 2.999 TL.
@@ -29,7 +29,7 @@
 |---|---|---|---|---|---|---|---|---|
 | couple1 | Prizma + Chloe Couple Zaman Kapsülü | 15434302423360 | prizma-chloe-couple-zaman-kapsulu | ACTIVE | 3.398 TL | boş | Evet | **2.898 TL** (sepet + hesap) |
 | couple2 | Nova + Chloe Couple Zaman Kapsülü | 10040852316480 | nora-vera-couple-zaman-kapsulu-kopya | ACTIVE | 3.599 TL | boş | Evet | **3.099 TL** (sepet + hesap) |
-| couple3 | Rose Pink + Prizma Couple Zaman Kapsülü | 15445654307136 | rose-pink-prizma-couple-zaman-kapsulu | **DRAFT** (yeni) | 3.799 TL | boş | Evet | **3.299 TL** (hesap) |
+| couple3 | Rose Pink + Prizma Couple Zaman Kapsülü | 15445654307136 | rose-pink-prizma-couple-zaman-kapsulu | **ACTIVE** (yeni; sonradan sen açtın) | 3.799 TL | boş | Evet | **3.299 TL** (hesap + sonradan sepet) |
 | couple4 | Gold + Nova Couple Zaman Kapsülü | 15445657387328 | gold-nova-couple-zaman-kapsulu | **DRAFT** (yeni) | 3.799 TL | boş | Evet | **3.299 TL** (hesap) |
 | couple5 | Luna + Aurora Couple Zaman Kapsülü, "316L Cerrahi Çelik" varyantı | 9976621793600 (varyant 67663049392448) | zaman-kapsulu-kolye-classic-white-925-ayar-gumus-couple-kopya | ACTIVE | 3.499 TL | **4.998 TL** (çelik varyantta dolu, değiştirmedim) | Evet | **2.999 TL** (sepet + hesap) |
 
@@ -48,7 +48,7 @@
 |---|---|
 | couple1 | https://texttonext.com/products/prizma-chloe-couple-zaman-kapsulu |
 | couple2 | https://texttonext.com/products/nora-vera-couple-zaman-kapsulu-kopya |
-| couple3 | https://texttonext.com/products/rose-pink-prizma-couple-zaman-kapsulu (ürün ACTIVE olunca açılır; bugün 404) |
+| couple3 | https://texttonext.com/products/rose-pink-prizma-couple-zaman-kapsulu (ürün ACTIVE; açılıyor, 200) |
 | couple4 | https://texttonext.com/products/gold-nova-couple-zaman-kapsulu (ürün ACTIVE olunca açılır; bugün 404) |
 | couple5 | https://texttonext.com/products/zaman-kapsulu-kolye-classic-white-925-ayar-gumus-couple-kopya |
 
@@ -159,7 +159,7 @@ Her iki sette aynı değişiklikler:
   - Rose Pink ve Gold'un kendi açıklamasında "925 ayar gümüşten üretilmiştir" yazıyor; ürünlerin gümüş varyantı da var.
   - Sette 316L çelik varyant kullanıldığı için malzeme 316L çelik kaldı.
   - Renkli kolyelerde "renk atmaz" ifadesinin doğru olduğundan emin ol.
-- Galeri: Rose Pink + Prizma'da 12 görsel var (4. bölüm). Gold + Nova'da boş.
+- Galeri: Rose Pink + Prizma'da 12 görsel (4. bölüm), Gold + Nova'da 11 görsel (4b bölümü).
 
 ## 4. Rose Pink + Prizma galerisi (12/12 READY)
 
@@ -195,6 +195,54 @@ Her iki sette aynı değişiklikler:
 - **Orijinal dosyanın kendisi indirildi:** 1856×2304; bayt sayıları Shopify'daki orijinalle eşit.
 - **3. model fotoğrafı:** vardı, satır atlanmadı.
 - **Rose Pink'in kendi galerisi:** dokunulmadı; işten sonra da aynı 10 görsel, aynı sırada.
+
+## 4b. Gold + Nova galerisi (11/11 READY, ek iş: gold-nova-set.zip)
+
+İşlem:
+- Ürüne manifest sırasıyla bağlandı.
+- Dosya adları aynen korundu; alt metinler manifest'ten yazıldı.
+- Varyanta bağlı görsel yok.
+- Ürünün durumu (DRAFT), fiyatı (3.799 TL) ve diğer ayarları değişmedi.
+- 400 KB üstü 8 görsel aynı yöntemle sıkıştırıldı (benzerlik ≥ %98,5, ad aynı).
+- Manifest'te atlanan satır yok.
+
+| Sıra | Medya ID | Dosya adı | Alt metin | Kaynak | Boyut / sıkıştırma | Durum |
+|---|---|---|---|---|---|---|
+| 1 | 46391258939712 | `gold-nova-01-packshot.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – ürün fotoğrafı | pakette | 197KB olduğu gibi | READY |
+| 2 | 46391258972480 | `gold-nova-02-couple-dort-adim.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – Couple 4 adımda nasıl çalışır | pakette | 337KB olduğu gibi | READY |
+| 3 | 46391259005248 | `gold-nova-03-lifestyle-1.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – model üzerinde 1 | Gold (316L Çelik) galerisi | 783KB → 388KB q69 %98.82 | READY |
+| 4 | 46391259038016 | `gold-nova-04-sette-neler-var.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – sette neler var | pakette | 260KB olduğu gibi | READY |
+| 5 | 46391259070784 | `gold-nova-05-lifestyle-2.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – model üzerinde 2 | pakette (Nova model üzerinde 1) | 407KB → 341KB q89 %99.86 | READY |
+| 6 | 46391259103552 | `gold-nova-06-couple-uygulama.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – Couple uygulama ekranları | pakette | 548KB → 384KB q84 %99.75 | READY |
+| 7 | 46391259136320 | `gold-nova-07-garanti.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – süresiz çip garantisi | pakette (Nova garanti) | 514KB → 396KB q88 %99.90 | READY |
+| 8 | 46391259169088 | `gold-nova-08-hediyeler-biter.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – hediye ömrü karşılaştırması | pakette | 363KB olduğu gibi | READY |
+| 9 | 46391259201856 | `gold-nova-09-kutu-teslimat.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – kutu ve teslimat | pakette | 516KB → 390KB q87 %99.81 | READY |
+| 10 | 46391259234624 | `gold-nova-10-lifestyle-3.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – model üzerinde 3 | Gold (316L Çelik) galerisi | 749KB → 372KB q69 %98.94 | READY |
+| 11 | 46391259267392 | `gold-nova-11-lifestyle-4.jpg` | Gold + Nova Couple Zaman Kapsülü – Couple set – model üzerinde 4 | pakette (Nova model üzerinde 2) | 505KB → 394KB q85 %99.80 | READY |
+
+**Gold'dan indirilen görseller:**
+- **Kaynak ürün:** "Gold" (**9100723585344**). 316L Çelik varyantı: SKU ATR313GY, 2.699 TL.
+- **Diğer "Gold" kayıtları kullanılmadı:**
+  - "Gold Çelik – ATR313GY" (15418511393088): DRAFT, 270 TL, galerisinde model fotoğrafı yok.
+  - Gold Couple ve Taşlıkilit Gold başka ürünler.
+
+| Yeni dosya | Gold'daki dosya | Kaynak medya ID |
+|---|---|---|
+| `gold-nova-03-lifestyle-1.jpg` | `gold-03-lifestyle-1.jpg` | **46287649931584** |
+| `gold-nova-10-lifestyle-3.jpg` | `gold-05-lifestyle-2.jpg` | **46287649997120** |
+
+- **Orijinal dosyanın kendisi indirildi:** 1856×2304; bayt sayıları eşit (802.453 ve 766.989).
+- **Gold'un kendi galerisi:** dokunulmadı; işten sonra da aynı 9 görsel, aynı sırada.
+
+**Rose Pink + Prizma:**
+- Aynı zip'le galerisi bu raporun 4. bölümünde kuruldu.
+- Bu turda yeniden yüklenmedi, kopya dosya oluşmasın diye.
+- Kontrol edildi: 12/12 READY, manifest sırasıyla.
+
+**Rose Pink + Prizma'nın gerçek sepet testi** (ürün ACTIVE olduktan sonra):
+- 3.799 TL → çark koduyla **3.299 TL**.
+- Otomatik indirim devreye girmedi, sipariş oluşmadı.
+- Kayıt: `veri/rose-pink-prizma-sepet.json`.
 
 ## 5. Çark indirimi (yalnızca okundu, değiştirilmedi)
 
