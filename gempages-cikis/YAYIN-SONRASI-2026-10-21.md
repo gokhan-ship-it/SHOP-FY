@@ -30,3 +30,9 @@ GemPages kaldırılana kadar her tema yayına alımında aynı şey tekrar olur.
 ## Canlı kontrol (`betikler/kaldirma-sonrasi.js`, telefon 390 ve masaüstü 1440, sayfa ekleri geri alındıktan sonra)
 - 62 kontrolün 60'ı geçti. QR adresinin 12 biçimi, alt kılavuzlar, iletisimsayfasi, sozlesmeler, iki "daha fazla bilgi" sayfası, couplezamankapsulleri ve gizli sayfaların 301'leri doğru.
 - Kalan 2 hata ana sayfada (telefon ve masaüstü): açılan app embed, GemPages betiklerini (`gp-lazyload.v2.js`, `gp-global.js`) ve `files.gempages.net` yazı tiplerini yüklüyor. Sayfa 200 dönüyor; metin ve 5 videonun hepsi yükleniyor. Embed elle kapatılınca bu iki kontrolün de geçmesi beklenir.
+
+## Kaldırma öncesi son kontrol (23.10.2026)
+- Canlı tema hâlâ "Gumus stok notu - 2026-10-21" (189316038976); arada başka tema yayına alınmadı.
+- Shopify bağlantısı bu sırada başka bir mağazaya (JantiFox) bağlıydı; orada yalnızca okuma yapıldı. texttonext kontrolü vitrin üzerinden yapıldı.
+- `betikler/kaldirma-sonrasi.js`: 62 kontrolün 60'ı geçti, 21.10 ile aynı. Kalan 2 hata yine ana sayfada (telefon ve masaüstü): açık app embed'in GemPages betikleri ve fontları. Sayfa 200 dönüyor; metin ve 5 videonun hepsi yükleniyor.
+- **Hüküm: GemPages kaldırılabilir.** Uygulama kaldırılınca embed de kalkar; kaldırma sonrası aynı betik 62/62 vermeli.
