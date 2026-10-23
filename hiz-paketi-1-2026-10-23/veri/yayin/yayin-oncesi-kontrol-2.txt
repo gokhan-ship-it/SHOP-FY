@@ -1,0 +1,16 @@
+Yayin oncesi kontrol (2. tur) - 2026-10-23T19:48Z
+
+Neden: kullanicinin istegiyle "Reklam setleri" isinin tema degisiklikleri bu temaya
+(Hiz paketi 1 - 2026-10-23, 189388095808) uygulandi; magazada 20 tema siniri oldugu
+icin ayri kopya olusturulamadi. Ayrinti: reklam-setleri-2026-10-23/RAPOR.md
+
+1) Canli tema: Gumus stok notu - 2026-10-21 (189316038976), MAIN, updatedAt 2026-10-21T10:26:55Z (degismedi).
+   18:02 ve 19:48 UTC MD5 listeleri birebir ayni (701 dosya).
+2) Kopya: 703 dosya. Canlidan farkli 21, yalniz kopyada 2, yalniz canlida 0.
+   15:50 kontrolunden sonra kopyada degisen 8 dosya (hepsi reklam setleri isi):
+   sections/tt-cok-satanlar.liquid, templates/index.json, templates/collection.json,
+   templates/collection.couple-urunler.json, templates/collection.zaman-kapsulu-bileklik.json,
+   templates/collection.zaman-kapsulu-kolyeler.json, templates/collection.celik-kolyeler.json,
+   templates/collection.gp-template-bk-default.json
+3) config/settings_data.json degismedi (1e36b108); canliyla fark yine 3 beklenen kayit.
+4) content_for_header on kaydi gecerli (canli degismedi).

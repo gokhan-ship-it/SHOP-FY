@@ -1,0 +1,157 @@
+{
+ "r": {
+  "id": "gid://shopify/Product/15445654307136",
+  "title": "Rose Pink + Prizma Couple Zaman Kapsülü",
+  "handle": "rose-pink-prizma-couple-zaman-kapsulu",
+  "status": "DRAFT",
+  "templateSuffix": "zaman-kapsulu-couple",
+  "vendor": "Text To Next",
+  "productType": "",
+  "tags": [],
+  "category": {
+   "id": "gid://shopify/TaxonomyCategory/aa-6-8"
+  },
+  "seo": {
+   "title": "Rose Pink + Prizma Couple Zaman Kapsülü | Text To Next"
+  },
+  "totalInventory": 0,
+  "collections": {
+   "nodes": [
+    {
+     "handle": "couple-collection"
+    },
+    {
+     "handle": "kampanyali-couple-setler"
+    }
+   ]
+  },
+  "resourcePublicationsV2": {
+   "nodes": []
+  },
+  "metafields": {
+   "nodes": [
+    {
+     "namespace": "custom",
+     "key": "card_title",
+     "type": "single_line_text_field",
+     "value": "Rose Pink + Prizma"
+    },
+    {
+     "namespace": "custom",
+     "key": "boyutlar",
+     "type": "rich_text_field",
+     "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Rose Pink: \",\"bold\":true},{\"type\":\"text\",\"value\":\"Zincir uzunluğu 40+5 cm (ayarlanabilir)\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Prizma: \",\"bold\":true},{\"type\":\"text\",\"value\":\"21 cm\"}]}]}"
+    },
+    {
+     "namespace": "delivery",
+     "key": "category_setting",
+     "type": "json_string",
+     "value": "{\"category_delivery_setting\":{\"category\":{\"is_add\":1,\"order_delivery_info\":\"<span style=\\\"display:block\\\">Ücretsiz Kargo <strong>{country_flag}</strong> <strong>{country_name}</strong></span><span style=\\\"display:block\\\">Ödeme sonrasında <strong>{cutoff_time}</strong> for dispatch today, and you&#x27;ll receive your package between <strong>{order_delivered_minimum_date} and {order_delivered_maximum_date}</strong><br/></span>\",\"out_of_stock_info\":\"<span style=\\\"display:block\\\"></span>\",\"out_of_stock_mode\":0,\"order_progress_bar_mode\":0,\"order_progress_setting\":{\"ordered\":{\"svg_number\":0,\"title\":\"Ordered\",\"tips_description\":\"After you place the order, we will need 1-3 days to prepare the shipment\"},\"order_ready\":{\"svg_number\":4,\"is_active\":1,\"title\":\"Order Ready\",\"date_title\":\"{order_ready_minimum_date} - {order_ready_maximum_date}\",\"tips_description\":\"Orders will start to be shipped\"},\"order_delivered\":{\"svg_number\":10,\"title\":\"Delivered\",\"date_title\":\"{order_delivered_minimum_date} - {order_delivered_maximum_date}\",\"tips_description\":\"Estimated arrival date range：{order_delivered_minimum_date} - {order_delivered_maximum_date}\"}},\"order_delivery_work_week\":[0,1,1,1,1,1,0],\"order_delivery_day_range\":[10,20],\"order_delivery_calc_method\":0,\"order_ready_work_week\":[1,1,1,1,1,1,1],\"order_ready_day_range\":[1,3],\"order_ready_calc_method\":2,\"holiday\":[],\"is_show_all_unadd_country\":1,\"widget_display_status\":0,\"widget_layout_mode\":0,\"cart_checkout_status\":1,\"cart_checkout_title\":\"Tahmini Teslimat\",\"cart_checkout_description\":\"{order_delivered_minimum_date} and {order_delivered_maximum_date}\",\"category_id\":\"267339\",\"t\":1719567796},\"language\":{\"tr\":{\"order_delivery_info\":\"<span style=\\\"display:block\\\">Free Shipping to <strong>{country_flag}</strong> <strong>{country_name}</strong></span><span style=\\\"display:block\\\">Order within the next <strong>{cutoff_time}</strong> for dispatch today, and you'll receive your package between <strong>{order_delivered_minimum_date} and {order_delivered_maximum_date}</strong><br/></span>\",\"out_of_stock_info\":\"<p></p>\",\"order_progress_setting\":{\"ordered\":{\"svg_number\":0,\"title\":\"Ordered\",\"tips_description\":\"After you place the order, we will need 1-3 days to prepare the shipment\"},\"order_ready\":{\"svg_number\":4,\"is_active\":1,\"title\":\"Order Ready\",\"date_title\":\"{order_ready_minimum_date} - {order_ready_maximum_date}\",\"tips_description\":\"Orders will start to be shipped\"},\"order_delivered\":{\"svg_number\":10,\"title\":\"Delivered\",\"date_title\":\"{order_delivered_minimum_date} - {order_delivered_maximum_date}\",\"tips_description\":\"Estimated arrival date range：{order_delivered_minimum_date} - {order_delivered_maximum_date}\"}},\"delivery_date_custom_format\":\"{month_local} {day}\",\"delivery_date_format_month_translate\":[\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"],\"delivery_date_format_week_translate\":[\"Sun\",\"Mon\",\"Tues\",\"Wed\",\"Thur\",\"Fri\",\"Sat\"],\"delivery_countdown_custom_format\":\"{hours} {hours_local} {minutes} {minutes_local} {seconds} {seconds_local}\",\"countdown_format_translate\":[\"Hours\",\"Minutes\",\"Seconds\"],\"cart_checkout_title\":\"Estimated between\",\"cart_checkout_description\":\"{order_delivered_minimum_date} and {order_delivered_maximum_date}\"}},\"country\":{\"tr\":{\"order_delivery_work_week\":[0,1,1,1,1,1,0],\"order_delivery_day_range\":[10,20],\"order_delivery_calc_method\":0,\"order_ready_work_week\":[1,1,1,1,1,1,1],\"order_ready_day_range\":[1,3],\"order_ready_calc_method\":2,\"holiday\":[],\"widget_display_status\":0,\"widget_layout_mode\":0,\"cart_checkout_status\":1,\"languages\":[]}}}}"
+    },
+    {
+     "namespace": "shopify--discovery--product_recommendation",
+     "key": "complementary_products",
+     "type": "list.product_reference",
+     "value": "[\"gid://shopify/Product/9565334012224\",\"gid://shopify/Product/9564915433792\",\"gid://shopify/Product/9100763169088\",\"gid://shopify/Product/9100772475200\"]"
+    },
+    {
+     "namespace": "shopify--discovery--product_recommendation",
+     "key": "related_products_display",
+     "type": "single_line_text_field",
+     "value": "ahead"
+    },
+    {
+     "namespace": "global",
+     "key": "title_tag",
+     "type": "string",
+     "value": "Rose Pink + Prizma Couple Zaman Kapsülü | Text To Next"
+    },
+    {
+     "namespace": "global",
+     "key": "description_tag",
+     "type": "string",
+     "value": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄"
+    }
+   ]
+  }
+ },
+ "g": {
+  "id": "gid://shopify/Product/15445657387328",
+  "title": "Gold + Nova Couple Zaman Kapsülü",
+  "handle": "gold-nova-couple-zaman-kapsulu",
+  "status": "DRAFT",
+  "templateSuffix": "zaman-kapsulu-couple",
+  "vendor": "Text To Next",
+  "productType": "",
+  "tags": [],
+  "category": {
+   "id": "gid://shopify/TaxonomyCategory/aa-6-8"
+  },
+  "seo": {
+   "title": "Gold + Nova Couple Zaman Kapsülü | Text To Next"
+  },
+  "totalInventory": 0,
+  "collections": {
+   "nodes": [
+    {
+     "handle": "couple-collection"
+    },
+    {
+     "handle": "kampanyali-couple-setler"
+    }
+   ]
+  },
+  "resourcePublicationsV2": {
+   "nodes": []
+  },
+  "metafields": {
+   "nodes": [
+    {
+     "namespace": "custom",
+     "key": "card_title",
+     "type": "single_line_text_field",
+     "value": "Gold + Nova"
+    },
+    {
+     "namespace": "custom",
+     "key": "boyutlar",
+     "type": "rich_text_field",
+     "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Gold: \",\"bold\":true},{\"type\":\"text\",\"value\":\"Zincir uzunluğu 40+5 cm (ayarlanabilir)\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Nova: \",\"bold\":true},{\"type\":\"text\",\"value\":\"17+5 cm (ayarlanabilir)\"}]}]}"
+    },
+    {
+     "namespace": "delivery",
+     "key": "category_setting",
+     "type": "json_string",
+     "value": "{\"category_delivery_setting\":{\"category\":{\"is_add\":1,\"order_delivery_info\":\"<span style=\\\"display:block\\\">Ücretsiz Kargo <strong>{country_flag}</strong> <strong>{country_name}</strong></span><span style=\\\"display:block\\\">Ödeme sonrasında <strong>{cutoff_time}</strong> for dispatch today, and you&#x27;ll receive your package between <strong>{order_delivered_minimum_date} and {order_delivered_maximum_date}</strong><br/></span>\",\"out_of_stock_info\":\"<span style=\\\"display:block\\\"></span>\",\"out_of_stock_mode\":0,\"order_progress_bar_mode\":0,\"order_progress_setting\":{\"ordered\":{\"svg_number\":0,\"title\":\"Ordered\",\"tips_description\":\"After you place the order, we will need 1-3 days to prepare the shipment\"},\"order_ready\":{\"svg_number\":4,\"is_active\":1,\"title\":\"Order Ready\",\"date_title\":\"{order_ready_minimum_date} - {order_ready_maximum_date}\",\"tips_description\":\"Orders will start to be shipped\"},\"order_delivered\":{\"svg_number\":10,\"title\":\"Delivered\",\"date_title\":\"{order_delivered_minimum_date} - {order_delivered_maximum_date}\",\"tips_description\":\"Estimated arrival date range：{order_delivered_minimum_date} - {order_delivered_maximum_date}\"}},\"order_delivery_work_week\":[0,1,1,1,1,1,0],\"order_delivery_day_range\":[10,20],\"order_delivery_calc_method\":0,\"order_ready_work_week\":[1,1,1,1,1,1,1],\"order_ready_day_range\":[1,3],\"order_ready_calc_method\":2,\"holiday\":[],\"is_show_all_unadd_country\":1,\"widget_display_status\":0,\"widget_layout_mode\":0,\"cart_checkout_status\":1,\"cart_checkout_title\":\"Tahmini Teslimat\",\"cart_checkout_description\":\"{order_delivered_minimum_date} and {order_delivered_maximum_date}\",\"category_id\":\"267339\",\"t\":1719567796},\"language\":{\"tr\":{\"order_delivery_info\":\"<span style=\\\"display:block\\\">Free Shipping to <strong>{country_flag}</strong> <strong>{country_name}</strong></span><span style=\\\"display:block\\\">Order within the next <strong>{cutoff_time}</strong> for dispatch today, and you'll receive your package between <strong>{order_delivered_minimum_date} and {order_delivered_maximum_date}</strong><br/></span>\",\"out_of_stock_info\":\"<p></p>\",\"order_progress_setting\":{\"ordered\":{\"svg_number\":0,\"title\":\"Ordered\",\"tips_description\":\"After you place the order, we will need 1-3 days to prepare the shipment\"},\"order_ready\":{\"svg_number\":4,\"is_active\":1,\"title\":\"Order Ready\",\"date_title\":\"{order_ready_minimum_date} - {order_ready_maximum_date}\",\"tips_description\":\"Orders will start to be shipped\"},\"order_delivered\":{\"svg_number\":10,\"title\":\"Delivered\",\"date_title\":\"{order_delivered_minimum_date} - {order_delivered_maximum_date}\",\"tips_description\":\"Estimated arrival date range：{order_delivered_minimum_date} - {order_delivered_maximum_date}\"}},\"delivery_date_custom_format\":\"{month_local} {day}\",\"delivery_date_format_month_translate\":[\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"],\"delivery_date_format_week_translate\":[\"Sun\",\"Mon\",\"Tues\",\"Wed\",\"Thur\",\"Fri\",\"Sat\"],\"delivery_countdown_custom_format\":\"{hours} {hours_local} {minutes} {minutes_local} {seconds} {seconds_local}\",\"countdown_format_translate\":[\"Hours\",\"Minutes\",\"Seconds\"],\"cart_checkout_title\":\"Estimated between\",\"cart_checkout_description\":\"{order_delivered_minimum_date} and {order_delivered_maximum_date}\"}},\"country\":{\"tr\":{\"order_delivery_work_week\":[0,1,1,1,1,1,0],\"order_delivery_day_range\":[10,20],\"order_delivery_calc_method\":0,\"order_ready_work_week\":[1,1,1,1,1,1,1],\"order_ready_day_range\":[1,3],\"order_ready_calc_method\":2,\"holiday\":[],\"widget_display_status\":0,\"widget_layout_mode\":0,\"cart_checkout_status\":1,\"languages\":[]}}}}"
+    },
+    {
+     "namespace": "shopify--discovery--product_recommendation",
+     "key": "complementary_products",
+     "type": "list.product_reference",
+     "value": "[\"gid://shopify/Product/9565334012224\",\"gid://shopify/Product/9564915433792\",\"gid://shopify/Product/9100763169088\",\"gid://shopify/Product/9100772475200\"]"
+    },
+    {
+     "namespace": "shopify--discovery--product_recommendation",
+     "key": "related_products_display",
+     "type": "single_line_text_field",
+     "value": "ahead"
+    },
+    {
+     "namespace": "global",
+     "key": "title_tag",
+     "type": "string",
+     "value": "Gold + Nova Couple Zaman Kapsülü | Text To Next"
+    },
+    {
+     "namespace": "global",
+     "key": "description_tag",
+     "type": "string",
+     "value": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄"
+    }
+   ]
+  }
+ },
+ "dogrula_isareti": {
+  "name": "Text To Next"
+ }
+}
