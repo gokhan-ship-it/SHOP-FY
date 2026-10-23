@@ -36,3 +36,9 @@ GemPages kaldırılana kadar her tema yayına alımında aynı şey tekrar olur.
 - Shopify bağlantısı bu sırada başka bir mağazaya (JantiFox) bağlıydı; orada yalnızca okuma yapıldı. texttonext kontrolü vitrin üzerinden yapıldı.
 - `betikler/kaldirma-sonrasi.js`: 62 kontrolün 60'ı geçti, 21.10 ile aynı. Kalan 2 hata yine ana sayfada (telefon ve masaüstü): açık app embed'in GemPages betikleri ve fontları. Sayfa 200 dönüyor; metin ve 5 videonun hepsi yükleniyor.
 - **Hüküm: GemPages kaldırılabilir.** Uygulama kaldırılınca embed de kalkar; kaldırma sonrası aynı betik 62/62 vermeli.
+
+## Kaldırma sonrası kontrol (23.10.2026)
+- GemPages kullanıcı tarafından kaldırıldı. Canlı tema aynı (189316038976).
+- `betikler/kaldirma-sonrasi.js`: **62/62 geçti.** QR adresinin 12 biçimi, alt kılavuzlar, iletisimsayfasi, sozlesmeler, iki "daha fazla bilgi" sayfası, couplezamankapsulleri, ana sayfa, koleksiyonlar ve ürünler; telefon ve masaüstü. Hiçbir sayfada GemPages isteği ya da JS hatası yok.
+- Yönlendirmeler: `text-to-next-pro-1` ve iki eski landing → `/`; `landing-page-feb-16-11-03-09` → `text-to-next-pro-1` → `/`; `contact-page-mar-5-21-32-02` → `iletisimsayfasi`. `ana-sayfa` ve `event-zaman-kapsulu` 404 (gizli sayfalar, önceden de öyle).
+- Kalan iz: ana sayfa kaynağında görünmeyen bir HTML yorumu ("Failed to render app block 6478312753674380289 … does not exist"). Sebep: `settings_data.json` içinde silinen embed'in kaydı duruyor. Görünür etkisi yok; sonraki tema çalışmasında taslak temada bu blok kaydı silinebilir.
