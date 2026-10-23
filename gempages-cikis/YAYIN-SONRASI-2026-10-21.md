@@ -42,3 +42,11 @@ GemPages kaldırılana kadar her tema yayına alımında aynı şey tekrar olur.
 - `betikler/kaldirma-sonrasi.js`: **62/62 geçti.** QR adresinin 12 biçimi, alt kılavuzlar, iletisimsayfasi, sozlesmeler, iki "daha fazla bilgi" sayfası, couplezamankapsulleri, ana sayfa, koleksiyonlar ve ürünler; telefon ve masaüstü. Hiçbir sayfada GemPages isteği ya da JS hatası yok.
 - Yönlendirmeler: `text-to-next-pro-1` ve iki eski landing → `/`; `landing-page-feb-16-11-03-09` → `text-to-next-pro-1` → `/`; `contact-page-mar-5-21-32-02` → `iletisimsayfasi`. `ana-sayfa` ve `event-zaman-kapsulu` 404 (gizli sayfalar, önceden de öyle).
 - Kalan iz: ana sayfa kaynağında görünmeyen bir HTML yorumu ("Failed to render app block 6478312753674380289 … does not exist"). Sebep: `settings_data.json` içinde silinen embed'in kaydı duruyor. Görünür etkisi yok; sonraki tema çalışmasında taslak temada bu blok kaydı silinebilir.
+
+## Kaldırma sonrası yönetim tarafı (23.10.2026, Admin API, salt okuma)
+- **Uygulama:** GemPages `appInstallations` listesinde yok.
+- **Canlı tema:** aynı (189316038976, updatedAt 2026-10-21T10:26:55Z). Bizim üç dosyamızın MD5'i aynı.
+- **Sayfalar:** Yayındaki hiçbir sayfa `gp-` şablonu kullanmıyor. 21.10'da geri alınan 8 sayfa onaylı eklerinde. GemPages şablonlu 5 sayfanın hepsi gizli (`text-to-next-pro-1`, `ana-sayfa`, `event-zaman-kapsulu`, iki eski landing).
+- **Yönlendirmeler:** 6'sı yerinde.
+- **Temada kalanlar:** Uygulama kaldırılınca GemPages'in tema dosyaları silinmedi (yaklaşık 170 dosya: `gp-section-*`, `gp-global-section-*`, `snippets/gp-*`, `page.gp-template-*`, `*.gem-*` / `*.gp-template-bk-default`, `layout/theme.gempages.*`). Yayındaki sayfaların hiçbiri bunları kullanmıyor. `settings_data.json` içindeki embed kaydı (blok `6478312753674380289`) da duruyor; ana sayfadaki "Failed to render app block" yorumunun kaynağı bu.
+- **Öneri (onay bekliyor):** Sonraki tema çalışmasında taslak temada embed kaydı ve kullanılmayan GemPages dosyaları temizlenebilir. Gizli sayfaların şablonları bu dosyalara bağlı olduğu için temizlikten önce o sayfalar için karar verilmeli.
