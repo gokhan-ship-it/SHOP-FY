@@ -1,0 +1,90 @@
+{
+ "yapiskan": [
+  {
+   "w": 390,
+   "cark": false,
+   "sonuc": {
+    "y": 1200,
+    "waUst": 683,
+    "waAlt": 731,
+    "kartUst": 743,
+    "carkUst": null,
+    "yigin": "101px",
+    "bosluk": 12
+   }
+  },
+  {
+   "w": 360,
+   "cark": false,
+   "sonuc": {
+    "y": 1200,
+    "waUst": 619,
+    "waAlt": 667,
+    "kartUst": 679,
+    "carkUst": null,
+    "yigin": "101px",
+    "bosluk": 12
+   }
+  },
+  {
+   "w": 1440,
+   "cark": false,
+   "sonuc": {
+    "y": 3300,
+    "waUst": 687,
+    "waAlt": 735,
+    "kartUst": 747,
+    "carkUst": null,
+    "yigin": "153px",
+    "bosluk": 12
+   }
+  },
+  {
+   "w": 390,
+   "cark": true,
+   "sonuc": {
+    "y": 1200,
+    "waUst": 647,
+    "waAlt": 695,
+    "kartUst": 742,
+    "carkUst": 707,
+    "yigin": "137px",
+    "bosluk": 12
+   }
+  },
+  {
+   "w": 360,
+   "cark": true,
+   "sonuc": {
+    "y": 1500,
+    "waUst": 584,
+    "waAlt": 632,
+    "kartUst": 679,
+    "carkUst": 644,
+    "yigin": "136px",
+    "bosluk": 12
+   }
+  },
+  {
+   "w": 1440,
+   "cark": true,
+   "sonuc": {
+    "y": 3300,
+    "waUst": 651,
+    "waAlt": 699,
+    "kartUst": 747,
+    "carkUst": 711,
+    "yigin": "189px",
+    "bosluk": 12
+   }
+  }
+ ],
+ "katman": {
+  "normal": "visible / opaklik 1 / tiklama auto",
+  "modal (has-modal-open)": "hidden / opaklik 0 / tiklama none",
+  "hamburger (ttm-kilit)": "hidden / opaklik 0 / tiklama none",
+  "Nasil calisir paneli": "hidden / opaklik 0 / tiklama none",
+  "kapaninca": "visible / opaklik 1 / tiklama auto",
+  "gercek sepet cekmecesi": "acilamadi: page.click: Timeout 8000ms exceeded."
+ }
+}
