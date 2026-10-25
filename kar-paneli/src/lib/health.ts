@@ -5,7 +5,7 @@ import { getJsonSetting, getSetting } from "./settings";
 import { getLockErrors, lastSync } from "./sync/log";
 import { accountsToSync, metaConfigured, tokenDaysLeft } from "./sync/meta";
 import { shopifyConfigured } from "./sync/shopify";
-import { TZ } from "./time";
+import { diffDays, todayIst, trDate, TZ } from "./time";
 
 export interface Warning {
   level: "kirmizi" | "sari";
@@ -23,7 +23,21 @@ export function healthWarnings(): Warning[] {
     w.push({ level: "kirmizi", key: `kilit-${l.source}`, title: l.source === "shopify" ? "Shopify kilidi: yanlış mağaza" : "Meta kilidi: izinsiz hesap", detail: l.message, href: "/saglik" });
 
   if (!shopifyConfigured()) w.push({ level: "sari", key: "shopify-yok", title: "Shopify bağlantısı kurulmadı", detail: "Panel şimdilik TrueProfit verisiyle sınırlı. Kurulum ekranından Shopify anahtarlarını girin.", href: "/kurulum" });
-  if (!env("META_ACCESS_TOKEN")) w.push({ level: "sari", key: "meta-yok", title: "Meta bağlantısı kurulmadı", detail: "Reklam harcaması şimdilik TrueProfit aylık yedeğinden geliyor.", href: "/kurulum" });
+  if (!env("META_ACCESS_TOKEN")) {
+    // Meta API yoksa reklam verisi elle yüklenen Ads Manager raporundan (ya da TrueProfit yedeğinden) gelir
+    const lastAd = c.prepare("select max(date) d from ad_insights_daily where level = 'account'").get() as { d: string | null };
+    const tpEnd = c.prepare("select max(o.date) d from tp_orders o where substr(o.date,1,7) in (select month from tp_monthly where facebook_ad_spend > 0)").get() as { d: string | null };
+    const last = [lastAd.d, tpEnd.d].filter((x): x is string => !!x).sort().pop() ?? null;
+    const today = todayIst();
+    if (!last || diffDays(last, today) > 7)
+      w.push({
+        level: "sari",
+        key: "reklam-eski",
+        title: `Reklam harcaması ${last ? trDate(last) + " tarihinden sonra" : "hiç"} girilmedi`,
+        detail: "Bu günlerde reklam gideri 0 sayılıyor, kâr olduğundan yüksek görünür. Reklam Yöneticisi'nden gün kırılımlı raporu indirip Ayarlar → Meta raporu yükle'den yükleyin.",
+        href: "/saglik#meta-rapor",
+      });
+  }
 
   const days = tokenDaysLeft();
   if (days !== null && days <= 7)

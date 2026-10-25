@@ -283,6 +283,7 @@ export const adInsightsDaily = sqliteTable(
     actionsJson: text("actions_json"),
     actionValuesJson: text("action_values_json"),
     currency: text("currency"),
+    source: text("source").notNull().default("api"), // api | csv (Ads Manager raporu elle yüklendi)
     fetchedAt: text("fetched_at").notNull(),
   },
   (t) => [

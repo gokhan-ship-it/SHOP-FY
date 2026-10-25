@@ -110,6 +110,15 @@ export default async function Kurulum({ searchParams }: { searchParams: Promise<
           <button className="btn-primary">Anahtarı 60 günlüğe çevir ve kaydet</button>
           <p className="text-xs text-muted">Veri yalnızca Text To Next reklam hesabından (act_426980502817664) çekilir. Diğer hesaplar için Ayarlar ekranından izin verebilirsiniz.</p>
         </form>
+        <div className="mt-4">
+          <Note tone="warn">
+            Geliştirici sitesi “You cannot access this service” diyorsa: reklam harcamasını{" "}
+            <Link href="/saglik#meta-rapor" className="font-medium underline">
+              Ayarlar → Meta raporu yükle
+            </Link>{" "}
+            bölümünden Reklam Yöneticisi raporuyla girebilirsiniz.
+          </Note>
+        </div>
         <details className="mt-4">
           <summary className="cursor-pointer text-sm text-ink-2">Kalıcı çözüm (isteğe bağlı): süresi dolmayan anahtar</summary>
           <div className="mt-2 space-y-2 text-sm text-ink-2">

@@ -1,5 +1,5 @@
-/** RFC 4180 uyumlu küçük CSV okuyucu (tırnak içi virgül ve satır sonu destekli). */
-export function parseCsv(text: string): string[][] {
+/** RFC 4180 uyumlu küçük CSV okuyucu (tırnak içi ayraç ve satır sonu destekli). */
+export function parseCsv(text: string, delimiter = ","): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
   let field = "";
@@ -15,7 +15,7 @@ export function parseCsv(text: string): string[][] {
         } else inQ = false;
       } else field += c;
     } else if (c === '"') inQ = true;
-    else if (c === ",") {
+    else if (c === delimiter) {
       row.push(field);
       field = "";
     } else if (c === "\n" || c === "\r") {
@@ -31,6 +31,14 @@ export function parseCsv(text: string): string[][] {
     rows.push(row);
   }
   return rows.filter((r) => r.some((x) => x.trim() !== ""));
+}
+
+/** İlk satıra bakarak ayracı tahmin eder: virgül, noktalı virgül ya da sekme. */
+export function detectDelimiter(text: string): string {
+  const first = text.replace(/^\uFEFF/, "").split(/\r?\n/, 1)[0] ?? "";
+  const counts = [",", ";", "\t"].map((d) => [d, first.split(d).length - 1] as const);
+  counts.sort((a, b) => b[1] - a[1]);
+  return counts[0][1] > 0 ? counts[0][0] : ",";
 }
 
 export function parseCsvObjects(text: string): Record<string, string>[] {

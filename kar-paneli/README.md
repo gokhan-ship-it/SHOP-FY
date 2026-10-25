@@ -26,6 +26,7 @@ bash ~/Downloads/TTN-Kar-Kurulum/kurulum.command
 | `src/lib/sync/` | Shopify (toplu + artımlı), Meta (arşiv + saatlik + gece), TCMB kuru, kilit kontrolleri |
 | `src/lib/scheduler.ts` | Sunucu içi zamanlayıcı (Shopify 15 dk, Meta saatlik + 03:00, kur günlük, yedek 04:00) |
 | `src/lib/validation.ts` | TrueProfit referansıyla aylık doğrulama raporu |
+| `src/lib/metaCsv.ts` | Meta API'ye erişilemediğinde Reklam Yöneticisi'nden indirilen gün kırılımlı raporun içe aktarılması (Ayarlar → Meta raporu yükle) |
 | `src/app/` | Ekranlar: Ana ekran, Kâr tablosu, Ürünler, Giderler, Maliyetler, Veri sağlığı ve Ayarlar, Kurulum |
 | `mac/` | Kurulum/kaldırma betikleri, uygulama simgesi |
 | `tests/` | Birim ve uçtan uca testler (`npm test`) |
@@ -34,7 +35,7 @@ bash ~/Downloads/TTN-Kar-Kurulum/kurulum.command
 
 - Shopify ve Meta'ya yalnızca okuma yapılır (Shopify'da tek mutation, okuma amaçlı `bulkOperationRunQuery`'dir).
 - Her Shopify senkronunun başında `shop { myshopifyDomain }` ayardaki adresle karşılaştırılır; tutmazsa hiçbir veri yazılmaz ve panelde kırmızı uyarı çıkar.
-- Meta verisi yalnızca `META_ALLOWED_AD_ACCOUNTS` listesindeki hesaplardan çekilir. JantiFox hesabı (`act_1389905762203018`) hiçbir koşulda çekilmez.
+- Meta verisi yalnızca `META_ALLOWED_AD_ACCOUNTS` listesindeki hesaplardan çekilir. JantiFox hesabı (`act_1389905762203018`) hiçbir koşulda çekilmez. Elle yüklenen raporlarda JantiFox ya da izinsiz hesap görünürse dosya reddedilir.
 - Meta anahtarı URL'ye değil `Authorization` başlığına konur; hata mesajları gizli değerlerden temizlenir.
 - Müşteri kişisel verisi (ad, adres, telefon, e-posta) çekilmez; yalnızca müşteri ID'si tutulur.
 

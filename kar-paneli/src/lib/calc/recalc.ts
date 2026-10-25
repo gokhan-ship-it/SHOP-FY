@@ -239,24 +239,24 @@ export function rebuildDaily(db: DB = getDb(), ctx: CalcContext = loadContext(db
   // Meta reklam: izinli hesapların hesap seviyesindeki günlük harcaması
   const metaRows = c
     .prepare(
-      `select i.date, i.currency, sum(i.spend) spend from ad_insights_daily i
+      `select i.date, i.currency, sum(i.spend) spend, max(case when i.source = 'csv' then 1 else 0 end) csv from ad_insights_daily i
          join ad_accounts a on a.id = i.account_id and a.allowed = 1
         where i.level = 'account' group by i.date, i.currency`,
     )
-    .all() as { date: string; currency: string | null; spend: number }[];
-  const metaMonths = new Set<string>();
+    .all() as { date: string; currency: string | null; spend: number; csv: number }[];
   const metaSource = new Map<string, string>();
+  const metaByDay = new Map<string, number>();
   for (const r of metaRows) {
     const rate = !r.currency || r.currency === "TRY" ? 1 : (fx(r.currency, r.date) ?? 0);
     get(r.date).meta += r.spend * rate;
-    metaMonths.add(r.date.slice(0, 7));
-    metaSource.set(r.date, "meta");
+    metaByDay.set(r.date, (metaByDay.get(r.date) ?? 0) + r.spend * rate);
+    metaSource.set(r.date, r.csv ? "csv" : "meta");
   }
 
-  // Meta'nın vermediği aylar için TrueProfit aylık reklam harcaması yedeği
+  // Meta verisi olmayan günler için TrueProfit aylık reklam harcaması yedeği:
+  // ayın Meta/rapor ile kapsanmayan günlerine, ay toplamından kalan tutar eşit bölünür.
   const tp = c.prepare("select month, facebook_ad_spend spend from tp_monthly where facebook_ad_spend > 0").all() as { month: string; spend: number }[];
   for (const r of tp) {
-    if (metaMonths.has(r.month)) continue;
     const from = `${r.month}-01`;
     const lastTp = (c.prepare("select max(date) d from tp_orders where substr(date, 1, 7) = ?").get(r.month) as { d: string | null }).d;
     const isLatestTpMonth = !tp.some((x) => x.month > r.month);
@@ -264,8 +264,12 @@ export function rebuildDaily(db: DB = getDb(), ctx: CalcContext = loadContext(db
     if (isLatestTpMonth && lastTp && lastTp < to) to = lastTp;
     if (to > today) to = today;
     const ds = eachDay(from, to);
-    for (const d of ds) {
-      get(d).meta += r.spend / ds.length;
+    const uncovered = ds.filter((d) => !metaByDay.has(d));
+    if (!uncovered.length) continue;
+    const covered = ds.reduce((s, d) => s + (metaByDay.get(d) ?? 0), 0);
+    const rest = Math.max(0, r.spend - covered);
+    for (const d of uncovered) {
+      get(d).meta += rest / uncovered.length;
       metaSource.set(d, "trueprofit");
     }
   }

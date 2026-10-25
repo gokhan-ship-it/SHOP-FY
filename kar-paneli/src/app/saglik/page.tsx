@@ -10,8 +10,9 @@ import { backupDir, cloudCandidates } from "@/lib/backup";
 import { validationReport, METRIC_LABELS, TOLERANCES, type Metric } from "@/lib/validation";
 import { BLOCKED_AD_ACCOUNTS, env } from "@/lib/config";
 import { dec, num, tl } from "@/lib/format";
-import { monthLabel, trDateTime } from "@/lib/time";
+import { monthLabel, trDate, trDateTime } from "@/lib/time";
 import type { RecalcSummary } from "@/lib/calc/recalc";
+import type { ImportSummary } from "@/lib/metaCsv";
 import { backupNowAction, resetShopifyHistoryAction, saveMetaAction, setAdAccountAction, setBackupDirAction, syncNowAction } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +40,7 @@ export default async function Saglik({ searchParams }: { searchParams: Promise<R
   const bdir = backupDir();
   const cands = cloudCandidates();
   const known = conn.metaAccounts;
+  const lastReport = getJsonSetting<(ImportSummary & { at: string; file: string }) | null>("meta_rapor_son", null);
 
   return (
     <div className="space-y-5">
@@ -221,6 +223,81 @@ export default async function Saglik({ searchParams }: { searchParams: Promise<R
           </details>
         </Card>
       </div>
+
+      <Card id="meta-rapor" title="Meta raporu yükle (Reklam Yöneticisi'nden)">
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div>
+            <p className="text-sm text-ink-2">Meta otomatik bağlanamadığında reklam harcaması buradan girilir. Haftada bir yüklemeniz yeterli; aynı günleri tekrar yüklerseniz eskisinin yerine geçer.</p>
+            <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm text-ink-2">
+              <li>
+                <b>adsmanager.facebook.com</b>&apos;u açın. Sol üstteki hesap seçicide <b>Text To Next (426980502817664)</b> seçili olsun.
+              </li>
+              <li>
+                <b>Kampanyalar</b> sekmesine geçin. Filtre olmasın (<b>Tüm reklamlar</b>); yalnızca &quot;etkin&quot; seçiliyse kapatılmış kampanyaların harcaması eksik kalır.
+              </li>
+              <li>
+                Sağ üstten tarih aralığını seçin. <b>İlk seferde</b> 1 Ocak 2025 – bugün; sonraki haftalarda son 14 gün.
+              </li>
+              <li>
+                <b>Kırılım → Zamana göre → Gün</b>&apos;ü seçin.
+              </li>
+              <li>
+                <b>Dışa aktar</b> (aşağı ok simgesi) → <b>Tablo verilerini dışa aktar</b> → <b>.csv</b> → Dışa aktar.
+              </li>
+              <li>İnen dosyayı aşağıdan seçip <b>Yükle</b>&apos;ye basın.</li>
+            </ol>
+            <form action="/api/meta-rapor" method="post" encType="multipart/form-data" className="mt-4 flex flex-wrap items-center gap-2">
+              <input type="file" name="dosya" accept=".csv,.xlsx,text/csv" required className="text-sm file:mr-2 file:rounded-md file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-sm" />
+              <button className="btn-primary">Yükle</button>
+            </form>
+            <p className="mt-2 text-xs text-muted">Dosyada JantiFox ya da başka bir hesap görünürse reddedilir, hiçbir şey yazılmaz.</p>
+          </div>
+          <div>
+            {lastReport ? (
+              <div className="space-y-2 text-sm">
+                <div>
+                  Son yükleme: <span className="font-medium">{trDateTime(lastReport.at)}</span>
+                  <span className="block text-xs break-all text-muted">{lastReport.file}</span>
+                </div>
+                <div>
+                  Kapsadığı günler: <span className="font-medium">{trDate(lastReport.from)} – {trDate(lastReport.to)}</span> ({lastReport.days} gün)
+                </div>
+                <div>
+                  Toplam harcama: <span className="num font-medium">{tl(lastReport.total)}</span>
+                </div>
+                {lastReport.tpCompare.length > 0 && (
+                  <table className="tbl num mt-2">
+                    <thead>
+                      <tr>
+                        <th>Ay</th>
+                        <th className="text-right">Rapor</th>
+                        <th className="text-right">TrueProfit</th>
+                        <th className="text-right">Fark</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lastReport.tpCompare.map((x) => {
+                        const diff = x.tp ? (x.csv - x.tp) / x.tp : null;
+                        return (
+                          <tr key={x.month}>
+                            <td>{monthLabel(x.month, true)}</td>
+                            <td className="text-right">{tl(x.csv)}</td>
+                            <td className="text-right">{tl(x.tp)}</td>
+                            <td className={`text-right ${diff !== null && Math.abs(diff) > 0.005 ? "text-neg" : "text-pos"}`}>{diff === null ? "—" : `%${dec(diff * 100, 1)}`}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+                {lastReport.tpCompare.length > 0 && <p className="text-xs text-muted">TrueProfit son ayı 23 Ekim&apos;e kadar sayar; o ayda fark normaldir.</p>}
+              </div>
+            ) : (
+              <Note>Henüz rapor yüklenmedi. Reklam harcaması şimdilik TrueProfit&apos;in aylık rakamlarından geliyor (23 Ekim 2026&apos;ya kadar).</Note>
+            )}
+          </div>
+        </div>
+      </Card>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Card id="yedek" title="Yedek">

@@ -1,0 +1,1 @@
+ALTER TABLE `ad_insights_daily` ADD `source` text DEFAULT 'api' NOT NULL;
