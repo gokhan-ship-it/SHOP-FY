@@ -1,0 +1,1156 @@
+{
+ "genislik": 390,
+ "mod": "kampanya",
+ "sayfalar": {
+  "anaCanli": {
+   "csY": 469,
+   "csH": 663,
+   "catalY": 1131,
+   "kartBoylari": [
+    353
+   ],
+   "ilkKart": {
+    "ad": "Prizma + Chloe",
+    "kat": "couple",
+    "satir": [
+     "COUPLE ZAMAN KAPSÜLÜ",
+     "Prizma + Chloe",
+     "3.398 TL Kişi başı 1.699 TL 500 TL indirim aktif 2.898 TL 3.398 TL Kişi başı 1.449 TL"
+    ],
+    "erkekEtiket": {
+     "m": "2'li set",
+     "sol": 8,
+     "ust": 8,
+     "w": 48
+    }
+   }
+  },
+  "ana": {
+   "csY": 469,
+   "csH": 663,
+   "catalY": 1131,
+   "kartBoylari": [
+    353
+   ],
+   "ilkKart": {
+    "ad": "Prizma",
+    "kat": "erkek",
+    "satir": [
+     "SINGLE ZAMAN KAPSÜLÜ",
+     "Prizma",
+     "1.999 TL2.399 TL500 TL indirim aktif 1.499 TL 1.999 TL Erkek koleksiyonunu gör"
+    ],
+    "erkekEtiket": {
+     "m": "Erkek",
+     "sol": 62,
+     "ust": 8,
+     "w": 44
+    }
+   },
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "Prizma",
+     "sinif": "ttn-adv-badge ttn-adv-badge--kart",
+     "gorunur": true,
+     "bolum": "tt_cok_satanlar_1",
+     "aria": "Avantajlı ürün, 400 TL indirim",
+     "role": "img",
+     "kutu": {
+      "sol": 3,
+      "ust": 5,
+      "sag": 96,
+      "alt": 133,
+      "w": 56,
+      "h": 56
+     },
+     "kap": "tt-cs-gorsel",
+     "transform": "matrix(0.990268, -0.139173, 0.139173, 0.990268, 0, 0)",
+     "filter": "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 2.5px)",
+     "ids": [
+      "ttnb-face-template-28033999372608__tt_cok_satanlar_1-15434301210944-kart",
+      "ttnb-rim-template-28033999372608__tt_cok_satanlar_1-15434301210944-kart",
+      "ttnb-gloss-template-28033999372608__tt_cok_satanlar_1-15434301210944-kart",
+      "ttnb-ss-template-28033999372608__tt_cok_satanlar_1-15434301210944-kart"
+     ],
+     "metinler": [
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42.9,
+       "y1": 58.9,
+       "merkezeEnUzak": 32.8,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42,
+       "y1": 58,
+       "merkezeEnUzak": 32.5,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54.9,
+       "y1": 78.9,
+       "merkezeEnUzak": 39.9,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54,
+       "y1": 78,
+       "merkezeEnUzak": 39.2,
+       "font": "Poppins",
+       "kalinlik": "700"
+      }
+     ]
+    }
+   ],
+   "gorunenRozet": 1,
+   "seritler": [
+    {
+     "urun": "Prizma",
+     "gorunur": true,
+     "metin": "Son gün 1 Kasım",
+     "kutu": {
+      "sol": 0,
+      "ust": 176,
+      "sag": 0,
+      "alt": 0,
+      "w": 156,
+      "h": 18
+     },
+     "refW": 156,
+     "zemin": "rgb(10, 10, 10)",
+     "yazi": "rgb(214, 255, 0)",
+     "boyut": "10.5px",
+     "kalinlik": "700",
+     "tekSatir": true,
+     "ikon": [
+      11,
+      11
+     ],
+     "ikonYaziArasi": 4,
+     "altOgeler": []
+    }
+   ],
+   "gorunenSerit": 1,
+   "etiketler": [],
+   "gorunenEtiket": 0,
+   "eskiHap": 0,
+   "idTekrar": 0,
+   "yedek": [],
+   "poppins700": true,
+   "tasma": 0,
+   "cip_erkek": {
+    "ilk3": [
+     "Prizma",
+     "Astor",
+     "Noir"
+    ],
+    "prizmaRozetGorunur": true
+   },
+   "cip_kadin": {
+    "ilk3": [
+     "Aurora",
+     "Chloe",
+     "Santorin"
+    ],
+    "prizmaRozetGorunur": false
+   },
+   "cip_tumu": {
+    "ilk3": [
+     "Prizma",
+     "Prizma + Chloe",
+     "Nova + Chloe"
+    ],
+    "prizmaRozetGorunur": true
+   }
+  },
+  "erkek-single": {
+   "gorunenKart": 13,
+   "prizmaSirasi": 1,
+   "ayniSatirKartBoylari": [
+    293,
+    293
+   ],
+   "prizmaMetin": "Zaman Kapsülü BileklikPrizma 1,999.00TL2,399.00TL 500 TL indirim aktif 1.499,00 TL 1.999,0",
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "sinif": "ttn-adv-badge ttn-adv-badge--kart",
+     "gorunur": true,
+     "bolum": "tt_secim_kartlari_MqYNcr",
+     "aria": "Avantajlı ürün, 400 TL indirim",
+     "role": "img",
+     "kutu": {
+      "sol": 3,
+      "ust": 5,
+      "sag": 116,
+      "alt": 158,
+      "w": 56,
+      "h": 56
+     },
+     "kap": "tt-uk-gorsel",
+     "transform": "matrix(0.990268, -0.139173, 0.139173, 0.990268, 0, 0)",
+     "filter": "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 2.5px)",
+     "ids": [
+      "ttnb-face-template-28033998946624__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-rim-template-28033998946624__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-gloss-template-28033998946624__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-ss-template-28033998946624__tt_secim_kartlari_mqyncr-15434301210944-kart-12"
+     ],
+     "metinler": [
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42.9,
+       "y1": 58.9,
+       "merkezeEnUzak": 32.8,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42,
+       "y1": 58,
+       "merkezeEnUzak": 32.5,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54.9,
+       "y1": 78.9,
+       "merkezeEnUzak": 39.9,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54,
+       "y1": 78,
+       "merkezeEnUzak": 39.2,
+       "font": "Poppins",
+       "kalinlik": "700"
+      }
+     ]
+    }
+   ],
+   "gorunenRozet": 1,
+   "seritler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": true,
+     "metin": "Son gün 1 Kasım",
+     "kutu": {
+      "sol": 0,
+      "ust": 201,
+      "sag": 0,
+      "alt": 0,
+      "w": 175,
+      "h": 18
+     },
+     "refW": 175,
+     "zemin": "rgb(10, 10, 10)",
+     "yazi": "rgb(214, 255, 0)",
+     "boyut": "10.5px",
+     "kalinlik": "700",
+     "tekSatir": true,
+     "ikon": [
+      11,
+      11
+     ],
+     "ikonYaziArasi": 4,
+     "altOgeler": [
+      {
+       "s": "tt-uk-noktalar",
+       "altBosluk": 26,
+       "seritUstundenMi": true
+      },
+      {
+       "s": "tt-uk-dugme",
+       "altBosluk": 26,
+       "seritUstundenMi": true
+      }
+     ]
+    }
+   ],
+   "gorunenSerit": 1,
+   "etiketler": [],
+   "gorunenEtiket": 0,
+   "eskiHap": 0,
+   "idTekrar": 0,
+   "yedek": [
+    {
+     "m": "%17 indirim",
+     "gorunur": false
+    }
+   ],
+   "poppins700": true,
+   "tasma": 0
+  },
+  "erkek-couple": {
+   "gorunenKart": 24,
+   "prizmaSirasi": 13,
+   "ayniSatirKartBoylari": [
+    293,
+    293
+   ],
+   "prizmaMetin": "Zaman Kapsülü BileklikPrizma 1,999.00TL2,399.00TL 500 TL indirim aktif 1.499,00 TL 1.999,0",
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "sinif": "ttn-adv-badge ttn-adv-badge--kart",
+     "gorunur": true,
+     "bolum": "tt_secim_kartlari_MqYNcr",
+     "aria": "Avantajlı ürün, 400 TL indirim",
+     "role": "img",
+     "kutu": {
+      "sol": 3,
+      "ust": 5,
+      "sag": 116,
+      "alt": 158,
+      "w": 56,
+      "h": 56
+     },
+     "kap": "tt-uk-gorsel",
+     "transform": "matrix(0.990268, -0.139173, 0.139173, 0.990268, 0, 0)",
+     "filter": "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 2.5px)",
+     "ids": [
+      "ttnb-face-template-28033998946624__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-rim-template-28033998946624__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-gloss-template-28033998946624__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-ss-template-28033998946624__tt_secim_kartlari_mqyncr-15434301210944-kart-12"
+     ],
+     "metinler": [
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42.9,
+       "y1": 58.9,
+       "merkezeEnUzak": 32.8,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42,
+       "y1": 58,
+       "merkezeEnUzak": 32.5,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54.9,
+       "y1": 78.9,
+       "merkezeEnUzak": 39.9,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54,
+       "y1": 78,
+       "merkezeEnUzak": 39.2,
+       "font": "Poppins",
+       "kalinlik": "700"
+      }
+     ]
+    }
+   ],
+   "gorunenRozet": 1,
+   "seritler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": true,
+     "metin": "Son gün 1 Kasım",
+     "kutu": {
+      "sol": 0,
+      "ust": 201,
+      "sag": 0,
+      "alt": 0,
+      "w": 175,
+      "h": 18
+     },
+     "refW": 175,
+     "zemin": "rgb(10, 10, 10)",
+     "yazi": "rgb(214, 255, 0)",
+     "boyut": "10.5px",
+     "kalinlik": "700",
+     "tekSatir": true,
+     "ikon": [
+      11,
+      11
+     ],
+     "ikonYaziArasi": 4,
+     "altOgeler": [
+      {
+       "s": "tt-uk-noktalar",
+       "altBosluk": 26,
+       "seritUstundenMi": true
+      },
+      {
+       "s": "tt-uk-dugme",
+       "altBosluk": 26,
+       "seritUstundenMi": true
+      }
+     ]
+    }
+   ],
+   "gorunenSerit": 1,
+   "etiketler": [],
+   "gorunenEtiket": 0,
+   "eskiHap": 0,
+   "idTekrar": 0,
+   "yedek": [
+    {
+     "m": "%17 indirim",
+     "gorunur": false
+    }
+   ],
+   "poppins700": true,
+   "tasma": 0
+  },
+  "kadin-single": {
+   "gorunenKart": 24,
+   "prizmaSirasi": 13,
+   "ayniSatirKartBoylari": [
+    293,
+    293
+   ],
+   "prizmaMetin": "Zaman Kapsülü BileklikPrizma 1,999.00TL2,399.00TL 500 TL indirim aktif 1.499,00 TL 1.999,0",
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "sinif": "ttn-adv-badge ttn-adv-badge--kart",
+     "gorunur": true,
+     "bolum": "tt_secim_kartlari_MqYNcr",
+     "aria": "Avantajlı ürün, 400 TL indirim",
+     "role": "img",
+     "kutu": {
+      "sol": 3,
+      "ust": 5,
+      "sag": 116,
+      "alt": 158,
+      "w": 56,
+      "h": 56
+     },
+     "kap": "tt-uk-gorsel",
+     "transform": "matrix(0.990268, -0.139173, 0.139173, 0.990268, 0, 0)",
+     "filter": "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 2.5px)",
+     "ids": [
+      "ttnb-face-template-28033998979392__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-rim-template-28033998979392__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-gloss-template-28033998979392__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-ss-template-28033998979392__tt_secim_kartlari_mqyncr-15434301210944-kart-12"
+     ],
+     "metinler": [
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42.9,
+       "y1": 58.9,
+       "merkezeEnUzak": 32.8,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42,
+       "y1": 58,
+       "merkezeEnUzak": 32.5,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54.9,
+       "y1": 78.9,
+       "merkezeEnUzak": 39.9,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54,
+       "y1": 78,
+       "merkezeEnUzak": 39.2,
+       "font": "Poppins",
+       "kalinlik": "700"
+      }
+     ]
+    }
+   ],
+   "gorunenRozet": 1,
+   "seritler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": true,
+     "metin": "Son gün 1 Kasım",
+     "kutu": {
+      "sol": 0,
+      "ust": 201,
+      "sag": 0,
+      "alt": 0,
+      "w": 175,
+      "h": 18
+     },
+     "refW": 175,
+     "zemin": "rgb(10, 10, 10)",
+     "yazi": "rgb(214, 255, 0)",
+     "boyut": "10.5px",
+     "kalinlik": "700",
+     "tekSatir": true,
+     "ikon": [
+      11,
+      11
+     ],
+     "ikonYaziArasi": 4,
+     "altOgeler": [
+      {
+       "s": "tt-uk-noktalar",
+       "altBosluk": 26,
+       "seritUstundenMi": true
+      },
+      {
+       "s": "tt-uk-dugme",
+       "altBosluk": 26,
+       "seritUstundenMi": true
+      }
+     ]
+    }
+   ],
+   "gorunenSerit": 1,
+   "etiketler": [],
+   "gorunenEtiket": 0,
+   "eskiHap": 0,
+   "idTekrar": 0,
+   "yedek": [
+    {
+     "m": "%17 indirim",
+     "gorunur": false
+    }
+   ],
+   "poppins700": true,
+   "tasma": 0
+  },
+  "kadin-couple": {
+   "gorunenKart": 24,
+   "prizmaSirasi": 13,
+   "ayniSatirKartBoylari": [
+    293,
+    293
+   ],
+   "prizmaMetin": "Zaman Kapsülü BileklikPrizma 1,999.00TL2,399.00TL 500 TL indirim aktif 1.499,00 TL 1.999,0",
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "sinif": "ttn-adv-badge ttn-adv-badge--kart",
+     "gorunur": true,
+     "bolum": "tt_secim_kartlari_MqYNcr",
+     "aria": "Avantajlı ürün, 400 TL indirim",
+     "role": "img",
+     "kutu": {
+      "sol": 3,
+      "ust": 5,
+      "sag": 116,
+      "alt": 158,
+      "w": 56,
+      "h": 56
+     },
+     "kap": "tt-uk-gorsel",
+     "transform": "matrix(0.990268, -0.139173, 0.139173, 0.990268, 0, 0)",
+     "filter": "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 2.5px)",
+     "ids": [
+      "ttnb-face-template-28033998979392__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-rim-template-28033998979392__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-gloss-template-28033998979392__tt_secim_kartlari_mqyncr-15434301210944-kart-12",
+      "ttnb-ss-template-28033998979392__tt_secim_kartlari_mqyncr-15434301210944-kart-12"
+     ],
+     "metinler": [
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42.9,
+       "y1": 58.9,
+       "merkezeEnUzak": 32.8,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42,
+       "y1": 58,
+       "merkezeEnUzak": 32.5,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54.9,
+       "y1": 78.9,
+       "merkezeEnUzak": 39.9,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54,
+       "y1": 78,
+       "merkezeEnUzak": 39.2,
+       "font": "Poppins",
+       "kalinlik": "700"
+      }
+     ]
+    }
+   ],
+   "gorunenRozet": 1,
+   "seritler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": true,
+     "metin": "Son gün 1 Kasım",
+     "kutu": {
+      "sol": 0,
+      "ust": 201,
+      "sag": 0,
+      "alt": 0,
+      "w": 175,
+      "h": 18
+     },
+     "refW": 175,
+     "zemin": "rgb(10, 10, 10)",
+     "yazi": "rgb(214, 255, 0)",
+     "boyut": "10.5px",
+     "kalinlik": "700",
+     "tekSatir": true,
+     "ikon": [
+      11,
+      11
+     ],
+     "ikonYaziArasi": 4,
+     "altOgeler": [
+      {
+       "s": "tt-uk-noktalar",
+       "altBosluk": 26,
+       "seritUstundenMi": true
+      },
+      {
+       "s": "tt-uk-dugme",
+       "altBosluk": 26,
+       "seritUstundenMi": true
+      }
+     ]
+    }
+   ],
+   "gorunenSerit": 1,
+   "etiketler": [],
+   "gorunenEtiket": 0,
+   "eskiHap": 0,
+   "idTekrar": 0,
+   "yedek": [
+    {
+     "m": "%17 indirim",
+     "gorunur": false
+    }
+   ],
+   "poppins700": true,
+   "tasma": 0
+  },
+  "urun": {
+   "etiketFiyatAraligi": 8,
+   "etiketCarkFiyatAraligi": null,
+   "carkSatiriGorunur": false,
+   "rozetGorselIcinde": {
+    "sol": 8,
+    "ust": 8,
+    "imgW": 350,
+    "imgH": 438
+   },
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "sinif": "ttn-adv-badge ttn-adv-badge--urun",
+     "gorunur": false,
+     "bolum": "main-product",
+     "aria": "Avantajlı ürün, 400 TL indirim",
+     "role": "img",
+     "kutu": {
+      "sol": 0,
+      "ust": 0,
+      "sag": 0,
+      "alt": 0,
+      "w": 0,
+      "h": 0
+     },
+     "kap": "product__preview relative overflow-hidde",
+     "transform": "none",
+     "filter": "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 2.5px)",
+     "ids": [
+      "ttnb-face-template-28034001011008__main-product-15434301210944-urun-gorsel-onizleme",
+      "ttnb-rim-template-28034001011008__main-product-15434301210944-urun-gorsel-onizleme",
+      "ttnb-gloss-template-28034001011008__main-product-15434301210944-urun-gorsel-onizleme",
+      "ttnb-ss-template-28034001011008__main-product-15434301210944-urun-gorsel-onizleme"
+     ],
+     "metinler": [
+      {
+       "m": "AVANTAJLI",
+       "x0": 0,
+       "x1": 0,
+       "y0": 0,
+       "y1": 0,
+       "merkezeEnUzak": 70.7,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "AVANTAJLI",
+       "x0": 0,
+       "x1": 0,
+       "y0": 0,
+       "y1": 0,
+       "merkezeEnUzak": 70.7,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 0,
+       "x1": 0,
+       "y0": 0,
+       "y1": 0,
+       "merkezeEnUzak": 70.7,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 0,
+       "x1": 0,
+       "y0": 0,
+       "y1": 0,
+       "merkezeEnUzak": 70.7,
+       "font": "Poppins",
+       "kalinlik": "700"
+      }
+     ]
+    },
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "sinif": "ttn-adv-badge ttn-adv-badge--urun tt-kmp-xl-gizle",
+     "gorunur": true,
+     "bolum": "main-product",
+     "aria": "Avantajlı ürün, 400 TL indirim",
+     "role": "img",
+     "kutu": {
+      "sol": 8,
+      "ust": 8,
+      "sag": 270,
+      "alt": 357,
+      "w": 72,
+      "h": 72
+     },
+     "kap": "relative w-full h-full",
+     "transform": "matrix(0.990268, -0.139173, 0.139173, 0.990268, 0, 0)",
+     "filter": "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 2.5px)",
+     "ids": [
+      "ttnb-face-template-28034001011008__main-product-15434301210944-urun-gorsel-liste",
+      "ttnb-rim-template-28034001011008__main-product-15434301210944-urun-gorsel-liste",
+      "ttnb-gloss-template-28034001011008__main-product-15434301210944-urun-gorsel-liste",
+      "ttnb-ss-template-28034001011008__main-product-15434301210944-urun-gorsel-liste"
+     ],
+     "metinler": [
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 80.9,
+       "y0": 44,
+       "y1": 58,
+       "merkezeEnUzak": 32,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 80.9,
+       "y0": 43.1,
+       "y1": 57.1,
+       "merkezeEnUzak": 31.7,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 55.7,
+       "y1": 79.1,
+       "merkezeEnUzak": 40.1,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54.8,
+       "y1": 78.2,
+       "merkezeEnUzak": 39.4,
+       "font": "Poppins",
+       "kalinlik": "700"
+      }
+     ]
+    }
+   ],
+   "gorunenRozet": 1,
+   "seritler": [],
+   "gorunenSerit": 0,
+   "etiketler": [
+    {
+     "sinif": "tt-kmp-etiket",
+     "gorunur": true,
+     "metin": "Son gün 1 Kasım",
+     "kutu": {
+      "sol": 20,
+      "ust": 746,
+      "sag": null,
+      "alt": null,
+      "w": 146,
+      "h": 26
+     },
+     "zemin": "rgb(10, 10, 10)",
+     "yazi": "rgb(214, 255, 0)",
+     "boyut": "13px",
+     "kalinlik": "700",
+     "padding": "5px 10px",
+     "kose": "6px",
+     "ikon": 13,
+     "onceki": "price price--on-sale flex flex-wrap item"
+    },
+    {
+     "sinif": "tt-kmp-etiket tt-kmp-etiket--kod",
+     "gorunur": false,
+     "metin": "Son gün 1 Kasım",
+     "kutu": {
+      "sol": 0,
+      "ust": 0,
+      "sag": null,
+      "alt": null,
+      "w": 0,
+      "h": 0
+     },
+     "zemin": "rgb(10, 10, 10)",
+     "yazi": "rgb(214, 255, 0)",
+     "boyut": "13px",
+     "kalinlik": "700",
+     "padding": "5px 10px",
+     "kose": "6px",
+     "ikon": 0,
+     "onceki": "tt-uf"
+    }
+   ],
+   "gorunenEtiket": 1,
+   "eskiHap": 0,
+   "idTekrar": 0,
+   "yedek": [],
+   "poppins700": true,
+   "tasma": 0
+  },
+  "couple-prizma-zaman-kapsulu-b": {
+   "bitti": false,
+   "rozetler": [],
+   "gorunenRozet": 0,
+   "seritler": [],
+   "gorunenSerit": 0,
+   "etiketler": [],
+   "gorunenEtiket": 0,
+   "eskiHap": 0,
+   "idTekrar": 0,
+   "yedek": [],
+   "poppins700": true,
+   "tasma": 0
+  },
+  "couple-prizma-chloe-couple-za": {
+   "bitti": false,
+   "rozetler": [],
+   "gorunenRozet": 0,
+   "seritler": [],
+   "gorunenSerit": 0,
+   "etiketler": [],
+   "gorunenEtiket": 0,
+   "eskiHap": 0,
+   "idTekrar": 0,
+   "yedek": [],
+   "poppins700": true,
+   "tasma": 0
+  },
+  "couple-rose-pink-prizma-coupl": {
+   "bitti": false,
+   "rozetler": [],
+   "gorunenRozet": 0,
+   "seritler": [],
+   "gorunenSerit": 0,
+   "etiketler": [],
+   "gorunenEtiket": 0,
+   "eskiHap": 0,
+   "idTekrar": 0,
+   "yedek": [],
+   "poppins700": true,
+   "tasma": 0
+  },
+  "arama": {
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "sinif": "ttn-adv-badge ttn-adv-badge--kart",
+     "gorunur": true,
+     "bolum": "main",
+     "aria": "Avantajlı ürün, 400 TL indirim",
+     "role": "img",
+     "kutu": {
+      "sol": 3,
+      "ust": 5,
+      "sag": 110,
+      "alt": 108,
+      "w": 56,
+      "h": 56
+     },
+     "kap": "product-card__media relative h-auto",
+     "transform": "matrix(0.990268, -0.139173, 0.139173, 0.990268, 0, 0)",
+     "filter": "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 2.5px)",
+     "ids": [
+      "ttnb-face-template-28034001043776__main-15434301210944-kart",
+      "ttnb-rim-template-28034001043776__main-15434301210944-kart",
+      "ttnb-gloss-template-28034001043776__main-15434301210944-kart",
+      "ttnb-ss-template-28034001043776__main-15434301210944-kart"
+     ],
+     "metinler": [
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42.9,
+       "y1": 58.9,
+       "merkezeEnUzak": 32.8,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42,
+       "y1": 58,
+       "merkezeEnUzak": 32.5,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54.9,
+       "y1": 78.9,
+       "merkezeEnUzak": 39.9,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54,
+       "y1": 78,
+       "merkezeEnUzak": 39.2,
+       "font": "Poppins",
+       "kalinlik": "700"
+      }
+     ]
+    },
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "sinif": "ttn-adv-badge ttn-adv-badge--kart",
+     "gorunur": false,
+     "bolum": "recently-viewed",
+     "aria": "Avantajlı ürün, 400 TL indirim",
+     "role": "img",
+     "kutu": {
+      "sol": 3,
+      "ust": 5,
+      "sag": 229,
+      "alt": 227,
+      "w": 56,
+      "h": 56
+     },
+     "kap": "product-card__media relative h-auto",
+     "transform": "matrix(0.990268, -0.139173, 0.139173, 0.990268, 0, 0)",
+     "filter": "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 2.5px)",
+     "ids": [
+      "ttnb-face-template-28034001043776__recently-viewed-15434301210944-kart",
+      "ttnb-rim-template-28034001043776__recently-viewed-15434301210944-kart",
+      "ttnb-gloss-template-28034001043776__recently-viewed-15434301210944-kart",
+      "ttnb-ss-template-28034001043776__recently-viewed-15434301210944-kart"
+     ],
+     "metinler": [
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42.9,
+       "y1": 58.9,
+       "merkezeEnUzak": 32.8,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "AVANTAJLI",
+       "x0": 19.1,
+       "x1": 81.5,
+       "y0": 42,
+       "y1": 58,
+       "merkezeEnUzak": 32.5,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54.9,
+       "y1": 78.9,
+       "merkezeEnUzak": 39.9,
+       "font": "Poppins",
+       "kalinlik": "700"
+      },
+      {
+       "m": "-400₺",
+       "x0": 23.1,
+       "x1": 77.5,
+       "y0": 54,
+       "y1": 78,
+       "merkezeEnUzak": 39.2,
+       "font": "Poppins",
+       "kalinlik": "700"
+      }
+     ]
+    }
+   ],
+   "gorunenRozet": 1,
+   "seritler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": true,
+     "metin": "Son gün 1 Kasım",
+     "kutu": {
+      "sol": 0,
+      "ust": 151,
+      "sag": 0,
+      "alt": 0,
+      "w": 169,
+      "h": 18
+     },
+     "refW": 169,
+     "zemin": "rgb(10, 10, 10)",
+     "yazi": "rgb(214, 255, 0)",
+     "boyut": "10.5px",
+     "kalinlik": "700",
+     "tekSatir": true,
+     "ikon": [
+      11,
+      11
+     ],
+     "ikonYaziArasi": 4,
+     "altOgeler": [
+      {
+       "s": "quick-add",
+       "altBosluk": 18,
+       "seritUstundenMi": true
+      }
+     ]
+    },
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": false,
+     "metin": "Son gün 1 Kasım",
+     "kutu": {
+      "sol": 0,
+      "ust": 271,
+      "sag": 0,
+      "alt": 0,
+      "w": 289,
+      "h": 18
+     },
+     "refW": 289,
+     "zemin": "rgb(10, 10, 10)",
+     "yazi": "rgb(214, 255, 0)",
+     "boyut": "10.5px",
+     "kalinlik": "700",
+     "tekSatir": true,
+     "ikon": [
+      11,
+      11
+     ],
+     "ikonYaziArasi": 4,
+     "altOgeler": []
+    }
+   ],
+   "gorunenSerit": 1,
+   "etiketler": [],
+   "gorunenEtiket": 0,
+   "eskiHap": 0,
+   "idTekrar": 0,
+   "yedek": [],
+   "poppins700": true,
+   "tasma": 0
+  }
+ },
+ "konsol": []
+}
