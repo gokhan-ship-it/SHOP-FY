@@ -1,0 +1,494 @@
+{
+ "genislik": 360,
+ "mod": "kampanya",
+ "sayfalar": {
+  "anaCanli": {
+   "heroY": 52,
+   "heroH": 404,
+   "csY": 456,
+   "csH": 646,
+   "catalY": 1102,
+   "kartSayisi": 19,
+   "kartYukseklikleri": [
+    337
+   ],
+   "ilkKartlar": [
+    {
+     "ad": "Prizma + Chloe",
+     "kat": "couple",
+     "h": 337,
+     "rozetler": [
+      "2'li set",
+      "#1 çok satan"
+     ],
+     "fiyat": "3.398 TL"
+    },
+    {
+     "ad": "Nova + Chloe",
+     "kat": "couple",
+     "h": 337,
+     "rozetler": [
+      "2'li set",
+      "#2 çok satan"
+     ],
+     "fiyat": "3.599 TL"
+    },
+    {
+     "ad": "Rose Pink + Prizma",
+     "kat": "couple",
+     "h": 337,
+     "rozetler": [
+      "2'li set"
+     ],
+     "fiyat": "3.799 TL"
+    },
+    {
+     "ad": "Gold + Nova",
+     "kat": "couple",
+     "h": 337,
+     "rozetler": [
+      "2'li set"
+     ],
+     "fiyat": "3.799 TL"
+    }
+   ],
+   "sayfaGenisligiTasma": 0
+  },
+  "ana": {
+   "heroY": 52,
+   "heroH": 404,
+   "csY": 456,
+   "csH": 646,
+   "catalY": 1102,
+   "kartSayisi": 20,
+   "kartYukseklikleri": [
+    337
+   ],
+   "ilkKartlar": [
+    {
+     "ad": "Prizma",
+     "kat": "erkek",
+     "h": 337,
+     "rozetler": [
+      "1 Kasım'a kadar",
+      "Erkek"
+     ],
+     "fiyat": "1.999 TL2.399 TL"
+    },
+    {
+     "ad": "Prizma + Chloe",
+     "kat": "couple",
+     "h": 337,
+     "rozetler": [
+      "2'li set",
+      "#1 çok satan"
+     ],
+     "fiyat": "3.398 TL"
+    },
+    {
+     "ad": "Nova + Chloe",
+     "kat": "couple",
+     "h": 337,
+     "rozetler": [
+      "2'li set",
+      "#2 çok satan"
+     ],
+     "fiyat": "3.599 TL"
+    },
+    {
+     "ad": "Rose Pink + Prizma",
+     "kat": "couple",
+     "h": 337,
+     "rozetler": [
+      "2'li set"
+     ],
+     "fiyat": "3.799 TL"
+    }
+   ],
+   "sayfaGenisligiTasma": 0,
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "Prizma",
+     "gorunur": true,
+     "metin": "1 Kasım'a kadar",
+     "yer": "tt-kmp-rozet--satir",
+     "bolum": "tt_cok_satanlar_1",
+     "zemin": "rgb(214, 255, 0)",
+     "yazi": "rgb(10, 10, 10)",
+     "kalinlik": "700",
+     "boyut": "11px",
+     "kose": "6px",
+     "font": "Poppins",
+     "w": 105,
+     "h": 22,
+     "gorselIci": {
+      "sol": 8,
+      "ust": 8,
+      "alanOrani": 0.093
+     }
+    }
+   ],
+   "gorunenRozet": 1,
+   "yedek": [],
+   "coupleRozet": 0,
+   "erkekCipi": [
+    "Prizma",
+    "Astor",
+    "Noir"
+   ]
+  },
+  "erkek-single": {
+   "filtre": null,
+   "gorunenKart": 13,
+   "ilk5": [
+    {
+     "h": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "kime": "erkek",
+     "rozet": [
+      "1 Kasım'a kadar"
+     ]
+    },
+    {
+     "h": "diamond-vantablack-zaman-kapsulu-erkek-kolye",
+     "kime": "erkek",
+     "rozet": []
+    },
+    {
+     "h": "lumin-zaman-kapsulu-kolye",
+     "kime": "erkek",
+     "rozet": []
+    },
+    {
+     "h": "luna-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+     "kime": "erkek",
+     "rozet": []
+    },
+    {
+     "h": "zaman-kapsulu-bileklik-kral",
+     "kime": "erkek",
+     "rozet": []
+    }
+   ],
+   "prizmaSirasi": 1,
+   "tasma": 0,
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": true,
+     "metin": "1 Kasım'a kadar",
+     "yer": "tt-kmp-rozet--kart",
+     "bolum": "tt_secim_kartlari_MqYNcr",
+     "zemin": "rgb(214, 255, 0)",
+     "yazi": "rgb(10, 10, 10)",
+     "kalinlik": "700",
+     "boyut": "11px",
+     "kose": "6px",
+     "font": "Poppins",
+     "w": 105,
+     "h": 22,
+     "gorselIci": {
+      "sol": 8,
+      "ust": 8,
+      "alanOrani": 0.073
+     }
+    }
+   ],
+   "gorunenRozet": 1,
+   "yedek": [
+    {
+     "metin": "%17 indirim",
+     "gorunur": false
+    }
+   ],
+   "coupleRozet": 0
+  },
+  "erkek-couple": {
+   "gorunenKart": 24,
+   "prizmaSirasi": 13,
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": true,
+     "metin": "1 Kasım'a kadar",
+     "yer": "tt-kmp-rozet--kart",
+     "bolum": "tt_secim_kartlari_MqYNcr",
+     "zemin": "rgb(214, 255, 0)",
+     "yazi": "rgb(10, 10, 10)",
+     "kalinlik": "700",
+     "boyut": "11px",
+     "kose": "6px",
+     "font": "Poppins",
+     "w": 105,
+     "h": 22,
+     "gorselIci": {
+      "sol": 8,
+      "ust": 8,
+      "alanOrani": 0.073
+     }
+    }
+   ],
+   "gorunenRozet": 1,
+   "yedek": [
+    {
+     "metin": "%17 indirim",
+     "gorunur": false
+    }
+   ],
+   "coupleRozet": 0
+  },
+  "kadin-single": {
+   "filtre": null,
+   "gorunenKart": 24,
+   "ilk5": [
+    {
+     "h": "full-tasli-kapsul-zaman-kapsulu-kolye",
+     "kime": "kadin",
+     "rozet": []
+    },
+    {
+     "h": "zaman-kapsulu-full-tasli-white",
+     "kime": "kadin",
+     "rozet": []
+    },
+    {
+     "h": "zaman-kapsulu-charm-beyaz",
+     "kime": "kadin",
+     "rozet": []
+    },
+    {
+     "h": "chloe-zaman-kapsulu-bileklik-316l-paslanmaz-celik-gold-kopya",
+     "kime": "kadin",
+     "rozet": []
+    },
+    {
+     "h": "santorin-zaman-kapsulu-bileklik-316l-paslanmaz-celik-kopya",
+     "kime": "kadin",
+     "rozet": []
+    }
+   ],
+   "prizmaSirasi": 13,
+   "tasma": 0,
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": true,
+     "metin": "1 Kasım'a kadar",
+     "yer": "tt-kmp-rozet--kart",
+     "bolum": "tt_secim_kartlari_MqYNcr",
+     "zemin": "rgb(214, 255, 0)",
+     "yazi": "rgb(10, 10, 10)",
+     "kalinlik": "700",
+     "boyut": "11px",
+     "kose": "6px",
+     "font": "Poppins",
+     "w": 105,
+     "h": 22,
+     "gorselIci": {
+      "sol": 8,
+      "ust": 8,
+      "alanOrani": 0.073
+     }
+    }
+   ],
+   "gorunenRozet": 1,
+   "yedek": [
+    {
+     "metin": "%17 indirim",
+     "gorunur": false
+    }
+   ],
+   "coupleRozet": 0
+  },
+  "kadin-couple": {
+   "gorunenKart": 24,
+   "prizmaSirasi": 13,
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": true,
+     "metin": "1 Kasım'a kadar",
+     "yer": "tt-kmp-rozet--kart",
+     "bolum": "tt_secim_kartlari_MqYNcr",
+     "zemin": "rgb(214, 255, 0)",
+     "yazi": "rgb(10, 10, 10)",
+     "kalinlik": "700",
+     "boyut": "11px",
+     "kose": "6px",
+     "font": "Poppins",
+     "w": 105,
+     "h": 22,
+     "gorselIci": {
+      "sol": 8,
+      "ust": 8,
+      "alanOrani": 0.073
+     }
+    }
+   ],
+   "gorunenRozet": 1,
+   "yedek": [
+    {
+     "metin": "%17 indirim",
+     "gorunur": false
+    }
+   ],
+   "coupleRozet": 0
+  },
+  "urun": {
+   "rozetKutu": {
+    "x": 20,
+    "y": 674,
+    "w": 115,
+    "h": 24,
+    "sag": 135
+   },
+   "fiyatKutu": {
+    "x": 20,
+    "y": 706,
+    "w": 154,
+    "h": 53,
+    "sag": 174
+   },
+   "fiyatMetin": "Satış ücreti1,999.00TLNormal fiyat 2,399.00TL",
+   "ustuste": false,
+   "temaIndirimEtiketi": "17% indirim!",
+   "tasma": 0,
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "https://texttonext.com/products/prizma-zaman-kapsulu-bilekli",
+     "gorunur": true,
+     "metin": "1 Kasım'a kadar",
+     "yer": "tt-kmp-rozet--urun",
+     "bolum": "main-product",
+     "zemin": "rgb(214, 255, 0)",
+     "yazi": "rgb(10, 10, 10)",
+     "kalinlik": "700",
+     "boyut": "12px",
+     "kose": "6px",
+     "font": "Poppins",
+     "w": 115,
+     "h": 24,
+     "gorselIci": null
+    }
+   ],
+   "gorunenRozet": 1,
+   "yedek": [],
+   "coupleRozet": 0
+  },
+  "couple-prizma-zaman-kapsu": {
+   "bitti": false,
+   "rozetler": [],
+   "gorunenRozet": 0,
+   "yedek": [],
+   "coupleRozet": 0
+  },
+  "couple-prizma-chloe-coupl": {
+   "bitti": false,
+   "rozetler": [],
+   "gorunenRozet": 0,
+   "yedek": [],
+   "coupleRozet": 0
+  },
+  "couple-rose-pink-prizma-c": {
+   "bitti": false,
+   "rozetler": [],
+   "gorunenRozet": 0,
+   "yedek": [],
+   "coupleRozet": 0
+  },
+  "arama": {
+   "bitti": false,
+   "rozetler": [
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": true,
+     "metin": "1 Kasım'a kadar",
+     "yer": "tt-kmp-rozet--rozet",
+     "bolum": "main",
+     "zemin": "rgb(214, 255, 0)",
+     "yazi": "rgb(10, 10, 10)",
+     "kalinlik": "700",
+     "boyut": "11px",
+     "kose": "6px",
+     "font": "Poppins",
+     "w": 105,
+     "h": 22,
+     "gorselIci": {
+      "sol": 12,
+      "ust": 12,
+      "alanOrani": 0.099
+     }
+    },
+    {
+     "urun": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+     "gorunur": false,
+     "metin": "1 Kasım'a kadar",
+     "yer": "tt-kmp-rozet--rozet",
+     "bolum": "recently-viewed",
+     "zemin": "rgb(214, 255, 0)",
+     "yazi": "rgb(10, 10, 10)",
+     "kalinlik": "700",
+     "boyut": "11px",
+     "kose": "6px",
+     "font": "Poppins",
+     "w": 105,
+     "h": 22,
+     "gorselIci": {
+      "sol": 12,
+      "ust": 12,
+      "alanOrani": 0.033
+     }
+    }
+   ],
+   "gorunenRozet": 1,
+   "yedek": [],
+   "coupleRozet": 0
+  },
+  "anlikArama": {
+   "rozet": 0,
+   "prizmaVar": true
+  }
+ },
+ "konsol": [
+  "pageerror: Failed to fetch",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "pageerror: Failed to fetch",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "pageerror: Failed to fetch",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "pageerror: Failed to fetch",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro",
+  "Error producing monorail event MonorailRequestError: Error completing request. A network failure may have prevented the request from completing. Error: TypeErro"
+ ],
+ "engellenenTakip": 572
+}

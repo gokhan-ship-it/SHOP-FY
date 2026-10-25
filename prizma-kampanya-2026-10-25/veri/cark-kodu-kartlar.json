@@ -1,0 +1,35 @@
+{
+ "erkek": {
+  "kodAktif": true,
+  "rozet": [
+   "1 Kasım'a kadar"
+  ],
+  "gorunenFiyatlar": [
+   "tt-kart-fiyat: 500 TL indirim aktif 1.499,00 TL 1.999,00 TL",
+   "tt-kart-eski: 1.999,00 TL"
+  ]
+ },
+ "ana": {
+  "kodAktif": true,
+  "rozet": [
+   "1 Kasım'a kadar"
+  ],
+  "gorunenFiyatlar": [
+   "tt-cs-fiyat tt-cs-fiyat--kod: 500 TL indirim aktif 1.499 TL 1.999 TL",
+   "tt-cs-eski: 1.999 TL"
+  ]
+ },
+ "urun": {
+  "kodAktif": true,
+  "rozet": [
+   "1 Kasım'a kadar"
+  ],
+  "gorunenFiyatlar": [
+   "tt-uf: 500 TL indirim aktif 1.499,00 TL 1.999,00 TL",
+   "tt-uf-eski: 1.999,00 TL",
+   "tt-fb-serit: Kodunuzla 1.499,00 TL 59:40 kaldı",
+   "tt-uf tt-uf--yapiskan: 500 TL indirim aktif 1.499 TL 1.999 TL",
+   "tt-uf-eski: 1.999 TL"
+  ]
+ }
+}
