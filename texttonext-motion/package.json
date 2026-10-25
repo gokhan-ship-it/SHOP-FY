@@ -1,0 +1,24 @@
+{
+  "name": "texttonext-motion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Meta reklamları (Reels / Story) için Apple tarzı motion graphic videolar",
+  "scripts": {
+    "dev": "remotion studio",
+    "render": "remotion render Reklam out/reklam.mp4",
+    "kurulum": "npm install"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.538",
+    "@remotion/fonts": "^4.0.538",
+    "@remotion/media-utils": "4.0.538",
+    "@remotion/studio": "4.0.538",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "remotion": "4.0.538"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.8",
+    "typescript": "5.8.3"
+  }
+}
