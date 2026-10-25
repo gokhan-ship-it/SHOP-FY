@@ -4,13 +4,16 @@
   "private": true,
   "description": "Meta reklamları (Reels / Story) için Apple tarzı motion graphic videolar",
   "scripts": {
-    "dev": "remotion studio",
+    "dev": "node scripts/studio.mjs",
+    "senkron": "node scripts/senkron.mjs",
+    "render:single-hediye-v1": "node scripts/senkron.mjs && remotion render single-hediye-v1 out/single-hediye-v1.mp4",
     "render": "remotion render Reklam out/reklam.mp4",
     "kurulum": "npm install"
   },
   "dependencies": {
     "@remotion/cli": "4.0.538",
     "@remotion/fonts": "4.0.538",
+    "@remotion/install-whisper-cpp": "4.0.538",
     "@remotion/media-utils": "4.0.538",
     "@remotion/studio": "4.0.538",
     "react": "19.1.0",
