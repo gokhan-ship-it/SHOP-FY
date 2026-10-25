@@ -28,7 +28,7 @@ export const singleHediyeV1: ReklamAyarlari = {
     boyunda: "kolye-boyunda.jpg", // assets/urunler/ — boyunda çekim (isteğe bağlı)
   },
   // Ana fotoğrafta kapsülün (kolye ucunun) yeri: x soldan, y üstten (0–1)
-  kapsulNoktasi: { x: 0.5, y: 0.74 },
+  kapsulNoktasi: { x: 0.483, y: 0.835 },
   logo: "", // assets/logo/ — boşsa klasördeki ilk görsel; o da yoksa yazı logo
 
   // ── Görünüm ────────────────────────────────────────────────
@@ -42,7 +42,8 @@ export const singleHediyeV1: ReklamAyarlari = {
   guvenliAlan: { ust: 250, alt: 380, yan: 96 }, // Instagram arayüzü için (px)
   gecisSuresi: 0.8,
   kenarYumusatma: 0.08,
-  golge: { acik: true, opaklik: 0.05, y: 0.93 }, // ürün altındaki çok hafif gölge (y: fotoğrafta dikey yer, 0–1)
+  // Ürün altındaki çok hafif gölge (y: fotoğrafta dikey yer, genislik: fotoğraf genişliğine oranı)
+  golge: { acik: true, opaklik: 0.05, y: 0.985, genislik: 0.28 },
 
   // ── Sahne içerikleri ───────────────────────────────────────
   tarih: "14 Şubat 2027",
@@ -90,7 +91,7 @@ export const singleHediyeV1: ReklamAyarlari = {
       // 7
       metin: "Her gün boynunda taşıyor.",
       urun: { gorsel: "boyunda", olcek: 1.12, y: 80, yakinlasma: 0.08, kayma: -30 },
-      boyundaFotoYoksa: { olcek: 1.35, y: -40, yakinlasma: 0.08, donme: 3 },
+      boyundaFotoYoksa: { olcek: 1.35, y: -70, yakinlasma: 0.08, donme: 3 },
     },
     {
       // 8
@@ -122,6 +123,6 @@ export const singleHediyeV1: ReklamAyarlari = {
     logoMetni: "Text To Next",
     site: "texttonext.com",
     altSatir: "Zaman Kapsülü",
-    urun: { olcek: 0.62, y: -170, yakinlasma: 0.03 },
+    urun: { olcek: 0.8, y: -190, yakinlasma: 0.03 },
   },
 };

@@ -287,7 +287,7 @@ export const SoruHalkasi: React.FC<{
   if (t < z.baslangic || t > z.bitis) return null;
   const gorunme = sinirla((t - z.baslangic - 0.6) / 0.9);
   const nefes = 0.5 - 0.5 * Math.cos(((t - z.baslangic) / 2.6) * Math.PI * 2);
-  const cap = 190 * olcek * (1 + 0.05 * nefes);
+  const cap = 230 * olcek * (1 + 0.05 * nefes);
   return (
     <div
       style={{

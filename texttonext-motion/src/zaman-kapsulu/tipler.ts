@@ -49,7 +49,7 @@ export type ReklamAyarlari = {
   guvenliAlan: { ust: number; alt: number; yan: number };
   gecisSuresi: number; // sahneler arası yumuşak geçiş (sn)
   kenarYumusatma: number; // fotoğraf kenarlarının beyaza karışma oranı (0–0.2)
-  golge: { acik: boolean; opaklik: number; y: number };
+  golge: { acik: boolean; opaklik: number; y: number; genislik: number };
   sahneler: Sahne[];
   kapanis: { sure: number; logoMetni: string; site: string; altSatir: string; urun: UrunDurumu };
 };

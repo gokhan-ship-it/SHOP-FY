@@ -34,8 +34,8 @@ const UrunFotografi: React.FC<{ katman: Katman; kaynaklar: Kaynaklar; a: ReklamA
         <div
           style={{
             position: "absolute",
-            left: "22%",
-            width: "56%",
+            left: `${((kaynaklar.ana.src ? a.kapsulNoktasi.x : YER_TUTUCU_KAPSUL.x) - a.golge.genislik / 2) * 100}%`,
+            width: `${a.golge.genislik * 100}%`,
             top: `${a.golge.y * 100 - 2.5}%`,
             height: "5%",
             borderRadius: "50%",
