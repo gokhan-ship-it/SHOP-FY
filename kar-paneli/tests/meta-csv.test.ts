@@ -69,6 +69,20 @@ describe("Ads Manager raporu", () => {
     expect(camp.n).toBe(3);
   });
 
+  it("“Rapor Başlangıcı / Rapor Sonu” başlıklı (yeni sürüm) raporu okur", () => {
+    const NEW = `"Rapor Başlangıcı","Rapor Sonu","Kampanya Adı","Kampanya yayını",Sonuçlar,Erişim,Sıklık,"Harcanan Tutar (TRY)",Gösterim,"Bağlantı Tıklamaları"
+2026-10-25,2026-10-25,Kampanya A,inactive,,0,0,0,0,
+2026-10-25,2026-10-25,Kampanya B,active,45,1434,1.154812,115.12,1656,45
+2026-10-24,2026-10-24,Kampanya B,active,40,1300,1.1,122.8,1500,40`;
+    const p = parseReport(table(NEW));
+    expect(p.level).toBe("campaign");
+    expect(p.rows.map((r) => [r.date, r.name, r.spend])).toEqual([
+      ["2026-10-25", "Kampanya A", 0],
+      ["2026-10-25", "Kampanya B", 115.12],
+      ["2026-10-24", "Kampanya B", 122.8],
+    ]);
+  });
+
   it("noktalı virgüllü ve İngilizce başlıklı raporu okur", () => {
     const EN = `Day;Campaign name;Amount spent (TRY);Impressions\n20.10.2026;Broad;1.234,56;1000\n21.10.2026;Broad;100;50`;
     const p = parseReport(table(EN));

@@ -119,8 +119,9 @@ export function parseReport(table: string[][], fileName = ""): ParsedReport {
   if (table.length < 2) throw new InputError("Dosyada veri satırı yok.");
   const headers = table[0].map(norm);
   const dayCol = findCol(headers, [/^(gün|day|tarih|date)$/]);
-  const startCol = findCol(headers, [/^raporlama başlangıcı$/, /^reporting starts?$/, /başlangıç/, /^start/]);
-  const endCol = findCol(headers, [/^raporlama bitişi$/, /^reporting ends?$/, /bitiş/, /^end/]);
+  // Reklam Yöneticisi sürüme göre "Raporlama başlangıcı/bitişi" ya da "Rapor Başlangıcı/Sonu" yazar
+  const startCol = findCol(headers, [/^rapor(lama)? başlangıc[ıi]$/, /^reporting starts?$/, /başlangı[cç]/, /^start/]);
+  const endCol = findCol(headers, [/^rapor(lama)? (bitişi|sonu)$/, /^reporting ends?$/, /bitiş/, /sonu$/, /^end/]);
   const spendCol = findCol(headers, [/^harcanan tutar/, /^amount spent/, /^spend/, /^harcama/]);
   if (spendCol < 0) throw new InputError("“Harcanan tutar” sütunu bulunamadı. Raporu Reklam Yöneticisi'nden harcama sütunu görünürken indirin.");
   if (dayCol < 0 && startCol < 0) throw new InputError("Tarih sütunu bulunamadı. Raporu “Kırılım → Zamana göre → Gün” seçiliyken indirin.");
@@ -292,7 +293,9 @@ export function importReport(p: ParsedReport): ImportSummary {
     const isLatest = !(c.prepare("select 1 from tp_monthly where month > ? and facebook_ad_spend > 0").get(m));
     const need = isLatest && tpLast ? tpLast : monthEnd(m + "-01");
     if (from > m + "-01" || to < need) continue;
-    const full = (c.prepare("select coalesce(sum(spend),0) v from ad_insights_daily where account_id = ? and level = 'account' and substr(date,1,7) = ?").get(account, m) as { v: number }).v;
+    const full = (
+      c.prepare("select coalesce(sum(spend),0) v from ad_insights_daily where account_id = ? and level = 'account' and date between ? and ?").get(account, m + "-01", need) as { v: number }
+    ).v;
     tpCompare.push({ month: m, csv: full, tp: tp.v });
   }
 

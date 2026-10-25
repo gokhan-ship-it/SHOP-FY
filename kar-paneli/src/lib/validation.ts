@@ -40,16 +40,21 @@ interface Actual {
   days: number;
 }
 
-export function monthlyActuals(): Map<string, Actual> {
+/** Referansın kapsadığı son gün (TrueProfit dökümündeki son sipariş günü). Son ay bu güne kadar karşılaştırılır. */
+export function referenceEnd(): string | null {
+  return (getDb().$client.prepare("select max(date) d from tp_orders").get() as { d: string | null }).d;
+}
+
+export function monthlyActuals(until: string = "9999-12-31"): Map<string, Actual> {
   const rows = getDb()
     .$client.prepare(
       `select substr(date, 1, 7) month, sum(orders) orders, sum(net_revenue) netRevenue, sum(meta_spend) metaSpend, sum(cogs) cogs,
               sum(post_ad_profit) postAdProfit, sum(other_marketing) otherMarketing,
               sum(case when meta_source = 'trueprofit' then 1 else 0 end) metaTpDays,
               sum(case when meta_source = 'yok' then 1 else 0 end) metaMissingDays, count(*) days
-         from daily_pnl group by 1`,
+         from daily_pnl where date <= ? group by 1`,
     )
-    .all() as Actual[];
+    .all(until) as Actual[];
   return new Map(rows.map((r) => [r.month, r]));
 }
 
@@ -73,7 +78,7 @@ function monthFacts(month: string) {
 
 const fmt = (n: number) => new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 }).format(n);
 
-function explain(month: string, m: Metric, ours: number, ref: number, a: Actual | undefined, f: ReturnType<typeof monthFacts>): string[] {
+function explain(month: string, m: Metric, ours: number, ref: number, a: Actual | undefined, f: ReturnType<typeof monthFacts>, refEnd: string | null): string[] {
   const out: string[] = [];
   const dir = ours > ref ? "fazla" : "az";
   if (!a) return ["Bu ay için hesaplanmış veri yok (Shopify senkronu henüz bu tarihe ulaşmamış olabilir)."];
@@ -92,6 +97,8 @@ function explain(month: string, m: Metric, ours: number, ref: number, a: Actual 
     case "metaSpend":
       if (a.metaTpDays) out.push("Bu ayın reklam harcaması Meta'dan değil, TrueProfit yedeğinden geliyor.");
       if (a.metaMissingDays) out.push(`${a.metaMissingDays} gün için reklam verisi yok.`);
+      if (refEnd && refEnd.startsWith(month))
+        out.push(`Referansın son günü (${refEnd.slice(8, 10)}.${refEnd.slice(5, 7)}) TrueProfit'ten gün içinde alınmış olabilir; o günün harcaması referansta yarım kalır.`);
       out.push("Meta reklam hesabının saat dilimi İstanbul değilse gün sınırları kayar; Veri sağlığı ekranındaki saat dilimi uyarısına bakın.");
       break;
     case "cogs":
@@ -114,7 +121,8 @@ export function validationReport(): MonthCompare[] {
   const refs = getDb()
     .$client.prepare("select month, orders, net_revenue netRevenue, meta_spend metaSpend, cogs, post_ad_profit postAdProfit from validation_reference order by month")
     .all() as ({ month: string } & Record<Metric, number>)[];
-  const actual = monthlyActuals();
+  const refEnd = referenceEnd();
+  const actual = monthlyActuals(refEnd ?? undefined);
   return refs.map((ref) => {
     const a = actual.get(ref.month);
     const f = monthFacts(ref.month);
@@ -131,7 +139,7 @@ export function validationReport(): MonthCompare[] {
       const diff = ref[m] ? (ours[m] - ref[m]) / Math.abs(ref[m]) : null;
       const ok = diff !== null && Math.abs(diff) <= TOLERANCES[m];
       values[m] = { ours: ours[m], ref: ref[m], diff, ok };
-      if (!ok) reasons.push(`${METRIC_LABELS[m]}: ` + explain(ref.month, m, ours[m], ref[m], a, f).join(" "));
+      if (!ok) reasons.push(`${METRIC_LABELS[m]}: ` + explain(ref.month, m, ours[m], ref[m], a, f, refEnd).join(" "));
     }
     return { month: ref.month, values, allOk: reasons.length === 0, reasons, hasData: !!a && (a.orders > 0 || a.netRevenue !== 0) };
   });
