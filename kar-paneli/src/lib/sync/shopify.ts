@@ -147,7 +147,30 @@ function currentMode(): FieldMode {
 
 function isProtectedDataError(e: unknown): boolean {
   const m = e instanceof Error ? e.message : String(e);
-  return /customer|protected|not approved|access denied/i.test(m);
+  // Toplu sorgu ayrıntı vermeden "ACCESS_DENIED" döner; normal sorgu alan adını söyler
+  return /customer|journey|protected|not approved|access[ _]denied/i.test(m);
+}
+
+/**
+ * Ön deneme: birkaç yeni siparişi normal sorguyla okur. İzni olmayan müşteri alanları varsa
+ * toplu sorgu başlamadan çıkarılır (toplu sorgu bu durumda dakikalar sonra ayrıntısız düşer).
+ */
+async function probeMode(start: FieldMode): Promise<FieldMode> {
+  let mode = start;
+  for (;;) {
+    try {
+      await gql(`{ orders(first: 5, reverse: true) { nodes { ${orderFields(mode)} lineItems(first: 1) { nodes { ${LINE_FIELDS} } } } } }`);
+      return mode;
+    } catch (e) {
+      const next = downgrade(mode);
+      if (next && isProtectedDataError(e)) {
+        mode = next;
+        setSetting("shopify_alan_modu", mode);
+        continue;
+      }
+      throw e;
+    }
+  }
 }
 
 function downgrade(mode: FieldMode): FieldMode | null {
@@ -518,7 +541,7 @@ export async function syncShopify(opts: { products?: boolean; onProgress?: (m: s
 
     let count = 0;
     let cursor: string | null = null;
-    let mode = currentMode();
+    let mode = await probeMode(currentMode());
     for (;;) {
       try {
         if (!initialDone) {

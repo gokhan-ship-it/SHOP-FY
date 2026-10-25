@@ -111,6 +111,7 @@ describe("§9.1 kilit — Shopify", () => {
       if (url.endsWith("/admin/oauth/access_token")) return json({ access_token: "tok", expires_in: 86399, scope: "read_orders,read_products,read_reports" });
       if (url.startsWith("https://bulk.example/")) return new Response(JSON.stringify(order) + "\n" + JSON.stringify(line) + "\n");
       if (body.includes("myshopifyDomain")) return json({ data: { shop: { myshopifyDomain: "52ae29-e0.myshopify.com", name: "Text To Next", currencyCode: "TRY", ianaTimezone: "Europe/Istanbul" } } });
+      if (body.includes("orders(first: 5, reverse: true)")) return json({ data: { orders: { nodes: [] } } });
       if (body.includes("bulkOperationRunQuery")) return json({ data: { bulkOperationRunQuery: { bulkOperation: { id: "gid://shopify/BulkOperation/1", status: "CREATED" }, userErrors: [] } } });
       if (body.includes("bulkOperation(id")) return json({ data: { bulkOperation: { status: "COMPLETED", errorCode: null, objectCount: "2", url: "https://bulk.example/x.jsonl", partialDataUrl: null } } });
       if (body.includes("nodes(ids")) return json({ data: { nodes: [{ id: "gid://shopify/Refund/5", refundLineItems: { nodes: [{ id: "gid://shopify/RefundLineItem/1", quantity: 1, restockType: "RETURN", subtotalSet: { shopMoney: { amount: "1449.0" } }, lineItem: { id: line.id } }], pageInfo: { hasNextPage: false } } }] } });
@@ -139,6 +140,52 @@ describe("§9.1 kilit — Shopify", () => {
     expect(mutations.every((c) => c.body.includes("bulkOperationRunQuery"))).toBe(true);
     // Ad ile eşleşen varyant kalıcı bağlandı
     expect(count("product_map where key_type = 'variant_id'")).toBe(1);
+  });
+});
+
+describe("Shopify korunan müşteri verisi", () => {
+  it("müşteri alanına izin yoksa alan çıkarılıp tekrar denenir; toplu sorgu ACCESS_DENIED ile düşse de senkron tamamlanır", async () => {
+    writeEnv({ SHOPIFY_STORE_DOMAIN: "52ae29-e0.myshopify.com", SHOPIFY_CLIENT_ID: "cid", SHOPIFY_CLIENT_SECRET: "sec" });
+    const order = {
+      id: "gid://shopify/Order/7", name: "#7", createdAt: "2026-10-20T10:00:00Z", updatedAt: "2026-10-20T10:00:00Z", test: false,
+      totalPriceSet: { shopMoney: { amount: "1000" } }, currentTotalPriceSet: { shopMoney: { amount: "1000" } }, subtotalPriceSet: { shopMoney: { amount: "1000" } },
+      totalDiscountsSet: null, totalShippingPriceSet: null, totalTaxSet: null, paymentGatewayNames: ["PayTR"], discountCodes: [], tags: [],
+      refunds: [], transactions: [], fulfillments: [{ createdAt: "2026-10-21T10:00:00Z" }],
+    };
+    const line = { id: "gid://shopify/LineItem/71", __parentId: order.id, title: "Luna - 316L Çelik", quantity: 1, originalUnitPriceSet: { shopMoney: { amount: "1000" } }, discountedTotalSet: { shopMoney: { amount: "1000" } }, discountAllocations: [] };
+    let bulkQueries: string[] = [];
+    mockFetch((url, body) => {
+      if (url.endsWith("/admin/oauth/access_token")) return json({ access_token: "tok", expires_in: 86399, scope: "read_orders" });
+      if (url.startsWith("https://bulk.example/")) return new Response(JSON.stringify(order) + "\n" + JSON.stringify(line) + "\n");
+      if (body.includes("myshopifyDomain")) return json({ data: { shop: { myshopifyDomain: "52ae29-e0.myshopify.com", name: "Text To Next", currencyCode: "TRY", ianaTimezone: "Europe/Istanbul" } } });
+      // Ön deneme: müşteri alanı izinsiz
+      if (body.includes("orders(first: 5, reverse: true)")) {
+        if (body.includes("customer { id }")) return json({ errors: [{ message: "This app is not approved to access the Customer object." }] });
+        return json({ data: { orders: { nodes: [] } } });
+      }
+      if (body.includes("bulkOperationRunQuery")) {
+        bulkQueries.push(body);
+        return json({ data: { bulkOperationRunQuery: { bulkOperation: { id: `gid://shopify/BulkOperation/${bulkQueries.length}`, status: "CREATED" }, userErrors: [] } } });
+      }
+      // İlk toplu sorgu (müşteri yolculuğu alanıyla) ayrıntısız düşer, ikincisi tamamlanır
+      if (body.includes("bulkOperation(id")) {
+        const failed = bulkQueries.length === 1;
+        return json({ data: { bulkOperation: { status: failed ? "FAILED" : "COMPLETED", errorCode: failed ? "ACCESS_DENIED" : null, objectCount: "2", url: failed ? null : "https://bulk.example/x.jsonl", partialDataUrl: null } } });
+      }
+      if (body.includes("products(")) return json({ data: { products: { nodes: [], pageInfo: { hasNextPage: false, endCursor: null } } } });
+      return json({ errors: [{ message: "beklenmeyen sorgu" }] });
+    });
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    const p = syncShopify();
+    await vi.runAllTimersAsync();
+    const r = await p;
+    vi.useRealTimers();
+    expect(r.status).toBe("ok");
+    expect(bulkQueries).toHaveLength(2);
+    expect(bulkQueries.every((q) => !q.includes("customer { id }"))).toBe(true);
+    expect(bulkQueries[1]).not.toContain("customerJourneySummary");
+    expect(count("orders")).toBe(1);
+    expect((db.$client.prepare("select value from settings where key = 'shopify_alan_modu'").get() as { value: string }).value).toBe("yolculuksuz");
   });
 });
 
