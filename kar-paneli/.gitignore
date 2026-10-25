@@ -1,0 +1,18 @@
+# bağımlılıklar ve derleme
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# gizli anahtarlar ve veriler — asla git'e girmez
+.env
+.env.*
+!.env.example
+data/
+yedek/
+logs/
+.runtime/
+
+# ticari veriler (kurulum paketiyle ayrıca gelir, herkese açık depoya girmez)
+seed/
+trueprofit/

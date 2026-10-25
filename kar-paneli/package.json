@@ -1,0 +1,41 @@
+{
+  "name": "ttn-kar-paneli",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Text To Next yerel kâr paneli",
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1 -p 4747",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1 -p 4747",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "better-sqlite3": "13.0.3",
+    "drizzle-orm": "0.45.2",
+    "exceljs": "4.4.0",
+    "next": "16.4.2",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "recharts": "3.9.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/better-sqlite3": "7.6.13",
+    "@types/node": "22.18.0",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "drizzle-kit": "0.31.5",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  },
+  "overrides": {
+    "postcss": "8.5.23",
+    "uuid": "11.1.1"
+  }
+}

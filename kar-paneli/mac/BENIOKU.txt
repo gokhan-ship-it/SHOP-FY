@@ -1,0 +1,23 @@
+TTN KÂR PANELİ — KURULUM
+========================
+
+1) Bu klasörün İndirilenler (Downloads) içinde "TTN-Kar-Kurulum" adıyla durduğundan emin olun.
+2) Terminal'i açın (Spotlight: ⌘ + boşluk → "Terminal" yazın → Enter).
+3) Aşağıdaki satırı yapıştırıp Enter'a basın:
+
+   bash ~/Downloads/TTN-Kar-Kurulum/kurulum.command
+
+   Mac "Terminal, İndirilenler klasörüne erişmek istiyor" diye sorarsa "İzin Ver"e basın.
+
+4) Kurulum birkaç dakika sürer. Bitince tarayıcıda panelin Kurulum ekranı açılır;
+   Shopify ve Meta anahtarlarını orada girersiniz.
+
+Panel:            http://localhost:4747
+Masaüstü simgesi: Masaüstü → "TTN Kâr"
+Program klasörü:  ~/TTN-Kar  (Masaüstünde "TTN-Kar" kısayolu)
+
+Güncelleme: Yeni paketi aynı şekilde indirip aynı komutu çalıştırın.
+Veritabanı, girdiğiniz maliyet/giderler, anahtarlar ve yedekler korunur.
+
+Kaldırma: bash ~/Downloads/TTN-Kar-Kurulum/kaldir.command
+(Yalnızca servis ve simge kaldırılır; verileriniz ~/TTN-Kar içinde kalır.)
