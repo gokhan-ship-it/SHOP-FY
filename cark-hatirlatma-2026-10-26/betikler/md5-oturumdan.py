@@ -14,7 +14,7 @@ for satir in open(yol, encoding='utf-8'):
         c = p.get('content')
         metinler = [c] if isinstance(c, str) else [x.get('text', '') for x in (c or []) if isinstance(x, dict)]
         for m in metinler:
-            if '"canli":{"role":"MAIN","files"' not in m: continue
+            if '"canli":{"role":"MAIN"' not in m: continue
             try: d = json.loads(m)
             except Exception: continue
             for n in d['data']['canli']['files']['nodes']: dosyalar[n['filename']] = n

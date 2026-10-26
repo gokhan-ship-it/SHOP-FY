@@ -8,14 +8,17 @@
   - Bu yüzden, istediğiniz gibi yayındaki temanın kopyası alındı: **"Cark hatirlatma - 2026-10-26"**. Bütün iş bu kopyada.
 - **Hiçbir tema yayına alınmadı.** Yayındaki tema değişmedi; MD5 kontrolü aşağıda.
 - **Dokunulmayanlar:**
-  - çarkın indirim tutarı ve indirim kodu mantığı
+  - çarkın indirim tutarı
+  - indirim kodu mantığı (onayınızla yapılan tek düzeltme dışında; en altta)
   - Meta, Google ve TikTok pikselleri
   - çerez izni
 - Sizin düzeltmeleriniz uygulandı:
   1. Çubukta ve sepet kutusunda tutar yok.
   2. Çubuk, çark bölümü çevrilmeden geçilince çıkıyor.
   3. Süresi dolmuş kişi sepette hatırlatmayı görüyor.
-- **Sizden onay bekleyen iki konu var** (en altta). İkisine de dokunmadım.
+- Onayınızla iki ek iş daha yapıldı (en altta):
+  - ürün sayfalarına çark eklendi,
+  - süresi dolan kodun sepetten kalkmaması düzeltildi.
 
 ## 1. Teşhis
 
@@ -29,7 +32,7 @@
 | "Çevir" ilk ekranda mı, bir şey üstüne biniyor mu? | Kart açıldığında "Çarkı çevir" düğmesi 390, 360 ve 1440'ta ilk ekranda; üstünde başka hiçbir şey yok. Çerez bandı yok. WhatsApp ve "Nasıl çalışır?" ekranın altında; açık çarkla çakışmıyor. |
 | Yanlışlıkla kapanıyor mu? | Hayır. Fark etmeden kapatmaya yol açan bir sorun bulunmadı. |
 
-**Asıl sorun görünürlük:** Ürün sayfasına (çoğu reklam buraya gelir) inen kişi çarkı hiç görmüyor. Koleksiyonda ise çark ilk ekranın altında kalıyor. Öneri aşağıda; onayınızı bekliyor.
+**Asıl sorun görünürlük:** Ürün sayfasına (çoğu reklam buraya gelir) inen kişi çarkı hiç görmüyordu. Koleksiyonda ise çark ilk ekranın altında kalıyor. Onayınızla ürün sayfalarına çark eklendi (en altta).
 
 ## 2. Çarkın üç durumu (tek yerden okunuyor)
 
@@ -68,7 +71,10 @@
   - Sayfa yenilenmeden toplam ve "-500 TL" satırı güncelleniyor, kutu kalkıyor.
   - Çekmece açık kalıyor. Esc ile çark kapanınca da çekmece açık kalıyor.
 - **"Ödemeye geç" hiç engellenmiyor;** test edildi.
-- **Süresi dolmuş kişi** (örneğin iki gün sonra doğrudan sepete gelen) kutuyu görüyor. Kod sepetten kalkınca sepet ekranı kendini tazeliyor; ancak aşağıdaki 2. onay konusuna bakın.
+- **Süresi dolmuş kişi** (örneğin iki gün sonra doğrudan sepete gelen) kutuyu görüyor:
+  - eski indirim sepetten kalkıyor ve sepet ekranı sayfa yenilenmeden tazeleniyor,
+  - süre sayfa açıkken dolarsa da aynısı oluyor,
+  - kişi çarkı yeniden çevirince indirim tekrar uygulanıyor.
 
 ## 5. Ölçüm
 
@@ -103,6 +109,11 @@ Olaylar Shopify Customer Events'e (`Shopify.analytics.publish`) ve Google'a (`gt
 | `assets/tt-cark-hatir.js` (yeni) | Davranış ve ölçüm |
 | `layout/theme.liquid` | 2 satır: durum ve çubuk eklendi |
 | `sections/cart-drawer.liquid`, `sections/main-cart.liquid` | 1'er satır: sepet kutusu listenin üstüne eklendi |
+| `assets/ttn-cark.js` (onayla) | Çarkın kod kaldırma kısmında tek düzeltme: süresi dolan kodu artık gerçekten sepetten kaldırıyor. İndirim tutarı ve kod mantığının geri kalanı aynı. |
+
+- Ürün sayfası çarkı da `snippets/tt-cark-hatir.liquid` içinde.
+- Ürün şablonlarına (`templates/product.zaman-kapsulu*.json`) dokunulmadı. İkisi de Shopify'ın şablon başına 25 bölüm sınırında; yeni bölüm kabul etmiyor. Bu yüzden kart koddan ekleniyor ve sayfa açılırken ürün bölümünün hemen altına yerleşiyor.
+- Bunu anlamak için kopya temada iki deneme yükleme yaptım: biri reddedildi, sonra zararsız bir sıra değişikliği yükleyip hemen geri aldım. Şablonun MD5'i başlangıçtaki haliyle aynı.
 
 ## Önizleme ve kendi testiniz
 
@@ -110,6 +121,7 @@ Linkler:
 - Ana sayfa: https://texttonext.com/?preview_theme_id=189466968384
 - Erkek sayfası: https://texttonext.com/collections/zaman-kapsulu-bileklik?preview_theme_id=189466968384
 - Ürün sayfası: https://texttonext.com/products/prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik?preview_theme_id=189466968384
+- Ürün sayfası (couple): https://texttonext.com/products/prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple?preview_theme_id=189466968384
 - Sepet: https://texttonext.com/cart?preview_theme_id=189466968384
 - Canlı siteye dönmek için: https://texttonext.com/?preview_theme_id=
 
@@ -128,24 +140,27 @@ Her senaryoya yeni bir **gizli sekmede** ana sayfa linkiyle başlayın:
 | 3. senaryo | Ana sayfa, koleksiyon, ürün, çekmece ve /cart'ta hiçbir şey çıkmıyor |
 | Couple, iki ürün | "İkinci Üründe %50 İndirim" (−999,50) + çark (−500) birlikte: 4.698 → 3.198,50 TL |
 | Boş sepet / "Ödemeye geç" | Kutu yok / gönderim engellenmiyor |
+| Ürün sayfası (tekli + couple) | Çark ürün bölümünün hemen altında: telefonda y≈1430, masaüstünde uzun galerinin altında. Çevirmeden geçince çubuk çıkıyor. Çevirince sayaç ve indirimli fiyat geliyor. Reklam linki (`?cark=1`) çarka kaydırıyor. |
+| Süresi dolmuş kupon | /cart ve çekmecede kod sepetten kalkıyor (1.499 → 1.999 TL), "-500" satırı gidiyor, kutu çıkıyor. Sayfa açıkken dolunca da aynısı; sayfa yenilenmiyor. |
 | Konsol | Yeni hata yok |
 
 Aynı gezinmede canlı ve kopya temada aynı iki hata görüldü; ikisi de shop.app kaynaklı, bizim kodumuzla ilgisi yok. Bir de şu var: çark çevrilince temanın sepet kodunda "reading 'open'" hatası çıkıyor. Bu **canlı sitede de aynen var** (çarkın kendi sinyalinden). Zararsız, çünkü sepet zaten güncelleniyor. Bizim yeni kodumuz bu hatayı üretmiyor.
 
 ## Yayındaki tema değişmedi (MD5)
 
-- Başta ve sonda alınan listelerdeki 708 dosyanın hepsinin MD5'i ve son değişiklik zamanı aynı.
+- Başta (09:1x) ve sonda (11:37, onaylı işlerden sonra) alınan listelerdeki 708 dosyanın hepsinin MD5'i ve son değişiklik zamanı aynı.
 - Sondaki listede 2 dosya fazla görünüyor (gift-wrapping-list…). Sabahki liste sayfalara bölünürken bu ikisi atlanmıştı. İkisinin de son değişikliği 25.10 10:23; bugün dokunulmadı.
 - Temanın kendi son değişiklik zamanı hâlâ 25.10 12:45.
 
-## Onayınızı bekleyen iki konu (uygulanmadı)
+## Onayınızla yapılanlar
 
-1. **Çark görünürlüğü.** Ürün sayfasına inen kişi çarkı hiç görmüyor; o yüzden üstteki çubuk da ona çıkmıyor (sepet kutusu çıkıyor). Seçenekler:
-   - ürün sayfasına çark kartını eklemek (hazır "ttn-spin-wheel" bölümü var)
-   - koleksiyonlarda çarkı yukarı almak
-   - olduğu gibi bırakmak
-2. **Süresi dolan kod sepetten kalkmıyor (çarkın kendi kodunda bir hata).**
-   - Çarkın 30 dakika dolunca kodu sepetten kaldırması gerekiyor. Ama Shopify'ın sepet verisinde artık olmayan bir alanı okuduğu için hiçbir şey kaldırmıyor.
-   - İndirim kodunun Shopify'da bitiş tarihi yok (müşteri başına bir kez).
-   - Sonuç: iki gün sonra gelen kişi hâlâ 500 TL indirimi alıyor. Sepet kutusu ona "İndirimin seni bekliyor" diyor ama sepet zaten indirimli.
-   - Düzeltme çarkın kod mantığında tek satır. Dokunmama kuralınız olduğu için onayınızı bekliyorum.
+1. **Ürün sayfasına çark.**
+   - Tekli ve couple ürün sayfalarında ürün bölümünün hemen altında; telefonda "Sepete ekle" ve güven maddelerinin altında.
+   - Ana sayfadaki çarkla aynı görünüm ve metin, aynı çark mantığı.
+   - Kişi çevirmeden geçince üstteki çubuk ürün sayfasında da çıkıyor.
+   - Başka sayfalar değişmedi; koleksiyondaki çarkın yeri aynı.
+2. **Süresi dolan kodun sepetten kaldırılması.**
+   - Çarkın kodu, Shopify'ın sepet verisinde artık olmayan bir alanı okuyordu; düzeltildi.
+   - Artık 30 dakika dolunca kod sepetten gerçekten kalkıyor ve sepette "Çarkı çevir" kutusu çıkıyor.
+   - Çark yeniden çevrilince indirim tekrar geliyor.
+   - Bilgi için: İndirim kodunun Shopify'da bitiş tarihi yok (müşteri başına bir kez). Biri kodu bilip elle girerse süre sınırı yine uygulanmaz; bu, kodun Shopify'daki ayarıyla ilgili, temayla değil.
