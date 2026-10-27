@@ -1,0 +1,597 @@
+{
+ "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik": {
+  "id": "gid://shopify/Product/15434301210944",
+  "title": "Prizma",
+  "handle": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik",
+  "status": "ACTIVE",
+  "templateSuffix": "zaman-kapsulu",
+  "productType": "",
+  "vendor": "Zaman Kapsülü Bileklik",
+  "tags": [
+   "zaman kapsülü bileklik"
+  ],
+  "descriptionHtml": "<p data-end=\"130\" data-start=\"93\" data-section-id=\"i86tfp\"><span role=\"text\"><strong>Zincir</strong>: Fasetli çubuk halkalı 316L cerrahi çelik zincir; uzatma zinciri yoktur.</span><br><span role=\"text\"><strong>Ölçü</strong>: 21 cm</span><span role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Süresiz Çip Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.<br><meta charset=\"utf-8\"> <strong>Su Geçirmez: </strong>Günlük kullanım, spor ve duş için uygundur.</span></p>",
+  "category": {
+   "id": "gid://shopify/TaxonomyCategory/aa-6-3",
+   "fullName": "Kıyafet ve Aksesuarlar > Mücevherler > Bilezikler"
+  },
+  "requiresSellingPlan": false,
+  "isGiftCard": false,
+  "seo": {
+   "title": null,
+   "description": null
+  },
+  "options": [
+   {
+    "id": "gid://shopify/ProductOption/17904881107264",
+    "name": "Ham Madde",
+    "position": 1,
+    "optionValues": [
+     {
+      "name": "316L Cerrahi Çelik",
+      "hasVariants": true
+     }
+    ]
+   }
+  ],
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/67804330328384",
+     "title": "316L Cerrahi Çelik",
+     "sku": "PRIZMA-316L",
+     "price": "1999.00",
+     "compareAtPrice": "2399.00",
+     "taxable": false,
+     "inventoryPolicy": "CONTINUE",
+     "selectedOptions": [
+      {
+       "name": "Ham Madde",
+       "value": "316L Cerrahi Çelik"
+      }
+     ],
+     "inventoryItem": {
+      "id": "gid://shopify/InventoryItem/69794333032768",
+      "tracked": true,
+      "requiresShipping": true,
+      "countryCodeOfOrigin": null,
+      "harmonizedSystemCode": null,
+      "measurement": {
+       "weight": {
+        "unit": "KILOGRAMS",
+        "value": 0
+       }
+      },
+      "unitCost": null,
+      "inventoryLevels": {
+       "nodes": [
+        {
+         "location": {
+          "id": "gid://shopify/Location/96617627968",
+          "name": "Ogün Sokak"
+         },
+         "quantities": [
+          {
+           "name": "available",
+           "quantity": 248
+          },
+          {
+           "name": "on_hand",
+           "quantity": 249
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "metafields": {
+      "nodes": []
+     }
+    }
+   ]
+  },
+  "metafields": {
+   "nodes": [
+    {
+     "id": "gid://shopify/Metafield/191254646391104",
+     "namespace": "custom",
+     "key": "couple_urun",
+     "type": "product_reference",
+     "value": "gid://shopify/Product/15434299212096"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254646423872",
+     "namespace": "custom",
+     "key": "boyutlar",
+     "type": "rich_text_field",
+     "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Ölçü: \",\"bold\":true},{\"type\":\"text\",\"value\":\"21 cm\"}]}]}"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254724641088",
+     "namespace": "shopify--discovery--product_recommendation",
+     "key": "complementary_products",
+     "type": "list.product_reference",
+     "value": "[\"gid://shopify/Product/9100357206336\",\"gid://shopify/Product/9100723585344\",\"gid://shopify/Product/9100707692864\",\"gid://shopify/Product/9100755042624\"]"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254724673856",
+     "namespace": "shopify--discovery--product_recommendation",
+     "key": "related_products_display",
+     "type": "single_line_text_field",
+     "value": "ahead"
+    }
+   ]
+  },
+  "collections": {
+   "nodes": [
+    {
+     "id": "gid://shopify/Collection/472433557824",
+     "title": "Erkekler İçin Zaman Kapsülleri",
+     "handle": "zaman-kapsulu-bileklik",
+     "sortOrder": "MANUAL"
+    },
+    {
+     "id": "gid://shopify/Collection/519914520896",
+     "title": "1 Al 1 Bedava — Çelik",
+     "handle": "1-al-1-bedava-celik",
+     "sortOrder": "ALPHA_ASC"
+    }
+   ]
+  },
+  "resourcePublicationsV2": {
+   "nodes": [
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/223716671808",
+      "catalog": {
+       "title": "Channel Catalog 223716671808 for Online Store"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/223716704576",
+      "catalog": {
+       "title": "Channel Catalog 223716704576 for Point of Sale"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/224969457984",
+      "catalog": {
+       "title": "Channel Catalog 224969457984 for parasut-integration"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/224986890560",
+      "catalog": {
+       "title": "Channel Catalog 224986890560 for Facebook"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/224987382080",
+      "catalog": {
+       "title": "Channel Catalog 224987382080 for Google"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/226566930752",
+      "catalog": {
+       "title": "Channel Catalog 226566930752 for TikTok"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/234209542464",
+      "catalog": {
+       "title": "Channel Catalog 234209542464 for Shopify Inbox"
+      }
+     }
+    }
+   ]
+  },
+  "mediaCount": {
+   "count": 9
+  }
+ },
+ "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple": {
+  "id": "gid://shopify/Product/15434299212096",
+  "title": "Prizma Couple",
+  "handle": "prizma-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+  "status": "ACTIVE",
+  "templateSuffix": "zaman-kapsulu-couple",
+  "productType": "",
+  "vendor": "Zaman Kapsülü Bileklik",
+  "tags": [],
+  "descriptionHtml": "<p data-end=\"130\" data-start=\"93\" data-section-id=\"i86tfp\"><span role=\"text\"><strong>Zincir</strong>: Fasetli çubuk halkalı 316L cerrahi çelik zincir; uzatma zinciri yoktur.</span><br><span role=\"text\"><strong>Ölçü</strong>: 21 cm</span><span role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Süresiz Çip Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.<br><meta charset=\"utf-8\"> <strong>Su Geçirmez: </strong>Günlük kullanım, spor ve duş için uygundur.</span></p>",
+  "category": {
+   "id": "gid://shopify/TaxonomyCategory/aa-6-3",
+   "fullName": "Kıyafet ve Aksesuarlar > Mücevherler > Bilezikler"
+  },
+  "seo": {
+   "title": null,
+   "description": null
+  },
+  "options": [
+   {
+    "id": "gid://shopify/ProductOption/17904878649664",
+    "name": "Ham Madde",
+    "position": 1,
+    "optionValues": [
+     {
+      "name": "316L Cerrahi Çelik",
+      "hasVariants": true
+     }
+    ]
+   }
+  ],
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/67804326625600",
+     "title": "316L Cerrahi Çelik",
+     "sku": "PRIZMA-316L-CPL",
+     "price": "2399.00",
+     "compareAtPrice": null,
+     "taxable": false,
+     "inventoryPolicy": "CONTINUE",
+     "selectedOptions": [
+      {
+       "name": "Ham Madde",
+       "value": "316L Cerrahi Çelik"
+      }
+     ],
+     "inventoryItem": {
+      "id": "gid://shopify/InventoryItem/69794329329984",
+      "tracked": true,
+      "requiresShipping": true,
+      "measurement": {
+       "weight": {
+        "unit": "KILOGRAMS",
+        "value": 0
+       }
+      },
+      "inventoryLevels": {
+       "nodes": [
+        {
+         "location": {
+          "id": "gid://shopify/Location/96617627968",
+          "name": "Ogün Sokak"
+         },
+         "quantities": [
+          {
+           "name": "available",
+           "quantity": 0
+          },
+          {
+           "name": "on_hand",
+           "quantity": 0
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "metafields": {
+      "nodes": []
+     }
+    }
+   ]
+  },
+  "metafields": {
+   "nodes": [
+    {
+     "id": "gid://shopify/Metafield/191254568239424",
+     "namespace": "custom",
+     "key": "couple_ikizi",
+     "type": "boolean",
+     "value": "true"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254568272192",
+     "namespace": "seo",
+     "key": "hidden",
+     "type": "number_integer",
+     "value": "1"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254568304960",
+     "namespace": "custom",
+     "key": "boyutlar",
+     "type": "rich_text_field",
+     "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Ölçü: \",\"bold\":true},{\"type\":\"text\",\"value\":\"21 cm\"}]}]}"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254724706624",
+     "namespace": "shopify--discovery--product_recommendation",
+     "key": "complementary_products",
+     "type": "list.product_reference",
+     "value": "[\"gid://shopify/Product/9100357206336\",\"gid://shopify/Product/9100723585344\",\"gid://shopify/Product/9100707692864\",\"gid://shopify/Product/9100755042624\"]"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254724739392",
+     "namespace": "shopify--discovery--product_recommendation",
+     "key": "related_products_display",
+     "type": "single_line_text_field",
+     "value": "ahead"
+    }
+   ]
+  },
+  "collections": {
+   "nodes": [
+    {
+     "id": "gid://shopify/Collection/506003718464",
+     "title": "Couple",
+     "handle": "couple",
+     "sortOrder": "BEST_SELLING"
+    },
+    {
+     "id": "gid://shopify/Collection/506039501120",
+     "title": "Couple Collection",
+     "handle": "couple-collection",
+     "sortOrder": "BEST_SELLING"
+    },
+    {
+     "id": "gid://shopify/Collection/511335203136",
+     "title": "Couple Zaman Kapsülleri",
+     "handle": "couple-zaman-kapsulleri",
+     "sortOrder": "BEST_SELLING"
+    },
+    {
+     "id": "gid://shopify/Collection/515410526528",
+     "title": "Couple Ürünler",
+     "handle": "couple-urunler",
+     "sortOrder": "MOST_RELEVANT"
+    }
+   ]
+  },
+  "resourcePublicationsV2": {
+   "nodes": [
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/223716671808",
+      "catalog": {
+       "title": "Channel Catalog 223716671808 for Online Store"
+      }
+     }
+    }
+   ]
+  },
+  "mediaCount": {
+   "count": 9
+  }
+ },
+ "prizma-chloe-couple-zaman-kapsulu": {
+  "id": "gid://shopify/Product/15434302423360",
+  "title": "Prizma + Chloe Couple Zaman Kapsülü",
+  "handle": "prizma-chloe-couple-zaman-kapsulu",
+  "status": "ACTIVE",
+  "templateSuffix": "zaman-kapsulu-couple",
+  "productType": "",
+  "vendor": "Text To Next",
+  "tags": [],
+  "descriptionHtml": "<div>Prizma + Chloe Couple Zaman Kapsülü Bileklik Seti</div>\n<div><br></div>\n<div>Birlikte geçirdiğiniz her anı, yalnızca sizin açabildiğiniz bir kapsülde biriktirin.</div>\n<div><br></div>\n<div>Prizma + Chloe, çiftler için tasarlanmış özel bir zaman kapsülü bileklik setidir.</div>\n<div>İki bileklik bir araya geldiğinde kapsülünüz açılır, uzaklaştığınızda otomatik olarak tekrar kilitlenir. Böylece ilişkinizin tüm hikâyesi sadece size özel kalır.</div>\n<div></div>\n<div>Öne Çıkan Özellikler</div>\n<div><br></div>\n<div>✔ Ayarlanabilir tasarım — her bileğe mükemmel uyum</div>\n<div>Kadın–erkek fark etmeksizin tüm bilek ölçülerine rahatça uyacak şekilde tasarlanmıştır. Takması kolaydır, gün boyu konfor sağlar.</div>\n<div><br></div>\n<div>✔ Hipoalerjenik 316L Çelik</div>\n<div>Cildi hassas olanlar için bile güvenli. Alerji yapmaz, uzun süreli kullanımda rahatsızlık vermez.</div>\n<div><br></div>\n<div>✔ Kararmaz</div>\n<div>316L paslanmaz çelik yapısı sayesinde kararma, solma veya renk atma yapmaz. Günlük kullanımda yıllarca ilk günkü görünümünü korur.</div>\n<div><br></div>\n<div>✔ Su geçirmez &amp; dayanıklı çip teknolojisi</div>\n<div>Bilekliklerdeki çip tamamen su geçirmezdir. Duşta, yağmurda, günlük aktivitelerde sorun yaşamadan kullanabilirsiniz.</div>\n<div><br></div>\n<div>✔ Yalnızca size özel şifreleme</div>\n<div>Kapsülünüz, yalnızca sizin belirlediğiniz iki ürün birlikte okutulduğunda açılır. Ürünü kaybetseniz bile başkası içerikleri göremez.</div>\n<div></div>\n<div>Nasıl Çalışır?</div>\n<div><span> • İkiniz de bilekliğinizi takıyorsunuz.</span></div>\n<div><span> • Ayrıyken kapsül kilitli kalıyor; yükleme yapmaya devam ediyorsunuz ama birbirinizin yüklediklerini göremiyorsunuz.</span></div>\n<div><span> • Buluştuğunuzda iki bilekliği okutuyorsunuz ve kapsül açılıyor.</span></div>\n<div><span> • İçerikler kilitlenip açıldıkça ilişkinizin hikâyesi yıllar boyunca bu kapsülde birikiyor.</span></div>\n<div></div>\n<div>Birlikte bir hikâye inşa edin.</div>\n<div><br></div>\n<div>Prizma + Chloe, sadece bir aksesuar değil; her buluşmanızda bir ritüele dönüşen, ilişkinize eşlik eden bir deneyimdir.</div>\n<p><br>Müşteri Destek Merkezi (Hafta içi her gün 10:00-18:00)</p>\n<p><b>0216 606 14 15</b></p>\n<!---->",
+  "category": {
+   "id": "gid://shopify/TaxonomyCategory/aa-6-8",
+   "fullName": "Kıyafet ve Aksesuarlar > Mücevherler > Kolyeler"
+  },
+  "seo": {
+   "title": null,
+   "description": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄"
+  },
+  "options": [
+   {
+    "id": "gid://shopify/ProductOption/17904882647360",
+    "name": "Title",
+    "position": 1,
+    "optionValues": [
+     {
+      "name": "Default Title",
+      "hasVariants": true
+     }
+    ]
+   }
+  ],
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/67804332491072",
+     "title": "Default Title",
+     "sku": "PRIZMA-CHLOE-SET",
+     "price": "3398.00",
+     "compareAtPrice": null,
+     "taxable": false,
+     "inventoryPolicy": "CONTINUE",
+     "selectedOptions": [
+      {
+       "name": "Title",
+       "value": "Default Title"
+      }
+     ],
+     "inventoryItem": {
+      "id": "gid://shopify/InventoryItem/69794335195456",
+      "tracked": true,
+      "requiresShipping": true,
+      "measurement": {
+       "weight": {
+        "unit": "KILOGRAMS",
+        "value": 0
+       }
+      },
+      "inventoryLevels": {
+       "nodes": [
+        {
+         "location": {
+          "id": "gid://shopify/Location/96617627968",
+          "name": "Ogün Sokak"
+         },
+         "quantities": [
+          {
+           "name": "available",
+           "quantity": 460
+          },
+          {
+           "name": "on_hand",
+           "quantity": 460
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "metafields": {
+      "nodes": []
+     }
+    }
+   ]
+  },
+  "metafields": {
+   "nodes": [
+    {
+     "id": "gid://shopify/Metafield/191254689153344",
+     "namespace": "custom",
+     "key": "boyutlar",
+     "type": "rich_text_field",
+     "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Prizma: \",\"bold\":true},{\"type\":\"text\",\"value\":\"21 cm\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Chloe: \",\"bold\":true},{\"type\":\"text\",\"value\":\"17+5 cm (ayarlanabilir)\"}]}]}"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254689218880",
+     "namespace": "custom",
+     "key": "card_title",
+     "type": "single_line_text_field",
+     "value": "Prizma + Chloe"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254689349952",
+     "namespace": "global",
+     "key": "description_tag",
+     "type": "string",
+     "value": "Bağlan\n\nTelefonunla ürüne dokunarak zaman kapsülüne bağlan.📱\n\nYükle \nSana özel bu alana limitsiz fotoğraf, video, ses kaydı veya yazılı not yükle. Gerçekten! ✅\n\nKilitle\nYükleme işleminden sonra kapsülün açılmasını istediğin zamanı seç ve kilitle. İster bugüne istersen 10 yıl sonraya. 🗝️\n\nSakla\nBelirlediğin tarihe kadar hediye ettiğin kişi saniye saniye geri sayım görecek. Tarih geldiğinde sen ve hediye ettiğin kişi içerikleri süresiz görüntüleyebilirsiniz. 💌\n\n▪️ Zaman kapsülün sen ve hediye ettiğin kişi arasında şifrelenir, üçüncü kişiler kapsülüne erişemez. 🔐\n\n▪️ Geri sayım devam ederken uzaktan yükleme yapabilir, dilerseniz açılacağı tarihi değiştirebilirsiniz.⏰\n\n\n▪️ Kapsülünün geri sayımı bittiğinde yeni bir tarihe tekrar kilitleyebilir, dilediğin kadar kullanabilirsin. 🔄"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254711992640",
+     "namespace": "delivery",
+     "key": "category_setting",
+     "type": "json_string",
+     "value": "{\"category_delivery_setting\":{\"category\":{\"is_add\":1,\"order_delivery_info\":\"<span style=\\\"display:block\\\">Ücretsiz Kargo <strong>{country_flag}</strong> <strong>{country_name}</strong></span><span style=\\\"display:block\\\">Ödeme sonrasında <strong>{cutoff_time}</strong> for dispatch today, and you&#x27;ll receive your package between <strong>{order_delivered_minimum_date} and {order_delivered_maximum_date}</strong><br/></span>\",\"out_of_stock_info\":\"<span style=\\\"display:block\\\"></span>\",\"out_of_stock_mode\":0,\"order_progress_bar_mode\":0,\"order_progress_setting\":{\"ordered\":{\"svg_number\":0,\"title\":\"Ordered\",\"tips_description\":\"After you place the order, we will need 1-3 days to prepare the shipment\"},\"order_ready\":{\"svg_number\":4,\"is_active\":1,\"title\":\"Order Ready\",\"date_title\":\"{order_ready_minimum_date} - {order_ready_maximum_date}\",\"tips_description\":\"Orders will start to be shipped\"},\"order_delivered\":{\"svg_number\":10,\"title\":\"Delivered\",\"date_title\":\"{order_delivered_minimum_date} - {order_delivered_maximum_date}\",\"tips_description\":\"Estimated arrival date range：{order_delivered_minimum_date} - {order_delivered_maximum_date}\"}},\"order_delivery_work_week\":[0,1,1,1,1,1,0],\"order_delivery_day_range\":[10,20],\"order_delivery_calc_method\":0,\"order_ready_work_week\":[1,1,1,1,1,1,1],\"order_ready_day_range\":[1,3],\"order_ready_calc_method\":2,\"holiday\":[],\"is_show_all_unadd_country\":1,\"widget_display_status\":0,\"widget_layout_mode\":0,\"cart_checkout_status\":1,\"cart_checkout_title\":\"Tahmini Teslimat\",\"cart_checkout_description\":\"{order_delivered_minimum_date} and {order_delivered_maximum_date}\",\"category_id\":\"267339\",\"t\":1719567796},\"language\":{\"tr\":{\"order_delivery_info\":\"<span style=\\\"display:block\\\">Free Shipping to <strong>{country_flag}</strong> <strong>{country_name}</strong></span><span style=\\\"display:block\\\">Order within the next <strong>{cutoff_time}</strong> for dispatch today, and you'll receive your package between <strong>{order_delivered_minimum_date} and {order_delivered_maximum_date}</strong><br/></span>\",\"out_of_stock_info\":\"<p></p>\",\"order_progress_setting\":{\"ordered\":{\"svg_number\":0,\"title\":\"Ordered\",\"tips_description\":\"After you place the order, we will need 1-3 days to prepare the shipment\"},\"order_ready\":{\"svg_number\":4,\"is_active\":1,\"title\":\"Order Ready\",\"date_title\":\"{order_ready_minimum_date} - {order_ready_maximum_date}\",\"tips_description\":\"Orders will start to be shipped\"},\"order_delivered\":{\"svg_number\":10,\"title\":\"Delivered\",\"date_title\":\"{order_delivered_minimum_date} - {order_delivered_maximum_date}\",\"tips_description\":\"Estimated arrival date range：{order_delivered_minimum_date} - {order_delivered_maximum_date}\"}},\"delivery_date_custom_format\":\"{month_local} {day}\",\"delivery_date_format_month_translate\":[\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"],\"delivery_date_format_week_translate\":[\"Sun\",\"Mon\",\"Tues\",\"Wed\",\"Thur\",\"Fri\",\"Sat\"],\"delivery_countdown_custom_format\":\"{hours} {hours_local} {minutes} {minutes_local} {seconds} {seconds_local}\",\"countdown_format_translate\":[\"Hours\",\"Minutes\",\"Seconds\"],\"cart_checkout_title\":\"Estimated between\",\"cart_checkout_description\":\"{order_delivered_minimum_date} and {order_delivered_maximum_date}\"}},\"country\":{\"tr\":{\"order_delivery_work_week\":[0,1,1,1,1,1,0],\"order_delivery_day_range\":[10,20],\"order_delivery_calc_method\":0,\"order_ready_work_week\":[1,1,1,1,1,1,1],\"order_ready_day_range\":[1,3],\"order_ready_calc_method\":2,\"holiday\":[],\"widget_display_status\":0,\"widget_layout_mode\":0,\"cart_checkout_status\":1,\"languages\":[]}}}}"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254724772160",
+     "namespace": "shopify--discovery--product_recommendation",
+     "key": "complementary_products",
+     "type": "list.product_reference",
+     "value": "[\"gid://shopify/Product/9565334012224\",\"gid://shopify/Product/9564915433792\",\"gid://shopify/Product/9100763169088\",\"gid://shopify/Product/9100772475200\"]"
+    },
+    {
+     "id": "gid://shopify/Metafield/191254724804928",
+     "namespace": "shopify--discovery--product_recommendation",
+     "key": "related_products_display",
+     "type": "single_line_text_field",
+     "value": "ahead"
+    }
+   ]
+  },
+  "collections": {
+   "nodes": [
+    {
+     "id": "gid://shopify/Collection/506039501120",
+     "title": "Couple Collection",
+     "handle": "couple-collection",
+     "sortOrder": "BEST_SELLING"
+    },
+    {
+     "id": "gid://shopify/Collection/520234107200",
+     "title": "Kampanyalı Couple Setler",
+     "handle": "kampanyali-couple-setler",
+     "sortOrder": "MANUAL"
+    }
+   ]
+  },
+  "resourcePublicationsV2": {
+   "nodes": [
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/223716671808",
+      "catalog": {
+       "title": "Channel Catalog 223716671808 for Online Store"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/223716704576",
+      "catalog": {
+       "title": "Channel Catalog 223716704576 for Point of Sale"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/224969457984",
+      "catalog": {
+       "title": "Channel Catalog 224969457984 for parasut-integration"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/224986890560",
+      "catalog": {
+       "title": "Channel Catalog 224986890560 for Facebook"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/224987382080",
+      "catalog": {
+       "title": "Channel Catalog 224987382080 for Google"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/226566930752",
+      "catalog": {
+       "title": "Channel Catalog 226566930752 for TikTok"
+      }
+     }
+    },
+    {
+     "isPublished": true,
+     "publication": {
+      "id": "gid://shopify/Publication/234209542464",
+      "catalog": {
+       "title": "Channel Catalog 234209542464 for Shopify Inbox"
+      }
+     }
+    }
+   ]
+  },
+  "mediaCount": {
+   "count": 11
+  }
+ }
+}

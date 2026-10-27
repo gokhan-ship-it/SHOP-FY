@@ -1,0 +1,122 @@
+{
+ "input": {
+  "title": "Fox Couple",
+  "handle": "fox-zaman-kapsulu-bileklik-316l-paslanmaz-celik-couple",
+  "status": "DRAFT",
+  "templateSuffix": "zaman-kapsulu-couple",
+  "productType": "",
+  "vendor": "Zaman Kapsülü Bileklik",
+  "tags": [],
+  "category": "gid://shopify/TaxonomyCategory/aa-6-3",
+  "descriptionHtml": "<p data-end=\"130\" data-start=\"93\" data-section-id=\"i86tfp\"><span role=\"text\"><strong>Zincir</strong>: Franco zincir (balık sırtı desenli, sık örgülü) 316L cerrahi çelik; uç kapakları silindir; uzatma zincirli.</span><br><span role=\"text\"><strong>Ölçü</strong>: [UZUNLUK – BELİRLENECEK]</span><span role=\"text\"><br></span></p>\n<p><span role=\"text\"><strong>Süresiz Çip Garantili: </strong>316L çelik <strong>kararmaz</strong> ve <strong>paslanmaz</strong>.<br><meta charset=\"utf-8\"> <strong>Su Geçirmez: </strong>Günlük kullanım, spor ve duş için uygundur.</span></p>",
+  "productOptions": [
+   {
+    "name": "Ham Madde",
+    "values": [
+     {
+      "name": "316L Cerrahi Çelik"
+     }
+    ]
+   }
+  ],
+  "variants": [
+   {
+    "optionValues": [
+     {
+      "optionName": "Ham Madde",
+      "name": "316L Cerrahi Çelik"
+     }
+    ],
+    "price": "2199.00",
+    "compareAtPrice": null,
+    "sku": "FOX-316L-CPL",
+    "taxable": false,
+    "inventoryPolicy": "CONTINUE",
+    "inventoryItem": {
+     "tracked": true,
+     "requiresShipping": true,
+     "measurement": {
+      "weight": {
+       "value": 0,
+       "unit": "KILOGRAMS"
+      }
+     }
+    },
+    "inventoryQuantities": [
+     {
+      "locationId": "gid://shopify/Location/96617627968",
+      "name": "available",
+      "quantity": 0
+     }
+    ]
+   }
+  ],
+  "files": [
+   {
+    "id": "gid://shopify/MediaImage/46438875627840"
+   },
+   {
+    "id": "gid://shopify/MediaImage/46438875660608"
+   },
+   {
+    "id": "gid://shopify/MediaImage/46438875693376"
+   },
+   {
+    "id": "gid://shopify/MediaImage/46438875726144"
+   },
+   {
+    "id": "gid://shopify/MediaImage/46438875758912"
+   },
+   {
+    "id": "gid://shopify/MediaImage/46438875791680"
+   },
+   {
+    "id": "gid://shopify/MediaImage/46438875824448"
+   },
+   {
+    "id": "gid://shopify/MediaImage/46438875857216"
+   },
+   {
+    "id": "gid://shopify/MediaImage/46438875889984"
+   }
+  ],
+  "metafields": [
+   {
+    "namespace": "custom",
+    "key": "couple_ikizi",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "namespace": "seo",
+    "key": "hidden",
+    "type": "number_integer",
+    "value": "1"
+   },
+   {
+    "namespace": "custom",
+    "key": "boyutlar",
+    "type": "rich_text_field",
+    "value": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Ölçü: \", \"bold\": true}, {\"type\": \"text\", \"value\": \"[UZUNLUK – BELİRLENECEK]\"}]}]}"
+   },
+   {
+    "namespace": "shopify--discovery--product_recommendation",
+    "key": "complementary_products",
+    "type": "list.product_reference",
+    "value": "[\"gid://shopify/Product/9100357206336\",\"gid://shopify/Product/9100723585344\",\"gid://shopify/Product/9100707692864\",\"gid://shopify/Product/9100755042624\"]"
+   },
+   {
+    "namespace": "shopify--discovery--product_recommendation",
+    "key": "related_products_display",
+    "type": "single_line_text_field",
+    "value": "ahead"
+   }
+  ],
+  "collections": [
+   "gid://shopify/Collection/506003718464",
+   "gid://shopify/Collection/506039501120",
+   "gid://shopify/Collection/511335203136",
+   "gid://shopify/Collection/515410526528"
+  ]
+ }
+}

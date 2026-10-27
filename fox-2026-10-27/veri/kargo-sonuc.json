@@ -1,0 +1,114 @@
+[
+ {
+  "senaryo": "A_luna_2299_kodlu",
+  "kod": "K7QX4M9TR",
+  "urun": "Luna",
+  "araToplam": "2299.0",
+  "toplam": "1898.0",
+  "kodUygun": [
+   "K7QX4M9TR:True"
+  ],
+  "indirimler": [
+   "K7QX4M9TR LINE_ITEM 500.0"
+  ],
+  "kargoSecenekleri": [
+   "Kargo Ücreti 99.0"
+  ],
+  "hata": []
+ },
+ {
+  "senaryo": "A0_luna_2299_kodsuz",
+  "kod": null,
+  "urun": "Luna",
+  "araToplam": "2299.0",
+  "toplam": "2299.0",
+  "kodUygun": [],
+  "indirimler": [
+   "2000₺ Üzeri Ücretsiz Kargo SHIPPING_LINE 99.0"
+  ],
+  "kargoSecenekleri": [
+   "Kargo Ücreti 99.0"
+  ],
+  "hata": []
+ },
+ {
+  "senaryo": "B_lumin_2699_kodlu",
+  "kod": "K7QX4M9TR",
+  "urun": "Lumin",
+  "araToplam": "2699.0",
+  "toplam": "2199.0",
+  "kodUygun": [
+   "K7QX4M9TR:True"
+  ],
+  "indirimler": [
+   "K7QX4M9TR LINE_ITEM 500.0",
+   "2000₺ Üzeri Ücretsiz Kargo SHIPPING_LINE 99.0"
+  ],
+  "kargoSecenekleri": [
+   "Kargo Ücreti 99.0"
+  ],
+  "hata": []
+ },
+ {
+  "senaryo": "B0_lumin_2699_kodsuz",
+  "kod": null,
+  "urun": "Lumin",
+  "araToplam": "2699.0",
+  "toplam": "2699.0",
+  "kodUygun": [],
+  "indirimler": [],
+  "kargoSecenekleri": [
+   "Kargo Ücreti 0.0"
+  ],
+  "hata": []
+ },
+ {
+  "senaryo": "C_chloe_2099_kodlu",
+  "kod": "K7QX4M9TR",
+  "urun": "Chloe",
+  "araToplam": "2099.0",
+  "toplam": "1698.0",
+  "kodUygun": [
+   "K7QX4M9TR:True"
+  ],
+  "indirimler": [
+   "K7QX4M9TR LINE_ITEM 500.0"
+  ],
+  "kargoSecenekleri": [
+   "Kargo Ücreti 99.0"
+  ],
+  "hata": []
+ },
+ {
+  "senaryo": "C0_chloe_2099_kodsuz",
+  "kod": null,
+  "urun": "Chloe",
+  "araToplam": "2099.0",
+  "toplam": "2099.0",
+  "kodUygun": [],
+  "indirimler": [
+   "2000₺ Üzeri Ücretsiz Kargo SHIPPING_LINE 99.0"
+  ],
+  "kargoSecenekleri": [
+   "Kargo Ücreti 99.0"
+  ],
+  "hata": []
+ },
+ {
+  "senaryo": "D_prizma_chloe_3398_kodlu",
+  "kod": "K7QX4M9TR",
+  "urun": "Prizma + Chloe Couple Zaman Kapsülü",
+  "araToplam": "3398.0",
+  "toplam": "2898.0",
+  "kodUygun": [
+   "K7QX4M9TR:True"
+  ],
+  "indirimler": [
+   "K7QX4M9TR LINE_ITEM 500.0"
+  ],
+  "kargoSecenekleri": [
+   "Kargo Ücreti 0.0"
+  ],
+  "hata": []
+ }
+]
