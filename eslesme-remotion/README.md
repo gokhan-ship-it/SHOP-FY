@@ -1,8 +1,8 @@
 # Kapsül animasyonları (Remotion)
 
-Tüm videolar: 60 fps, H.264, yuv420p, crf 16, ses yok. Eşleşme ve kilit 1080×1080.
+Tüm videolar: 60 fps, H.264, yuv420p, crf 16, ses yok. Eşleşme ve kilit 1080×1080, açılış 1080×1920.
 
-Motion blur kilit videolarında `src/FloatMotionBlur.tsx` ile yapılıyor: örnekler kayan noktalı tamponda ortalanıyor, böylece blur açık ve kapalı videolar aynı renkte buluşuyor ve lime gradyan kademelenmiyor.
+Motion blur kilit ve açılış videolarında `src/FloatMotionBlur.tsx` ile yapılıyor: örnekler kayan noktalı tamponda ortalanıyor, böylece blur açık ve kapalı videolar aynı renkte buluşuyor ve lime gradyan kademelenmiyor.
 
 ## Couple eşleşme
 
@@ -26,6 +26,19 @@ Single kapsülde kullanıcı kapsülü her kilitlediğinde oynayan animasyon. İ
 - Kaynak: `single-kilit-final.html` → `src/kilit/`
 - Kilit çizimi tekrar kullanılabilir `Lock` bileşeni (`src/kilit/Lock.tsx`); açılış ve bekleme ekranı videoları da bunu kullanacak
 
+## Uygulama açılışı ("merhaba")
+
+Uygulama açılırken oynayan video. Telefonun siyah açılış ekranından başlar (ilk kare tamamen siyah), uygulamanın ana ekranına bağlanır. Ekrana dokunulunca atlanabilir.
+
+- 1080×1920 (dikey). Dosyalar `out/acilis/acilis-<fikir>-<versiyon>-<dil>.mp4`:
+  - fikir: `el` (1 · tek çizgiyle el yazısı) veya `halka` (2 · halkalardan harfler)
+  - versiyon: `tam` (~3 sn; ilk kurulumda ve günde bir kez) veya `kisa` (~1,3 sn; diğer açılışlar)
+  - dil: `merhaba`, `hello`, `hallo`
+- Video bittiğinde ana ekrana geçiş uygulamanın katmanında yapılır:
+  - `el`: son kare siyah; ana ekran 10 karede (0,33 sn) siyahtan belirir
+  - `halka`: son kare lime; ana ekranın üstündeki lime perde 12 karede (0,4 sn, easeInOutCubic) yukarı kayar
+- Kaynak: `merhaba-acilis.html` → `src/acilis/`
+
 ## Sıradaki işler
 
 `SIRA.md` ve `promptlar/` klasöründeki adımlar sırayla yapılıyor (1 ve 2 tamam). Eskizler bu klasörde.
@@ -35,7 +48,8 @@ Single kapsülde kullanıcı kapsülü her kilitlediğinde oynayan animasyon. İ
 ```sh
 npm i
 npm run studio        # Remotion Studio önizleme
-npm run render        # out/ altındaki tüm videolar
+npm run render        # out/ altındaki tüm videolar (yalnızca açılış: npm run render:acilis)
 npm run verify-loop   # eşleşme loop doğrulaması
 npm run verify-kilit  # kilit loop ve geçiş doğrulaması
+npm run verify-acilis # açılış: ilk kare siyah, son kare siyah/lime (render sonrası)
 ```

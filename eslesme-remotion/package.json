@@ -9,9 +9,11 @@
     "render:b": "remotion render EslesmeB out/eslesme-B.mp4",
     "render:kilit": "remotion render SingleKilit out/single-kilit.mp4",
     "render:kilit-bekleme": "remotion render SingleKilitBekleme out/single-kilit-bekleme.mp4",
-    "render": "npm run render:a && npm run render:b && npm run render:kilit && npm run render:kilit-bekleme",
+    "render:acilis": "tsx scripts/render-acilis.ts",
+    "render": "npm run render:a && npm run render:b && npm run render:kilit && npm run render:kilit-bekleme && npm run render:acilis",
     "verify-loop": "tsx scripts/verify-loop.ts",
     "verify-kilit": "tsx scripts/verify-kilit.tsx",
+    "verify-acilis": "tsx scripts/verify-acilis.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

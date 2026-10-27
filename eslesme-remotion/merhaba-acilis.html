@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merhaba Açılışı</title>
+<style>
+  :root{ --bg:#000; --panel:#0c0c0c; --line:#1f1f1f; --text:#f2f2f2; --muted:#8b8b8b; --lime:#DEFE52; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:640px;margin:0 auto;padding:22px 16px 48px}
+  h1{font-size:17px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.45}
+  .tabs{display:flex;gap:6px;margin-bottom:12px}
+  .tab{flex:1;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:13px;padding:10px 8px;border-radius:12px;cursor:pointer;text-align:center}
+  .tab.on{background:var(--lime);border-color:var(--lime);color:#000;font-weight:600}
+  .stage{position:relative;width:min(100%,360px);aspect-ratio:9/16;margin:0 auto;border:1px solid var(--line);border-radius:30px;overflow:hidden;background:#000}
+  canvas{display:block;width:100%;height:100%}
+  .phase-now{text-align:center;font-size:12px;color:var(--muted);margin-top:10px;min-height:16px}
+  .phase-now b{color:var(--lime);font-weight:600}
+  .controls{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .btn{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--text);height:34px;min-width:34px;padding:0 12px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap}
+  .btn.main{background:var(--lime);border-color:var(--lime);color:#000;font-weight:600}
+  input[type=range]{flex:1;min-width:0;accent-color:var(--lime)}
+  .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+  .row .lbl{font-size:12px;color:var(--muted);min-width:66px}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{appearance:none;border:0;background:var(--panel);color:var(--muted);font-size:12.5px;padding:8px 12px;cursor:pointer}
+  .seg button.on{background:var(--lime);color:#000;font-weight:600}
+  .label{font-size:12px;color:var(--muted);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.08em}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:12.5px;padding:7px 11px;border-radius:999px;cursor:pointer;user-select:none}
+  .chip.on{border-color:var(--lime);color:var(--text)}
+  .chip.on::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lime);margin-right:7px;vertical-align:1px}
+  ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.55;color:#cfcfcf}
+  li{margin-bottom:5px}
+  li b{color:var(--text);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Uygulama açılışı · "merhaba"</h1>
+  <p class="sub">Telefonun siyah açılış ekranından başlıyor, uygulamanın ana ekranına bağlanıyor. Üstten iki fikri karşılaştırabilirsin.</p>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="stage"><canvas id="cv"></canvas></div>
+  <div class="phase-now" id="phaseNow"></div>
+
+  <div class="controls">
+    <button class="btn main" id="open">Uygulamayı aç</button>
+    <button class="btn" id="play">❚❚</button>
+    <input type="range" id="scrub" min="0" max="100" step="1" value="0">
+    <button class="btn" id="speed">1x</button>
+  </div>
+  <div class="row"><span class="lbl">Dil</span><div class="seg" id="segLang"></div></div>
+  <div class="row"><span class="lbl">Versiyon</span><div class="seg" id="segVer"></div></div>
+
+  <div class="label">Efektler</div>
+  <div class="chips" id="chips"></div>
+
+  <div class="label">Notlar</div>
+  <ul>
+    <li><b>1 · Tek çizgiyle el yazısı:</b> Yazı, zarif bir el yazısı fontundan (Allura, ücretsiz ve ticari kullanıma açık lisanslı) tek çizgi olarak alındı. Lime bir nokta beliriyor, ondan çıkan tek ve kesintisiz beyaz çizgi "merhaba"yı yazıyor. Kelime bitince çizgi lime bir halkaya dönüşüp kapanıyor (kapsül göndermesi). Kamera halkanın içinden geçiyor ve ana ekran açılıyor.</li>
+    <li><b>2 · Halkalardan harfler:</b> Ritimle halkalar düşüyor, her biri yaylı bir hareketle açılıp bir harfe dönüşüyor. Kelime tamamlanınca harfler sırayla zıplıyor ve sona lime bir nokta konuyor. Kamera noktaya dalıyor, ekran lime oluyor ve ana ekran lime perdenin arkasından açılıyor.</li>
+    <li><b>Tam ve kısa:</b> Tam versiyon yaklaşık 3 saniye; ilk kurulumda ve günde bir kez oynar. Kısa versiyon yaklaşık 1.3 saniye; diğer açılışlar için. Ekrana dokunulunca atlanabilir.</li>
+    <li><b>Dil:</b> Aynı animasyon, sadece kelime değişiyor; her dil ayrı bir video olarak çıkar.</li>
+    <li><b>İlk kare:</b> Tamamen siyah, telefonun sabit açılış ekranıyla aynı. Böylece açılış kesintisiz görünür.</li>
+    <li><b>Ana ekran:</b> Buradaki ana ekran temsili, uygulamanın kendisi.</li>
+  </ul>
+</div>
+
+<script>
+(() => {
+  const FPS = 30, W0 = 540, H0 = 960, CX = 270, BASE_Y = 520, TAU = Math.PI * 2;
+  const LIME = [222, 254, 82];
+  const lime = a => `rgba(${LIME[0]},${LIME[1]},${LIME[2]},${a})`;
+  const white = a => `rgba(255,255,255,${a})`;
+  const SANS = '-apple-system,BlinkMacSystemFont,Inter,Roboto,sans-serif';
+
+  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  const sc = document.createElement('canvas'), sctx = sc.getContext('2d');
+  const acc = document.createElement('canvas'), actx = acc.getContext('2d');
+  const bl = document.createElement('canvas'), bctx = bl.getContext('2d');
+  const HAS_FILTER = typeof bctx.filter === 'string';
+
+  let VAR = 'hand', WORD = 'merhaba', SHORT = false;
+  const FX = { blur: true, bloom: true, auto: true };
+  const FX_NAMES = [['blur', 'Motion blur'], ['bloom', 'Bloom'], ['auto', 'Otomatik tekrar']];
+  const SPEED_SHORT = 2.4, APP = 60;
+
+  // ---------- yardımcılar ----------
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const ramp = (f, a, b) => clamp((f - a) / (b - a));
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const easeInCubic = t => t * t * t;
+  const easeInOutCubic = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const easeInOutSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
+  const easeOutBack = t => { const c1 = 1.8, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+  function pulse(f, t0, amp, att = 3, dec = 10) {
+    if (f < t0) return 0;
+    const d = f - t0;
+    if (d < att) return amp * easeOutCubic(d / att);
+    if (d > att + dec * 2) return 0;
+    return amp * Math.exp(-(d - att) / (dec / 3));
+  }
+
+  // =========================================================
+  // 1 · TEK ÇİZGİYLE EL YAZISI
+  // harf noktaları: [x, y, kırılma?]  taban çizgisi y=0, x-yüksekliği 1
+  // =========================================================
+  // Harfler: EMS Allure (Allura türevi, SIL Open Font License) tek çizgi yazı fontundan alındı,
+  // yazım sırasına göre düzenlendi. [x, y, kırılma?] font birimi; x-yüksekliği 300.
+  const AL = {
+    m: { adv: 687, pts: [[-31.5,183],[47.2,255],[75.6,321,1],[-34.6,28.4,1],[37.8,104],[167,252],[233,309],[280,337],[302,340],[309,312],[296,274],[208,107,1],[318,195],[403,261],[491,293,1],[447,230],[400,94.5],[413,37.8],[472,18.9],[561,69.3],[655,183]] },
+    e: { adv: 346, pts: [[66.1,170],[148,211],[217,249],[252,306],[239,350],[180,356],[63,287],[15.8,252],[-34.6,192],[-66.1,139],[-72.4,88.2],[-50.4,44.1],[31.5,9.45],[170,44.1],[214,81.9],[277,135],[315,183]] },
+    r: { adv: 369, pts: [[-31.5,183],[34.6,287],[154,463,1],[47.2,391],[47.2,365],[59.9,356],[258,353,1],[145,214],[81.9,101],[97.6,22],[186,28.4],[296,132],[337,183]] },
+    h: { adv: 561, pts: [[-31.5,183],[113,315],[343,482],[447,605],[469,702],[394,718],[324,662],[255,586],[180,457],[101,309],[12.6,31.5,1],[110,148],[192,252],[287,315],[328,334],[350,312],[340,261],[290,183],[261,75.6],[284,18.9],[350,18.9],[413,63],[482,129],[529,183]] },
+    l: { adv: 261, pts: [[-25.2,176],[91.4,265],[239,428],[346,589],[394,662],[381,709],[312,718],[243,674],[148,532],[41,340],[-28.4,198],[-50.4,85.1],[-22,25.2],[44.1,18.9],[120,53.6],[195,132],[230,183]] },
+    a: { adv: 526, pre: [[34.6,261],[148,331]], pts: [[240,362],[318,352],[324,343,1],[300,358],[230,357],[148,331],[34.6,261],[-56.7,154],[-63,66.1],[-18.9,18.9],[69.3,56.7],[176,145],[277,243],[296,274,1],[255,142],[243,63],[271,18.9],[331,31.5],[406,78.8],[457,132],[495,183]] },
+    b: { adv: 416, pts: [[-31.5,183],[47.2,252],[132,328],[233,406],[312,476],[394,583],[416,674],[372,721],[284,680],[195,564],[97.6,359],[37.8,202],[28.4,72.4,1],[70,22],[135,18.9],[189,40.9],[287,120],[328,183],[369,252],[365,296],[334,334],[255,320],[150,290],[90,262,1],[170,300],[260,328],[340,330],[400,305],[445,280]] },
+    o: { adv: 391, pre: [[-6.3,233],[66.1,315],[142,365]], pts: [[195,337,1],[142,366],[66.1,315],[-6.3,233],[-40.9,161],[-56.7,75.6],[12.6,9.45],[101,40.9],[183,110],[230,208],[239,246],[239,284],[250,302],[300,312],[360,305]] },
+  };
+  function catmull(p0, p1, p2, p3, n) {
+    const out = [], d = (a, b) => Math.pow(Math.hypot(b[0] - a[0], b[1] - a[1]) || 1e-6, .5);
+    const t0 = 0, t1 = t0 + d(p0, p1), t2 = t1 + d(p1, p2), t3 = t2 + d(p2, p3);
+    for (let i = 0; i < n; i++) {
+      const t = t1 + (t2 - t1) * i / n;
+      const L = (a, b, ta, tb) => [(tb - t) / (tb - ta) * a[0] + (t - ta) / (tb - ta) * b[0], (tb - t) / (tb - ta) * a[1] + (t - ta) / (tb - ta) * b[1]];
+      const A1 = L(p0, p1, t0, t1), A2 = L(p1, p2, t1, t2), A3 = L(p2, p3, t2, t3);
+      out.push(L(L(A1, A2, t0, t2), L(A2, A3, t1, t3), t1, t2));
+    }
+    return out;
+  }
+  function spline(pts) {
+    const segs = []; let cur = [pts[0]];
+    for (let i = 1; i < pts.length; i++) { cur.push(pts[i]); if (pts[i][2] && i < pts.length - 1) { segs.push(cur); cur = [pts[i]]; } }
+    segs.push(cur);
+    const out = [];
+    for (const s of segs) for (let i = 0; i < s.length - 1; i++) {
+      const p0 = i > 0 ? s[i - 1] : [2 * s[0][0] - s[1][0], 2 * s[0][1] - s[1][1]];
+      const p3 = i + 2 < s.length ? s[i + 2] : [2 * s[s.length - 1][0] - s[s.length - 2][0], 2 * s[s.length - 1][1] - s[s.length - 2][1]];
+      out.push(...catmull(p0, s[i], s[i + 1], p3, 12));
+    }
+    out.push(pts[pts.length - 1]);
+    return out;
+  }
+  const handCache = {};
+  function handGeo(word) {
+    if (handCache[word]) return handCache[word];
+    let x = 0; const pts = [];
+    for (const ch of word) {
+      const L = AL[ch];
+      for (const p of [...(L.pre || []), ...L.pts]) pts.push([(p[0] + x) / 300, p[1] / 300, p[2]]);
+      x += L.adv;
+    }
+    // uçta lime halka: son çıkıştan sağa doğru akıp halkanın altından girer
+    const ex = pts[pts.length - 1], rr = .3, rc = [ex[0] + .38, ex[1] - .03 + rr];
+    pts.push([ex[0] + .2, ex[1] - .06], [rc[0], rc[1] - rr]);
+    const wpts = spline(pts);
+    const ring = []; for (let i = 0; i <= 64; i++) { const a = -Math.PI / 2 + TAU * i / 64; ring.push([rc[0] + Math.cos(a) * rr, rc[1] + Math.sin(a) * rr]); }
+    const cum = arr => { const c = [0]; for (let i = 1; i < arr.length; i++) c.push(c[i - 1] + Math.hypot(arr[i][0] - arr[i - 1][0], arr[i][1] - arr[i - 1][1])); return c; };
+    let left = Infinity, right = -Infinity;
+    for (const p of wpts) { left = Math.min(left, p[0]); right = Math.max(right, p[0]); }
+    right = Math.max(right, rc[0] + rr);
+    const unit = Math.min(64, 470 / (right - left)), ox = CX - (left + right) / 2 * unit;
+    return (handCache[word] = { word: wpts, ring, cw: cum(wpts), cr: cum(ring), unit, ox, rc, rr, start: pts[0] });
+  }
+  function handTimeline(word) {
+    const n = word.length, wDur = 18 + 5.2 * n;
+    const W0f = 6, W1 = W0f + wDur, R1 = W1 + 9, D0 = R1 + 7, D1 = D0 + 20, END = D1 + 3;
+    return { W0: W0f, W1, R1, D0, D1, END };
+  }
+  function drawPartial(g, pts, cum, L, map) {
+    if (L <= 0) return null;
+    g.beginPath();
+    let last = null;
+    for (let i = 0; i < pts.length; i++) {
+      const [X, Y] = map(pts[i]);
+      if (cum[i] <= L) { i ? g.lineTo(X, Y) : g.moveTo(X, Y); last = [X, Y]; }
+      else {
+        const [Xp, Yp] = map(pts[i - 1]), u = (L - cum[i - 1]) / (cum[i] - cum[i - 1]);
+        last = [lerp(Xp, X, u), lerp(Yp, Y, u)]; g.lineTo(last[0], last[1]); break;
+      }
+    }
+    g.stroke();
+    return last;
+  }
+  function drawHand(g, f) {
+    const G = handGeo(WORD), T = handTimeline(WORD), U = G.unit;
+    const F = [G.ox + G.rc[0] * U, BASE_Y - G.rc[1] * U];
+    let z = 1;
+    if (f >= T.D0) z = Math.exp(easeInCubic(ramp(f, T.D0, T.D1)) * Math.log(70));
+    const map = ([x, y]) => [F[0] + (G.ox + x * U - F[0]) * z, F[1] + (BASE_Y - y * U - F[1]) * z];
+    const fadeW = 1 - ramp(z, 2.5, 9);
+    g.lineCap = 'round'; g.lineJoin = 'round';
+
+    // başlangıç noktası
+    const dotP = map(G.start), dotS = easeOutBack(ramp(f, 0, 7));
+    if (dotS > 0) { g.fillStyle = lime(fadeW); g.beginPath(); g.arc(dotP[0], dotP[1], Math.max(0, 5.5 * dotS * z), 0, TAU); g.fill(); }
+
+    // kelime
+    const wp = easeInOutSine(ramp(f, T.W0, T.W1));
+    g.strokeStyle = white(fadeW); g.lineWidth = Math.max(1, .11 * U * z);
+    const tip = drawPartial(g, G.word, G.cw, wp * G.cw[G.cw.length - 1], map);
+
+    // halka
+    const rp = easeInOutCubic(ramp(f, T.W1, T.R1));
+    let ringTip = null;
+    if (rp > 0) {
+      const pop = f >= T.R1 ? 1 + .22 * Math.exp(-(f - T.R1) / 4) * Math.sin(.8 * (f - T.R1)) : 1;
+      const mapR = p => map([G.rc[0] + (p[0] - G.rc[0]) * pop, G.rc[1] + (p[1] - G.rc[1]) * pop]);
+      g.strokeStyle = lime(1); g.lineWidth = Math.max(1, .13 * U * z);
+      ringTip = drawPartial(g, G.ring, G.cr, rp * G.cr[G.cr.length - 1], mapR);
+    }
+    // kalem ucu
+    const tp = rp > 0 && rp < 1 ? ringTip : (wp > 0 && wp < 1 ? tip : null);
+    if (tp) {
+      const gr = g.createRadialGradient(tp[0], tp[1], 0, tp[0], tp[1], 18);
+      gr.addColorStop(0, lime(.55)); gr.addColorStop(1, lime(0));
+      g.fillStyle = gr; g.beginPath(); g.arc(tp[0], tp[1], 18, 0, TAU); g.fill();
+      g.fillStyle = white(1); g.beginPath(); g.arc(tp[0], tp[1], 3.6, 0, TAU); g.fill();
+    }
+    // halka kapanınca ritim halkası
+    if (f >= T.R1 && f < T.R1 + 18 && z < 1.5) {
+      const u = ramp(f, T.R1, T.R1 + 18);
+      g.strokeStyle = lime(.6 * Math.pow(1 - u, 1.5)); g.lineWidth = lerp(2, .5, u);
+      g.beginPath(); g.arc(F[0], F[1], lerp(G.rr * U, G.rr * U * 3, 1 - Math.pow(2, -10 * u)), 0, TAU); g.stroke();
+    }
+  }
+
+  // =========================================================
+  // 2 · HALKALARDAN HARFLER (geometrik; birim = halka yarıçapı)
+  // =========================================================
+  const GEO = {
+    m: { w: 2.8, rings: [{ c: [.7, 1.3], r: .7, k: [0, 180] }, { c: [2.1, 1.3], r: .7, k: [0, 180] }], stems: [[[0, 2], [0, 0]], [[1.4, 1.3], [1.4, 0]], [[2.8, 1.3], [2.8, 0]]] },
+    e: { w: 2, rings: [{ c: [1, 1], r: 1, k: [0, 315] }], stems: [[[0, 1], [2, 1]]] },
+    r: { w: 1.1, rings: [{ c: [1, 1], r: 1, k: [90, 180] }], stems: [[[0, 2], [0, 0]]] },
+    h: { w: 2, rings: [{ c: [1, 1], r: 1, k: [0, 180] }], stems: [[[0, 3.4], [0, 0]], [[2, 1], [2, 0]]] },
+    a: { w: 2, rings: [{ c: [1, 1], r: 1, k: [0, 360] }], stems: [[[2, 2], [2, 0]]] },
+    b: { w: 2, rings: [{ c: [1, 1], r: 1, k: [0, 360] }], stems: [[[0, 3.4], [0, 0]]] },
+    l: { w: 0, rings: [{ c: [0, 1], r: .5, k: [270, 270] }], stems: [[[0, 0], [0, 3.4]]] },
+    o: { w: 2, rings: [{ c: [1, 1], r: 1, k: [0, 360] }], stems: [] },
+  };
+  const GAP = .62;
+  function geoLayout(word) {
+    let x = 0; const xs = [];
+    for (const ch of word) { xs.push(x); x += GEO[ch].w + GAP; }
+    const dotX = x + .1, right = dotX + .45, unit = Math.min(30, 450 / right);
+    return { xs, dotX, unit, ox: CX - right / 2 * unit };
+  }
+  function geoTimeline(word) {
+    const n = word.length, s = i => 4 + i * 5, done = s(n - 1) + 18, W = done + 2, P = W + 2 * n + 2;
+    return { s, done, W, P, D0: P + 6, D1: P + 24, END: P + 26 };
+  }
+  function drawGeo(g, f) {
+    const Lg = geoLayout(WORD), T = geoTimeline(WORD), U = Lg.unit;
+    const F = [Lg.ox + Lg.dotX * U, BASE_Y - .32 * U];
+    let z = 1; if (f >= T.D0) z = Math.exp(easeInCubic(ramp(f, T.D0, T.D1)) * Math.log(90));
+    const toS = (x, y, oy = 0) => [F[0] + (Lg.ox + x * U - F[0]) * z, F[1] + (BASE_Y - y * U + oy - F[1]) * z];
+    const fadeW = 1 - ramp(z, 2, 7);
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    [...WORD].forEach((ch, i) => {
+      const L = GEO[ch], s0 = T.s(i), x0 = Lg.xs[i];
+      if (f < s0) return;
+      const drop = easeOutBack(ramp(f, s0, s0 + 8));
+      const oy = -(1 - drop) * 420 - 7 * pulse(f, T.W + i * 2, 1, 3, 6) * 1;
+      const land = f >= s0 + 8 ? .14 * Math.exp(-(f - s0 - 8) / 3) * Math.cos(.9 * (f - s0 - 8)) : 0;
+      const un = easeInOutCubic(ramp(f, s0 + 7, s0 + 16));
+      g.strokeStyle = white(fadeW); g.lineWidth = Math.max(1, .17 * U * z);
+      for (const R of L.rings) {
+        const span = R.k[1] - R.k[0], miss = 360 - span;
+        const a0 = lerp(R.k[0] - miss / 2, R.k[0], un), a1 = lerp(R.k[1] + miss / 2, R.k[1], un);
+        if (a1 - a0 < .5) continue;
+        const [cx, cy] = toS(x0 + R.c[0], R.c[1], oy);
+        g.beginPath();
+        g.ellipse(cx, cy, Math.max(.1, R.r * U * z * (1 + land * .6)), Math.max(.1, R.r * U * z * (1 - land)), 0, -a1 * Math.PI / 180, -a0 * Math.PI / 180);
+        g.stroke();
+      }
+      const sg = easeOutCubic(ramp(f, s0 + 8, s0 + 18));
+      if (sg > 0) for (const [p, q] of L.stems) {
+        const [x1, y1] = toS(x0 + p[0], p[1], oy), [x2, y2] = toS(x0 + q[0], q[1], oy);
+        g.beginPath(); g.moveTo(x1, y1); g.lineTo(lerp(x1, x2, sg), lerp(y1, y2, sg)); g.stroke();
+      }
+    });
+    // lime nokta
+    const dp = easeOutBack(ramp(f, T.P, T.P + 7));
+    if (dp > 0) {
+      g.fillStyle = lime(1); g.beginPath(); g.arc(F[0], F[1], Math.max(0, .32 * U * dp * z), 0, TAU); g.fill();
+      if (f < T.P + 18) { const u = ramp(f, T.P, T.P + 18); g.strokeStyle = lime(.55 * Math.pow(1 - u, 1.5)); g.lineWidth = 1.5; g.beginPath(); g.arc(F[0], F[1], lerp(8, 70, easeOutCubic(u)), 0, TAU); g.stroke(); }
+      if (.32 * U * z > 1150) { g.fillStyle = lime(1); g.fillRect(0, 0, W0, H0); }
+    }
+  }
+
+  // ---------- zaman ----------
+  function animEnd() { return VAR === 'hand' ? handTimeline(WORD).END : geoTimeline(WORD).END; }
+  function videoLen() { return animEnd() / (SHORT ? SPEED_SHORT : 1); }
+  function total() { return videoLen() + APP; }
+
+  // ---------- temsili ana ekran ----------
+  function drawApp(g, t) {
+    const u = t - videoLen();
+    const a = VAR === 'hand' ? ramp(u, 0, 10) : 1;
+    g.save(); g.globalAlpha = a;
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    g.fillStyle = white(.5); g.font = `500 14px ${SANS}`; g.fillText('Günaydın Gökhan', 24, 92);
+    g.fillStyle = white(1); g.font = `600 30px ${SANS}`; g.fillText('Kapsüllerim', 24, 128);
+    const card = (y, title, sub, couple) => {
+      g.fillStyle = '#121212'; g.beginPath(); if (g.roundRect) g.roundRect(24, y, W0 - 48, 150, 22); else g.rect(24, y, W0 - 48, 150); g.fill();
+      g.strokeStyle = white(.85); g.lineWidth = 2;
+      if (couple) { g.beginPath(); g.arc(78, y + 75, 26, 0, TAU); g.stroke(); g.beginPath(); g.arc(106, y + 75, 26, 0, TAU); g.stroke(); }
+      else { g.fillStyle = lime(1); g.beginPath(); g.arc(92, y + 75, 26, 0, TAU); g.fill(); }
+      g.fillStyle = white(1); g.font = `600 18px ${SANS}`; g.fillText(title, 152, y + 68);
+      g.fillStyle = white(.5); g.font = `400 14px ${SANS}`; g.fillText(sub, 152, y + 94);
+    };
+    card(170, 'Biz', 'Couple · 14 Şubat 2026', true);
+    card(340, "Ayşe'den", 'Kilitli · 109 gün kaldı', false);
+    g.fillStyle = '#121212'; g.fillRect(0, H0 - 90, W0, 90);
+    g.restore();
+    if (VAR === 'geo') { const w = easeInOutCubic(ramp(u, 0, 12)); if (w < 1) { g.fillStyle = lime(1); g.fillRect(0, -H0 * w, W0, H0); } }
+  }
+
+  function drawScene(g, t) {
+    const k = cv.width / W0;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    g.clearRect(0, 0, g.canvas.width, g.canvas.height);
+    g.setTransform(k, 0, 0, k, 0, 0);
+    if (t >= videoLen()) return drawApp(g, t);
+    const f = t * (SHORT ? SPEED_SHORT : 1);
+    (VAR === 'hand' ? drawHand : drawGeo)(g, f);
+  }
+
+  // ---------- render: motion blur + bloom ----------
+  function render(t) {
+    const W = cv.width, H = cv.height;
+    for (const c of [sc, acc]) if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
+    const n = FX.blur ? 10 : 1;
+    actx.setTransform(1, 0, 0, 1, 0, 0); actx.globalAlpha = 1; actx.globalCompositeOperation = 'source-over';
+    actx.clearRect(0, 0, W, H);
+    if (n === 1) drawScene(actx, t);
+    else {
+      for (let i = 0; i < n; i++) {
+        drawScene(sctx, Math.max(0, t - .8 * i / (n - 1)));
+        actx.setTransform(1, 0, 0, 1, 0, 0); actx.globalCompositeOperation = 'lighter'; actx.globalAlpha = 1 / n;
+        actx.drawImage(sc, 0, 0);
+      }
+      actx.globalCompositeOperation = 'source-over'; actx.globalAlpha = 1;
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    if (FX.bloom && HAS_FILTER && t < videoLen()) {
+      const bw = Math.max(1, W >> 2), bh = Math.max(1, H >> 2);
+      if (bl.width !== bw || bl.height !== bh) { bl.width = bw; bl.height = bh; }
+      bctx.filter = 'none'; bctx.clearRect(0, 0, bw, bh);
+      bctx.filter = `blur(${Math.max(2, Math.round(bw / 45))}px)`; bctx.drawImage(acc, 0, 0, bw, bh); bctx.filter = 'none';
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .7; ctx.drawImage(bl, 0, 0, W, H);
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.drawImage(acc, 0, 0);
+  }
+
+  // ---------- oynatıcı ----------
+  let playing = true, t = 0, last = null, speed = 1;
+  const $ = id => document.getElementById(id);
+  const playBtn = $('play'), openBtn = $('open'), scrub = $('scrub'), speedBtn = $('speed'), phaseNow = $('phaseNow');
+  const restart = () => { t = 0; playing = true; playBtn.textContent = '❚❚'; draw(); };
+  [['hand', '1 · El yazısı'], ['geo', '2 · Halkalardan harfler']].forEach(([key, name]) => {
+    const el = document.createElement('button'); el.className = 'tab' + (key === VAR ? ' on' : ''); el.textContent = name;
+    el.onclick = () => { VAR = key; [...$('tabs').children].forEach(x => x.classList.toggle('on', x === el)); restart(); };
+    $('tabs').appendChild(el);
+  });
+  const seg = (id, items, get, set) => items.forEach(([val, label]) => {
+    const b = document.createElement('button'); b.textContent = label; b.className = get() === val ? 'on' : '';
+    b.onclick = () => { set(val); [...$(id).children].forEach(x => x.classList.toggle('on', x === b)); restart(); };
+    $(id).appendChild(b);
+  });
+  seg('segLang', [['merhaba', 'merhaba'], ['hello', 'hello'], ['hallo', 'hallo']], () => WORD, v => WORD = v);
+  seg('segVer', [[false, 'Tam'], [true, 'Kısa']], () => SHORT, v => SHORT = v);
+  FX_NAMES.forEach(([key, name]) => {
+    const el = document.createElement('div'); el.className = 'chip' + (FX[key] ? ' on' : ''); el.textContent = name;
+    el.onclick = () => { FX[key] = !FX[key]; el.classList.toggle('on', FX[key]); draw(); };
+    $('chips').appendChild(el);
+  });
+  function draw() {
+    render(t);
+    scrub.max = Math.floor(total()) - 1; scrub.value = Math.floor(t);
+    const vl = videoLen();
+    phaseNow.innerHTML = t < vl ? `<b>Merhaba videosu</b> · ${(t / FPS).toFixed(2)} / ${(vl / FPS).toFixed(1)} sn` : '<b>Ana ekran</b> · uygulama (temsili)';
+  }
+  function resize() {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.width * dpr * 16 / 9);
+    draw();
+  }
+  function tick(ts) {
+    if (last == null) last = ts;
+    const dt = Math.min(.1, (ts - last) / 1000); last = ts;
+    if (playing) { t += dt * FPS * speed; const T = total(); if (t >= T) t = FX.auto ? 0 : T - .001; draw(); }
+    requestAnimationFrame(tick);
+  }
+  openBtn.onclick = restart;
+  playBtn.onclick = () => { playing = !playing; playBtn.textContent = playing ? '❚❚' : '▶'; };
+  scrub.oninput = () => { playing = false; playBtn.textContent = '▶'; t = +scrub.value; draw(); };
+  speedBtn.onclick = () => { speed = speed === 1 ? .5 : speed === .5 ? .25 : 1; speedBtn.textContent = speed + 'x'; };
+  window.__set = (tt, o = {}) => { if (o.v) VAR = o.v; if (o.w) WORD = o.w; if ('s' in o) SHORT = o.s; playing = false; t = tt; draw(); };
+  window.__len = () => ({ video: videoLen(), total: total() });
+  new ResizeObserver(resize).observe(cv);
+  resize();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

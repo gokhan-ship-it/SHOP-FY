@@ -4,9 +4,12 @@ import { Eslesme, type EslesmeProps } from './Eslesme';
 import { FPS, OUT_FPS, OUT_TOTAL } from './anim';
 import { Kilit, type KilitProps } from './kilit/Kilit';
 import { IDLE, LOCK_END } from './kilit/anim';
+import { Acilis } from './acilis/Acilis';
+import { ACILIS } from './acilis/list';
 
 const fxDefaults = { blur: true, jelly: true, burst: true, echo: true, bloom: true };
 const kilitFx = { blur: true, bloom: true, echo: true };
+
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -22,5 +25,10 @@ export const RemotionRoot: React.FC = () => (
     {/* Single kilit bekleme: kilit bitince, kapsül kilitli kaldıkça loop (2 sn); hareket yavaş, motion blur kapalı */}
     <Composition id="SingleKilitBekleme" component={Kilit} durationInFrames={(IDLE * OUT_FPS) / FPS} fps={OUT_FPS} width={1080} height={1080}
       defaultProps={{ segment: 'idle', ...kilitFx, blur: false } satisfies KilitProps} />
+    {/* Uygulama açılışı "merhaba" (1 · el yazısı, 2 · halkalardan harfler); ilk kare tamamen siyah */}
+    {ACILIS.map((a) => (
+      <Composition key={a.id} id={a.id} component={Acilis} durationInFrames={a.frames} fps={OUT_FPS} width={1080} height={1920}
+        defaultProps={a.props} />
+    ))}
   </>
 );
