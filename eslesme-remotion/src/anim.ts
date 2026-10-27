@@ -2,6 +2,8 @@
 // Tüm fonksiyonlar kare numarasına bağlı ve saf; zamanlamalar, easing'ler ve yay değerleri değiştirilmedi.
 
 export const FPS = 30, TOTAL = 120, S = 800, CX = 400, CY = 400, R = 150, TAU = Math.PI * 2, N = 200, I = 30;
+// Video çıkışı: tasarım 30 fps karelerinde tanımlı, 60 fps'te yarım karelik adımlarla çizilir
+export const OUT_FPS = 60, OUT_TOTAL = (TOTAL * OUT_FPS) / FPS;
 // Loop doğrudan hazırlık hareketiyle başlasın diye iç zaman çizelgesi 15 kare kaydırıldı
 export const OFF = 15;
 // Negatif kareleri de (motion blur örnekleri) HTML'deki gibi döngüye sarar
