@@ -1,6 +1,6 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
-import { LoopMotionBlur, useSampleFrame } from './LoopMotionBlur';
+import { AbsoluteFill, useVideoConfig } from 'remotion';
+import { LoopMotionBlur, useDesignFrame, useSampleFrame } from './LoopMotionBlur';
 import { CX, CY, R, S, drawScene, lime, loopFrame, shift, state, type Fx, type Shape, type Variant } from './anim';
 
 export type EslesmeProps = Fx & { variant: Variant };
@@ -37,7 +37,7 @@ const Accumulated: React.FC<{ fx: Fx; variant: Variant }> = ({ fx, variant }) =>
 };
 
 export const Eslesme: React.FC<EslesmeProps> = ({ variant, ...fx }) => {
-  const frame = useCurrentFrame();
+  const frame = useDesignFrame();
   const { width } = useVideoConfig();
   const s = state(shift(loopFrame(frame)), variant, fx);
   const bn = s.b / .1;

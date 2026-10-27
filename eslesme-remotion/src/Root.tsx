@@ -13,5 +13,10 @@ export const RemotionRoot: React.FC = () => (
     {/* B · Plak gibi dönüş */}
     <Composition id="EslesmeB" component={Eslesme} durationInFrames={TOTAL} fps={FPS} width={1080} height={1080}
       defaultProps={{ variant: 'B', ...fxDefaults } satisfies EslesmeProps} />
+    {/* Aynı zamanlamalar, 60 fps (240 kare) */}
+    <Composition id="EslesmeA60" component={Eslesme} durationInFrames={TOTAL * 2} fps={FPS * 2} width={1080} height={1080}
+      defaultProps={{ variant: 'A', ...fxDefaults } satisfies EslesmeProps} />
+    <Composition id="EslesmeB60" component={Eslesme} durationInFrames={TOTAL * 2} fps={FPS * 2} width={1080} height={1080}
+      defaultProps={{ variant: 'B', ...fxDefaults } satisfies EslesmeProps} />
   </>
 );
