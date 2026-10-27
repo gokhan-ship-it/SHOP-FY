@@ -32,6 +32,8 @@ export type Shape =
   | { kind: 'fill'; color: string }; // tüm ekran
 
 type Pt = [number, number];
+// F noktasından ekranın en uzak köşesine uzaklık
+const farCorner = (F: Pt) => Math.max(...[[0, 0], [W0, 0], [0, H0], [W0, H0]].map(([x, y]) => Math.hypot(x - F[0], y - F[1])));
 const polyD = (pts: Pt[]) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join('');
 
 // =========================================================
@@ -123,8 +125,11 @@ function drawHand(f: number, WORD: string): Shape[] {
   const out: Shape[] = [];
   const G = handGeo(WORD), T = handTimeline(WORD), U = G.unit;
   const F: Pt = [G.ox + G.rc[0] * U, BASE_Y - G.rc[1] * U];
+  // Eskizde dalış 70 kat yakınlaşmada biter; "hello"/"hallo"da halka tam bu anda ekrandan çıkar. Uzun kelimede
+  // (merhaba) halka küçük kaldığı için 70'te köşelerde kalıyordu; dalış en az halkanın ekrandan çıktığı yere kadar sürer.
+  const zEnd = Math.max(70, farCorner(F) / ((G.rr - .065) * U));
   let z = 1;
-  if (f >= T.D0) z = Math.exp(easeInCubic(ramp(f, T.D0, T.D1)) * Math.log(70));
+  if (f >= T.D0) z = Math.exp(easeInCubic(ramp(f, T.D0, T.D1)) * Math.log(zEnd));
   const map = ([x, y]: Pt): Pt => [F[0] + (G.ox + x * U - F[0]) * z, F[1] + (BASE_Y - y * U - F[1]) * z];
   const fadeW = 1 - ramp(z, 2.5, 9);
 
@@ -199,7 +204,10 @@ function drawGeo(f: number, WORD: string): Shape[] {
   const out: Shape[] = [];
   const Lg = geoLayout(WORD), T = geoTimeline(WORD), U = Lg.unit;
   const F: Pt = [Lg.ox + Lg.dotX * U, BASE_Y - .32 * U];
-  let z = 1; if (f >= T.D0) z = Math.exp(easeInCubic(ramp(f, T.D0, T.D1)) * Math.log(90));
+  // Eskizde dalış 90 kat yakınlaşmada biter; "merhaba"da nokta ekranı ancak ~92'de kaplıyordu.
+  // Dalış en az noktanın ekranı tamamen kapladığı yere kadar sürer.
+  const zEnd = Math.max(90, farCorner(F) / (.32 * U));
+  let z = 1; if (f >= T.D0) z = Math.exp(easeInCubic(ramp(f, T.D0, T.D1)) * Math.log(zEnd));
   const toS = (x: number, y: number, oy = 0): Pt => [F[0] + (Lg.ox + x * U - F[0]) * z, F[1] + (BASE_Y - y * U + oy - F[1]) * z];
   const fadeW = 1 - ramp(z, 2, 7);
   [...WORD].forEach((ch, i) => {
@@ -224,9 +232,10 @@ function drawGeo(f: number, WORD: string): Shape[] {
       out.push({ kind: 'path', d: `M${x1} ${y1}L${lerp(x1, x2, sg)} ${lerp(y1, y2, sg)}`, stroke, strokeWidth });
     }
   });
-  // lime nokta
+  // lime nokta. easeOutBack(0) kayan nokta artığıyla 0 yerine ~2e-16 veriyor; eskizde bu yüzden noktanın
+  // küçük halkası ilk kareden itibaren görünüyordu ("ilk kare tamamen siyah" notuna aykırı). Nokta P'de belirir.
   const dp = easeOutBack(ramp(f, T.P, T.P + 7));
-  if (dp > 0) {
+  if (f > T.P && dp > 0) {
     out.push({ kind: 'circle', cx: F[0], cy: F[1], r: Math.max(0, .32 * U * dp * z), fill: lime(1) });
     if (f < T.P + 18) { const u = ramp(f, T.P, T.P + 18); out.push({ kind: 'circle', cx: F[0], cy: F[1], r: lerp(8, 70, easeOutCubic(u)), stroke: lime(.55 * Math.pow(1 - u, 1.5)), strokeWidth: 1.5 }); }
     if (.32 * U * z > 1150) out.push({ kind: 'fill', color: lime(1) });
@@ -245,5 +254,14 @@ export function drawScene(t: number, v: AcilisVariant, word: string, short: bool
   return v === 'hand' ? drawHand(f, word) : drawGeo(f, word);
 }
 
-// Bir çıkış karesinin motion blur örnekleri (HTML: max(0, t - .8·i/9))
-export const acilisSamples = (t: number, blur: boolean) => (blur ? blurSampleFrames(t) : [t]).map((x) => Math.max(0, x));
+// Dalışın bittiği an (video zamanı); bundan sonra sahne sabit (el yazısında siyah, halkalarda lime)
+export function diveEnd(v: AcilisVariant, word: string, short: boolean) {
+  return (v === 'hand' ? handTimeline(word).D1 : geoTimeline(word).D1) / (short ? SPEED_SHORT : 1);
+}
+
+// Bir çıkış karesinin motion blur örnekleri (HTML: max(0, t - .8·i/9)). Dalış bittikten sonraki karelerde örnekler
+// dalışın öncesine uzanmaz; aksi halde kısa versiyonda son kare tam lime olmuyordu.
+export const acilisSamples = (t: number, blur: boolean, v: AcilisVariant, word: string, short: boolean) => {
+  const end = diveEnd(v, word, short);
+  return (blur ? blurSampleFrames(t) : [t]).map((x) => Math.max(0, t >= end ? Math.max(end, x) : x));
+};

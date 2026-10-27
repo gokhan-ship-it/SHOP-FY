@@ -16,7 +16,7 @@ export const Acilis: React.FC<AcilisProps> = ({ variant, word, short, ...fx }) =
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#000000' }}>
-      <FloatMotionBlur width={width} height={height} samples={acilisSamples(t, fx.blur)}
+      <FloatMotionBlur width={width} height={height} samples={acilisSamples(t, fx.blur, variant, word, short)}
         renderSample={(s) => <AcilisSvg t={s} variant={variant} word={word} short={short} id="a" width={width} height={height} />}
         depsKey={JSON.stringify({ variant, word, short, fx })} bloom={fx.bloom ? { px: bloomPx, opacity: .7 } : null} />
     </AbsoluteFill>
