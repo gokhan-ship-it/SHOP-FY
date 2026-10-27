@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eşleşme Animasyonu v2</title>
+<style>
+  :root{ --bg:#000; --panel:#0c0c0c; --line:#1f1f1f; --text:#f2f2f2; --muted:#8b8b8b; --lime:#DEFE52; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:640px;margin:0 auto;padding:22px 16px 48px}
+  h1{font-size:17px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.45}
+  .tabs{display:flex;gap:6px;margin-bottom:12px}
+  .tab{flex:1;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:13px;
+    padding:10px 8px;border-radius:12px;cursor:pointer;text-align:center}
+  .tab.on{background:var(--lime);border-color:var(--lime);color:#000;font-weight:600}
+  .stage{position:relative;width:100%;aspect-ratio:1/1;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#000}
+  canvas{display:block;width:100%;height:100%}
+  .controls{display:flex;align-items:center;gap:10px;margin-top:12px}
+  .btn{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--text);height:34px;min-width:34px;
+    padding:0 12px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap}
+  input[type=range]{flex:1;min-width:0;accent-color:var(--lime)}
+  .frame{font:12px ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:var(--muted);min-width:92px;text-align:right}
+  .beats{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:10px}
+  .beat{height:4px;border-radius:2px;background:#1c1c1c;transition:background .08s}
+  .beat.on{background:var(--lime)}
+  .phases{display:flex;gap:3px;margin-top:6px}
+  .phase{flex-basis:0;border:0;background:var(--panel);color:var(--muted);font-size:11px;padding:7px 4px;border-radius:8px;
+    cursor:pointer;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .phase.on{background:#1d1d1d;color:var(--text)}
+  .label{font-size:12px;color:var(--muted);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.08em}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:12.5px;padding:7px 11px;border-radius:999px;cursor:pointer;user-select:none}
+  .chip.on{border-color:var(--lime);color:var(--text)}
+  .chip.on::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lime);margin-right:7px;vertical-align:1px}
+  ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.55;color:#cfcfcf}
+  li{margin-bottom:5px}
+  li b{color:var(--text);font-weight:600}
+  .note{margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Couple eşleşme · v2 (sade, ritmik)</h1>
+  <p class="sub">4 sn loop · 120 BPM · 8 vuruş. İlk kareden itibaren hareket başlıyor, her hareket bir vuruşa oturuyor. Üstten iki giriş stilini karşılaştırabilirsin.</p>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="stage"><canvas id="cv"></canvas></div>
+
+  <div class="controls">
+    <button class="btn" id="play">❚❚</button>
+    <input type="range" id="scrub" min="0" max="119" step="1" value="0">
+    <button class="btn" id="speed">1x</button>
+    <div class="frame" id="fr">000 · 0.00s</div>
+  </div>
+  <div class="beats" id="beats"></div>
+  <div class="phases" id="phases"></div>
+
+  <div class="label">Efektler</div>
+  <div class="chips" id="chips"></div>
+
+  <div class="label">Neden daha "Spotify"</div>
+  <ul>
+    <li><b>Ritim:</b> Loop 8 vuruş ve doğrudan hazırlık hareketiyle başlıyor. Eşleşme 2. vuruşta, kalp atışı 4. vuruşta, açılış 6. vuruşta. Son vuruş nefes payı; daireler orada hafifçe "bop" yapıp yeni tura geçiyor.</li>
+    <li><b>Hazırlık:</b> Daireler çarpışmadan önce bir an geri çekiliyor, yay gerilir gibi.</li>
+    <li><b>Yaylı hareket:</b> Kalp hedef boyutunu biraz geçip geri oturuyor, hafifçe yana yatıp toparlanıyor.</li>
+    <li><b>Jöle:</b> Çarpışma ve pop anlarında şekil esneyip titreşerek toparlanıyor.</li>
+    <li><b>Pop parçacıkları:</b> Kalp oluşurken 8 küçük nokta fırlıyor, beğen butonu hissi.</li>
+    <li><b>Açılış:</b> Kalp önce sıkışıyor, sonra halkalar dışarı fırlayıp yerine oturuyor.</li>
+    <li><b>Motion blur + bloom:</b> Hızlı anlarda hareket bulanıklığı, şekillerin etrafında yumuşak ışık. "Pahalı" görünmesini sağlayan kısım bu.</li>
+  </ul>
+  <div class="note">Remotion karşılıkları: yaylı hareketler <code>spring()</code>, hareket bulanıklığı <code>@remotion/motion-blur</code>, lens→kalp dönüşümü <code>@remotion/paths</code> ile yapılır. Çizim tek bir <code>render(kare)</code> fonksiyonunda olduğu için doğrudan aktarılabilir.</div>
+</div>
+
+<script>
+(() => {
+  const FPS = 30, TOTAL = 120, S = 800, CX = 400, CY = 400, R = 150, TAU = Math.PI * 2, N = 200, I = 30;
+  // Loop doğrudan hazırlık hareketiyle başlasın diye iç zaman çizelgesi 15 kare kaydırıldı
+  const OFF = 15;
+  const shift = f => (f + OFF) % TOTAL;
+  const LIME = [222, 254, 82];
+  const lime = a => `rgba(${LIME[0]},${LIME[1]},${LIME[2]},${a})`;
+
+  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  const sc = document.createElement('canvas'), sctx = sc.getContext('2d');
+  const acc = document.createElement('canvas'), actx = acc.getContext('2d');
+  const bl = document.createElement('canvas'), bctx = bl.getContext('2d');
+  const HAS_FILTER = typeof bctx.filter === 'string';
+
+  let VAR = 'A';
+  const VARS = {
+    A: { name: 'A · Çarpışma', phases: [['Hazırlık', 0, 15], ['Eşleşme', 15, 30], ['Kalp', 30, 69], ['Açılış', 69, 105], ['Nefes', 105, 120]] },
+    B: { name: 'B · Plak gibi dönüş', phases: [['Dönüş', 0, 15], ['Eşleşme', 15, 30], ['Kalp', 30, 69], ['Açılış', 69, 105], ['Nefes', 105, 120]] }
+  };
+  const FX = { blur: true, jelly: true, burst: true, echo: true, bloom: true };
+  const FX_NAMES = [['blur', 'Motion blur'], ['jelly', 'Jöle'], ['burst', 'Pop parçacıkları'], ['echo', 'Ritim halkaları'], ['bloom', 'Bloom']];
+
+  // ---------- yardımcılar ----------
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const ramp = (f, a, b) => clamp((f - a) / (b - a));
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const easeInCubic = t => t * t * t;
+  const easeInOutCubic = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const easeOutQuart = t => 1 - Math.pow(1 - t, 4);
+  const easeInOutQuint = t => t < .5 ? 16 * Math.pow(t, 5) : 1 - Math.pow(-2 * t + 2, 5) / 2;
+  const easeOutExpo = t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  function pulse(f, t0, amp, att = 3, dec = 11) {
+    if (f < t0) return 0;
+    const d = f - t0;
+    if (d < att) return amp * easeOutCubic(d / att);
+    if (d > att + dec * 2) return 0;
+    return amp * Math.exp(-(d - att) / (dec / 3));
+  }
+
+  // ---------- hareket durumu (kareye bağlı, saf fonksiyon) ----------
+  function state(f) {
+    const H0 = .49, fade = 1 - ramp(f, 110, 117);
+    let h = H0, rot = 0;
+
+    if (VAR === 'A') {
+      if (f >= 15 && f < 24) h = lerp(H0, .57, easeOutCubic(ramp(f, 15, 24)));
+      else if (f >= 24 && f < I) h = lerp(.57, .36, easeInCubic(ramp(f, 24, I)));
+    } else {
+      if (f >= 15 && f < 19) { const t = easeOutCubic(ramp(f, 15, 19)); h = lerp(H0, .52, t); rot = -.17 * t; }
+      else if (f >= 19 && f < I) h = f < 24 ? lerp(.52, .50, ramp(f, 19, 24)) : lerp(.50, .36, easeInCubic(ramp(f, 24, I)));
+      if (f >= 19 && f < 28) rot = lerp(-.17, Math.PI + .1, easeInOutQuint(ramp(f, 19, 28)));
+      else if (f >= 28) rot = Math.PI + .1 * Math.exp(-(f - 28) / 3) * Math.cos((f - 28) * .8);
+    }
+    if (f >= I && f < 90) { const t = f - I; h = .40 - .04 * Math.exp(-t / 3) * Math.cos(t * .8); }
+    if (f >= 90) { const t = f - 90; h = .49 - .09 * Math.exp(-t / 5) * Math.cos(.42 * t) * fade; }
+
+    // ezilme-esneme
+    let st = 0, q = 0;
+    if (f >= I - 6 && f < I) st = .08 * easeInCubic(ramp(f, I - 6, I));
+    if (f >= I && f < I + 24) { const t = f - I; q = .12 * Math.exp(-t / 4) * Math.cos(t * .85); }
+    const bop = pulse(f, 0, .025, 2, 6) + pulse(f, 105, .025, 2, 6);
+    const sx = (1 + st - q) * (1 + bop), sy = (1 - st * .5 + q * .8) * (1 + bop);
+
+    // lens → kalp
+    let m = 0;
+    if (f >= 35 && f < 90) m = easeOutQuart(ramp(f, 35, 44));
+    else if (f >= 90) m = 1 - easeOutQuart(ramp(f, 90, 99));
+
+    // halkaların kalbe çekilmesi
+    let c = 0;
+    if (f >= 35 && f < 90) c = easeInCubic(ramp(f, 35, 43));
+    else if (f >= 90) { const t = f - 90; c = Math.exp(-t / 4.5) * Math.cos(.42 * t) * fade; }
+
+    // kalp pop + yana yatma
+    let ss = 1, hr = 0;
+    if (f >= 35 && f < 84) { const t = f - 35; ss = 1 + .2 * Math.exp(-t / 7) * Math.sin(.45 * t); hr = (VAR === 'A' ? -1 : 1) * .16 * Math.exp(-t / 6) * Math.sin(.5 * t); }
+    else if (f >= 84 && f < 90) { const t = easeInOutCubic(ramp(f, 84, 90)); ss = lerp(1, .86, t); hr = -.07 * t; }
+    else if (f >= 90) { const t = f - 90; ss = 1 - .14 * Math.exp(-t / 5) * Math.cos(.5 * t) * fade; hr = -.07 * Math.exp(-t / 4) * Math.cos(.6 * t) * fade; }
+
+    // jöle
+    let j = 0;
+    if (FX.jelly) for (const [t0, a] of [[I, .035], [35, .04], [90, .03]]) {
+      if (f < t0 || f >= t0 + 30) continue;
+      const t = f - t0; j += a * Math.exp(-t / 5) * Math.sin(.75 * t) * (t0 === 90 ? fade : 1);
+    }
+
+    const b = pulse(f, 60, .10) + pulse(f, 67, .05);
+    let rd = rot; while (rd > Math.PI / 2) rd -= Math.PI; while (rd < -Math.PI / 2) rd += Math.PI;
+    return { h, rot: rd + hr, sx, sy, m, c, ss, b, j };
+  }
+
+  // ---------- geometri ----------
+  function lensPt(s, h) {
+    const g = Math.atan2(Math.sqrt(Math.max(0, R * R - h * h)), h);
+    if (s < .5) { const phi = Math.PI + g - 2 * g * (s / .5); return [h + R * Math.cos(phi), R * Math.sin(phi)]; }
+    const phi = g - 2 * g * ((s - .5) / .5); return [-h + R * Math.cos(phi), R * Math.sin(phi)];
+  }
+  function heartPt(s) {
+    const t = Math.PI + TAU * s, k = R / 16;
+    return [16 * Math.pow(Math.sin(t), 3) * k,
+      (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t) + 2.5) * k];
+  }
+  function localPt(s, h, m, kx, ky, j) {
+    s = s - Math.floor(s);
+    const a = lensPt(s, h), b = heartPt(s);
+    let x = lerp(a[0], b[0], m), y = -lerp(a[1], b[1], m);
+    if (j) { const w = 1 + j * Math.cos(4 * Math.atan2(y, x)); x *= w; y *= w; }
+    return [x * kx, y * ky];
+  }
+  function path(g, h, m, kx, ky, j = 0) {
+    g.beginPath();
+    for (let i = 0; i <= N; i++) { const [x, y] = localPt(i / N, h, m, kx, ky, j); i ? g.lineTo(x, y) : g.moveTo(x, y); }
+    g.closePath();
+  }
+
+  // ---------- sahne ----------
+  function drawScene(g, f) {
+    f = shift(f);
+    const s = state(f), k = cv.width / S, hp = s.h * R;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    g.clearRect(0, 0, g.canvas.width, g.canvas.height);
+    g.setTransform(k, 0, 0, k, 0, 0);
+
+    // eşleşme anı halkası
+    if (FX.echo && f >= I && f < I + 18) {
+      const t = ramp(f, I, I + 18);
+      g.strokeStyle = `rgba(255,255,255,${.6 * Math.pow(1 - t, 1.5)})`; g.lineWidth = lerp(2, .5, t);
+      g.beginPath(); g.arc(CX, CY, lerp(.55 * R, 2.5 * R, easeOutExpo(t)), 0, TAU); g.stroke();
+    }
+
+    g.save();
+    g.translate(CX, CY); g.rotate(s.rot); g.scale(s.sx, s.sy);
+    const kx = s.ss * (1 + .75 * s.b), ky = s.ss * (1 + 1.1 * s.b);
+
+    // kalp yankıları (atışlarda)
+    if (FX.echo) for (const [b0, amp] of [[60, .85], [67, .45]]) {
+      if (f < b0 || f >= b0 + 20) continue;
+      const t = ramp(f, b0, b0 + 20), e = 1 + .7 * easeOutCubic(t);
+      g.strokeStyle = lime(amp * Math.pow(1 - t, 1.6)); g.lineWidth = 2 / e;
+      path(g, hp, 1, s.ss * e, s.ss * e); g.stroke();
+    }
+
+    // dolgu
+    g.fillStyle = lime(1);
+    path(g, hp, s.m, kx, ky, s.j); g.fill();
+
+    // halkalar
+    const ra = clamp((1 - s.c) / .5);
+    if (ra > .01) {
+      const cc = clamp(s.c, -1, 1), cp = clamp(cc), rs = lerp(1, s.ss, cp);
+      g.strokeStyle = `rgba(255,255,255,${ra})`; g.lineWidth = lerp(2.6, 1.2, cp);
+      for (const side of [-1, 1]) {
+        g.beginPath();
+        g.arc(side * lerp(hp, .5 * R, cc) * rs, -lerp(0, .41 * R, cc) * rs, Math.max(1, lerp(R, .5 * R, cc) * rs), 0, TAU);
+        g.stroke();
+      }
+    }
+
+    // pop parçacıkları
+    if (FX.burst && f >= 36 && f < 52) {
+      const t = easeOutCubic(ramp(f, 36, 52));
+      for (let i = 0; i < 8; i++) {
+        const [x, y] = localPt((i + .5) / 8, hp, 1, 1, 1);
+        const len = Math.hypot(x, y) || 1, d = 1.08 + .45 * t;
+        g.fillStyle = i % 2 ? `rgba(255,255,255,${1 - t})` : lime(1 - t);
+        g.beginPath(); g.arc(x * d + x / len * 8, y * d + y / len * 8, Math.max(.1, 6 * (1 - t)), 0, TAU); g.fill();
+      }
+    }
+    g.restore();
+  }
+
+  // ---------- render(kare): motion blur + bloom ----------
+  function render(f) {
+    const W = cv.width, H = cv.height;
+    for (const c of [sc, acc]) if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
+    const n = FX.blur ? 10 : 1;
+    actx.setTransform(1, 0, 0, 1, 0, 0); actx.globalAlpha = 1; actx.globalCompositeOperation = 'source-over';
+    actx.clearRect(0, 0, W, H);
+    if (n === 1) drawScene(actx, f);
+    else {
+      for (let i = 0; i < n; i++) {
+        const t = ((f - .8 * i / (n - 1)) % TOTAL + TOTAL) % TOTAL;
+        drawScene(sctx, t);
+        actx.setTransform(1, 0, 0, 1, 0, 0);
+        actx.globalCompositeOperation = 'lighter'; actx.globalAlpha = 1 / n;
+        actx.drawImage(sc, 0, 0);
+      }
+      actx.globalCompositeOperation = 'source-over'; actx.globalAlpha = 1;
+    }
+
+    const s = state(shift(f)), k = W / S, bn = s.b / .1;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    const g = ctx.createRadialGradient(CX * k, CY * k, 0, CX * k, CY * k, R * 1.9 * k);
+    g.addColorStop(0, lime(.05 + .14 * bn)); g.addColorStop(1, lime(0));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    if (FX.bloom && HAS_FILTER) {
+      const bw = Math.max(1, W >> 2), bh = Math.max(1, H >> 2);
+      if (bl.width !== bw || bl.height !== bh) { bl.width = bw; bl.height = bh; }
+      bctx.filter = 'none'; bctx.clearRect(0, 0, bw, bh);
+      bctx.filter = `blur(${Math.max(2, Math.round(bw / 45))}px)`;
+      bctx.drawImage(acc, 0, 0, bw, bh);
+      bctx.filter = 'none';
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .7 + .3 * bn;
+      ctx.drawImage(bl, 0, 0, W, H);
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.drawImage(acc, 0, 0);
+  }
+
+  // ---------- oynatıcı ----------
+  let playing = true, frame = 0, last = null, speed = 1;
+  const $ = id => document.getElementById(id);
+  const playBtn = $('play'), scrub = $('scrub'), fr = $('fr'), speedBtn = $('speed');
+  const tabs = $('tabs'), phaseWrap = $('phases'), chipWrap = $('chips'), beatWrap = $('beats');
+
+  for (let i = 0; i < 8; i++) { const d = document.createElement('div'); d.className = 'beat'; beatWrap.appendChild(d); }
+  function buildPhases() {
+    phaseWrap.innerHTML = '';
+    VARS[VAR].phases.forEach(([name, a, b]) => {
+      const el = document.createElement('button');
+      el.className = 'phase'; el.textContent = name; el.style.flexGrow = b - a;
+      el.onclick = () => { frame = a; draw(); };
+      phaseWrap.appendChild(el);
+    });
+  }
+  Object.entries(VARS).forEach(([key, v]) => {
+    const el = document.createElement('button');
+    el.className = 'tab' + (key === VAR ? ' on' : ''); el.textContent = v.name;
+    el.onclick = () => { VAR = key; [...tabs.children].forEach(t => t.classList.toggle('on', t === el)); buildPhases(); frame = 0; draw(); };
+    tabs.appendChild(el);
+  });
+  FX_NAMES.forEach(([key, name]) => {
+    const el = document.createElement('div');
+    el.className = 'chip on'; el.textContent = name;
+    el.onclick = () => { FX[key] = !FX[key]; el.classList.toggle('on', FX[key]); draw(); };
+    chipWrap.appendChild(el);
+  });
+  buildPhases();
+
+  function draw() {
+    render(frame);
+    const fi = Math.floor(frame);
+    scrub.value = fi;
+    fr.textContent = String(fi).padStart(3, '0') + ' · ' + (frame / FPS).toFixed(2) + 's';
+    const ph = VARS[VAR].phases;
+    [...phaseWrap.children].forEach((el, i) => el.classList.toggle('on', frame >= ph[i][1] && frame < ph[i][2]));
+    const bi = Math.floor(frame / 15);
+    [...beatWrap.children].forEach((el, i) => el.classList.toggle('on', i === bi && (frame % 15) < 5));
+  }
+  function resize() {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.width * dpr);
+    draw();
+  }
+  function tick(ts) {
+    if (last == null) last = ts;
+    const dt = Math.min(.1, (ts - last) / 1000); last = ts;
+    if (playing) { frame = (frame + dt * FPS * speed) % TOTAL; draw(); }
+    requestAnimationFrame(tick);
+  }
+  playBtn.onclick = () => { playing = !playing; playBtn.textContent = playing ? '❚❚' : '▶'; };
+  scrub.oninput = () => { playing = false; playBtn.textContent = '▶'; frame = +scrub.value; draw(); };
+  speedBtn.onclick = () => { speed = speed === 1 ? .5 : speed === .5 ? .25 : 1; speedBtn.textContent = speed + 'x'; };
+
+  window.__setFrame = f => { playing = false; frame = f; draw(); };
+  window.__setVar = v => { VAR = v; buildPhases(); };
+  new ResizeObserver(resize).observe(cv);
+  resize();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

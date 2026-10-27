@@ -1,0 +1,25 @@
+{
+  "name": "eslesme-remotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Couple kapsül eşleşme loop animasyonu (Remotion)",
+  "scripts": {
+    "studio": "remotion studio",
+    "render:a": "remotion render EslesmeA out/eslesme-A.mp4",
+    "render:b": "remotion render EslesmeB out/eslesme-B.mp4",
+    "render": "npm run render:a && npm run render:b",
+    "verify-loop": "tsx scripts/verify-loop.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.539",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.539"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  }
+}
