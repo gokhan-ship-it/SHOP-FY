@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Single Kilit Final</title>
+<style>
+  :root{ --bg:#000; --panel:#0c0c0c; --line:#1f1f1f; --text:#f2f2f2; --muted:#8b8b8b; --lime:#DEFE52; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:640px;margin:0 auto;padding:22px 16px 48px}
+  h1{font-size:17px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.45}
+  .stage{position:relative;width:100%;aspect-ratio:1/1;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#000}
+  canvas{display:block;width:100%;height:100%}
+  .controls{display:flex;align-items:center;gap:8px;margin-top:12px}
+  .btn{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--text);height:34px;min-width:34px;padding:0 12px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap}
+  .btn.lock{background:var(--lime);border-color:var(--lime);color:#000;font-weight:600}
+  input[type=range]{flex:1;min-width:0;accent-color:var(--lime)}
+  .frame{font:12px ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:var(--muted);min-width:84px;text-align:right}
+  .phases{display:flex;gap:3px;margin-top:10px}
+  .phase{flex-basis:0;border:0;background:var(--panel);color:var(--muted);font-size:11px;padding:7px 4px;border-radius:8px;cursor:pointer;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .phase.on{background:#1d1d1d;color:var(--text)}
+  .phase.loop{border:1px dashed #2a2a2a}
+  .label{font-size:12px;color:var(--muted);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.08em}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:12.5px;padding:7px 11px;border-radius:999px;cursor:pointer;user-select:none}
+  .chip.on{border-color:var(--lime);color:var(--text)}
+  .chip.on::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lime);margin-right:7px;vertical-align:1px}
+  ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.55;color:#cfcfcf}
+  li{margin-bottom:5px}
+  li b{color:var(--text);font-weight:600}
+  @media (max-width:420px){ .frame{display:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Single kilit · Dolup mühürlenme (final)</h1>
+  <p class="sub">Kilit anı 2.7 sn ve bir kere oynar. Ardından 2 sn'lik bekleme döngüsü, kapsül kilitli kaldıkça döner.</p>
+
+  <div class="stage"><canvas id="cv"></canvas></div>
+
+  <div class="controls">
+    <button class="btn lock" id="lock">Kilitle</button>
+    <button class="btn" id="play">❚❚</button>
+    <input type="range" id="scrub" min="0" max="139" step="1" value="0">
+    <button class="btn" id="speed">1x</button>
+    <div class="frame" id="fr">000 · 0.00s</div>
+  </div>
+  <div class="phases" id="phases"></div>
+
+  <div class="label">Efektler</div>
+  <div class="chips" id="chips"></div>
+
+  <div class="label">Notlar</div>
+  <ul>
+    <li><b>Doluş:</b> 0.6 saniyeye indi (önceki 0.9 sn). Sonrasındaki her şey de buna göre sıkıştı, kilit anı toplam 2.7 sn.</li>
+    <li><b>Klik:</b> 2.0. saniye. Titreşim için en iyi an bu.</li>
+    <li><b>Bekleme:</b> Kilidin son karesi bekleme döngüsünün ilk karesiyle birebir aynı, geçiş dikişsiz.</li>
+  </ul>
+</div>
+
+<script>
+(() => {
+  const FPS = 30, TOTAL = 140, LOCK_END = 80, IMPACT = 60;
+  const FILL0 = 15, FILL1 = 33, F3D0 = 38, F3D1 = 50, KEY0 = 44;
+  const S = 800, CX = 400, CY = 400, R = 150, RB = 112, DEPTH = 34, TAU = Math.PI * 2, D = Math.PI / 180;
+  const LIME = [222, 254, 82];
+  const lime = a => `rgba(${LIME[0]},${LIME[1]},${LIME[2]},${a})`;
+  const white = a => `rgba(255,255,255,${a})`;
+
+  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  const sc = document.createElement('canvas'), sctx = sc.getContext('2d');
+  const acc = document.createElement('canvas'), actx = acc.getContext('2d');
+  const bl = document.createElement('canvas'), bctx = bl.getContext('2d');
+  const HAS_FILTER = typeof bctx.filter === 'string';
+
+  const PHASES = [['Hazırlık', 0, 15], ['Doluş', 15, 33], ['Kilit formu', 33, 50], ['Klik', 50, 80], ['Bekleme · loop', 80, 140]];
+  const FX = { blur: true, bloom: true, echo: true, auto: true };
+  const FX_NAMES = [['blur', 'Motion blur'], ['bloom', 'Bloom'], ['echo', 'Ritim halkaları'], ['auto', 'Otomatik tekrar (demo)']];
+
+  // ---------- yardımcılar ----------
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const ramp = (f, a, b) => clamp((f - a) / (b - a));
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const easeInCubic = t => t * t * t;
+  const easeInOutCubic = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const easeInOutSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
+
+  function echo(g, f, t0, x, y, r0) {
+    if (!FX.echo || f < t0 || f >= t0 + 18) return;
+    const t = ramp(f, t0, t0 + 18);
+    g.strokeStyle = lime(.6 * Math.pow(1 - t, 1.5)); g.lineWidth = lerp(2, .5, t);
+    g.beginPath(); g.arc(x, y, lerp(r0, r0 * 2.2, 1 - Math.pow(2, -10 * t)), 0, TAU); g.stroke();
+  }
+
+  // ---------- hareket durumu (kareye bağlı saf fonksiyon) ----------
+  function keyPop(f) { if (f < KEY0) return 0; const t = f - KEY0; return 1 - Math.exp(-t / 4) * Math.cos(.45 * t); }
+
+  function lockState(f) {
+    if (f >= LOCK_END) {
+      const p = (f - LOCK_END) / (TOTAL - LOCK_END);
+      return { rad: RB, cx: CX, cy: CY + 50 - 5 * (1 - Math.cos(TAU * p)) / 2, depth: DEPTH,
+        yaw: -.26 + .24 * Math.sin(TAU * p) * Math.sin(Math.PI * p), sx: 1, sy: 1,
+        shQ: 1, shO: 0, shA: 1, gap: 0, kp: 1, krot: 0, flash: 0, level: 1, wave: 0, idle: true, sheen: p };
+    }
+    const fadeL = 1 - ramp(f, 72, 78);
+    const t3 = easeInOutCubic(ramp(f, F3D0, F3D1));
+    let sx = 1, sy = 1;
+    if (f >= 8 && f < FILL0) sx = sy = lerp(1, 1.03, easeOutCubic(ramp(f, 8, FILL0)));
+    else if (f >= FILL0 && f < FILL1) sx = sy = lerp(1.03, 1, easeInOutCubic(ramp(f, FILL0, FILL1)));
+    else if (f >= FILL1) { const u = f - FILL1, j = .08 * Math.exp(-u / 4) * Math.sin(.9 * u); sx = 1 + j * .6; sy = 1 - j; }
+
+    const rad = lerp(R, RB, t3), cy = lerp(CY, CY + 50, t3), depth = DEPTH * t3;
+    let yaw = 0;
+    if (f >= F3D0 && f < 52) yaw = -.62 * easeOutCubic(ramp(f, F3D0, 52));
+    else if (f >= 52) { const u = f - 52; yaw = -.26 - .36 * Math.exp(-u / 6) * Math.cos(.25 * u) * fadeL; }
+    if (f >= IMPACT) { const u = f - IMPACT, j = .07 * Math.exp(-u / 4) * Math.sin(.9 * u) * fadeL; sy *= 1 - j; sx *= 1 + j * .5; }
+
+    const shQ = easeInOutCubic(ramp(f, 40, 50));
+    let shO = 44;
+    if (f >= 50 && f < 56) shO = 44 + 8 * easeOutCubic(ramp(f, 50, 56));
+    else if (f >= 56 && f < IMPACT) shO = lerp(52, 0, easeInCubic(ramp(f, 56, IMPACT)));
+    else if (f >= IMPACT) shO = 0;
+
+    const gap = f < IMPACT ? 30 * D : 30 * D * (1 - easeOutCubic(ramp(f, IMPACT, IMPACT + 5)));
+    const flash = (f >= IMPACT && f < IMPACT + 12) ? .5 * Math.exp(-(f - IMPACT) / 3) : 0;
+    let level = 1, wave = 0;
+    if (f < FILL0) level = 0;
+    else if (f < FILL1) { const p = ramp(f, FILL0, FILL1); level = easeInOutSine(p); wave = Math.sin(Math.PI * p); }
+    return { rad, cx: CX, cy, depth, yaw, sx, sy, shQ, shO, shA: 1, gap, kp: keyPop(f), krot: 0, flash, level, wave, idle: false, sheen: 0 };
+  }
+
+  // ---------- kilit çizimi (tekrar kullanılabilir parça) ----------
+  function limeGrad(g, r) {
+    const grd = g.createLinearGradient(-r, -r, r, r);
+    grd.addColorStop(0, '#ECFF8C'); grd.addColorStop(.45, '#DEFE52'); grd.addColorStop(1, '#C9E644');
+    return grd;
+  }
+  function drawBody(g, st) {
+    if (st.depth < .5) return;
+    const s = Math.sin(st.yaw), c = Math.abs(Math.cos(st.yaw));
+    const fx = st.cx + s * st.depth / 2, bx = st.cx - s * st.depth / 2;
+    const rx = st.rad * c * st.sx, ry = st.rad * st.sy, a = clamp(st.depth / DEPTH);
+    g.fillStyle = '#4c5913'; g.beginPath(); g.ellipse(bx, st.cy, rx, ry, 0, 0, TAU); g.fill();
+    g.strokeStyle = white(.3 * a); g.lineWidth = 1.4; g.stroke();
+    const grd = g.createLinearGradient(bx, 0, fx, 0); grd.addColorStop(0, '#4c5913'); grd.addColorStop(1, '#9db234');
+    g.fillStyle = grd; g.fillRect(Math.min(bx, fx), st.cy - ry, Math.abs(fx - bx), 2 * ry);
+    g.beginPath(); g.moveTo(bx, st.cy - ry); g.lineTo(fx, st.cy - ry); g.moveTo(bx, st.cy + ry); g.lineTo(fx, st.cy + ry); g.stroke();
+  }
+  function shackleGeo(r) {
+    const a = .5 * r, ybL = -.75 * r, ybR = -.3 * r, yt = -1.3 * r;
+    const L1 = ybL - yt, LA = Math.PI * a, L2 = ybR - yt, T = L1 + LA + L2;
+    const U = s => {
+      if (s <= L1) return [-a, ybL - s];
+      if (s <= L1 + LA) { const ang = (s - L1) / a; return [-a * Math.cos(ang), yt - a * Math.sin(ang)]; }
+      return [a, yt + (s - L1 - LA)];
+    };
+    return { U, T, sTop: L1 + LA / 2, top: yt - a, bot: ybR };
+  }
+  function strokePoly(g, pts, w, style, dx = 0) {
+    if (pts.length < 2) return;
+    g.strokeStyle = style; g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x + dx, y) : g.moveTo(x + dx, y)); g.stroke();
+  }
+  function drawShackle(g, st) {
+    if (st.shQ <= 0 || st.shA <= 0) return;
+    const r = st.rad, G = shackleGeo(r), c = Math.cos(st.yaw), M = 70, w = 20;
+    const map = ([x, y]) => [st.cx + x * c, st.cy + y - st.shO];
+    const segs = [];
+    if (st.shQ < 1) {
+      const L = [], Rr = [];
+      for (let i = 0; i <= M; i++) { L.push(map(G.U(st.shQ * G.sTop * i / M))); Rr.push(map(G.U(G.T - st.shQ * (G.T - G.sTop) * i / M))); }
+      segs.push(L, Rr);
+    } else { const pts = []; for (let i = 0; i <= M * 2; i++) pts.push(map(G.U(G.T * i / (M * 2)))); segs.push(pts); }
+    g.save(); g.globalAlpha = st.shA;
+    const grd = g.createLinearGradient(0, st.cy + G.top - st.shO, 0, st.cy + G.bot - st.shO);
+    grd.addColorStop(0, '#ffffff'); grd.addColorStop(1, '#b9b9b9');
+    for (const p of segs) strokePoly(g, p, w + 4, 'rgba(28,28,28,1)');
+    for (const p of segs) strokePoly(g, p, w, grd);
+    for (const p of segs) strokePoly(g, p, w * .28, white(.9), -w * .2 * c);
+    g.restore();
+  }
+  function drawFace(g, f, st) {
+    const r = st.rad;
+    g.save(); g.beginPath(); g.arc(0, 0, r, 0, TAU); g.clip();
+    const grd = limeGrad(g, r);
+    if (st.level > 0) {
+      if (st.level < 1 || st.wave > 0) {
+        const lvl = lerp(r + 10, -r - 14, st.level), amp = 9 * st.wave, tilt = .14 * Math.sin(f * .18) * st.wave;
+        g.beginPath(); g.moveTo(-r - 2, r + 2);
+        for (let x = -r - 2; x <= r + 2; x += 6) g.lineTo(x, lvl + amp * (.6 * Math.sin(x * .035 + f * .35) + .4 * Math.sin(x * .062 - f * .22)) + tilt * x);
+        g.lineTo(r + 2, r + 2); g.closePath(); g.fillStyle = grd; g.fill();
+      } else { g.fillStyle = grd; g.fillRect(-r, -r, 2 * r, 2 * r); }
+    }
+    if (st.kp > .01) {
+      g.save(); g.translate(0, .05 * r); g.rotate(st.krot); g.translate(0, -.05 * r); g.scale(st.kp, st.kp);
+      g.fillStyle = '#0b0b0b';
+      g.beginPath(); g.arc(0, -.12 * r, .15 * r, 0, TAU); g.fill();
+      g.beginPath(); g.moveTo(-.065 * r, -.06 * r); g.lineTo(.065 * r, -.06 * r); g.lineTo(.11 * r, .3 * r); g.lineTo(-.11 * r, .3 * r); g.closePath(); g.fill();
+      g.restore();
+    }
+    if (st.flash > 0) { g.fillStyle = white(st.flash); g.fillRect(-r, -r, 2 * r, 2 * r); }
+    if (st.idle) {
+      const u = ramp(st.sheen, .12, .5);
+      if (u > 0 && u < 1) {
+        const x = lerp(-1.6 * r, 1.6 * r, easeInOutCubic(u)), a = .35 * Math.sin(Math.PI * u);
+        g.save(); g.rotate(-.45);
+        const sg = g.createLinearGradient(x - 36, 0, x + 36, 0);
+        sg.addColorStop(0, white(0)); sg.addColorStop(.5, white(a)); sg.addColorStop(1, white(0));
+        g.fillStyle = sg; g.fillRect(x - 36, -2 * r, 72, 4 * r); g.restore();
+      }
+    }
+    g.restore();
+    g.strokeStyle = white(.95); g.lineWidth = 2.6; g.lineCap = 'round';
+    g.beginPath();
+    if (st.gap < .001) g.arc(0, 0, r, 0, TAU); else g.arc(0, 0, r, -Math.PI / 2 + st.gap, -Math.PI / 2 - st.gap + TAU);
+    g.stroke();
+  }
+  function drawLock(g, f, st) {
+    drawBody(g, st);
+    drawShackle(g, st);
+    g.save();
+    g.translate(st.cx + Math.sin(st.yaw) * st.depth / 2, st.cy);
+    g.scale(Math.cos(st.yaw) * st.sx, st.sy);
+    drawFace(g, f, st);
+    g.restore();
+  }
+
+  function drawScene(g, f) {
+    const k = cv.width / S;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    g.clearRect(0, 0, g.canvas.width, g.canvas.height);
+    g.setTransform(k, 0, 0, k, 0, 0);
+    const st = lockState(f);
+    echo(g, f, FILL1, CX, CY, R);
+    echo(g, f, IMPACT, st.cx, st.cy, RB * 1.05);
+    drawLock(g, f, st);
+  }
+
+  // ---------- render: motion blur + bloom ----------
+  function render(f) {
+    const W = cv.width, H = cv.height;
+    for (const c of [sc, acc]) if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
+    const n = FX.blur ? 10 : 1;
+    actx.setTransform(1, 0, 0, 1, 0, 0); actx.globalAlpha = 1; actx.globalCompositeOperation = 'source-over';
+    actx.clearRect(0, 0, W, H);
+    if (n === 1) drawScene(actx, f);
+    else {
+      for (let i = 0; i < n; i++) {
+        let t = f - .8 * i / (n - 1); if (t < 0) t = 0;
+        drawScene(sctx, t);
+        actx.setTransform(1, 0, 0, 1, 0, 0); actx.globalCompositeOperation = 'lighter'; actx.globalAlpha = 1 / n;
+        actx.drawImage(sc, 0, 0);
+      }
+      actx.globalCompositeOperation = 'source-over'; actx.globalAlpha = 1;
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    if (FX.bloom && HAS_FILTER) {
+      const bw = Math.max(1, W >> 2), bh = Math.max(1, H >> 2);
+      if (bl.width !== bw || bl.height !== bh) { bl.width = bw; bl.height = bh; }
+      bctx.filter = 'none'; bctx.clearRect(0, 0, bw, bh);
+      bctx.filter = `blur(${Math.max(2, Math.round(bw / 45))}px)`; bctx.drawImage(acc, 0, 0, bw, bh); bctx.filter = 'none';
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .6; ctx.drawImage(bl, 0, 0, W, H);
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.drawImage(acc, 0, 0);
+  }
+
+  // ---------- oynatıcı ----------
+  let playing = true, frame = 0, last = null, speed = 1;
+  const $ = id => document.getElementById(id);
+  const playBtn = $('play'), lockBtn = $('lock'), scrub = $('scrub'), fr = $('fr'), speedBtn = $('speed'), phaseWrap = $('phases');
+  PHASES.forEach(([name, a, b]) => {
+    const el = document.createElement('button');
+    el.className = 'phase' + (a >= LOCK_END ? ' loop' : ''); el.textContent = name; el.style.flexGrow = b - a;
+    el.onclick = () => { frame = a; draw(); };
+    phaseWrap.appendChild(el);
+  });
+  FX_NAMES.forEach(([key, name]) => {
+    const el = document.createElement('div');
+    el.className = 'chip' + (FX[key] ? ' on' : ''); el.textContent = name;
+    el.onclick = () => { FX[key] = !FX[key]; el.classList.toggle('on', FX[key]); draw(); };
+    $('chips').appendChild(el);
+  });
+  function draw() {
+    render(frame);
+    const fi = Math.floor(frame);
+    scrub.value = fi;
+    fr.textContent = String(fi).padStart(3, '0') + ' · ' + (frame / FPS).toFixed(2) + 's';
+    [...phaseWrap.children].forEach((el, i) => el.classList.toggle('on', frame >= PHASES[i][1] && frame < PHASES[i][2]));
+  }
+  function resize() {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.width * dpr);
+    draw();
+  }
+  function tick(ts) {
+    if (last == null) last = ts;
+    const dt = Math.min(.1, (ts - last) / 1000); last = ts;
+    if (playing) {
+      let nf = frame + dt * FPS * speed;
+      if (nf >= TOTAL) nf = FX.auto ? 0 : LOCK_END + (nf - TOTAL);
+      frame = nf; draw();
+    }
+    requestAnimationFrame(tick);
+  }
+  lockBtn.onclick = () => { frame = 0; playing = true; playBtn.textContent = '❚❚'; draw(); };
+  playBtn.onclick = () => { playing = !playing; playBtn.textContent = playing ? '❚❚' : '▶'; };
+  scrub.oninput = () => { playing = false; playBtn.textContent = '▶'; frame = +scrub.value; draw(); };
+  speedBtn.onclick = () => { speed = speed === 1 ? .5 : speed === .5 ? .25 : 1; speedBtn.textContent = speed + 'x'; };
+  window.__setFrame = f => { playing = false; frame = f; draw(); };
+  new ResizeObserver(resize).observe(cv);
+  resize();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

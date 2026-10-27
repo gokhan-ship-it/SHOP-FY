@@ -7,8 +7,11 @@
     "studio": "remotion studio",
     "render:a": "remotion render EslesmeA out/eslesme-A.mp4",
     "render:b": "remotion render EslesmeB out/eslesme-B.mp4",
-    "render": "npm run render:a && npm run render:b",
+    "render:kilit": "remotion render SingleKilit out/single-kilit.mp4",
+    "render:kilit-bekleme": "remotion render SingleKilitBekleme out/single-kilit-bekleme.mp4",
+    "render": "npm run render:a && npm run render:b && npm run render:kilit && npm run render:kilit-bekleme",
     "verify-loop": "tsx scripts/verify-loop.ts",
+    "verify-kilit": "tsx scripts/verify-kilit.tsx",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -19,6 +22,7 @@
   },
   "devDependencies": {
     "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "tsx": "4.23.15",
     "typescript": "7.0.2"
   }
