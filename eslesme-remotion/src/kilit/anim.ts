@@ -1,6 +1,7 @@
 // single-kilit-final.html içindeki çizim mantığının birebir aktarımı.
 // Tüm fonksiyonlar kare numarasına bağlı ve saf; zamanlamalar, easing'ler ve yay değerleri değiştirilmedi.
 import { clamp, easeInCubic, easeInOutCubic, easeOutCubic, lerp, ramp } from '../anim';
+import { blurSampleFrames } from '../blur';
 
 export const FPS = 30, TOTAL = 140, LOCK_END = 80, IMPACT = 60;
 export const FILL0 = 15, FILL1 = 33, F3D0 = 38, F3D1 = 50, KEY0 = 44;
@@ -20,6 +21,10 @@ export type KilitFx = { blur: boolean; bloom: boolean; echo: boolean };
 // 1e-6 yuvarlaması kesirli blur örneklerinde kayan nokta artıklarını temizler (görsel fark yok).
 export const segmentFrame = (seg: Segment, t: number) =>
   seg === 'lock' ? Math.max(0, t) : LOCK_END + Math.round(((((t % IDLE) + IDLE) % IDLE) * 1e6)) / 1e6 % IDLE;
+
+// Bir çıkış karesinin (tasarım karesi `frame`) motion blur örnekleri, HTML karesi cinsinden
+export const kilitSamples = (seg: Segment, frame: number, blur: boolean) =>
+  (blur ? blurSampleFrames(frame) : [frame]).map((t) => segmentFrame(seg, t));
 
 const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
 

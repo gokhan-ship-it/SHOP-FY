@@ -7,15 +7,16 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { OUT_FPS } from '../src/anim';
 import { blurSampleFrames } from '../src/blur';
 import { KilitSvg } from '../src/kilit/KilitSvg';
-import { FPS, IDLE, LOCK_END, TAU, lockState, segmentFrame, shackleGeo, type KilitFx, type Segment } from '../src/kilit/anim';
+import { FPS, IDLE, LOCK_END, TAU, kilitSamples, lockState, segmentFrame, shackleGeo, type KilitFx, type Segment } from '../src/kilit/anim';
 
-const FX: KilitFx = { blur: true, bloom: true, echo: true };
+// Root.tsx'teki varsayılanlar: kilitte motion blur açık, beklemede kapalı
+const FX: Record<Segment, KilitFx> = { lock: { blur: true, bloom: true, echo: true }, idle: { blur: false, bloom: true, echo: true } };
 const design = (i: number) => (i * FPS) / OUT_FPS;
 const LOCK_FRAMES = (LOCK_END * OUT_FPS) / FPS, IDLE_FRAMES = (IDLE * OUT_FPS) / FPS;
 
-// Bir çıkış karesinin tam render girdisi: 10 blur örneğinin SVG'si
+// Bir çıkış karesinin tam render girdisi: örneklerin (blur açıksa 10) SVG'si
 const frameMarkup = (seg: Segment, i: number) =>
-  blurSampleFrames(design(i)).map((t) => renderToStaticMarkup(<KilitSvg f={segmentFrame(seg, t)} fx={FX} id="v" />)).join('');
+  kilitSamples(seg, design(i), FX[seg].blur).map((t) => renderToStaticMarkup(<KilitSvg f={t} fx={FX[seg]} id="v" size={1080} />)).join('');
 
 // Kilidin ekrandaki referans noktaları (yüz çevresi, halka tepesi, anahtar deliği), 1080 ölçeğinde
 const keyPts = (f: number) => {
@@ -40,8 +41,9 @@ let ok = true;
 // 1) bekleme loop'u: tüm kareler için i == i + IDLE_FRAMES
 let identical = true;
 for (let i = 0; i < IDLE_FRAMES; i++) if (frameMarkup('idle', i) !== frameMarkup('idle', i + IDLE_FRAMES)) identical = false;
+// blur açılırsa kare 0'ın örnekleri turun sonuna sarılmalı
 const wraps = blurSampleFrames(0).slice(1).every((t) => segmentFrame('idle', t) > LOCK_END + IDLE - 1);
-console.log(`SingleKilitBekleme: kare0 == kare${IDLE_FRAMES}: ${identical ? 'EVET' : 'HAYIR'} | kare 0 blur örnekleri turun sonuna sarılıyor: ${wraps ? 'EVET' : 'HAYIR'}`);
+console.log(`SingleKilitBekleme: kare0 == kare${IDLE_FRAMES}: ${identical ? 'EVET' : 'HAYIR'} | blur açılırsa kare 0 örnekleri turun sonuna sarılıyor: ${wraps ? 'EVET' : 'HAYIR'}`);
 ok &&= identical && wraps;
 
 // 2) bekleme 119 → 0 geçişi

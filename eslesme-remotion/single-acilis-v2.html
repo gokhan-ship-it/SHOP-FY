@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Single Kapsül Açılışı v2</title>
+<style>
+  :root{ --bg:#000; --panel:#0c0c0c; --line:#1f1f1f; --text:#f2f2f2; --muted:#8b8b8b; --lime:#DEFE52; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:640px;margin:0 auto;padding:22px 16px 48px}
+  h1{font-size:17px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 16px;line-height:1.45}
+  .stage{position:relative;width:min(100%,360px);aspect-ratio:9/16;margin:0 auto;border:1px solid var(--line);border-radius:30px;overflow:hidden;background:#000}
+  canvas{display:block;width:100%;height:100%}
+  .phase-now{text-align:center;font-size:12px;color:var(--muted);margin-top:10px;min-height:16px}
+  .phase-now b{color:var(--lime);font-weight:600}
+  .controls{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .btn{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--text);height:34px;min-width:34px;padding:0 12px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap}
+  .btn.main{background:var(--lime);border-color:var(--lime);color:#000;font-weight:600}
+  input[type=range]{flex:1;min-width:0;accent-color:var(--lime)}
+  .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+  .row .lbl{font-size:12px;color:var(--muted);min-width:66px}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{appearance:none;border:0;background:var(--panel);color:var(--muted);font-size:12.5px;padding:8px 12px;cursor:pointer}
+  .seg button.on{background:var(--lime);color:#000;font-weight:600}
+  .label{font-size:12px;color:var(--muted);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.08em}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:12.5px;padding:7px 11px;border-radius:999px;cursor:pointer;user-select:none}
+  .chip.on{border-color:var(--lime);color:var(--text)}
+  .chip.on::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lime);margin-right:7px;vertical-align:1px}
+  ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.55;color:#cfcfcf}
+  li{margin-bottom:5px}
+  li b{color:var(--text);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Single kapsül · hediye açılışı v2</h1>
+  <p class="sub">Kilit, bileklik okutulunca kalbe dönüşüyor ve couple ile ortak kalp tünelinden doğrudan galeriye gidiyor. "Bileklik dokundur" ile istediğin an açabilirsin.</p>
+
+  <div class="stage"><canvas id="cv"></canvas></div>
+  <div class="phase-now" id="phaseNow"></div>
+
+  <div class="controls">
+    <button class="btn main" id="tap">Bileklik dokundur</button>
+    <button class="btn" id="play">❚❚</button>
+    <input type="range" id="scrub" min="0" max="100" step="1" value="0">
+    <button class="btn" id="speed">1x</button>
+  </div>
+  <div class="row"><span class="lbl">Yükleme</span><div class="seg" id="segLoad"></div></div>
+
+  <div class="label">Katmanlar</div>
+  <div class="chips" id="chips"></div>
+
+  <div class="label">Notlar</div>
+  <ul>
+    <li><b>1 · Açılmaya hazır (video, 2 sn loop):</b> Kilit, kulpunu iki kez çekiştirerek "kapıyı çalıyor".</li>
+    <li><b>2 · Açılış (video, 1.9 sn):</b> Bileklik okununca klik sesi geliyor, kulp fırlayıp uçuyor ve anahtar deliği anahtar çevrilmiş gibi dönüyor. Kilit düzleşiyor, lime yüzü kalbe dönüşüyor; dönüşürken etrafa küçük noktalar fırlıyor. Kalp bir kez atıyor, sonra içine dalınıyor.</li>
+    <li><b>3–4 · Tünel ve çıkış:</b> Couple açılışıyla birebir aynı kalp tüneli ve lime çıkış. Bu iki video iki ürün için ortak, tekrar üretmeye gerek yok.</li>
+    <li><b>Galeri:</b> Çıkışın lime ekranından doğrudan galeri açılıyor, arada mesaj ekranı yok. Buradaki galeri temsili.</li>
+    <li><b>Uygulama katmanı:</b> İsim, "412 gün önce", buton yazıları ve gün sayacı uygulamanın; videoya gömülmüyor. Buradaki isim ve sayılar örnek.</li>
+  </ul>
+</div>
+
+<script>
+(() => {
+  const FPS = 30, W0 = 540, H0 = 960, CX = 270, CY = 470, TAU = Math.PI * 2;
+  const RB = 100, DEPTH = 30, RH = 105;
+  const READY = 120, RLOOP = 60, KLIK = 6, MORPH0 = 16, DIVE0 = 42, INTRO = 56, P = 15, EXIT = 24, GAL = 54;
+  const FOC = 500, WR = 100, SP = 220, NEAR = 40, FAR = 2600, V = SP / P, Z0 = SP / 2;
+  const Z_HERO = WR * FOC / RH, DD = Z_HERO + 120;
+  const Z_E0 = WR * FOC / 6, AEX = (Z_E0 - 30 - V * 18) / Math.pow(18, 3);
+  const LIME = [222, 254, 82];
+  const lime = a => `rgba(${LIME[0]},${LIME[1]},${LIME[2]},${a})`;
+  const white = a => `rgba(255,255,255,${a})`;
+  const SANS = '-apple-system,BlinkMacSystemFont,Inter,Roboto,sans-serif';
+
+  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  const sc = document.createElement('canvas'), sctx = sc.getContext('2d');
+  const acc = document.createElement('canvas'), actx = acc.getContext('2d');
+  const bl = document.createElement('canvas'), bctx = bl.getContext('2d');
+  const HAS_FILTER = typeof bctx.filter === 'string';
+
+  let LOAD = 2;
+  const FX = { app: true, blur: true, bloom: true, auto: true };
+  const FX_NAMES = [['app', 'Uygulama katmanı'], ['blur', 'Motion blur'], ['bloom', 'Bloom'], ['auto', 'Otomatik tekrar']];
+
+  // ---------- yardımcılar ----------
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const ramp = (f, a, b) => clamp((f - a) / (b - a));
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const easeInCubic = t => t * t * t;
+  const easeInOutCubic = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const easeOutQuart = t => 1 - Math.pow(1 - t, 4);
+  const easeOutBack = t => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+  function pulse(f, t0, amp, att = 3, dec = 11) {
+    if (f < t0) return 0;
+    const d = f - t0;
+    if (d < att) return amp * easeOutCubic(d / att);
+    if (d > att + dec * 2) return 0;
+    return amp * Math.exp(-(d - att) / (dec / 3));
+  }
+
+  function TL() {
+    const loops = Math.max(2, Math.ceil(Math.max(0, LOAD * FPS - INTRO) / P));
+    const te = INTRO + loops * P;
+    return { te, ex: te + EXIT, total: READY + te + EXIT + GAL };
+  }
+  function echo(g, f, t0, x, y, r0, amp = .6, len = 18) {
+    if (f < t0 || f >= t0 + len) return;
+    const t = ramp(f, t0, t0 + len);
+    g.strokeStyle = lime(amp * Math.pow(1 - t, 1.5)); g.lineWidth = lerp(2, .5, t);
+    g.beginPath(); g.arc(x, y, lerp(r0, r0 * 2.1, 1 - Math.pow(2, -10 * t)), 0, TAU); g.stroke();
+  }
+
+  // ---------- şekil: daire ↔ kalp ----------
+  function circlePt(s, r) { const a = Math.PI / 2 + TAU * s; return [r * Math.cos(a), r * Math.sin(a)]; }
+  function heartUnit(s) {
+    const a = Math.PI + TAU * s;
+    return [Math.pow(Math.sin(a), 3), -(13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a) + 2.5) / 16];
+  }
+  function morphPath(g, m, kx, ky) {
+    g.beginPath();
+    for (let i = 0; i <= 160; i++) {
+      const s = i / 160, c = circlePt(s, RB), h = heartUnit(s);
+      const x = lerp(c[0], h[0] * RH, m) * kx, y = lerp(c[1], h[1] * RH, m) * ky;
+      i ? g.lineTo(x, y) : g.moveTo(x, y);
+    }
+    g.closePath();
+  }
+  function heartPath(g, x0, y0, rho, rot = 0) {
+    const c = Math.cos(rot), s = Math.sin(rot);
+    g.beginPath();
+    for (let i = 0; i <= 120; i++) {
+      const [ux, uy] = heartUnit(i / 120), X = ux * rho, Y = uy * rho;
+      const px = x0 + X * c - Y * s, py = y0 + X * s + Y * c;
+      i ? g.lineTo(px, py) : g.moveTo(px, py);
+    }
+    g.closePath();
+  }
+
+  // ---------- 1 · açılmaya hazır (loop) ----------
+  const JIGS = [6, 36];
+  function readyState(f) {
+    const p = f / RLOOP;
+    let shO = 0, flash = 0;
+    for (const t0 of JIGS) if (f >= t0 && f < t0 + 16) { const d = f - t0; shO += 7 * Math.exp(-d / 2.4) * Math.abs(Math.sin(1.5 * d)); flash += .1 * Math.exp(-d / 3); }
+    return { cx: CX, cy: CY - 5 * (1 - Math.cos(TAU * p)) / 2, depth: DEPTH, yaw: -.26 + .24 * Math.sin(TAU * p) * Math.sin(Math.PI * p),
+      sx: 1, sy: 1, shO, shA: 1, kp: 1, krot: 0, flash, sheen: p, idle: true,
+      m: 0, ss: 1, b: 0, rimA: 1, fillA: 1, outA: 0 };
+  }
+
+  // ---------- 2 · açılış: kilit → kalp ----------
+  function openState(t) {
+    let sx = 1, sy = 1;
+    if (t < KLIK) { const e = easeOutCubic(ramp(t, 0, KLIK)); sy = 1 - .05 * e; sx = 1 + .03 * e; }
+    else { const u = t - KLIK, j = Math.exp(-u / 4) * Math.cos(.9 * u); sy = 1 - .05 * j; sx = 1 + .03 * j; }
+    let shO = 0, shA = 1, krot = 0, flash = 0;
+    if (t >= KLIK) {
+      const u = t - KLIK;
+      shO = 70 * (1 - Math.exp(-u / 3.5) * Math.cos(.5 * u));
+      krot = Math.PI / 2 * (1 - Math.exp(-u / 3) * Math.cos(.7 * u));
+      flash = u < 10 ? .45 * Math.exp(-u / 3) : 0;
+    }
+    if (t >= 12) { shO += Math.pow(t - 12, 2) * .9; shA = 1 - ramp(t, 12, 22); }
+    const fl = easeInOutCubic(ramp(t, 8, 18));
+    const m = t < MORPH0 ? 0 : easeOutQuart(ramp(t, MORPH0, MORPH0 + 10));
+    let ss = 1; if (t >= MORPH0) { const u = t - MORPH0; ss = 1 + .18 * Math.exp(-u / 7) * Math.sin(.45 * u); }
+    ss *= 1 - .1 * easeInOutCubic(ramp(t, 38, 42));
+    return { cx: CX, cy: CY, depth: lerp(DEPTH, 0, fl), yaw: lerp(-.26, 0, fl), sx, sy, shO, shA,
+      kp: 1 - easeInCubic(ramp(t, 10, 16)), krot, flash, sheen: 0, idle: false,
+      m, ss, b: (pulse(t, 28, .10) + pulse(t, 34, .05)) * (1 - ramp(t, 38, 41)), rimA: 1 - ramp(t, 18, 28), fillA: 1 - ramp(t, 38, 46), outA: ramp(t, 38, 44) };
+  }
+
+  // ---------- kilit parçaları (single kilit ile aynı) ----------
+  function limeGrad(g, r) {
+    const grd = g.createLinearGradient(-r, -r, r, r);
+    grd.addColorStop(0, '#ECFF8C'); grd.addColorStop(.45, '#DEFE52'); grd.addColorStop(1, '#C9E644');
+    return grd;
+  }
+  function drawBody(g, st) {
+    if (st.depth < .5) return;
+    const s = Math.sin(st.yaw), c = Math.abs(Math.cos(st.yaw));
+    const fx = st.cx + s * st.depth / 2, bx = st.cx - s * st.depth / 2;
+    const rx = RB * c * st.sx, ry = RB * st.sy, a = clamp(st.depth / DEPTH);
+    g.fillStyle = `rgba(76,89,19,${a})`; g.beginPath(); g.ellipse(bx, st.cy, rx, ry, 0, 0, TAU); g.fill();
+    g.strokeStyle = white(.3 * a); g.lineWidth = 1.4; g.stroke();
+    const grd = g.createLinearGradient(bx, 0, fx, 0); grd.addColorStop(0, '#4c5913'); grd.addColorStop(1, '#9db234');
+    g.fillStyle = grd; g.fillRect(Math.min(bx, fx), st.cy - ry, Math.abs(fx - bx), 2 * ry);
+    g.beginPath(); g.moveTo(bx, st.cy - ry); g.lineTo(fx, st.cy - ry); g.moveTo(bx, st.cy + ry); g.lineTo(fx, st.cy + ry); g.stroke();
+  }
+  function shackleGeo(r) {
+    const a = .5 * r, ybL = -.75 * r, ybR = -.3 * r, yt = -1.3 * r;
+    const L1 = ybL - yt, LA = Math.PI * a, L2 = ybR - yt, T = L1 + LA + L2;
+    const U = s => {
+      if (s <= L1) return [-a, ybL - s];
+      if (s <= L1 + LA) { const ang = (s - L1) / a; return [-a * Math.cos(ang), yt - a * Math.sin(ang)]; }
+      return [a, yt + (s - L1 - LA)];
+    };
+    return { U, T, top: yt - a, bot: ybR };
+  }
+  function strokePoly(g, pts, w, style, dx = 0) {
+    g.strokeStyle = style; g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x + dx, y) : g.moveTo(x + dx, y)); g.stroke();
+  }
+  function drawShackle(g, st) {
+    if (st.shA <= 0) return;
+    const G = shackleGeo(RB), c = Math.cos(st.yaw), M = 140, w = 18, pts = [];
+    for (let i = 0; i <= M; i++) { const [x, y] = G.U(G.T * i / M); pts.push([st.cx + x * c, st.cy + y - st.shO]); }
+    g.save(); g.globalAlpha = st.shA;
+    const grd = g.createLinearGradient(0, st.cy + G.top - st.shO, 0, st.cy + G.bot - st.shO);
+    grd.addColorStop(0, '#ffffff'); grd.addColorStop(1, '#b9b9b9');
+    strokePoly(g, pts, w + 4, 'rgba(28,28,28,1)');
+    strokePoly(g, pts, w, grd);
+    strokePoly(g, pts, w * .28, white(.9), -w * .2 * c);
+    g.restore();
+  }
+  function drawFace(g, st) {
+    const kx = st.ss * (1 + .75 * st.b), ky = st.ss * (1 + 1.1 * st.b);
+    g.save();
+    morphPath(g, st.m, kx, ky);
+    g.save(); g.clip();
+    if (st.fillA > 0) { g.globalAlpha = st.fillA; g.fillStyle = limeGrad(g, RB); g.fillRect(-RB * 1.6, -RB * 1.6, RB * 3.2, RB * 3.2); g.globalAlpha = 1; }
+    if (st.kp > .01) {
+      g.save(); g.translate(0, .05 * RB); g.rotate(st.krot); g.translate(0, -.05 * RB); g.scale(st.kp, st.kp);
+      g.fillStyle = '#0b0b0b';
+      g.beginPath(); g.arc(0, -.12 * RB, .15 * RB, 0, TAU); g.fill();
+      g.beginPath(); g.moveTo(-.065 * RB, -.06 * RB); g.lineTo(.065 * RB, -.06 * RB); g.lineTo(.11 * RB, .3 * RB); g.lineTo(-.11 * RB, .3 * RB); g.closePath(); g.fill();
+      g.restore();
+    }
+    if (st.flash > 0) { g.fillStyle = white(st.flash); g.fillRect(-RB * 1.6, -RB * 1.6, RB * 3.2, RB * 3.2); }
+    if (st.idle) {
+      const u = ramp(st.sheen, .12, .5);
+      if (u > 0 && u < 1) {
+        const x = lerp(-1.6 * RB, 1.6 * RB, easeInOutCubic(u)), a = .35 * Math.sin(Math.PI * u);
+        g.save(); g.rotate(-.45);
+        const sg = g.createLinearGradient(x - 36, 0, x + 36, 0);
+        sg.addColorStop(0, white(0)); sg.addColorStop(.5, white(a)); sg.addColorStop(1, white(0));
+        g.fillStyle = sg; g.fillRect(x - 36, -2 * RB, 72, 4 * RB); g.restore();
+      }
+    }
+    g.restore();
+    morphPath(g, st.m, kx, ky); // kenar çizgisi için dış şekli yeniden çiz (anahtar deliğine değil kenara uygulansın)
+    if (st.rimA > 0) { g.strokeStyle = white(.95 * st.rimA); g.lineWidth = 2.6; g.stroke(); }
+    if (st.outA > 0) { g.strokeStyle = lime(st.outA); g.lineWidth = 3.8; g.stroke(); }
+    g.restore();
+  }
+  function drawLockHeart(g, st) {
+    drawBody(g, st);
+    drawShackle(g, st);
+    g.save();
+    g.translate(st.cx + Math.sin(st.yaw) * st.depth / 2, st.cy);
+    g.scale(Math.cos(st.yaw) * st.sx, st.sy);
+    drawFace(g, st);
+    g.restore();
+  }
+  function drawBurst(g, t) {
+    if (t < MORPH0 + 2 || t >= MORPH0 + 18) return;
+    const u = easeOutCubic(ramp(t, MORPH0 + 2, MORPH0 + 18));
+    for (let i = 0; i < 8; i++) {
+      const [hx, hy] = heartUnit((i + .5) / 8), x = hx * RH, y = hy * RH, len = Math.hypot(x, y) || 1, d = 1.08 + .45 * u;
+      g.fillStyle = i % 2 ? white(1 - u) : lime(1 - u);
+      g.beginPath(); g.arc(CX + x * d + x / len * 8, CY + y * d + y / len * 8, Math.max(.1, 6 * (1 - u)), 0, TAU); g.fill();
+    }
+  }
+
+  // ---------- 3–4 · kalp tüneli + çıkış (couple ile ortak) ----------
+  function cz(t, te) {
+    if (t < DIVE0) return -DD;
+    if (t < INTRO) {
+      const u = (t - DIVE0) / (INTRO - DIVE0), mm = V * (INTRO - DIVE0) / DD;
+      return -DD + DD * ((-2 * u * u * u + 3 * u * u) + (u * u * u - u * u) * mm);
+    }
+    if (t < te) return V * (t - INTRO);
+    const tau = t - te; return V * (te - INTRO) + V * tau + AEX * tau * tau * tau;
+  }
+  function beatPulse(t) { const ph = (((t - INTRO) % P) + P) % P; return ph < 2 ? ph / 2 : Math.exp(-(ph - 2) / 3); }
+  function drawTunnel(g, t, tl) {
+    const camz = cz(t, tl.te), tunA = ramp(t, DIVE0 + 2, DIVE0 + 12), bp = beatPulse(t), inExit = t >= tl.te;
+    let zE = Infinity, rhoE = 6 * (1 + .4 * bp);
+    if (inExit) { zE = Z_E0 - (camz - cz(tl.te, tl.te)); rhoE = WR * FOC / Math.max(1, zE); }
+    const endA = ramp(t, DIVE0 + 4, DIVE0 + 12);
+    const gr = g.createRadialGradient(CX, CY, 0, CX, CY, Math.min(900, 70 + rhoE * 1.6));
+    gr.addColorStop(0, lime((.22 + .18 * (inExit ? 1 : bp)) * endA)); gr.addColorStop(1, lime(0));
+    g.fillStyle = gr; g.fillRect(0, 0, W0, H0);
+    if (endA > 0) { g.fillStyle = lime(endA); heartPath(g, CX, CY, rhoE); g.fill(); }
+    if (tunA > 0) {
+      const iMin = Math.ceil((camz + NEAR - Z0) / SP), iMax = Math.floor((camz + FAR - Z0) / SP);
+      for (let i = iMax; i >= iMin; i--) {
+        const z = i * SP + Z0 - camz;
+        if (z >= zE) continue;
+        const a = clamp((FAR - z) / 800) * clamp((z - NEAR) / 120) * tunA * (.72 + .28 * bp);
+        if (a <= .005) continue;
+        g.strokeStyle = white(a); g.lineWidth = clamp(3.4 * FOC / z, .6, 16); g.lineJoin = 'round';
+        heartPath(g, CX, CY, WR * FOC / z, .2 * Math.sin(z * .0024)); g.stroke();
+      }
+    }
+    if (t < INTRO) {
+      const zr = Z_HERO - (camz - cz(DIVE0, tl.te));
+      if (zr > NEAR * .5) {
+        const persp = Z_HERO / zr, na = clamp((zr - NEAR) / 120), sNow = openState(t);
+        g.save(); g.translate(CX, CY);
+        heartPath(g, 0, 0, RH * sNow.ss * persp);
+        if (sNow.fillA > 0) { g.globalAlpha = sNow.fillA * na; g.fillStyle = limeGrad(g, RB * sNow.ss * persp); g.fill(); g.globalAlpha = 1; }
+        g.strokeStyle = lime(sNow.outA * na); g.lineWidth = 3.8 * persp; g.stroke();
+        g.restore();
+      }
+    }
+    if (inExit) {
+      const cover = zE < NEAR ? 1 : ramp(rhoE, 420, 1000);
+      if (cover > 0) { g.fillStyle = lime(cover); g.fillRect(0, 0, W0, H0); }
+    }
+  }
+
+  // ---------- galeri (uygulama, temsili) ----------
+  function drawGallery(g, t, tl) {
+    const u = t - tl.ex, wipe = easeInOutCubic(ramp(u, 0, 12)), hA = ramp(u, 6, 16);
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    g.fillStyle = white(.95 * hA); g.font = `600 30px ${SANS}`; g.fillText("Ayşe'nin kapsülü", 24, 118 - 8 * (1 - hA));
+    g.fillStyle = lime(hA); g.font = `500 15px ${SANS}`; g.fillText('14 Şubat 2025 · 412 gün', 24, 146 - 8 * (1 - hA));
+    const gap = 8, cols = 3, tw = (W0 - 48 - gap * (cols - 1)) / cols;
+    for (let i = 0; i < 15; i++) {
+      const r = Math.floor(i / cols), c = i % cols, p = easeOutBack(ramp(u, 4 + i * 1.4, 16 + i * 1.4));
+      if (p <= 0) continue;
+      const x = 24 + c * (tw + gap), y = 176 + r * (tw + gap);
+      g.save(); g.translate(x + tw / 2, y + tw / 2); g.scale(p, p);
+      const grd = g.createLinearGradient(-tw / 2, -tw / 2, tw / 2, tw / 2); grd.addColorStop(0, '#262626'); grd.addColorStop(1, '#151515');
+      g.fillStyle = grd; g.beginPath(); if (g.roundRect) g.roundRect(-tw / 2, -tw / 2, tw, tw, 14); else g.rect(-tw / 2, -tw / 2, tw, tw); g.fill();
+      g.restore();
+    }
+    if (wipe < 1) { g.fillStyle = lime(1); g.fillRect(0, -H0 * wipe, W0, H0); }
+  }
+
+  // ---------- sahne (global zaman) ----------
+  function drawSceneG(g, gg) {
+    const tl = TL(), k = cv.width / W0;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    g.clearRect(0, 0, g.canvas.width, g.canvas.height);
+    g.setTransform(k, 0, 0, k, 0, 0);
+    if (gg < READY) {
+      const f = gg % RLOOP, st = readyState(f);
+      for (const t0 of JIGS) echo(g, f, t0, st.cx, st.cy, RB * 1.05, .35, 22);
+      drawLockHeart(g, st);
+      return;
+    }
+    const t = gg - READY;
+    if (t >= tl.ex) return drawGallery(g, t, tl);
+    if (t < DIVE0) {
+      const st = openState(t);
+      echo(g, t, KLIK, st.cx, st.cy, RB * 1.05);
+      echo(g, t, MORPH0 + 2, CX, CY, RH, .5, 18);
+      drawLockHeart(g, st);
+      drawBurst(g, t);
+    } else drawTunnel(g, t, tl);
+  }
+
+  // ---------- uygulama katmanı ----------
+  function drawApp(g, gg) {
+    if (!FX.app) return;
+    const tl = TL(), k = cv.width / W0, t = gg - READY;
+    g.setTransform(k, 0, 0, k, 0, 0);
+    const ra = gg < READY ? 1 : 1 - ramp(t, 0, 6);
+    if (ra > 0) {
+      g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+      g.font = `600 13px ${SANS}`; if ('letterSpacing' in g) g.letterSpacing = '4px';
+      g.fillStyle = lime(ra); g.fillText("AYŞE'DEN SANA", CX + 2, 132);
+      if ('letterSpacing' in g) g.letterSpacing = '0px';
+      g.fillStyle = white(ra); g.font = `600 26px ${SANS}`; g.fillText('Kapsülün açılmaya hazır', CX, 172);
+      g.fillStyle = white(.55 * ra); g.font = `400 15px ${SANS}`; g.fillText('412 gün önce kilitlendi', CX, 200);
+      const by = 790;
+      g.strokeStyle = white(.25 * ra); g.lineWidth = 1.5;
+      g.beginPath(); if (g.roundRect) g.roundRect(CX - 150, by - 30, 300, 56, 28); else g.rect(CX - 150, by - 30, 300, 56); g.stroke();
+      g.strokeStyle = lime(ra); g.lineWidth = 2; g.lineCap = 'round';
+      for (let i = 0; i < 3; i++) { g.beginPath(); g.arc(CX - 112, by - 2, 5 + i * 5, -.7, .7); g.stroke(); }
+      g.fillStyle = white(.95 * ra); g.font = `600 15px ${SANS}`; g.textAlign = 'left'; g.fillText('Bilekliğini telefona dokundur', CX - 88, by + 3);
+      g.textAlign = 'center'; g.fillStyle = white(.45 * ra); g.font = `400 13px ${SANS}`; g.fillText('ya da açmak için basılı tut', CX, by + 54);
+    }
+    if (gg >= READY) {
+      const da = ramp(t, INTRO - 6, INTRO + 4) * (1 - ramp(t, tl.te, tl.te + 8));
+      if (da > 0) {
+        const v = Math.round(412 * easeOutCubic(clamp((t - INTRO + 6) / Math.max(1, tl.te - INTRO + 4))));
+        g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+        g.fillStyle = white(.95 * da); g.font = `600 44px ${SANS}`; g.fillText(String(v), CX, H0 - 140);
+        g.font = `600 11px ${SANS}`; if ('letterSpacing' in g) g.letterSpacing = '4px';
+        g.fillStyle = lime(da); g.fillText('GÜN SONRA', CX + 2, H0 - 112);
+        if ('letterSpacing' in g) g.letterSpacing = '0px';
+      }
+    }
+  }
+
+  // ---------- render: motion blur + bloom ----------
+  let xf = null;
+  function render(gg) {
+    const W = cv.width, H = cv.height;
+    for (const c of [sc, acc]) if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
+    const n = FX.blur ? 10 : 1;
+    actx.setTransform(1, 0, 0, 1, 0, 0); actx.globalAlpha = 1; actx.globalCompositeOperation = 'source-over';
+    actx.clearRect(0, 0, W, H);
+    if (n === 1) drawSceneG(actx, gg);
+    else {
+      for (let i = 0; i < n; i++) {
+        let s = gg - .8 * i / (n - 1); if (s < 0) s = 0;
+        if (xf != null && gg >= READY && s < READY) s = READY;
+        drawSceneG(sctx, s);
+        actx.setTransform(1, 0, 0, 1, 0, 0); actx.globalCompositeOperation = 'lighter'; actx.globalAlpha = 1 / n;
+        actx.drawImage(sc, 0, 0);
+      }
+      actx.globalCompositeOperation = 'source-over'; actx.globalAlpha = 1;
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    if (FX.bloom && HAS_FILTER) {
+      const bw = Math.max(1, W >> 2), bh = Math.max(1, H >> 2);
+      if (bl.width !== bw || bl.height !== bh) { bl.width = bw; bl.height = bh; }
+      bctx.filter = 'none'; bctx.clearRect(0, 0, bw, bh);
+      bctx.filter = `blur(${Math.max(2, Math.round(bw / 45))}px)`; bctx.drawImage(acc, 0, 0, bw, bh); bctx.filter = 'none';
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .6; ctx.drawImage(bl, 0, 0, W, H);
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.drawImage(acc, 0, 0);
+    if (xf != null && gg >= READY && gg < READY + 6) {
+      drawSceneG(sctx, xf);
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1 - (gg - READY) / 6; ctx.drawImage(sc, 0, 0); ctx.globalAlpha = 1;
+    }
+    drawApp(ctx, gg);
+  }
+
+  // ---------- oynatıcı ----------
+  let playing = true, gt = 0, last = null, speed = 1;
+  const $ = id => document.getElementById(id);
+  const playBtn = $('play'), tapBtn = $('tap'), scrub = $('scrub'), speedBtn = $('speed'), phaseNow = $('phaseNow');
+  [[.5, '0.5 sn'], [2, '2 sn'], [4, '4 sn']].forEach(([val, label]) => {
+    const b = document.createElement('button'); b.textContent = label; b.className = LOAD === val ? 'on' : '';
+    b.onclick = () => { LOAD = val; [...$('segLoad').children].forEach(x => x.classList.toggle('on', x === b)); xf = null; gt = 0; playing = true; playBtn.textContent = '❚❚'; draw(); };
+    $('segLoad').appendChild(b);
+  });
+  FX_NAMES.forEach(([key, name]) => {
+    const el = document.createElement('div'); el.className = 'chip' + (FX[key] ? ' on' : ''); el.textContent = name;
+    el.onclick = () => { FX[key] = !FX[key]; el.classList.toggle('on', FX[key]); draw(); };
+    $('chips').appendChild(el);
+  });
+  function draw() {
+    const tl = TL();
+    if (xf != null && gt >= READY + 6) xf = null;
+    render(gt);
+    scrub.max = Math.floor(tl.total) - 1; scrub.value = Math.floor(gt);
+    const t = gt - READY;
+    let ph;
+    if (gt < READY) ph = '<b>Açılmaya hazır</b> · video 1 · loop';
+    else if (t < DIVE0) ph = '<b>Açılış</b> · video 2 · kilit kalbe dönüşüyor';
+    else if (t < tl.te) ph = '<b>Kalp tüneli</b> · couple ile ortak · yükleme sürdükçe döner';
+    else if (t < tl.ex) ph = '<b>Çıkış</b> · couple ile ortak';
+    else ph = '<b>Galeri</b> · uygulama';
+    phaseNow.innerHTML = ph;
+  }
+  function resize() {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.width * dpr * 16 / 9);
+    draw();
+  }
+  function tick(ts) {
+    if (last == null) last = ts;
+    const dt = Math.min(.1, (ts - last) / 1000); last = ts;
+    if (playing) {
+      const total = TL().total;
+      gt += dt * FPS * speed;
+      if (gt >= total) { gt = FX.auto ? 0 : total - .001; xf = null; }
+      draw();
+    }
+    requestAnimationFrame(tick);
+  }
+  tapBtn.onclick = () => { xf = gt < READY ? gt % RLOOP : null; gt = READY; playing = true; playBtn.textContent = '❚❚'; draw(); };
+  playBtn.onclick = () => { playing = !playing; playBtn.textContent = playing ? '❚❚' : '▶'; };
+  scrub.oninput = () => { playing = false; playBtn.textContent = '▶'; xf = null; gt = +scrub.value; draw(); };
+  speedBtn.onclick = () => { speed = speed === 1 ? .5 : speed === .5 ? .25 : 1; speedBtn.textContent = speed + 'x'; };
+
+  window.__set = (g, opts = {}) => { if (opts.load) LOAD = opts.load; if ('app' in opts) FX.app = opts.app; xf = null; playing = false; gt = g; draw(); };
+  window.__tl = () => TL();
+  new ResizeObserver(resize).observe(cv);
+  resize();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

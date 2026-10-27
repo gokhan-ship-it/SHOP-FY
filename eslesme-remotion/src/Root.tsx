@@ -19,8 +19,8 @@ export const RemotionRoot: React.FC = () => (
     {/* Single kilit: kilitlendiğinde bir kere oynar (2.67 sn) */}
     <Composition id="SingleKilit" component={Kilit} durationInFrames={(LOCK_END * OUT_FPS) / FPS} fps={OUT_FPS} width={1080} height={1080}
       defaultProps={{ segment: 'lock', ...kilitFx } satisfies KilitProps} />
-    {/* Single kilit bekleme: kilit bitince, kapsül kilitli kaldıkça loop (2 sn) */}
+    {/* Single kilit bekleme: kilit bitince, kapsül kilitli kaldıkça loop (2 sn); hareket yavaş, motion blur kapalı */}
     <Composition id="SingleKilitBekleme" component={Kilit} durationInFrames={(IDLE * OUT_FPS) / FPS} fps={OUT_FPS} width={1080} height={1080}
-      defaultProps={{ segment: 'idle', ...kilitFx } satisfies KilitProps} />
+      defaultProps={{ segment: 'idle', ...kilitFx, blur: false } satisfies KilitProps} />
   </>
 );
