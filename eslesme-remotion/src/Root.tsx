@@ -6,6 +6,8 @@ import { Kilit, type KilitProps } from './kilit/Kilit';
 import { IDLE, LOCK_END } from './kilit/anim';
 import { Acilis } from './acilis/Acilis';
 import { ACILIS } from './acilis/list';
+import { CoupleAcilis } from './couple-acilis/CoupleAcilis';
+import { SEGMENTS } from './couple-acilis/anim';
 
 const fxDefaults = { blur: true, jelly: true, burst: true, echo: true, bloom: true };
 const kilitFx = { blur: true, bloom: true, echo: true };
@@ -29,6 +31,11 @@ export const RemotionRoot: React.FC = () => (
     {ACILIS.map((a) => (
       <Composition key={a.id} id={a.id} component={Acilis} durationInFrames={a.frames} fps={OUT_FPS} width={1080} height={1920}
         defaultProps={a.props} />
+    ))}
+    {/* Couple kapsül açılışı: giriş (bir kere) → kalp tüneli döngüsü (yükleme sürdükçe) → çıkış (lime); tünel ve çıkış single ile ortak */}
+    {([['CoupleAcilisGiris', 'giris'], ['KalpTuneliLoop', 'loop'], ['KalpTuneliCikis', 'cikis']] as const).map(([id, segment]) => (
+      <Composition key={id} id={id} component={CoupleAcilis} durationInFrames={(SEGMENTS[segment].len * OUT_FPS) / FPS} fps={OUT_FPS}
+        width={1080} height={1920} defaultProps={{ segment, blur: true, bloom: true }} />
     ))}
   </>
 );

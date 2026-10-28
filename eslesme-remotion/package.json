@@ -10,10 +10,12 @@
     "render:kilit": "remotion render SingleKilit out/single-kilit.mp4",
     "render:kilit-bekleme": "remotion render SingleKilitBekleme out/single-kilit-bekleme.mp4",
     "render:acilis": "tsx scripts/render-acilis.ts",
-    "render": "npm run render:a && npm run render:b && npm run render:kilit && npm run render:kilit-bekleme && npm run render:acilis",
+    "render:tunel": "remotion render CoupleAcilisGiris out/couple-acilis-giris.mp4 && remotion render KalpTuneliLoop out/kalp-tuneli-loop.mp4 && remotion render KalpTuneliCikis out/kalp-tuneli-cikis.mp4",
+    "render": "npm run render:a && npm run render:b && npm run render:kilit && npm run render:kilit-bekleme && npm run render:acilis && npm run render:tunel",
     "verify-loop": "tsx scripts/verify-loop.ts",
     "verify-kilit": "tsx scripts/verify-kilit.tsx",
     "verify-acilis": "tsx scripts/verify-acilis.ts",
+    "verify-tunel": "tsx scripts/verify-tunel.tsx",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
