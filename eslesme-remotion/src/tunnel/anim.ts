@@ -36,12 +36,13 @@ export function beatPulse(t: number, c: TunnelCfg) {
   return ph < 2 ? ph / 2 : Math.exp(-(ph - 2) / 3);
 }
 
-// birim kalp (121 nokta)
-const HU: [number, number][] = [];
-for (let i = 0; i <= 120; i++) {
-  const a = Math.PI + TAU * i / 120;
-  HU.push([Math.pow(Math.sin(a), 3), -(13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a) + 2.5) / 16]);
+// birim kalp (s: 0…1 çevre boyunca), yarı genişliği 1
+export function heartUnit(s: number): [number, number] {
+  const a = Math.PI + TAU * s;
+  return [Math.pow(Math.sin(a), 3), -(13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a) + 2.5) / 16];
 }
+const HU: [number, number][] = [];
+for (let i = 0; i <= 120; i++) HU.push(heartUnit(i / 120));
 export function heartD(x0: number, y0: number, rho: number, rot = 0) {
   const c = Math.cos(rot), s = Math.sin(rot);
   return HU.map(([x, y], i) => { const X = x * rho, Y = y * rho; return `${i ? 'L' : 'M'}${x0 + X * c - Y * s} ${y0 + X * s + Y * c}`; }).join('') + 'Z';

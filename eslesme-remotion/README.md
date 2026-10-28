@@ -54,18 +54,33 @@ Couple kapsülde çip okutulunca, galeri açılmadan önce oynayan tam ekran ge�
 - Eskizden tek fark: çıkış başlarken merkezdeki ışık tek karede tepeye sıçrıyordu; artık normal vuruş gibi 2 karede yükseliyor (döngüden çıkışa geçiş dikişsiz).
 - Kaynak: `kapsul-acilis-kalp-tuneli.html` → `src/couple-acilis/`, `src/tunnel/`
 
+## Single kapsül açılışı
+
+Hediye edilen single kapsülün açılış günü alıcının gördüğü animasyonlar. 1080×1920. Sırayla:
+
+1. `out/single-hazir-loop.mp4`: açılmaya hazır, 120 kare (2 sn), **loop**. Kilit kulpunu iki kez çekiştirerek "kapıyı çalıyor"; her seferinde etrafına soluk lime bir halka yayılıyor.
+2. `out/single-acilis.mp4`: bileklik okutulunca, 112 kare (1,87 sn), **bir kere**. Kulp fırlayıp uçar, anahtar deliği dönüp küçülür, kilit düzleşir, lime yüzü kalbe döner (etrafa küçük noktalar fırlar), kalp bir kez atar, kontura döner ve içine dalınır.
+3. Ardından couple ile ortak `out/kalp-tuneli-loop.mp4` (yükleme sürdükçe) ve `out/kalp-tuneli-cikis.mp4`; galeri çıkışın lime ekranından açılır.
+
+- Açılış videosunun ilk karesi hazır döngüsünün ilk karesiyle aynı. Bileklik döngünün ortasında okutulursa uygulama, döngünün o anki karesinden açılış videosuna 6 karede (0,2 sn) yumuşak geçiş yapar (eskizdeki gibi).
+- Açılışın son karesi tünel döngüsünün ilk karesine bağlanır; yükleme açılış bitmeden tamamlandıysa doğrudan çıkışa geçilebilir.
+- İsim, "Kapsülün açılmaya hazır", "412 gün önce kilitlendi", bileklik butonu, gün sayacı ve galeri uygulamanın katmanı.
+- Kilit `Lock` bileşeniyle (yüzün kalbe dönüşmesi için `morph`), tünel `HeartTunnel` bileşeniyle çizilir.
+- Kaynak: `single-acilis-v2.html` → `src/single-acilis/`
+
 ## Sıradaki işler
 
-`SIRA.md` ve `promptlar/` klasöründeki adımlar sırayla yapılıyor (1, 2 ve 3 tamam). Eskizler bu klasörde.
+`SIRA.md` ve `promptlar/` klasöründeki adımlar sırayla yapılıyor (1–4 tamam). Eskizler bu klasörde.
 
 ## Komutlar
 
 ```sh
 npm i
 npm run studio        # Remotion Studio önizleme
-npm run render        # out/ altındaki tüm videolar (yalnızca uygulama açılışı: render:acilis, kapsül açılışı: render:tunel)
+npm run render        # out/ altındaki tüm videolar (yalnızca uygulama açılışı: render:acilis, kapsül açılışı: render:tunel, single açılış: render:single)
 npm run verify-loop   # eşleşme loop doğrulaması
 npm run verify-kilit  # kilit loop ve geçiş doğrulaması
 npm run verify-acilis # açılış: ilk kare siyah, son kare siyah/lime (render sonrası)
 npm run verify-tunel  # kapsül açılışı: tünel döngüsü ve tüm geçişler (render sonrası)
+npm run verify-single # single açılış: hazır döngüsü, açılış ve tünele geçişler (render sonrası)
 ```

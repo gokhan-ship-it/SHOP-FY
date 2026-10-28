@@ -6,13 +6,14 @@ export type TShape =
   | { kind: 'glow'; cx: number; cy: number; r: number; color: string; alpha: number } // tüm ekrana radyal ışık
   | { kind: 'fill'; d: string; fill: string } // dolu yol
   | { kind: 'stroke'; d: string; stroke: string; width: number; round?: boolean } // çizgi (round: lineJoin round)
-  | { kind: 'circle'; cx: number; cy: number; r: number; stroke: string; width: number }
+  | { kind: 'circle'; cx: number; cy: number; r: number; stroke?: string; width?: number; fill?: string }
+  | { kind: 'gradFill'; d: string; from: [number, number]; to: [number, number]; stops: [number, string][]; opacity: number } // doğrusal gradyanla dolu yol
   | { kind: 'rect'; fill: string } // tüm ekran
   | { kind: 'group'; transform: string; clip?: { cx: number; cy: number; r: number }; children: TShape[] };
 
 export const W0 = 540, H0 = 960;
 
-const ShapeEl: React.FC<{ s: TShape; id: string }> = ({ s, id }) => {
+export const ShapeEl: React.FC<{ s: TShape; id: string }> = ({ s, id }) => {
   switch (s.kind) {
     case 'glow':
       return (
@@ -31,7 +32,18 @@ const ShapeEl: React.FC<{ s: TShape; id: string }> = ({ s, id }) => {
     case 'stroke':
       return <path d={s.d} fill="none" stroke={s.stroke} strokeWidth={s.width} strokeLinejoin={s.round ? 'round' : 'miter'} />;
     case 'circle':
-      return <circle cx={s.cx} cy={s.cy} r={s.r} fill="none" stroke={s.stroke} strokeWidth={s.width} />;
+      return <circle cx={s.cx} cy={s.cy} r={s.r} fill={s.fill ?? 'none'} stroke={s.stroke ?? 'none'} strokeWidth={s.width} />;
+    case 'gradFill':
+      return (
+        <>
+          <defs>
+            <linearGradient id={id} gradientUnits="userSpaceOnUse" x1={s.from[0]} y1={s.from[1]} x2={s.to[0]} y2={s.to[1]}>
+              {s.stops.map(([o, c]) => <stop key={o} offset={o} stopColor={c} />)}
+            </linearGradient>
+          </defs>
+          <path d={s.d} fill={`url(#${id})`} opacity={s.opacity} />
+        </>
+      );
     case 'rect':
       return <rect x={0} y={0} width={W0} height={H0} fill={s.fill} />;
     case 'group':

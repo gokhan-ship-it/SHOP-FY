@@ -1,5 +1,6 @@
 import React from 'react';
 import { clamp, easeInOutCubic, easeOutCubic, lerp, ramp } from '../anim';
+import { heartUnit } from '../tunnel/anim';
 import { DEPTH, lime, shackleGeo, white } from './anim';
 
 // Tekrar kullanılabilir kilit (single-kilit-final.html'deki drawBody/drawShackle/drawFace/drawLock).
@@ -23,6 +24,12 @@ export type LockProps = {
   level: number; // dolgu seviyesi (0…1)
   wave: number; // dalga şiddeti
   sheen: number | null; // ışık yansımasının ilerlemesi (null kapalı)
+  // Yüzün daireden kalbe dönüşmesi (single açılış): m 0 daire … 1 kalp; kx/ky ölçek; heartR kalbin yarı genişliği.
+  // Verilirse yüz bu şekle kırpılır ve kenarı bu şekilden çizilir (gap kullanılmaz).
+  morph?: { m: number; kx: number; ky: number; heartR: number };
+  fillA?: number; // lime dolgunun şeffaflığı (varsayılan 1)
+  rimA?: number; // beyaz kenarın şeffaflığı (varsayılan 1)
+  outA?: number; // lime konturun şeffaflığı (varsayılan 0)
   look?: Partial<LockLook>;
 };
 
@@ -91,11 +98,24 @@ const Shackle: React.FC<{ p: LockProps; look: LockLook }> = ({ p, look }) => {
   );
 };
 
+// single-acilis-v2.html'deki morphPath: daire (alttan başlar) ile birim kalp arasında 161 nokta
+const morphD = (r: number, { m, kx, ky, heartR }: NonNullable<LockProps['morph']>) => {
+  let d = '';
+  for (let i = 0; i <= 160; i++) {
+    const s = i / 160, a = Math.PI / 2 + Math.PI * 2 * s, h = heartUnit(s);
+    d += `${i ? 'L' : 'M'}${lerp(r * Math.cos(a), h[0] * heartR, m) * kx} ${lerp(r * Math.sin(a), h[1] * heartR, m) * ky}`;
+  }
+  return d + 'Z';
+};
+
 const keyholeD = (r: number) => `M${-.065 * r} ${-.06 * r}L${.065 * r} ${-.06 * r}L${.11 * r} ${.3 * r}L${-.11 * r} ${.3 * r}Z`;
 
 // ön yüz: dolum, dalga halkası, anahtar deliği, parlama, ışık yansıması, kenar
 const Face: React.FC<{ p: LockProps; look: LockLook }> = ({ p, look }) => {
   const r = p.rad, f = p.f;
+  const shapeD = p.morph ? morphD(r, p.morph) : null;
+  const ext = shapeD ? 1.6 * r : r; // kalp daireden taşar; dolgu ve parlama dikdörtgeni eskizdeki gibi 1.6r
+  const fillOp = p.fillA === undefined ? undefined : p.fillA;
   let fill: React.ReactNode = null;
   if (p.level > 0) {
     if (p.level < 1 || p.wave > 0) {
@@ -103,8 +123,8 @@ const Face: React.FC<{ p: LockProps; look: LockLook }> = ({ p, look }) => {
       let d = `M${-r - 2} ${r + 2}`;
       for (let x = -r - 2; x <= r + 2; x += 6) d += `L${x} ${lvl + amp * (.6 * Math.sin(x * .035 + f * .35) + .4 * Math.sin(x * .062 - f * .22)) + tilt * x}`;
       d += `L${r + 2} ${r + 2}Z`;
-      fill = <path d={d} fill={`url(#${p.id}lime)`} />;
-    } else fill = <rect x={-r} y={-r} width={2 * r} height={2 * r} fill={`url(#${p.id}lime)`} />;
+      fill = <path d={d} fill={`url(#${p.id}lime)`} opacity={fillOp} />;
+    } else fill = <rect x={-ext} y={-ext} width={2 * ext} height={2 * ext} fill={`url(#${p.id}lime)`} opacity={fillOp} />;
   }
 
   const ripple = p.ripple >= 0 && p.ripple < 1 && (
@@ -142,7 +162,13 @@ const Face: React.FC<{ p: LockProps; look: LockLook }> = ({ p, look }) => {
   // gap < .001 ise tam daire, yoksa tepesi açık yay (iki yarım yay olarak çizilir)
   const outline = { fill: 'none', stroke: white(.95), strokeWidth: 2.6, strokeLinecap: 'round' } as const;
   let ring: React.ReactNode;
-  if (p.gap < .001) ring = <circle cx={0} cy={0} r={r} {...outline} />;
+  if (shapeD) ring = (
+    <>
+      {(p.rimA ?? 1) > 0 && <path d={shapeD} fill="none" stroke={white(.95 * (p.rimA ?? 1))} strokeWidth={2.6} />}
+      {(p.outA ?? 0) > 0 && <path d={shapeD} fill="none" stroke={lime(p.outA ?? 0)} strokeWidth={3.8} />}
+    </>
+  );
+  else if (p.gap < .001) ring = <circle cx={0} cy={0} r={r} {...outline} />;
   else {
     const a0 = -Math.PI / 2 + p.gap, a1 = -Math.PI / 2 - p.gap + Math.PI * 2, am = (a0 + a1) / 2;
     const pt = (a: number) => `${r * Math.cos(a)} ${r * Math.sin(a)}`;
@@ -152,7 +178,7 @@ const Face: React.FC<{ p: LockProps; look: LockLook }> = ({ p, look }) => {
   return (
     <g transform={`translate(${p.cx + Math.sin(p.yaw) * p.depth / 2} ${p.cy}) scale(${Math.cos(p.yaw) * p.sx} ${p.sy})`}>
       <defs>
-        <clipPath id={`${p.id}clip`}><circle cx={0} cy={0} r={r} /></clipPath>
+        <clipPath id={`${p.id}clip`}>{shapeD ? <path d={shapeD} /> : <circle cx={0} cy={0} r={r} />}</clipPath>
         <linearGradient id={`${p.id}lime`} gradientUnits="userSpaceOnUse" x1={-r} y1={-r} x2={r} y2={r}>
           <stop offset="0" stopColor="#ECFF8C" />
           <stop offset=".45" stopColor="#DEFE52" />
@@ -175,7 +201,7 @@ const Face: React.FC<{ p: LockProps; look: LockLook }> = ({ p, look }) => {
             {key(lime(p.keyLime))}
           </>
         )}
-        {p.flash > 0 && <rect x={-r} y={-r} width={2 * r} height={2 * r} fill={white(p.flash)} />}
+        {p.flash > 0 && <rect x={-ext} y={-ext} width={2 * ext} height={2 * ext} fill={white(p.flash)} />}
         {sheen}
       </g>
       {ring}
