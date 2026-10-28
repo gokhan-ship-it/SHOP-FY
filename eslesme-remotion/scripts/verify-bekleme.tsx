@@ -9,7 +9,7 @@ import { FPS, OUT_FPS } from '../src/anim';
 import { LOOP, lockProps, lockState, type Variant } from '../src/bekleme/anim';
 import { BeklemeSvg } from '../src/bekleme/Bekleme';
 import { readyState } from '../src/single-acilis/anim';
-import { decodePng, meanDiff, pngFrames } from './video';
+import { meanDiff, pngFrames, still } from './video';
 
 const k = FPS / OUT_FPS, N = LOOP / k;
 let ok = true;
@@ -36,21 +36,22 @@ const geoDiff = Math.max(...Object.values(geo).map(([x, y]) => Math.abs(x - y)))
 console.log(`Bekleme turu sonu → SingleHazirLoop: ${Object.entries(geo).map(([n, [x, y]]) => `${n} ${+x.toFixed(6)}/${+y.toFixed(6)}`).join(', ')} → ${geoDiff < 1e-9 ? 'aynı' : 'FARKLI'} (yarıçap ikisinde de 100)`);
 ok &&= geoDiff < 1e-9;
 
-// ---------- 2) geçişler videolarda ----------
-const load = (f: string) => pngFrames(f).map(decodePng);
-const V = {
-  BeklemeLoop: load('out/bekleme-loop.mp4'), Son24SaatLoop: load('out/son-24-saat-loop.mp4'),
-  HenuzDegil: load('out/henuz-degil.mp4'), AniEklendi: load('out/ani-eklendi.mp4'), SingleHazirLoop: load('out/single-hazir-loop.mp4'),
-};
-type Name = keyof typeof V;
-const countOk = (['BeklemeLoop', 'Son24SaatLoop', 'HenuzDegil', 'AniEklendi'] as Name[]).every((n) => V[n].length === N);
-console.log(`Kare sayıları: ${(Object.keys(V) as Name[]).map((n) => `${n} ${V[n].length}`).join(', ')} → ${countOk ? 'tamam' : 'HATA'}`);
+// ---------- 2) geçişler ----------
+// Hareket çok yavaş olduğu için MP4 sıkıştırma gürültüsü (~0.1) kare farklarını bastırır; geçiş kareleri
+// sıkıştırmasız render edilip karşılaştırılır. Kare sayıları render edilmiş videolardan.
+const files: Record<string, string> = { BeklemeLoop: 'out/bekleme-loop.mp4', Son24SaatLoop: 'out/son-24-saat-loop.mp4', HenuzDegil: 'out/henuz-degil.mp4', AniEklendi: 'out/ani-eklendi.mp4' };
+const counts = Object.entries(files).map(([n, f]) => [n, pngFrames(f).length] as const);
+const countOk = counts.every(([, c]) => c === N);
+console.log(`Kare sayıları: ${counts.map(([n, c]) => `${n} ${c}`).join(', ')} → ${countOk ? 'tamam' : 'HATA'}`);
 ok &&= countOk;
-const step = (v: Buffer[], i: number) => meanDiff(v[i], v[i + 1]);
-const seam = (from: Name, to: Name) => {
-  const A = V[from], B = V[to], d = meanDiff(A[A.length - 1], B[0]);
-  const nb = [step(A, A.length - 2), step(B, 0)], good = d <= Math.max(...nb) * 1.5 + .1;
-  console.log(`${from} → ${to}: geçiş farkı ${d.toFixed(3)} (komşu kareler ${nb.map((x) => x.toFixed(3)).join(' / ')}) → ${good ? 'atlama yok' : 'ATLAMA'}`);
+
+type Name = 'BeklemeLoop' | 'Son24SaatLoop' | 'HenuzDegil' | 'AniEklendi' | 'SingleHazirLoop';
+const cache = new Map<string, Buffer>();
+const fr = (n: Name, i: number) => { const key = `${n}:${i}`; if (!cache.has(key)) cache.set(key, still(n, i)); return cache.get(key)!; };
+const seam = (from: Name, to: Name, tol = .01) => {
+  const d = meanDiff(fr(from, N - 1), fr(to, 0)), nb = [meanDiff(fr(from, N - 2), fr(from, N - 1)), meanDiff(fr(to, 0), fr(to, 1))];
+  const good = d <= Math.max(...nb) * 1.5 + tol;
+  console.log(`${from} → ${to}: geçiş farkı ${d.toFixed(4)} (komşu kareler ${nb.map((x) => x.toFixed(4)).join(' / ')}) → ${good ? 'atlama yok' : 'ATLAMA'}`);
   ok &&= good;
 };
 seam('BeklemeLoop', 'BeklemeLoop');
@@ -59,8 +60,10 @@ seam('BeklemeLoop', 'Son24SaatLoop');
 for (const from of ['BeklemeLoop', 'Son24SaatLoop'] as Name[]) for (const to of ['HenuzDegil', 'AniEklendi'] as Name[]) seam(from, to);
 seam('HenuzDegil', 'BeklemeLoop');
 seam('AniEklendi', 'BeklemeLoop');
-seam('BeklemeLoop', 'SingleHazirLoop');
-seam('Son24SaatLoop', 'SingleHazirLoop');
+// SingleHazirLoop: kilidin konumu/boyutu/açısı aynı (yukarıda kodla). Kalan fark yalnızca yüz kenarının kenar yumuşatması:
+// bekleme eskizi kenarı daire, single açılış eskizi 160 köşeli çokgen (daire → kalp dönüşümü) olarak çiziyor.
+seam('BeklemeLoop', 'SingleHazirLoop', .02);
+seam('Son24SaatLoop', 'SingleHazirLoop', .02);
 
 if (!ok) { console.error('Bekleme doğrulaması BAŞARISIZ'); process.exit(1); }
 console.log('Bekleme doğrulaması başarılı.');

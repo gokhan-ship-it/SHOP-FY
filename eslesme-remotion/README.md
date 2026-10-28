@@ -78,7 +78,8 @@ Kapsül henüz açılmaya hazır değilken alıcının bekleme ekranındaki kili
 4. `out/ani-eklendi.mp4`: gönderen anı ekleyince **bir kere**. Lime damla süzülüp anahtar deliğinden girer, delik lime yanar, yüzeyde dalga halkası ve dışarı ritim halkası çıkar, kilit esner.
 
 - Uygulama bu videolar arasında yalnızca döngünün tur sonunda geçer: olay gelince tur bitince olay videosu bir kere oynar, sonra bekleme döngüsüne döner. Bütün bu geçişler dikişsiz.
-- Süre dolunca uygulama tur sonunda `out/single-hazir-loop.mp4`'e geçer; kilidin konumu, boyutu ve açısı aynı.
+- Süre dolunca uygulama tur sonunda `out/single-hazir-loop.mp4`'e geçer; kilidin konumu, boyutu ve açısı aynı. Tek fark yüz kenarının kenar yumuşatması (bekleme eskizi kenarı daire, single açılış eskizi 160 köşeli çokgen olarak çiziyor): ortalama 255'te 0,018, gözle görülmez.
+- Eskizden tek fark: bloom şiddeti .55 yerine .6 (kilit ve single açılıştaki gibi); .55, SingleHazirLoop'a geçişte ışıkta sıçrama yapıyordu.
 - Motion blur yalnızca `henuz-degil` ve `ani-eklendi`'de; döngülerde kapalı.
 - Zaman halkası, geri sayım, "Ayşe'den sana", "Kapsülün kilitli", tarih, uyarı ve bildirimler uygulamanın katmanı.
 - Kilit `Lock` bileşeniyle çizilir (anahtar deliğinin lime yanması `keyLime`, yüzeydeki dalga halkası `ripple`).
