@@ -11,13 +11,15 @@
     "render:kilit-bekleme": "remotion render SingleKilitBekleme out/single-kilit-bekleme.mp4",
     "render:acilis": "tsx scripts/render-acilis.ts",
     "render:single": "remotion render SingleHazirLoop out/single-hazir-loop.mp4 && remotion render SingleAcilis out/single-acilis.mp4",
+    "render:bekleme": "remotion render BeklemeLoop out/bekleme-loop.mp4 && remotion render Son24SaatLoop out/son-24-saat-loop.mp4 && remotion render HenuzDegil out/henuz-degil.mp4 && remotion render AniEklendi out/ani-eklendi.mp4",
     "render:tunel": "remotion render CoupleAcilisGiris out/couple-acilis-giris.mp4 && remotion render KalpTuneliLoop out/kalp-tuneli-loop.mp4 && remotion render KalpTuneliCikis out/kalp-tuneli-cikis.mp4",
-    "render": "npm run render:a && npm run render:b && npm run render:kilit && npm run render:kilit-bekleme && npm run render:acilis && npm run render:tunel && npm run render:single",
+    "render": "npm run render:a && npm run render:b && npm run render:kilit && npm run render:kilit-bekleme && npm run render:acilis && npm run render:tunel && npm run render:single && npm run render:bekleme",
     "verify-loop": "tsx scripts/verify-loop.ts",
     "verify-kilit": "tsx scripts/verify-kilit.tsx",
     "verify-acilis": "tsx scripts/verify-acilis.ts",
     "verify-tunel": "tsx scripts/verify-tunel.tsx",
     "verify-single": "tsx scripts/verify-single.tsx",
+    "verify-bekleme": "tsx scripts/verify-bekleme.tsx",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

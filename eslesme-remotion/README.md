@@ -1,6 +1,6 @@
 # Kapsül animasyonları (Remotion)
 
-Tüm videolar: 60 fps, H.264, yuv420p, crf 16, ses yok. Eşleşme ve kilit 1080×1080; uygulama açılışı ve kapsül açılışı 1080×1920.
+Tüm videolar: 60 fps, H.264, yuv420p, crf 16, ses yok. Eşleşme ve kilit 1080×1080; uygulama açılışı, kapsül açılışları ve bekleme ekranı 1080×1920.
 
 Motion blur kilit ve açılış videolarında (uygulama ve kapsül açılışı) `src/FloatMotionBlur.tsx` ile yapılıyor: örnekler kayan noktalı tamponda ortalanıyor, böylece blur açık ve kapalı videolar aynı renkte buluşuyor ve lime gradyan kademelenmiyor.
 
@@ -68,19 +68,36 @@ Hediye edilen single kapsülün açılış günü alıcının gördüğü animas
 - Kilit `Lock` bileşeniyle (yüzün kalbe dönüşmesi için `morph`), tünel `HeartTunnel` bileşeniyle çizilir.
 - Kaynak: `single-acilis-v2.html` → `src/single-acilis/`
 
+## Bekleme ekranı (alıcı)
+
+Kapsül henüz açılmaya hazır değilken alıcının bekleme ekranındaki kilit. 1080×1920. Hepsi bekleme döngüsünün bir turu: 120 kare (2 sn).
+
+1. `out/bekleme-loop.mp4`: **loop**. Kilit hafifçe sağa sola dönüp süzülür, yüzeyinden ışık yansıması geçer.
+2. `out/son-24-saat-loop.mp4`: son 24 saatte **loop**. Aynı döngü; kilit saniyede bir nabız gibi atar, etrafına soluk lime halka yayılır.
+3. `out/henuz-degil.mp4`: bileklik erken okutulunca **bir kere**. Kilit başını sallar gibi sağa sola sallanır, kulp tıkırdar.
+4. `out/ani-eklendi.mp4`: gönderen anı ekleyince **bir kere**. Lime damla süzülüp anahtar deliğinden girer, delik lime yanar, yüzeyde dalga halkası ve dışarı ritim halkası çıkar, kilit esner.
+
+- Uygulama bu videolar arasında yalnızca döngünün tur sonunda geçer: olay gelince tur bitince olay videosu bir kere oynar, sonra bekleme döngüsüne döner. Bütün bu geçişler dikişsiz.
+- Süre dolunca uygulama tur sonunda `out/single-hazir-loop.mp4`'e geçer; kilidin konumu, boyutu ve açısı aynı.
+- Motion blur yalnızca `henuz-degil` ve `ani-eklendi`'de; döngülerde kapalı.
+- Zaman halkası, geri sayım, "Ayşe'den sana", "Kapsülün kilitli", tarih, uyarı ve bildirimler uygulamanın katmanı.
+- Kilit `Lock` bileşeniyle çizilir (anahtar deliğinin lime yanması `keyLime`, yüzeydeki dalga halkası `ripple`).
+- Kaynak: `kapsul-bekleme-ekrani.html` → `src/bekleme/`
+
 ## Sıradaki işler
 
-`SIRA.md` ve `promptlar/` klasöründeki adımlar sırayla yapılıyor (1–4 tamam). Eskizler bu klasörde.
+`SIRA.md` ve `promptlar/` klasöründeki adımların hepsi (1–5) tamam. Sırada uygulamaya bağlama var (ayrı iş).
 
 ## Komutlar
 
 ```sh
 npm i
 npm run studio        # Remotion Studio önizleme
-npm run render        # out/ altındaki tüm videolar (yalnızca uygulama açılışı: render:acilis, kapsül açılışı: render:tunel, single açılış: render:single)
+npm run render        # out/ altındaki tüm videolar (yalnızca uygulama açılışı: render:acilis, kapsül açılışı: render:tunel, single açılış: render:single, bekleme ekranı: render:bekleme)
 npm run verify-loop   # eşleşme loop doğrulaması
 npm run verify-kilit  # kilit loop ve geçiş doğrulaması
 npm run verify-acilis # açılış: ilk kare siyah, son kare siyah/lime (render sonrası)
 npm run verify-tunel  # kapsül açılışı: tünel döngüsü ve tüm geçişler (render sonrası)
 npm run verify-single # single açılış: hazır döngüsü, açılış ve tünele geçişler (render sonrası)
+npm run verify-bekleme # bekleme ekranı: döngüler, olay videoları ve SingleHazirLoop'a geçişler (render sonrası)
 ```

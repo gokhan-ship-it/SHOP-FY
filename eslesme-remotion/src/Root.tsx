@@ -10,6 +10,8 @@ import { CoupleAcilis } from './couple-acilis/CoupleAcilis';
 import { SEGMENTS } from './couple-acilis/anim';
 import { SingleAcilis } from './single-acilis/SingleAcilis';
 import { SEGMENTS as SINGLE } from './single-acilis/anim';
+import { Bekleme } from './bekleme/Bekleme';
+import { LOOP } from './bekleme/anim';
 
 const fxDefaults = { blur: true, jelly: true, burst: true, echo: true, bloom: true };
 const kilitFx = { blur: true, bloom: true, echo: true };
@@ -43,6 +45,11 @@ export const RemotionRoot: React.FC = () => (
     {([['SingleHazirLoop', 'hazir'], ['SingleAcilis', 'acilis']] as const).map(([id, segment]) => (
       <Composition key={id} id={id} component={SingleAcilis} durationInFrames={(SINGLE[segment].len * OUT_FPS) / FPS} fps={OUT_FPS}
         width={1080} height={1920} defaultProps={{ segment, blur: true, bloom: true }} />
+    ))}
+    {/* Bekleme ekranı (alıcı, kapsül henüz hazır değil): hepsi bekleme döngüsünün bir turu. Motion blur yalnızca olay videolarında. */}
+    {([['BeklemeLoop', 'bekleme'], ['Son24SaatLoop', 'son24'], ['HenuzDegil', 'henuz'], ['AniEklendi', 'ani']] as const).map(([id, variant]) => (
+      <Composition key={id} id={id} component={Bekleme} durationInFrames={(LOOP * OUT_FPS) / FPS} fps={OUT_FPS}
+        width={1080} height={1920} defaultProps={{ variant, bloom: true }} />
     ))}
   </>
 );
