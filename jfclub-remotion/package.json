@@ -1,0 +1,24 @@
+{
+  "name": "jfclub-remotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JantiFox Club pop-up kutu videolari (Remotion)",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "bash scripts/render.sh",
+    "check": "node scripts/kontrol.mjs",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.539",
+    "@remotion/cli": "4.0.539",
+    "@remotion/renderer": "4.0.539",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.539"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "typescript": "5.9.3"
+  }
+}
