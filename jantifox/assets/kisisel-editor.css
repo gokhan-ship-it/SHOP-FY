@@ -4900,35 +4900,139 @@ html.kp-kilit body {
 }
 
 /* ---------- Sweatshirt kombini (editörün kombin modu) ---------- */
-/* Önizlemenin üstünde, ortada: "2 patch dahil · 1/2" (2'de ✓), fazlası "3. patch +300 TL" */
-.kp-kombin-sayac {
-  position: absolute;
-  z-index: 3;
-  top: 0.6rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.2rem 0.6rem;
-  max-width: calc(100% - 9rem);
-  padding: 0.3rem 0.9rem;
+/* Önizlemenin hemen altında, panel kayınca da görünen dahil patch göstergesi: iki yuva (boşken kesikli çerçeve, takılınca
+   patch'in küçük görseli + ✓), "3.400 TL'ye 2 patch dahil"; dolunca "2 patch dahil ✓ · Sıradaki patch +300 TL".
+   Tasarım ekranında altında seçili hediye tişört ve "Değiştir" */
+.kp-dahil {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 560px;
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.8rem;
   border: 1px solid var(--kp-cizgi);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.94);
+  border-radius: 12px;
+  background: var(--kp-zemin);
   color: var(--kp-murekkep);
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.4;
-  text-align: center;
-  pointer-events: none;
 }
-.kp-kombin-sayac--tamam {
+.kp-dahil[hidden] {
+  display: none;
+}
+.kp-dahil--tamam {
   border-color: var(--kp-murekkep);
 }
-.kp-kombin-sayac__ek {
-  color: var(--kp-murekkep);
+.kp-dahil__ust {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.kp-dahil__yuvalar {
+  display: flex;
+  flex: none;
+  gap: 0.5rem;
+}
+.kp-dahil__yuva {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1.5px dashed var(--kp-ikincil);
+  border-radius: 8px;
+  background: var(--kp-zemin);
+}
+.kp-dahil__yuva--dolu {
+  border: 1.5px solid var(--kp-murekkep);
+}
+.kp-dahil__yuva img {
+  max-width: 28px;
+  max-height: 28px;
+  object-fit: contain;
+}
+.kp-dahil__harf {
+  font-size: 1.5rem;
   font-weight: 700;
+}
+.kp-dahil__tik {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #b3141b;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+.kp-dahil__metin {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+.kp-dahil__baslik {
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+.kp-dahil__alt {
+  color: var(--kp-ikincil);
+  font-size: 1.25rem;
+}
+.kp-dahil--tamam .kp-dahil__alt {
+  color: var(--kp-murekkep);
+  font-weight: 600;
+}
+.kp-dahil__tisort {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--kp-cizgi);
+  font-size: 1.25rem;
+}
+.kp-dahil__tisort img {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.kp-dahil__tisort-ad {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kp-dahil__ayrac {
+  flex: none;
+  color: var(--kp-ikincil);
+}
+.kp-dahil__degistir {
+  flex: none;
+  min-height: 32px;
+  padding: 0 0.2rem;
+  border: 0;
+  background: none;
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+/* Görsel kartlarında fiyat yerine "Dahil" (dahil yuvalar dolana kadar), sonra sıradaki patch'in ek ücreti */
+.kp-editor--kombin .kp-secim--ikon:not([disabled])::after {
+  content: var(--kp-kombin-fiyat, none);
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  background: var(--kp-yumusak);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.6;
 }
 .kp-alt__etiket--hediye {
   background: #b3141b;
@@ -4936,12 +5040,11 @@ html.kp-kilit body {
 .kp-editor .kp-alt__ileri.kp-alt__ileri--pasif {
   opacity: 0.55;
 }
-/* Sweatshirt adımı ve Özet'teki tişört seçimi: renk kutucukları ve yaş düğmeleri */
+/* Kombinini seç: Sweatshirt ve Hediye tişört blokları, renk kutucukları ve yaş düğmeleri */
 .kp-kombin-baslik {
   margin: 0 0 0.4rem;
 }
-.kp-kombin-aciklama,
-.kp-kombin-ipucu {
+.kp-kombin-aciklama {
   margin: 0 0 1rem;
   color: var(--kp-ikincil);
   font-size: 1.35rem;
@@ -5031,7 +5134,8 @@ html.kp-kilit body {
   color: #fff !important;
   font-weight: 600;
 }
-.kp-kombin-devam:disabled {
+.kp-kombin-devam:disabled,
+.kp-kombin-devam--pasif {
   opacity: 0.45;
 }
 .kp-kombin-not {
@@ -5057,32 +5161,65 @@ html.kp-kilit body {
   font-size: 1.3rem;
   font-weight: 600;
 }
-/* Özet: zorunlu "Hediye tişörtünü seç" kutusu */
-.kp-kombin-tisort {
+/* Kombinini seç blokları (Sweatshirt, Hediye tişört): sitenin kart görünümü, ~12 px köşe */
+.kp-kombin-blok {
   margin: 1rem 0;
   padding: 1rem 1.1rem 1.1rem;
   border: 1px solid var(--kp-cizgi);
   border-radius: 12px;
   background: var(--kp-zemin);
 }
-.kp-kombin-tisort--uyari:not(.kp-kombin-tisort--tamam) {
+.kp-kombin-blok--eksik {
   border-color: var(--kp-hata);
 }
-.kp-kombin-tisort .kp-kombin-yaslar {
-  margin-top: 0.8rem;
+.kp-kombin-blok .kp-kombin-etiket:first-of-type {
+  margin-top: 0;
 }
-.kp-kombin-tisort__ust {
+.kp-kombin-blok__ust {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: 0.2rem 1rem;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.6rem;
 }
-.kp-kombin-tisort__baslik {
+.kp-kombin-blok__baslik {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
+}
+/* Özet: seçili hediye tişört ve "Değiştir" */
+.kp-kombin-ozet-tisort {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1rem 0 0;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 12px;
+  background: var(--kp-zemin);
+}
+.kp-kombin-ozet-tisort img {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.kp-kombin-ozet-tisort__bilgi {
+  min-width: 0;
+}
+.kp-kombin-ozet-tisort__ad,
+.kp-kombin-ozet-tisort .kp-kombin-tisort__fiyat {
+  margin: 0;
+  font-size: 1.35rem;
+}
+.kp-kombin-ozet-tisort__ad {
+  font-weight: 700;
+}
+.kp-kombin-ozet-tisort__degistir {
+  flex: none;
+  margin-left: auto;
 }
 .kp-kombin-tisort__fiyat {
   color: #b3141b;

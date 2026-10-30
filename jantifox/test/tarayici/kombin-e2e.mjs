@@ -1,11 +1,13 @@
-// Sweatshirt kombini (2026-10-30): vitrin kartı editörü kombin modunda açar.
-// - Önce Sweatshirt adımı: yaş seçilmeden "Tasarımı tamamla" soluk, dokununca "yaşını seç"; renk değişince görsel değişir.
-// - Sayaç "2 patch dahil · n/2", 2'de ✓; 2'nin altında Özet'e geçilmez ("Kombin için 2 patch tak"); 3. patch "+300 TL".
-// - Alt çubuk 2 patch'te ~~5.400~~ 3.400 TL "Tişört hediye"; 3 patch'te 3.700 TL.
-// - Renk İndigo'ya (3-5, başka görsel ve alan yeri) geçince patch'ler alanda kalır, yaş yeniden seçilir.
-// - Özet'te zorunlu tişört: 3-5 notu, tişört seçilmeden sepete eklenmez; seçilince "Hediye tişört: … 0 TL".
-// - Sepete tek istek (sweatshirt + patch'ler + tişört, hepsi _kombin), ardından test kodu /cart/update.js'e;
-//   Meta / GA4'e tek AddToCart (değer 3.700, tişört 0 TL).
+// Sweatshirt kombini (2026-10-30, v2): vitrin kartı editörü kombin modunda açar.
+// - İlk ekran "Kombinini seç": Sweatshirt (renk + yaş) ve Hediye tişört (renk + yaş). Tişört yaşı sweatshirt'ünkünü
+//   izler, rengi seçili gelmez. Dördü seçilmeden "Tasarıma başla" soluk; basınca eksikler yazılır.
+// - Tasarım ekranında ilk girişte "2 patch fiyata dahil!" bildirimi; önizlemenin altında dahil patch göstergesi (iki
+//   yuva, dolunca "Sıradaki patch +300 TL", fiyat motorundan) ve tişört satırı ("Değiştir": tasarım bozulmadan seçim).
+//   Görsel kartlarında "Dahil", yuvalar dolunca "+300 TL"; panelde "İlk 2 patch dahil"; alt çubukta "2 patch dahil".
+// - Renk İndigo'ya (3-5, başka görsel ve alan yeri) geçince patch'ler alanda kalır; 3-5 notu tişört bloğunda.
+// - Özet'te seçili tişört ve "Değiştir"; taslak tişört seçimini de saklar.
+// - Ölçüm: 1 CustomizeProduct (renk değişse de), tişört seçimi ve "Değiştir" olay göndermez, 1 TasarimTamamlandi,
+//   1 TaslakKaydedildi, sepete tek istek (hepsi _kombin) + test kodu, tek AddToCart (3.700, tişört 0 TL).
 // Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node kombin-e2e.mjs
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
@@ -41,7 +43,7 @@ const kombin = {
   vitrin: { id: 16029928292638, url: '/products/sweatshirt-kombini', baslik: 'Sweatshirt Kombini · 2 Patch + Hediye Tişört' },
   sweatshirtler: SW.map((s) => ({ id: s.id, handle: 'x', baslik: s.baslik, kucuk_beden: !!s.kucuk, kapak: svg(`<rect width="10" height="10" fill="${s.renk}"/>`, 10, 10), metin_siniri: null,
     gorsel: swGorsel(s), harita: swHarita(s), varyantlar: s.v.map(([id, b]) => ({ id, baslik: b, fiyat: 250000, satilabilir: true, stok: 100 })) })),
-  tisortler: TS.map((s) => ({ id: s.id, handle: 'x', baslik: s.baslik, kapak: null,
+  tisortler: TS.map((s, i) => ({ id: s.id, handle: 'x', baslik: s.baslik, kapak: svg(`<rect width="10" height="10" fill="${['#e8dcc4', '#f3d36b', '#8db4d9', '#f1c9c9'][i]}"/>`, 10, 10),
     varyantlar: s.v.map(([id, b, stok]) => ({ id, baslik: b, fiyat: 200000, satilabilir: stok !== 0, stok: stok ?? 50 })) }))
 };
 
@@ -100,7 +102,9 @@ function sepet(satirlar) {
 }
 
 const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
-const baglam = await t.newContext({ ...devices['iPhone 13'] });
+// "masaustu": kısa masaüstü akışı (Kampanyalar kartı, alt çubuk etiketi)
+const MASA = process.argv[2] === 'masaustu';
+const baglam = await t.newContext(MASA ? { viewport: { width: 1440, height: 900 } } : { ...devices['iPhone 13'] });
 const olaylar = [];
 await baglam.exposeFunction('__olayKaydet', (x) => { olaylar.push(x); });
 await baglam.addInitScript(() => {
@@ -136,50 +140,132 @@ await s.goto('https://jantifox.test/products/sweatshirt-kombini');
 await bekle(300);
 assert.equal(await yazi('[data-kisisel-davet] [data-kisisel-ac]'), 'Kombinini Tasarla');
 
-// 1) Açılış: Sweatshirt adımı, sayaç 0/2, yaş yokken ana buton soluk
+const olay = (ad) => olaylar.filter((o) => (o.k === 'fbq' && o.a[2] === ad) || (o.k === 'gtag' && o.a[0] === 'event' && o.a[1] === ad));
+const olaySayisi = () => olaylar.length;
+const sonra = (q) => s.locator(q).first().evaluate((e) => getComputedStyle(e, '::after').content);
+
+if (MASA) {
+  await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
+  await s.locator('[data-kp-kombin-yas="49661755851038"]').click();
+  await s.locator('[data-kp-tisort-renk="9726700192030"]').click();
+  await s.locator('[data-kp-kombin-devam]').click();
+  await s.locator('#kp-isim').fill('AB');
+  await metinBekle('[data-kp-kkart-liste]', /Kombin · 2 patch dahil ?3\.400 TL/);
+  assert.match(await yazi('[data-kp-kkart-liste]'), /✓ Sweatshirt kombini: hediye tişört ?−2\.000 TL/);
+  assert.ok(await s.locator('[data-kp-kkart]').isVisible(), 'Kampanyalar kartı görünür');
+  assert.equal(await yazi('.kp-alt__fiyat > span'), 'Toplam · 2 patch dahil');
+  assert.equal(await yazi('[data-kp-dahil] .kp-dahil__tisort-ad'), 'Hediye tişört: Sarı · 8-9 yaş');
+  assert.ok(await s.locator('[data-kp-dahil]').isVisible());
+  assert.deepEqual(hatalar, []);
+  console.log('KOMBİN MASAÜSTÜ E2E TAMAM', await yazi('[data-kp-kkart-liste]'));
+  await t.close();
+  process.exit(0);
+}
+
+// 1) Açılış: Kombinini seç (iki blok), gösterge boş yuvalarla; eski sayaç yok; tek CustomizeProduct
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 await s.locator('[data-kp-panel="sweat"]:not([hidden]) .kp-kombin-renk').first().waitFor();
-assert.equal(await yazi('[data-kp-kombin-sayac]'), '2 patch dahil · 0/2');
-assert.equal(await s.locator('.kp-arac-dugme[data-kp-adim]').count(), 3, 'Sweatshirt, Metin, Görsel (aksesuar yok)');
-assert.equal(await s.locator('.kp-kombin-renk').count(), 5);
-assert.ok(await s.locator('[data-kp-ileri].kp-alt__ileri--pasif').count(), 'yaş yokken buton soluk');
-await s.locator('[data-kp-ileri]').click();
-await metinBekle('.kp-editor [data-kp-bildirim]', /yaşını seç/);
-assert.ok(await s.locator('[data-kp-panel="sweat"]:not([hidden])').count(), 'Sweatshirt adımında kalır');
+assert.equal(await yazi('#kp-p-sweat'), 'Kombinini seç');
+assert.deepEqual(await s.$$eval('[data-kp-panel="sweat"] .kp-kombin-blok__baslik', (l) => l.map((x) => x.textContent)), ['Sweatshirt', 'Hediye tişört']);
+assert.match(await yazi('[data-kp-panel="sweat"] .kp-kombin-tisort .kp-kombin-tisort__fiyat'), /^Hediye · 0 TL 2\.000 TL$/);
+assert.equal(await s.locator('[data-kp-tisort-renk] img').count(), 4, 'tişört renkleri küçük görselle');
+assert.equal(await s.locator('[data-kp-tisort-renk].kp-kombin-renk--secili').count(), 0, 'tişört rengi seçili gelmez');
+assert.equal(await s.locator('[data-kp-kombin-sayac]').count(), 0, 'eski sayaç yok');
+assert.equal(await yazi('[data-kp-dahil] .kp-dahil__baslik'), '3.400 TL\'ye 2 patch dahil');
+assert.equal(await s.locator('[data-kp-dahil] .kp-dahil__yuva').count(), 2);
+assert.equal(await s.locator('[data-kp-dahil] .kp-dahil__yuva--dolu').count(), 0);
+assert.equal(await s.locator('[data-kp-dahil] .kp-dahil__tisort').count(), 0, 'Kombinini seç ekranında tişört satırı yok');
+assert.equal(await s.locator('.kp-arac-dugme[data-kp-adim]').count(), 3, 'Kombin, Metin, Görsel (aksesuar yok)');
+assert.equal(olay('CustomizeProduct').length, 1);
+assert.equal(olay('customize_product').length, 1);
+const cpDeger = olay('CustomizeProduct')[0].a[3].value;
 
-// 2) Renk Mavi, yaş 8-9 → Patch'leri ekle
+// 2) "Tasarıma başla" seçim tamamlanmadan soluk; basınca eksikler
+assert.equal(await s.locator('[data-kp-kombin-devam]').getAttribute('aria-disabled'), 'true');
+// aria-disabled: tarayıcıda dokunulabilir (eksikleri söylemek için); Playwright'a zorla tıklatılır
+await s.locator('[data-kp-kombin-devam]').click({ force: true });
+assert.equal(await yazi('[data-kp-panel="sweat"] .kp-kombin-eksik'), 'Tasarıma başlamak için seç: sweatshirt yaşı, tişört rengi.');
+assert.ok(await s.locator('[data-kp-panel="sweat"]:not([hidden])').count(), 'Kombinini seç ekranında kalır');
+assert.ok(await s.locator('[data-kp-ileri].kp-alt__ileri--pasif').count(), 'ana buton da soluk');
+
+// 3) Sweatshirt Mavi 8-9 → tişört yaşı kendiliğinden 8-9; renk hâlâ eksik
+const olayOnce = olaySayisi();
 await s.locator('[data-kp-kombin-renk="9726702223646"]').click();
 await bekle(200);
 assert.equal(await s.locator('.kp-editor .kp-onizleme .kp-sahne__urun').getAttribute('alt'), 'Mavi Sweatshirt');
-assert.ok(await s.locator('[data-kp-kombin-devam][disabled]').count(), 'yaş seçilmeden devam kapalı');
 await s.locator('[data-kp-kombin-yas="49661735993630"]').click();
-await s.locator('[data-kp-kombin-devam]:not([disabled])').click();
-await s.locator('[data-kp-panel="yazi"]:not([hidden]) #kp-isim').waitFor();
-assert.match(await yazi('.kp-kombin-not--yazi'), /her harf ve rakam 1 patch/);
+await bekle(150);
+assert.equal(await s.locator('[data-kp-tisort-yas].kp-kombin-yas--secili').getAttribute('data-kp-tisort-yas'), '8-9');
+await s.locator('[data-kp-kombin-devam]').click({ force: true });
+assert.equal(await yazi('[data-kp-panel="sweat"] .kp-kombin-eksik'), 'Tasarıma başlamak için seç: tişört rengi.');
+// Mavi tişörtün 6-7'si tükenmiş: yaşlar 8-9 ve 10-11
+await s.locator('[data-kp-tisort-renk="9726700880158"]').click();
+await bekle(150);
+assert.deepEqual(await s.$$eval('[data-kp-tisort-yas]', (l) => l.map((x) => x.textContent)), ['8-9 yaş', '10-11 yaş']);
+assert.equal(await s.locator('[data-kp-kombin-devam]').getAttribute('aria-disabled'), 'false');
+assert.equal(await s.locator('[data-kp-panel="sweat"] .kp-kombin-eksik').count(), 0, 'eksik notu kalkar');
+assert.equal(olaySayisi(), olayOnce, 'renk / yaş / tişört seçimi olay göndermez');
 
-// 3) 1 harf: sayaç 1/2, Özet'e geçilmez
+// 4) Tasarıma başla → Metin; ilk bildirim, not, tişört satırı, alt çubuk etiketi
+assert.equal(await yazi('[data-kp-kombin-devam]'), 'Tasarıma başla →');
+await s.locator('[data-kp-kombin-devam]').click();
+await s.locator('[data-kp-panel="yazi"]:not([hidden]) #kp-isim').waitFor();
+await metinBekle('.kp-editor [data-kp-bildirim]', /^2 patch fiyata dahil! Harf ya da görsel seçerek başla\.$/);
+assert.equal(await yazi('.kp-kombin-not--yazi'), 'Her harf 1 patch sayılır · ilk 2 patch dahil');
+assert.equal(await yazi('[data-kp-dahil] .kp-dahil__tisort-ad'), 'Hediye tişört: Mavi · 8-9 yaş');
+assert.equal(await yazi('[data-kp-dahil] .kp-dahil__tisort [data-kp-tisort-degistir]'), 'Değiştir');
+assert.equal(await s.locator('[data-kp-dahil] .kp-dahil__tisort img').count(), 1, 'tişört satırında görsel');
+assert.equal(await yazi('.kp-alt__fiyat > span'), 'Toplam · 2 patch dahil');
+
+// 5) 1 harf: bir yuva dolu; Özet'e geçilmez. Görsel paneli: "İlk 2 patch dahil", kartlarda "Dahil"
 await s.locator('#kp-isim').fill('A');
 await bekle(500);
-assert.equal(await yazi('[data-kp-kombin-sayac]'), '2 patch dahil · 1/2');
+assert.equal(await s.locator('[data-kp-dahil] .kp-dahil__yuva--dolu img').count(), 1, 'dolu yuvada patch görseli');
+assert.equal(await yazi('[data-kp-dahil] .kp-dahil__alt'), '1 patch daha dahil');
 await s.locator('[data-kp-ileri]').click();
 await metinBekle('.kp-editor [data-kp-bildirim]', /Kombin için 2 patch tak/);
 assert.ok(!(await s.locator('.kp-editor--ozet').count()), 'Özet açılmadı');
-
-// 4) 2 harf: ✓, alt çubuk ~~5.400~~ 3.400 "Tişört hediye"
-await s.locator('#kp-isim').fill('AB');
-await metinBekle('[data-kp-toplam]', /5\.400 TL 3\.400 TL Tişört hediye/);
-assert.equal(await yazi('[data-kp-kombin-sayac]'), '2 patch dahil · 2/2 ✓');
-assert.ok(!(await s.locator('[data-kp-ileri].kp-alt__ileri--pasif').count()), '2 patch: buton etkin');
-
-// 5) 3. patch (ikon): "3. patch +300 TL", toplam 3.700
 await s.locator('[data-kp-adim="ikon"]').click();
-await s.locator('[data-kp-ikon]:not([disabled])').first().click();
-await metinBekle('[data-kp-kombin-sayac]', /3\. patch \+300 TL/);
-await metinBekle('[data-kp-toplam]', /5\.700 TL 3\.700 TL Tişört hediye/);
+await s.locator('[data-kp-ikon]:not([disabled])').first().waitFor();
+assert.equal(await yazi('[data-kp-ikon-fiyat]'), 'İlk 2 patch dahil');
+assert.equal(await sonra('[data-kp-ikon]:not([disabled])'), '"Dahil"');
+// Panel kayınca gösterge görünür kalır (telefonda önizlemenin altında)
+await s.locator('.kp-editor .kp-kaydir').evaluate((e) => { e.scrollTop = e.scrollHeight; });
+await bekle(200);
+const gorunur = await s.locator('[data-kp-dahil]').evaluate((e) => { const r = e.getBoundingClientRect(); return r.height > 0 && r.top >= 0 && r.bottom <= window.innerHeight; });
+assert.ok(gorunur, 'gösterge kaydırınca da ekranda');
 
-// 6) Renk İndigo (3-5): görsel değişir, patch'ler alanda kalır, yaş yeniden seçilir
+// 6) İkon: iki yuva dolu → "2 patch dahil ✓ · Sıradaki patch +300 TL", kartlarda "+300 TL", alt çubuk 3.400
+await s.locator('[data-kp-ikon]:not([disabled])').first().click();
+await metinBekle('[data-kp-dahil] .kp-dahil__metin', /2 patch dahil ✓ ?Sıradaki patch \+300 TL/);
+assert.equal(await s.locator('[data-kp-dahil] .kp-dahil__yuva--dolu').count(), 2);
+assert.ok(await s.locator('[data-kp-dahil].kp-dahil--tamam').count());
+await metinBekle('[data-kp-toplam]', /5\.400 TL 3\.400 TL Tişört hediye/);
+assert.equal(await sonra('[data-kp-ikon]:not([disabled])'), '"+300 TL"');
+
+// 7) Üçüncü patch (harf): toplam 3.700, sıradaki yine fiyat motorundan (4'lü: +300)
+await s.locator('[data-kp-adim="yazi"]').click();
+await s.locator('#kp-isim').fill('AB');
+await metinBekle('[data-kp-toplam]', /5\.700 TL 3\.700 TL Tişört hediye/);
+await metinBekle('[data-kp-dahil] .kp-dahil__metin', /Sıradaki patch \+300 TL/);
+
+// 8) "Değiştir": tasarım bozulmadan tişört seçimi; dönüşte kalınan yer
 const yerlesik = () => s.evaluate(() => document.querySelectorAll('.kp-editor .kp-onizleme .kp-sahne__parcalar .kp-parca').length);
 assert.equal(await yerlesik(), 3);
+const olayOnce2 = olaySayisi();
+await s.locator('[data-kp-tisort-degistir]').click();
+await s.locator('[data-kp-panel="sweat"]:not([hidden])').waitFor();
+assert.equal(await yazi('[data-kp-kombin-devam]'), 'Tasarıma dön →');
+await s.locator('[data-kp-tisort-renk="10085931221278"]').click();
+await bekle(150);
+assert.equal(await s.locator('[data-kp-tisort-yas].kp-kombin-yas--secili').getAttribute('data-kp-tisort-yas'), '8-9');
+await s.locator('[data-kp-kombin-devam]').click();
+await s.locator('[data-kp-panel="yazi"]:not([hidden])').waitFor();
+assert.equal(await yerlesik(), 3, 'tasarım yerinde');
+assert.equal(await yazi('[data-kp-dahil] .kp-dahil__tisort-ad'), 'Hediye tişört: Pudra Pembe · 8-9 yaş');
+assert.equal(olaySayisi(), olayOnce2, '"Değiştir" ve tişört seçimi olay göndermez');
+
+// 9) Kombin aracı: İndigo (3-5) → patch'ler alanda kalır, yaş yeniden; tişört bloğunda 3-5 notu, tişört yaşı elle 4-5
 await s.locator('[data-kp-adim="sweat"]').click();
 await s.locator('[data-kp-kombin-renk="9870146830622"]').click();
 await bekle(300);
@@ -188,69 +274,84 @@ await metinBekle('.kp-editor [data-kp-bildirim]', /8-9 yaş bu renkte yok/);
 assert.equal(await yerlesik(), 3, 'patch\'ler yeni renkte de sahnede');
 assert.equal(await s.locator('.kp-editor [data-kp-kenar]:not([hidden])').count(), 0, 'kenara giden yok');
 const alanda = await s.evaluate(() => {
-  const sahne = document.querySelector('.kp-editor .kp-onizleme .kp-sahne').getBoundingClientRect();
   const alan = document.querySelector('.kp-editor .kp-onizleme .kp-alan').getBoundingClientRect();
   return Array.from(document.querySelectorAll('.kp-editor .kp-onizleme .kp-parca')).every((p) => {
     const r = p.getBoundingClientRect();
     const cx = r.left + r.width / 2;
     const cy = r.top + r.height / 2;
-    return cx > alan.left && cx < alan.right && cy > alan.top && cy < alan.bottom && sahne.width > 0;
+    return cx > alan.left && cx < alan.right && cy > alan.top && cy < alan.bottom;
   });
 });
 assert.ok(alanda, 'patch\'ler İndigo\'nun alanında');
-assert.ok(await s.locator('[data-kp-ileri].kp-alt__ileri--pasif').count(), 'yaş yok: buton soluk');
 await s.locator('[data-kp-kombin-yas="50171329544478"]').click();
 await bekle(200);
-
-// 7) Özet: tişört zorunlu, 3-5 notu; tişört seçilmeden sepete eklenmez
-await s.locator('[data-kp-ileri]').click();
-await s.locator('.kp-kombin-tisort').waitFor();
-assert.match(await yazi('.kp-oz__urun'), /İndigo Sweatshirt · 3-5 yaş/);
-assert.equal(await yazi('.kp-kombin-uyari'), 'Tişörtlerimizde 3-5 yaş bedeni yok. Pudra Pembe\'de 4-5 yaş var, diğer renklerde en küçük beden 6-7 yaş.');
+assert.equal(await yazi('[data-kp-panel="sweat"] .kp-kombin-tisort .kp-kombin-uyari'), 'Tişörtlerimizde 3-5 yaş bedeni yok. Pudra Pembe\'de 4-5 yaş var, diğer renklerde en küçük beden 6-7 yaş.');
 assert.equal(await s.locator('[data-kp-tisort-yas].kp-kombin-yas--secili').count(), 0, '3-5: tişört yaşı boş');
-assert.match(await yazi('[data-kp-ileri]'), /^Kombinimi sepete ekle · 3\.700 TL$/);
-assert.ok(await s.locator('[data-kp-ileri].kp-alt__ileri--pasif').count(), 'tişört yokken soluk');
-await s.locator('[data-kp-ileri]').click();
-await bekle(200);
-assert.equal(eklenen, null, 'tişörtsüz sepete eklenmedi');
-assert.match(await yazi('.kp-kombin-eksik'), /rengini seç/);
-// Mavi tişörtün 6-7'si tükenmiş: Mavi seçilince yaşlar 8-9 ve 10-11
-await s.locator('[data-kp-tisort-renk="9726700880158"]').click();
-await bekle(150);
-assert.deepEqual(await s.$$eval('[data-kp-tisort-yas]', (l) => l.map((x) => x.textContent)), ['8-9 yaş', '10-11 yaş']);
-await s.locator('[data-kp-tisort-renk="10085931221278"]').click();
-await bekle(150);
-assert.deepEqual(await s.$$eval('[data-kp-tisort-yas]', (l) => l.map((x) => x.textContent)), ['4-5 yaş', '6-7 yaş', '8-9 yaş', '10-11 yaş']);
+assert.equal(await s.locator('[data-kp-kombin-devam]').getAttribute('aria-disabled'), 'true');
 await s.locator('[data-kp-tisort-yas="4-5"]').click();
-await bekle(200);
+await bekle(150);
+await s.locator('[data-kp-kombin-devam]').click();
+await s.locator('[data-kp-panel="yazi"]:not([hidden])').waitFor();
+
+// 10) Özet: seçili tişört + Değiştir, hediye satırı; tek TasarimTamamlandi
+await s.locator('[data-kp-ileri]').click();
+await s.locator('.kp-kombin-ozet-tisort').waitFor();
+assert.match(await yazi('.kp-oz__urun'), /İndigo Sweatshirt · 3-5 yaş/);
+assert.match(await yazi('.kp-kombin-ozet-tisort'), /^Hediye tişört: Pudra Pembe · 4-5 yaş ?Hediye · 0 TL 2\.000 TL ?Değiştir$/);
 assert.match(await yazi('.kp-ozet__hediye'), /Hediye tişört: Pudra Pembe · 4-5 yaş ?2\.000 TL 0 TL/);
 assert.match(await yazi('.kp-ozet tfoot'), /Toplam ?5\.700 TL 3\.700 TL/);
-assert.match(await yazi('.kp-kombin-tisort .kp-kombin-not'), /Patch'lerini tişörtüne de takabilirsin/);
+assert.match(await yazi('[data-kp-ileri]'), /^Kombinimi sepete ekle · 3\.700 TL$/);
+assert.ok(!(await s.locator('[data-kp-ileri].kp-alt__ileri--pasif').count()));
+assert.equal(await s.locator('[data-kp-dahil]').isVisible(), false, 'Özet\'te gösterge yok');
+assert.equal(olay('TasarimTamamlandi').length, 1);
+assert.equal(olay('design_complete').length, 1);
+// Özet'ten "Değiştir" → Kombinini seç, "Özete dön"
+await s.locator('.kp-kombin-ozet-tisort [data-kp-tisort-degistir]').click();
+await s.locator('[data-kp-panel="sweat"]:not([hidden])').waitFor();
+assert.equal(await yazi('[data-kp-kombin-devam]'), 'Özete dön →');
+await s.locator('[data-kp-kombin-devam]').click();
+await s.locator('.kp-kombin-ozet-tisort').waitFor();
 
-// 8) Sepete ekle: tek istek, hepsi _kombin; kod sepete yazılır; tek AddToCart
+// 11) Taslak: tişört seçimi de saklanır; tek TaslakKaydedildi
+await s.locator('.kp-alt__baglantilar [data-kp-taslak-kaydet]').click();
+await s.waitForFunction(() => !document.querySelector('.kp-editor:not(.kp-editor--alt):not([hidden])'));
+assert.equal(olay('TaslakKaydedildi').length, 1);
+const kayit = await s.evaluate(() => JSON.parse(localStorage.getItem('kisisel-tasarim-kombin')).t.kombin);
+assert.deepEqual([kayit.s, kayit.v, kayit.tr, kayit.ty], [9870146830622, 50171329544478, '10085931221278', '4-5']);
+assert.match(await yazi('[data-kisisel-adet]'), /Hediye tişört: Pudra Pembe 4-5/);
+await s.locator('[data-kisisel-govde] [data-kisisel-ac]').click();
+await s.locator('[data-kp-dahil] .kp-dahil__tisort').waitFor();
+assert.equal(await yazi('[data-kp-dahil] .kp-dahil__tisort-ad'), 'Hediye tişört: Pudra Pembe · 4-5 yaş', 'taslaktan tişört');
+assert.equal(olay('CustomizeProduct').length, 1, 'renk değişse de tek CustomizeProduct');
+assert.equal(cpDeger, 3400, 'CustomizeProduct değeri kombin fiyatı');
+
+// 12) Sepete ekle: tek istek, hepsi _kombin; kod sepete yazılır; tek AddToCart
 await s.locator('[data-kp-ileri]').click();
-await s.waitForFunction(() => !document.querySelector('.kp-editor:not([hidden])'), null, { timeout: 5000 }).catch(() => {});
+await s.locator('.kp-kombin-ozet-tisort').waitFor();
+await s.locator('[data-kp-ileri]').click();
 for (let i = 0; i < 30 && !guncellemeler.length; i++) await bekle(100);
 assert.ok(eklenen, 'sepete eklendi');
 const kalemler = eklenen.items;
 const kimlik = kalemler[0].properties._tasarim_id;
 assert.equal(kalemler[0].id, 50171329544478, 'İndigo 3-5');
-assert.equal(kalemler[0].properties._kombin, kimlik);
 assert.ok(kalemler.every((k) => k.properties._kombin === kimlik && k.properties._tasarim_id === kimlik), 'hepsi aynı kombin');
 const hediye = kalemler.filter((k) => k.properties._tasarim_rol === 'hediye');
 assert.equal(hediye.length, 1);
 assert.equal(hediye[0].id, 51790886666526, 'Pudra Pembe 4-5');
 assert.equal(kalemler.filter((k) => k.properties._tasarim_rol === 'patch').reduce((t, k) => t + k.quantity, 0), 3);
 assert.deepEqual(guncellemeler[0].discount, 'FIRSTORDER,' + KOD, 'sepetteki kod korunur, test kodu eklenir');
-const atc = olaylar.filter((o) => o.k === 'fbq' && o.a[2] === 'AddToCart');
+const atc = olay('AddToCart');
 assert.equal(atc.length, 1, 'tek AddToCart');
 assert.equal(atc[0].a[3].value, 3700);
 assert.ok(atc[0].a[3].content_ids.includes(String(SW[3].id)) && atc[0].a[3].content_ids.includes(String(TS[3].id)));
 assert.equal(atc[0].a[3].contents.filter((c) => c.id === String(TS[3].id))[0].item_price, 0, 'tişört 0 TL');
 assert.equal(atc[0].a[3].content_name, kombin.vitrin.baslik);
-const ga = olaylar.filter((o) => o.k === 'gtag' && o.a[1] === 'add_to_cart');
+const ga = olay('add_to_cart');
 assert.equal(ga.length, 1);
 assert.equal(ga[0].a[2].value, 3700);
+// TasarimTamamlandi editör açılışı başına bir kez (ölçüm kuralı): taslaktan ikinci açılışta ikinci olay
+assert.equal(olay('TasarimTamamlandi').length, 2);
+assert.equal(olay('TaslakKaydedildi').length, 1);
 assert.deepEqual(hatalar, []);
-console.log('KOMBİN E2E TAMAM', { kalem: kalemler.length, kod: guncellemeler[0].discount, deger: atc[0].a[3].value });
+console.log('KOMBİN E2E TAMAM', { kalem: kalemler.length, kod: guncellemeler[0].discount, deger: atc[0].a[3].value, olaylar: olaylar.filter((o) => o.k === 'fbq').map((o) => o.a[2]) });
 await t.close();

@@ -4903,35 +4903,139 @@ html.kp-kilit body {
 }
 
 /* ---------- Sweatshirt kombini (editörün kombin modu) ---------- */
-/* Önizlemenin üstünde, ortada: "2 patch dahil · 1/2" (2'de ✓), fazlası "3. patch +300 TL" */
-.kp-kombin-sayac {
-  position: absolute;
-  z-index: 3;
-  top: 0.6rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.2rem 0.6rem;
-  max-width: calc(100% - 9rem);
-  padding: 0.3rem 0.9rem;
+/* Önizlemenin hemen altında, panel kayınca da görünen dahil patch göstergesi: iki yuva (boşken kesikli çerçeve, takılınca
+   patch'in küçük görseli + ✓), "3.400 TL'ye 2 patch dahil"; dolunca "2 patch dahil ✓ · Sıradaki patch +300 TL".
+   Tasarım ekranında altında seçili hediye tişört ve "Değiştir" */
+.kp-dahil {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 560px;
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.8rem;
   border: 1px solid var(--kp-cizgi);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.94);
+  border-radius: 12px;
+  background: var(--kp-zemin);
   color: var(--kp-murekkep);
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.4;
-  text-align: center;
-  pointer-events: none;
 }
-.kp-kombin-sayac--tamam {
+.kp-dahil[hidden] {
+  display: none;
+}
+.kp-dahil--tamam {
   border-color: var(--kp-murekkep);
 }
-.kp-kombin-sayac__ek {
-  color: var(--kp-murekkep);
+.kp-dahil__ust {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.kp-dahil__yuvalar {
+  display: flex;
+  flex: none;
+  gap: 0.5rem;
+}
+.kp-dahil__yuva {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1.5px dashed var(--kp-ikincil);
+  border-radius: 8px;
+  background: var(--kp-zemin);
+}
+.kp-dahil__yuva--dolu {
+  border: 1.5px solid var(--kp-murekkep);
+}
+.kp-dahil__yuva img {
+  max-width: 28px;
+  max-height: 28px;
+  object-fit: contain;
+}
+.kp-dahil__harf {
+  font-size: 1.5rem;
   font-weight: 700;
+}
+.kp-dahil__tik {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #b3141b;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+.kp-dahil__metin {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+.kp-dahil__baslik {
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+.kp-dahil__alt {
+  color: var(--kp-ikincil);
+  font-size: 1.25rem;
+}
+.kp-dahil--tamam .kp-dahil__alt {
+  color: var(--kp-murekkep);
+  font-weight: 600;
+}
+.kp-dahil__tisort {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--kp-cizgi);
+  font-size: 1.25rem;
+}
+.kp-dahil__tisort img {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.kp-dahil__tisort-ad {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kp-dahil__ayrac {
+  flex: none;
+  color: var(--kp-ikincil);
+}
+.kp-dahil__degistir {
+  flex: none;
+  min-height: 32px;
+  padding: 0 0.2rem;
+  border: 0;
+  background: none;
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+/* Görsel kartlarında fiyat yerine "Dahil" (dahil yuvalar dolana kadar), sonra sıradaki patch'in ek ücreti */
+.kp-editor--kombin .kp-secim--ikon:not([disabled])::after {
+  content: var(--kp-kombin-fiyat, none);
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  background: var(--kp-yumusak);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.6;
 }
 .kp-alt__etiket--hediye {
   background: #b3141b;
@@ -4939,12 +5043,11 @@ html.kp-kilit body {
 .kp-editor .kp-alt__ileri.kp-alt__ileri--pasif {
   opacity: 0.55;
 }
-/* Sweatshirt adımı ve Özet'teki tişört seçimi: renk kutucukları ve yaş düğmeleri */
+/* Kombinini seç: Sweatshirt ve Hediye tişört blokları, renk kutucukları ve yaş düğmeleri */
 .kp-kombin-baslik {
   margin: 0 0 0.4rem;
 }
-.kp-kombin-aciklama,
-.kp-kombin-ipucu {
+.kp-kombin-aciklama {
   margin: 0 0 1rem;
   color: var(--kp-ikincil);
   font-size: 1.35rem;
@@ -5034,7 +5137,8 @@ html.kp-kilit body {
   color: #fff !important;
   font-weight: 600;
 }
-.kp-kombin-devam:disabled {
+.kp-kombin-devam:disabled,
+.kp-kombin-devam--pasif {
   opacity: 0.45;
 }
 .kp-kombin-not {
@@ -5060,32 +5164,65 @@ html.kp-kilit body {
   font-size: 1.3rem;
   font-weight: 600;
 }
-/* Özet: zorunlu "Hediye tişörtünü seç" kutusu */
-.kp-kombin-tisort {
+/* Kombinini seç blokları (Sweatshirt, Hediye tişört): sitenin kart görünümü, ~12 px köşe */
+.kp-kombin-blok {
   margin: 1rem 0;
   padding: 1rem 1.1rem 1.1rem;
   border: 1px solid var(--kp-cizgi);
   border-radius: 12px;
   background: var(--kp-zemin);
 }
-.kp-kombin-tisort--uyari:not(.kp-kombin-tisort--tamam) {
+.kp-kombin-blok--eksik {
   border-color: var(--kp-hata);
 }
-.kp-kombin-tisort .kp-kombin-yaslar {
-  margin-top: 0.8rem;
+.kp-kombin-blok .kp-kombin-etiket:first-of-type {
+  margin-top: 0;
 }
-.kp-kombin-tisort__ust {
+.kp-kombin-blok__ust {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: 0.2rem 1rem;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.6rem;
 }
-.kp-kombin-tisort__baslik {
+.kp-kombin-blok__baslik {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
+}
+/* Özet: seçili hediye tişört ve "Değiştir" */
+.kp-kombin-ozet-tisort {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1rem 0 0;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 12px;
+  background: var(--kp-zemin);
+}
+.kp-kombin-ozet-tisort img {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.kp-kombin-ozet-tisort__bilgi {
+  min-width: 0;
+}
+.kp-kombin-ozet-tisort__ad,
+.kp-kombin-ozet-tisort .kp-kombin-tisort__fiyat {
+  margin: 0;
+  font-size: 1.35rem;
+}
+.kp-kombin-ozet-tisort__ad {
+  font-weight: 700;
+}
+.kp-kombin-ozet-tisort__degistir {
+  flex: none;
+  margin-left: auto;
 }
 .kp-kombin-tisort__fiyat {
   color: #b3141b;
@@ -5460,12 +5597,13 @@ html.kp-kilit body {
 
   // Editör açıldı ("Kişiselleştir"): aynı ürün için oturumda bir kez
   function kisisellestirmeOlcumu(m) {
-    var anahtar = 'kp_cp_' + m.urun.id;
+    // Kombinde sweatshirt rengi değişse de oturumda tek olay (değer kombin fiyatı)
+    var anahtar = 'kp_cp_' + (m.kombin ? 'kombin' : m.urun.id);
     try {
       if (sessionStorage.getItem(anahtar)) return;
       sessionStorage.setItem(anahtar, '1');
     } catch (e) { /* depolama kapalıysa her açılışta */ }
-    var deger = (Number(m.urun.fiyat) || 0) / 100;
+    var deger = (Number(m.kombin ? m.kombin.fiyat : m.urun.fiyat) || 0) / 100;
     metaOlay('CustomizeProduct', {
       content_ids: [String(m.urun.id)], content_type: 'product_group', content_name: m.kombinAdi || m.urun.baslik, value: deger, currency: paraBirimi()
     }, olayKimligi('cp'));
@@ -8583,7 +8721,6 @@ html.kp-kilit body {
         '</div>') +
       '<div class="kp-onizleme__ic" style="--kp-oran:' + (this.m.gorsel.en / this.m.gorsel.boy) + '">' +
       '<div data-kp-sahne></div>' +
-      (this.kombin ? '<div class="kp-kombin-sayac" data-kp-kombin-sayac aria-live="polite"></div>' : '') +
       (this.alt ? '' :
         '<button type="button" class="kp-kapat kp-kapat--onizleme" data-kp-kapat aria-label="Kapat">' +
         '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>' +
@@ -8614,6 +8751,8 @@ html.kp-kilit body {
       '</div>' +
       '</div>' +
       // Önizlemenin hemen altında sabit satır: seçim yokken eklenenler, seçimde adı ve araçlar (aynı yükseklik)
+      // Kombin: dahil patch göstergesi ve seçili tişört, önizlemenin hemen altında (panel kayınca da görünür)
+      (this.kombin ? '<div class="kp-dahil" data-kp-dahil></div>' : '') +
       '<div class="kp-satir">' +
       '<div class="kp-etiketler" data-kp-etiketler aria-label="Eklenenler"></div>' +
       '<div class="kp-arac" data-kp-secim-cubuk role="toolbar" aria-label="Seçili patch" hidden>' +
@@ -8773,8 +8912,10 @@ html.kp-kilit body {
     this.el.hidden = false;
     // Açılışta her zaman takılabilir alana yakın (kayıtlı görünüm tercihi açılışta kullanılmaz)
     this.sahne.gorunumAyarla(true);
-    // Kombinde sweatshirt yaşı seçilmeden tasarıma geçilmez
-    this.adimaGit(this.kombin && !this.t.kombin.v ? 'sweat' : adim || 'yazi', true);
+    // Kombinde sweatshirt ve tişört seçilmeden tasarıma geçilmez: önce Kombinini seç; seçim tamamsa (taslakta son
+    // açık ekran Kombinini seç olsa da) tasarım ekranı
+    var kombinIlk = this.kombin && (this.kombinSecimEksikleri().length ? 'sweat' : adim === 'sweat' ? 'yazi' : null);
+    this.adimaGit(kombinIlk || adim || 'yazi', true);
     this.yenile();
     var self = this;
     setTimeout(function () {
@@ -9318,7 +9459,7 @@ html.kp-kilit body {
     if (this.kombin) {
       // Eksik varken buton soluk; dokununca ne eksik olduğu söylenir (kombinIleri)
       var eksik = this.kombinEksik();
-      ileri.classList.toggle('kp-alt__ileri--pasif', !!eksik && (this.adim === 'ozet' || eksik.tur !== 'tisort'));
+      ileri.classList.toggle('kp-alt__ileri--pasif', !!eksik);
     }
     if (this.adim !== 'ozet') {
       ileri.textContent = 'Tasarımı tamamla →';
@@ -9416,7 +9557,7 @@ html.kp-kilit body {
 
   Editor.prototype.ileri = function () {
     if (this.alt) return this.altYerlestir(false);
-    // Kombin: yaş, 2 patch ve (Özet'te) hediye tişört olmadan ilerlenmez
+    // Kombin: sweatshirt ve tişört seçimi ve 2 patch olmadan ilerlenmez
     if (this.kombin && this.kombinIleri()) return;
     // Yazı/Rakam/İkon: İleri her zaman çalışır (sorunlu tasarım Özet'te sepete eklenirken durdurulur)
     // Tasarım ekranında ana buton "Özete geç →" (sorunlu tasarım Özet'te sepete eklenirken durdurulur)
@@ -9540,6 +9681,7 @@ html.kp-kilit body {
 
   // İkonların ortak fiyatı (hepsi aynıysa); başlığın sağında bir kez yazılır
   Editor.prototype.ikonFiyatYazisi = function () {
+    if (this.kombin) return 'İlk ' + this.kombin.dahil + ' patch dahil';
     var fiyatlar = {};
     this.m.ikonlar.forEach(function (i) { if (i.varyant && i.varyant.fiyat != null) fiyatlar[i.varyant.fiyat] = true; });
     var liste = Object.keys(fiyatlar).map(Number).sort(function (a, b) { return a - b; });
@@ -11871,7 +12013,7 @@ html.kp-kilit body {
       (k && k.hata ? '<p class="kp-indirim-notu kp-indirim-notu--ozet">İndirimler sepette uygulanır</p>' : ''));
     yaz('[data-kp-oz-kenar]', this.kenarKartiHtml());
     if (this.kombin) {
-      yaz('[data-kp-oz-tisort]', this.kombinTisortHtml());
+      yaz('[data-kp-oz-tisort]', this.kombinOzetTisortHtml());
       yaz('.kp-oz__urun', kacis(m.urun.baslik + this.kombinSweatEki()));
     }
     // Küçük görsel: tasarımlı ürün, tüm çanta görünümü
@@ -11971,6 +12113,7 @@ html.kp-kilit body {
     this.seritCiz();
     this.kazancKontrol(sonuc);
     this.ileriYazisi();
+    if (this.kombin) this.kombinCiz();
   };
 
   // Alt çubuğun en üstündeki 3 px ilerleme çizgisi (Özet'te yok) ve kampanya panelinin içeriği. Tasarım değişince
@@ -13540,23 +13683,25 @@ html.kp-kilit body {
   /* ------------------------------------------------------------------ */
 
   // Vitrin sayfasındaki kart (data-kombin, sections/kisisel-kombin-vitrin.liquid) editörü kombin modunda açar:
-  // - Önce sweatshirt rengi ve yaşı (Sweatshirt adımı). Renk değişince patch'ler alanın merkezine göre yerinde kalır,
-  //   sığmayanlar en yakın boş yere, yer yoksa kenara gider.
-  // - Fiyata dahil 2 patch (tema ayarı): her harf ve rakam 1 patch, kenardakiler sayılmaz. Altında "Tasarımı tamamla"
-  //   çalışmaz; 3. patch'ten itibaren fark anında yazılır.
+  // - İlk ekran "Kombinini seç": Sweatshirt (renk + yaş) ve Hediye tişört (renk + yaş; yalnızca stoktakiler, yaş
+  //   varsayılan olarak sweatshirt'ünkü, renk müşterinin seçimi). Dördü seçilmeden tasarıma geçilmez. Seçim sonradan
+  //   "Değiştir" ile (tasarım ekranındaki tişört satırı, Özet) ya da Kombin aracıyla değişir; tasarım bozulmaz.
+  //   Sweatshirt rengi değişince patch'ler alanın merkezine göre yerinde kalır, sığmayanlar en yakın boş yere, yer yoksa
+  //   kenara gider.
+  // - Fiyata dahil 2 patch (tema ayarı): her harf ve rakam 1 patch, kenardakiler sayılmaz. Önizlemenin altında sabit
+  //   gösterge (iki yuva; dolunca sıradaki patch'in ücreti fiyat motorundan). Altında "Tasarımı tamamla" çalışmaz.
   // - Yalnızca tekli patch'ler: hazır set ve aksesuar yok.
-  // - Özet'te zorunlu hediye tişört: yalnızca stoktaki renk ve yaşlar; yaş varsayılan olarak sweatshirt'ünkü.
   // - Fiyat: sweatshirt + patch'ler, patch indirimleri düşülmüş (2 patch: 2.500 + 1.000 − 100 = 3.400 TL). Tişört 0 TL
   //   gösterilir (üstü çizili liste fiyatıyla) ve kampanya simülasyonuna girmez; indirimini Shopify'daki kombin indirimi
   //   yapar. Testte tema ayarındaki kod, sepete eklemenin hemen ardından sepete yazılır.
   // - Sepete tek istek: sweatshirt (tasarım özellikleriyle), patch'ler ve tişört; hepsi aynı _tasarim_id ve _kombin ile.
-  var KOMBIN_ADIM = { id: 'sweat', ad: 'Sweatshirt' };
+  var KOMBIN_ADIM = { id: 'sweat', ad: 'Kombin' };
   ARAC_BILGI.sweat = {
-    ad: 'Sweatshirt',
-    etiket: 'Sweatshirt rengi ve yaşı',
+    ad: 'Kombin',
+    etiket: 'Kombinini seç: sweatshirt ve hediye tişört',
     simge: '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M9 4.5h6l5.5 3.2-2 4.1-2.5-1.2V20h-8V10.6l-2.5 1.2-2-4.1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.2 4.6a2.8 2.8 0 0 0 5.6 0" fill="none" stroke="currentColor" stroke-width="2"/></svg>'
   };
-  // 3-5 yaş sweatshirt seçilince Özet'teki tişört adımında
+  // 3-5 yaş sweatshirt seçilince Kombinini seç ekranının tişört bloğunda
   var KOMBIN_KUCUK_NOTU = 'Tişörtlerimizde 3-5 yaş bedeni yok. Pudra Pembe\'de 4-5 yaş var, diğer renklerde en küçük beden 6-7 yaş.';
 
   // "8-9 yaş" → "8-9"; "Bej Sweatshirt" → "Bej"
@@ -13634,9 +13779,12 @@ html.kp-kilit body {
     return v ? { urun: urun, varyant: v } : null;
   }
 
-  // Sweatshirt'e takılı patch sayısı: her harf ve rakam 1 patch; kenardakiler sayılmaz
+  // Sweatshirt'e takılı patch'ler (sırayla): her harf ve rakam 1 patch; kenardakiler sayılmaz
+  function kombinTakililar(parcalar) {
+    return (parcalar || []).filter(function (p) { return !p.kenar && (p.tip === 'letter' || p.tip === 'number' || p.tip === 'icon'); });
+  }
   function kombinPatchSayisi(parcalar) {
-    return (parcalar || []).filter(function (p) { return !p.kenar && (p.tip === 'letter' || p.tip === 'number' || p.tip === 'icon'); }).length;
+    return kombinTakililar(parcalar).length;
   }
 
   // Kampanya simülasyonuna giren satırlar: kombinin hediye tişörtü hariç (indirimini Shopify'daki kombin indirimi yapar)
@@ -13673,6 +13821,9 @@ html.kp-kilit body {
     if (t.kombin.v && !s.varyantlar.some(function (v) { return String(v.id) === String(t.kombin.v) && v.satilabilir; })) t.kombin.v = null;
     if (t.kombin.tr && !k.tisortUrunu(t.kombin.tr)) t.kombin.tr = null;
     if (!t.kombin.tyElle) this.kombinTisortYasiEsitle();
+    this.kombinDonus = null;
+    this.kombinEksikGoster = false;
+    this.kombinIlkBildirim = false;
     this.kombinModelEsitle();
   };
 
@@ -13707,12 +13858,15 @@ html.kp-kilit body {
     return x ? x.varyant.yas : null;
   };
 
-  // Tişörtün yaşı (müşteri ayrıca seçmediyse) sweatshirt'ün yaşını izler; o yaş hiçbir tişörtte yoksa boş kalır
+  // Tişörtün yaşı (müşteri ayrıca seçmediyse) sweatshirt'ün yaşını izler: seçili renkte (renk yoksa herhangi bir
+  // tişörtte) o yaş stoktaysa o, değilse boş kalır (müşteri seçer)
   Editor.prototype.kombinTisortYasiEsitle = function () {
     var kb = this.t.kombin;
     if (!kb || kb.tyElle) return;
     var yas = this.kombinSweatYasi();
-    kb.ty = this.kombin.tisortYasiVar(yas) ? yas : null;
+    var renk = kb.tr ? this.kombin.tisortUrunu(kb.tr) : null;
+    var var_ = renk ? renk.varyantlar.some(function (v) { return v.yas === yas; }) : this.kombin.tisortYasiVar(yas);
+    kb.ty = yas && var_ ? yas : null;
   };
 
   Editor.prototype.kombinRenkSec = function (urunId) {
@@ -13756,32 +13910,60 @@ html.kp-kilit body {
     this.yenile();
   };
 
-  // Kombinin eksiği (sırayla): sweatshirt yaşı, patch sayısı, hediye tişört
+  // Sweatshirt rengi + yaşı ve tişört rengi + yaşı: eksikler sırayla (Kombinini seç ekranında söylenir)
+  Editor.prototype.kombinSecimEksikleri = function () {
+    var kb = this.t.kombin || {};
+    var eksik = [];
+    if (!kb.v) eksik.push('sweatshirt yaşı');
+    if (!kb.tr) eksik.push('tişört rengi');
+    else if (!kombinTisortu(this.kombin, this.t)) eksik.push('tişört yaşı');
+    return eksik;
+  };
+
+  // Kombinin eksiği (sırayla): sweatshirt ve tişört seçimi, sonra fiyata dahil patch sayısı
   Editor.prototype.kombinEksik = function () {
-    var k = this.kombin;
-    var kb = this.t.kombin;
-    if (!kb || !kb.v) return { tur: 'yas', metin: 'Önce sweatshirt\'ünün yaşını seç.' };
-    if (kombinPatchSayisi(this.durum && this.durum.parcalar) < k.dahil) return { tur: 'patch', metin: 'Kombin için ' + k.dahil + ' patch tak' };
-    if (!kombinTisortu(k, this.t)) return { tur: 'tisort', metin: 'Hediye tişörtünü seç.' };
+    var secim = this.kombinSecimEksikleri();
+    if (secim.length) return { tur: 'secim', metin: 'Tasarıma başlamak için seç: ' + secim.join(', ') + '.' };
+    if (kombinPatchSayisi(this.durum && this.durum.parcalar) < this.kombin.dahil) return { tur: 'patch', metin: 'Kombin için ' + this.kombin.dahil + ' patch tak' };
     return null;
   };
 
-  // Ana buton: eksik varsa uyarır ve ilgili yere götürür (Tasarım ekranında tişört eksiği sayılmaz). true: durdu
+  // Ana buton: eksik varsa uyarır; seçim eksiğinde Kombinini seç ekranına götürür. true: durdu
   Editor.prototype.kombinIleri = function () {
     var eksik = this.kombinEksik();
-    if (!eksik || (this.adim !== 'ozet' && eksik.tur === 'tisort')) return false;
-    if (eksik.tur === 'yas') this.adimaGit('sweat', false, true);
-    if (eksik.tur === 'tisort') {
-      var blok = this.el.querySelector('.kp-kombin-tisort');
-      if (blok) {
-        blok.classList.add('kp-kombin-tisort--uyari');
-        blok.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      }
+    if (!eksik) return false;
+    if (eksik.tur === 'secim') {
+      this.kombinEksikGoster = true;
+      if (this.adim !== 'sweat') this.kombinSecimAc(false);
+      else this.yenile();
     }
     // Engel uyarısı sıradaki bilgilendirmeyi beklemez
     this.bildirimKapat();
     this.bildir(eksik.metin, { sure: 3500 });
     return true;
+  };
+
+  // "Değiştir" ve Kombin aracı: Kombinini seç ekranı; dönüşte kalınan yere gidilir (tasarıma dokunulmaz)
+  Editor.prototype.kombinSecimAc = function (tisort) {
+    if (this.adim !== 'sweat') this.kombinDonus = this.adim;
+    this.adimaGit('sweat', false, true);
+    var blok = tisort && this.el.querySelector('[data-kp-panel="sweat"] .kp-kombin-tisort');
+    if (blok && blok.scrollIntoView) blok.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  };
+
+  // "Tasarıma başla" / "Tasarıma dön": seçim tamamsa kalınan yere (ilk girişte Metin); değilse eksikler söylenir
+  Editor.prototype.kombinSecimBitti = function () {
+    var eksik = this.kombinSecimEksikleri();
+    if (eksik.length) {
+      this.kombinEksikGoster = true;
+      this.yenile();
+      this.bildirimKapat();
+      this.bildir('Tasarıma başlamak için seç: ' + eksik.join(', ') + '.', { sure: 3500 });
+      return;
+    }
+    var donus = this.kombinDonus && this.kombinDonus !== 'sweat' ? this.kombinDonus : 'yazi';
+    this.kombinDonus = null;
+    this.adimaGit(donus, false, true);
   };
 
   // Ödenecek tutar (patch indirimleri düşülmüş) ve fiyata dahil patch'lerin üstündeki fark
@@ -13792,6 +13974,16 @@ html.kp-kilit body {
     return { yeni: yeni, ek: k && !k.hata ? yeni - this.kombin.fiyat : null, eski: yeni + this.kombin.tisortFiyati(kombinTisortu(this.kombin, this.t)) };
   };
 
+  // Sıradaki patch'in ek ücreti, fiyat motorundan: kampanya simülasyonunun "+1" sonucu (bir patch daha) ile
+  // şimdiki sonuç arasındaki indirim farkı patch fiyatından düşülür (ör. 3. patch: 500 − (300 − 100) = 300 TL)
+  Editor.prototype.kombinSiradakiUcret = function () {
+    var k = this.kampanyaSonucu();
+    var ek = k && !k.hata && k.ekler && k.ekler['+1'];
+    var b = varyantHaritasi(this.m)[String(ornekPatch(this.m))];
+    if (!ek || !b) return null;
+    return Math.max(0, b.f - (ek.indirim - (k.indirim || 0)));
+  };
+
   // Alt çubuktaki toplam: 2 patch'ten sonra üstü çizili (tişörtün liste fiyatı dahil) ve "Tişört hediye"
   Editor.prototype.kombinToplamHtml = function (yeni) {
     if (kombinPatchSayisi(this.durum && this.durum.parcalar) < this.kombin.dahil) return '<span class="kp-alt__yeni">' + paraBicimle(yeni) + '</span>';
@@ -13799,46 +13991,79 @@ html.kp-kilit body {
     return '<s class="kp-alt__eski">' + paraBicimle(eski) + '</s> <span class="kp-alt__yeni">' + paraBicimle(yeni) + '</span> <span class="kp-alt__etiket kp-alt__etiket--hediye">Tişört hediye</span>';
   };
 
-  // Kampanyalar kartı (masaüstü) ve kampanya paneli (mobil): en üstte kombin satırı
+  // Kampanyalar kartı (masaüstü) ve kampanya paneli (mobil): en üstte kombin fiyatı ("2 patch dahil") ve hediye tişört
   Editor.prototype.kombinKampanyaSatiri = function () {
     if (!this.kombin) return '';
     var k = this.kombin;
     var n = kombinPatchSayisi(this.durum && this.durum.parcalar);
+    var fiyat = '<li class="kp-kombin-satir kp-kombin-satir--fiyat"><span class="kp-kampanya-satir"><span>Kombin · ' + k.dahil + ' patch dahil</span><strong>' +
+      paraBicimle(n >= k.dahil ? this.kombinTutar().yeni : k.fiyat) + '</strong></span></li>';
     if (n >= k.dahil) {
-      return '<li class="kp-kombin-satir"><span class="kp-kampanya-satir"><span>✓ Sweatshirt kombini: hediye tişört</span><strong>−' +
+      return fiyat + '<li class="kp-kombin-satir"><span class="kp-kampanya-satir"><span>✓ Sweatshirt kombini: hediye tişört</span><strong>−' +
         paraBicimle(k.tisortFiyati(kombinTisortu(k, this.t))) + '</strong></span></li>';
     }
-    return '<li class="kp-kombin-satir kp-kombin-satir--bekliyor"><span class="kp-kampanya-satir"><span>Sweatshirt kombini: ' + (k.dahil - n) + ' patch daha tak, tişört hediye</span></span></li>';
+    return fiyat + '<li class="kp-kombin-satir kp-kombin-satir--bekliyor"><span class="kp-kampanya-satir"><span>Sweatshirt kombini: ' + (k.dahil - n) + ' patch daha tak, tişört hediye</span></span></li>';
   };
   Editor.prototype.kombinHediyeTutari = function () {
     if (!this.kombin || kombinPatchSayisi(this.durum && this.durum.parcalar) < this.kombin.dahil) return 0;
     return this.kombin.tisortFiyati(kombinTisortu(this.kombin, this.t));
   };
 
-  // Önizlemenin üstündeki sayaç ("2 patch dahil · 1/2", 2'de ✓; fazlası "3. patch +300 TL") ve Sweatshirt paneli
+  // Önizlemenin altındaki dahil patch göstergesi (iki yuva; dolunca sıradaki patch'in ücreti) ve seçili tişört satırı,
+  // Görsel kartlarındaki "Dahil" / "+300 TL", Kombinini seç ekranı, tasarım ekranına ilk giriş bildirimi
   Editor.prototype.kombinCiz = function () {
     var k = this.kombin;
-    var n = kombinPatchSayisi(this.durum && this.durum.parcalar);
-    var tamam = n >= k.dahil;
-    var sayac = this.el.querySelector('[data-kp-kombin-sayac]');
-    if (sayac) {
-      var html = '<span class="kp-kombin-sayac__ana">' + k.dahil + ' patch dahil · ' + Math.min(n, k.dahil) + '/' + k.dahil + (tamam ? ' <span aria-hidden="true">✓</span>' : '') + '</span>';
-      if (n > k.dahil) {
-        var fazla = n - k.dahil;
-        var tutar = this.kombinTutar();
-        html += '<span class="kp-kombin-sayac__ek">' + (fazla === 1 ? (k.dahil + 1) + '. patch' : fazla + ' ek patch') +
-          (tutar.ek > 0 ? ' +' + paraBicimle(tutar.ek) : '') + '</span>';
+    var takili = kombinTakililar(this.durum && this.durum.parcalar);
+    var tamam = takili.length >= k.dahil;
+    var siradaki = tamam ? this.kombinSiradakiUcret() : null;
+    var gosterge = this.el.querySelector('[data-kp-dahil]');
+    if (gosterge) {
+      var yuvalar = '';
+      for (var i = 0; i < k.dahil; i++) {
+        var p = takili[i];
+        var g = p && p.varyant && p.varyant.gorsel;
+        yuvalar += p
+          ? '<span class="kp-dahil__yuva kp-dahil__yuva--dolu">' + (g ? '<img src="' + kacis(g) + '" alt="">' : '<span class="kp-dahil__harf">' + kacis(p.etiket || '') + '</span>') +
+            '<span class="kp-dahil__tik" aria-hidden="true">✓</span></span>'
+          : '<span class="kp-dahil__yuva"></span>';
       }
-      if (sayac.innerHTML !== html) sayac.innerHTML = html;
-      sayac.classList.toggle('kp-kombin-sayac--tamam', tamam);
-      sayac.hidden = this.adim === 'ozet';
+      var metin = tamam
+        ? '<strong class="kp-dahil__baslik">' + k.dahil + ' patch dahil ✓</strong><span class="kp-dahil__alt">Sıradaki patch ' + (siradaki != null ? '+' + paraBicimle(siradaki) : 'ek ücretli') + '</span>'
+        : '<strong class="kp-dahil__baslik">' + paraBicimle(k.fiyat) + '\'ye ' + k.dahil + ' patch dahil</strong><span class="kp-dahil__alt">' +
+          (takili.length ? (k.dahil - takili.length) + ' patch daha dahil' : 'Harf ya da görsel seç') + '</span>';
+      var secim = kombinTisortu(k, this.t);
+      var tisort = this.adim === 'sweat' ? '' :
+        '<div class="kp-dahil__tisort">' + (secim && secim.urun.kapak ? '<img src="' + kacis(secim.urun.kapak) + '" alt="" width="28" height="28">' : '') +
+        '<span class="kp-dahil__tisort-ad">' + (secim ? 'Hediye tişört: ' + kacis(secim.urun.renk) + ' · ' + kacis(secim.varyant.yas) + ' yaş' : 'Hediye tişört seçilmedi') + '</span>' +
+        '<span class="kp-dahil__ayrac" aria-hidden="true">·</span><button type="button" class="kp-dahil__degistir" data-kp-tisort-degistir>' + (secim ? 'Değiştir' : 'Seç') + '</button></div>';
+      var html = '<div class="kp-dahil__ust"><div class="kp-dahil__yuvalar" aria-hidden="true">' + yuvalar + '</div><div class="kp-dahil__metin" role="status">' + metin + '</div></div>' + tisort;
+      if (this._dahilHtml !== html) {
+        this._dahilHtml = html;
+        gosterge.innerHTML = html;
+      }
+      gosterge.classList.toggle('kp-dahil--tamam', tamam);
+      gosterge.hidden = this.adim === 'ozet';
+    }
+    // Görsel kartlarında: dahil yuvalar dolana kadar "Dahil", sonra sıradaki patch'in ek ücreti (CSS ::after)
+    var etiket = !tamam ? 'Dahil' : siradaki != null ? '+' + paraBicimle(siradaki) : '';
+    if (this._kombinKartEtiketi !== etiket) {
+      this._kombinKartEtiketi = etiket;
+      this.el.style.setProperty('--kp-kombin-fiyat', etiket ? JSON.stringify(etiket) : 'none');
+    }
+    // Tasarım ekranına ilk giriş (editör açılışı başına bir kez, dahil patch'ler dolmadıysa); bildirim sırasına girer
+    if (!this.kombinIlkBildirim && (this.adim === 'yazi' || this.adim === 'ikon')) {
+      this.kombinIlkBildirim = true;
+      if (!tamam) this.bildir(k.dahil + ' patch fiyata dahil! Harf ya da görsel seçerek başla.');
     }
     // Giderilen eksiğin uyarısı ekranda kalmaz
+    var secimTamam = !this.kombinSecimEksikleri().length;
+    if (secimTamam) this.kombinEksikGoster = false;
     var b = this.bildirimSimdiki;
-    if (b && b.tur === 'diger' && ((tamam && /^Kombin için/.test(b.metin)) || (this.t.kombin.v && /yaşını seç/.test(b.metin)))) this.bildirimKapat();
+    if (b && b.tur === 'diger' && ((tamam && /^Kombin için/.test(b.metin)) || (secimTamam && /^Tasarıma başlamak için/.test(b.metin)))) this.bildirimKapat();
     if (this.adim === 'sweat') this.kombinPanelCiz();
   };
 
+  // Kombinini seç: alt alta Sweatshirt (renk + yaş) ve Hediye tişört (renk + yaş); ikisi seçilmeden "Tasarıma başla" soluk
   Editor.prototype.kombinPanelCiz = function () {
     var panel = this.el.querySelector('[data-kp-panel="sweat"]');
     if (!panel) return;
@@ -13856,20 +14081,29 @@ html.kp-kilit body {
       return '<button type="button" class="kp-kombin-yas' + (secili ? ' kp-kombin-yas--secili' : '') + '" data-kp-kombin-yas="' + kacis(v.id) + '" aria-pressed="' + secili + '"' + (v.satilabilir ? '' : ' disabled') + '>' +
         kacis(v.yas) + ' yaş</button>';
     }).join('');
+    var eksik = this.kombinSecimEksikleri();
+    var donus = this.kombinDonus && this.kombinDonus !== 'sweat' ? this.kombinDonus : null;
+    var dugme = donus === 'ozet' ? 'Özete dön →' : donus || !bosMu(this.t) ? 'Tasarıma dön →' : 'Tasarıma başla →';
+    var yas = this.kombinSweatYasi();
     var html =
-      '<h3 id="kp-p-sweat" class="kp-panel__baslik kp-kombin-baslik" tabindex="-1">Sweatshirt\'ünü seç</h3>' +
-      '<p class="kp-kombin-aciklama">1 sweatshirt + ' + k.dahil + ' patch ' + paraBicimle(k.fiyat) + ', tişört hediye. Rengi sonra da değiştirebilirsin, patch\'lerin yerinde kalır.</p>' +
+      '<h3 id="kp-p-sweat" class="kp-panel__baslik kp-kombin-baslik" tabindex="-1">Kombinini seç</h3>' +
+      '<p class="kp-kombin-aciklama">1 sweatshirt + ' + k.dahil + ' patch ' + paraBicimle(k.fiyat) + ', tişört hediye. Seçimlerini sonra da değiştirebilirsin, patch\'lerin yerinde kalır.</p>' +
+      '<section class="kp-kombin-blok' + (this.kombinEksikGoster && !kb.v ? ' kp-kombin-blok--eksik' : '') + '" aria-labelledby="kp-kombin-sweat">' +
+      '<div class="kp-kombin-blok__ust"><h4 id="kp-kombin-sweat" class="kp-kombin-blok__baslik">Sweatshirt</h4></div>' +
       '<p class="kp-kombin-etiket">Renk · ' + kacis(s.renk) + '</p>' +
       '<div class="kp-kombin-renkler" role="group" aria-label="Sweatshirt rengi">' + renkler + '</div>' +
-      '<p class="kp-kombin-etiket">Yaş</p>' +
+      '<p class="kp-kombin-etiket">Yaş' + (yas ? ' · ' + kacis(yas) : '') + '</p>' +
       '<div class="kp-kombin-yaslar" role="group" aria-label="Sweatshirt yaşı">' + yaslar + '</div>' +
-      (kb.v ? '' : '<p class="kp-kombin-ipucu">Yaşı seçince patch\'lerini eklemeye geç.</p>') +
-      '<button type="button" class="btn kp-kombin-devam" data-kp-kombin-devam' + (kb.v ? '' : ' disabled') + '>Patch\'leri ekle →</button>' +
+      '</section>' +
+      this.kombinTisortHtml() +
+      (this.kombinEksikGoster && eksik.length ? '<p class="kp-kombin-eksik" role="alert">Tasarıma başlamak için seç: ' + kacis(eksik.join(', ')) + '.</p>' : '') +
+      '<button type="button" class="btn kp-kombin-devam' + (eksik.length ? ' kp-kombin-devam--pasif' : '') + '" data-kp-kombin-devam aria-disabled="' + (eksik.length ? 'true' : 'false') + '">' + dugme + '</button>' +
       '<p class="kp-kombin-not">Her harf ve rakam 1 patch sayılır. ' + k.dahil + ' patch fiyata dahil, sonrakiler patch indirimiyle eklenir.</p>';
     if (panel.innerHTML !== html) panel.innerHTML = html;
   };
 
-  // Özet: zorunlu "Hediye tişörtünü seç" (stoktaki renkler; seçili rengin stoktaki yaşları, renk yoksa hepsi)
+  // Kombinini seç ekranındaki Hediye tişört bloğu: stoktaki renkler (tişörtün küçük görseliyle), seçili rengin stoktaki
+  // yaşları (renk yoksa hepsi); yaş varsayılan olarak sweatshirt'ünkü, renk müşterinin seçimi
   Editor.prototype.kombinTisortHtml = function () {
     var k = this.kombin;
     var kb = this.t.kombin;
@@ -13897,16 +14131,29 @@ html.kp-kilit body {
     } else if (renk && kb.ty && !secim) {
       not = renk.renk + ' tişörtte ' + kb.ty + ' yaş kalmadı. Başka bir yaş ya da renk seç.';
     }
-    var eksik = secim ? '' : !kb.tr ? 'Tişörtünün rengini seç.' : 'Tişörtünün yaşını seç.';
-    return '<section class="kp-kombin-tisort' + (secim ? ' kp-kombin-tisort--tamam' : '') + '" aria-labelledby="kp-tisort-baslik">' +
-      '<div class="kp-kombin-tisort__ust"><h4 id="kp-tisort-baslik" class="kp-kombin-tisort__baslik">Hediye tişörtünü seç</h4>' +
+    return '<section class="kp-kombin-blok kp-kombin-tisort' + (secim ? ' kp-kombin-tisort--tamam' : '') + (this.kombinEksikGoster && !secim ? ' kp-kombin-blok--eksik' : '') + '" aria-labelledby="kp-tisort-baslik">' +
+      '<div class="kp-kombin-blok__ust"><h4 id="kp-tisort-baslik" class="kp-kombin-blok__baslik">Hediye tişört</h4>' +
       '<span class="kp-kombin-tisort__fiyat">Hediye · 0 TL <s>' + paraBicimle(k.tisortFiyati(secim)) + '</s></span></div>' +
+      '<p class="kp-kombin-etiket">Renk' + (renk ? ' · ' + kacis(renk.renk) : '') + '</p>' +
       '<div class="kp-kombin-renkler" role="group" aria-label="Tişört rengi">' + renkHtml + '</div>' +
+      '<p class="kp-kombin-etiket">Yaş' + (kb.ty ? ' · ' + kacis(kb.ty) : '') + '</p>' +
       '<div class="kp-kombin-yaslar" role="group" aria-label="Tişört yaşı">' + yasHtml + '</div>' +
       (not ? '<p class="kp-kombin-uyari">' + kacis(not) + '</p>' : '') +
-      (eksik ? '<p class="kp-kombin-eksik">' + kacis(eksik) + '</p>' : '') +
       '<p class="kp-kombin-not">Patch\'lerini tişörtüne de takabilirsin.</p>' +
       '</section>';
+  };
+
+  // Özet: seçili hediye tişört (görsel, renk, yaş, 0 TL) ve "Değiştir"
+  Editor.prototype.kombinOzetTisortHtml = function () {
+    var secim = kombinTisortu(this.kombin, this.t);
+    return '<div class="kp-kombin-ozet-tisort">' +
+      (secim && secim.urun.kapak ? '<img src="' + kacis(secim.urun.kapak) + '" alt="" width="44" height="44">' : '') +
+      '<div class="kp-kombin-ozet-tisort__bilgi"><p class="kp-kombin-ozet-tisort__ad">' +
+      (secim ? 'Hediye tişört: ' + kacis(secim.urun.renk) + ' · ' + kacis(secim.varyant.yas) + ' yaş' : 'Hediye tişörtünü seç') + '</p>' +
+      '<p class="kp-kombin-tisort__fiyat">Hediye · 0 TL <s>' + paraBicimle(this.kombin.tisortFiyati(secim)) + '</s></p></div>' +
+      '<button type="button" class="kp-baglanti kp-kombin-ozet-tisort__degistir" data-kp-tisort-degistir>' + (secim ? 'Değiştir' : 'Seç') + '</button>' +
+      '</div>' +
+      '<p class="kp-kombin-not">Patch\'lerini tişörtüne de takabilirsin.</p>';
   };
 
   // Özet'te sweatshirt satırının eki ve hediye tişört satırı
@@ -13926,15 +14173,19 @@ html.kp-kilit body {
       '<div class="kp-ozet-bos"><button type="button" class="kp-oneri" data-kp-kombin-geri>Patch eklemek için geri dön</button></div>';
   };
 
-  // Kombin düğmeleri (editörün tıklama dinleyicisinden); true: işlendi
+  // Kombin düğmeleri (editörün tıklama dinleyicisinden); true: işlendi. Seçimler ve "Değiştir" olay göndermez.
   Editor.prototype.kombinTikla = function (b) {
     var kb = this.t.kombin;
     if (b.hasAttribute('data-kp-kombin-renk')) return this.kombinRenkSec(b.getAttribute('data-kp-kombin-renk')), true;
     if (b.hasAttribute('data-kp-kombin-yas')) return this.kombinYasSec(b.getAttribute('data-kp-kombin-yas')), true;
-    if (b.hasAttribute('data-kp-kombin-devam')) return this.adimaGit('yazi', false, true), true;
+    if (b.hasAttribute('data-kp-kombin-devam')) return this.kombinSecimBitti(), true;
+    if (b.hasAttribute('data-kp-tisort-degistir')) return this.kombinSecimAc(true), true;
     if (b.hasAttribute('data-kp-kombin-geri')) return this.adimaGit(this.sonArac && this.sonArac !== 'sweat' ? this.sonArac : 'yazi', false, true), true;
+    // Kombin aracı: dönüş yeri hatırlanır, geçişi editörün kendi dinleyicisi yapar
+    if (b.getAttribute('data-kp-adim') === 'sweat' && this.adim !== 'sweat') this.kombinDonus = this.adim;
     if (b.hasAttribute('data-kp-tisort-renk')) {
       kb.tr = b.getAttribute('data-kp-tisort-renk');
+      this.kombinTisortYasiEsitle();
       this.yenile();
       return true;
     }
@@ -13947,10 +14198,14 @@ html.kp-kilit body {
     return false;
   };
 
-  // Yazı panelinde not: harf ve rakamlar da patch sayılır
+  // Kombin modunun sabit metinleri: yazı alanının altındaki not, alt çubukta "Toplam · 2 patch dahil"
   Editor.prototype.kombinNotlariKur = function () {
+    var k = this.kombin;
+    this.el.classList.add('kp-editor--kombin');
     var yazi = this.el.querySelector('[data-kp-panel="yazi"] .kp-alan-girdi');
-    if (yazi) yazi.insertAdjacentHTML('afterend', '<p class="kp-kombin-not kp-kombin-not--yazi">Kombinde her harf ve rakam 1 patch sayılır: ECE yazarsan 3 patch.</p>');
+    if (yazi) yazi.insertAdjacentHTML('afterend', '<p class="kp-kombin-not kp-kombin-not--yazi">Her harf 1 patch sayılır · ilk ' + k.dahil + ' patch dahil</p>');
+    var etiket = this.el.querySelector('.kp-alt__fiyat > span');
+    if (etiket) etiket.textContent = 'Toplam · ' + k.dahil + ' patch dahil';
   };
 
   /* ---------- Kart: kombin modu ---------- */
@@ -14022,8 +14277,8 @@ html.kp-kilit body {
     var k = this.kombin;
     var kb = paket.tasarim.kombin;
     if (!kb || !kb.v) return { adim: 'sweat', metin: 'Önce sweatshirt\'ünün yaşını seç.' };
+    if (!kombinTisortu(k, paket.tasarim)) return { adim: 'sweat', metin: 'Hediye tişörtünü seç.' };
     if (kombinPatchSayisi(paket.parcalar) < k.dahil) return { adim: 'yazi', metin: 'Kombin için ' + k.dahil + ' patch tak.' };
-    if (!kombinTisortu(k, paket.tasarim)) return { adim: 'ozet', metin: 'Hediye tişörtünü seç.' };
     return null;
   };
 
@@ -14763,7 +15018,9 @@ html.kp-kilit body {
       var adet = f.harfAdet + f.rakamAdet + f.ikonAdet;
       var kb = this.kombin && t.kombin;
       var ks = kb && this.kombin.sweatVaryanti(kb.v);
-      this.querySelector('[data-kisisel-adet]').textContent = adet + ' patch' + (kb ? ' · ' + renkAdi(m.urun.baslik) + (ks ? ' · ' + ks.varyant.yas + ' yaş' : '') : '');
+      var kt = kb && kombinTisortu(this.kombin, t);
+      this.querySelector('[data-kisisel-adet]').textContent = adet + ' patch' + (kb ? ' · ' + renkAdi(m.urun.baslik) + (ks ? ' · ' + ks.varyant.yas + ' yaş' : '') : '') +
+        (kt ? ' · Hediye tişört: ' + kt.urun.renk + ' ' + kt.varyant.yas : '');
       var taslakEl = this.querySelector('[data-kisisel-taslak]');
       if (taslakEl) taslakEl.textContent = taslakZamani(this.taslakBilgi && this.taslakBilgi.zaman);
       this.kartToplamCiz(f);

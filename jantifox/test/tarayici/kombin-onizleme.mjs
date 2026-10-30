@@ -62,21 +62,39 @@ assert.equal(veri.fiyat, 340000);
 assert.equal(veri.sweat.length, 5);
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 await s.locator('[data-kp-panel="sweat"]:not([hidden]) .kp-kombin-renk').first().waitFor({ timeout: 15000 });
-sonuc.editor = { sayac: await yazi('[data-kp-kombin-sayac]'), renkler: await s.$$eval('.kp-kombin-renk', (l) => l.map((x) => x.innerText.replace(/\s+/g, ' ').trim())) };
-await s.locator('.kp-kombin-yas').first().click();
-await s.locator('[data-kp-kombin-devam]:not([disabled])').click();
-await s.locator('#kp-isim').fill('AB');
-await s.waitForFunction(() => /3\.400 TL/.test((document.querySelector('[data-kp-toplam]') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
-sonuc.editor.ikiPatch = { sayac: await yazi('[data-kp-kombin-sayac]'), toplam: await yazi('[data-kp-toplam]') };
-await s.locator('[data-kp-adim="ikon"]').click();
-await s.locator('[data-kp-ikon]:not([disabled])').first().click();
-await s.waitForFunction(() => /\+300 TL/.test((document.querySelector('[data-kp-kombin-sayac]') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
-sonuc.editor.ucPatch = { sayac: await yazi('[data-kp-kombin-sayac]'), toplam: await yazi('[data-kp-toplam]') };
-await s.locator('[data-kp-ileri]').click();
-await s.locator('.kp-kombin-tisort').waitFor({ timeout: 8000 });
+// Kombinini seç: sweatshirt yaşı ve tişört rengi (yaş sweatshirt'ünkü gelir), sonra tasarım
+sonuc.editor = {
+  baslik: await yazi('#kp-p-sweat'),
+  bloklar: await s.$$eval('[data-kp-panel="sweat"] .kp-kombin-blok__baslik', (l) => l.map((x) => x.textContent)),
+  renkler: await s.$$eval('[data-kp-kombin-renk]', (l) => l.map((x) => x.innerText.replace(/\s+/g, ' ').trim())),
+  tisortRenkleri: await s.$$eval('[data-kp-tisort-renk]', (l) => l.map((x) => x.innerText.trim() + (x.querySelector('img') ? ' (görsel)' : ''))),
+  gosterge: await yazi('[data-kp-dahil]'),
+  devamOnce: await s.locator('[data-kp-kombin-devam]').getAttribute('aria-disabled')
+};
+await s.locator('.kp-kombin-yas[data-kp-kombin-yas]').first().click();
 await s.locator('[data-kp-tisort-renk]').first().click();
 await s.waitForTimeout(300);
-sonuc.ozet = { tisort: await yazi('.kp-kombin-tisort'), hediye: await yazi('.kp-ozet__hediye'), buton: await yazi('[data-kp-ileri]') };
+sonuc.editor.tisortYasi = await yazi('[data-kp-tisort-yas].kp-kombin-yas--secili');
+sonuc.editor.devamSonra = await s.locator('[data-kp-kombin-devam]').getAttribute('aria-disabled');
+await s.locator('[data-kp-kombin-devam]').click();
+await s.locator('#kp-isim').waitFor();
+await s.waitForTimeout(400);
+sonuc.editor.ilkBildirim = await yazi('.kp-editor [data-kp-bildirim]');
+sonuc.editor.tisortSatiri = await yazi('[data-kp-dahil] .kp-dahil__tisort-ad');
+sonuc.editor.yaziNotu = await yazi('.kp-kombin-not--yazi');
+sonuc.editor.altEtiket = await yazi('.kp-alt__fiyat > span');
+await s.locator('#kp-isim').fill('AB');
+await s.waitForFunction(() => /Sıradaki patch \+/.test((document.querySelector('[data-kp-dahil]') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
+sonuc.editor.ikiPatch = { gosterge: await yazi('[data-kp-dahil] .kp-dahil__metin'), yuvalar: await s.locator('[data-kp-dahil] .kp-dahil__yuva--dolu img').count(), toplam: await yazi('[data-kp-toplam]') };
+await s.locator('[data-kp-adim="ikon"]').click();
+await s.locator('[data-kp-ikon]:not([disabled])').first().waitFor();
+sonuc.editor.gorselPaneli = { ust: await yazi('[data-kp-ikon-fiyat]'), kart: await s.locator('[data-kp-ikon]:not([disabled])').first().evaluate((e) => getComputedStyle(e, '::after').content) };
+await s.locator('[data-kp-ikon]:not([disabled])').first().click();
+await s.waitForFunction(() => /3\.700 TL/.test((document.querySelector('[data-kp-toplam]') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
+sonuc.editor.ucPatch = { gosterge: await yazi('[data-kp-dahil] .kp-dahil__metin'), toplam: await yazi('[data-kp-toplam]') };
+await s.locator('[data-kp-ileri]').click();
+await s.locator('.kp-kombin-ozet-tisort').waitFor({ timeout: 8000 });
+sonuc.ozet = { tisort: await yazi('.kp-kombin-ozet-tisort'), hediye: await yazi('.kp-ozet__hediye'), buton: await yazi('[data-kp-ileri]') };
 sonuc.hatalar = hatalar;
 console.log(JSON.stringify(sonuc, null, 1));
 await t.close();
