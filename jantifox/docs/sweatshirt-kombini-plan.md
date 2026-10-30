@@ -1,7 +1,13 @@
 # Sweatshirt Kombini — plan ve mağaza verisi onay listesi (2026-10-30)
 
-Kopya tema: **Kişiselleştirme DEV - Sweatshirt kombini** (`207697543454`). Şu an içinde yalnızca 30 Ekim ölçüm düzeltmesi var
-(`assets/kisisel-editor.js`, `assets/kisisel-olcum.js`, `layout/theme.liquid`); kombin tema işi henüz yüklenmedi.
+İlk açılan kopya (`207697543454`) yalnızca ölçüm düzeltmesini taşıyor ve adı **Kişiselleştirme DEV - Meta ölçüm** oldu
+(kullanıcı kararı, 30 Ekim). Kullanıcı onu yayınlayınca canlının yeni kopyası **Kişiselleştirme DEV - Sweatshirt kombini**
+adıyla açılacak; kombin tema işi ve aşağıdaki mağaza verisi o kopya açıldıktan sonra yazılacak.
+
+**Kararlar (30 Ekim):** 1–4. maddeler onaylı. Vitrin ürünü Online Mağaza'da yayında, hiçbir yerden bağlantısız, stok 0.
+Test indiriminde tercih edilen koşul tutar (Kombin Koşulu'ndan en az 3.500 TL); adet (en az 3) ve 3.400 TL koşulları da
+denenecek, üçünün sonucu yan yana raporlanacak. Editörün AddToCart'ı tasarım başına tek olay, tam tutar, yalnızca
+tarayıcıdan kalacak. GTM'deki G-QN43QTEZW5 etiketine dokunulmayacak (kullanıcı halledecek).
 
 ## Mevcut ürünler (okundu, değiştirilmedi)
 
