@@ -203,7 +203,8 @@ sonuc.editor.setli = {
 const tekliId = await s.evaluate(() => { const ed = document.querySelector('kisisel-kart').editor; const kullanilan = ed.t.parcalar.map((p) => String(p.urunId)); const i = ed.m.ikonlar.filter((x) => x.varyant.satilabilir && (x.varyant.stok == null || x.varyant.stok > 5) && kullanilan.indexOf(String(x.id)) === -1)[0]; return i && String(i.id); });
 await s.locator('[data-kp-panel="ikon"] [data-kp-ikon="' + tekliId + '"]').first().click();
 await s.waitForFunction(() => /4\.500 TL/.test((document.querySelector('[data-kp-toplam]') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
-await s.waitForTimeout(2000);
+// Shopify'ın sonucu (kodlu simülasyon) gelene kadar: sıradaki patch 2'li indirimle +400 TL
+await s.waitForFunction(() => /Sıradaki patch \+400 TL/.test((document.querySelector('[data-kp-dahil]') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
 sonuc.editor.setArtiTekli = { toplam: await yazi('[data-kp-toplam]'), gosterge: await yazi('[data-kp-dahil] .kp-dahil__metin') };
 await s.locator('[data-kp-geri-al]').click();
 await s.waitForFunction(() => /6\.000 TL ?4\.000 TL/.test((document.querySelector('[data-kp-toplam]') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});

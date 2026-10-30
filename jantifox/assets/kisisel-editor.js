@@ -7993,7 +7993,9 @@
   function yerelKampanya(m, temel, tasarim, ekler) {
     var k = kurallariOku();
     if (!k) return null;
-    var esikler = m.ayar.kampanyaEsikleri;
+    // Kombin sepetinde tutar eşikli kampanya uygulanmaz (kombinEsiksiz): yerel hesap da patch indirimlerini onun yerine
+    // seçmesin
+    var esikler = m.kombin ? [] : m.ayar.kampanyaEsikleri;
     var a = yerelIndirimler(k, temel, esikler);
     var b = yerelIndirimler(k, temel.concat(tasarim), esikler);
     var ekSonuc = {};
