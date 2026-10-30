@@ -99,7 +99,12 @@ sonuc.editor = {
 assert.equal(sonuc.editor.anaButon, 'Yaşını seç ↓');
 assert.ok(sonuc.editor.kapaklarSade && sonuc.editor.onizlemeSweatSade, 'sade görseller');
 const olayIstegi = [];
-s.on('request', (r) => { if (/facebook\.com\/tr|google-analytics|analytics\.google|\/api\/collect/.test(r.url())) olayIstegi.push(r.url().slice(0, 80)); });
+// Seçim sırasında Meta / GA4'e giden istekler (olması gerekmez). /api/collect sitenin tarayıcı sinyali betiği (olay değil), ayrı sayılır
+const sinyal = [];
+s.on('request', (r) => {
+  if (/facebook\.com\/tr|google-analytics|analytics\.google|googletagmanager\.com\/g\/collect/.test(r.url())) olayIstegi.push(r.url().slice(0, 160));
+  else if (/\/api\/collect/.test(r.url())) sinyal.push((r.postData() || '').slice(0, 200));
+});
 // Sweatshirt yaşı → hediye bloğuna kayar ve parlar, "Harika!"; tişört yaşı sweatshirt'ünkü
 await s.locator('.kp-kombin-yas[data-kp-kombin-yas]').first().click();
 await s.waitForTimeout(250);
@@ -128,7 +133,8 @@ await s.locator('[data-kp-kombin-onizleme] [data-kp-galeri-ac^="t:"]').click();
 await s.locator('[data-kp-kombin-galeri]').waitFor();
 sonuc.editor.galeri = { ad: await yazi('[data-kp-galeri-ad]'), kare: await s.locator('.kp-kombin-galeri__kare').count(), not: await s.locator('.kp-kombin-galeri__kare figcaption').count(), sayac: await yazi('[data-kp-galeri-sayac]') };
 await s.locator('[data-kp-galeri-kapat]').click();
-sonuc.editor.secimOlayIstegi = olayIstegi.length;
+sonuc.editor.secimOlayIstegi = olayIstegi.slice();
+sonuc.editor.tarayiciSinyali = sinyal.length;
 await s.locator('[data-kp-ileri]').click();
 await s.locator('#kp-isim').waitFor();
 await s.waitForTimeout(600);
