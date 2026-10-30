@@ -2,7 +2,8 @@
   Sweatshirt kombini verisi (editörün kombin modu) JSON olarak: fiyat ayarları, sweatshirtler (editör görseli, harita,
   yaş varyantları) ve hediye tişörtler (editör görseli, yaş varyantları, stok). Ürünler tema ayarlarındaki handle
   listelerinden okunur. "İndigo ve Pembe dahil" kapalıysa 3-5 yaş listesindeki sweatshirtler hiç yazılmaz.
-  Kartlardaki küçük görsel (kapak) ve önizleme editörün sade görseli (kisisellestirme.onizleme_gorseli_png, patch'siz);
+  Renk kutularındaki küçük görsel (kapak) ve Kombinini seç ekranındaki kombin önizlemesi (gorsel.kucuk) editörün sade
+  görseli (kisisellestirme.onizleme_gorseli_png, patch'siz);
   ürün fotoğrafları (fotograflar, örnek patch'li) yalnızca tam ekran galeride, "Görseldeki patch'ler örnektir" notuyla.
 
   Kullanım (kisisel-kart.liquid içinden, kombin: true ile): {% render 'kisisel-kombin-veri', section_id: section.id %}
@@ -86,6 +87,7 @@
         "gorsel": {
           "en": {{ kb_oniz.width | default: 1000 }},
           "boy": {{ kb_oniz.height | default: 1000 }},
+          "kucuk": {{ kb_oniz | image_url: width: 600 | json }},
           "buyuk": {{ kb_oniz | image_url: width: 1200 | json }}
         },
         "fotograflar": [

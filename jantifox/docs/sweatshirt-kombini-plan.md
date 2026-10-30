@@ -136,6 +136,18 @@ sweatshirt ve tişört ekleyen müşteriyi engelleyemez. "1 sweatshirt + 2 patch
   rengine dokununca tişörtün sade görseli), kartlarda sade görsel ve büyüteç → tam ekran fotoğraflar ("Görseldeki
   patch'ler örnektir."), kartlarda "3-5 yaş" yazısı yok; fiyat baştan ~~5.400~~ 3.400 "2 patch dahil", 2 patch'e kadar
   sabit; Kombinini seç'te tek ana buton "Tasarıma başla →".
+- v4 (30 Ekim, kombin-secim-ekrani tasarımı): Kombinini seç'te hediye tişört ilk açılışta görünür. Önizleme ~%45 kısa
+  (telefonda 299 → 166 px, masaüstünde 670 → 378 px) ve kombini birlikte gösterir: solda büyük sweatshirt, sağ altta
+  biraz küçük, hafif üstüne binen, gölgeli hediye tişört ve kırmızı "HEDİYE" etiketi (sade görseller); tişört seçilene
+  kadar yerinde kesikli, hafif nabız atan boş yer ("Hediye tişörtün burada görünecek", sweatshirt yaşı seçilince "Şimdi
+  hediye tişörtünü seç"). İki ürünün büyüteci tam ekran fotoğrafları açar; "Sweatshirt | Hediye tişört" düğmesi, sol
+  araçlar ve "2 patch dahil" göstergesi bu ekranda yok (tasarım ekranında gelir). Altında 3 adım: Sweatshirt — Hediye
+  tişört — Patch'ler. Bloklar sıkı: renkler tek satırda 54 px kare görseller, seçili renk ve yaş başlığın sağında, yaş
+  seçilmeden yaşlar kırmızı çerçeveli; Hediye tişört bloğu kırmızı çerçeveli, "HEDİYE", 0 TL ~~2.000 TL~~, sweatshirt
+  yaşı seçilene kadar soluk (seçilebilir). Ana buton hep basılabilir ve sıradakini yazar ("Yaşını seç ↓" / "Hediye
+  tişörtünü seç ↓": beyaz, kırmızı çerçeve; basınca oraya kayar ve vurgular; tamamsa koyu "Tasarıma başla →").
+  Sweatshirt yaşı seçilince hediye bloğuna kayar, blok parlar, "Harika! Şimdi hediye tişörtünü seç". Ölçüm olayları
+  aynı; kaydırma, vurgu ve büyüteç olay göndermez.
 - Sepet: kombin grubu (tişört son satır, rozet "Sweatshirt kombini"), adetler kilitli; patch silinince kombin bozulacaksa
   tişört de çıkar (onayla); bozuk kombinde uyarı ve "Tişörtü çıkar".
 - Sepetteki kombin düzenlenmez (renk, tişört ve indirim birlikte değişiyor): kart "Sepetten sil" ve yeniden tasarla der.

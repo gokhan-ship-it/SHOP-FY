@@ -5040,80 +5040,91 @@ html.kp-kilit body {
 .kp-editor .kp-alt__ileri.kp-alt__ileri--pasif {
   opacity: 0.55;
 }
-/* Kombinini seç: Sweatshirt ve Hediye tişört blokları, renk kutucukları ve yaş düğmeleri */
+/* Kombinini seç (v4, sıkı): başlık ve alt başlık, Sweatshirt ve Hediye tişört blokları; renkler tek satırda küçük kare
+   görseller, yaşlar altında. Telefonda iki blok ve alt çubuk mümkün olduğunca kaydırmadan sığar. */
 .kp-kombin-baslik {
-  margin: 0 0 0.4rem;
-}
-.kp-kombin-aciklama {
-  margin: 0 0 1rem;
-  color: var(--kp-ikincil);
-  font-size: 1.35rem;
-  line-height: 1.45;
-}
-.kp-kombin-etiket {
-  margin: 0.8rem 0 0.5rem;
-  font-size: 1.3rem;
+  margin: 0;
+  font-size: 1.7rem;
   font-weight: 700;
 }
-.kp-kombin-renkler,
+.kp-kombin-aciklama {
+  margin: 0.2rem 0 1rem;
+  color: var(--kp-ikincil);
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+.kp-kombin-aciklama b {
+  color: #b3141b;
+  font-weight: 600;
+}
+.kp-kombin-renkler {
+  display: flex;
+  gap: 0.7rem;
+  margin: -2px;
+  padding: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.kp-kombin-renkler::-webkit-scrollbar {
+  display: none;
+}
 .kp-kombin-yaslar {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
+  margin-top: 0.9rem;
 }
 .kp-kombin-renk {
   display: inline-flex;
-  flex-direction: column;
+  flex: none;
   align-items: center;
-  gap: 0.3rem;
-  width: 7.6rem;
-  padding: 0.5rem 0.3rem;
-  border: 1px solid var(--kp-cizgi);
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 1.5px solid transparent;
   border-radius: 12px;
+  background: var(--kp-yumusak);
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1.1;
+  cursor: pointer;
+}
+/* Beyaz zeminli görsel de kutunun rengine karışır */
+.kp-kombin-renk img {
+  width: 86%;
+  height: 86%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+.kp-kombin-renk--secili {
+  border: 2px solid var(--kp-murekkep);
+  background: var(--kp-zemin);
+}
+.kp-kombin-renk--soluk {
+  opacity: 0.45;
+}
+.kp-kombin-yas {
+  min-height: 34px;
+  padding: 0 1.1rem;
+  border: 1.5px solid var(--kp-cizgi);
+  border-radius: 10px;
   background: var(--kp-zemin);
   color: var(--kp-murekkep);
   font: inherit;
   font-size: 1.25rem;
-  line-height: 1.2;
-  cursor: pointer;
-}
-.kp-kombin-renk img {
-  width: 5.6rem;
-  height: 5.6rem;
-  border-radius: 8px;
-  object-fit: cover;
-  background: var(--kp-yumusak);
-}
-.kp-kombin-renk--kucuk {
-  width: 6.4rem;
-}
-.kp-kombin-renk--kucuk img {
-  width: 4.4rem;
-  height: 4.4rem;
-}
-.kp-kombin-renk--secili {
-  border: 2px solid var(--kp-murekkep);
-  padding: calc(0.5rem - 1px) calc(0.3rem - 1px);
-  font-weight: 700;
-}
-.kp-kombin-renk--soluk {
-  opacity: 0.55;
-}
-.kp-kombin-yas {
-  min-height: var(--kp-dokunma);
-  min-width: 7.2rem;
-  padding: 0.4rem 1.1rem;
-  border: 1px solid var(--kp-cizgi);
-  border-radius: 12px;
-  background: var(--kp-zemin);
-  color: var(--kp-murekkep);
-  font: inherit;
-  font-size: 1.35rem;
+  line-height: 1;
   cursor: pointer;
 }
 .kp-kombin-yas--secili {
   border: 2px solid var(--kp-murekkep);
   font-weight: 700;
+}
+/* Sweatshirt yaşı seçilmeden: yaşlar kırmızı çerçeveli */
+.kp-kombin-yas--gerekli {
+  border-color: rgba(179, 20, 27, 0.5);
+  color: #b3141b;
 }
 .kp-kombin-yas:disabled {
   color: var(--kp-ikincil);
@@ -5134,41 +5145,90 @@ html.kp-kilit body {
   padding: 0.6rem 0.9rem;
   border-radius: 10px;
   background: var(--kp-bilgi-zemin);
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   line-height: 1.45;
 }
-.kp-kombin-eksik {
-  margin: 0.8rem 0 0;
-  color: var(--kp-hata);
-  font-size: 1.3rem;
-  font-weight: 600;
-}
-/* Kombinini seç blokları (Sweatshirt, Hediye tişört): sitenin kart görünümü, ~12 px köşe */
+/* Bloklar: sitenin kart görünümü, ~12 px köşe; eksiğe kaydırınca ya da sweatshirt yaşı seçilince kısa süre parlar */
 .kp-kombin-blok {
-  margin: 1rem 0;
+  position: relative;
+  margin: 0 0 1rem;
   padding: 1rem 1.1rem 1.1rem;
   border: 1px solid var(--kp-cizgi);
   border-radius: 12px;
   background: var(--kp-zemin);
+  scroll-margin: 1.6rem 0;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.2s ease;
 }
-.kp-kombin-blok--eksik {
-  border-color: var(--kp-hata);
-}
-.kp-kombin-blok .kp-kombin-etiket:first-of-type {
-  margin-top: 0;
+.kp-kombin-blok--parla {
+  border-color: rgba(179, 20, 27, 0.5);
+  box-shadow: 0 0 0 5px rgba(179, 20, 27, 0.14);
 }
 .kp-kombin-blok__ust {
   display: flex;
-  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: 0.2rem 1rem;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.8rem;
 }
 .kp-kombin-blok__baslik {
+  flex: none;
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
+}
+.kp-kombin-blok__secim {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--kp-ikincil);
+  font-size: 1.2rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Hediye tişört bloğu: kırmızı çerçeve, sol üstte "HEDİYE"; sweatshirt yaşı seçilene kadar soluk (seçilebilir) */
+.kp-kombin-tisort {
+  margin-top: 1.6rem;
+  padding-top: 1.5rem;
+  border: 2px solid #b3141b;
+  background: linear-gradient(180deg, #fff7f3, var(--kp-zemin) 60%);
+}
+.kp-kombin-tisort.kp-kombin-blok--parla {
+  border-color: #b3141b;
+}
+.kp-kombin-tisort--soluk {
+  opacity: 0.55;
+}
+.kp-kombin-tisort .kp-kombin-not {
+  margin-top: 0.7rem;
+  font-size: 1.15rem;
+}
+.kp-kombin-tisort .kp-kombin-uyari {
+  margin-top: 0.7rem;
+}
+/* "HEDİYE": kırmızı zemin, beyaz yazı, hediye kutusu simgesi */
+.kp-kombin-hediye {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: #b3141b;
+  box-shadow: 0 0 0 2px #fff;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.kp-kombin-hediye svg {
+  flex: none;
+}
+.kp-kombin-hediye--blok {
+  top: -11px;
+  left: 12px;
 }
 /* Özet: seçili hediye tişört ve "Değiştir" */
 .kp-kombin-ozet-tisort {
@@ -5204,6 +5264,7 @@ html.kp-kilit body {
   margin-left: auto;
 }
 .kp-kombin-tisort__fiyat {
+  white-space: nowrap;
   color: #b3141b;
   font-size: 1.3rem;
   font-weight: 700;
@@ -5226,105 +5287,259 @@ html.kp-kilit body {
   color: var(--kp-ikincil);
 }
 
-/* Kombinini seç: kartın köşesinde büyüteç (ürünün fotoğrafları tam ekran) */
-.kp-kombin-kart {
-  position: relative;
-  display: inline-flex;
-}
-.kp-kombin-buyutec {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: 1px solid var(--kp-cizgi);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--kp-murekkep);
-  cursor: zoom-in;
-}
-/* Kombinini seç ekranında önizleme ürünün tamamı: alan çizgisi, geri al / yinele, görünüm ve indir düğmeleri yok */
-.kp-editor--kombin-sec .kp-sahne__alanlar,
-.kp-editor--kombin-sec .kp-alan-etiketleri {
-  opacity: 0;
-}
+/* Kombinini seç ekranı: tasarım önizlemesi, sol araçlar, dahil patch göstergesi ve satırlar yok; yerinde kombin
+   önizlemesi (önceki önizlemeden ~%45 kısa) ve 3 adım. Tasarım ekranına geçince hepsi eski hâline döner. */
+.kp-editor--kombin-sec .kp-araclar,
+.kp-editor--kombin-sec [data-kp-sahne],
+.kp-editor--kombin-sec .kp-satir,
+.kp-editor--kombin-sec .kp-kenar,
+.kp-editor--kombin-sec .kp-onizleme__not,
+.kp-editor--kombin-sec .kp-yerlestir-katman,
+.kp-editor--kombin-sec .kp-set-cerceve,
+.kp-editor--kombin-sec .kp-balon,
+.kp-editor--kombin-sec .kp-aci,
 .kp-editor--kombin-sec .kp-gecmis,
 .kp-editor--kombin-sec [data-kp-gorunum],
 .kp-editor--kombin-sec [data-kp-indir],
 .kp-editor--kombin-sec [data-kp-buyut] {
   display: none !important;
 }
-/* Önizlemenin üstünde "Sweatshirt | Hediye tişört" */
-.kp-kombin-gorunum {
-  position: absolute;
-  z-index: 5;
-  top: 0.6rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  padding: 3px;
-  border: 1px solid var(--kp-cizgi);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.96);
-}
-.kp-kombin-gorunum[hidden] {
-  display: none;
-}
-.kp-kombin-gorunum button {
-  min-height: 32px;
-  padding: 0 1.1rem;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  color: var(--kp-murekkep);
-  font: inherit;
-  font-size: 1.25rem;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.kp-kombin-gorunum button[aria-pressed='true'] {
-  background: var(--kp-murekkep);
-  color: #fff;
-}
-/* Hediye tişörtün büyük önizlemesi (editörün sade, patch'siz görseli) */
-.kp-kombin-tisort-onizleme {
-  position: absolute;
-  z-index: 4;
-  inset: 0;
-  display: flex;
-  align-items: center;
+.kp-editor.kp-editor--kombin-sec:not(.kp-editor--alt) .kp-onizleme__sira {
   justify-content: center;
-  padding: 3.4rem 0.8rem 2.6rem;
+}
+.kp-editor.kp-editor--kombin-sec:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme__ic {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 560px;
+}
+/* Kombin önizlemesi: solda büyük sweatshirt, sağ altta biraz küçük, hafif üstüne binen ve gölgeli hediye tişört */
+.kp-kombin-onizleme {
+  position: relative;
+  height: clamp(150px, 25vh, 210px);
+  height: clamp(150px, 25dvh, 210px);
+  overflow: hidden;
   border-radius: 12px;
   background: var(--kp-zemin);
 }
-.kp-kombin-tisort-onizleme[hidden] {
+.kp-kombin-onizleme[hidden] {
   display: none;
 }
-.kp-kombin-tisort-onizleme img {
+.kp-kombin-onizleme__sahne {
+  position: relative;
   max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  height: 100%;
+  margin: 0 auto;
+  aspect-ratio: 33 / 20;
 }
-.kp-kombin-tisort-onizleme__ad {
+.kp-kombin-onizleme__sweat {
   position: absolute;
-  bottom: 0.6rem;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: calc(100% - 1.6rem);
-  padding: 0.2rem 0.9rem;
-  border-radius: 999px;
-  background: var(--kp-yumusak);
+  left: 3%;
+  top: 5%;
+  width: 58%;
+  height: 90%;
+}
+.kp-kombin-onizleme__tisort {
+  position: absolute;
+  right: 3%;
+  bottom: 5%;
+  width: 46%;
+  height: 72%;
+}
+.kp-kombin-onizleme__sweat img,
+.kp-kombin-onizleme__tisort img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.kp-kombin-onizleme__tisort img {
+  object-position: center bottom;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.12));
+}
+.kp-kombin-onizleme__tisort--bos {
+  right: 4%;
+  bottom: 7%;
+  width: 44%;
+  height: 64%;
+}
+.kp-kombin-hediye--onizleme {
+  top: 0;
+  right: 10%;
+  transform: translateY(-50%);
+}
+/* Tişört seçilene kadar yerinde kesikli kırmızı boş yer, hafif nabız */
+.kp-kombin-yuva {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 100%;
+  height: 100%;
+  padding: 1rem 0.8rem 0.6rem;
+  border: 2px dashed rgba(179, 20, 27, 0.45);
+  border-radius: 12px;
+  background: rgba(179, 20, 27, 0.03);
+  color: #b3141b;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+.kp-kombin-yuva svg {
+  flex: none;
+  opacity: 0.85;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .kp-kombin-yuva {
+    animation: kp-kombin-nabiz 1.6s ease-in-out infinite;
+  }
+}
+@keyframes kp-kombin-nabiz {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(179, 20, 27, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(179, 20, 27, 0.14);
+  }
+}
+/* Ürünlerin büyüteci: sweatshirt sol üstte, tişört sağ altta; dokununca tam ekran fotoğraflar */
+.kp-kombin-buyutec {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  color: var(--kp-murekkep);
+  cursor: zoom-in;
+}
+/* Dokunma alanı ~44 px */
+.kp-kombin-buyutec::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+}
+.kp-kombin-buyutec--sol {
+  left: 0;
+  top: 0;
+}
+.kp-kombin-buyutec--sag {
+  right: 0;
+  bottom: 0;
+}
+/* Önizlemenin altında 3 adım: Sweatshirt — Hediye tişört — Patch'ler. Etkin koyu, tamamlanan kırmızı ✓, hediye
+   adımı etkinken numarası kırmızı */
+.kp-kombin-adimlar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 560px;
+  margin: 0.8rem 0 0.2rem;
+  padding: 0 0.6rem;
+  list-style: none;
+}
+.kp-kombin-adimlar[hidden] {
+  display: none;
+}
+.kp-kombin-adim {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  color: var(--kp-ikincil);
   font-size: 1.2rem;
   font-weight: 600;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+.kp-kombin-adim:last-child {
+  flex: none;
+}
+.kp-kombin-adim:not(:last-child)::after {
+  content: '';
+  flex: 1 1 auto;
+  min-width: 0.8rem;
+  height: 1.5px;
+  margin: 0 0.2rem;
+  background: var(--kp-cizgi);
+}
+.kp-kombin-adim__no {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--kp-cizgi);
+  border-radius: 50%;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+.kp-kombin-adim--etkin,
+.kp-kombin-adim--tamam {
+  color: var(--kp-murekkep);
+}
+.kp-kombin-adim--etkin .kp-kombin-adim__no {
+  border-color: var(--kp-murekkep);
+  background: var(--kp-murekkep);
+  color: #fff;
+}
+.kp-kombin-adim--tamam .kp-kombin-adim__no,
+.kp-kombin-adim--hediye .kp-kombin-adim__no {
+  border-color: #b3141b;
+  background: #b3141b;
+  color: #fff;
+}
+/* Ana buton eksik varken yol gösterir: beyaz zemin, kırmızı çerçeve ve yazı ("Yaşını seç ↓"); tamamsa koyu */
+.kp-editor .kp-alt__ileri.kp-alt__ileri--yol {
+  border: 2px solid #b3141b !important;
+  background: var(--kp-zemin) !important;
+  box-shadow: none !important;
+  color: #b3141b !important;
+}
+.kp-editor .kp-alt__ileri.kp-alt__ileri--yol::before,
+.kp-editor .kp-alt__ileri.kp-alt__ileri--yol::after {
+  display: none;
+}
+@media (min-width: 990px) {
+  .kp-editor.kp-editor--kombin-sec:not(.kp-editor--alt):not(.kp-editor--ozet) .kp-onizleme__ic {
+    max-width: 860px;
+  }
+  .kp-kombin-onizleme {
+    height: clamp(280px, 42vh, 440px);
+    border-radius: 16px;
+  }
+  .kp-kombin-adimlar {
+    margin-top: 1.6rem;
+  }
+  .kp-kombin-adim {
+    font-size: 1.35rem;
+  }
+  .kp-kombin-adim__no {
+    width: 24px;
+    height: 24px;
+    font-size: 1.15rem;
+  }
+  .kp-kombin-yuva {
+    font-size: 1.5rem;
+  }
+  .kp-kombin-yuva svg {
+    width: 56px;
+    height: 56px;
+  }
+  .kp-kombin-hediye--onizleme {
+    font-size: 1.25rem;
+  }
 }
 /* Tasarım ekranındaki tişört satırında görsel: dokununca tam ekran */
 .kp-dahil__tisort-gorsel {

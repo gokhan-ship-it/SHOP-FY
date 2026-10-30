@@ -1,5 +1,6 @@
 // Kombin kopyasının gerçek önizlemesi (preview_theme_id): ana sayfa kutusu, Kendin Tasarla ilk kartı, vitrin sayfası ve
-// editörün kombin modu (sepete eklemeden). Meta / GA4 / Shopify olay istekleri kesilir; ekran görüntüsü alınmaz.
+// editörün kombin modu (v4: Kombinini seç ekranında kombin önizlemesi, 3 adım, yol gösteren ana buton; sepete eklemeden).
+// Meta / GA4 / Shopify olay istekleri kesilir; ekran görüntüsü alınmaz.
 // Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node kombin-onizleme.mjs [tema] [mobil|masaustu]
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
@@ -62,33 +63,77 @@ assert.equal(veri.fiyat, 340000);
 assert.equal(veri.sweat.length, 5);
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
 await s.locator('[data-kp-panel="sweat"]:not([hidden]) .kp-kombin-renk').first().waitFor({ timeout: 15000 });
-// Kombinini seç: sweatshirt yaşı ve tişört rengi (yaş sweatshirt'ünkü gelir), sonra tasarım
+await s.waitForTimeout(800);
+// Kombinini seç (v4): kombin önizlemesi + 3 adım, sıkı bloklar, yol gösteren ana buton
+const kutu = (q) => s.locator(q).first().evaluate((e) => { const r = e.getBoundingClientRect(); return { ust: Math.round(r.top), alt: Math.round(r.bottom), yuk: Math.round(r.height), gen: Math.round(r.width) }; });
+const dugmeStili = () => s.locator('[data-kp-ileri]').evaluate((e) => { const c = getComputedStyle(e); return [c.backgroundColor, c.color, c.borderTopColor, c.borderTopWidth, getComputedStyle(e, '::before').display, getComputedStyle(e, '::after').display].join(' | '); });
+const adimlar = () => s.$$eval('[data-kp-kombin-adimlar] .kp-kombin-adim', (l) => l.map((x) => x.className.replace(/kp-kombin-adim--/g, '').replace('kp-kombin-adim', '').trim() + ':' + x.querySelector('.kp-kombin-adim__no').textContent));
+const sade = (src) => /kisisel-urun-/.test(src || '');
 sonuc.editor = {
   baslik: await yazi('#kp-p-sweat'),
+  altBaslik: await yazi('[data-kp-panel="sweat"] .kp-kombin-aciklama'),
   bloklar: await s.$$eval('[data-kp-panel="sweat"] .kp-kombin-blok__baslik', (l) => l.map((x) => x.textContent)),
-  renkler: await s.$$eval('[data-kp-kombin-renk]', (l) => l.map((x) => x.innerText.replace(/\s+/g, ' ').trim())),
-  tisortRenkleri: await s.$$eval('[data-kp-tisort-renk]', (l) => l.map((x) => x.innerText.trim() + (x.querySelector('img') ? ' (görsel)' : ''))),
-  gosterge: await yazi('[data-kp-dahil]'),
+  sweatSecim: await yazi('[data-kp-kombin-blok="sweat"] .kp-kombin-blok__secim'),
+  tisortFiyat: await yazi('[data-kp-kombin-blok="tisort"] .kp-kombin-tisort__fiyat'),
+  renkler: await s.$$eval('[data-kp-kombin-renk]', (l) => l.map((x) => x.title + (x.textContent.trim() ? ' [' + x.textContent.trim() + ']' : ''))),
+  tisortRenkleri: await s.$$eval('[data-kp-tisort-renk]', (l) => l.map((x) => x.title + (x.querySelector('img') ? ' (görsel)' : ''))),
+  kapaklarSade: await s.$$eval('[data-kp-panel="sweat"] .kp-kombin-renk img', (l) => l.every((x) => /kisisel-urun-/.test(x.src))),
+  renkKutusu: await kutu('[data-kp-kombin-renk]'),
+  yaslarKirmizi: await s.locator('[data-kp-kombin-yas].kp-kombin-yas--gerekli').count(),
+  tisortSoluk: /--soluk/.test(await s.locator('[data-kp-kombin-blok="tisort"]').getAttribute('class')),
+  onizleme: await kutu('[data-kp-kombin-onizleme]'),
+  onizlemeSweatSade: sade(await s.locator('.kp-kombin-onizleme__sweat img').getAttribute('src')),
+  bosYer: await yazi('[data-kp-kombin-onizleme] .kp-kombin-yuva'),
+  hediyeEtiketi: await yazi('[data-kp-kombin-onizleme] .kp-kombin-hediye'),
+  adimlar: await adimlar(),
+  gizli: { araclar: !(await s.locator('.kp-editor .kp-araclar').isVisible()), dahil: !(await s.locator('[data-kp-dahil]').isVisible()), sahne: !(await s.locator('.kp-editor [data-kp-sahne]').isVisible()), dugme: await s.locator('[data-kp-kombin-gorunum]').count() === 0 },
   anaButon: await yazi('[data-kp-ileri]'),
-  ikinciDugme: await s.locator('[data-kp-kombin-devam]').count(),
+  anaButonStili: await dugmeStili(),
   fiyat: await yazi('[data-kp-toplam]'),
-  tamami: await s.evaluate(() => document.querySelector('kisisel-kart').editor.sahne.yakin === false),
-  buyutec: await s.locator('[data-kp-panel="sweat"] .kp-kombin-buyutec').count(),
-  kapaklarSade: await s.$$eval('[data-kp-panel="sweat"] .kp-kombin-renk img', (l) => l.every((x) => /kisisel-urun-/.test(x.src)))
+  bloklarEkranda: await s.evaluate(() => {
+    const alt = document.querySelector('.kp-editor .kp-alt').getBoundingClientRect();
+    const b = document.querySelector('[data-kp-kombin-blok="tisort"]').getBoundingClientRect();
+    return { tisortAlti: Math.round(b.bottom), altCubukUstu: Math.round(alt.top), ekran: window.innerHeight, sigiyor: b.bottom <= alt.top + 1 };
+  })
 };
+assert.equal(sonuc.editor.anaButon, 'Yaşını seç ↓');
+assert.ok(sonuc.editor.kapaklarSade && sonuc.editor.onizlemeSweatSade, 'sade görseller');
+const olayIstegi = [];
+s.on('request', (r) => { if (/facebook\.com\/tr|google-analytics|analytics\.google|\/api\/collect/.test(r.url())) olayIstegi.push(r.url().slice(0, 80)); });
+// Sweatshirt yaşı → hediye bloğuna kayar ve parlar, "Harika!"; tişört yaşı sweatshirt'ünkü
 await s.locator('.kp-kombin-yas[data-kp-kombin-yas]').first().click();
+await s.waitForTimeout(250);
+sonuc.editor.yasSonrasi = {
+  parla: /kp-kombin-blok--parla/.test(await s.locator('[data-kp-kombin-blok="tisort"]').getAttribute('class')),
+  bildirim: await yazi('.kp-editor [data-kp-bildirim]'),
+  tisortYasi: await yazi('[data-kp-tisort-yas].kp-kombin-yas--secili'),
+  bosYer: await yazi('[data-kp-kombin-onizleme] .kp-kombin-yuva'),
+  adimlar: await adimlar(),
+  anaButon: await yazi('[data-kp-ileri]')
+};
+await s.waitForTimeout(700);
+sonuc.editor.yasSonrasi.hediyeBlogu = await kutu('[data-kp-kombin-blok="tisort"]');
+sonuc.editor.yasSonrasi.altCubukUstu = (await kutu('.kp-editor .kp-alt')).ust;
 await s.locator('[data-kp-tisort-renk]').first().click();
 await s.waitForTimeout(300);
-sonuc.editor.tisortYasi = await yazi('[data-kp-tisort-yas].kp-kombin-yas--secili');
-sonuc.editor.tisortOnizleme = { gorunur: await s.locator('[data-kp-tisort-onizleme]').isVisible(), sade: /kisisel-urun-/.test(await s.locator('[data-kp-tisort-onizleme-img]').getAttribute('src')), ad: await yazi('[data-kp-tisort-onizleme-ad]') };
-await s.locator('[data-kp-panel="sweat"] .kp-kombin-tisort .kp-kombin-buyutec').first().click();
+sonuc.editor.tisortSonrasi = {
+  onizlemeSade: sade(await s.locator('.kp-kombin-onizleme__tisort img').getAttribute('src')),
+  buyutecler: await s.$$eval('[data-kp-kombin-onizleme] [data-kp-galeri-ac]', (l) => l.map((x) => x.getAttribute('data-kp-galeri-ac').charAt(0))),
+  adimlar: await adimlar(),
+  not: await yazi('[data-kp-kombin-blok="tisort"] .kp-kombin-not'),
+  anaButon: await yazi('[data-kp-ileri]'),
+  anaButonStili: await dugmeStili()
+};
+await s.locator('[data-kp-kombin-onizleme] [data-kp-galeri-ac^="t:"]').click();
 await s.locator('[data-kp-kombin-galeri]').waitFor();
 sonuc.editor.galeri = { ad: await yazi('[data-kp-galeri-ad]'), kare: await s.locator('.kp-kombin-galeri__kare').count(), not: await s.locator('.kp-kombin-galeri__kare figcaption').count(), sayac: await yazi('[data-kp-galeri-sayac]') };
 await s.locator('[data-kp-galeri-kapat]').click();
-sonuc.editor.anaButonSonra = await yazi('[data-kp-ileri]');
+sonuc.editor.secimOlayIstegi = olayIstegi.length;
 await s.locator('[data-kp-ileri]').click();
 await s.locator('#kp-isim').waitFor();
-await s.waitForTimeout(400);
+await s.waitForTimeout(600);
+sonuc.editor.tasarimOnizleme = await kutu('.kp-editor .kp-onizleme__ic');
+sonuc.editor.tasarimGorunur = { araclar: await s.locator('.kp-editor .kp-araclar').isVisible(), dahil: await s.locator('[data-kp-dahil]').isVisible(), kombinOnizleme: await s.locator('[data-kp-kombin-onizleme]').isVisible(), sahneGorseli: await s.locator('.kp-editor .kp-onizleme .kp-sahne__urun').evaluate((e) => !!e.currentSrc && e.naturalWidth > 0) };
 sonuc.editor.ilkBildirim = await yazi('.kp-editor [data-kp-bildirim]');
 sonuc.editor.tisortSatiri = await yazi('[data-kp-dahil] .kp-dahil__tisort-ad');
 sonuc.editor.yaziNotu = await yazi('.kp-kombin-not--yazi');
