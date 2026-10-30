@@ -106,18 +106,32 @@ ${kartHtml}
 const patchMi = (vid) => (vid >= 1000 && vid < 4000);
 // Hazır set patch indirimine girmez (mağazadaki gibi: kombin-v5-sepetleri.mjs)
 const fiyat = (vid) => (patchMi(vid) ? 50000 : SET_FIYAT[vid] || (SW.some((s) => s.v.some((x) => x[0] === vid)) ? 250000 : 200000));
-function sepet(satirlar) {
+// Kombin kodu (editör simülasyonda da gönderir): sweatshirt başına bir hediye Tshirt bedava (kod indirimi, satırda başlıksız);
+// kod uygulanınca sipariş indirimi ("Ekstra %10") birleşmez, uygulanmaz
+const TSHIRT_V = new Set(TS.flatMap((x) => x.v.map((y) => y[0])));
+const SWEAT_V = new Set(SW.flatMap((x) => x.v.map((y) => y[0])));
+function sepet(satirlar, kodlar = []) {
   const lines = satirlar.map((l) => ({ v: Number(String(l.merchandiseId).split('/').pop()), q: l.quantity }));
   const n = lines.filter((l) => patchMi(l.v)).reduce((t, l) => t + l.q, 0);
   const adet = n >= 4 ? ['4lü patche indirim', 50000] : n === 3 ? ['3lü patche indirim', 30000] : n === 2 ? ['2li patche indirim', 10000] : null;
   const tl = (k) => (k / 100).toFixed(2);
   const pt = lines.filter((l) => patchMi(l.v)).reduce((t, l) => t + fiyat(l.v) * l.q, 0);
-  const nodes = lines.map((l) => ({ quantity: l.q, merchandise: { id: 'gid://shopify/ProductVariant/' + l.v },
-    discountAllocations: adet && patchMi(l.v) ? [{ title: adet[0], discountedAmount: { amount: tl(Math.round((adet[1] * fiyat(l.v) * l.q) / pt)) } }] : [] }));
-  const ara = lines.reduce((t, l) => t + fiyat(l.v) * l.q, 0) - (adet ? adet[1] : 0);
+  let bedava = kodlar.includes(KOD) ? lines.filter((l) => SWEAT_V.has(l.v)).reduce((t, l) => t + l.q, 0) : 0;
+  let kodIndirimi = 0;
+  const nodes = lines.map((l) => {
+    const d = adet && patchMi(l.v) ? [{ title: adet[0], discountedAmount: { amount: tl(Math.round((adet[1] * fiyat(l.v) * l.q) / pt)) } }] : [];
+    if (bedava && TSHIRT_V.has(l.v)) {
+      const q = Math.min(bedava, l.q);
+      bedava -= q;
+      kodIndirimi += q * fiyat(l.v);
+      d.push({ discountedAmount: { amount: tl(q * fiyat(l.v)) } });
+    }
+    return { quantity: l.q, merchandise: { id: 'gid://shopify/ProductVariant/' + l.v }, discountAllocations: d };
+  });
+  const ara = lines.reduce((t, l) => t + fiyat(l.v) * l.q, 0) - (adet ? adet[1] : 0) - kodIndirimi;
   // Mağazadaki gibi sepet düzeyinde "Ekstra %10 İndirim" (ara toplam ≥ 5.000 TL). Kombin sepetinde Shopify bunu uygulamaz
   // (kombin kodu sipariş indirimleriyle birleşmez); editör kombinde bu kampanyayı düşer
-  const on = ara >= 500000 ? Math.round(ara / 10) : 0;
+  const on = !kodIndirimi && ara >= 500000 ? Math.round(ara / 10) : 0;
   return { cost: { subtotalAmount: { amount: tl(ara) }, totalAmount: { amount: tl(ara - on) } }, discountAllocations: on ? [{ title: 'Ekstra %10 İndirim', discountedAmount: { amount: tl(on) } }] : [], lines: { nodes } };
 }
 
@@ -142,7 +156,7 @@ await s.route('https://jantifox.test/**', async (r) => {
   if (/^\/api\/[0-9-]+\/graphql\.json$/.test(url.pathname)) {
     const { variables } = JSON.parse(r.request().postData());
     const data = {};
-    for (const [ad, satirlar] of Object.entries(variables)) data[ad] = { cart: sepet(satirlar), userErrors: [] };
+    for (const [ad, satirlar] of Object.entries(variables)) if (ad !== 'kodlar') data[ad] = { cart: sepet(satirlar, variables.kodlar || []), userErrors: [] };
     return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ data }) });
   }
   if (url.pathname === '/cart/add.js') { eklenen = JSON.parse(r.request().postData()); return r.fulfill({ contentType: 'application/json', body: '{"items":[]}' }); }

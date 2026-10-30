@@ -12527,7 +12527,7 @@ html.kp-kilit body {
       if (uid) t.aksesuarlar.forEach(function (a) { if (a.uid === uid) a.tasarim = ic; });
       else t.aksesuarlar.push({ uid: 'onizleme', urunId: this.secenek.aksesuar.id, cx: 0, cy: 0, aci: 0, tasarim: ic });
       var adet0 = ana.kart.adet ? ana.kart.adet() : 1;
-      return ana.kart.sepetKalemleri(adet0, t).kalemler.filter(simSatiri).map(function (k) { return { v: k.id, q: k.quantity }; });
+      return simSatirlari(ana.kart.sepetKalemleri(adet0, t).kalemler, !!ana.kombin);
     }
     var adet = this.kart.adet ? this.kart.adet() : 1;
     if (bosMu(this.t)) return [{ v: this.m.urun.varyant, q: adet }];
@@ -12535,7 +12535,7 @@ html.kp-kilit body {
     var anahtar = JSON.stringify([this.t, adet]);
     if (this.simAnahtar !== anahtar) {
       this.simAnahtar = anahtar;
-      this.simSatirlar = this.kart.sepetKalemleri(adet, this.t).kalemler.filter(simSatiri).map(function (k) { return { v: k.id, q: k.quantity }; });
+      this.simSatirlar = simSatirlari(this.kart.sepetKalemleri(adet, this.t).kalemler, !!this.kombin);
     }
     return this.simSatirlar.map(function (r) { return { v: r.v, q: r.q }; });
   };
@@ -13589,15 +13589,29 @@ html.kp-kilit body {
     return a.replace(/\s[İI]ndirim$/, ' indirim').replace(/\s[İI]ndirimi$/, ' indirimi');
   }
 
-  function sepetIndirimleri(sepet) {
+  // atla: indirimi sayılmayacak satırların varyantları (kombinin hediye Tshirt'leri: kombin indirimi tasarımın değil)
+  function sepetIndirimleri(sepet, atla) {
     var adlar = {};
     var ekle = function (d) {
       var ad = kampanyaAdi(d.title) || 'İndirim';
       adlar[ad] = (adlar[ad] || 0) + kurus(d.discountedAmount);
     };
     (sepet.discountAllocations || []).forEach(ekle);
-    ((sepet.lines && sepet.lines.nodes) || []).forEach(function (l) { (l.discountAllocations || []).forEach(ekle); });
+    ((sepet.lines && sepet.lines.nodes) || []).forEach(function (l) {
+      if (atla && atla[satirVaryanti(l)]) return;
+      (l.discountAllocations || []).forEach(ekle);
+    });
     return adlar;
+  }
+  function satirVaryanti(l) {
+    return (l.merchandise && l.merchandise.id && String(l.merchandise.id).split('/').pop()) || '';
+  }
+  // Kombin simülasyonunda indirimi sayılmayan hediye Tshirt varyantları (kombin dışında null)
+  function kombinAtla(m) {
+    if (!m || !m.kombin) return null;
+    var h = {};
+    m.kombin.tisortler.forEach(function (s) { s.varyantlar.forEach(function (v) { h[String(v.id)] = true; }); });
+    return h;
   }
 
   var SEPET_PARCASI =
@@ -13630,7 +13644,7 @@ html.kp-kilit body {
     return x > 0 ? x : 0;
   }
 
-  function tasarimPayiSepetten(cart, tasarim) {
+  function tasarimPayiSepetten(cart, tasarim, atla) {
     var miktar = {};
     var tutar = 0;
     tasarim.forEach(function (s) {
@@ -13641,7 +13655,7 @@ html.kp-kilit body {
     var urunPayi = 0;
     ((cart.lines && cart.lines.nodes) || []).forEach(function (l) {
       var v = l.merchandise && l.merchandise.id && String(l.merchandise.id).split('/').pop();
-      if (!v || !miktar[v] || !l.quantity) return;
+      if (!v || !miktar[v] || !l.quantity || (atla && atla[v])) return;
       var oran = Math.min(1, miktar[v] / l.quantity);
       (l.discountAllocations || []).forEach(function (d) {
         var ad = kampanyaAdi(d.title) || 'İndirim';
@@ -13669,7 +13683,8 @@ html.kp-kilit body {
 
   // Kombin sepeti: kombin indirimi (hediye Tshirt) sipariş indirimleriyle birleşmez, Shopify Tshirt indirimini seçer; tutar
   // eşikli kampanyalar (Ekstra %10) kombin sepetinde uygulanmaz (Storefront: test/kombin/kombin-v5-sepetleri.mjs, h).
-  // Simülasyon Tshirt satırı ve kod olmadan yapıldığı için bu kampanyalar sonuçtan düşülür (önbellekteki sonuç değişmez).
+  // Simülasyon kodla yapılır (kampanyaHesapla); anlık yerel hesapta ve kodsuz durumda görünseler de düşülür (önbellekteki
+  // sonuç değişmez).
   function kombinEsiksiz(m, sonuc) {
     if (!m || !m.kombin || !sonuc || sonuc.hata) return sonuc;
     var adlar = (m.ayar.kampanyaEsikleri || []).map(function (e) { return kampanyaAdi(e.baslik); });
@@ -13950,24 +13965,33 @@ html.kp-kilit body {
       if (kampanyaOnbellek[anahtar]) return kampanyaOnbellek[anahtar];
       var degiskenler = { a: satirGirdisi(temel), b: satirGirdisi(temel.concat(tasarimSatirlari)) };
       var tanim = '$a: [CartLineInput!]!, $b: [CartLineInput!]!';
-      var govde = 'a: cartCreate(input: { lines: $a }) { cart { ...C } userErrors { message } } b: cartCreate(input: { lines: $b }) { cart { ...C } userErrors { message } }';
+      // Kombin: sepete yazılan kombin kodu simülasyonda da (gerçek sepetteki gibi: kod sipariş indirimleriyle birleşmez,
+      // Shopify Tshirt indirimini ve patch indirimlerini birlikte uygular)
+      var kod = m && m.kombin && m.kombin.kod;
+      var kodlar = kod ? ', discountCodes: $kodlar' : '';
+      if (kod) {
+        degiskenler.kodlar = [kod];
+        tanim += ', $kodlar: [String!]';
+      }
+      var govde = 'a: cartCreate(input: { lines: $a' + kodlar + ' }) { cart { ...C } userErrors { message } } b: cartCreate(input: { lines: $b' + kodlar + ' }) { cart { ...C } userErrors { message } }';
       (ekSatirlar || []).forEach(function (e, i) {
         degiskenler['e' + i] = satirGirdisi(temel.concat(tasarimSatirlari, e.satirlar));
         tanim += ', $e' + i + ': [CartLineInput!]!';
-        govde += ' e' + i + ': cartCreate(input: { lines: $e' + i + ' }) { cart { ...C } userErrors { message } }';
+        govde += ' e' + i + ': cartCreate(input: { lines: $e' + i + kodlar + ' }) { cart { ...C } userErrors { message } }';
       });
+      var atla = kombinAtla(m);
       var sorgu = { query: 'mutation Simulasyon(' + tanim + ') { ' + govde + ' } ' + SEPET_PARCASI, variables: degiskenler };
       var soz = kampanyaIstegi(sorgu)
         .then(function (j) {
           var d = j && j.data;
           if (!d || !d.a || !d.b || !d.a.cart || !d.b.cart) throw new Error('Simülasyon başarısız');
-          var once = sepetIndirimleri(d.a.cart);
-          var sonra = sepetIndirimleri(d.b.cart);
+          var once = sepetIndirimleri(d.a.cart, atla);
+          var sonra = sepetIndirimleri(d.b.cart, atla);
           var ekler = {};
           (ekSatirlar || []).forEach(function (e, i) {
             var c = d['e' + i] && d['e' + i].cart;
             if (!c) return;
-            var ek = sepetIndirimleri(c);
+            var ek = sepetIndirimleri(c, atla);
             ekler[e.ad] = { kampanyalar: kampanyaFarki(once, ek), indirim: toplamIndirim(ek) - toplamIndirim(once), aktif: ek, sepetIndirim: toplamIndirim(ek) };
           });
           var uygunAdet = null;
@@ -13983,7 +14007,7 @@ html.kp-kilit body {
           var sonuc = kampanyaSonucu(once, sonra, kurus(d.b.cart.cost && d.b.cart.cost.subtotalAmount), uygunAdet, ekler);
           // Sepette başka ürün yoksa indirimin tamamı tasarımındır
           if (!temel.length) payEkle(sonuc, Object.assign({}, sonra));
-          else if (m) payEkle(sonuc, tasarimPayiSepetten(d.b.cart, satirlariZenginlestir(m, tasarimSatirlari)));
+          else if (m) payEkle(sonuc, tasarimPayiSepetten(d.b.cart, satirlariZenginlestir(m, tasarimSatirlari), atla));
           sonucSakla(anahtar, sonuc);
           return sonuc;
         });
@@ -14311,9 +14335,13 @@ html.kp-kilit body {
     return kombinTakililar(parcalar).length;
   }
 
-  // Kampanya simülasyonuna giren satırlar: kombinin hediye Tshirt'ü hariç (indirimini Shopify'daki kombin indirimi yapar)
+  // Kampanya simülasyonuna giren satırlar: kombinin hediye Tshirt'ü hariç (indirimini Shopify'daki kombin indirimi yapar).
+  // Kombin editöründe Tshirt da girer (simSatirlari): gerçek sepetteki indirim seçimi aynı olsun; indirimi sayılmaz (kombinAtla)
   function simSatiri(k) {
     return !(k.properties && k.properties._tasarim_rol === 'hediye');
+  }
+  function simSatirlari(kalemler, kombin) {
+    return kalemler.filter(function (k) { return kombin || simSatiri(k); }).map(function (k) { return { v: k.id, q: k.quantity }; });
   }
 
   // Tasarımın bütün kayıtlı konumlarını (yazı blokları, ayrı harfler, patch'ler, aksesuarlar) dx, dy kadar kaydırır
@@ -15806,7 +15834,7 @@ html.kp-kilit body {
   KisiselKart.prototype.kartKampanyaGuncelle = function () {
     if (bosMu(this.tasarim)) return;
     var self = this;
-    var satirlar = this.sepetKalemleri(this.adet(), this.tasarim).kalemler.filter(simSatiri).map(function (k) { return { v: k.id, q: k.quantity }; });
+    var satirlar = simSatirlari(this.sepetKalemleri(this.adet(), this.tasarim).kalemler, !!this.kombin);
     var anahtar = JSON.stringify([satirlar, kampanyaSurumu]);
     if (anahtar === this.kartKampanyaAnahtari) return;
     this.kartKampanyaAnahtari = anahtar;
