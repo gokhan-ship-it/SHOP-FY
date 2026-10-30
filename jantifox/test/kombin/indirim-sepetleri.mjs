@@ -22,9 +22,10 @@ const SEPETLER = {
   '3 patch + T (sweatshirt yok)': [satir(P[0]), satir(P[1]), satir(P[2]), satir(V.bejT)],
   '2 S + T (patch yok)': [satir(V.bejS), satir(V.maviS), satir(V.bejT)],
   '7 patch + T (sweatshirt yok)': [satir(P[0]), satir(P[1]), satir(P[2]), satir(P[3]), satir(P[4]), satir(V.harfA), satir(V.harfD), satir(V.bejT)].map((x, i) => x),
-  'S + 2 patch + 2 T (bir kombin, iki tişört)': [satir(V.bejS), satir(P[0]), satir(P[1]), satir(V.bejT), satir(V.maviT)]
+  'S + 2 patch + 2 T (bir kombin, iki tişört)': [satir(V.bejS), satir(P[0]), satir(P[1]), satir(V.bejT), satir(V.maviT)],
+  'S + 4 patch + T': [satir(V.bejS), satir(P[0]), satir(P[1]), satir(P[2]), satir(P[3]), satir(V.bejT)]
 };
-const KODLAR = { 'tutar ≥3.500': 'KMB3500-3BFD8', 'tutar ≥3.400': 'KMB3400-LJGC9', 'adet ≥3': 'KMBADET3-4P5BE' };
+const KODLAR = { 'tutar ≥3.500': 'KMB3500-3BFD8', 'tutar ≥3.400': 'KMB3400-LJGC9', 'adet ≥3': 'KMBADET3-4P5BE', 'yalnız 1 sweatshirt': 'KMBSWEAT1-9TQ4M' };
 const EK = { 'a) + FIRSTORDER': ['a) tek kombin (S + 2 patch + T)', 'FIRSTORDER'], 'a) + DEARMOMS': ['a) tek kombin (S + 2 patch + T)', 'DEARMOMS'] };
 const SORGU = `mutation S($lines: [CartLineInput!]!, $codes: [String!]) { cartCreate(input: { lines: $lines, discountCodes: $codes }) { cart { cost { subtotalAmount { amount } totalAmount { amount } } discountCodes { code applicable } discountAllocations { discountedAmount { amount } ... on CartCodeDiscountAllocation { code } ... on CartAutomaticDiscountAllocation { title } } lines(first: 30) { nodes { quantity merchandise { ... on ProductVariant { title product { title } } } cost { totalAmount { amount } subtotalAmount { amount } } discountAllocations { discountedAmount { amount } ... on CartCodeDiscountAllocation { code } ... on CartAutomaticDiscountAllocation { title } } } } } userErrors { message } } }`;
 const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
@@ -37,7 +38,7 @@ const hesapla = (lines, codes) => s.evaluate(async ({ q, lines, codes }) => {
   const c = j.data && j.data.cartCreate && j.data.cartCreate.cart;
   if (!c) return { hata: JSON.stringify(j).slice(0, 300) };
   const ad = (a) => a.code || a.title || 'indirim';
-  const tisort = c.lines.nodes.filter((l) => /Tshirt/i.test(l.merchandise.product.title));
+  const tisort = c.lines.nodes.filter((l) => / Tshirt$/i.test(l.merchandise.product.title));
   return {
     ara: Number(c.cost.subtotalAmount.amount), toplam: Number(c.cost.totalAmount.amount),
     kodlar: c.discountCodes.map((d) => d.code + (d.applicable ? '' : ' (uygulanmadı)')),
