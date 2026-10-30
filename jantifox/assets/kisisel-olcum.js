@@ -290,8 +290,9 @@
     if (kutu || !document.body) return;
     kutu = document.createElement('div');
     kutu.setAttribute('data-kp-olcum', '');
-    kutu.style.cssText = 'position:fixed;z-index:2147483647;left:6px;bottom:calc(6px + env(safe-area-inset-bottom));' +
-      'max-width:calc(100vw - 12px);max-height:55vh;overflow:auto;padding:6px 8px;border-radius:8px;' +
+    // Sol üstte; varsayılan kısa görünüm (sayaçlar ve son olaylar): editörün alttaki panelini kapatmaz. "Ayrıntı" tüm ölçümü açar
+    kutu.style.cssText = 'position:fixed;z-index:2147483647;left:6px;top:calc(6px + env(safe-area-inset-top));' +
+      'max-width:calc(100vw - 12px);max-height:var(--kp-olcum-yukseklik,22vh);overflow:auto;padding:6px 8px;border-radius:8px;' +
       'background:rgba(0,0,0,.72);color:#fff;font:10px/1.35 ui-monospace,Menlo,monospace;visibility:visible;' +
       '-webkit-text-size-adjust:100%;pointer-events:auto';
     var ust = document.createElement('div');
@@ -301,11 +302,19 @@
     baslik.style.cssText = 'flex:1;font-size:11px';
     var kopyala = dugme('Kopyala');
     var temizle = dugme('Olayları sil');
+    var ayrinti = dugme('Ayrıntı');
     var kucult = dugme('–');
     ust.appendChild(baslik);
     ust.appendChild(kopyala);
     ust.appendChild(temizle);
+    ust.appendChild(ayrinti);
     ust.appendChild(kucult);
+    ayrinti.addEventListener('click', function () {
+      ayrintiAcik = !ayrintiAcik;
+      ayrinti.textContent = ayrintiAcik ? 'Kısa' : 'Ayrıntı';
+      kutu.style.setProperty('--kp-olcum-yukseklik', ayrintiAcik ? '55vh' : '22vh');
+      ciz();
+    });
     temizle.addEventListener('click', function () {
       olaylar.length = 0;
       try { sessionStorage.removeItem('kp_olcum_olaylar'); } catch (e) { /* yoksay */ }
@@ -353,9 +362,14 @@
     return b;
   }
 
+  var ayrintiAcik = false;
+  function kisaMetin() {
+    var s = olayMetni().split('\n');
+    return s.slice(0, 7).join('\n') + (s.length > 7 ? '\n  … (Ayrıntı)' : '');
+  }
   function ciz() {
     if (!kutu) return;
-    pre.textContent = metin();
+    pre.textContent = ayrintiAcik ? metin() : kisaMetin();
   }
   var bekliyor = false;
   function planla() {
