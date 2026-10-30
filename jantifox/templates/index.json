@@ -68,13 +68,14 @@
             "button_type_2": "primary"
           }
         },
-        "slide_FA4tnT": {
+        "slide_6AUpwU": {
           "type": "slide",
+          "disabled": true,
           "settings": {
-            "slide_link": "shopify://collections/le-koko-collectif",
+            "image": "shopify://shop_images/banner-01-mobil.jpg",
+            "mobile_image": "shopify://shop_images/banner-01-mobil.jpg",
+            "slide_link": "https://jantifox.com/collections/janti-patchler",
             "video_background": true,
-            "video_hosted": "shopify://files/videos/video-banner-01.mp4",
-            "video_mobile": "shopify://files/videos/video-banner-01_1d5b5c87-8c33-4788-8604-41f250cc0f14.mp4",
             "content_width": 500,
             "content_position": "middle-center",
             "mobile_content_position": "middle-center",
@@ -96,12 +97,12 @@
             "button_type_2": "primary"
           }
         },
-        "slide_XVPJhd": {
+        "slide_AkyUha": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/janti-banner-2.jpg",
-            "mobile_image": "shopify://shop_images/janti-banner-1-2-mobil.jpg",
-            "slide_link": "shopify://collections/le-koko-collectif",
+            "image": "shopify://shop_images/banner-02_b3cc5dd8-4cbc-44d6-b91c-81cd84c5023f.jpg",
+            "mobile_image": "shopify://shop_images/banner-02-mobil.jpg",
+            "slide_link": "https://jantifox.com/collections/le-koko-collectif",
             "video_background": false,
             "content_width": 500,
             "content_position": "middle-center",
@@ -124,13 +125,12 @@
             "button_type_2": "primary"
           }
         },
-        "slide_AkyUha": {
+        "slide_hkcEB3": {
           "type": "slide",
-          "disabled": true,
           "settings": {
-            "image": "shopify://shop_images/janti-banner-6.jpg",
-            "mobile_image": "shopify://shop_images/janti-banner-6-mobil.jpg",
-            "slide_link": "shopify://collections/le-koko-collectif",
+            "image": "shopify://shop_images/banner-03.jpg",
+            "mobile_image": "shopify://shop_images/banner-03-mobil.jpg",
+            "slide_link": "https://jantifox.com/collections/kiyafet",
             "video_background": false,
             "content_width": 500,
             "content_position": "middle-center",
@@ -273,9 +273,9 @@
       "block_order": [
         "slide_tzrAiQ",
         "slide_n9La9k",
-        "slide_FA4tnT",
-        "slide_XVPJhd",
+        "slide_6AUpwU",
         "slide_AkyUha",
+        "slide_hkcEB3",
         "slide_FxqKA9",
         "slide_bhtBXp",
         "slide_9jFTD6",
@@ -457,8 +457,8 @@
         "columns_desktop": 4,
         "swipe_on_mobile": true,
         "show_progress_bar": false,
-        "kisisel_buton": "kirmizi",
         "filtreler": true,
+        "kisisel_buton": "kirmizi",
         "ornek_tasarim": true,
         "ornek_isimler": "ATLAS, LEYLA, PERA, EGE, MIRO, ADA, ECE",
         "buton_metni": "Tüm kişiselleştirilebilir ürünler →",
