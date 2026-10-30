@@ -4902,7 +4902,7 @@ html.kp-kilit body {
 /* ---------- Sweatshirt kombini (editörün kombin modu) ---------- */
 /* Önizlemenin hemen altında, panel kayınca da görünen dahil patch göstergesi: iki yuva (boşken kesikli çerçeve, takılınca
    patch'in küçük görseli + ✓), "3.400 TL'ye 2 patch dahil"; dolunca "2 patch dahil ✓ · Sıradaki patch +300 TL".
-   Tasarım ekranında altında seçili hediye tişört ve "Değiştir" */
+   Tasarım ekranında altında seçili hediye Tshirt ve "Değiştir" */
 .kp-dahil {
   display: flex;
   flex-direction: column;
@@ -5040,7 +5040,7 @@ html.kp-kilit body {
 .kp-editor .kp-alt__ileri.kp-alt__ileri--pasif {
   opacity: 0.55;
 }
-/* Kombinini seç (v4, sıkı): başlık ve alt başlık, Sweatshirt ve Hediye tişört blokları; renkler tek satırda küçük kare
+/* Kombinini seç (v4, sıkı): başlık ve alt başlık, Sweatshirt ve Hediye Tshirt blokları; renkler tek satırda küçük kare
    görseller, yaşlar altında. Telefonda iki blok ve alt çubuk mümkün olduğunca kaydırmadan sığar. */
 .kp-kombin-baslik {
   margin: 0;
@@ -5184,7 +5184,7 @@ html.kp-kilit body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Hediye tişört bloğu: kırmızı çerçeve, sol üstte "HEDİYE"; sweatshirt yaşı seçilene kadar soluk (seçilebilir) */
+/* Hediye Tshirt bloğu: kırmızı çerçeve, sol üstte "HEDİYE"; sweatshirt yaşı seçilene kadar soluk (seçilebilir) */
 .kp-kombin-tisort {
   margin-top: 1.6rem;
   padding-top: 1.5rem;
@@ -5230,7 +5230,7 @@ html.kp-kilit body {
   top: -11px;
   left: 12px;
 }
-/* Özet: seçili hediye tişört ve "Değiştir" */
+/* Özet: seçili hediye Tshirt ve "Değiştir" */
 .kp-kombin-ozet-tisort {
   display: flex;
   align-items: center;
@@ -5312,7 +5312,7 @@ html.kp-kilit body {
   width: 100%;
   max-width: 560px;
 }
-/* Kombin önizlemesi: solda büyük sweatshirt, sağ altta biraz küçük, hafif üstüne binen ve gölgeli hediye tişört */
+/* Kombin önizlemesi: solda büyük sweatshirt, sağ altta biraz küçük, hafif üstüne binen ve gölgeli hediye Tshirt */
 .kp-kombin-onizleme {
   position: relative;
   height: clamp(150px, 25vh, 210px);
@@ -5369,7 +5369,7 @@ html.kp-kilit body {
   right: 10%;
   transform: translateY(-50%);
 }
-/* Tişört seçilene kadar yerinde kesikli kırmızı boş yer, hafif nabız */
+/* Tshirt seçilene kadar yerinde kesikli kırmızı boş yer, hafif nabız */
 .kp-kombin-yuva {
   display: flex;
   flex-direction: column;
@@ -5406,7 +5406,7 @@ html.kp-kilit body {
     box-shadow: 0 0 0 6px rgba(179, 20, 27, 0.14);
   }
 }
-/* Ürünlerin büyüteci: sweatshirt sol üstte, tişört sağ altta; dokununca tam ekran fotoğraflar */
+/* Ürünlerin büyüteci: sweatshirt sol üstte, Tshirt sağ altta; dokununca tam ekran fotoğraflar */
 .kp-kombin-buyutec {
   position: absolute;
   z-index: 2;
@@ -5437,7 +5437,7 @@ html.kp-kilit body {
   right: 0;
   bottom: 0;
 }
-/* Önizlemenin altında 3 adım: Sweatshirt — Hediye tişört — Patch'ler. Etkin koyu, tamamlanan kırmızı ✓, hediye
+/* Önizlemenin altında 3 adım: Sweatshirt — Hediye Tshirt — Patch'ler. Etkin koyu, tamamlanan kırmızı ✓, hediye
    adımı etkinken numarası kırmızı */
 .kp-kombin-adimlar {
   display: flex;
@@ -5541,7 +5541,7 @@ html.kp-kilit body {
     font-size: 1.25rem;
   }
 }
-/* Tasarım ekranındaki tişört satırında görsel: dokununca tam ekran */
+/* Tasarım ekranındaki Tshirt satırında görsel: dokununca tam ekran */
 .kp-dahil__tisort-gorsel {
   flex: none;
   display: inline-flex;

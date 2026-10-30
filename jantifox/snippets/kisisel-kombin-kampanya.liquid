@@ -3,7 +3,7 @@
   çizilir: ana sayfa şablonu Shopify'ın 25 bölüm sınırında olduğundan ayrı bölüm eklenemiyor. Kombin açıkken (tema ayarı
   ve tarih aralığı, kisisel-kombin-acik) görünür; kapalıyken hiçbir şey yazmaz. Metinler, görsel ve fiyatlar
   Tema ayarları → Sweatshirt kombini'nden. Buton vitrin ürününün sayfasını editör açık getirir (?kisisellestir=1).
-  Görsel: ayardaki görsel, yoksa vitrin ürününün ana görseli; köşede ilk hediye tişörtün küçük görseli.
+  Görsel: ayardaki görsel, yoksa vitrin ürününün ana görseli; köşede ilk hediye Tshirt'ün küçük görseli.
 
   Kullanım: {% render 'kisisel-kombin-kampanya', genislik: section.settings.section_width, bolum: section.id %}
 {%- endcomment -%}
@@ -13,9 +13,9 @@
   {%- liquid
     assign kk_link = kk_vitrin.url | append: '?kisisellestir=1'
     assign kk_gorsel = settings.kombin_ana_gorsel | default: kk_vitrin.featured_media.preview_image
-    assign kk_etiket = settings.kombin_ana_etiket | default: 'TİŞÖRT HEDİYE'
-    assign kk_baslik = settings.kombin_ana_baslik | default: "Sweatshirt'ünü tasarla, tişört bizden"
-    assign kk_alt = settings.kombin_ana_alt | default: '1 sweatshirt + 2 patch 3.400 TL. Hediye tişörtün rengini sen seç.'
+    assign kk_etiket = settings.kombin_ana_etiket | default: 'TSHIRT HEDİYE'
+    assign kk_baslik = settings.kombin_ana_baslik | default: "Sweatshirt'ünü tasarla, Tshirt bizden"
+    assign kk_alt = settings.kombin_ana_alt | default: "1 sweatshirt + 2 patch 3.400 TL. Hediye Tshirt'ün rengini sen seç."
     assign kk_buton = settings.kombin_ana_buton | default: 'Kombinini Tasarla'
     assign kk_tisortler = settings.kombin_tisortler | remove: ' ' | split: ','
     assign kk_tisort = all_products[kk_tisortler.first]

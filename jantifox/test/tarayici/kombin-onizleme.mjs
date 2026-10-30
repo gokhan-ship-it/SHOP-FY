@@ -37,18 +37,18 @@ sonuc.anaSayfa = await s.evaluate(() => {
   };
 });
 assert.ok(sonuc.anaSayfa, 'ana sayfa kutusu');
-assert.match(sonuc.anaSayfa.metin, /Sweatshirt'ünü tasarla, tişört bizden/);
+assert.match(sonuc.anaSayfa.metin, /Sweatshirt'ünü tasarla, Tshirt bizden/);
 assert.match(sonuc.anaSayfa.metin, /3\.400 TL 5\.400 TL/);
 assert.ok(sonuc.anaSayfa.arada, 'kutu Çok satanlar\'ın hemen üstünde');
 
-// 2) Kendin Tasarla: ilk kart vitrin, "Tişört hediye"
+// 2) Kendin Tasarla: ilk kart vitrin, "Tshirt hediye"
 await git('/collections/kendin-tasarla');
 sonuc.kendinTasarla = await s.evaluate(() => {
   const li = document.querySelector('#product-grid > li');
   return li && { kombin: li.hasAttribute('data-kp-kombin-kart'), metin: li.innerText.replace(/\s+/g, ' ').trim().slice(0, 160), gorunur: li.offsetParent !== null };
 });
 assert.ok(sonuc.kendinTasarla && sonuc.kendinTasarla.kombin, 'ilk kart kombin');
-assert.match(sonuc.kendinTasarla.metin, /Tişört hediye/);
+assert.match(sonuc.kendinTasarla.metin, /Tshirt hediye/);
 
 // 3) Vitrin sayfası ve editör (kombin modu)
 await git('/products/sweatshirt-kombini');
@@ -105,7 +105,7 @@ s.on('request', (r) => {
   if (/facebook\.com\/tr|google-analytics|analytics\.google|googletagmanager\.com\/g\/collect/.test(r.url())) olayIstegi.push(r.url().slice(0, 160));
   else if (/\/api\/collect/.test(r.url())) sinyal.push((r.postData() || '').slice(0, 200));
 });
-// Sweatshirt yaşı → hediye bloğuna kayar ve parlar, "Harika!"; tişört yaşı sweatshirt'ünkü
+// Sweatshirt yaşı → hediye bloğuna kayar ve parlar, "Harika!"; Tshirt yaşı sweatshirt'ünkü
 await s.locator('.kp-kombin-yas[data-kp-kombin-yas]').first().click();
 await s.waitForTimeout(250);
 sonuc.editor.yasSonrasi = {

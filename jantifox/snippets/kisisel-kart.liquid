@@ -10,7 +10,7 @@
 
   Sweatshirt kombini (vitrin sayfası, sections/kisisel-kombin-vitrin.liquid): product kombinin ilk sweatshirt'ü,
   kombin: true. Kart kombin açıkken (kisisel-kombin-acik) görünür; editör kombin modunda açılır (sweatshirt rengi ve
-  yaşı, 2 patch dahil, hediye tişört). Kombin verisi kisisel-kombin-veri'den gelir.
+  yaşı, 2 patch dahil, hediye Tshirt). Kombin verisi kisisel-kombin-veri'den gelir.
 {%- endcomment -%}
 {%- liquid
   assign kisisel_aktif = false
@@ -60,7 +60,7 @@
     <div class="kisisel-kart__tekrar" data-kisisel-tekrar hidden>
       <div class="kisisel-kart__tekrar-metin">
         <p class="kisisel-kart__tekrar-baslik">Bir tane daha yapmak ister misin?</p>
-        <p class="kisisel-kart__tekrar-alt">{% if kombin %}Başka bir renkte ikinci kombinini tasarla, tişörtü yine hediye.{% elsif kp_tek %}Farklı bir patch'le ikinci çantanı tasarla.{% else %}Farklı bir isim ve patch'lerle ikinci çantanı tasarla.{% endif %}</p>
+        <p class="kisisel-kart__tekrar-alt">{% if kombin %}Başka bir renkte ikinci kombinini tasarla, Tshirt'ü yine hediye.{% elsif kp_tek %}Farklı bir patch'le ikinci çantanı tasarla.{% else %}Farklı bir isim ve patch'lerle ikinci çantanı tasarla.{% endif %}</p>
       </div>
       <button type="button" class="btn kisisel-kart__buton--marka kisisel-kart__tekrar-buton" data-kisisel-yeni>Yeni tasarım</button>
     </div>
@@ -72,7 +72,7 @@
           <span class="kisisel-kart__ornek" data-kisisel-ornek aria-hidden="true">{% if kombin %}<span>A</span><span>B</span>{% elsif kp_tek %}<span>A</span>{% else %}<span>A</span><span>B</span><span>C</span>{% endif %}</span>
           <div class="kisisel-kart__metin">
             <p class="kisisel-kart__baslik">{% if kombin %}Kombinini tasarla{% else %}Ürünü kişiselleştir{% endif %}</p>
-            <p class="kisisel-kart__aciklama">{% if kombin %}Sweatshirt'ünü ve hediye tişörtünü seç, 2 patch'ini tak: ikisi fiyata dahil.{% elsif kp_tek %}Bir harf, rakam ya da ikon patch'i seç, çantanın üzerinde canlı gör.{% else %}İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.{% endif %}</p>
+            <p class="kisisel-kart__aciklama">{% if kombin %}Sweatshirt'ünü ve hediye Tshirt'ünü seç, 2 patch'ini tak: ikisi fiyata dahil.{% elsif kp_tek %}Bir harf, rakam ya da ikon patch'i seç, çantanın üzerinde canlı gör.{% else %}İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.{% endif %}</p>
           </div>
         </div>
         <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-ac>
@@ -112,7 +112,7 @@
 
       <p class="kisisel-kart__cirt">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        <span>{% if kombin %}Patch'leri Velcro yüzeye sen takarsın; hediye tişörtüne de takabilirsin.{% elsif kp_tek %}Ön yüzdeki Velcro'ya patch'i sen takarsın, istediğin zaman değiştirirsin.{% else %}Ön yüzdeki Velcro yüzeye patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.{% endif %}</span>
+        <span>{% if kombin %}Patch'leri Velcro yüzeye sen takarsın; hediye Tshirt'üne de takabilirsin.{% elsif kp_tek %}Ön yüzdeki Velcro'ya patch'i sen takarsın, istediğin zaman değiştirirsin.{% else %}Ön yüzdeki Velcro yüzeye patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.{% endif %}</span>
       </p>
     </div>
 

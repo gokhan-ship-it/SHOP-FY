@@ -1,7 +1,7 @@
-// Sepette Sweatshirt kombini (2026-10-30): hediye tişört grubun son satırı ("🎁 Hediye tişört"), rozet "Sweatshirt
+// Sepette Sweatshirt kombini (2026-10-30): hediye Tshirt grubun son satırı ("🎁 Hediye Tshirt"), rozet "Sweatshirt
 // kombini", kombin satırlarında adet kutusu yok ve adet değiştirilemez. Patch silinince kombin bozulacaksa onaydan sonra
-// patch ve tişört birlikte çıkar; sweatshirt silinirse grup (tişört dahil) çıkar; bozuk kombinde (sweatshirt yok) uyarı
-// ve "Tişörtü çıkar".
+// patch ve Tshirt birlikte çıkar; sweatshirt silinirse grup (Tshirt dahil) çıkar; bozuk kombinde (sweatshirt yok) uyarı
+// ve "Tshirt'ü çıkar".
 // Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node kombin-sepet-e2e.mjs
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
@@ -14,7 +14,7 @@ const K = 'TKMB';
 const oz = (rol, ek = {}) => ({ 'Tasarım': 'AB', _tasarim_id: K, _tasarim_rol: rol, _kombin: K, ...ek });
 const kalem = (key, variant_id, product_title, variant_title, properties, quantity = 1) => ({ key, variant_id, product_title, variant_title, quantity, properties, final_line_price: 0 });
 const tamSepet = () => ({ items: [
-  kalem('k-t', 51790886666526, 'Pudra Pembe Tshirt', '4-5 yaş', { 'Kombin': 'Hediye tişört', _tasarim_id: K, _tasarim_rol: 'hediye', _kombin: K, _adet_birim: '1' }),
+  kalem('k-t', 51790886666526, 'Pudra Pembe Tshirt', '4-5 yaş', { 'Kombin': 'Hediye Tshirt', _tasarim_id: K, _tasarim_rol: 'hediye', _kombin: K, _adet_birim: '1' }),
   kalem('k-b', 1001, 'Cool Alfabe Patch', 'B', oz('patch', { 'Harf sırası': '2', _adet_birim: '1' })),
   kalem('k-a', 1000, 'Cool Alfabe Patch', 'A', oz('patch', { 'Harf sırası': '1', _adet_birim: '1' })),
   kalem('k-s', 50171329544478, 'İndigo Sweatshirt', '3-5', oz('baz', { 'İsim': 'AB', _tasarim_konum: '{"v":1,"p":[{"v":1000},{"v":1001}]}' })),
@@ -50,13 +50,13 @@ const ac = async () => {
   await s.waitForTimeout(150);
 };
 
-// 1) Grup: sweatshirt, patch'ler, en sonda tişört; rozet, hediye etiketi, adet kutuları gizli
+// 1) Grup: sweatshirt, patch'ler, en sonda Tshirt; rozet, hediye etiketi, adet kutuları gizli
 await ac();
 const sira = await s.$$eval('.liste > .cart-item', (l) => l.map((x) => x.id));
-assert.deepEqual(sira.slice(0, 4), ['CartDrawer-Item-4', 'CartDrawer-Item-2', 'CartDrawer-Item-3', 'CartDrawer-Item-1'], 'tişört grubun sonunda');
+assert.deepEqual(sira.slice(0, 4), ['CartDrawer-Item-4', 'CartDrawer-Item-2', 'CartDrawer-Item-3', 'CartDrawer-Item-1'], 'Tshirt grubun sonunda');
 assert.equal(await s.locator('#CartDrawer-Item-4 .kp-sepet-rozet').textContent(), 'Sweatshirt kombini');
-assert.equal(await s.locator('#CartDrawer-Item-1 .kp-sepet-aks').textContent(), '🎁 Hediye tişört');
-assert.ok(await s.locator('#CartDrawer-Item-1').isVisible(), 'tişört satırı görünür');
+assert.equal(await s.locator('#CartDrawer-Item-1 .kp-sepet-aks').textContent(), '🎁 Hediye Tshirt');
+assert.ok(await s.locator('#CartDrawer-Item-1').isVisible(), 'Tshirt satırı görünür');
 assert.equal(await s.locator('.kp-sepet-kombin quantity-input:visible').count(), 0, 'kombin satırlarında adet yok');
 assert.ok(await s.locator('#CartDrawer-Item-5 quantity-input').isVisible(), 'diğer ürünün adedi var');
 assert.equal(await s.locator('.kp-sepet-kombin-uyari').count(), 0, 'kombin sağlam: uyarı yok');
@@ -67,32 +67,32 @@ await s.waitForTimeout(200);
 assert.equal(istekler.length, 0, 'adet isteği yok');
 assert.equal(await s.locator('#CartDrawer-Item-4 input').inputValue(), '1');
 
-// 3) Patch silinince kombin bozulur: onay, patch + tişört çıkar, sweatshirt özeti güncellenir
+// 3) Patch silinince kombin bozulur: onay, patch + Tshirt çıkar, sweatshirt özeti güncellenir
 // Patch satırları "2 patch'i göster" ile açılır
 await s.locator('[data-kp-patch-ac]').click();
 await s.locator('#CartDrawer-Item-2 .cart-remove-button').click();
 await s.waitForTimeout(500);
-assert.match(onaylar.pop(), /Hediye tişört için 1 sweatshirt \+ 2 patch gerekiyor\. Bu patch'i silersen hediye tişört de sepetten çıkar/);
+assert.match(onaylar.pop(), /Hediye Tshirt için 1 sweatshirt \+ 2 patch gerekiyor\. Bu patch'i silersen hediye Tshirt de sepetten çıkar/);
 assert.deepEqual(istekler[0], ['/cart/update.js', { updates: { 'k-b': 0 } }]);
 assert.equal(istekler[1][0], '/cart/change.js');
 assert.equal(istekler[1][1].id, 'k-s');
 assert.deepEqual(istekler[2], ['/cart/update.js', { updates: { 'k-t': 0 } }]);
 istekler.length = 0;
 
-// 4) Sweatshirt silinince: kombin onayı, grubun tamamı (tişört dahil)
+// 4) Sweatshirt silinince: kombin onayı, grubun tamamı (Tshirt dahil)
 sepet = tamSepet();
 await ac();
 await s.locator('#CartDrawer-Item-4 .cart-remove-button').click();
 await s.waitForTimeout(400);
-assert.match(onaylar.pop(), /Sweatshirt'ü silersen kombindeki patch'ler ve hediye tişört de sepetten çıkar/);
+assert.match(onaylar.pop(), /Sweatshirt'ü silersen kombindeki patch'ler ve hediye Tshirt de sepetten çıkar/);
 assert.deepEqual(istekler.pop(), ['/cart/update.js', { updates: { 'k-s': 0, 'k-t': 0, 'k-b': 0, 'k-a': 0 } }]);
 istekler.length = 0;
 
-// 5) Bozuk kombin (sweatshirt başka yoldan silinmiş): tişört satırında uyarı ve "Tişörtü çıkar"
+// 5) Bozuk kombin (sweatshirt başka yoldan silinmiş): Tshirt satırında uyarı ve "Tshirt'ü çıkar"
 sepet = tamSepet();
 sepet.items = sepet.items.filter((k) => k.key !== 'k-s');
 await ac();
-assert.match(await s.locator('#CartDrawer-Item-1 .kp-sepet-kombin-uyari').textContent(), /Hediye tişört için 1 sweatshirt \+ 2 patch gerekiyor/);
+assert.match(await s.locator('#CartDrawer-Item-1 .kp-sepet-kombin-uyari').textContent(), /Hediye Tshirt için 1 sweatshirt \+ 2 patch gerekiyor/);
 await s.locator('[data-kp-hediye-cikar]').click();
 await s.waitForTimeout(300);
 assert.deepEqual(istekler.pop(), ['/cart/update.js', { updates: { 'k-t': 0 } }]);

@@ -1603,7 +1603,7 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "1 sweatshirt + 2 patch sabit fiyatla, tişört hediye. Ana sayfa bölümü, Kendin Tasarla kartı, vitrin sayfası, editörün kombin modu ve sepet grubu bu ayarlara bakar."
+        "content": "1 sweatshirt + 2 patch sabit fiyatla, Tshirt hediye. Ana sayfa bölümü, Kendin Tasarla kartı, vitrin sayfası, editörün kombin modu ve sepet grubu bu ayarlara bakar."
       },
       {
         "type": "checkbox",
@@ -1664,7 +1664,7 @@
       {
         "type": "text",
         "id": "kombin_tisortler",
-        "label": "Hediye tişörtler (handle, virgülle)",
+        "label": "Hediye Tshirt'ler (handle, virgülle)",
         "default": "bej-tshirt,sari-tshirt,mavi-tshirt,pudra-pembe-tshirt"
       },
       {
@@ -1692,19 +1692,19 @@
         "type": "text",
         "id": "kombin_ana_etiket",
         "label": "Üst küçük etiket",
-        "default": "TİŞÖRT HEDİYE"
+        "default": "TSHIRT HEDİYE"
       },
       {
         "type": "text",
         "id": "kombin_ana_baslik",
         "label": "Başlık",
-        "default": "Sweatshirt'ünü tasarla, tişört bizden"
+        "default": "Sweatshirt'ünü tasarla, Tshirt bizden"
       },
       {
         "type": "text",
         "id": "kombin_ana_alt",
         "label": "Alt metin",
-        "default": "1 sweatshirt + 2 patch 3.400 TL. Hediye tişörtün rengini sen seç."
+        "default": "1 sweatshirt + 2 patch 3.400 TL. Hediye Tshirt'ün rengini sen seç."
       },
       {
         "type": "text",

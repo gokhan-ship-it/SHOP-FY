@@ -12,7 +12,7 @@
   {% if request.page_type == 'collection' %}{% render 'kisisel-koleksiyon' %}{% endif %}
 
   Sweatshirt kombini: Kendin Tasarla'da (kendin-tasarla) kombin açıkken ızgaranın ilk kartı vitrin ürünü (temanın
-  card-product'ı, "Tişört hediye" etiketi ve ince çerçeve). İlk sayfada; filtre / sıralama ızgarayı yenileyince yeniden
+  card-product'ı, "Tshirt hediye" etiketi ve ince çerçeve). İlk sayfada; filtre / sıralama ızgarayı yenileyince yeniden
   eklenir, "Sadece kişiselleştirilebilenler" açıkken de görünür.
 {%- endcomment -%}
 {%- liquid
@@ -84,7 +84,7 @@
     </style>
     <script>
       (function () {
-        // Izgaranın başına vitrin kartı; temanın "Tükendi" / indirim etiketi yerine "Tişört hediye"
+        // Izgaranın başına vitrin kartı; temanın "Tükendi" / indirim etiketi yerine "Tshirt hediye"
         function yerlestir() {
           var g = document.getElementById('product-grid');
           var s = document.getElementById('KisiselKombinKart');
@@ -92,7 +92,7 @@
           if (/[?&]page=(?!1(&|$))\d+/.test(window.location.search)) return;
           var li = s.content.firstElementChild.cloneNode(true);
           var rozet = li.querySelector('.card__badge');
-          if (rozet) rozet.innerHTML = '<span class="kp-kombin-rozet">Tişört hediye</span>';
+          if (rozet) rozet.innerHTML = '<span class="kp-kombin-rozet">Tshirt hediye</span>';
           g.insertBefore(li, g.firstElementChild);
         }
         function izle() {

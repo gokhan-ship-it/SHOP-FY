@@ -6,9 +6,9 @@
  * - Çanta adedi değişirse patch adetlerini aynı oranda değiştirir.
  * - Çanta satırında model fotoğrafı yerine tasarımın önizlemesi (ürün sayfasında kaydedilen çizim kitinden),
  *   içerik özeti ve grubun toplam fiyatı; patch satırları "N patch'i göster" ile açılır.
- * - Sweatshirt kombini (_kombin): hediye tişört grubun son satırı, adetler kilitli. Sweatshirt ya da patch silinip
- *   kombin bozulursa ("1 sweatshirt + 2 patch") uyarır ve tişörtü çıkarmayı önerir; patch silerken kombin bozulacaksa
- *   tişört de birlikte çıkar.
+ * - Sweatshirt kombini (_kombin): hediye Tshirt grubun son satırı, adetler kilitli. Sweatshirt ya da patch silinip
+ *   kombin bozulursa ("1 sweatshirt + 2 patch") uyarır ve Tshirt'ü çıkarmayı önerir; patch silerken kombin bozulacaksa
+ *   Tshirt de birlikte çıkar.
  * Tasarım kalemi olmayan sepetlerde hiçbir şey yapmaz.
  */
 (function () {
@@ -105,7 +105,7 @@
       k._satir = i + 1;
       if (o._tasarim_rol === 'baz') g[o._tasarim_id].baz = k;
       else g[o._tasarim_id].patchler.push(k);
-      // Kombinin hediye tişörtü: patchler'de de durur (grup silinince o da çıkar)
+      // Kombinin hediye Tshirt'ü: patchler'de de durur (grup silinince o da çıkar)
       if (o._tasarim_rol === 'hediye') g[o._tasarim_id].hediye = k;
     });
     return g;
@@ -178,7 +178,7 @@
     // İçerik özeti ve patch'leri göster/gizle
     var ad = baz.querySelector('.cart-item__name');
     var ozellik = g.baz.properties || {};
-    // Hazır set satırı içindeki patch sayısı kadar sayılır (_patch_sayisi); aksesuar ve hediye tişört sayılmaz
+    // Hazır set satırı içindeki patch sayısı kadar sayılır (_patch_sayisi); aksesuar ve hediye Tshirt sayılmaz
     var patchSayisi = takiliPatch(g);
     // Aksesuar satırları görünür kalır: "+ Kalem Kutusu Kırmızı ve tasarımı"
     Array.prototype.forEach.call(kap.querySelectorAll(':scope > [data-kp-rol="aksesuar"][data-kp-tasarim="' + id + '"]'), function (satir) {
@@ -216,7 +216,7 @@
     if (fiyat && fiyat.innerHTML !== yeni) fiyat.innerHTML = yeni;
   }
 
-  // Grupta takılı patch sayısı (hazır set satırı içindeki patch sayısı kadar; aksesuar ve hediye tişört sayılmaz)
+  // Grupta takılı patch sayısı (hazır set satırı içindeki patch sayısı kadar; aksesuar ve hediye Tshirt sayılmaz)
   function patchBirimi(g, p) {
     var o = p.properties || {};
     if (o._tasarim_rol === 'aksesuar' || o._tasarim_rol === 'hediye') return 0;
@@ -227,18 +227,18 @@
     return g.patchler.reduce(function (t, p) { return t + patchBirimi(g, p); }, 0);
   }
 
-  // Kombin bozuldu mu: hediye tişört var ama sweatshirt yok ya da takılı patch fiyata dahil sayının altında
+  // Kombin bozuldu mu: hediye Tshirt var ama sweatshirt yok ya da takılı patch fiyata dahil sayının altında
   function kombinBozuk(g) {
     return !!g.hediye && (!g.baz || takiliPatch(g) < KOMBIN_DAHIL);
   }
 
-  // Hediye tişört satırı: üstünde "🎁 Hediye tişört"; kombin bozulduysa uyarı ve "Tişörtü çıkar"
+  // Hediye Tshirt satırı: üstünde "🎁 Hediye Tshirt"; kombin bozulduysa uyarı ve "Tshirt'ü çıkar"
   function hediyeSatiri(satir, g) {
     var ad = satir.querySelector('.cart-item__name');
     if (ad && !satir.querySelector('.kp-sepet-aks')) {
       var etiket = document.createElement('p');
       etiket.className = 'kp-sepet-aks';
-      etiket.textContent = '🎁 Hediye tişört';
+      etiket.textContent = '🎁 Hediye Tshirt';
       ad.insertAdjacentElement('beforebegin', etiket);
     }
     var uyari = satir.querySelector('.kp-sepet-kombin-uyari');
@@ -249,8 +249,8 @@
     if (uyari || !ad) return;
     uyari = document.createElement('div');
     uyari.className = 'kp-sepet-kombin-uyari';
-    uyari.innerHTML = '<p>Hediye tişört için 1 sweatshirt + ' + KOMBIN_DAHIL + ' patch gerekiyor.</p>' +
-      '<button type="button" class="kp-sepet-ac" data-kp-hediye-cikar>Tişörtü çıkar</button>';
+    uyari.innerHTML = '<p>Hediye Tshirt için 1 sweatshirt + ' + KOMBIN_DAHIL + ' patch gerekiyor.</p>' +
+      '<button type="button" class="kp-sepet-ac" data-kp-hediye-cikar>Tshirt\'ü çıkar</button>';
     ad.insertAdjacentElement('afterend', uyari);
   }
 
@@ -268,7 +268,7 @@
     }
     var mevcut = satirlar();
     // Görünür "Tasarım" özelliği olan satır yoksa sepeti hiç sorgulama
-    var adayVar = mevcut.some(function (s) { return s.textContent.indexOf('Tasarım') !== -1 || s.textContent.indexOf('Hediye tişört') !== -1; });
+    var adayVar = mevcut.some(function (s) { return s.textContent.indexOf('Tasarım') !== -1 || s.textContent.indexOf('Hediye Tshirt') !== -1; });
     if (!adayVar) return;
     calisiyor = true;
     sepetGetir()
@@ -301,7 +301,7 @@
           Array.prototype.forEach.call(bazlar, function (baz) {
             var id = baz.getAttribute('data-kp-tasarim');
             var onceki = baz;
-            // Hediye tişört grubun en sonunda
+            // Hediye Tshirt grubun en sonunda
             var altlar = Array.prototype.slice.call(kap.querySelectorAll(':scope > [data-kp-rol="patch"], :scope > [data-kp-rol="aksesuar"]'))
               .concat(Array.prototype.slice.call(kap.querySelectorAll(':scope > [data-kp-rol="hediye"]')));
             altlar.forEach(function (p) {
@@ -327,7 +327,7 @@
             }
           });
         });
-        // Hediye tişört satırları (sweatshirt'ü silinmiş kombinde de)
+        // Hediye Tshirt satırları (sweatshirt'ü silinmiş kombinde de)
         var gs = gruplar(sepet);
         satirlar().forEach(function (satir) {
           if (satir.getAttribute('data-kp-rol') !== 'hediye') return;
@@ -579,7 +579,7 @@
     }
   });
 
-  // Bozulan kombinde "Tişörtü çıkar"
+  // Bozulan kombinde "Tshirt'ü çıkar"
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-kp-hediye-cikar]');
     if (!b) return;
@@ -604,14 +604,14 @@
       var g = bilgi.grup;
       var rol = satir.getAttribute('data-kp-rol');
       if (rol === 'hediye') {
-        if (!window.confirm('Hediye tişört sepetten çıkarılsın mı?')) return;
+        if (!window.confirm('Hediye Tshirt sepetten çıkarılsın mı?')) return;
         islem(hediyeCikar(g));
       } else if (rol === 'baz') {
-        if (!window.confirm(g.hediye ? 'Sweatshirt\'ü silersen kombindeki patch\'ler ve hediye tişört de sepetten çıkar. Devam edilsin mi?' : 'Çantayı silersen bu tasarıma ait tüm patch\'ler de sepetten çıkar. Devam edilsin mi?')) return;
+        if (!window.confirm(g.hediye ? 'Sweatshirt\'ü silersen kombindeki patch\'ler ve hediye Tshirt de sepetten çıkar. Devam edilsin mi?' : 'Çantayı silersen bu tasarıma ait tüm patch\'ler de sepetten çıkar. Devam edilsin mi?')) return;
         islem(grupSil(g));
       } else if (rol === 'patch' && g.hediye && g.baz && takiliPatch(g) - patchBirimi(g, bilgi.kalem) < KOMBIN_DAHIL) {
-        // Kombin bozulacak: patch'le birlikte hediye tişört de çıkar
-        if (!window.confirm('Hediye tişört için 1 sweatshirt + ' + KOMBIN_DAHIL + ' patch gerekiyor. Bu patch\'i silersen hediye tişört de sepetten çıkar. Devam edilsin mi?')) return;
+        // Kombin bozulacak: patch'le birlikte hediye Tshirt de çıkar
+        if (!window.confirm('Hediye Tshirt için 1 sweatshirt + ' + KOMBIN_DAHIL + ' patch gerekiyor. Bu patch\'i silersen hediye Tshirt de sepetten çıkar. Devam edilsin mi?')) return;
         islem(patchSil(g, bilgi.kalem).then(function () { return hediyeCikar(g); }));
       } else if (satir.getAttribute('data-kp-rol') === 'aksesuar') {
         if (!window.confirm('Aksesuarı silersen üzerindeki patch\'ler de sepetten çıkar. Devam edilsin mi?')) return;
@@ -652,7 +652,7 @@
         return;
       }
       if (yeni === 0) {
-        if (!window.confirm(kombinde ? 'Sweatshirt\'ü silersen kombindeki patch\'ler ve hediye tişört de sepetten çıkar. Devam edilsin mi?' : 'Çantayı silersen bu tasarıma ait tüm patch\'ler de sepetten çıkar. Devam edilsin mi?')) {
+        if (!window.confirm(kombinde ? 'Sweatshirt\'ü silersen kombindeki patch\'ler ve hediye Tshirt de sepetten çıkar. Devam edilsin mi?' : 'Çantayı silersen bu tasarıma ait tüm patch\'ler de sepetten çıkar. Devam edilsin mi?')) {
           girdi.value = bilgi.kalem.quantity;
           return;
         }

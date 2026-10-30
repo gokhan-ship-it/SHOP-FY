@@ -1,7 +1,7 @@
 {%- comment -%}
   Sweatshirt kombini vitrin sayfası (templates/product.kombin-vitrin.json). Vitrin ürünü tek başına satılmaz (stok 0):
   sayfada satın alma düğmesi yerine kombin kartı var; kart editörü kombin modunda açar (sweatshirt rengi ve yaşı,
-  2 patch dahil, Özet'te hediye tişört). Kart, listedeki ilk sweatshirt'ün verisiyle başlar (kisisel-kart, kombin: true).
+  2 patch dahil, Özet'te hediye Tshirt). Kart, listedeki ilk sweatshirt'ün verisiyle başlar (kisisel-kart, kombin: true).
   Kombin kapalıyken (tema ayarı ya da tarih) kart yerine kısa bir not ve Kendin Tasarla bağlantısı görünür.
 {%- endcomment -%}
 {%- liquid
@@ -48,7 +48,7 @@
         {%- endif -%}
       </div>
       <div class="kp-kv__bilgi">
-        <p class="kp-kv__etiket">Tişört hediye</p>
+        <p class="kp-kv__etiket">Tshirt hediye</p>
         <h1 class="kp-kv__baslik h2">{{ product.title | escape }}</h1>
         <p class="kp-kv__fiyat">
           <strong>{%- render 'kisisel-kombin-tl', tl: settings.kombin_fiyat -%}</strong>
@@ -56,7 +56,7 @@
         </p>
         <ul class="kp-kv__maddeler">
           <li>1 sweatshirt + {{ settings.kombin_patch | default: 2 }} patch: {% render 'kisisel-kombin-tl', tl: settings.kombin_fiyat %}</li>
-          <li>Hediye tişörtün rengini ve yaşını sen seç</li>
+          <li>Hediye Tshirt'ün rengini ve yaşını sen seç</li>
           <li>Her harf ve rakam 1 patch sayılır; sonraki patch'ler patch indirimiyle eklenir</li>
           {%- if kv_renkler != blank -%}<li>Sweatshirt: {{ kv_renkler }} (6-11 yaş){% if kv_kucuk_renkler != blank %}; {{ kv_kucuk_renkler }} (3-5 yaş){% endif %}</li>{%- endif -%}
         </ul>

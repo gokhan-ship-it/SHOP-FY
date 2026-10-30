@@ -23,7 +23,7 @@ tarayıcıdan kalacak. GTM'deki G-QN43QTEZW5 etiketine dokunulmayacak (kullanıc
 | Mavi Tshirt | 9726700880158 | 6-7 (98), 8-9 (100), 10-11 (100) |
 | Pudra Pembe Tshirt | 10085931221278 | 4-5 (25), 6-7 (40), 8-9 (45), 10-11 (7) |
 
-Hepsinde kişiselleştirme zaten açık (tek "Ön alan", 22 cm daire). Sweatshirt 2.500 TL, tişört 2.000 TL. Hepsi Online
+Hepsinde kişiselleştirme zaten açık (tek "Ön alan", 22 cm daire). Sweatshirt 2.500 TL, Tshirt 2.000 TL. Hepsi Online
 Mağaza, POS, Facebook ve Google kanallarında yayında.
 
 İndirimler (okundu): 2'li / 3'lü / 4'lü patch indirimi (otomatik, ürün indirimi, 100 / 300 / 500 TL, 57 ürünlük liste;
@@ -35,7 +35,7 @@ FIRSTORDER (kod, sipariş, %10), DEARMOMS (kod, **ürün** indirimi, %10, Tüm �
 
 Her madde onay gelmeden yazılmaz. 1–4 test içindir, canlıdaki müşteriyi etkilemez. 5 yayın günü ayrıca onaylanır.
 
-1. **Vitrin ürünü oluştur:** "Sweatshirt Kombini · 2 Patch + Hediye Tişört".
+1. **Vitrin ürünü oluştur:** "Sweatshirt Kombini · 2 Patch + Hediye Tshirt".
    - Fiyat 3.400 TL, karşılaştırma fiyatı 5.400 TL.
    - Stok takibi açık, stok 0, stokta yokken satış kapalı. Shopify bu ürünü sepete almaz, ürün tek başına satın alınamaz.
    - Şablon `product.kombin-vitrin`: bu şablon yalnızca kopya temada olacak. Sayfa, satın alma düğmesi yerine editörü kombin modunda açar.
@@ -44,11 +44,11 @@ Her madde onay gelmeden yazılmaz. 1–4 test içindir, canlıdaki müşteriyi e
    - Etiketler: `kombin-vitrin` ve `feed-haric`.
    - Hiçbir koleksiyona eklenmez.
    - Görsel: Bej Sweatshirt'ün ana görselinin kopyası. Yeni bir medya olarak eklenir, mevcut ürün görsellerine dokunulmaz.
-2. **"Hediye Tişört" koleksiyonu:** elle, 4 tişört. Online Mağaza'da yayınlanmaz, sitede görünmez.
+2. **"Hediye Tshirt" koleksiyonu:** elle, 4 Tshirt. Online Mağaza'da yayınlanmaz, sitede görünmez.
 3. **"Kombin Koşulu" koleksiyonu:** elle; 5 sweatshirt ve 500 TL'lik 54 tekli patch (patch indirimi listesindeki ürünler). Yayınlanmaz. İndirimin "müşteri alır" koşulu bu koleksiyona bağlanır.
 4. **Test indirimi:** yalnızca kodla çalışan X al Y kazan indirimi. Kodu yalnızca sen ve testler bilir; canlıda kod girilmedikçe kimseyi etkilemez.
    - Koşul: "Kombin Koşulu" koleksiyonundan.
-   - Hediye: "Hediye Tişört" koleksiyonundan 1 adet, %100 indirim.
+   - Hediye: "Hediye Tshirt" koleksiyonundan 1 adet, %100 indirim.
    - Birleşme: patch (ürün) indirimleriyle evet, sipariş indirimleriyle hayır, kargo indirimleriyle evet.
    - Önce adet koşuluyla (en az 3) kurulur ve sepetler denenir. Sonra aynı kodda tutar koşuluna (3.400 ve 3.500 TL) geçilip aynı sepetler tekrar denenir.
    - 3 gün sonra kendiliğinden biter.
@@ -71,25 +71,25 @@ Her madde onay gelmeden yazılmaz. 1–4 test içindir, canlıdaki müşteriyi e
 
   Uygulama yalnızca koleksiyonla çalışıyorsa vitrin ürünü zaten hiçbir koleksiyonda olmadığı için listeye girmez.
 - **Test, gerçek sepetlerle ve ödeme sayfasında yapılır** (sipariş verilmez). Denenecek sepetler:
-  - (a) tek kombin: 1 sweatshirt + 2 patch + tişört = 3.400 TL
+  - (a) tek kombin: 1 sweatshirt + 2 patch + Tshirt = 3.400 TL
   - (b) 3 patch'li kombin: 3.700 TL
   - (c) aynı sepette iki kombin
   - (d) kombin varken FIRSTORDER kodu
-  - Ek denemeler: DEARMOMS, yalnız sweatshirt + tişört, sweatshirt + 1 patch + tişört, 3 patch + tişört (sweatshirt yok), 2 sweatshirt + tişört.
+  - Ek denemeler: DEARMOMS, yalnız sweatshirt + Tshirt, sweatshirt + 1 patch + Tshirt, 3 patch + Tshirt (sweatshirt yok), 2 sweatshirt + Tshirt.
 
   Otomatik indirimle kod birlikte girilince Shopify en iyi fiyatı seçebilir. Bu nedenle (d) yayın günü otomatik indirimle bir kez daha denenir.
 - **DEARMOMS.** Ürün indirimi türünde ve ürün indirimleriyle birleşmeye açık. Kombin de ürün indirimleriyle birleşmek zorunda (patch indirimi için), bu yüzden DEARMOMS büyük ihtimalle kombinle birleşir. Testte doğrulanacak. Engellemenin tek yolu DEARMOMS'un kendi birleşme ayarını kapatmak; bu, kodun patch indirimleriyle birleşmesini de kapatır.
 
 ## Açık kalan durumlar (Shopify'ın X al Y kazan indirimi "1 sweatshirt + 2 patch" koşulunu birebir kuramaz)
 
-- Adet koşulu (en az 3): sweatshirtsiz 3 patch + tişört, 2 sweatshirt + 1 patch + tişört ya da 3 sweatshirt + tişört de hediye kazanır. Her 3 üründe bir tişört verilir: 1 sweatshirt + 5 patch + 2 tişört alan 2 tişörtü hediye alır.
-- Tutar koşulu: 2 sweatshirt + tişört (5.000 TL) ya da 7 patch + tişört (3.500 TL) de kazanır. Eşik patch indirimi düşülmeden mi sonra mı hesaplanıyor, testte görülecek (3.400 / 3.500).
-- Tişörtü normal yoldan ekleyen müşteri de koşul sağlanırsa tişörtü 0 TL alır; gizli koleksiyon bunu engellemez.
+- Adet koşulu (en az 3): sweatshirtsiz 3 patch + Tshirt, 2 sweatshirt + 1 patch + Tshirt ya da 3 sweatshirt + Tshirt de hediye kazanır. Her 3 üründe bir Tshirt verilir: 1 sweatshirt + 5 patch + 2 Tshirt alan 2 Tshirt'ü hediye alır.
+- Tutar koşulu: 2 sweatshirt + Tshirt (5.000 TL) ya da 7 patch + Tshirt (3.500 TL) de kazanır. Eşik patch indirimi düşülmeden mi sonra mı hesaplanıyor, testte görülecek (3.400 / 3.500).
+- Tshirt'ü normal yoldan ekleyen müşteri de koşul sağlanırsa Tshirt'ü 0 TL alır; gizli koleksiyon bunu engellemez.
 - Temadaki sepet grubu kombin bozulunca uyarır ama Shopify'ın indirimini bilmez. Birebir kural için özel indirim uygulaması (Shopify Functions) gerekir.
 
 ## İndirim denemeleri (30 Ekim, Storefront API geçici sepetleri, sipariş yok)
 
-S = sweatshirt 2.500 TL, P = 500 TL'lik tekli patch, T = tişört 2.000 TL. Tutarlar TL, sepetin indirimli toplamı.
+S = sweatshirt 2.500 TL, P = 500 TL'lik tekli patch, T = Tshirt 2.000 TL. Tutarlar TL, sepetin indirimli toplamı.
 "kod ✗" = Shopify kodu sepete almadı (uygulanmadı). Hedef: (a) 3.400, (b) 3.700, (c) 6.500.
 
 | Sepet | Kodsuz | tutar ≥3.500 `KMB3500` | tutar ≥3.400 `KMB3400` | adet ≥3 `KMBADET3` | 1 sweatshirt `KMBSWEAT1` |
@@ -98,7 +98,7 @@ S = sweatshirt 2.500 TL, P = 500 TL'lik tekli patch, T = tişört 2.000 TL. Tuta
 | (b) S+3P+T | 5.130 | 5.130 (kod ✗) | 5.130 (kod ✗) | 5.130 (kod ✗) | **3.700** |
 | (c) 2S+4P+2T | 9.450 | 9.450 (kod ✗) | 9.450 (kod ✗) | 9.450 (kod ✗) | **6.500** |
 | S+4P+T | 5.400 | kod ✗ | kod ✗ | kod ✗ | 4.000 |
-| S+2P+2T | 6.660 | 5.500 (1 tişört bedava) | 5.500 | 5.500 | 5.400 |
+| S+2P+2T | 6.660 | 5.500 (1 Tshirt bedava) | 5.500 | 5.500 | 5.400 |
 | S+T | 4.500 | kod ✗ | kod ✗ | kod ✗ | 2.500 (sızıntı) |
 | S+1P+T | 4.500 | kod ✗ | kod ✗ | kod ✗ | 3.000 (sızıntı) |
 | 2S+T | 6.300 | 5.000 (sızıntı) | 5.000 (sızıntı) | kod ✗ | 5.000 |
@@ -113,9 +113,9 @@ Shopify patch indirimini tutup kodu reddediyor. `KMBSWEAT1`'de alıcı satırı 
 4'lü indirimi alabiliyor, hedef fiyatlar tutuyor.
 
 **Tema ayarındaki test kodu bu yüzden `KMBSWEAT1-9TQ4M`** (Tema ayarları → Sweatshirt kombini → Sepete yazılacak indirim
-kodu; değiştirilebilir). Bedeli: sweatshirt + tişört alan, patch'siz ya da tek patch'li sepet de tişörtü 0 TL alır
-(yukarıdaki sızıntı satırları). Tema sepette kombin bozulunca uyarır ve tişörtü çıkarmayı önerir, ama sepete normal yoldan
-sweatshirt ve tişört ekleyen müşteriyi engelleyemez. "1 sweatshirt + 2 patch" kuralını Shopify'da birebir kurmanın yolu
+kodu; değiştirilebilir). Bedeli: sweatshirt + Tshirt alan, patch'siz ya da tek patch'li sepet de Tshirt'ü 0 TL alır
+(yukarıdaki sızıntı satırları). Tema sepette kombin bozulunca uyarır ve Tshirt'ü çıkarmayı önerir, ama sepete normal yoldan
+sweatshirt ve Tshirt ekleyen müşteriyi engelleyemez. "1 sweatshirt + 2 patch" kuralını Shopify'da birebir kurmanın yolu
 özel indirim uygulaması (Shopify Functions); yayın günü kararı.
 
 ## Tema (30 Ekim, yalnızca kombin kopyası 207699345694)
@@ -125,29 +125,32 @@ sweatshirt ve tişört ekleyen müşteriyi engelleyemez. "1 sweatshirt + 2 patch
 - Ana sayfa kutusu Çok satanlar bölümünün en üstünde çizilir: ana sayfa şablonu Shopify'ın 25 bölüm sınırında, ayrı bölüm
   eklenemiyor. Çok satanlar bölüm ayarı "Üstte Sweatshirt kombini kutusu" ile kapatılabilir.
 - Vitrin sayfası `product.kombin-vitrin`: satın alma düğmesi yok, kombin kartı editörü kombin modunda açar.
-- Kendin Tasarla: ilk sayfanın ilk kartı vitrin (temanın kartı, "Tişört hediye" etiketi, ince çerçeve).
-- Editör kombin modu (v2, 30 Ekim): ilk ekran "Kombinini seç" (Sweatshirt renk + yaş, Hediye tişört renk + yaş; dördü
-  seçilmeden tasarıma geçilmez), tasarım ekranında tişört satırı ve "Değiştir", önizlemenin altında "3.400 TL'ye 2 patch
+- Kendin Tasarla: ilk sayfanın ilk kartı vitrin (temanın kartı, "Tshirt hediye" etiketi, ince çerçeve).
+- Editör kombin modu (v2, 30 Ekim): ilk ekran "Kombinini seç" (Sweatshirt renk + yaş, Hediye Tshirt renk + yaş; dördü
+  seçilmeden tasarıma geçilmez), tasarım ekranında Tshirt satırı ve "Değiştir", önizlemenin altında "3.400 TL'ye 2 patch
   dahil" göstergesi (iki yuva, dolunca sıradaki patch ücreti fiyat motorundan), Görsel kartlarında "Dahil" / "+300 TL",
   2 patch kapısı, renk değişiminde patch'ler yerinde, yalnızca tekli patch, patch indirimi kutlamaları kapalı, Özet'te
-  seçili tişört + Değiştir, sepete tek istek (`_kombin`), test kodunun sepete yazılması (sepetteki kodlar korunur),
-  kombin başına tek AddToCart (değer = ödenen, tişört 0 TL), oturumda tek CustomizeProduct.
-- v3 (30 Ekim, telefon kontrolü): Kombinini seç'te önizleme ürünün tamamı, "Sweatshirt | Hediye tişört" düğmesi (tişört
-  rengine dokununca tişörtün sade görseli), kartlarda sade görsel ve büyüteç → tam ekran fotoğraflar ("Görseldeki
+  seçili Tshirt + Değiştir, sepete tek istek (`_kombin`), test kodunun sepete yazılması (sepetteki kodlar korunur),
+  kombin başına tek AddToCart (değer = ödenen, Tshirt 0 TL), oturumda tek CustomizeProduct.
+- v3 (30 Ekim, telefon kontrolü): Kombinini seç'te önizleme ürünün tamamı, "Sweatshirt | Hediye Tshirt" düğmesi (Tshirt
+  rengine dokununca Tshirt'ün sade görseli), kartlarda sade görsel ve büyüteç → tam ekran fotoğraflar ("Görseldeki
   patch'ler örnektir."), kartlarda "3-5 yaş" yazısı yok; fiyat baştan ~~5.400~~ 3.400 "2 patch dahil", 2 patch'e kadar
   sabit; Kombinini seç'te tek ana buton "Tasarıma başla →".
-- v4 (30 Ekim, kombin-secim-ekrani tasarımı): Kombinini seç'te hediye tişört ilk açılışta görünür. Önizleme ~%45 kısa
+- v4 (30 Ekim, kombin-secim-ekrani tasarımı): Kombinini seç'te hediye Tshirt ilk açılışta görünür. Önizleme ~%45 kısa
   (telefonda 299 → 166 px, masaüstünde 670 → 378 px) ve kombini birlikte gösterir: solda büyük sweatshirt, sağ altta
-  biraz küçük, hafif üstüne binen, gölgeli hediye tişört ve kırmızı "HEDİYE" etiketi (sade görseller); tişört seçilene
-  kadar yerinde kesikli, hafif nabız atan boş yer ("Hediye tişörtün burada görünecek", sweatshirt yaşı seçilince "Şimdi
-  hediye tişörtünü seç"). İki ürünün büyüteci tam ekran fotoğrafları açar; "Sweatshirt | Hediye tişört" düğmesi, sol
+  biraz küçük, hafif üstüne binen, gölgeli hediye Tshirt ve kırmızı "HEDİYE" etiketi (sade görseller); Tshirt seçilene
+  kadar yerinde kesikli, hafif nabız atan boş yer ("Hediye Tshirt'ün burada görünecek", sweatshirt yaşı seçilince "Şimdi
+  hediye Tshirt'ünü seç"). İki ürünün büyüteci tam ekran fotoğrafları açar; "Sweatshirt | Hediye Tshirt" düğmesi, sol
   araçlar ve "2 patch dahil" göstergesi bu ekranda yok (tasarım ekranında gelir). Altında 3 adım: Sweatshirt — Hediye
-  tişört — Patch'ler. Bloklar sıkı: renkler tek satırda 54 px kare görseller, seçili renk ve yaş başlığın sağında, yaş
-  seçilmeden yaşlar kırmızı çerçeveli; Hediye tişört bloğu kırmızı çerçeveli, "HEDİYE", 0 TL ~~2.000 TL~~, sweatshirt
+  Tshirt — Patch'ler. Bloklar sıkı: renkler tek satırda 54 px kare görseller, seçili renk ve yaş başlığın sağında, yaş
+  seçilmeden yaşlar kırmızı çerçeveli; Hediye Tshirt bloğu kırmızı çerçeveli, "HEDİYE", 0 TL ~~2.000 TL~~, sweatshirt
   yaşı seçilene kadar soluk (seçilebilir). Ana buton hep basılabilir ve sıradakini yazar ("Yaşını seç ↓" / "Hediye
-  tişörtünü seç ↓": beyaz, kırmızı çerçeve; basınca oraya kayar ve vurgular; tamamsa koyu "Tasarıma başla →").
-  Sweatshirt yaşı seçilince hediye bloğuna kayar, blok parlar, "Harika! Şimdi hediye tişörtünü seç". Ölçüm olayları
+  Tshirt'ünü seç ↓": beyaz, kırmızı çerçeve; basınca oraya kayar ve vurgular; tamamsa koyu "Tasarıma başla →").
+  Sweatshirt yaşı seçilince hediye bloğuna kayar, blok parlar, "Harika! Şimdi hediye Tshirt'ünü seç". Ölçüm olayları
   aynı; kaydırma, vurgu ve büyüteç olay göndermez.
-- Sepet: kombin grubu (tişört son satır, rozet "Sweatshirt kombini"), adetler kilitli; patch silinince kombin bozulacaksa
-  tişört de çıkar (onayla); bozuk kombinde uyarı ve "Tişörtü çıkar".
-- Sepetteki kombin düzenlenmez (renk, tişört ve indirim birlikte değişiyor): kart "Sepetten sil" ve yeniden tasarla der.
+- Yazım (30 Ekim): bizim eklediğimiz bütün metinlerde ürün adlarındaki gibi "Tshirt" (ekler kesme işaretiyle:
+  Tshirt'ün, Tshirt'ünü, Tshirt'üne, Tshirt'e, Tshirt'ü, Tshirt'te). Vitrin ürünü "Sweatshirt Kombini · 2 Patch + Hediye
+  Tshirt", koleksiyon "Hediye Tshirt" (handle'lar ve indirim koşulları aynı).
+- Sepet: kombin grubu (Tshirt son satır, rozet "Sweatshirt kombini"), adetler kilitli; patch silinince kombin bozulacaksa
+  Tshirt de çıkar (onayla); bozuk kombinde uyarı ve "Tshirt'ü çıkar".
+- Sepetteki kombin düzenlenmez (renk, Tshirt ve indirim birlikte değişiyor): kart "Sepetten sil" ve yeniden tasarla der.

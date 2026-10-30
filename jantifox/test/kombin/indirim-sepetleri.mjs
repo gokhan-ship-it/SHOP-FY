@@ -1,5 +1,5 @@
 // Sweatshirt kombini test indirimleri: gerçek mağazada Shopify'ın sepet hesabı (Storefront API cartCreate, sepet
-// gerçekte oluşturulur ama ödemeye gidilmez) ile her kod ve sepet için toplam, indirimler ve tişört satırı.
+// gerçekte oluşturulur ama ödemeye gidilmez) ile her kod ve sepet için toplam, indirimler ve Tshirt satırı.
 // Sipariş verilmez, sepete gerçek ekleme yapılmaz (sitenin sepet çerezine dokunulmaz).
 // Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node indirim-sepetleri.mjs [çıktı.json]
 import { createRequire } from 'node:module';
@@ -22,7 +22,7 @@ const SEPETLER = {
   '3 patch + T (sweatshirt yok)': [satir(P[0]), satir(P[1]), satir(P[2]), satir(V.bejT)],
   '2 S + T (patch yok)': [satir(V.bejS), satir(V.maviS), satir(V.bejT)],
   '7 patch + T (sweatshirt yok)': [satir(P[0]), satir(P[1]), satir(P[2]), satir(P[3]), satir(P[4]), satir(V.harfA), satir(V.harfD), satir(V.bejT)].map((x, i) => x),
-  'S + 2 patch + 2 T (bir kombin, iki tişört)': [satir(V.bejS), satir(P[0]), satir(P[1]), satir(V.bejT), satir(V.maviT)],
+  'S + 2 patch + 2 T (bir kombin, iki Tshirt)': [satir(V.bejS), satir(P[0]), satir(P[1]), satir(V.bejT), satir(V.maviT)],
   'S + 4 patch + T': [satir(V.bejS), satir(P[0]), satir(P[1]), satir(P[2]), satir(P[3]), satir(V.bejT)]
 };
 const KODLAR = { 'tutar ≥3.500': 'KMB3500-3BFD8', 'tutar ≥3.400': 'KMB3400-LJGC9', 'adet ≥3': 'KMBADET3-4P5BE', 'yalnız 1 sweatshirt': 'KMBSWEAT1-9TQ4M' };
