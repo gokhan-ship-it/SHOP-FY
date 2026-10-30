@@ -1,7 +1,7 @@
 {%- comment -%}
   Sweatshirt kombini vitrin sayfası (templates/product.kombin-vitrin.json). Vitrin ürünü tek başına satılmaz (stok 0):
   sayfada satın alma düğmesi yerine kombin kartı var; kart editörü kombin modunda açar (sweatshirt rengi ve yaşı,
-  2 patch dahil, Özet'te hediye Tshirt). Kart, listedeki ilk sweatshirt'ün verisiyle başlar (kisisel-kart, kombin: true).
+  4 patch ya da 4'lü patch seti dahil, Özet'te hediye Tshirt). Fiyat ve üstü çizili fiyat vitrin ürününden. Kart, listedeki ilk sweatshirt'ün verisiyle başlar (kisisel-kart, kombin: true).
   Kombin kapalıyken (tema ayarı ya da tarih) kart yerine kısa bir not ve Kendin Tasarla bağlantısı görünür.
 {%- endcomment -%}
 {%- liquid
@@ -38,6 +38,16 @@
   assign kv_renkler = kv_renkler | remove_last: ', '
   assign kv_kucuk_renkler = kv_kucuk_renkler | remove_last: ', '
   assign kv_gorsel = product.featured_media.preview_image
+  assign kv_dahil = settings.kombin_patch | default: 4
+  assign kv_fiyat = settings.kombin_fiyat | default: 4000
+  assign kv_eski = settings.kombin_eski_fiyat | default: 6000
+  if product.price > 0
+    assign kv_fiyat = product.price | divided_by: 100
+    assign kv_eski = 0
+    if product.compare_at_price > product.price
+      assign kv_eski = product.compare_at_price | divided_by: 100
+    endif
+  endif
 -%}
 <div class="kp-kv section-padding">
   <div class="container">
@@ -51,13 +61,13 @@
         <p class="kp-kv__etiket">Tshirt hediye</p>
         <h1 class="kp-kv__baslik h2">{{ product.title | escape }}</h1>
         <p class="kp-kv__fiyat">
-          <strong>{%- render 'kisisel-kombin-tl', tl: settings.kombin_fiyat -%}</strong>
-          {%- if settings.kombin_eski_fiyat > settings.kombin_fiyat -%}<s>{%- render 'kisisel-kombin-tl', tl: settings.kombin_eski_fiyat -%}</s>{%- endif -%}
+          <strong>{%- render 'kisisel-kombin-tl', tl: kv_fiyat -%}</strong>
+          {%- if kv_eski > kv_fiyat -%}<s>{%- render 'kisisel-kombin-tl', tl: kv_eski -%}</s>{%- endif -%}
         </p>
         <ul class="kp-kv__maddeler">
-          <li>1 sweatshirt + {{ settings.kombin_patch | default: 2 }} patch: {% render 'kisisel-kombin-tl', tl: settings.kombin_fiyat %}</li>
+          <li>1 sweatshirt + 1 patch seti ({{ kv_dahil }} patch): {% render 'kisisel-kombin-tl', tl: kv_fiyat %}</li>
           <li>Hediye Tshirt'ün rengini ve yaşını sen seç</li>
-          <li>Her harf ve rakam 1 patch sayılır; sonraki patch'ler patch indirimiyle eklenir</li>
+          <li>Hazır bir patch seti seç ya da {{ kv_dahil }} patch'i kendin seç (her harf ve rakam 1 patch)</li>
           {%- if kv_renkler != blank -%}<li>Sweatshirt: {{ kv_renkler }} (6-11 yaş){% if kv_kucuk_renkler != blank %}; {{ kv_kucuk_renkler }} (3-5 yaş){% endif %}</li>{%- endif -%}
         </ul>
         {%- if kp_kombin_acik == '1' and kv_ilk -%}

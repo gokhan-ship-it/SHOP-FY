@@ -13,14 +13,22 @@
   assign kb_kucuk = settings.kombin_kucuk_sweatshirtler | remove: ' ' | split: ','
   assign kb_tisort = settings.kombin_tisortler | remove: ' ' | split: ','
   assign kb_vitrin = all_products[settings.kombin_vitrin]
-  assign kb_fiyat = settings.kombin_fiyat | default: 3400 | times: 100
-  assign kb_eski = settings.kombin_eski_fiyat | default: 5400 | times: 100
+  # Kombin fiyatı ve üstü çizili fiyat vitrin ürününden (4.000 / 6.000); yoksa tema ayarı. Editör 4 patch'e kadar
+  # gösterilen fiyatı veriden hesaplar (sweatshirt + 4'lü set); bu değer yedek.
+  assign kb_fiyat = settings.kombin_fiyat | default: 4000 | times: 100
+  assign kb_eski = settings.kombin_eski_fiyat | default: 6000 | times: 100
+  if kb_vitrin.price > 0
+    assign kb_fiyat = kb_vitrin.price
+    if kb_vitrin.compare_at_price > kb_vitrin.price
+      assign kb_eski = kb_vitrin.compare_at_price
+    endif
+  endif
 -%}
 <script type="application/json" id="KisiselKombin-{{ section_id }}">
 {
   "fiyat": {{ kb_fiyat }},
   "eski_fiyat": {{ kb_eski }},
-  "dahil": {{ settings.kombin_patch | default: 2 }},
+  "dahil": {{ settings.kombin_patch | default: 4 }},
   "kod": {{ settings.kombin_kod | strip | json }},
   "baslangic": {{ settings.kombin_baslangic | strip | json }},
   "bitis": {{ settings.kombin_bitis | strip | json }},

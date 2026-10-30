@@ -148,6 +148,15 @@ sweatshirt ve Tshirt ekleyen müşteriyi engelleyemez. "1 sweatshirt + 2 patch" 
   Tshirt'ünü seç ↓": beyaz, kırmızı çerçeve; basınca oraya kayar ve vurgular; tamamsa koyu "Tasarıma başla →").
   Sweatshirt yaşı seçilince hediye bloğuna kayar, blok parlar, "Harika! Şimdi hediye Tshirt'ünü seç". Ölçüm olayları
   aynı; kaydırma, vurgu ve büyüteç olay göndermez.
+- v5 (30 Ekim, kampanya kuralı değişti): 1 sweatshirt + 4 patch (hazır bir 4'lü patch seti ya da tek tek 4 patch) =
+  4.000 TL, Tshirt hediye. Fiyat veriden: 4 patch'e kadar sweatshirt + 4'lü setin fiyatı (2.500 + 1.500), üstü çizili
+  + Tshirt (6.000); sonrası fiyat motorundan (4 tekli: 2.500 + 2.000 − 500 = 4.000; set + 1 tekli 4.500). Görsel
+  panelinde en üstte "Patch seti seç · 4 patch dahil" (yalnızca 4 patch'lik, satıştaki setler), altında "ya da 4 patch'i
+  kendin seç"; kartlarda "Dahil" / "Dahil · 4 patch", dolunca "+500 TL" / "+1.500 TL" (setler patch indirimine girmez).
+  Dört yuvalı gösterge, set seçilince "Football Lover seti ✓". Kenardakiler kombinde (4'e sayılır, sepete gider, "Bu
+  patch'leri hediye Tshirt'üne takabilirsin"); Özet'te kenar sorusu yok. "Tasarıma başla" Görsel paneline götürür. Vitrin
+  ürünü "Sweatshirt Kombini · Patch Seti + Hediye Tshirt" 4.000 / 6.000; ana sayfa kutusu, vitrin sayfası ve kombin
+  verisi fiyatı vitrin ürününden okur. Storefront sepet hesabı: `test/kombin/kombin-v5-sepetleri.mjs`.
 - Yazım (30 Ekim): bizim eklediğimiz bütün metinlerde ürün adlarındaki gibi "Tshirt" (ekler kesme işaretiyle:
   Tshirt'ün, Tshirt'ünü, Tshirt'üne, Tshirt'e, Tshirt'ü, Tshirt'te). Vitrin ürünü "Sweatshirt Kombini · 2 Patch + Hediye
   Tshirt", koleksiyon "Hediye Tshirt" (handle'lar ve indirim koşulları aynı).

@@ -4900,9 +4900,9 @@ html.kp-kilit body {
 }
 
 /* ---------- Sweatshirt kombini (editörün kombin modu) ---------- */
-/* Önizlemenin hemen altında, panel kayınca da görünen dahil patch göstergesi: iki yuva (boşken kesikli çerçeve, takılınca
-   patch'in küçük görseli + ✓), "3.400 TL'ye 2 patch dahil"; dolunca "2 patch dahil ✓ · Sıradaki patch +300 TL".
-   Tasarım ekranında altında seçili hediye Tshirt ve "Değiştir" */
+/* Önizlemenin hemen altında, panel kayınca da görünen dahil patch göstergesi: dört yuva (boşken kesikli çerçeve, takılınca
+   patch'in küçük görseli + ✓), "4.000 TL'ye 4 patch dahil"; set seçilince "Football Lover seti ✓", dolunca
+   "4 patch dahil ✓ · Sıradaki patch +500 TL". Tasarım ekranında altında seçili hediye Tshirt ve "Değiştir" */
 .kp-dahil {
   display: flex;
   flex-direction: column;
@@ -4930,15 +4930,15 @@ html.kp-kilit body {
 .kp-dahil__yuvalar {
   display: flex;
   flex: none;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 .kp-dahil__yuva {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border: 1.5px dashed var(--kp-ikincil);
   border-radius: 8px;
   background: var(--kp-zemin);
@@ -4947,8 +4947,8 @@ html.kp-kilit body {
   border: 1.5px solid var(--kp-murekkep);
 }
 .kp-dahil__yuva img {
-  max-width: 28px;
-  max-height: 28px;
+  max-width: 25px;
+  max-height: 25px;
   object-fit: contain;
 }
 .kp-dahil__harf {
@@ -5024,7 +5024,8 @@ html.kp-kilit body {
   text-decoration: underline;
   cursor: pointer;
 }
-/* Görsel kartlarında fiyat yerine "Dahil" (dahil yuvalar dolana kadar), sonra sıradaki patch'in ek ücreti */
+/* Görsel kartlarında fiyat yerine "Dahil" (dahil yuvalar dolana kadar), sonra sıradaki patch'in ek ücreti. 4'lü set
+   kartlarında "Dahil · 4 patch", yuvalar dolunca setin fiyatı (setler patch indirimine girmez) */
 .kp-editor--kombin .kp-secim--ikon:not([disabled])::after {
   content: var(--kp-kombin-fiyat, none);
   padding: 0 0.5rem;
@@ -5033,6 +5034,39 @@ html.kp-kilit body {
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.6;
+}
+.kp-editor--kombin .kp-secim--set .kp-set-kart__fiyat {
+  display: none;
+}
+.kp-editor--kombin .kp-secim--set:not([disabled])::after {
+  content: attr(data-kp-dahil-yazi);
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  background: #fbe9ea;
+  color: #b3141b;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.kp-editor--kombin-dolu .kp-secim--set:not([disabled])::after {
+  content: attr(data-kp-ek-yazi);
+  background: var(--kp-yumusak);
+  color: var(--kp-murekkep);
+}
+/* Görsel paneli (kombin): setlerden sonra "ya da 4 patch'i kendin seç" */
+.kp-gorsel-ayrac {
+  margin: 0.4rem 0 0.8rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--kp-cizgi);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+.kp-gorsel-bolum--kombin-set .kp-gorsel-bolum__ad {
+  font-size: 1.5rem;
+}
+.kp-gorsel-bolum--kombin-set .kp-gorsel-bolum__ek {
+  color: #b3141b;
+  font-weight: 700;
 }
 .kp-alt__etiket--hediye {
   background: #b3141b;

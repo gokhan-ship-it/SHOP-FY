@@ -1,8 +1,8 @@
 {%- comment -%}
   Ana sayfa: Sweatshirt kombini kampanya kutusu. Çok satanlar bölümünün (sections/kisisel-cok-satanlar.liquid) en üstünde
   çizilir: ana sayfa şablonu Shopify'ın 25 bölüm sınırında olduğundan ayrı bölüm eklenemiyor. Kombin açıkken (tema ayarı
-  ve tarih aralığı, kisisel-kombin-acik) görünür; kapalıyken hiçbir şey yazmaz. Metinler, görsel ve fiyatlar
-  Tema ayarları → Sweatshirt kombini'nden. Buton vitrin ürününün sayfasını editör açık getirir (?kisisellestir=1).
+  ve tarih aralığı, kisisel-kombin-acik) görünür; kapalıyken hiçbir şey yazmaz. Metinler ve görsel Tema ayarları →
+  Sweatshirt kombini'nden; fiyat ve üstü çizili fiyat vitrin ürününden (yoksa tema ayarı). Buton vitrin ürününün sayfasını editör açık getirir (?kisisellestir=1).
   Görsel: ayardaki görsel, yoksa vitrin ürününün ana görseli; köşede ilk hediye Tshirt'ün küçük görseli.
 
   Kullanım: {% render 'kisisel-kombin-kampanya', genislik: section.settings.section_width, bolum: section.id %}
@@ -15,10 +15,19 @@
     assign kk_gorsel = settings.kombin_ana_gorsel | default: kk_vitrin.featured_media.preview_image
     assign kk_etiket = settings.kombin_ana_etiket | default: 'TSHIRT HEDİYE'
     assign kk_baslik = settings.kombin_ana_baslik | default: "Sweatshirt'ünü tasarla, Tshirt bizden"
-    assign kk_alt = settings.kombin_ana_alt | default: "1 sweatshirt + 2 patch 3.400 TL. Hediye Tshirt'ün rengini sen seç."
+    assign kk_alt = settings.kombin_ana_alt | default: "1 sweatshirt + 1 patch seti 4.000 TL. Hediye Tshirt'ün rengini sen seç."
     assign kk_buton = settings.kombin_ana_buton | default: 'Kombinini Tasarla'
     assign kk_tisortler = settings.kombin_tisortler | remove: ' ' | split: ','
     assign kk_tisort = all_products[kk_tisortler.first]
+    assign kk_fiyat = settings.kombin_fiyat | default: 4000
+    assign kk_eski = settings.kombin_eski_fiyat | default: 6000
+    if kk_vitrin.price > 0
+      assign kk_fiyat = kk_vitrin.price | divided_by: 100
+      assign kk_eski = 0
+      if kk_vitrin.compare_at_price > kk_vitrin.price
+        assign kk_eski = kk_vitrin.compare_at_price | divided_by: 100
+      endif
+    endif
   -%}
   <div class="kp-kk-bolum section-padding" id="kp-kombin-{{ bolum }}">
     <div class="{{ genislik | default: 'container' }}">
@@ -39,8 +48,8 @@
           <h2 class="kp-kk__baslik section__heading h2">{{ kk_baslik | escape }}</h2>
           {%- if kk_alt != blank -%}<p class="kp-kk__alt">{{ kk_alt | escape }}</p>{%- endif -%}
           <p class="kp-kk__fiyat">
-            <strong>{%- render 'kisisel-kombin-tl', tl: settings.kombin_fiyat -%}</strong>
-            {%- if settings.kombin_eski_fiyat > settings.kombin_fiyat -%}<s>{%- render 'kisisel-kombin-tl', tl: settings.kombin_eski_fiyat -%}</s>{%- endif -%}
+            <strong>{%- render 'kisisel-kombin-tl', tl: kk_fiyat -%}</strong>
+            {%- if kk_eski > kk_fiyat -%}<s>{%- render 'kisisel-kombin-tl', tl: kk_eski -%}</s>{%- endif -%}
           </p>
           <span class="btn btn-primary kp-kk__buton">{{ kk_buton | escape }}</span>
         </div>

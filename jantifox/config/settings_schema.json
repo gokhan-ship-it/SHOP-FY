@@ -1603,7 +1603,7 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "1 sweatshirt + 2 patch sabit fiyatla, Tshirt hediye. Ana sayfa bölümü, Kendin Tasarla kartı, vitrin sayfası, editörün kombin modu ve sepet grubu bu ayarlara bakar."
+        "content": "1 sweatshirt + 4 patch (hazır bir 4'lü patch seti ya da tek tek 4 patch), Tshirt hediye. Ana sayfa bölümü, Kendin Tasarla kartı, vitrin sayfası, editörün kombin modu ve sepet grubu bu ayarlara bakar."
       },
       {
         "type": "checkbox",
@@ -1675,13 +1675,14 @@
         "type": "number",
         "id": "kombin_fiyat",
         "label": "Kombin fiyatı (TL)",
-        "default": 3400
+        "default": 4000,
+        "info": "Yedek: fiyat ve üstü çizili fiyat vitrin ürününden okunur. Editör 4 patch'e kadar sweatshirt + 4'lü setin fiyatını gösterir."
       },
       {
         "type": "number",
         "id": "kombin_eski_fiyat",
         "label": "Üstü çizili fiyat (TL)",
-        "default": 5400
+        "default": 6000
       },
       {
         "type": "header",
@@ -1704,7 +1705,7 @@
         "type": "text",
         "id": "kombin_ana_alt",
         "label": "Alt metin",
-        "default": "1 sweatshirt + 2 patch 3.400 TL. Hediye Tshirt'ün rengini sen seç."
+        "default": "1 sweatshirt + 1 patch seti 4.000 TL. Hediye Tshirt'ün rengini sen seç."
       },
       {
         "type": "text",
@@ -1726,10 +1727,11 @@
         "type": "range",
         "id": "kombin_patch",
         "min": 1,
-        "max": 4,
+        "max": 6,
         "step": 1,
         "label": "Fiyata dahil patch",
-        "default": 2
+        "info": "Görsel panelinde yalnızca bu sayıda patch'lik hazır setler görünür.",
+        "default": 4
       }
     ]
   }

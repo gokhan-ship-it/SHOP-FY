@@ -7,7 +7,7 @@
  * - Çanta satırında model fotoğrafı yerine tasarımın önizlemesi (ürün sayfasında kaydedilen çizim kitinden),
  *   içerik özeti ve grubun toplam fiyatı; patch satırları "N patch'i göster" ile açılır.
  * - Sweatshirt kombini (_kombin): hediye Tshirt grubun son satırı, adetler kilitli. Sweatshirt ya da patch silinip
- *   kombin bozulursa ("1 sweatshirt + 2 patch") uyarır ve Tshirt'ü çıkarmayı önerir; patch silerken kombin bozulacaksa
+ *   kombin bozulursa ("1 sweatshirt + 4 patch") uyarır ve Tshirt'ü çıkarmayı önerir; patch silerken kombin bozulacaksa
  *   Tshirt de birlikte çıkar.
  * Tasarım kalemi olmayan sepetlerde hiçbir şey yapmaz.
  */
@@ -28,7 +28,7 @@
   var sonSepet = null;
   var calisiyor = false;
   // Kombinde fiyata dahil patch sayısı (tema ayarı, kisisel-sepet.liquid)
-  var KOMBIN_DAHIL = (window.KisiselKombinAyar && parseInt(window.KisiselKombinAyar.dahil, 10)) || 2;
+  var KOMBIN_DAHIL = (window.KisiselKombinAyar && parseInt(window.KisiselKombinAyar.dahil, 10)) || 4;
   var tekrar = false;
 
   function sepetGetir() {
