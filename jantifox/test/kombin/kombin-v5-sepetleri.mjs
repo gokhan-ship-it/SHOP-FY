@@ -23,7 +23,10 @@ const SEPETLER = {
   'd) sweatshirt + 5 tekli patch + Tshirt': { lines: [satir(V.bejS), ...tekli(5), satir(V.bejT)], beklenen: 4500 },
   'e) iki kombin, ikisi de hazır setli': { lines: [satir(V.bejS), satir(V.football), satir(V.bejT), satir(V.maviS), satir(V.hearts), satir(V.maviT)], beklenen: 8000 },
   'f) iki kombin, ikisi de 4 tekli patch\'li': { lines: [satir(V.bejS), ...tekli(4), satir(V.bejT), satir(V.maviS), satir(V.futbol), satir(V.harfA), satir(V.harfD), satir(V.harfH), satir(V.maviT)], beklenen: 8500 },
-  'g) a) + FIRSTORDER': { lines: [satir(V.bejS), satir(V.football), satir(V.bejT)], kodlar: [KOD, 'FIRSTORDER'], beklenen: 4000 }
+  'g) a) + FIRSTORDER': { lines: [satir(V.bejS), satir(V.football), satir(V.bejT)], kodlar: [KOD, 'FIRSTORDER'], beklenen: 4000 },
+  // Ek: patch ara toplamı 5.000 TL eşiğinin üstünde ("Ekstra %10 İndirim" otomatik); kombin kodu sipariş indirimleriyle
+  // birleşmez, Shopify Tshirt indirimini seçer: %10 uygulanmaz
+  'h) sweatshirt + 4\'lü set + 3 tekli patch + Tshirt (eşik üstü)': { lines: [satir(V.bejS), satir(V.football), ...tekli(3), satir(V.bejT)], beklenen: 5200 }
 };
 const SORGU = `mutation S($lines: [CartLineInput!]!, $codes: [String!]) { cartCreate(input: { lines: $lines, discountCodes: $codes }) { cart { cost { subtotalAmount { amount } totalAmount { amount } } discountCodes { code applicable } discountAllocations { discountedAmount { amount } ... on CartCodeDiscountAllocation { code } ... on CartAutomaticDiscountAllocation { title } } lines(first: 30) { nodes { quantity merchandise { ... on ProductVariant { title price { amount } product { title } } } cost { totalAmount { amount } subtotalAmount { amount } } discountAllocations { discountedAmount { amount } ... on CartCodeDiscountAllocation { code } ... on CartAutomaticDiscountAllocation { title } } } } } userErrors { message } } }`;
 const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });

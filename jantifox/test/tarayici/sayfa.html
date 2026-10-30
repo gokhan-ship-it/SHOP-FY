@@ -12610,7 +12610,8 @@ html.kp-kilit body {
     if (!serit) return;
     var k = this.kampanyaSonucu();
     var kok = this.kok();
-    var esikler = kok ? kok.m.ayar.kampanyaEsikleri : [];
+    // Kombinde tutar eşikli kampanyalar uygulanmaz (kombinEsiksiz): şeritte de yok
+    var esikler = kok && !kok.kombin ? kok.m.ayar.kampanyaEsikleri : [];
     var kural = kurallariOku();
     var d = k && !k.hata ? seritDurumu(k, kural ? kural.merdiven : [], esikler, kok ? ornekPatchFiyati(kok.m) : null, kok ? enUcuzPatchFiyati(kok.m) : null, !!(kok && kok.m.tekPatch)) : null;
     this.kampanyaDurumu = d;
@@ -13666,6 +13667,28 @@ html.kp-kilit body {
     return sonuc;
   }
 
+  // Kombin sepeti: kombin indirimi (hediye Tshirt) sipariş indirimleriyle birleşmez, Shopify Tshirt indirimini seçer; tutar
+  // eşikli kampanyalar (Ekstra %10) kombin sepetinde uygulanmaz (Storefront: test/kombin/kombin-v5-sepetleri.mjs, h).
+  // Simülasyon Tshirt satırı ve kod olmadan yapıldığı için bu kampanyalar sonuçtan düşülür (önbellekteki sonuç değişmez).
+  function kombinEsiksiz(m, sonuc) {
+    if (!m || !m.kombin || !sonuc || sonuc.hata) return sonuc;
+    var adlar = (m.ayar.kampanyaEsikleri || []).map(function (e) { return kampanyaAdi(e.baslik); });
+    if (!adlar.length) return sonuc;
+    var suz = function (h) {
+      var y = {};
+      Object.keys(h || {}).forEach(function (ad) { if (adlar.indexOf(kampanyaAdi(ad)) === -1) y[ad] = h[ad]; });
+      return y;
+    };
+    var once = suz(sonuc.onceAktif);
+    var y = Object.assign({}, sonuc, kampanyaSonucu(once, suz(sonuc.aktif), sonuc.altToplam, sonuc.uygunAdet, {}));
+    Object.keys(sonuc.ekler || {}).forEach(function (ad) {
+      var ek = suz(sonuc.ekler[ad].aktif);
+      y.ekler[ad] = { kampanyalar: kampanyaFarki(once, ek), indirim: toplamIndirim(ek) - toplamIndirim(once), aktif: ek, sepetIndirim: toplamIndirim(ek) };
+    });
+    if (sonuc.tasarimPay) payEkle(y, suz(sonuc.tasarimPay));
+    return y;
+  }
+
   // Ortak sonuç biçimi: once/sonra = kampanya adı → tutar (kuruş)
   function kampanyaSonucu(once, sonra, altToplam, uygunAdet, ekler) {
     return {
@@ -13811,8 +13834,8 @@ html.kp-kilit body {
     var mevcut = sepetOnbellek ? sepetOnbellek.satirlar : [];
     var temel = mevcut.filter(function (s) { return !haric || s.tasarim !== haric; });
     var kayit = kampanyaSonuclari[sonucAnahtari(temel, tasarimSatirlari, ekler)];
-    if (kayit) return kayit;
-    return yerelKampanya(m, satirlariZenginlestir(m, temel), satirlariZenginlestir(m, tasarimSatirlari), (ekler || []).map(function (e) { return { ad: e.ad, satirlar: satirlariZenginlestir(m, e.satirlar) }; }));
+    if (kayit) return kombinEsiksiz(m, kayit);
+    return kombinEsiksiz(m, yerelKampanya(m, satirlariZenginlestir(m, temel), satirlariZenginlestir(m, tasarimSatirlari), (ekler || []).map(function (e) { return { ad: e.ad, satirlar: satirlariZenginlestir(m, e.satirlar) }; })));
   }
 
   // Shopify sepetinden kural öğrenme: adet kampanyası aktifse, payı olan satırların ürünleri dahildir, olmayanlar değil.
@@ -13967,7 +13990,7 @@ html.kp-kilit body {
       kampanyaOnbellek[anahtar] = soz;
       soz.catch(function () { delete kampanyaOnbellek[anahtar]; });
       return soz;
-    });
+    }).then(function (sonuc) { return kombinEsiksiz(m, sonuc); });
   }
 
   // İki sonuç aynı fiyatı mı veriyor? (sessiz düzeltme gerekmez)

@@ -115,7 +115,10 @@ function sepet(satirlar) {
   const nodes = lines.map((l) => ({ quantity: l.q, merchandise: { id: 'gid://shopify/ProductVariant/' + l.v },
     discountAllocations: adet && patchMi(l.v) ? [{ title: adet[0], discountedAmount: { amount: tl(Math.round((adet[1] * fiyat(l.v) * l.q) / pt)) } }] : [] }));
   const ara = lines.reduce((t, l) => t + fiyat(l.v) * l.q, 0) - (adet ? adet[1] : 0);
-  return { cost: { subtotalAmount: { amount: tl(ara) }, totalAmount: { amount: tl(ara) } }, discountAllocations: [], lines: { nodes } };
+  // Mağazadaki gibi sepet düzeyinde "Ekstra %10 İndirim" (ara toplam ≥ 5.000 TL). Kombin sepetinde Shopify bunu uygulamaz
+  // (kombin kodu sipariş indirimleriyle birleşmez); editör kombinde bu kampanyayı düşer
+  const on = ara >= 500000 ? Math.round(ara / 10) : 0;
+  return { cost: { subtotalAmount: { amount: tl(ara) }, totalAmount: { amount: tl(ara - on) } }, discountAllocations: on ? [{ title: 'Ekstra %10 İndirim', discountedAmount: { amount: tl(on) } }] : [], lines: { nodes } };
 }
 
 const t = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
@@ -387,7 +390,14 @@ assert.ok(gorunur, 'gösterge kaydırınca da ekranda');
 await s.locator('[data-kp-panel="ikon"] [data-kp-ikon="2"]').first().click();
 await metinBekle('[data-kp-toplam]', /6\.500 TL 4\.500 TL 4 patch dahil/);
 await metinBekle('[data-kp-dahil] .kp-dahil__metin', /Sıradaki patch \+400 TL/);
-await s.locator('[data-kp-geri-al]').click();
+// Set + 3 tekli: patch ara toplamı 5.200 (5.000 eşiği üstü); kombinde "Ekstra %10" uygulanmaz → 5.200, sıradaki +200 TL
+await s.locator('[data-kp-panel="ikon"] [data-kp-ikon="2"]').first().click();
+await s.locator('[data-kp-panel="ikon"] [data-kp-ikon="2"]').first().click();
+await metinBekle('[data-kp-toplam]', /7\.200 TL 5\.200 TL 4 patch dahil/);
+await metinBekle('[data-kp-dahil] .kp-dahil__metin', /Sıradaki patch \+300 TL/);
+await bekle(800);
+assert.equal(await yazi('[data-kp-toplam]'), '7.200 TL 5.200 TL 4 patch dahil', 'Ekstra %10 kombinde düşülmez');
+for (let i = 0; i < 3; i++) await s.locator('[data-kp-geri-al]').click();
 await metinBekle('[data-kp-toplam]', /6\.000 TL 4\.000 TL 4 patch dahil/);
 
 // 8) Kenar: setin bir patch'i kenarda da kombine dahil (4 sayılır, fiyat aynı), not; Özet'te "alalım mı?" yok
