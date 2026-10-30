@@ -7777,8 +7777,11 @@
   function sepetIndirimleri(sepet, atla) {
     var adlar = {};
     var ekle = function (d) {
+      var x = kurus(d.discountedAmount);
+      // Tutarsız tahsis (ör. kombin kodunun sepet düzeyindeki boş kaydı) sayılmaz
+      if (!x) return;
       var ad = kampanyaAdi(d.title) || 'İndirim';
-      adlar[ad] = (adlar[ad] || 0) + kurus(d.discountedAmount);
+      adlar[ad] = (adlar[ad] || 0) + x;
     };
     (sepet.discountAllocations || []).forEach(ekle);
     ((sepet.lines && sepet.lines.nodes) || []).forEach(function (l) {
