@@ -1,7 +1,8 @@
 // Kampanya simülasyonu (Storefront API cartCreate) sayfanın fetch / XMLHttpRequest'inden geçmez: Shopify'ın Web Pixels
 // Manager'ı bunları sarıp yanıttaki extensions.cart_changelog'u "ürün sepete eklendi" olarak yayınlar (Meta'ya AddToCart).
 // Test, sayfanın fetch ve XHR'ını WPM gibi sarar: editör açılıp yazı ve ikon eklenince simülasyon istekleri sunucuya
-// gider ama sarılmış fetch / XHR'dan hiçbiri geçmez; gerçek sepete ekleme (/cart/add.js) ise sarılmış fetch'ten geçer.
+// gider ama sarılmış fetch / XHR'dan hiçbiri geçmez; tasarımın gerçek sepete eklemesi (/cart/add.js) de geçmez
+// (2026-10-30: Meta'ya tasarım başına tek AddToCart editörden gider).
 // Çalıştırma: NODE_PATH=/opt/node22/lib/node_modules node izsiz-simulasyon-e2e.mjs  (önce: node sayfa-uret.mjs)
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
@@ -53,7 +54,8 @@ while (!(await s.locator('.kp-ozet').isVisible().catch(() => false))) { await s.
 await s.locator('[data-kp-ileri]').click();
 await s.waitForURL('**/cart');
 assert.ok(eklenen && eklenen.items.length >= 2, 'sepete eklendi');
-assert.ok(sarili.some((x) => /\/cart\/add\.js/.test(x)), 'gerçek sepete ekleme izlenen fetch\'ten');
+// 2026-10-30'dan beri tasarımın gerçek eklemesi de izlenmeyen yoldan (tasarım başına tek AddToCart: olcum-olaylari-e2e)
+assert.deepEqual(sarili.filter((x) => /\/cart\/add/.test(x)), [], 'tasarımın sepete eklemesi izlenen fetch\'ten geçmedi');
 assert.deepEqual(sarili.filter((x) => /\/api\/[0-9-]+\/graphql/.test(x)), [], 'sepete eklerken de simülasyon izlenen yoldan geçmedi');
 assert.deepEqual(hatalar, []);
 await t.close();

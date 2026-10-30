@@ -22,6 +22,11 @@
   }
   window.kpOlcum = function (ad) { isle(ad, performance.now()); };
   window.kpOlcum.editor = editorSayfasi;
+  // Olay kaydı layout/theme.liquid'de kurulur (fbq / dataLayer okuma); burada yalnızca kutuda gösterilir
+  var olaylar = on.olaylar || [];
+  window.kpOlcum.olaylar = olaylar;
+  window.kpOlcum.olay = on.olay || function (o) { o.z = Date.now(); o.sayfa = location.pathname; olaylar.push(o); planla(); };
+  window.kpOlcum.olayCiz = function () { planla(); };
   (on.kuyruk || []).forEach(function (x) { isle(x[0], x[1]); });
   var kareler = on.kareler || [];
   window.kpOlcum.kareler = kareler;
@@ -189,6 +194,25 @@
     return s;
   }
 
+  // Gönderilen olaylar (en yenisi üstte): saat, kanal, ad, değer, event_id, kaynak; sayaçlar
+  function olayMetni() {
+    var s = [];
+    var sayac = {};
+    olaylar.forEach(function (o) {
+      if (o.not) return;
+      var k = o.kanal + ' ' + o.ad;
+      sayac[k] = (sayac[k] || 0) + 1;
+    });
+    s.push('Olaylar (' + olaylar.length + ')' + (olaylar.length ? ' · ' + Object.keys(sayac).map(function (k) { return k + ' ×' + sayac[k]; }).join(', ') : ''));
+    olaylar.slice().reverse().slice(0, 40).forEach(function (o) {
+      var saat = new Date(o.z || Date.now()).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      var deger = o.deger != null && o.deger !== '' ? ' · ' + String(o.deger).replace('.', ',') + ' TL' : '';
+      s.push('  ' + saat + '  ' + o.kanal + '  ' + o.ad + deger + (o.kimlik ? ' · ' + o.kimlik : '') +
+        (o.kaynak ? ' · ' + o.kaynak : '') + (o.not ? ' · ' + o.not : '') + (o.sayfa && o.sayfa !== location.pathname ? ' · ' + o.sayfa : ''));
+    });
+    return s.join('\n');
+  }
+
   function metin() {
     var ust = [];
     ust.push('JantiFox editör açılış ölçümü');
@@ -196,6 +220,7 @@
     ust.push(navigator.userAgent);
     ust.push('Ekran ' + screen.width + '×' + screen.height + ' @' + (window.devicePixelRatio || 1) +
       (navigator.connection && navigator.connection.effectiveType ? ' · ağ ' + navigator.connection.effectiveType : ''));
+    ust.push(olayMetni());
     if (!editorSayfasi) {
       ust.push('Ölçüm modu açık. "Kişiselleştir"e bas; sonuçlar editör açılınca görünür.');
       ust.push('Bu sayfa: ' + location.pathname);
@@ -275,10 +300,17 @@
     baslik.textContent = '⏱ Ölçüm';
     baslik.style.cssText = 'flex:1;font-size:11px';
     var kopyala = dugme('Kopyala');
+    var temizle = dugme('Olayları sil');
     var kucult = dugme('–');
     ust.appendChild(baslik);
     ust.appendChild(kopyala);
+    ust.appendChild(temizle);
     ust.appendChild(kucult);
+    temizle.addEventListener('click', function () {
+      olaylar.length = 0;
+      try { sessionStorage.removeItem('kp_olcum_olaylar'); } catch (e) { /* yoksay */ }
+      ciz();
+    });
     pre = document.createElement('pre');
     pre.style.cssText = 'margin:0;white-space:pre;font:inherit;color:inherit;background:none;border:0;padding:0';
     kutu.appendChild(ust);

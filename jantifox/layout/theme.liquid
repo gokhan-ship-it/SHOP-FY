@@ -4,13 +4,21 @@
     <meta charset="utf-8">
     {%- comment -%}
       Kişiselleştirme gizli ölçüm modu: yalnızca adreste ?kp_olcum=1 varsa (ya da ölçüm modunda "Kişiselleştir"e basılıp
-      ?kisisellestir=1 ile gelindiyse) açılır. Normal ziyaretçide adres metnine tek bir bakıştan başka bir şey çalışmaz.
+      ?kisisellestir=1 ile gelindiyse) açılır, oturumun sonraki sayfalarında da açık kalır (?kp_olcum=0 kapatır).
+      Normal ziyaretçide adres metnine ve oturum deposuna tek bir bakıştan başka bir şey çalışmaz.
+      Açılış süreleri ve gönderilen olaylar (Meta, GA4, temanın Shopify olayları) köşedeki kutuda görünür.
     {%- endcomment -%}
     <script>
       (function () {
         var q = location.search;
         var acik = /[?&]kp_olcum=1/.test(q);
         if (!acik && /[?&]kisisellestir=1/.test(q)) { try { acik = !!sessionStorage.getItem('kp_olcum_tik'); } catch (e) {} }
+        // Bir kez açılınca oturum boyunca diğer sayfalarda da açık (sepet, normal ürün); ?kp_olcum=0 kapatır
+        try {
+          if (/[?&]kp_olcum=0/.test(q)) sessionStorage.removeItem('kp_olcum_acik');
+          else if (acik) sessionStorage.setItem('kp_olcum_acik', '1');
+          else acik = !!sessionStorage.getItem('kp_olcum_acik');
+        } catch (e) {}
         if (!acik) return;
         document.documentElement.classList.add('kp-olcum');
         try { performance.setResourceTimingBufferSize(3000); } catch (e) {}
@@ -23,6 +31,62 @@
         window.kpOlcum.kareler = kareler;
         var kare = function (t) { kareler.push(performance.now()); if (kareler.length < 3000) requestAnimationFrame(kare); };
         requestAnimationFrame(kare);
+        // Gönderilen olaylar (Meta fbq, GA4 gtag, temanın Shopify olayları): ad, değer, event_id; oturum boyunca saklanır.
+        // fbq ve dataLayer.push yalnızca okunur, çağrı aynen geçer.
+        var olaylar = [];
+        try { olaylar = JSON.parse(sessionStorage.getItem('kp_olcum_olaylar') || '[]'); } catch (e) {}
+        window.kpOlcum.olaylar = olaylar;
+        window.kpOlcum.olay = function (o) {
+          o.z = Date.now();
+          o.sayfa = location.pathname;
+          olaylar.push(o);
+          if (olaylar.length > 80) olaylar.shift();
+          try { sessionStorage.setItem('kp_olcum_olaylar', JSON.stringify(olaylar)); } catch (e) {}
+          if (window.kpOlcum.olayCiz) window.kpOlcum.olayCiz();
+        };
+        var kaydet = function (o) { try { window.kpOlcum.olay(o); } catch (e) {} };
+        var fbqSar = function (f) {
+          if (!f || f.__kpOlcum) return f;
+          var s = function () {
+            try {
+              var a = arguments, y = a[0], tek = /Single/.test(y) || y === 'trackShopify';
+              if (/^track/.test(y)) {
+                var v = (tek ? a[3] : a[2]) || {}, sec = (tek ? a[4] : a[3]) || {};
+                kaydet({ kanal: 'Meta', ad: tek ? a[2] : a[1], deger: v.value, kimlik: sec.eventID, kaynak: y === 'trackShopify' ? 'F&I uygulaması' : 'tema' });
+              }
+            } catch (e) {}
+            return f.apply(this, arguments);
+          };
+          Object.keys(f).forEach(function (k) { s[k] = f[k]; });
+          ['callMethod', 'queue', 'loaded', 'version'].forEach(function (k) { Object.defineProperty(s, k, { get: function () { return f[k]; }, set: function (v) { f[k] = v; } }); });
+          s.__kpOlcum = true;
+          return s;
+        };
+        var fbqAsil;
+        try { Object.defineProperty(window, 'fbq', { configurable: true, get: function () { return fbqAsil; }, set: function (v) { fbqAsil = fbqSar(v); } }); } catch (e) {}
+        // gtag çağrıları dataLayer'a ['event', ad, parametre] olarak düşer; GTM push'u sonradan değiştirse de okunur
+        var dl = window.dataLayer = window.dataLayer || [];
+        var pushAsil = dl.push;
+        try {
+          Object.defineProperty(dl, 'push', {
+            configurable: true,
+            get: function () {
+              return function () {
+                try {
+                  for (var i = 0; i < arguments.length; i++) {
+                    var x = arguments[i];
+                    if (x && x[0] === 'event' && typeof x[1] === 'string') {
+                      var p = x[2] || {};
+                      kaydet({ kanal: 'GA4', ad: x[1], deger: p.value, kimlik: p.event_id, kaynak: p.shopify_event_name ? 'Google uygulaması' : 'tema', hedef: [].concat(p.send_to || []).join(' ') });
+                    }
+                  }
+                } catch (e) {}
+                return pushAsil.apply(dl, arguments);
+              };
+            },
+            set: function (v) { pushAsil = v; }
+          });
+        } catch (e) {}
         var s = document.createElement('script');
         s.src = {{ 'kisisel-olcum.js' | asset_url | json }};
         s.async = true;

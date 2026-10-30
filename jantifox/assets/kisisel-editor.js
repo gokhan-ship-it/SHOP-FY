@@ -156,10 +156,139 @@
     try {
       if (window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') {
         Shopify.analytics.publish(ad, veri || {});
+        olcumKaydi({ kanal: 'Shopify', ad: ad, deger: veri && veri.toplam });
       }
     } catch (e) {
       /* ölçüm hatası akışı bozmasın */
     }
+  }
+
+  /* ---------------- Meta ve GA4 olayları ---------------- */
+
+  // Meta: Facebook & Instagram uygulaması pikseli sayfanın kendi fbq'su ile kurar (Shopify'ın "açık" piksel ortamı);
+  // standart olaylarını (PageView, ViewContent, sepete ekleme...) o gönderir, sunucudan da (Conversions API) aynı
+  // event_id ile tekrarlar. Burada yalnızca editöre özgü olaylar aynı fbq ve aynı piksel ile, tarayıcıdan gönderilir:
+  // CustomizeProduct, TasarimTamamlandi, TaslakKaydedildi ve tasarım başına tek AddToCart (tasarımın gerçek ekleme
+  // isteği izlenmeyen yoldan gider, uygulama satır başına olay göndermez; bkz. sepeteEkle). Uygulama yalnızca
+  // pazarlama izni varken yüklendiği için fbq yoksa ya da izin yoksa olay gönderilmez.
+  // GA4: Google & YouTube uygulamasının kurduğu gtag ile, yalnızca bu ölçüm kimliğine.
+  var META_PIKSEL = '3419060311599240';
+  var GA4_KIMLIK = 'G-QN43QTEZW5';
+  // Google & YouTube uygulamasının ürün kimliği biçimi (shopify_ZZ_ürün_varyant)
+  var GA4_URUN_ONEKI = 'shopify_ZZ_';
+
+  // Ölçüm modu (?kp_olcum=1) kutusuna kayıt; normal ziyaretçide kpOlcum.olay tanımlı değildir
+  function olcumKaydi(kayit) {
+    try {
+      if (window.kpOlcum && typeof window.kpOlcum.olay === 'function') window.kpOlcum.olay(kayit);
+    } catch (e) { /* yoksay */ }
+  }
+
+  function paraBirimi() {
+    return (window.Shopify && Shopify.currency && Shopify.currency.active) || 'TRY';
+  }
+
+  function pazarlamaIzni() {
+    try {
+      var cp = window.Shopify && Shopify.customerPrivacy;
+      if (cp && typeof cp.marketingAllowed === 'function') return !!cp.marketingAllowed();
+    } catch (e) { /* yoksay */ }
+    return true;
+  }
+
+  // Uygulamanın kurduğu piksel (bağlantı değişirse onu kullan); fbevents henüz yüklenmediyse bilinen kimlik
+  function metaPikseli() {
+    try {
+      var p = window.fbq && typeof window.fbq.getState === 'function' ? window.fbq.getState().pixels || [] : [];
+      var kimlikler = p.map(function (x) { return String(x.id); });
+      if (kimlikler.length && kimlikler.indexOf(META_PIKSEL) < 0) return kimlikler[0];
+    } catch (e) { /* yoksay */ }
+    return META_PIKSEL;
+  }
+
+  function metaOlay(ad, veri, kimlik, ozel) {
+    try {
+      if (typeof window.fbq === 'function' && pazarlamaIzni()) {
+        window.fbq(ozel ? 'trackSingleCustom' : 'trackSingle', metaPikseli(), ad, veri, { eventID: kimlik });
+        return true;
+      }
+    } catch (e) { /* yoksay */ }
+    olcumKaydi({ kanal: 'Meta', ad: ad, deger: veri && veri.value, kimlik: kimlik, not: 'gönderilmedi (fbq ya da pazarlama izni yok)' });
+    return false;
+  }
+
+  function ga4Olay(ad, parametre) {
+    var p = { send_to: GA4_KIMLIK };
+    Object.keys(parametre || {}).forEach(function (k) { p[k] = parametre[k]; });
+    try {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', ad, p);
+        return true;
+      }
+    } catch (e) { /* yoksay */ }
+    olcumKaydi({ kanal: 'GA4', ad: ad, deger: p.value, not: 'gönderilmedi (gtag yok)' });
+    return false;
+  }
+
+  function olayKimligi(on) {
+    return 'kp-' + on + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  // Editör açıldı ("Kişiselleştir"): aynı ürün için oturumda bir kez
+  function kisisellestirmeOlcumu(m) {
+    var anahtar = 'kp_cp_' + m.urun.id;
+    try {
+      if (sessionStorage.getItem(anahtar)) return;
+      sessionStorage.setItem(anahtar, '1');
+    } catch (e) { /* depolama kapalıysa her açılışta */ }
+    var deger = (Number(m.urun.fiyat) || 0) / 100;
+    metaOlay('CustomizeProduct', {
+      content_ids: [String(m.urun.id)], content_type: 'product_group', content_name: m.urun.baslik, value: deger, currency: paraBirimi()
+    }, olayKimligi('cp'));
+    ga4Olay('customize_product', {
+      value: deger, currency: paraBirimi(),
+      items: [{ item_id: GA4_URUN_ONEKI + m.urun.id + '_' + m.urun.varyant, item_name: m.urun.baslik, price: deger, quantity: 1 }]
+    });
+  }
+
+  // "Tasarımı tamamla": o anki toplam (kampanya indirimi düşülmüş)
+  function tamamlamaOlcumu(m, tutarKurus) {
+    var deger = Math.max(0, tutarKurus) / 100;
+    metaOlay('TasarimTamamlandi', { content_ids: [String(m.urun.id)], content_type: 'product_group', value: deger, currency: paraBirimi() }, olayKimligi('tt'), true);
+    ga4Olay('design_complete', { value: deger, currency: paraBirimi(), items: [{ item_id: GA4_URUN_ONEKI + m.urun.id + '_' + m.urun.varyant, item_name: m.urun.baslik }] });
+  }
+
+  function taslakOlcumu(m) {
+    metaOlay('TaslakKaydedildi', { content_ids: [String(m.urun.id)], content_type: 'product_group' }, olayKimligi('tk'), true);
+    ga4Olay('save_draft', { items: [{ item_id: GA4_URUN_ONEKI + m.urun.id + '_' + m.urun.varyant, item_name: m.urun.baslik }] });
+  }
+
+  // Tasarım sepete eklendi: tasarım başına tek AddToCart. value = ödenecek tutar (indirimler düşülmüş), içerik = ana
+  // ürün ve patch / set / aksesuar ürünleri (Facebook & Instagram kataloğundaki gibi ürün kimliği, product_group).
+  // event_id tasarım kimliğinden: aynı tasarımın iki kez sayılmasını Meta da engeller.
+  function sepetOlcumu(m, kalemler, tasarimKimlik, tutarKurus) {
+    var h = varyantHaritasi(m);
+    var urunler = [];
+    var icerik = {};
+    var ga4 = [];
+    var adet = 0;
+    kalemler.forEach(function (k) {
+      var b = h[String(k.id)] || {};
+      var urun = b.p || String(k.id);
+      if (!icerik[urun]) {
+        icerik[urun] = { id: urun, quantity: 0, item_price: (b.f || 0) / 100 };
+        urunler.push(urun);
+      }
+      icerik[urun].quantity += k.quantity;
+      adet += k.quantity;
+      ga4.push({ item_id: GA4_URUN_ONEKI + urun + '_' + k.id, item_name: b.n || '', price: (b.f || 0) / 100, quantity: k.quantity });
+    });
+    var deger = Math.max(0, tutarKurus) / 100;
+    metaOlay('AddToCart', {
+      content_ids: urunler, content_type: 'product_group', content_name: m.urun.baslik,
+      contents: urunler.map(function (u) { return icerik[u]; }), num_items: adet, value: deger, currency: paraBirimi()
+    }, 'kp-atc-' + tasarimKimlik);
+    ga4Olay('add_to_cart', { value: deger, currency: paraBirimi(), items: ga4 });
   }
 
   function depoOku(anahtar) {
@@ -3414,7 +3543,10 @@
       var kapat = Array.prototype.filter.call(self.el.querySelectorAll('[data-kp-kapat]'), function (b) { return b.offsetParent; })[0];
       if (kapat) kapat.focus();
     }, 50);
+    this.tamamlamaGonderildi = false;
     if (!this.alt) olayYayinla('kisisellestirme_acildi', { urun_id: this.m.urun.id, urun_adi: this.m.urun.baslik });
+    // Sepetteki tasarımı düzenlemek kişiselleştirmeye başlamak sayılmaz
+    if (!this.alt && !this.duzenlenen) kisisellestirmeOlcumu(this.m);
   };
 
   // X (ve Esc): tasarımda bir şey varken "Tasarımın kaydedilsin mi?"; boşken doğrudan kapatır.
@@ -3443,7 +3575,10 @@
     var kaydedilir = !this.alt && !this.duzenlenen && !bosMu(this.t);
     this.taslakPaneli(false);
     this.kapat(true);
-    if (kaydedilir && this.el.hidden && this.kart.bildirimGoster) this.kart.bildirimGoster('<span>Tasarımın taslak olarak kaydedildi.</span>');
+    if (kaydedilir && this.el.hidden) {
+      taslakOlcumu(this.m);
+      if (this.kart.bildirimGoster) this.kart.bildirimGoster('<span>Tasarımın taslak olarak kaydedildi.</span>');
+    }
   };
 
   // "Kaydetmeden çık": tasarım silinir; ürün kartında birkaç saniye "Tasarım silindi · Geri al"
@@ -4038,7 +4173,10 @@
     if (this.alt) return this.altYerlestir(false);
     // Yazı/Rakam/İkon: İleri her zaman çalışır (sorunlu tasarım Özet'te sepete eklenirken durdurulur)
     // Tasarım ekranında ana buton "Özete geç →" (sorunlu tasarım Özet'te sepete eklenirken durdurulur)
-    if (this.adim !== 'ozet') return this.adimaGit('ozet', false, true);
+    if (this.adim !== 'ozet') {
+      this.tamamlamaOlcumu();
+      return this.adimaGit('ozet', false, true);
+    }
     // Yer kontrolü yalnızca Özet'te: geçersiz patch varsa sepete eklenmez, liste ve "Hepsini düzelt" gösterilir
     if (this.hataliGruplar().length) {
       this.yenile();
@@ -4062,23 +4200,30 @@
       for (var i = 0; i < this.adimlar.length; i++) {
         if (this.adimEngeli(this.adimlar[i].id)) return this.adimaGit(this.adimlar[i].id, true);
       }
-      var f = fiyatHesapla(this.m, this.yer, this.t);
-      if (!bosMu(this.t)) {
-        olayYayinla('tasarim_tamamlandi', {
-          urun_id: this.m.urun.id,
-          harf_sayisi: f.harfAdet,
-          rakam_sayisi: f.rakamAdet,
-          ikon_sayisi: f.ikonAdet,
-          toplam: f.toplam / 100,
-          para_birimi: (window.Shopify && Shopify.currency && Shopify.currency.active) || 'TRY'
-        });
-      }
       if (this.duzenlenen) return this.sepetiGuncelle();
       // Tasarımı kaydet, editörü kapat ve doğrudan sepete ekle (sepet çekmecesi editörün altında kalmasın)
       this.kapat(true);
       return this.kart.sepeteGonder();
     }
     this.adimaGit(this.adimlar[sira + 1].id);
+  };
+
+  // "Tasarımı tamamla": editör açılışı başına bir kez (geri dönüp yeniden basınca tekrar gönderilmez)
+  Editor.prototype.tamamlamaOlcumu = function () {
+    if (this.alt || this.tamamlamaGonderildi || bosMu(this.t)) return;
+    this.tamamlamaGonderildi = true;
+    var f = fiyatHesapla(this.m, this.yer, this.t);
+    var adet = this.kart.adet ? this.kart.adet() : 1;
+    var tutar = f.toplam * adet - tasarimIndirimi(this.kampanyaSonucu());
+    olayYayinla('tasarim_tamamlandi', {
+      urun_id: this.m.urun.id,
+      harf_sayisi: f.harfAdet,
+      rakam_sayisi: f.rakamAdet,
+      ikon_sayisi: f.ikonAdet,
+      toplam: tutar / 100,
+      para_birimi: paraBirimi()
+    });
+    tamamlamaOlcumu(this.m, tutar);
   };
 
   /* ---------------- Paneller ---------------- */
@@ -7447,7 +7592,8 @@
   // satırları) "ürün sepete eklendi" olarak yayınlar ve bunlar Meta'ya Conversions API ile AddToCart olarak gider: her
   // harf / ikon değişikliğinde sepete eklenmemiş ürünler için onlarca AddToCart (teşhis 2026-10-22). Gizli, aynı
   // kökenli bir iframe'in kendi fetch'i izlenmez. Kurulamazsa simülasyon yapılmaz (liste fiyatı + "İndirimler sepette
-  // uygulanır"). Gerçek sepete ekleme (/cart/add.js) sayfanın fetch'iyle gider ve izlenmeye devam eder.
+  // uygulanır"). Tasarımın gerçek sepete eklemesi (/cart/add.js) de bu yoldan gider; tasarım başına tek AddToCart
+  // sepetOlcumu ile gönderilir (2026-10-30).
   var izsizCerceve = null;
   function izsizFetch() {
     try {
@@ -7658,12 +7804,12 @@
   function varyantHaritasi(m) {
     if (m._varyantHaritasi) return m._varyantHaritasi;
     var h = {};
-    var ekle = function (v, p, f) { if (v != null) h[String(v)] = { p: String(p), f: Number(f) || 0 }; };
-    ekle(m.urun.varyant, m.urun.id, m.urun.fiyat);
-    m.setler.concat(m.rakamSetleri).forEach(function (s) { s.varyantlar.forEach(function (v) { ekle(v.id, s.id, v.fiyat); }); });
-    m.ikonlar.forEach(function (i) { i.varyantlar.forEach(function (v) { ekle(v.id, i.id, v.fiyat); }); });
-    (m.hazirSetler || []).forEach(function (s) { ekle(s.varyant, s.id, s.fiyat); });
-    (m.aksesuarlar || []).forEach(function (a) { ekle(a.varyant, a.id, a.fiyat); });
+    var ekle = function (v, p, f, n) { if (v != null) h[String(v)] = { p: String(p), f: Number(f) || 0, n: n || '' }; };
+    ekle(m.urun.varyant, m.urun.id, m.urun.fiyat, m.urun.baslik);
+    m.setler.concat(m.rakamSetleri).forEach(function (s) { s.varyantlar.forEach(function (v) { ekle(v.id, s.id, v.fiyat, s.ad); }); });
+    m.ikonlar.forEach(function (i) { i.varyantlar.forEach(function (v) { ekle(v.id, i.id, v.fiyat, i.ad); }); });
+    (m.hazirSetler || []).forEach(function (s) { ekle(s.varyant, s.id, s.fiyat, s.ad); });
+    (m.aksesuarlar || []).forEach(function (a) { ekle(a.varyant, a.id, a.fiyat, a.ad); });
     m._varyantHaritasi = h;
     return h;
   }
@@ -8512,9 +8658,12 @@
     this.editor.ac('ikon', { tasarim: t, grup: g });
   };
 
-  function postJson(url, govde) {
-    return fetch(url, {
+  // izsiz: gizli iframe'in fetch'i (Web Pixels Manager izlemez; yoksa sayfanın fetch'i)
+  function postJson(url, govde, izsiz) {
+    var f = (izsiz && izsizFetch()) || window.fetch.bind(window);
+    return f(window.location.origin + url, {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify(govde)
     }).then(function (r) {
@@ -8532,11 +8681,12 @@
     return postJson((rotalar.cart_update_url || '/cart/update') + '.js', { updates: guncelle });
   }
 
-  // Bir grup kalemi sepete ekler; başarısızsa yarım kalan kalemleri geri alır ve hata fırlatır
+  // Bir grup kalemi sepete ekler; başarısızsa yarım kalan kalemleri geri alır ve hata fırlatır.
+  // Sepetteki tasarımı güncelleme ve silineni geri getirme yeni sepete ekleme değildir: izlenmeyen yoldan, olaysız.
   KisiselKart.prototype.grupEkle = function (kalemler, kimlik) {
     var self = this;
     var rotalar = window.routes || {};
-    return postJson((rotalar.cart_add_url || '/cart/add') + '.js', { items: kalemler }).catch(function (e) {
+    return postJson((rotalar.cart_add_url || '/cart/add') + '.js', { items: kalemler }, true).catch(function (e) {
       return self.yarimKalanlariTemizle(kimlik).then(function () { throw e; });
     });
   };
@@ -9096,9 +9246,17 @@
       govde.sections = ['cart-drawer', 'cart-icon-bubble'];
       govde.sections_url = window.location.pathname;
     }
+    // Ödenecek tutar (kampanya indirimi düşülmüş), istekten önce: sepet değişince kart yeniden hesaplanır
+    var odenecek = this.kartTutar(paket.fiyat).odenecek;
+    // Gerçek ekleme izlenmeyen yoldan (gizli iframe'in fetch'i): Web Pixels Manager satır başına "ürün sepete eklendi"
+    // yayınlamaz, Meta'ya ve GA4'e tasarım başına tek olay sepetOlcumu'ndan gider. Yol kurulamazsa sayfanın fetch'i
+    // kullanılır; o zaman uygulamalar satır başına olay gönderir, burada ayrıca olay gönderilmez (çift sayılmasın).
+    var izsiz = izsizFetch();
+    var gonder = izsiz || window.fetch.bind(window);
 
-    fetch(ekleUrl, {
+    gonder(window.location.origin + ekleUrl, {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify(govde)
     })
@@ -9118,9 +9276,12 @@
           urun_id: m.urun.id,
           tasarim_id: paket.kimlik,
           adet: adet,
-          toplam: (paket.fiyat.toplam * adet) / 100,
-          para_birimi: (window.Shopify && Shopify.currency && Shopify.currency.active) || 'TRY'
+          toplam: odenecek / 100,
+          liste: (paket.fiyat.toplam * adet) / 100,
+          para_birimi: paraBirimi()
         });
+        if (izsiz) sepetOlcumu(m, paket.kalemler, paket.kimlik, odenecek);
+        else olcumKaydi({ kanal: 'Meta', ad: 'AddToCart', not: 'izlenmeyen yol kurulamadı: satır başına uygulama olayları' });
         try {
           if (typeof publish === 'function' && typeof PUB_SUB_EVENTS !== 'undefined') {
             publish(PUB_SUB_EVENTS.cartUpdate, { source: 'kisisel-editor', productVariantId: m.urun.varyant, cartData: sonuc.veri });
