@@ -40,5 +40,5 @@ Adım 1–4 tamam (ayrıntı: `docs/degisiklik-kaydi.md`, 2026-10-20 satırları
 ## Açık konular
 - 4, 5, 6 numaralı görsellerde Velcro dairesi çantaya göre büyük çizilmiş (ön yüz daireden 19,1 / 16,5 / 14,7 cm,
   gerçekte ~24 cm). Kullanıcı "şimdilik böyle" dedi; yeni görsel gelirse yalnızca PNG ve harita değişir.
-- Panel tişört / sweatshirt / şapka / kalem kutusunda Aksesuar'ı kapalı yazıyor ama editör `harita.izinler`'i
+- Panel Tshirt / sweatshirt / şapka / kalem kutusunda Aksesuar'ı kapalı yazıyor ama editör `harita.izinler`'i
   okumuyor (Aksesuar adımı görünüyor). Kullanıcıya soruldu, bu işte dokunulmadı.

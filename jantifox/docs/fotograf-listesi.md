@@ -28,5 +28,5 @@ Editörde ürünün kendisi önden ve Velcro alanı boş görünmeli: müşterin
 
 Önerilen çekim: ürün tam karşıdan, Velcro alanı boş, düz zemin, ürünün tamamı kadrajda.
 
-Diğer ürünlerin fotoğrafları (tişört, sweatshirt, şapka, sırt çantaları, tote, Pembe Kırmızı Spor Çanta) önden ve Velcro'su boş.
+Diğer ürünlerin fotoğrafları (Tshirt, sweatshirt, şapka, sırt çantaları, tote, Pembe Kırmızı Spor Çanta) önden ve Velcro'su boş.
 Zarf Kalemlikler, Mini Yuvarlak Çantalar ve Kalem Kutusu Sarı (yapıştırılmayan) fotoğraf yüzünden değil, ürün rozetinde "patch alanı yoktur" yazdığı için kişiselleştirme dışında.

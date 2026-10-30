@@ -141,7 +141,7 @@ telefonda bu yönlendirme ayrıca bir gidiş-dönüş ekler).
 | Mavi Beyaz Spor Çanta | 316 × 654 (%98), yazı alanı ekran dışı, 1,16× | 316 × 299 (%45), yazı alanı görünür, alana 2,1× | 324 × 670, 1,16× | 779 × 670, alana 2,0× |
 | Pembe Kırmızı Spor Çanta | 316 × 427 (%64) | 316 × 299 (%45) | 495 × 670 | 779 × 670 |
 | 5 sırt çantası | 316 × 365–390 (%55–59), yakınlaşma yok (1,0×) | 316 × 299 (%45), üst panele yakın | 542–580 × 670, 1,0× | 779 × 670, üst panele yakın |
-| Tişört, sweatshirt, tote | %38–48 | %38–45 (değişmedi) | değişmedi | sweatshirt / tote pencere tam genişlikte |
+| Tshirt, sweatshirt, tote | %38–48 | %38–45 (değişmedi) | değişmedi | sweatshirt / tote pencere tam genişlikte |
 | Kalem kutuları, şapkalar | %26–40, alan görselin ~%80–95'i (1,0×) | aynı | aynı | aynı |
 
 Sonra: 23 üründe de önizleme ekranın en fazla %45'i, yazı alanı ilk ekranda, görsel PNG kaynaklı kopyadan.
@@ -199,7 +199,7 @@ Kategori sayfası `/collections/all` (aynı tema efekti 12 kartta; yalnızca öl
 
 ## 2026-10-13: Patch görselleri PNG kaynaklı
 
-iPhone 13 kullanıcı ajanı, kopya tema, Bej Tişört editörü, "atlase" (6 harf) + 2 ikon;
+iPhone 13 kullanıcı ajanı, kopya tema, Bej Tshirt editörü, "atlase" (6 harf) + 2 ikon;
 `node test/performans/editor-gorsel-boyut.mjs 207022653726 bej-tshirt`. İndirilen görsel boyutu (aktarılan bayt).
 
 | Grup | Önce (WebP kaynak → iPhone'a PNG) | Sonra (PNG kaynak → AVIF / WebP) |

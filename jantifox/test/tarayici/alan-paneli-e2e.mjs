@@ -45,7 +45,7 @@ await s.keyboard.press('Control+s');
 assert.equal((await D('bej-tshirt')).durum, 'hazir');
 assert.equal(await s.textContent('#ilerleme'), '4 / 30 hazır');
 
-// 3. Grubun tüm renklerine uygula: tişörtler aynı oranda → Hazır, kontrol işareti yok
+// 3. Grubun tüm renklerine uygula: Tshirt'ler aynı oranda → Hazır, kontrol işareti yok
 await s.fill('#metin-siniri', '7');
 await s.click('#gruba-uygula');
 for (const h of ['sari-tshirt', 'mavi-tshirt', 'pudra-pembe-tshirt']) {

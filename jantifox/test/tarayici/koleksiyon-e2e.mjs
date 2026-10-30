@@ -38,12 +38,12 @@ const izgaraHtml = (ogeler) => `
 const veri = {
   urunler: {
     'kanvas-lacivert-tote-canta': { u: '/products/kanvas-lacivert-tote-canta', b: 'Tote', k: true, v: [{ id: 111, t: 'Default Title', a: true }] },
-    'bej-tshirt': { u: '/products/bej-tshirt', b: 'Bej Tişört', k: true, v: [{ id: 201, t: 'S', a: true }, { id: 202, t: 'M', a: false }, { id: 203, t: 'L', a: true }] },
+    'bej-tshirt': { u: '/products/bej-tshirt', b: 'Bej Tshirt', k: true, v: [{ id: 201, t: 'S', a: true }, { id: 202, t: 'M', a: false }, { id: 203, t: 'L', a: true }] },
     'the-gamer': { u: '/products/the-gamer', b: 'The Gamer', k: true, v: [{ id: 301, t: 'Default Title', a: true }] },
     'baska-kategoride': { u: '/products/baska-kategoride', b: 'Başka', k: false, v: [{ id: 401, t: 'Default Title', a: true }] }
   }
 };
-const sayfa1 = [li('kanvas-lacivert-tote-canta', 'Tote', '<span class="card-new-in-badge">NEW IN</span>'), li('patch-kalp', 'Kalp Patch'), li('bej-tshirt', 'Bej Tişört'), li('sapka', 'Şapka')].join('');
+const sayfa1 = [li('kanvas-lacivert-tote-canta', 'Tote', '<span class="card-new-in-badge">NEW IN</span>'), li('patch-kalp', 'Kalp Patch'), li('bej-tshirt', 'Bej Tshirt'), li('sapka', 'Şapka')].join('');
 const html = `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${css}</style>
 <style>.card-new-in-badge{position:absolute;top:1rem;left:1rem;z-index:3;background:#fff;padding:.4rem .7rem}html{font-size:62.5%}body{margin:0;font-family:sans-serif;font-size:1.4rem}.lg-gizli{display:block}@media(min-width:1024px){.lg-gizli{display:none}}</style></head><body>
 <script>window.routes={cart_add_url:'/cart/add'};let subscribers={};const PUB_SUB_EVENTS={cartUpdate:'cart-update'};window.yayinlar=[];function publish(a,b){window.yayinlar.push(a)}</script>
@@ -54,7 +54,7 @@ const html = `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta n
 </div></div></div>
 <div id="ProductGridContainer" class="product-grid-container">${izgaraHtml(sayfa1)}</div>
 <script type="application/json" id="KisiselKoleksiyon">${JSON.stringify(veri)}</script>
-<template id="KisiselKoleksiyonKartlar"><li class="grid__item" data-kp-kk-ek="kanvas-lacivert-tote-canta">${kart('kanvas-lacivert-tote-canta', 'Tote')}</li><li class="grid__item" data-kp-kk-ek="bej-tshirt">${kart('bej-tshirt', 'Bej Tişört')}</li><li class="grid__item" data-kp-kk-ek="the-gamer">${kart('the-gamer', 'The Gamer')}</li></template>
+<template id="KisiselKoleksiyonKartlar"><li class="grid__item" data-kp-kk-ek="kanvas-lacivert-tote-canta">${kart('kanvas-lacivert-tote-canta', 'Tote')}</li><li class="grid__item" data-kp-kk-ek="bej-tshirt">${kart('bej-tshirt', 'Bej Tshirt')}</li><li class="grid__item" data-kp-kk-ek="the-gamer">${kart('the-gamer', 'The Gamer')}</li></template>
 <script>${js}</script>
 </body></html>`;
 
@@ -151,7 +151,7 @@ const gorunur = (s, q) => s.locator(q).evaluateAll((els) => els.map((e) => !!(e.
   assert.deepEqual(await gorunur(s, '.pagination-wrapper'), [false]);
   assert.match(s.url(), /kisisel=1/);
   // Tema ızgarayı yeniden çizer (sıralama): filtre korunur, kartlar yeniden işaretlenir, düğme yeniden eklenir
-  await s.evaluate((h) => { document.getElementById('ProductGridContainer').innerHTML = h; }, izgaraHtml([li('bej-tshirt', 'Bej Tişört'), li('sapka', 'Şapka')].join('')));
+  await s.evaluate((h) => { document.getElementById('ProductGridContainer').innerHTML = h; }, izgaraHtml([li('bej-tshirt', 'Bej Tshirt'), li('sapka', 'Şapka')].join('')));
   await s.waitForFunction(() => document.querySelector('.facet-filters.sorting [data-kp-kk-filtre]'));
   await s.waitForTimeout(50);
   assert.deepEqual(await gorunenler(), ['bej-tshirt', 'kanvas-lacivert-tote-canta', 'the-gamer']);

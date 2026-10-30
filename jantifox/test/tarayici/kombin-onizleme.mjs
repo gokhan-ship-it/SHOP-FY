@@ -22,6 +22,17 @@ const git = async (yol) => {
 };
 const yazi = async (q) => ((await s.locator(q).first().textContent({ timeout: 8000 })) || '').replace(/\s+/g, ' ').trim();
 const sonuc = {};
+// Bizim öğelerimizde eski yazım (metin, aria-label, title, alt) kalmadı mı; bulunanları döndürür
+const isortAra = (seciciler) => s.evaluate((l) => {
+  const R = /i\u015f\u00f6rt|\u0130\u015e\u00d6RT/;
+  const bulunan = [];
+  for (const q of l) document.querySelectorAll(q).forEach((e) => {
+    if (R.test(e.textContent)) bulunan.push(q + ': ' + e.textContent.replace(/\s+/g, ' ').match(/.{0,30}(i\u015f\u00f6rt|\u0130\u015e\u00d6RT).{0,20}/)[0]);
+    e.querySelectorAll('*').forEach((x) => ['aria-label', 'title', 'alt', 'placeholder'].forEach((a) => { const v = x.getAttribute(a); if (v && R.test(v)) bulunan.push(q + ' [' + a + ']: ' + v); }));
+  });
+  return bulunan;
+}, seciciler);
+sonuc.isort = {};
 
 // 1) Ana sayfa: kutu Çok satanlar'ın hemen üstünde
 await git('/');
@@ -40,6 +51,7 @@ assert.ok(sonuc.anaSayfa, 'ana sayfa kutusu');
 assert.match(sonuc.anaSayfa.metin, /Sweatshirt'ünü tasarla, Tshirt bizden/);
 assert.match(sonuc.anaSayfa.metin, /3\.400 TL 5\.400 TL/);
 assert.ok(sonuc.anaSayfa.arada, 'kutu Çok satanlar\'ın hemen üstünde');
+sonuc.isort.anaSayfa = await isortAra(['.kp-kk-bolum']);
 
 // 2) Kendin Tasarla: ilk kart vitrin, "Tshirt hediye"
 await git('/collections/kendin-tasarla');
@@ -49,6 +61,7 @@ sonuc.kendinTasarla = await s.evaluate(() => {
 });
 assert.ok(sonuc.kendinTasarla && sonuc.kendinTasarla.kombin, 'ilk kart kombin');
 assert.match(sonuc.kendinTasarla.metin, /Tshirt hediye/);
+sonuc.isort.kendinTasarla = await isortAra(['[data-kp-kombin-kart]']);
 
 // 3) Vitrin sayfası ve editör (kombin modu)
 await git('/products/sweatshirt-kombini');
@@ -59,6 +72,9 @@ const veri = await s.evaluate(() => {
   return j && { fiyat: j.fiyat, dahil: j.dahil, kod: j.kod, sweat: j.sweatshirtler.map((x) => x.baslik + ':' + x.varyantlar.map((v) => v.baslik).join('/')), tisort: j.tisortler.map((x) => x.baslik + ':' + x.varyantlar.filter((v) => v.satilabilir).map((v) => v.baslik).join('/')) };
 });
 sonuc.kombinVerisi = veri;
+sonuc.isort.vitrin = await isortAra(['.kp-kv', 'title', 'meta[property="og:title"]']);
+sonuc.isort.vitrinMeta = await s.evaluate(() => [document.title, (document.querySelector('meta[property="og:title"]') || {}).content, (document.querySelector('meta[name="description"]') || {}).content]);
+sonuc.isort.veri = /i\u015f\u00f6rt|\u0130\u015e\u00d6RT/.test(await s.evaluate(() => document.querySelector('script[id^="KisiselKombin-"]').textContent));
 assert.equal(veri.fiyat, 340000);
 assert.equal(veri.sweat.length, 5);
 await s.locator('[data-kisisel-davet] [data-kisisel-ac]').click();
@@ -97,6 +113,7 @@ sonuc.editor = {
   })
 };
 assert.equal(sonuc.editor.anaButon, 'Yaşını seç ↓');
+sonuc.isort.editorSecim = await isortAra(['.kp-editor']);
 assert.ok(sonuc.editor.kapaklarSade && sonuc.editor.onizlemeSweatSade, 'sade görseller');
 const olayIstegi = [];
 // Seçim sırasında Meta / GA4'e giden istekler (olması gerekmez). /api/collect sitenin tarayıcı sinyali betiği (olay değil), ayrı sayılır
@@ -141,6 +158,7 @@ await s.waitForTimeout(600);
 sonuc.editor.tasarimOnizleme = await kutu('.kp-editor .kp-onizleme__ic');
 sonuc.editor.tasarimGorunur = { araclar: await s.locator('.kp-editor .kp-araclar').isVisible(), dahil: await s.locator('[data-kp-dahil]').isVisible(), kombinOnizleme: await s.locator('[data-kp-kombin-onizleme]').isVisible(), sahneGorseli: await s.locator('.kp-editor .kp-onizleme .kp-sahne__urun').evaluate((e) => !!e.currentSrc && e.naturalWidth > 0) };
 sonuc.editor.ilkBildirim = await yazi('.kp-editor [data-kp-bildirim]');
+sonuc.isort.editorTasarim = await isortAra(['.kp-editor']);
 sonuc.editor.tisortSatiri = await yazi('[data-kp-dahil] .kp-dahil__tisort-ad');
 sonuc.editor.yaziNotu = await yazi('.kp-kombin-not--yazi');
 sonuc.editor.altEtiket = await yazi('.kp-alt__fiyat > span');
@@ -156,6 +174,8 @@ sonuc.editor.ucPatch = { gosterge: await yazi('[data-kp-dahil] .kp-dahil__metin'
 await s.locator('[data-kp-ileri]').click();
 await s.locator('.kp-kombin-ozet-tisort').waitFor({ timeout: 8000 });
 sonuc.ozet = { tisort: await yazi('.kp-kombin-ozet-tisort'), hediye: await yazi('.kp-ozet__hediye'), buton: await yazi('[data-kp-ileri]') };
+sonuc.isort.editorOzet = await isortAra(['.kp-editor']);
+sonuc.kampanyalarKarti = MOBIL ? null : await s.locator('[data-kp-kkart-liste]').first().textContent().catch(() => null);
 sonuc.hatalar = hatalar;
 console.log(JSON.stringify(sonuc, null, 1));
 await t.close();

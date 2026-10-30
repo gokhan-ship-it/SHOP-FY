@@ -316,7 +316,7 @@ for (const en of [1280, 1440, 1920]) {
     const depo = await s.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('kp-ornek-v3:')).map((k) => JSON.parse(localStorage.getItem(k))));
     const kadrajlar = depo.filter((x) => x.isim).map((x) => x.kadraj);
     assert.equal(kadrajlar.filter((x) => x && x.w > 0).length, 3, 'Le Koko kartlarında kadraj bulundu: ' + JSON.stringify(kadrajlar));
-    assert.equal(kadrajlar.filter((x) => x === null).length, 3, 'spor / tişört: kesit ortalanır');
+    assert.equal(kadrajlar.filter((x) => x === null).length, 3, 'spor / Tshirt: kesit ortalanır');
     const ak = kadrajlar.find((x) => x);
     // Çevrimdışı ölçüm (tam boy görsellerle): x≈0.18, y≈0.12, w≈0.63
     assert.ok(Math.abs(ak.x - 0.18) < 0.03 && Math.abs(ak.y - 0.12) < 0.03 && Math.abs(ak.w - 0.63) < 0.03, JSON.stringify(ak));
