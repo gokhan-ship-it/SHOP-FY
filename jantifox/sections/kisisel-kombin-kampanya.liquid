@@ -1,0 +1,88 @@
+{%- comment -%}
+  Ana sayfa: Sweatshirt kombini kampanya kutusu (Çok satanlar'ın üstünde). Kombin açıkken (tema ayarı ve tarih
+  aralığı, kisisel-kombin-acik) görünür; kapalıyken hiçbir şey yazmaz. Fiyatlar tema ayarından (Sweatshirt kombini).
+  Buton varsayılan olarak vitrin ürününün sayfasını editör açık getirir (?kisisellestir=1).
+  Görsel: bölümde seçilen görsel, yoksa vitrin ürününün ana görseli; köşede ilk hediye tişörtün küçük görseli.
+{%- endcomment -%}
+{%- capture kp_kombin_acik -%}{%- render 'kisisel-kombin-acik' -%}{%- endcapture -%}
+{%- assign kk_vitrin = all_products[settings.kombin_vitrin] -%}
+{%- if kp_kombin_acik == '1' and kk_vitrin.id -%}
+  {%- liquid
+    assign kk_link = section.settings.link
+    if kk_link == blank
+      assign kk_link = kk_vitrin.url | append: '?kisisellestir=1'
+    endif
+    assign kk_gorsel = section.settings.gorsel | default: kk_vitrin.featured_media.preview_image
+    assign kk_tisortler = settings.kombin_tisortler | remove: ' ' | split: ','
+    assign kk_tisort = all_products[kk_tisortler.first]
+  -%}
+  <div class="kp-kk-bolum section-padding" id="kp-kombin-{{ section.id }}">
+    <div class="{{ section.settings.section_width }}">
+      <a class="kp-kk" href="{{ kk_link }}">
+        <div class="kp-kk__gorsel">
+          {%- if kk_gorsel -%}
+            {{ kk_gorsel | image_url: width: 900 | image_tag: loading: 'lazy', widths: '360, 540, 720, 900', sizes: '(min-width: 990px) 440px, 100vw', alt: kk_vitrin.title, class: 'kp-kk__resim' }}
+          {%- endif -%}
+          {%- if kk_tisort.featured_media -%}
+            <span class="kp-kk__hediye">
+              {{ kk_tisort.featured_media.preview_image | image_url: width: 160 | image_tag: loading: 'lazy', alt: '', width: 80, height: 80 }}
+              <span>Hediye</span>
+            </span>
+          {%- endif -%}
+        </div>
+        <div class="kp-kk__metin">
+          {%- if section.settings.etiket != blank -%}<p class="kp-kk__etiket">{{ section.settings.etiket | escape }}</p>{%- endif -%}
+          <h2 class="kp-kk__baslik section__heading h2">{{ section.settings.baslik | escape }}</h2>
+          {%- if section.settings.alt != blank -%}<p class="kp-kk__alt">{{ section.settings.alt | escape }}</p>{%- endif -%}
+          <p class="kp-kk__fiyat">
+            <strong>{%- render 'kisisel-kombin-tl', tl: settings.kombin_fiyat -%}</strong>
+            {%- if settings.kombin_eski_fiyat > settings.kombin_fiyat -%}<s>{%- render 'kisisel-kombin-tl', tl: settings.kombin_eski_fiyat -%}</s>{%- endif -%}
+          </p>
+          <span class="btn btn-primary kp-kk__buton">{{ section.settings.buton | escape }}</span>
+        </div>
+      </a>
+    </div>
+  </div>
+  <style>
+    .kp-kk-bolum { padding-top: 2.4rem; padding-bottom: 2.4rem; }
+    .kp-kk { display: grid; grid-template-columns: 1fr; overflow: hidden; border: 1px solid rgba(0, 0, 0, .1); border-radius: 12px; background: #f6f5f1; color: inherit; text-decoration: none; }
+    .kp-kk__gorsel { position: relative; aspect-ratio: 4 / 3; background: #efede7; }
+    .kp-kk__resim { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .kp-kk__hediye { position: absolute; right: 1.2rem; bottom: 1.2rem; display: flex; flex-direction: column; align-items: center; gap: .2rem; padding: .5rem; border-radius: 12px; background: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, .12); font-size: 1.2rem; font-weight: 700; color: #b3141b; }
+    .kp-kk__hediye img { width: 6.4rem; height: 6.4rem; border-radius: 8px; object-fit: cover; }
+    .kp-kk__metin { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; padding: 2rem 2rem 2.4rem; }
+    .kp-kk__etiket { margin: 0; padding: .3rem 1rem; border-radius: 999px; background: #b3141b; color: #fff; font-size: 1.2rem; font-weight: 700; letter-spacing: .04em; }
+    .kp-kk__baslik { margin: 0; }
+    .kp-kk__alt { margin: 0; font-size: 1.6rem; line-height: 1.5; }
+    .kp-kk__fiyat { display: flex; align-items: baseline; gap: 1rem; margin: 0; font-size: 2.4rem; }
+    .kp-kk__fiyat strong { font-weight: 700; }
+    .kp-kk__fiyat s { font-size: 1.7rem; opacity: .6; }
+    .kp-kk__buton { margin-top: .4rem; }
+    @media (min-width: 750px) {
+      .kp-kk { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: stretch; }
+      .kp-kk__gorsel { aspect-ratio: auto; min-height: 36rem; }
+      .kp-kk__metin { justify-content: center; padding: 3.2rem 4rem; }
+    }
+  </style>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Sweatshirt kombini",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": { "groups": ["header", "footer", "aside"] },
+  "settings": [
+    { "type": "paragraph", "content": "Kombin açıkken görünür (Tema ayarları → Sweatshirt kombini). Fiyatlar oradan gelir." },
+    { "type": "select", "id": "section_width", "label": "Genişlik", "default": "container",
+      "options": [{ "value": "container", "label": "Kutu" }, { "value": "container-fluid", "label": "Geniş" }, { "value": "w-full", "label": "Tam genişlik" }] },
+    { "type": "text", "id": "etiket", "label": "Üst küçük etiket", "default": "TİŞÖRT HEDİYE" },
+    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Sweatshirt'ünü tasarla, tişört bizden" },
+    { "type": "text", "id": "alt", "label": "Alt metin", "default": "1 sweatshirt + 2 patch 3.400 TL. Hediye tişörtün rengini sen seç." },
+    { "type": "text", "id": "buton", "label": "Buton", "default": "Kombinini Tasarla" },
+    { "type": "url", "id": "link", "label": "Buton linki", "info": "Boşsa vitrin ürününün sayfası, editör açık." },
+    { "type": "image_picker", "id": "gorsel", "label": "Görsel", "info": "Boşsa vitrin ürününün ana görseli." }
+  ],
+  "presets": [{ "name": "Sweatshirt kombini" }]
+}
+{% endschema %}

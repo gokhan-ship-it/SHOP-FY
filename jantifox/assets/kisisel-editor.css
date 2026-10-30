@@ -4898,3 +4898,211 @@ html.kp-kilit body {
     transform: translateX(100%);
   }
 }
+
+/* ---------- Sweatshirt kombini (editörün kombin modu) ---------- */
+/* Önizlemenin üstünde, ortada: "2 patch dahil · 1/2" (2'de ✓), fazlası "3. patch +300 TL" */
+.kp-kombin-sayac {
+  position: absolute;
+  z-index: 3;
+  top: 0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.2rem 0.6rem;
+  max-width: calc(100% - 9rem);
+  padding: 0.3rem 0.9rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--kp-murekkep);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  pointer-events: none;
+}
+.kp-kombin-sayac--tamam {
+  border-color: var(--kp-murekkep);
+}
+.kp-kombin-sayac__ek {
+  color: var(--kp-murekkep);
+  font-weight: 700;
+}
+.kp-alt__etiket--hediye {
+  background: #b3141b;
+}
+.kp-editor .kp-alt__ileri.kp-alt__ileri--pasif {
+  opacity: 0.55;
+}
+/* Sweatshirt adımı ve Özet'teki tişört seçimi: renk kutucukları ve yaş düğmeleri */
+.kp-kombin-baslik {
+  margin: 0 0 0.4rem;
+}
+.kp-kombin-aciklama,
+.kp-kombin-ipucu {
+  margin: 0 0 1rem;
+  color: var(--kp-ikincil);
+  font-size: 1.35rem;
+  line-height: 1.45;
+}
+.kp-kombin-etiket {
+  margin: 0.8rem 0 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.kp-kombin-renkler,
+.kp-kombin-yaslar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.kp-kombin-renk {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  width: 7.6rem;
+  padding: 0.5rem 0.3rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 12px;
+  background: var(--kp-zemin);
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.kp-kombin-renk img {
+  width: 5.6rem;
+  height: 5.6rem;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--kp-yumusak);
+}
+.kp-kombin-renk small {
+  color: var(--kp-ikincil);
+  font-size: 1.1rem;
+}
+.kp-kombin-renk--kucuk {
+  width: 6.4rem;
+}
+.kp-kombin-renk--kucuk img {
+  width: 4.4rem;
+  height: 4.4rem;
+}
+.kp-kombin-renk--secili {
+  border: 2px solid var(--kp-murekkep);
+  padding: calc(0.5rem - 1px) calc(0.3rem - 1px);
+  font-weight: 700;
+}
+.kp-kombin-renk--soluk {
+  opacity: 0.55;
+}
+.kp-kombin-yas {
+  min-height: var(--kp-dokunma);
+  min-width: 7.2rem;
+  padding: 0.4rem 1.1rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 12px;
+  background: var(--kp-zemin);
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+.kp-kombin-yas--secili {
+  border: 2px solid var(--kp-murekkep);
+  font-weight: 700;
+}
+.kp-kombin-yas:disabled {
+  color: var(--kp-ikincil);
+  text-decoration: line-through;
+  cursor: default;
+}
+.kp-kombin-devam {
+  width: 100%;
+  margin-top: 1.4rem;
+  min-height: var(--kp-dokunma);
+  border-radius: 999px;
+  background: var(--kp-murekkep) !important;
+  border: 1px solid var(--kp-murekkep) !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+.kp-kombin-devam:disabled {
+  opacity: 0.45;
+}
+.kp-kombin-not {
+  margin: 0.8rem 0 0;
+  color: var(--kp-ikincil);
+  font-size: 1.25rem;
+  line-height: 1.45;
+}
+.kp-kombin-not--yazi {
+  margin: 0.4rem 0 0.6rem;
+}
+.kp-kombin-uyari {
+  margin: 0.8rem 0 0;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  background: var(--kp-bilgi-zemin);
+  font-size: 1.3rem;
+  line-height: 1.45;
+}
+.kp-kombin-eksik {
+  margin: 0.8rem 0 0;
+  color: var(--kp-hata);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+/* Özet: zorunlu "Hediye tişörtünü seç" kutusu */
+.kp-kombin-tisort {
+  margin: 1rem 0;
+  padding: 1rem 1.1rem 1.1rem;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 12px;
+  background: var(--kp-zemin);
+}
+.kp-kombin-tisort--uyari:not(.kp-kombin-tisort--tamam) {
+  border-color: var(--kp-hata);
+}
+.kp-kombin-tisort .kp-kombin-yaslar {
+  margin-top: 0.8rem;
+}
+.kp-kombin-tisort__ust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.2rem 1rem;
+  margin-bottom: 0.8rem;
+}
+.kp-kombin-tisort__baslik {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.kp-kombin-tisort__fiyat {
+  color: #b3141b;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.kp-kombin-tisort__fiyat s {
+  margin-left: 0.3rem;
+  color: var(--kp-ikincil);
+  font-weight: 400;
+}
+.kp-ozet__hediye td {
+  color: #b3141b;
+  font-weight: 700;
+}
+.kp-ozet__hediye td s {
+  margin-right: 0.3rem;
+  color: var(--kp-ikincil);
+  font-weight: 400;
+}
+.kp-kombin-satir--bekliyor .kp-kampanya-satir {
+  color: var(--kp-ikincil);
+}

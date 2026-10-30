@@ -10,6 +10,10 @@
 
   layout/theme.liquid içinden, koleksiyon sayfalarında render edilir:
   {% if request.page_type == 'collection' %}{% render 'kisisel-koleksiyon' %}{% endif %}
+
+  Sweatshirt kombini: Kendin Tasarla'da (kendin-tasarla) kombin açıkken ızgaranın ilk kartı vitrin ürünü (temanın
+  card-product'ı, "Tişört hediye" etiketi ve ince çerçeve). İlk sayfada; filtre / sıralama ızgarayı yenileyince yeniden
+  eklenir, "Sadece kişiselleştirilebilenler" açıkken de görünür.
 {%- endcomment -%}
 {%- liquid
   assign adaylar = shop.metafields.kisisellestirme.acik_urunler.value
@@ -64,4 +68,41 @@
   <template id="KisiselKoleksiyonKartlar">{{ kartlar }}</template>
   {{ 'kisisel-koleksiyon.css' | asset_url | stylesheet_tag }}
   <script src="{{ 'kisisel-koleksiyon.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+{%- if collection.handle == 'kendin-tasarla' -%}
+  {%- capture kp_kombin_acik -%}{%- render 'kisisel-kombin-acik' -%}{%- endcapture -%}
+  {%- assign kp_vitrin = all_products[settings.kombin_vitrin] -%}
+  {%- if kp_kombin_acik == '1' and kp_vitrin.id -%}
+    <template id="KisiselKombinKart"><li class="grid__item kp-kombin-vitrin-kart" data-kp-kombin-kart>
+      {%- render 'card-product', card_product: kp_vitrin, section_id: 'kisisel-kombin', product_placeholder: 'product-1' -%}
+    </li></template>
+    <style>
+      #product-grid > .kp-kombin-vitrin-kart.kp-kk-gizli { display: block !important; }
+      .kp-kombin-vitrin-kart .card-wrapper { height: 100%; padding: .8rem; border: 1px solid #b3141b; border-radius: 12px; }
+      .kp-kombin-vitrin-kart .card-product__media { border-radius: 8px; overflow: hidden; }
+      .kp-kombin-rozet { display: inline-block; padding: .4rem .9rem; border-radius: 999px; background: #b3141b; color: #fff; font-size: 1.2rem; font-weight: 700; line-height: 1.2; }
+    </style>
+    <script>
+      (function () {
+        // Izgaranın başına vitrin kartı; temanın "Tükendi" / indirim etiketi yerine "Tişört hediye"
+        function yerlestir() {
+          var g = document.getElementById('product-grid');
+          var s = document.getElementById('KisiselKombinKart');
+          if (!g || !s || !s.content || g.querySelector(':scope > [data-kp-kombin-kart]')) return;
+          if (/[?&]page=(?!1(&|$))\d+/.test(window.location.search)) return;
+          var li = s.content.firstElementChild.cloneNode(true);
+          var rozet = li.querySelector('.card__badge');
+          if (rozet) rozet.innerHTML = '<span class="kp-kombin-rozet">Tişört hediye</span>';
+          g.insertBefore(li, g.firstElementChild);
+        }
+        function izle() {
+          yerlestir();
+          var kap = document.getElementById('ProductGridContainer') || (document.getElementById('product-grid') || {}).parentNode;
+          if (kap && window.MutationObserver) new MutationObserver(yerlestir).observe(kap, { childList: true, subtree: true });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', izle);
+        else izle();
+      })();
+    </script>
+  {%- endif -%}
 {%- endif -%}

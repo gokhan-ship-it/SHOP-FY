@@ -1,0 +1,86 @@
+{%- comment -%}
+  Sweatshirt kombini verisi (editörün kombin modu) JSON olarak: fiyat ayarları, sweatshirtler (editör görseli, harita,
+  yaş varyantları) ve hediye tişörtler (yaş varyantları, stok). Ürünler tema ayarlarındaki handle listelerinden okunur.
+  "İndigo ve Pembe dahil" kapalıysa 3-5 yaş listesindeki sweatshirtler hiç yazılmaz.
+
+  Kullanım (kisisel-kart.liquid içinden, kombin: true ile): {% render 'kisisel-kombin-veri', section_id: section.id %}
+{%- endcomment -%}
+{%- liquid
+  assign kb_sweat = settings.kombin_sweatshirtler | remove: ' ' | split: ','
+  assign kb_kucuk = settings.kombin_kucuk_sweatshirtler | remove: ' ' | split: ','
+  assign kb_tisort = settings.kombin_tisortler | remove: ' ' | split: ','
+  assign kb_vitrin = all_products[settings.kombin_vitrin]
+  assign kb_fiyat = settings.kombin_fiyat | default: 3400 | times: 100
+  assign kb_eski = settings.kombin_eski_fiyat | default: 5400 | times: 100
+-%}
+<script type="application/json" id="KisiselKombin-{{ section_id }}">
+{
+  "fiyat": {{ kb_fiyat }},
+  "eski_fiyat": {{ kb_eski }},
+  "dahil": {{ settings.kombin_patch | default: 2 }},
+  "kod": {{ settings.kombin_kod | strip | json }},
+  "baslangic": {{ settings.kombin_baslangic | strip | json }},
+  "bitis": {{ settings.kombin_bitis | strip | json }},
+  "vitrin": {% if kb_vitrin.id %}{ "id": {{ kb_vitrin.id }}, "url": {{ kb_vitrin.url | json }}, "baslik": {{ kb_vitrin.title | json }} }{% else %}null{% endif %},
+  "sweatshirtler": [
+    {%- assign kb_ilk = true -%}
+    {%- for h in kb_sweat -%}
+      {%- assign p = all_products[h] -%}
+      {%- if p.id == blank -%}{%- continue -%}{%- endif -%}
+      {%- assign kb_k = false -%}
+      {%- if kb_kucuk contains h -%}{%- assign kb_k = true -%}{%- endif -%}
+      {%- if kb_k and settings.kombin_kucuk_beden != true -%}{%- continue -%}{%- endif -%}
+      {%- assign kb_harita = p.metafields.kisisellestirme.harita.value -%}
+      {%- if kb_harita == blank -%}{%- continue -%}{%- endif -%}
+      {%- assign kb_oniz = p.metafields.kisisellestirme.onizleme_gorseli_png.value | default: p.metafields.kisisellestirme.onizleme_gorseli.value -%}
+      {%- if kb_oniz == blank -%}{%- assign kb_oniz = p.featured_media -%}{%- endif -%}
+      {%- assign kb_oniz = kb_oniz.preview_image | default: kb_oniz -%}
+      {%- unless kb_ilk -%},{%- endunless -%}{%- assign kb_ilk = false -%}
+      {
+        "id": {{ p.id }},
+        "handle": {{ p.handle | json }},
+        "baslik": {{ p.title | json }},
+        "kucuk_beden": {{ kb_k }},
+        "kapak": {{ p.featured_media | image_url: width: 160 | json }},
+        "metin_siniri": {{ p.metafields.kisisellestirme.metin_karakter_siniri.value | json }},
+        "gorsel": {
+          "en": {{ kb_oniz.width | default: 1000 }},
+          "boy": {{ kb_oniz.height | default: 1000 }},
+          "kucuk": {{ kb_oniz | image_url: width: 750 | json }},
+          "buyuk": {{ kb_oniz | image_url: width: 1200 | json }},
+          "dev": {{ kb_oniz | image_url: width: 1800 | json }}
+        },
+        "harita": {{ kb_harita | json }},
+        "varyantlar": [
+          {%- for v in p.variants -%}
+            {%- assign kb_stok = nil -%}
+            {%- if v.inventory_management == 'shopify' and v.inventory_policy != 'continue' -%}{%- assign kb_stok = v.inventory_quantity | at_least: 0 -%}{%- endif -%}
+            {"id":{{ v.id }},"baslik":{{ v.title | json }},"fiyat":{{ v.price }},"satilabilir":{{ v.available | json }},"stok":{{ kb_stok | json }}}{%- unless forloop.last -%},{%- endunless -%}
+          {%- endfor -%}
+        ]
+      }
+    {%- endfor -%}
+  ],
+  "tisortler": [
+    {%- assign kb_ilk = true -%}
+    {%- for h in kb_tisort -%}
+      {%- assign p = all_products[h] -%}
+      {%- if p.id == blank -%}{%- continue -%}{%- endif -%}
+      {%- unless kb_ilk -%},{%- endunless -%}{%- assign kb_ilk = false -%}
+      {
+        "id": {{ p.id }},
+        "handle": {{ p.handle | json }},
+        "baslik": {{ p.title | json }},
+        "kapak": {{ p.featured_media | image_url: width: 160 | json }},
+        "varyantlar": [
+          {%- for v in p.variants -%}
+            {%- assign kb_stok = nil -%}
+            {%- if v.inventory_management == 'shopify' and v.inventory_policy != 'continue' -%}{%- assign kb_stok = v.inventory_quantity | at_least: 0 -%}{%- endif -%}
+            {"id":{{ v.id }},"baslik":{{ v.title | json }},"fiyat":{{ v.price }},"satilabilir":{{ v.available | json }},"stok":{{ kb_stok | json }}}{%- unless forloop.last -%},{%- endunless -%}
+          {%- endfor -%}
+        ]
+      }
+    {%- endfor -%}
+  ]
+}
+</script>

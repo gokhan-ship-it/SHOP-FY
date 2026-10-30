@@ -1597,5 +1597,101 @@
         "info": "When use [Subscriptions app](https://apps.shopify.com/shopify-subscriptions)"
       }
     ]
+  },
+  {
+    "name": "Sweatshirt kombini",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "1 sweatshirt + 2 patch sabit fiyatla, tişört hediye. Ana sayfa bölümü, Kendin Tasarla kartı, vitrin sayfası, editörün kombin modu ve sepet grubu bu ayarlara bakar."
+      },
+      {
+        "type": "checkbox",
+        "id": "kombin_aktif",
+        "label": "Kombin açık",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "kombin_baslangic",
+        "label": "Başlangıç",
+        "placeholder": "2026-11-01 00:00",
+        "info": "YYYY-AA-GG SS:DD, Türkiye saati. Boşsa hemen başlar."
+      },
+      {
+        "type": "text",
+        "id": "kombin_bitis",
+        "label": "Bitiş",
+        "placeholder": "2026-11-30 23:59",
+        "info": "YYYY-AA-GG SS:DD, Türkiye saati. Boşsa bitiş yok."
+      },
+      {
+        "type": "checkbox",
+        "id": "kombin_kucuk_beden",
+        "label": "İndigo ve Pembe (3-5 yaş) kombine dahil",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "kombin_kod",
+        "label": "Sepete yazılacak indirim kodu",
+        "default": "KMBSWEAT1-9TQ4M",
+        "info": "Yalnızca test için: kombin sepete eklenince bu kod sepete yazılır. Otomatik indirim açılınca boşalt."
+      },
+      {
+        "type": "header",
+        "content": "Ürünler"
+      },
+      {
+        "type": "text",
+        "id": "kombin_vitrin",
+        "label": "Vitrin ürünü (handle)",
+        "default": "sweatshirt-kombini"
+      },
+      {
+        "type": "text",
+        "id": "kombin_sweatshirtler",
+        "label": "Sweatshirtler (handle, virgülle, sırayla)",
+        "default": "bej-sweatshirt,mavi-sweatshirt,yesil-sweatshirt,indigo-sweatshirt,pembe-sweatshirt"
+      },
+      {
+        "type": "text",
+        "id": "kombin_kucuk_sweatshirtler",
+        "label": "3-5 yaş sweatshirtler (handle, virgülle)",
+        "default": "indigo-sweatshirt,pembe-sweatshirt",
+        "info": "Yukarıdaki \"İndigo ve Pembe dahil\" kapalıyken bunlar kombinde görünmez."
+      },
+      {
+        "type": "text",
+        "id": "kombin_tisortler",
+        "label": "Hediye tişörtler (handle, virgülle)",
+        "default": "bej-tshirt,sari-tshirt,mavi-tshirt,pudra-pembe-tshirt"
+      },
+      {
+        "type": "header",
+        "content": "Fiyat"
+      },
+      {
+        "type": "number",
+        "id": "kombin_fiyat",
+        "label": "Kombin fiyatı (TL)",
+        "default": 3400
+      },
+      {
+        "type": "number",
+        "id": "kombin_eski_fiyat",
+        "label": "Üstü çizili fiyat (TL)",
+        "default": 5400
+      },
+      {
+        "type": "range",
+        "id": "kombin_patch",
+        "min": 1,
+        "max": 4,
+        "step": 1,
+        "label": "Fiyata dahil patch",
+        "default": 2
+      }
+    ]
   }
 ]

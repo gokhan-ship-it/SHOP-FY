@@ -7,6 +7,10 @@
 
   Kullanım (main-product içinde custom_liquid bloğu):
   {% render 'kisisel-kart', product: product, section: section %}
+
+  Sweatshirt kombini (vitrin sayfası, sections/kisisel-kombin-vitrin.liquid): product kombinin ilk sweatshirt'ü,
+  kombin: true. Kart kombin açıkken (kisisel-kombin-acik) görünür; editör kombin modunda açılır (sweatshirt rengi ve
+  yaşı, 2 patch dahil, hediye tişört). Kombin verisi kisisel-kombin-veri'den gelir.
 {%- endcomment -%}
 {%- liquid
   assign kisisel_aktif = false
@@ -23,6 +27,14 @@
       assign kisisel_aktif = true
     endif
   endif
+  if kombin
+    capture kp_kombin_acik
+      render 'kisisel-kombin-acik'
+    endcapture
+    if kp_kombin_acik != '1'
+      assign kisisel_aktif = false
+    endif
+  endif
 -%}
 {%- if kisisel_aktif -%}
   {{ 'kisisel-editor.css' | asset_url | stylesheet_tag }}
@@ -32,11 +44,13 @@
   {%- endcomment -%}
   <script src="{{ 'kisisel-editor.js' | asset_url }}" async></script>
   {%- render 'kisisel-veri', product: product, katalog: katalog, section_id: section.id -%}
+  {%- if kombin -%}{%- render 'kisisel-kombin-veri', section_id: section.id -%}{%- endif -%}
 
   <kisisel-kart
     class="kisisel-kart"
     data-section-id="{{ section.id }}"
     data-form-id="product-form-{{ section.id }}"
+    {% if kombin %}data-kombin{% endif %}
     hidden
   >
     {%- comment -%} (c) Bu ürüne ait tasarım sepette: içerik JS ile sepetten (/cart.js) doldurulur {%- endcomment -%}
@@ -46,7 +60,7 @@
     <div class="kisisel-kart__tekrar" data-kisisel-tekrar hidden>
       <div class="kisisel-kart__tekrar-metin">
         <p class="kisisel-kart__tekrar-baslik">Bir tane daha yapmak ister misin?</p>
-        <p class="kisisel-kart__tekrar-alt">{% if kp_tek %}Farklı bir patch'le ikinci çantanı tasarla.{% else %}Farklı bir isim ve patch'lerle ikinci çantanı tasarla.{% endif %}</p>
+        <p class="kisisel-kart__tekrar-alt">{% if kombin %}Başka bir renkte ikinci kombinini tasarla, tişörtü yine hediye.{% elsif kp_tek %}Farklı bir patch'le ikinci çantanı tasarla.{% else %}Farklı bir isim ve patch'lerle ikinci çantanı tasarla.{% endif %}</p>
       </div>
       <button type="button" class="btn kisisel-kart__buton--marka kisisel-kart__tekrar-buton" data-kisisel-yeni>Yeni tasarım</button>
     </div>
@@ -55,26 +69,30 @@
       {%- comment -%} (a) Tasarım yok: davet {%- endcomment -%}
       <div class="kisisel-kart__davet" data-kisisel-davet>
         <div class="kisisel-kart__davet-ust">
-          <span class="kisisel-kart__ornek" data-kisisel-ornek aria-hidden="true">{% if kp_tek %}<span>A</span>{% else %}<span>A</span><span>B</span><span>C</span>{% endif %}</span>
+          <span class="kisisel-kart__ornek" data-kisisel-ornek aria-hidden="true">{% if kombin %}<span>A</span><span>B</span>{% elsif kp_tek %}<span>A</span>{% else %}<span>A</span><span>B</span><span>C</span>{% endif %}</span>
           <div class="kisisel-kart__metin">
-            <p class="kisisel-kart__baslik">Ürünü kişiselleştir</p>
-            <p class="kisisel-kart__aciklama">{% if kp_tek %}Bir harf, rakam ya da ikon patch'i seç, çantanın üzerinde canlı gör.{% else %}İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.{% endif %}</p>
+            <p class="kisisel-kart__baslik">{% if kombin %}Kombinini tasarla{% else %}Ürünü kişiselleştir{% endif %}</p>
+            <p class="kisisel-kart__aciklama">{% if kombin %}Sweatshirt'ünün rengini ve yaşını seç, 2 patch'ini tak, hediye tişörtünü seç.{% elsif kp_tek %}Bir harf, rakam ya da ikon patch'i seç, çantanın üzerinde canlı gör.{% else %}İsim, rakam ve ikon patch'lerini seç, ürünün üzerinde canlı gör.{% endif %}</p>
           </div>
         </div>
         <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka" data-kisisel-ac>
-          Kişiselleştirmeye başla
+          {% if kombin %}Kombinini Tasarla{% else %}Kişiselleştirmeye başla{% endif %}
         </button>
         <div class="kisisel-kart__alt">
+          {%- if kombin -%}
+            <span class="kisisel-kart__fiyat">{{ settings.kombin_patch | default: 2 }} patch dahil · Her harf ve rakam 1 patch</span>
+          {%- else -%}
           {%- assign kp_patch_fiyat = katalog.harf_setleri.value.first.selected_or_first_available_variant.price -%}
           <span class="kisisel-kart__fiyat" data-kisisel-patch-fiyat>{% if kp_patch_fiyat %}{% if kp_tek %}Patch{% else %}Her patch{% endif %} {{ kp_patch_fiyat | divided_by: 100 }} TL{% endif %}</span>
           <button type="button" class="kisisel-kart__link" data-kisisel-sade>Sadece çantayı al</button>
+          {%- endif -%}
         </div>
       </div>
 
       {%- comment -%} (b) Kayıtlı tasarım, henüz sepette değil {%- endcomment -%}
       <div class="kisisel-kart__govde" data-kisisel-govde hidden>
         <div class="kisisel-kart__ust">
-          <p class="kisisel-kart__baslik">Senin tasarımın</p>
+          <p class="kisisel-kart__baslik">{% if kombin %}Senin kombinin{% else %}Senin tasarımın{% endif %}</p>
           <span class="kisisel-kart__kayit" data-kisisel-taslak>Taslak</span>
         </div>
         <div class="kisisel-kart__tasarim">
@@ -94,7 +112,7 @@
 
       <p class="kisisel-kart__cirt">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        <span>{% if kp_tek %}Ön yüzdeki Velcro'ya patch'i sen takarsın, istediğin zaman değiştirirsin.{% else %}Ön yüzdeki Velcro yüzeye patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.{% endif %}</span>
+        <span>{% if kombin %}Patch'leri Velcro yüzeye sen takarsın; hediye tişörtüne de takabilirsin.{% elsif kp_tek %}Ön yüzdeki Velcro'ya patch'i sen takarsın, istediğin zaman değiştirirsin.{% else %}Ön yüzdeki Velcro yüzeye patch'leri sen takarsın, istediğin zaman yerini değiştirirsin.{% endif %}</span>
       </p>
     </div>
 
@@ -103,7 +121,7 @@
 
     {%- comment -%} (b) durumunda kartın altında: tasarımla sepete ekle {%- endcomment -%}
     <button type="button" class="btn button--full-width kisisel-kart__buton kisisel-kart__buton--marka kisisel-kart__sepete" data-kisisel-sepete-ekle hidden>
-      <span data-kisisel-sepete-yazi>Tasarımımı sepete ekle</span>
+      <span data-kisisel-sepete-yazi>{% if kombin %}Kombinimi sepete ekle{% else %}Tasarımımı sepete ekle{% endif %}</span>
     </button>
   </kisisel-kart>
   <script data-kisisel-kart-son>document.dispatchEvent(new Event('kisisel:kart-son'));</script>

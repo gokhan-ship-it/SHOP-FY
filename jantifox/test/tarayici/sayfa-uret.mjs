@@ -48,7 +48,9 @@ let kartHtml = kart
   .slice(kart.indexOf('<kisisel-kart'), kart.indexOf('</kisisel-kart>') + 15)
   .replace(/\{\{ section\.id \}\}/g, 'main')
   .replace(/\{\{ kp_patch_fiyat \| divided_by: 100 \}\}/g, '330')
-  .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '');
+  .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '')
+  // Kombin kartı ayrı sayfada (kombin-e2e.mjs): else'siz "if kombin" burada atılır
+  .replace(/\{%-?\s*if kombin\s*-?%\}[^{]*\{%-?\s*endif\s*-?%\}/g, '');
 const ICTEKI_IF = /\{%-?\s*if [^%]*-?%\}((?:(?!\{%-?\s*if )[\s\S])*?)\{%-?\s*endif\s*-?%\}/;
 for (let m; (m = ICTEKI_IF.exec(kartHtml)); ) {
   const kollar = m[1].split(/\{%-?\s*else\s*-?%\}/);

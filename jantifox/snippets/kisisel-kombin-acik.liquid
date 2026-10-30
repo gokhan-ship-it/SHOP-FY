@@ -1,0 +1,24 @@
+{%- comment -%}
+  Sweatshirt kombini açık mı: tema ayarı (Sweatshirt kombini → Kombin açık) ve tarih aralığı (Başlangıç / Bitiş,
+  "YYYY-AA-GG SS:DD", mağaza saatiyle). Açıksa "1" yazar, değilse hiçbir şey. Ana sayfa bölümü, Kendin Tasarla kartı
+  ve vitrin sayfası aynı koşulu buradan okur. Ayar yalnızca kombin kopyasında var; başka temada hiçbir şey yazmaz.
+
+  Kullanım: {% capture kombin_acik %}{% render 'kisisel-kombin-acik' %}{% endcapture %} … kombin_acik == '1'
+{%- endcomment -%}
+{%- liquid
+  if settings.kombin_aktif == true
+    assign kb_simdi = 'now' | date: '%Y-%m-%d %H:%M'
+    assign kb_bas = settings.kombin_baslangic | strip
+    assign kb_bit = settings.kombin_bitis | strip
+    assign kb_acik = true
+    if kb_bas != blank and kb_simdi < kb_bas
+      assign kb_acik = false
+    endif
+    if kb_bit != blank and kb_simdi > kb_bit
+      assign kb_acik = false
+    endif
+    if kb_acik
+      echo '1'
+    endif
+  endif
+-%}

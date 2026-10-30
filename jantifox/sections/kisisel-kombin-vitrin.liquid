@@ -1,0 +1,103 @@
+{%- comment -%}
+  Sweatshirt kombini vitrin sayfası (templates/product.kombin-vitrin.json). Vitrin ürünü tek başına satılmaz (stok 0):
+  sayfada satın alma düğmesi yerine kombin kartı var; kart editörü kombin modunda açar (sweatshirt rengi ve yaşı,
+  2 patch dahil, Özet'te hediye tişört). Kart, listedeki ilk sweatshirt'ün verisiyle başlar (kisisel-kart, kombin: true).
+  Kombin kapalıyken (tema ayarı ya da tarih) kart yerine kısa bir not ve Kendin Tasarla bağlantısı görünür.
+{%- endcomment -%}
+{%- liquid
+  capture kp_kombin_acik
+    render 'kisisel-kombin-acik'
+  endcapture
+  assign kv_liste = settings.kombin_sweatshirtler | remove: ' ' | split: ','
+  assign kv_kucuk = settings.kombin_kucuk_sweatshirtler | remove: ' ' | split: ','
+  assign kv_ilk = nil
+  assign kv_renkler = ''
+  assign kv_kucuk_renkler = ''
+  for h in kv_liste
+    assign p = all_products[h]
+    if p.id == blank
+      continue
+    endif
+    assign kucuk = false
+    if kv_kucuk contains h
+      assign kucuk = true
+    endif
+    if kucuk and settings.kombin_kucuk_beden != true
+      continue
+    endif
+    if kv_ilk == nil
+      assign kv_ilk = p
+    endif
+    assign renk = p.title | remove: ' Sweatshirt'
+    if kucuk
+      assign kv_kucuk_renkler = kv_kucuk_renkler | append: renk | append: ', '
+    else
+      assign kv_renkler = kv_renkler | append: renk | append: ', '
+    endif
+  endfor
+  assign kv_renkler = kv_renkler | remove_last: ', '
+  assign kv_kucuk_renkler = kv_kucuk_renkler | remove_last: ', '
+  assign kv_gorsel = product.featured_media.preview_image
+-%}
+<div class="kp-kv section-padding">
+  <div class="container">
+    <div class="kp-kv__izgara">
+      <div class="kp-kv__gorsel">
+        {%- if kv_gorsel -%}
+          {{ kv_gorsel | image_url: width: 1200 | image_tag: loading: 'eager', fetchpriority: 'high', widths: '540, 720, 900, 1200', sizes: '(min-width: 990px) 560px, 100vw', alt: product.title, class: 'kp-kv__resim' }}
+        {%- endif -%}
+      </div>
+      <div class="kp-kv__bilgi">
+        <p class="kp-kv__etiket">Tişört hediye</p>
+        <h1 class="kp-kv__baslik h2">{{ product.title | escape }}</h1>
+        <p class="kp-kv__fiyat">
+          <strong>{%- render 'kisisel-kombin-tl', tl: settings.kombin_fiyat -%}</strong>
+          {%- if settings.kombin_eski_fiyat > settings.kombin_fiyat -%}<s>{%- render 'kisisel-kombin-tl', tl: settings.kombin_eski_fiyat -%}</s>{%- endif -%}
+        </p>
+        <ul class="kp-kv__maddeler">
+          <li>1 sweatshirt + {{ settings.kombin_patch | default: 2 }} patch: {% render 'kisisel-kombin-tl', tl: settings.kombin_fiyat %}</li>
+          <li>Hediye tişörtün rengini ve yaşını sen seç</li>
+          <li>Her harf ve rakam 1 patch sayılır; sonraki patch'ler patch indirimiyle eklenir</li>
+          {%- if kv_renkler != blank -%}<li>Sweatshirt: {{ kv_renkler }} (6-11 yaş){% if kv_kucuk_renkler != blank %}; {{ kv_kucuk_renkler }} (3-5 yaş){% endif %}</li>{%- endif -%}
+        </ul>
+        {%- if kp_kombin_acik == '1' and kv_ilk -%}
+          {%- render 'kisisel-kart', product: kv_ilk, section: section, kombin: true -%}
+        {%- else -%}
+          <p class="kp-kv__kapali">Bu kampanya şu an aktif değil. <a href="/collections/kendin-tasarla">Kendin tasarla</a></p>
+        {%- endif -%}
+        {%- if product.description != blank -%}
+          <div class="kp-kv__aciklama rte">{{ product.description }}</div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+  .kp-kv { padding-top: 2rem; padding-bottom: 4rem; }
+  .kp-kv__izgara { display: grid; grid-template-columns: 1fr; gap: 2.4rem; }
+  .kp-kv__gorsel { overflow: hidden; border-radius: 12px; background: #f6f5f1; }
+  .kp-kv__resim { display: block; width: 100%; height: auto; }
+  .kp-kv__bilgi { display: flex; flex-direction: column; gap: 1.2rem; }
+  .kp-kv__etiket { align-self: flex-start; margin: 0; padding: .3rem 1rem; border-radius: 999px; background: #b3141b; color: #fff; font-size: 1.2rem; font-weight: 700; }
+  .kp-kv__baslik { margin: 0; }
+  .kp-kv__fiyat { display: flex; align-items: baseline; gap: 1rem; margin: 0; font-size: 2.6rem; }
+  .kp-kv__fiyat s { font-size: 1.8rem; opacity: .6; }
+  .kp-kv__maddeler { margin: 0; padding-left: 1.8rem; font-size: 1.5rem; line-height: 1.6; }
+  .kp-kv__kapali { margin: 0; padding: 1.2rem 1.4rem; border-radius: 12px; background: #f6f5f1; }
+  .kp-kv .kisisel-kart { margin-top: .4rem; }
+  @media (min-width: 990px) {
+    .kp-kv__izgara { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 4.8rem; align-items: start; }
+    .kp-kv__bilgi { position: sticky; top: 10rem; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Kombin vitrini",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    { "type": "paragraph", "content": "Sweatshirt kombini vitrin sayfası. Fiyat, ürünler ve açık/kapalı durumu Tema ayarları → Sweatshirt kombini'nden gelir." }
+  ]
+}
+{% endschema %}

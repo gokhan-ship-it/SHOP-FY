@@ -1,0 +1,15 @@
+{%- comment -%}
+  Tam TL tutarını editördeki gibi yazar: 3400 → "3.400 TL" (mağazanın para biçimi "3,400.00TL" yazıyor).
+  Kullanım: {% render 'kisisel-kombin-tl', tl: settings.kombin_fiyat %}
+{%- endcomment -%}
+{%- liquid
+  assign kb_tl = tl | default: 0 | round
+  assign kb_bin = kb_tl | divided_by: 1000
+  assign kb_kalan = kb_tl | modulo: 1000
+  if kb_bin > 0
+    assign kb_kalan_yazi = '00' | append: kb_kalan | slice: -3, 3
+    echo kb_bin | append: '.' | append: kb_kalan_yazi | append: ' TL'
+  else
+    echo kb_tl | append: ' TL'
+  endif
+-%}
