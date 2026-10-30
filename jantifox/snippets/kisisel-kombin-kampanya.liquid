@@ -1,23 +1,27 @@
 {%- comment -%}
-  Ana sayfa: Sweatshirt kombini kampanya kutusu (Çok satanlar'ın üstünde). Kombin açıkken (tema ayarı ve tarih
-  aralığı, kisisel-kombin-acik) görünür; kapalıyken hiçbir şey yazmaz. Fiyatlar tema ayarından (Sweatshirt kombini).
-  Buton varsayılan olarak vitrin ürününün sayfasını editör açık getirir (?kisisellestir=1).
-  Görsel: bölümde seçilen görsel, yoksa vitrin ürününün ana görseli; köşede ilk hediye tişörtün küçük görseli.
+  Ana sayfa: Sweatshirt kombini kampanya kutusu. Çok satanlar bölümünün (sections/kisisel-cok-satanlar.liquid) en üstünde
+  çizilir: ana sayfa şablonu Shopify'ın 25 bölüm sınırında olduğundan ayrı bölüm eklenemiyor. Kombin açıkken (tema ayarı
+  ve tarih aralığı, kisisel-kombin-acik) görünür; kapalıyken hiçbir şey yazmaz. Metinler, görsel ve fiyatlar
+  Tema ayarları → Sweatshirt kombini'nden. Buton vitrin ürününün sayfasını editör açık getirir (?kisisellestir=1).
+  Görsel: ayardaki görsel, yoksa vitrin ürününün ana görseli; köşede ilk hediye tişörtün küçük görseli.
+
+  Kullanım: {% render 'kisisel-kombin-kampanya', genislik: section.settings.section_width, bolum: section.id %}
 {%- endcomment -%}
 {%- capture kp_kombin_acik -%}{%- render 'kisisel-kombin-acik' -%}{%- endcapture -%}
 {%- assign kk_vitrin = all_products[settings.kombin_vitrin] -%}
 {%- if kp_kombin_acik == '1' and kk_vitrin.id -%}
   {%- liquid
-    assign kk_link = section.settings.link
-    if kk_link == blank
-      assign kk_link = kk_vitrin.url | append: '?kisisellestir=1'
-    endif
-    assign kk_gorsel = section.settings.gorsel | default: kk_vitrin.featured_media.preview_image
+    assign kk_link = kk_vitrin.url | append: '?kisisellestir=1'
+    assign kk_gorsel = settings.kombin_ana_gorsel | default: kk_vitrin.featured_media.preview_image
+    assign kk_etiket = settings.kombin_ana_etiket | default: 'TİŞÖRT HEDİYE'
+    assign kk_baslik = settings.kombin_ana_baslik | default: "Sweatshirt'ünü tasarla, tişört bizden"
+    assign kk_alt = settings.kombin_ana_alt | default: '1 sweatshirt + 2 patch 3.400 TL. Hediye tişörtün rengini sen seç.'
+    assign kk_buton = settings.kombin_ana_buton | default: 'Kombinini Tasarla'
     assign kk_tisortler = settings.kombin_tisortler | remove: ' ' | split: ','
     assign kk_tisort = all_products[kk_tisortler.first]
   -%}
-  <div class="kp-kk-bolum section-padding" id="kp-kombin-{{ section.id }}">
-    <div class="{{ section.settings.section_width }}">
+  <div class="kp-kk-bolum section-padding" id="kp-kombin-{{ bolum }}">
+    <div class="{{ genislik | default: 'container' }}">
       <a class="kp-kk" href="{{ kk_link }}">
         <div class="kp-kk__gorsel">
           {%- if kk_gorsel -%}
@@ -31,14 +35,14 @@
           {%- endif -%}
         </div>
         <div class="kp-kk__metin">
-          {%- if section.settings.etiket != blank -%}<p class="kp-kk__etiket">{{ section.settings.etiket | escape }}</p>{%- endif -%}
-          <h2 class="kp-kk__baslik section__heading h2">{{ section.settings.baslik | escape }}</h2>
-          {%- if section.settings.alt != blank -%}<p class="kp-kk__alt">{{ section.settings.alt | escape }}</p>{%- endif -%}
+          {%- if kk_etiket != blank -%}<p class="kp-kk__etiket">{{ kk_etiket | escape }}</p>{%- endif -%}
+          <h2 class="kp-kk__baslik section__heading h2">{{ kk_baslik | escape }}</h2>
+          {%- if kk_alt != blank -%}<p class="kp-kk__alt">{{ kk_alt | escape }}</p>{%- endif -%}
           <p class="kp-kk__fiyat">
             <strong>{%- render 'kisisel-kombin-tl', tl: settings.kombin_fiyat -%}</strong>
             {%- if settings.kombin_eski_fiyat > settings.kombin_fiyat -%}<s>{%- render 'kisisel-kombin-tl', tl: settings.kombin_eski_fiyat -%}</s>{%- endif -%}
           </p>
-          <span class="btn btn-primary kp-kk__buton">{{ section.settings.buton | escape }}</span>
+          <span class="btn btn-primary kp-kk__buton">{{ kk_buton | escape }}</span>
         </div>
       </a>
     </div>
@@ -65,24 +69,3 @@
     }
   </style>
 {%- endif -%}
-
-{% schema %}
-{
-  "name": "Sweatshirt kombini",
-  "tag": "section",
-  "class": "section",
-  "disabled_on": { "groups": ["header", "footer", "aside"] },
-  "settings": [
-    { "type": "paragraph", "content": "Kombin açıkken görünür (Tema ayarları → Sweatshirt kombini). Fiyatlar oradan gelir." },
-    { "type": "select", "id": "section_width", "label": "Genişlik", "default": "container",
-      "options": [{ "value": "container", "label": "Kutu" }, { "value": "container-fluid", "label": "Geniş" }, { "value": "w-full", "label": "Tam genişlik" }] },
-    { "type": "text", "id": "etiket", "label": "Üst küçük etiket", "default": "TİŞÖRT HEDİYE" },
-    { "type": "text", "id": "baslik", "label": "Başlık", "default": "Sweatshirt'ünü tasarla, tişört bizden" },
-    { "type": "text", "id": "alt", "label": "Alt metin", "default": "1 sweatshirt + 2 patch 3.400 TL. Hediye tişörtün rengini sen seç." },
-    { "type": "text", "id": "buton", "label": "Buton", "default": "Kombinini Tasarla" },
-    { "type": "url", "id": "link", "label": "Buton linki", "info": "Boşsa vitrin ürününün sayfası, editör açık." },
-    { "type": "image_picker", "id": "gorsel", "label": "Görsel", "info": "Boşsa vitrin ürününün ana görseli." }
-  ],
-  "presets": [{ "name": "Sweatshirt kombini" }]
-}
-{% endschema %}

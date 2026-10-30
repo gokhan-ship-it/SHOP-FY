@@ -76,6 +76,9 @@
 {{ 'kisisel-koleksiyon.css' | asset_url | stylesheet_tag }}
 {{ 'kisisel-cok-satanlar.css' | asset_url | stylesheet_tag }}
 
+{%- comment -%} Sweatshirt kombini kutusu: kombin açıkken bölümün en üstünde (Tema ayarları → Sweatshirt kombini) {%- endcomment -%}
+{%- if section.settings.kombin_kutusu != false -%}{%- render 'kisisel-kombin-kampanya', genislik: section.settings.section_width, bolum: section.id -%}{%- endif -%}
+
 <div class="section-featured-collection kp-cs{% if swipe_on_mobile %} kp-cs--kaydir{% endif %} section-padding section-bg isolate overflow-hidden lg:overflow-visible" {% render 'section-properties' %} data-kp-cs data-editor-src="{{ 'kisisel-editor.js' | asset_url }}" data-kp-editor-js="{{ 'kisisel-editor.js' | asset_url }}" data-kp-editor-css="{{ 'kisisel-editor.css' | asset_url }}" data-ornek="{{ section.settings.ornek_tasarim }}" data-buton="{{ section.settings.kisisel_buton }}">
   <div class="collection {{ section.settings.section_width }}" id="collection-{{ section.id }}" data-id="{{ section.id }}" style="--column-product:{{ columns_desktop }};--column-product-mobile:2;--column-gap:3rem;">
     {%- if filtre_var -%}<tabs-component class="tabs-component kp-cs__sekmeler">{%- endif -%}
@@ -250,6 +253,7 @@
     { "type": "checkbox", "id": "swipe_on_mobile", "label": "Mobilde kaydırma", "default": true, "info": "Kapalıysa mobilde iki sütunlu ızgara (temanın ürün listesi gibi)." },
     { "type": "checkbox", "id": "show_progress_bar", "label": "Kaydırma ilerleme çubuğu", "default": false },
     { "type": "checkbox", "id": "filtreler", "label": "Filtre sekmeleri (Hepsi, Çanta, Kıyafet, Şapka)", "default": true, "info": "İçinde kişiselleştirilebilir ürün olmayan tipin sekmesi görünmez." },
+    { "type": "checkbox", "id": "kombin_kutusu", "label": "Üstte Sweatshirt kombini kutusu", "default": true, "info": "Kombin açıkken görünür (Tema ayarları → Sweatshirt kombini)." },
     { "type": "header", "content": "Kişiselleştirme" },
     { "type": "select", "id": "kisisel_buton", "label": "\"Kişiselleştir\" butonu", "default": "kirmizi",
       "options": [{ "value": "kirmizi", "label": "Tema butonu, marka kırmızısı" }, { "value": "tema", "label": "Tema butonu, tema rengi" }] },

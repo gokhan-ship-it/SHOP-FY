@@ -1684,6 +1684,45 @@
         "default": 5400
       },
       {
+        "type": "header",
+        "content": "Ana sayfa kutusu",
+        "info": "Çok satanlar bölümünün üstünde görünür."
+      },
+      {
+        "type": "text",
+        "id": "kombin_ana_etiket",
+        "label": "Üst küçük etiket",
+        "default": "TİŞÖRT HEDİYE"
+      },
+      {
+        "type": "text",
+        "id": "kombin_ana_baslik",
+        "label": "Başlık",
+        "default": "Sweatshirt'ünü tasarla, tişört bizden"
+      },
+      {
+        "type": "text",
+        "id": "kombin_ana_alt",
+        "label": "Alt metin",
+        "default": "1 sweatshirt + 2 patch 3.400 TL. Hediye tişörtün rengini sen seç."
+      },
+      {
+        "type": "text",
+        "id": "kombin_ana_buton",
+        "label": "Buton",
+        "default": "Kombinini Tasarla"
+      },
+      {
+        "type": "image_picker",
+        "id": "kombin_ana_gorsel",
+        "label": "Görsel",
+        "info": "Boşsa vitrin ürününün ana görseli."
+      },
+      {
+        "type": "header",
+        "content": "Patch"
+      },
+      {
         "type": "range",
         "id": "kombin_patch",
         "min": 1,
