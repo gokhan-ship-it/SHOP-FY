@@ -1,0 +1,147 @@
+{
+ "cihaz": "mobil",
+ "tema": "207697543454",
+ "butonTutar": "Tasarımımı sepete ekle · 5.400 TL",
+ "sepet": {
+  "satir": 6,
+  "adet": 7,
+  "liste": 6500,
+  "toplam": 5400
+ },
+ "olcumKutusu": [
+  "Olaylar (21) · GA4 page_view ×1, GA4 view_item ×1, Meta PageView ×1, Meta ViewContent ×1, Shopify kisisellestirme_acildi ×2, Meta CustomizeProduct ×1, GA4 customize_product ×1, Shopify isim_yazildi ×1, Shopify ikon_eklendi ×1, Shopify tasarim_tamamlandi ×2, Meta TasarimTamamlandi ×2, GA4 design_complete ×2, Meta TaslakKaydedildi ×1, GA4 save_draft ×1, Shopify tasarimla_sepete_eklendi ×1, Meta AddToCart ×1, GA4 add_to_cart ×1",
+  "  08:58:23  GA4  add_to_cart · 5400 TL · tema",
+  "  08:58:23  Meta  AddToCart · 5400 TL · kp-atc-TMVUQPDUH5C3J8L · tema",
+  "  08:58:23  Shopify  tasarimla_sepete_eklendi · 5400 TL",
+  "  08:58:18  GA4  design_complete · 5400 TL · tema",
+  "  08:58:18  Meta  TasarimTamamlandi · 5400 TL · kp-tt-mvuqpasrejryw · tema",
+  "  08:58:18  Shopify  tasarim_tamamlandi · 5400 TL",
+  "  … (Ayrıntı)"
+ ],
+ "odeme": {
+  "adres": "/checkouts/cn/…/tr-tr",
+  "baslik": "Ödeme sayfası - JantiFox",
+  "kod": 200
+ },
+ "sepetSonra": 0,
+ "sayac": {
+  "acilis": {
+   "GA4 isabet: page_view": 5,
+   "GA4 isabet: view_item": 1,
+   "Meta: PageView (F&I uygulaması)": 1,
+   "Meta: ViewContent (F&I uygulaması)": 1
+  },
+  "1-editoru-ac": {
+   "GA4 isabet: page_view": 1,
+   "GA4 isabet: view_item": 1,
+   "GA4 isabet: customize_product": 2,
+   "Shopify: kisisellestirme_acildi": 1,
+   "Meta: CustomizeProduct (tema)": 1
+  },
+  "2-ekle-cikar-geri-al": {
+   "GA4 isabet: scroll": 2,
+   "Shopify: isim_yazildi": 1,
+   "Shopify: ikon_eklendi": 1
+  },
+  "3-tasarimi-tamamla": {
+   "Shopify: tasarim_tamamlandi": 1,
+   "Meta: TasarimTamamlandi (tema)": 1
+  },
+  "4-taslak-kaydet-cik": {
+   "GA4 isabet: design_complete": 1,
+   "GA4 isabet: save_draft": 1,
+   "Meta: TaslakKaydedildi (tema)": 1
+  },
+  "5-tasarimi-sepete-ekle": {
+   "GA4 isabet: design_complete": 2,
+   "GA4 isabet: add_to_cart": 2,
+   "Shopify: kisisellestirme_acildi": 1,
+   "Shopify: tasarim_tamamlandi": 1,
+   "Meta: TasarimTamamlandi (tema)": 1,
+   "Shopify: tasarimla_sepete_eklendi": 1,
+   "Meta: AddToCart (tema)": 1
+  },
+  "6-normal-urun-sepete-ekle": {
+   "GA4 isabet: user_engagement": 2,
+   "GA4 isabet: page_view": 3,
+   "Meta: PageView (F&I uygulaması)": 1,
+   "Meta: ViewContent (F&I uygulaması)": 1,
+   "Shopify (CAPI kaynağı): product_added_to_cart": 1,
+   "GA4 isabet: view_item": 1,
+   "GA4 isabet: add_to_cart": 2,
+   "Meta: AddToCart (F&I uygulaması)": 1
+  },
+  "7-odeme-sayfasi": {
+   "GA4 isabet: user_engagement": 2,
+   "GA4 isabet: page_view": 2,
+   "GA4 isabet: begin_checkout": 1,
+   "GA4 isabet: add_shipping_info": 1
+  },
+  "temizlik": {
+   "GA4 isabet: user_engagement": 2,
+   "GA4 isabet: page_view": 2
+  }
+ },
+ "ayrinti": [
+  {
+   "faz": "1-editoru-ac",
+   "kanal": "Meta",
+   "yontem": "tema",
+   "ad": "CustomizeProduct",
+   "deger": 3500,
+   "kimlik": "kp-cp-mvuqouzeg4n5g"
+  },
+  {
+   "faz": "3-tasarimi-tamamla",
+   "kanal": "Meta",
+   "yontem": "tema",
+   "ad": "TasarimTamamlandi",
+   "deger": 5400,
+   "kimlik": "kp-tt-mvuqp6j0fodn3"
+  },
+  {
+   "faz": "4-taslak-kaydet-cik",
+   "kanal": "Meta",
+   "yontem": "tema",
+   "ad": "TaslakKaydedildi",
+   "kimlik": "kp-tk-mvuqp8m0ud7im"
+  },
+  {
+   "faz": "5-tasarimi-sepete-ekle",
+   "kanal": "Meta",
+   "yontem": "tema",
+   "ad": "TasarimTamamlandi",
+   "deger": 5400,
+   "kimlik": "kp-tt-mvuqpasrejryw"
+  },
+  {
+   "faz": "5-tasarimi-sepete-ekle",
+   "kanal": "Meta",
+   "yontem": "tema",
+   "ad": "AddToCart",
+   "deger": 5400,
+   "kimlik": "kp-atc-TMVUQPDUH5C3J8L"
+  },
+  {
+   "faz": "6-normal-urun-sepete-ekle",
+   "kanal": "Shopify (CAPI kaynağı)",
+   "ad": "product_added_to_cart",
+   "kimlik": "sh-8c0870bd-FAD9-4741-6E45-1D4579E814CE",
+   "deger": 500,
+   "capi": true
+  },
+  {
+   "faz": "6-normal-urun-sepete-ekle",
+   "kanal": "Meta",
+   "yontem": "F&I uygulaması",
+   "ad": "AddToCart",
+   "deger": 500,
+   "kimlik": "sh-8c0870bd-FAD9-4741-6E45-1D4579E814CE"
+  }
+ ],
+ "zaman": {
+  "basla": "2026-10-30T08:57:47.829Z",
+  "bitis": "2026-10-30T08:58:57.640Z"
+ },
+ "hatalar": []
+}
