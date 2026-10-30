@@ -86,3 +86,50 @@ Her madde onay gelmeden yazılmaz. 1–4 test içindir, canlıdaki müşteriyi e
 - Tutar koşulu: 2 sweatshirt + tişört (5.000 TL) ya da 7 patch + tişört (3.500 TL) de kazanır. Eşik patch indirimi düşülmeden mi sonra mı hesaplanıyor, testte görülecek (3.400 / 3.500).
 - Tişörtü normal yoldan ekleyen müşteri de koşul sağlanırsa tişörtü 0 TL alır; gizli koleksiyon bunu engellemez.
 - Temadaki sepet grubu kombin bozulunca uyarır ama Shopify'ın indirimini bilmez. Birebir kural için özel indirim uygulaması (Shopify Functions) gerekir.
+
+## İndirim denemeleri (30 Ekim, Storefront API geçici sepetleri, sipariş yok)
+
+S = sweatshirt 2.500 TL, P = 500 TL'lik tekli patch, T = tişört 2.000 TL. Tutarlar TL, sepetin indirimli toplamı.
+"kod ✗" = Shopify kodu sepete almadı (uygulanmadı). Hedef: (a) 3.400, (b) 3.700, (c) 6.500.
+
+| Sepet | Kodsuz | tutar ≥3.500 `KMB3500` | tutar ≥3.400 `KMB3400` | adet ≥3 `KMBADET3` | 1 sweatshirt `KMBSWEAT1` |
+|---|---|---|---|---|---|
+| (a) S+2P+T | 4.860 | 3.500 (T 0, 2'li indirim düşer) | 3.500 | 3.500 | **3.400** |
+| (b) S+3P+T | 5.130 | 5.130 (kod ✗) | 5.130 (kod ✗) | 5.130 (kod ✗) | **3.700** |
+| (c) 2S+4P+2T | 9.450 | 9.450 (kod ✗) | 9.450 (kod ✗) | 9.450 (kod ✗) | **6.500** |
+| S+4P+T | 5.400 | kod ✗ | kod ✗ | kod ✗ | 4.000 |
+| S+2P+2T | 6.660 | 5.500 (1 tişört bedava) | 5.500 | 5.500 | 5.400 |
+| S+T | 4.500 | kod ✗ | kod ✗ | kod ✗ | 2.500 (sızıntı) |
+| S+1P+T | 4.500 | kod ✗ | kod ✗ | kod ✗ | 3.000 (sızıntı) |
+| 2S+T | 6.300 | 5.000 (sızıntı) | 5.000 (sızıntı) | kod ✗ | 5.000 |
+| 3P+T | 3.200 | kod ✗ | kod ✗ | kod ✗ | kod ✗ |
+| 7P+T | 4.500 | kod ✗ | kod ✗ | kod ✗ | kod ✗ |
+
+FIRSTORDER ve DEARMOMS her kodla birlikte "uygulanmadı" (kombin fiyatı korunur).
+
+Neden: Shopify'ın X al Y kazan indirimi "müşteri alır" satırlarına da (0 TL) pay yazıyor; o satır başka bir ürün indirimi
+alamıyor (satır başına bir ürün indirimi). Koşul patch'leri kapsadıkça (tutar / adet) patch indirimi ya düşüyor ya da
+Shopify patch indirimini tutup kodu reddediyor. `KMBSWEAT1`'de alıcı satırı yalnızca sweatshirt; patch'ler 2'li / 3'lü /
+4'lü indirimi alabiliyor, hedef fiyatlar tutuyor.
+
+**Tema ayarındaki test kodu bu yüzden `KMBSWEAT1-9TQ4M`** (Tema ayarları → Sweatshirt kombini → Sepete yazılacak indirim
+kodu; değiştirilebilir). Bedeli: sweatshirt + tişört alan, patch'siz ya da tek patch'li sepet de tişörtü 0 TL alır
+(yukarıdaki sızıntı satırları). Tema sepette kombin bozulunca uyarır ve tişörtü çıkarmayı önerir, ama sepete normal yoldan
+sweatshirt ve tişört ekleyen müşteriyi engelleyemez. "1 sweatshirt + 2 patch" kuralını Shopify'da birebir kurmanın yolu
+özel indirim uygulaması (Shopify Functions); yayın günü kararı.
+
+## Tema (30 Ekim, yalnızca kombin kopyası 207699345694)
+
+- Ayarlar: Tema ayarları → **Sweatshirt kombini** (açık/kapalı, başlangıç / bitiş, İndigo ve Pembe dahil, test kodu,
+  ürün listeleri, 3.400 / 5.400, fiyata dahil patch, ana sayfa kutusunun metinleri ve görseli).
+- Ana sayfa kutusu Çok satanlar bölümünün en üstünde çizilir: ana sayfa şablonu Shopify'ın 25 bölüm sınırında, ayrı bölüm
+  eklenemiyor. Çok satanlar bölüm ayarı "Üstte Sweatshirt kombini kutusu" ile kapatılabilir.
+- Vitrin sayfası `product.kombin-vitrin`: satın alma düğmesi yok, kombin kartı editörü kombin modunda açar.
+- Kendin Tasarla: ilk sayfanın ilk kartı vitrin (temanın kartı, "Tişört hediye" etiketi, ince çerçeve).
+- Editör kombin modu: Sweatshirt adımı (renk + yaş), sayaç, 2 patch kapısı, 3. patch'ten fark, renk değişiminde patch'ler
+  yerinde, yalnızca tekli patch, patch indirimi kutlamaları kapalı, Özet'te zorunlu hediye tişört, sepete tek istek
+  (`_kombin`), test kodunun sepete yazılması (sepetteki kodlar korunur), kombin başına tek AddToCart (değer = ödenen,
+  tişört 0 TL).
+- Sepet: kombin grubu (tişört son satır, rozet "Sweatshirt kombini"), adetler kilitli; patch silinince kombin bozulacaksa
+  tişört de çıkar (onayla); bozuk kombinde uyarı ve "Tişörtü çıkar".
+- Sepetteki kombin düzenlenmez (renk, tişört ve indirim birlikte değişiyor): kart "Sepetten sil" ve yeniden tasarla der.
