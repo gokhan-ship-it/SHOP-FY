@@ -126,10 +126,12 @@ sweatshirt ve tişört ekleyen müşteriyi engelleyemez. "1 sweatshirt + 2 patch
   eklenemiyor. Çok satanlar bölüm ayarı "Üstte Sweatshirt kombini kutusu" ile kapatılabilir.
 - Vitrin sayfası `product.kombin-vitrin`: satın alma düğmesi yok, kombin kartı editörü kombin modunda açar.
 - Kendin Tasarla: ilk sayfanın ilk kartı vitrin (temanın kartı, "Tişört hediye" etiketi, ince çerçeve).
-- Editör kombin modu: Sweatshirt adımı (renk + yaş), sayaç, 2 patch kapısı, 3. patch'ten fark, renk değişiminde patch'ler
-  yerinde, yalnızca tekli patch, patch indirimi kutlamaları kapalı, Özet'te zorunlu hediye tişört, sepete tek istek
-  (`_kombin`), test kodunun sepete yazılması (sepetteki kodlar korunur), kombin başına tek AddToCart (değer = ödenen,
-  tişört 0 TL).
+- Editör kombin modu (v2, 30 Ekim): ilk ekran "Kombinini seç" (Sweatshirt renk + yaş, Hediye tişört renk + yaş; dördü
+  seçilmeden tasarıma geçilmez), tasarım ekranında tişört satırı ve "Değiştir", önizlemenin altında "3.400 TL'ye 2 patch
+  dahil" göstergesi (iki yuva, dolunca sıradaki patch ücreti fiyat motorundan), Görsel kartlarında "Dahil" / "+300 TL",
+  2 patch kapısı, renk değişiminde patch'ler yerinde, yalnızca tekli patch, patch indirimi kutlamaları kapalı, Özet'te
+  seçili tişört + Değiştir, sepete tek istek (`_kombin`), test kodunun sepete yazılması (sepetteki kodlar korunur),
+  kombin başına tek AddToCart (değer = ödenen, tişört 0 TL), oturumda tek CustomizeProduct.
 - Sepet: kombin grubu (tişört son satır, rozet "Sweatshirt kombini"), adetler kilitli; patch silinince kombin bozulacaksa
   tişört de çıkar (onayla); bozuk kombinde uyarı ve "Tişörtü çıkar".
 - Sepetteki kombin düzenlenmez (renk, tişört ve indirim birlikte değişiyor): kart "Sepetten sil" ve yeniden tasarla der.
