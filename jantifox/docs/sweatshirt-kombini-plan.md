@@ -132,6 +132,10 @@ sweatshirt ve tişört ekleyen müşteriyi engelleyemez. "1 sweatshirt + 2 patch
   2 patch kapısı, renk değişiminde patch'ler yerinde, yalnızca tekli patch, patch indirimi kutlamaları kapalı, Özet'te
   seçili tişört + Değiştir, sepete tek istek (`_kombin`), test kodunun sepete yazılması (sepetteki kodlar korunur),
   kombin başına tek AddToCart (değer = ödenen, tişört 0 TL), oturumda tek CustomizeProduct.
+- v3 (30 Ekim, telefon kontrolü): Kombinini seç'te önizleme ürünün tamamı, "Sweatshirt | Hediye tişört" düğmesi (tişört
+  rengine dokununca tişörtün sade görseli), kartlarda sade görsel ve büyüteç → tam ekran fotoğraflar ("Görseldeki
+  patch'ler örnektir."), kartlarda "3-5 yaş" yazısı yok; fiyat baştan ~~5.400~~ 3.400 "2 patch dahil", 2 patch'e kadar
+  sabit; Kombinini seç'te tek ana buton "Tasarıma başla →".
 - Sepet: kombin grubu (tişört son satır, rozet "Sweatshirt kombini"), adetler kilitli; patch silinince kombin bozulacaksa
   tişört de çıkar (onayla); bozuk kombinde uyarı ve "Tişörtü çıkar".
 - Sepetteki kombin düzenlenmez (renk, tişört ve indirim birlikte değişiyor): kart "Sepetten sil" ve yeniden tasarla der.
