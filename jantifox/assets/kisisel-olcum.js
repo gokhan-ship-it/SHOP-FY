@@ -290,8 +290,9 @@
     if (kutu || !document.body) return;
     kutu = document.createElement('div');
     kutu.setAttribute('data-kp-olcum', '');
-    // Sol üstte; varsayılan kısa görünüm (sayaçlar ve son olaylar): editörün alttaki panelini kapatmaz. "Ayrıntı" tüm ölçümü açar
-    kutu.style.cssText = 'position:fixed;z-index:2147483647;left:6px;top:calc(6px + env(safe-area-inset-top));' +
+    // Sol ortada (editörün üstteki düğmelerini ve alttaki panelini kapatmaz); varsayılan kısa görünüm (sayaçlar ve son
+    // olaylar), "Ayrıntı" tüm ölçümü açar, "–" kutuyu küçük bir sayaç düğmesine indirir
+    kutu.style.cssText = 'position:fixed;z-index:2147483647;left:6px;top:38vh;' +
       'max-width:calc(100vw - 12px);max-height:var(--kp-olcum-yukseklik,22vh);overflow:auto;padding:6px 8px;border-radius:8px;' +
       'background:rgba(0,0,0,.72);color:#fff;font:10px/1.35 ui-monospace,Menlo,monospace;visibility:visible;' +
       '-webkit-text-size-adjust:100%;pointer-events:auto';
@@ -347,9 +348,11 @@
       else yedek();
     });
     kucult.addEventListener('click', function () {
-      var gizli = pre.style.display === 'none';
-      pre.style.display = gizli ? '' : 'none';
-      kucult.textContent = gizli ? '–' : '+';
+      kucuk = !kucuk;
+      [kopyala, temizle, ayrinti, pre].forEach(function (e) { e.style.display = kucuk ? 'none' : ''; });
+      kucult.textContent = kucuk ? '+' : '–';
+      kutu.style.padding = kucuk ? '3px' : '6px 8px';
+      ciz();
     });
     ciz();
   }
@@ -363,12 +366,15 @@
   }
 
   var ayrintiAcik = false;
+  var kucuk = false;
   function kisaMetin() {
     var s = olayMetni().split('\n');
     return s.slice(0, 7).join('\n') + (s.length > 7 ? '\n  … (Ayrıntı)' : '');
   }
   function ciz() {
     if (!kutu) return;
+    var b = kutu.querySelector('strong');
+    if (b) b.textContent = kucuk ? '⏱ ' + olaylar.length : '⏱ Ölçüm';
     pre.textContent = ayrintiAcik ? metin() : kisaMetin();
   }
   var bekliyor = false;
