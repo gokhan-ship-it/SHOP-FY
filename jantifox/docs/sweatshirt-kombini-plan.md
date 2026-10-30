@@ -163,3 +163,48 @@ sweatshirt ve Tshirt ekleyen müşteriyi engelleyemez. "1 sweatshirt + 2 patch" 
 - Sepet: kombin grubu (Tshirt son satır, rozet "Sweatshirt kombini"), adetler kilitli; patch silinince kombin bozulacaksa
   Tshirt de çıkar (onayla); bozuk kombinde uyarı ve "Tshirt'ü çıkar".
 - Sepetteki kombin düzenlenmez (renk, Tshirt ve indirim birlikte değişiyor): kart "Sepetten sil" ve yeniden tasarla der.
+
+## v5: hazır setler, sığma ve sepet tutarları (30 Ekim)
+
+Katalogdaki 22 hazır set (`kisisellestirme_katalog.ana` → `hazir_setler`, içerik `kisisellestirme.set_icerik`). Hepsi satışta;
+kombinde yalnızca 4 patch'lik olanlar görünür (17 set). Sığma: editörün kendi set yerleştirmesiyle boş sweatshirt alanına
+(22 cm daire), beş renkte (Bej, Mavi, Yeşil, İndigo, Pembe) aynı sonuç.
+
+| Set | Fiyat | Patch | Stok | Kombinde | 22 cm daireye |
+|---|---|---|---|---|---|
+| The Girl Fun | 1.500 TL | 4 | 7 | görünür | sığıyor |
+| Janti Expressions | 1.500 TL | 4 | 11 | görünür | sığıyor |
+| Hearts | 1.500 TL | 4 | 15 | görünür | sığıyor |
+| Gymnast Party | 1.500 TL | 4 | 13 | görünür | sığıyor |
+| Dancing in the Sea | 1.500 TL | 4 | 17 | görünür | sığıyor |
+| Tennis Day | 1.500 TL | 4 | 18 | görünür | sığıyor |
+| Football Lover | 1.500 TL | 4 | 15 | görünür | sığıyor |
+| Gamer Zone | 1.500 TL | 4 | 14 | görünür | sığıyor |
+| Dino Moves | 1.500 TL | 4 | 14 | görünür | sığıyor |
+| Cuties | 1.500 TL | 4 | 15 | görünür | 1 patch kenarda (Sevimli Köpek) |
+| Swim Buddies | 1.500 TL | 4 | 15 | görünür | sığıyor |
+| Space Treats | 1.500 TL | 4 | 14 | görünür | sığıyor |
+| Stage & Music | 1.500 TL | 4 | 14 | görünür | sığıyor |
+| School Vibes | 1.500 TL | 4 | 9 | görünür | sığıyor |
+| Pink Power | 1.500 TL | 4 | 13 | görünür | sığıyor |
+| Daymaker | 1.500 TL | 4 | 14 | görünür | sığıyor |
+| Voleybolcu | 1.500 TL | 4 | 19 | görünür | sığıyor |
+| Cat Lover | 1.200 TL | 3 | 13 | gizli | — |
+| Lucky Friends | 1.200 TL | 3 | 15 | gizli | — |
+| Explorer Mood | 1.200 TL | 3 | 15 | gizli | — |
+| Girly Girly | 1.200 TL | 3 | 14 | gizli | — |
+| Basketball Lover | 1.200 TL | 3 | 11 | gizli | — |
+
+Storefront sepet hesabı (`test/kombin/kombin-v5-sepetleri.mjs`; geçici sepet, sipariş yok; test kodu KMBSWEAT1 her sepette):
+
+| Sepet | Toplam | İndirimler |
+|---|---|---|
+| (a) sweatshirt + 4'lü set + Tshirt | 4.000 | Tshirt −2.000 |
+| (b) sweatshirt + 4 tekli + Tshirt | 4.000 | Tshirt −2.000, 4'lü −500 |
+| (c) sweatshirt + 4'lü set + 1 tekli + Tshirt | 4.500 | Tshirt −2.000 (set patch indirimine girmez) |
+| (d) sweatshirt + 5 tekli + Tshirt | 4.500 | Tshirt −2.000, 4'lü −500 |
+| (e) iki kombin, ikisi setli | 8.000 | Tshirt −4.000 |
+| (f) iki kombin, ikisi 4 teklili | 8.500 | Tshirt −4.000, 4'lü −500 (siparişte bir kez) |
+| (g) (a) + FIRSTORDER | 4.000 | FIRSTORDER uygulanmadı |
+| (h) sweatshirt + set + 3 tekli + Tshirt (5.000 eşiği üstü) | 5.200 | Tshirt −2.000, 3'lü −300; Ekstra %10 yok (kod sipariş indirimleriyle birleşmez) |
+
