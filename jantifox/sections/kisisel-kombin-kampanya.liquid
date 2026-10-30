@@ -1,0 +1,20 @@
+{%- comment -%}
+  Sweatshirt kombini kutusu, ayrı bölüm olarak (başka sayfalar için). Ana sayfada kutu Çok satanlar bölümünün en üstünde
+  çizilir (ana sayfa şablonu 25 bölüm sınırında). İçerik ve koşul snippets/kisisel-kombin-kampanya.liquid'de.
+{%- endcomment -%}
+{%- render 'kisisel-kombin-kampanya', genislik: section.settings.section_width, bolum: section.id -%}
+
+{% schema %}
+{
+  "name": "Sweatshirt kombini",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": { "groups": ["header", "footer", "aside"] },
+  "settings": [
+    { "type": "paragraph", "content": "Kombin açıkken görünür. Metinler, görsel ve fiyatlar: Tema ayarları → Sweatshirt kombini." },
+    { "type": "select", "id": "section_width", "label": "Genişlik", "default": "container",
+      "options": [{ "value": "container", "label": "Kutu" }, { "value": "container-fluid", "label": "Geniş" }, { "value": "w-full", "label": "Tam genişlik" }] }
+  ],
+  "presets": [{ "name": "Sweatshirt kombini" }]
+}
+{% endschema %}
