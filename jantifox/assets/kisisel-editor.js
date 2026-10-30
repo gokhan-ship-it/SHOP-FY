@@ -226,7 +226,7 @@
         return true;
       }
     } catch (e) { /* yoksay */ }
-    olcumKaydi({ kanal: 'GA4', ad: ad, deger: p.value, not: 'gönderilmedi (gtag yok)' });
+    olcumKaydi({ kanal: 'GA4', ad: ad, deger: p.value, not: 'gönderilmedi (gtag yok ya da hata verdi)' });
     return false;
   }
 
