@@ -1,7 +1,9 @@
 {%- comment -%}
   Sweatshirt kombini verisi (editörün kombin modu) JSON olarak: fiyat ayarları, sweatshirtler (editör görseli, harita,
-  yaş varyantları) ve hediye tişörtler (yaş varyantları, stok). Ürünler tema ayarlarındaki handle listelerinden okunur.
-  "İndigo ve Pembe dahil" kapalıysa 3-5 yaş listesindeki sweatshirtler hiç yazılmaz.
+  yaş varyantları) ve hediye tişörtler (editör görseli, yaş varyantları, stok). Ürünler tema ayarlarındaki handle
+  listelerinden okunur. "İndigo ve Pembe dahil" kapalıysa 3-5 yaş listesindeki sweatshirtler hiç yazılmaz.
+  Kartlardaki küçük görsel (kapak) ve önizleme editörün sade görseli (kisisellestirme.onizleme_gorseli_png, patch'siz);
+  ürün fotoğrafları (fotograflar, örnek patch'li) yalnızca tam ekran galeride, "Görseldeki patch'ler örnektir" notuyla.
 
   Kullanım (kisisel-kart.liquid içinden, kombin: true ile): {% render 'kisisel-kombin-veri', section_id: section.id %}
 {%- endcomment -%}
@@ -41,7 +43,13 @@
         "handle": {{ p.handle | json }},
         "baslik": {{ p.title | json }},
         "kucuk_beden": {{ kb_k }},
-        "kapak": {{ p.featured_media | image_url: width: 160 | json }},
+        "kapak": {{ kb_oniz | image_url: width: 160 | json }},
+        "fotograflar": [
+          {%- assign kb_ilk_f = true -%}
+          {%- for med in p.media limit: 8 -%}
+            {%- if med.preview_image -%}{%- unless kb_ilk_f -%},{%- endunless -%}{%- assign kb_ilk_f = false -%}{{ med.preview_image | image_url: width: 1200 | json }}{%- endif -%}
+          {%- endfor -%}
+        ],
         "metin_siniri": {{ p.metafields.kisisellestirme.metin_karakter_siniri.value | json }},
         "gorsel": {
           "en": {{ kb_oniz.width | default: 1000 }},
@@ -66,12 +74,26 @@
     {%- for h in kb_tisort -%}
       {%- assign p = all_products[h] -%}
       {%- if p.id == blank -%}{%- continue -%}{%- endif -%}
+      {%- assign kb_oniz = p.metafields.kisisellestirme.onizleme_gorseli_png.value | default: p.metafields.kisisellestirme.onizleme_gorseli.value -%}
+      {%- if kb_oniz == blank -%}{%- assign kb_oniz = p.featured_media -%}{%- endif -%}
+      {%- assign kb_oniz = kb_oniz.preview_image | default: kb_oniz -%}
       {%- unless kb_ilk -%},{%- endunless -%}{%- assign kb_ilk = false -%}
       {
         "id": {{ p.id }},
         "handle": {{ p.handle | json }},
         "baslik": {{ p.title | json }},
-        "kapak": {{ p.featured_media | image_url: width: 160 | json }},
+        "kapak": {{ kb_oniz | image_url: width: 160 | json }},
+        "gorsel": {
+          "en": {{ kb_oniz.width | default: 1000 }},
+          "boy": {{ kb_oniz.height | default: 1000 }},
+          "buyuk": {{ kb_oniz | image_url: width: 1200 | json }}
+        },
+        "fotograflar": [
+          {%- assign kb_ilk_f = true -%}
+          {%- for med in p.media limit: 8 -%}
+            {%- if med.preview_image -%}{%- unless kb_ilk_f -%},{%- endunless -%}{%- assign kb_ilk_f = false -%}{{ med.preview_image | image_url: width: 1200 | json }}{%- endif -%}
+          {%- endfor -%}
+        ],
         "varyantlar": [
           {%- for v in p.variants -%}
             {%- assign kb_stok = nil -%}

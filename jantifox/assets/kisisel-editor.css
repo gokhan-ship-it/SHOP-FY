@@ -5084,10 +5084,6 @@ html.kp-kilit body {
   object-fit: cover;
   background: var(--kp-yumusak);
 }
-.kp-kombin-renk small {
-  color: var(--kp-ikincil);
-  font-size: 1.1rem;
-}
 .kp-kombin-renk--kucuk {
   width: 6.4rem;
 }
@@ -5123,20 +5119,6 @@ html.kp-kilit body {
   color: var(--kp-ikincil);
   text-decoration: line-through;
   cursor: default;
-}
-.kp-kombin-devam {
-  width: 100%;
-  margin-top: 1.4rem;
-  min-height: var(--kp-dokunma);
-  border-radius: 999px;
-  background: var(--kp-murekkep) !important;
-  border: 1px solid var(--kp-murekkep) !important;
-  color: #fff !important;
-  font-weight: 600;
-}
-.kp-kombin-devam:disabled,
-.kp-kombin-devam--pasif {
-  opacity: 0.45;
 }
 .kp-kombin-not {
   margin: 0.8rem 0 0;
@@ -5242,4 +5224,228 @@ html.kp-kilit body {
 }
 .kp-kombin-satir--bekliyor .kp-kampanya-satir {
   color: var(--kp-ikincil);
+}
+
+/* Kombinini seç: kartın köşesinde büyüteç (ürünün fotoğrafları tam ekran) */
+.kp-kombin-kart {
+  position: relative;
+  display: inline-flex;
+}
+.kp-kombin-buyutec {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--kp-murekkep);
+  cursor: zoom-in;
+}
+/* Kombinini seç ekranında önizleme ürünün tamamı: alan çizgisi, geri al / yinele, görünüm ve indir düğmeleri yok */
+.kp-editor--kombin-sec .kp-sahne__alanlar,
+.kp-editor--kombin-sec .kp-alan-etiketleri {
+  opacity: 0;
+}
+.kp-editor--kombin-sec .kp-gecmis,
+.kp-editor--kombin-sec [data-kp-gorunum],
+.kp-editor--kombin-sec [data-kp-indir],
+.kp-editor--kombin-sec [data-kp-buyut] {
+  display: none !important;
+}
+/* Önizlemenin üstünde "Sweatshirt | Hediye tişört" */
+.kp-kombin-gorunum {
+  position: absolute;
+  z-index: 5;
+  top: 0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+}
+.kp-kombin-gorunum[hidden] {
+  display: none;
+}
+.kp-kombin-gorunum button {
+  min-height: 32px;
+  padding: 0 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--kp-murekkep);
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.kp-kombin-gorunum button[aria-pressed='true'] {
+  background: var(--kp-murekkep);
+  color: #fff;
+}
+/* Hediye tişörtün büyük önizlemesi (editörün sade, patch'siz görseli) */
+.kp-kombin-tisort-onizleme {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3.4rem 0.8rem 2.6rem;
+  border-radius: 12px;
+  background: var(--kp-zemin);
+}
+.kp-kombin-tisort-onizleme[hidden] {
+  display: none;
+}
+.kp-kombin-tisort-onizleme img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.kp-kombin-tisort-onizleme__ad {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 1.6rem);
+  padding: 0.2rem 0.9rem;
+  border-radius: 999px;
+  background: var(--kp-yumusak);
+  font-size: 1.2rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Tasarım ekranındaki tişört satırında görsel: dokununca tam ekran */
+.kp-dahil__tisort-gorsel {
+  flex: none;
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  cursor: zoom-in;
+}
+/* Tam ekran ürün fotoğrafları: yatay kaydırma, ✕ ile kapanır */
+.kp-kombin-galeri {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--kp-zemin);
+}
+.kp-kombin-galeri[hidden] {
+  display: none;
+}
+.kp-kombin-galeri__ust {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 0.6rem 0.6rem 1.6rem;
+  border-bottom: 1px solid var(--kp-cizgi);
+}
+.kp-kombin-galeri__ad {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kp-kombin-galeri__sayac {
+  flex: none;
+  color: var(--kp-ikincil);
+  font-size: 1.3rem;
+}
+.kp-kombin-galeri__kapat {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--kp-dokunma);
+  height: var(--kp-dokunma);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--kp-yumusak);
+  color: var(--kp-murekkep);
+  cursor: pointer;
+}
+.kp-kombin-galeri__alan {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.kp-kombin-galeri__iz {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+.kp-kombin-galeri__iz::-webkit-scrollbar {
+  display: none;
+}
+.kp-kombin-galeri__kare {
+  display: flex;
+  flex: 0 0 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 1.2rem;
+  scroll-snap-align: center;
+}
+.kp-kombin-galeri__kare img {
+  max-width: 100%;
+  max-height: calc(100% - 3rem);
+  border-radius: 12px;
+  object-fit: contain;
+  user-select: none;
+}
+.kp-kombin-galeri__kare figcaption {
+  color: var(--kp-ikincil);
+  font-size: 1.25rem;
+}
+.kp-kombin-galeri__ok {
+  position: absolute;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--kp-dokunma);
+  height: var(--kp-dokunma);
+  margin-top: -22px;
+  padding: 0;
+  border: 1px solid var(--kp-cizgi);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--kp-murekkep);
+  cursor: pointer;
+}
+.kp-kombin-galeri__ok[hidden] {
+  display: none;
+}
+.kp-kombin-galeri__ok--geri {
+  left: 0.8rem;
+}
+.kp-kombin-galeri__ok--ileri {
+  right: 0.8rem;
 }

@@ -69,14 +69,24 @@ sonuc.editor = {
   renkler: await s.$$eval('[data-kp-kombin-renk]', (l) => l.map((x) => x.innerText.replace(/\s+/g, ' ').trim())),
   tisortRenkleri: await s.$$eval('[data-kp-tisort-renk]', (l) => l.map((x) => x.innerText.trim() + (x.querySelector('img') ? ' (görsel)' : ''))),
   gosterge: await yazi('[data-kp-dahil]'),
-  devamOnce: await s.locator('[data-kp-kombin-devam]').getAttribute('aria-disabled')
+  anaButon: await yazi('[data-kp-ileri]'),
+  ikinciDugme: await s.locator('[data-kp-kombin-devam]').count(),
+  fiyat: await yazi('[data-kp-toplam]'),
+  tamami: await s.evaluate(() => document.querySelector('kisisel-kart').editor.sahne.yakin === false),
+  buyutec: await s.locator('[data-kp-panel="sweat"] .kp-kombin-buyutec').count(),
+  kapaklarSade: await s.$$eval('[data-kp-panel="sweat"] .kp-kombin-renk img', (l) => l.every((x) => /kisisel-urun-/.test(x.src)))
 };
 await s.locator('.kp-kombin-yas[data-kp-kombin-yas]').first().click();
 await s.locator('[data-kp-tisort-renk]').first().click();
 await s.waitForTimeout(300);
 sonuc.editor.tisortYasi = await yazi('[data-kp-tisort-yas].kp-kombin-yas--secili');
-sonuc.editor.devamSonra = await s.locator('[data-kp-kombin-devam]').getAttribute('aria-disabled');
-await s.locator('[data-kp-kombin-devam]').click();
+sonuc.editor.tisortOnizleme = { gorunur: await s.locator('[data-kp-tisort-onizleme]').isVisible(), sade: /kisisel-urun-/.test(await s.locator('[data-kp-tisort-onizleme-img]').getAttribute('src')), ad: await yazi('[data-kp-tisort-onizleme-ad]') };
+await s.locator('[data-kp-panel="sweat"] .kp-kombin-tisort .kp-kombin-buyutec').first().click();
+await s.locator('[data-kp-kombin-galeri]').waitFor();
+sonuc.editor.galeri = { ad: await yazi('[data-kp-galeri-ad]'), kare: await s.locator('.kp-kombin-galeri__kare').count(), not: await s.locator('.kp-kombin-galeri__kare figcaption').count(), sayac: await yazi('[data-kp-galeri-sayac]') };
+await s.locator('[data-kp-galeri-kapat]').click();
+sonuc.editor.anaButonSonra = await yazi('[data-kp-ileri]');
+await s.locator('[data-kp-ileri]').click();
 await s.locator('#kp-isim').waitFor();
 await s.waitForTimeout(400);
 sonuc.editor.ilkBildirim = await yazi('.kp-editor [data-kp-bildirim]');
