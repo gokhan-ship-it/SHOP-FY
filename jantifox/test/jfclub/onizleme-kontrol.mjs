@@ -100,7 +100,7 @@ const durum = (p) => p.evaluate(() => {
     tema: window.Shopify && Shopify.theme && Shopify.theme.id, editor: document.documentElement.classList.contains('kp-kilit') || document.documentElement.classList.contains('kp-acilis-bekle')
   };
 });
-const jf = (ist) => ist.filter((x) => /jfclub/.test(x.url));
+const jf = (ist) => ist.filter((x) => /\/jfclub-[^/?]+\.(js|css|mp4|webp|svg)/.test(new URL(x.url).pathname));
 const medya = (ist) => ist.filter((x) => /\.(mp4|webp)(\?|$)/i.test(new URL(x.url).pathname + (new URL(x.url).search ? '?' : '')));
 const kisa = (u) => u.replace(/^https?:\/\/[^/]+/, '').replace(/\?v=\d+/, '').replace(/^\/cdn\/shop\/t\/\d+\/assets\//, '');
 const durumYaz = (p, v) => p.evaluate((v) => localStorage.setItem('jfclub_durum', v), v);
@@ -337,6 +337,23 @@ if (secim.includes('f')) {
     const a = await durum(s.p);
     yaz(`f) ${ad}: rozet ${rozetBeklenen ? '"' + etiketBeklenen + '"' : 'yok'}, otomatik ${acikBeklenen ? 'açılır' : 'açılmaz'}`, r.rozet === rozetBeklenen && (!rozetBeklenen || r.etiket === etiketBeklenen) && a.acik === acikBeklenen, JSON.stringify({ rozet: r.rozet, etiket: r.etiket, kaydirincaAcildi: a.acik }));
     await s.ctx.close();
+  }
+}
+
+// g) Tema ayarında pop-up kapalı (jfclub_aktif: false) iken hiçbir pop-up dosyası yüklenmez. Yalnızca ayar
+// kapatılmışken çalıştırılır: node test/jfclub/onizleme-kontrol.mjs g
+if (secim.includes('g') && process.argv[2] && process.argv[2].split(',').includes('g')) {
+  for (const [ad, yol, ek] of [['ana sayfa', '/', ''], ['ana sayfa ?jfclub=ac', '/', 'jfclub=ac'], ['ürün sayfası', '/products/kanvas-lacivert-tote-canta', '']]) {
+    const { ctx, p, istekler } = await baglam({ kuponKapali: true });
+    await p.goto(adres('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await durumYaz(p, dur('kapatildi'));
+    await p.goto(adres(yol, ek), { waitUntil: 'load', timeout: 60000 });
+    await bekle(3000);
+    await p.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await bekle(11000);
+    const d = await durum(p);
+    yaz(`g) ayar kapalı, ${ad}: işaretleme yok, jfclub dosyası istenmedi`, d.tema == TEMA && !d.ayar && !d.kok && jf(istekler).length === 0, JSON.stringify({ tema: d.tema, ayar: d.ayar, kok: d.kok, jfclub: jf(istekler).map((x) => kisa(x.url)) }));
+    await ctx.close();
   }
 }
 
