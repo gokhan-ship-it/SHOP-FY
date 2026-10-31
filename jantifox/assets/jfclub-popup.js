@@ -10,8 +10,9 @@
  * - Videolar üst üste: Klip1 (bekleme, döngü) → Klip2 (açılış) → Klip3 (açık, döngü). Klip1'in dinlenme anında
  *   geçilir (Klip2 kare 0 = Klip1 kare 0); Klip3 oynamaya başlamadan Klip2 son karesinde kalır. Video oynamazsa
  *   (düşük güç modu, hata, hareket azaltma) posterlerle çalışır.
- * - Form: Shopify müşteri formu, sayfa yenilenmeden gönderilir. /challenge (bot kontrolü) gelirse normal gönderilir;
- *   ?customer_posted=true#jfclub-form ile dönüşte pop-up kendiliğinden açılır ve açılış klibi oynar.
+ * - Form: Shopify müşteri formu, sayfa yenilenmeden gönderilir. Shopify'ın bot koruması (hCaptcha) atlanmaz: jetonu o
+ *   ekler, istek fetch ile jetonla gider. /challenge gelirse normal gönderilir; ?customer_posted=true#jfclub-form ile
+ *   dönüşte pop-up kendiliğinden açılır ve açılış klibi oynar.
  * - Kayıt başarılı olunca Meta'ya standart Lead (tarayıcıda bir kez), CustomizeProduct ile aynı yoldan (trackSingle).
  * - E-posta adresi tarayıcıda saklanmaz.
  */
@@ -208,6 +209,9 @@
     panelKap = kok.querySelector('[data-jfclub-paneller]');
     panelPosta = kok.querySelector('[data-jfclub-panel="posta"]');
     panelOdul = kok.querySelector('[data-jfclub-panel="odul"]');
+    // Shopify'ın bot koruması jetonu ekledikten sonra form.submit() çağırır: sayfa gitmeden fetch ile gönderilir.
+    // (Koruma bağlanırken bu işlevi saklayıp kendi doğrulamasının sonunda çağırır; /challenge yedeği prototipi kullanır.)
+    form.submit = function () { postaGonder(); };
     olaylariBagla();
     // Editör açılırsa pop-up ve rozet sessizce gizlenir; tema çekmecesi açıkken rozet görünmez
     new MutationObserver(editorDegisti).observe(html, { attributes: true, attributeFilter: ['class'] });
@@ -534,22 +538,88 @@
     if (m) eposta.setAttribute('aria-invalid', 'true');
     else eposta.removeAttribute('aria-invalid');
   }
+  // Shopify'ın bot koruması (hCaptcha): müşteri formu odak alınca korumaya bağlanır; gönderimde görünmez doğrulama
+  // yapılır, jeton (h-captcha-response) forma eklenir ve formun submit() işlevi çağrılır. Koruma atlanmaz: submit()
+  // bağlanmadan önce burada fetch gönderimine yönlendirilir, jeton FormData ile gider, sayfa yenilenmez.
   var gonderiliyor = false;
+  var istekGitti = false;
+  function gecerli(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  }
+  function korumaVar() {
+    return !!(window.Shopify && Shopify.captcha && typeof Shopify.captcha.protect === 'function');
+  }
+  function korumaBagli() {
+    return form.hasAttribute('data-hcaptcha-bound');
+  }
   function gonder(e) {
-    if (e) e.preventDefault();
-    if (gonderiliyor || asama !== 'posta') return;
     var v = eposta.value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
+    var dur = function () {
+      if (!e) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    };
+    if (gonderiliyor || asama !== 'posta') return dur();
+    if (!gecerli(v)) {
+      dur();
       hataGoster(HATA_EPOSTA);
       eposta.focus();
       return;
     }
     hataGoster('');
     eposta.value = v;
+    basla();
+    if (korumaBagli()) {
+      // Shopify'ın dinleyicisi doğrulamayı yapar, sonra form.submit() → postaGonder
+      if (e) e.preventDefault();
+      return korumaBekle();
+    }
+    dur();
+    if (!korumaVar()) return postaGonder();
+    // Odak almadan gönderildi (ör. otomatik doldurma): önce korumaya bağlanır, sonra aynı yoldan
+    try { if (!form.dataset.cptcha) Shopify.captcha.protect(form); } catch (x) { /* yok say */ }
+    var bas = Date.now();
+    (function bekle_() {
+      if (korumaBagli()) {
+        korumaBekle();
+        return form.submit();
+      }
+      if (Date.now() - bas < 6000) return setTimeout(bekle_, 150);
+      postaGonder(); // koruma yüklenemedi: jetonsuz gider; gerekirse Shopify /challenge'a yönlendirir
+    })();
+  }
+  // Doğrulama penceresi açılmadan 10 sn, kapatıldıktan sonra 3 sn içinde gönderim olmazsa buton yeniden açılır
+  var bekci = null;
+  function korumaBekle() {
+    clearInterval(bekci);
+    var bos = 0;
+    var goruldu = false;
+    bekci = setInterval(function () {
+      if (!gonderiliyor || istekGitti) return clearInterval(bekci);
+      var pencere = Array.prototype.some.call(document.querySelectorAll('iframe[src*="hcaptcha"]'), function (f) {
+        return /frame=challenge/.test(f.src) && ekranda(f);
+      });
+      if (pencere) goruldu = true;
+      bos = pencere ? 0 : bos + 1;
+      if (bos >= (goruldu ? 3 : 10)) {
+        clearInterval(bekci);
+        bitir();
+      }
+    }, 1000);
+  }
+  function basla() {
     gonderiliyor = true;
+    istekGitti = false;
     gonderBtn.disabled = true;
     kok.setAttribute('aria-busy', 'true');
     onYukle();
+  }
+  function postaGonder() {
+    if (asama !== 'posta' || istekGitti) return;
+    var v = eposta.value.trim();
+    if (!gecerli(v)) return;
+    if (!gonderiliyor) basla();
+    istekGitti = true;
     fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin', headers: { Accept: 'text/html' } })
       .then(function (r) {
         // Yalnızca son adres gerekir; sayfanın gövdesi indirilmez
@@ -572,6 +642,8 @@
   }
   function bitir() {
     gonderiliyor = false;
+    istekGitti = false;
+    clearInterval(bekci);
     gonderBtn.disabled = false;
     kok.removeAttribute('aria-busy');
   }
@@ -712,12 +784,6 @@
       } else if (!e.shiftKey && simdi === son) {
         e.preventDefault();
         ilk.focus();
-      }
-    });
-    // Odak dışarı kaçarsa (ör. ekran okuyucu) pencereye geri döner
-    document.addEventListener('focusin', function (e) {
-      if (acik && !kok.contains(e.target)) {
-        try { kart.focus({ preventScroll: true }); } catch (x) { /* yok say */ }
       }
     });
     // Klip3 kare 0'da bekler (ön yüklemede ilk kare)
