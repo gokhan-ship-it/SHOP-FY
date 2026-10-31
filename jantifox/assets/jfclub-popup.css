@@ -1,0 +1,688 @@
+/*
+ * JantiFox Club e-posta pop-up'ı (snippets/jfclub-popup.liquid, assets/jfclub-popup.js). Onaylı taslağın ölçüleri:
+ * jfclub-remotion/public/referans/onayli-taslak-popup.html. Taslaktaki CSS kutusunun yerinde Remotion videoları var.
+ * Mobilde alttan açılan sayfa, 750 px ve üstünde ortada kart (en fazla 420 px). Yalnızca pop-up açılmadan hemen önce
+ * JS ile yüklenir. Tema 1rem = 10 px kullandığı için ölçüler px.
+ */
+.jfclub,
+.jfclub-rozet {
+  --jfclub-kirmizi: #bc0027;
+  --jfclub-kirmizi-koyu: #a50022;
+  --jfclub-turuncu: #ff501b;
+  --jfclub-krem: #fbead6;
+  --jfclub-bordo: #59001c;
+  --jfclub-murekkep: #202223;
+  --jfclub-soluk: #6b5a52;
+  --jfclub-yazi: var(--font-body-family, Poppins, system-ui, -apple-system, 'Segoe UI', sans-serif);
+}
+
+.jfclub[hidden],
+.jfclub-rozet[hidden],
+.jfclub [hidden] {
+  display: none !important;
+}
+
+html.jfclub-kilit,
+html.jfclub-kilit body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+/* ---------- Kök ve karartma ---------- */
+
+.jfclub {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: var(--jfclub-murekkep);
+  font-family: var(--jfclub-yazi);
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: normal;
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.jfclub *,
+.jfclub *::before,
+.jfclub *::after {
+  box-sizing: border-box;
+}
+
+.jfclub__karartma {
+  position: absolute;
+  inset: 0;
+  background: rgba(32, 20, 18, 0.48);
+  opacity: 0;
+  transition: opacity 0.35s;
+  touch-action: none;
+}
+
+.jfclub--acik .jfclub__karartma {
+  opacity: 1;
+}
+
+/* ---------- Sayfa (mobil) / kart (masaüstü) ---------- */
+
+.jfclub__kart {
+  position: relative;
+  width: 100%;
+  max-height: calc(100vh - 12px);
+  max-height: calc(100dvh - 12px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: var(--jfclub-krem);
+  border-radius: 26px 26px 0 0;
+  padding: 10px 18px calc(26px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.18);
+  transform: translateY(105%);
+  transition: transform 0.55s cubic-bezier(0.2, 1, 0.3, 1), margin-bottom 0.2s;
+  outline: none;
+}
+
+.jfclub--acik .jfclub__kart {
+  transform: none;
+}
+
+.jfclub__tutamac {
+  width: 38px;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(89, 0, 28, 0.2);
+  margin: 0 auto 10px;
+}
+
+@media screen and (min-width: 750px) {
+  .jfclub {
+    align-items: center;
+    padding: 16px;
+  }
+
+  .jfclub__kart {
+    max-width: 420px;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    border-radius: 26px;
+    padding: 18px 22px 26px;
+    box-shadow: 0 24px 60px -18px rgba(60, 10, 20, 0.45);
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+    transition: transform 0.45s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.3s;
+  }
+
+  .jfclub--acik .jfclub__kart {
+    opacity: 1;
+    transform: none;
+  }
+
+  .jfclub__tutamac {
+    display: none;
+  }
+}
+
+/* ---------- Üst satır: etiket ve kapatma ---------- */
+
+.jfclub__ust {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+}
+
+.jfclub__cip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border-radius: 999px;
+  padding: 4px 13px 4px 5px;
+  box-shadow: 0 1px 0 rgba(89, 0, 28, 0.08);
+  line-height: 1.2;
+}
+
+.jfclub__cip img {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.jfclub__cip b {
+  font-size: 13px;
+  color: var(--jfclub-kirmizi);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.jfclub__cip small {
+  font-size: 10.5px;
+  color: var(--jfclub-soluk);
+  font-weight: 500;
+}
+
+/* Görünen daire 32 px, dokunma alanı 44 × 44 px */
+.jfclub__kapat {
+  position: relative;
+  z-index: 0;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -6px -6px -6px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--jfclub-bordo);
+  font: 400 18px/1 var(--jfclub-yazi);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: none;
+}
+
+.jfclub__kapat::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(89, 0, 28, 0.08);
+  transition: background 0.2s;
+  z-index: -1;
+}
+
+.jfclub__kapat:hover::before {
+  background: rgba(89, 0, 28, 0.14);
+}
+
+/* ---------- Bildirim (Sepetime uygula) ---------- */
+
+.jfclub__bildirim {
+  position: fixed;
+  left: 50%;
+  top: 58px;
+  z-index: 5;
+  transform: translate(-50%, -20px);
+  opacity: 0;
+  background: var(--jfclub-murekkep);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 9px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: opacity 0.35s cubic-bezier(0.2, 1, 0.3, 1), transform 0.35s cubic-bezier(0.2, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.jfclub__bildirim--on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---------- Video sahnesi: kare, kenarları yumuşak radyal maskeyle karta karışır ---------- */
+
+.jfclub__sahne {
+  --jfclub-sahne: min(240px, 34vh);
+  --jfclub-sahne: min(240px, 34dvh);
+  position: relative;
+  width: var(--jfclub-sahne);
+  height: var(--jfclub-sahne);
+  margin: 2px auto 0;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle closest-side at 50% 50%, #000 86%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side at 50% 50%, #000 86%, transparent 100%);
+  transition: width 0.25s, height 0.25s;
+}
+
+.jfclub__video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  object-fit: cover;
+  background: transparent;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.jfclub__video--on {
+  opacity: 1;
+}
+
+/* Video oynamazsa posterler: kapalı kutu açık kutuya yumuşak geçer */
+.jfclub--poster .jfclub__video {
+  transition: opacity 0.6s ease;
+}
+
+/* iOS düşük güç modunda oynatma düğmesi görünmesin */
+.jfclub__video::-webkit-media-controls,
+.jfclub__video::-webkit-media-controls-start-playback-button,
+.jfclub__video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+/* Klavye açıkken sahne küçülür, buton görünür kalır */
+.jfclub--klavye .jfclub__kart {
+  margin-bottom: var(--jfclub-klavye, 0px);
+  max-height: var(--jfclub-gorunur, 100dvh);
+}
+
+.jfclub--klavye .jfclub__sahne {
+  --jfclub-sahne: clamp(88px, calc(var(--jfclub-gorunur, 600px) - 330px), 240px);
+}
+
+/* ---------- Paneller ---------- */
+
+.jfclub__paneller {
+  position: relative;
+  transition: height 0.4s cubic-bezier(0.2, 1, 0.3, 1);
+}
+
+.jfclub__panel {
+  transition: opacity 0.3s, transform 0.35s;
+}
+
+.jfclub__panel--gizle {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+.jfclub .jfclub__baslik {
+  margin: 4px 0 6px;
+  font-family: var(--jfclub-yazi);
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--jfclub-bordo);
+  text-align: center;
+}
+
+.jfclub .jfclub__aciklama {
+  margin: 0 auto 14px;
+  max-width: 290px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--jfclub-soluk);
+  text-align: center;
+}
+
+.jfclub .jfclub__form {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+}
+
+.jfclub .jfclub__eposta {
+  display: block;
+  width: 100%;
+  height: 50px;
+  margin: 0;
+  border-radius: 12px;
+  border: 1.5px solid rgba(89, 0, 28, 0.18);
+  background: #fff;
+  padding: 0 16px;
+  font-family: var(--jfclub-yazi);
+  font-size: 16px;
+  line-height: normal;
+  color: var(--jfclub-murekkep);
+  outline: none;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.jfclub .jfclub__eposta::placeholder {
+  color: #8a7c76;
+  opacity: 1;
+}
+
+.jfclub .jfclub__eposta:focus,
+.jfclub .jfclub__eposta:focus-visible {
+  border-color: var(--jfclub-kirmizi);
+  outline: none;
+  outline-offset: 0;
+  box-shadow: 0 0 0 4px rgba(188, 0, 39, 0.12);
+}
+
+.jfclub .jfclub__eposta--hata,
+.jfclub .jfclub__eposta--hata:focus {
+  border-color: var(--jfclub-turuncu);
+}
+
+@media screen and (min-width: 750px) {
+  .jfclub .jfclub__eposta {
+    font-size: 15px;
+  }
+}
+
+.jfclub .jfclub__hata {
+  margin: -2px 0 0 4px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--jfclub-turuncu);
+}
+
+.jfclub .jfclub__hata:empty {
+  display: none;
+}
+
+.jfclub .jfclub__buton {
+  display: block;
+  width: 100%;
+  height: 52px;
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--jfclub-kirmizi);
+  color: #fff;
+  font-family: var(--jfclub-yazi);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.3px;
+  text-transform: none;
+  cursor: pointer;
+  box-shadow: 0 6px 14px -6px rgba(188, 0, 39, 0.6);
+  -webkit-appearance: none;
+  appearance: none;
+  transition: transform 0.15s, background 0.2s, opacity 0.2s;
+}
+
+.jfclub .jfclub__buton:hover {
+  background: var(--jfclub-kirmizi-koyu);
+}
+
+.jfclub .jfclub__buton:active {
+  transform: scale(0.98);
+}
+
+.jfclub .jfclub__buton:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.jfclub .jfclub__buton:focus-visible,
+.jfclub .jfclub__kopyala:focus-visible,
+.jfclub .jfclub__kapat:focus-visible {
+  outline: 2px solid var(--jfclub-bordo);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.jfclub .jfclub__mikro {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--jfclub-soluk);
+}
+
+/* Açılmış hâl */
+.jfclub__panel--odul {
+  text-align: center;
+}
+
+.jfclub__odul {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.jfclub__yuzde {
+  font-size: 64px;
+  line-height: 1;
+  font-weight: 800;
+  color: var(--jfclub-kirmizi);
+  letter-spacing: -2px;
+}
+
+.jfclub__etiket {
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--jfclub-bordo);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.jfclub .jfclub__kosul {
+  margin: 6px 0 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--jfclub-soluk);
+}
+
+.jfclub .jfclub__kosul b {
+  color: var(--jfclub-bordo);
+}
+
+.jfclub__kod-satir {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.jfclub__kod {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  border-radius: 12px;
+  border: 2px dashed rgba(188, 0, 39, 0.45);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--jfclub-bordo);
+  -webkit-user-select: all;
+  user-select: all;
+}
+
+.jfclub .jfclub__kopyala {
+  flex: none;
+  width: 116px;
+  height: 52px;
+  margin: 0;
+  padding: 0 6px;
+  white-space: nowrap;
+  border-radius: 12px;
+  border: 1.5px solid var(--jfclub-bordo);
+  background: transparent;
+  color: var(--jfclub-bordo);
+  font-family: var(--jfclub-yazi);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.jfclub .jfclub__kopyala--tamam {
+  background: var(--jfclub-bordo);
+  color: var(--jfclub-krem);
+}
+
+.jfclub .jfclub__gonderildi {
+  margin: 12px 0 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--jfclub-bordo);
+  overflow-wrap: anywhere;
+}
+
+.jfclub .jfclub__gonderildi b {
+  font-weight: 600;
+}
+
+.jfclub .jfclub__ince {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--jfclub-soluk);
+}
+
+/* Açılmış hâlin metinleri sırayla yükselir */
+.jfclub__panel--belir > * {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: jfclub-yuksel 0.5s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+}
+
+.jfclub__panel--belir > :nth-child(2) { animation-delay: 0.08s; }
+.jfclub__panel--belir > :nth-child(3) { animation-delay: 0.16s; }
+.jfclub__panel--belir > :nth-child(4) { animation-delay: 0.24s; }
+.jfclub__panel--belir > :nth-child(5) { animation-delay: 0.32s; }
+.jfclub__panel--belir > :nth-child(6) { animation-delay: 0.38s; }
+
+@keyframes jfclub-yuksel {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Rozet (sol alt) ---------- */
+
+.jfclub-rozet {
+  position: fixed;
+  left: 14px;
+  bottom: var(--jfclub-rozet-alt, 22px);
+  z-index: 997;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--jfclub-krem);
+  box-shadow: 0 8px 20px -6px rgba(89, 0, 28, 0.45), 0 0 0 3px #fff;
+  cursor: pointer;
+  font-family: var(--jfclub-yazi);
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transform: scale(0);
+  transition: transform 0.45s cubic-bezier(0.3, 1.5, 0.5, 1), bottom 0.25s, opacity 0.2s, visibility 0.2s;
+}
+
+.jfclub-rozet--on {
+  transform: scale(1);
+  animation: jfclub-durt 3.2s ease-in-out 1s infinite;
+}
+
+.jfclub-rozet--engel {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.jfclub-rozet img {
+  display: block;
+  width: 38px;
+  height: 38px;
+}
+
+.jfclub-rozet__etiket {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: var(--jfclub-kirmizi);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 2px 7px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.jfclub-rozet:focus-visible {
+  outline: 2px solid var(--jfclub-bordo);
+  outline-offset: 4px;
+}
+
+@keyframes jfclub-durt {
+  0%, 80%, 100% { rotate: 0deg; }
+  84% { rotate: -12deg; }
+  88% { rotate: 10deg; }
+  92% { rotate: -6deg; }
+  96% { rotate: 3deg; }
+}
+
+/* ---------- Hareket azaltma: video yok (JS), sade geçişler ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .jfclub__kart,
+  .jfclub__karartma,
+  .jfclub__panel,
+  .jfclub__paneller,
+  .jfclub__sahne,
+  .jfclub-rozet,
+  .jfclub__bildirim {
+    transition-duration: 0.01s !important;
+  }
+
+  .jfclub__kart,
+  .jfclub--acik .jfclub__kart {
+    transform: none;
+  }
+
+  .jfclub__kart {
+    opacity: 0;
+  }
+
+  .jfclub--acik .jfclub__kart {
+    opacity: 1;
+  }
+
+  .jfclub--poster .jfclub__video {
+    transition: opacity 0.3s ease;
+  }
+
+  .jfclub__panel--belir > *,
+  .jfclub-rozet--on {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .jfclub-rozet--on {
+    transform: scale(1);
+  }
+}

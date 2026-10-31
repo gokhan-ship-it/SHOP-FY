@@ -1734,5 +1734,34 @@
         "default": 4
       }
     ]
+  },
+  {
+    "name": "JantiFox Club",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "E-posta pop-up'ı: ziyaretçi e-postasını bırakınca hediye kutusu açılır ve indirim kodu görünür. Kod mağazada (İndirimler) ayrıca açılmalıdır."
+      },
+      {
+        "type": "checkbox",
+        "id": "jfclub_aktif",
+        "label": "Pop-up açık",
+        "info": "Kapalıyken hiçbir pop-up dosyası yüklenmez.",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "jfclub_kod",
+        "label": "İndirim kodu",
+        "default": "CLUB15"
+      },
+      {
+        "type": "text",
+        "id": "jfclub_alt_tutar",
+        "label": "Alt tutar metni",
+        "info": "Kutu açılınca kalın yazılır: \"… siparişinde geçerli\".",
+        "default": "5.000 TL ve üzeri"
+      }
+    ]
   }
 ]

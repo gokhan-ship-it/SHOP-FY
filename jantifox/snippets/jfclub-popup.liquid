@@ -1,0 +1,75 @@
+{%- comment -%}
+  JantiFox Club e-posta pop-up'ı (layout/theme.liquid'den çağrılır). Ziyaretçi e-postasını bırakınca hediye kutusu açılır
+  ve indirim kodu görünür. Onaylı taslak: jfclub-remotion/public/referans/onayli-taslak-popup.html.
+
+  Hiç yazılmaz: Tema ayarları → JantiFox Club'da kapalıysa, sepet, hesap ve şifre sayfalarında, giriş yapmış ve zaten
+  e-posta abonesi olan müşteride. Sayfa açılışında yalnızca küçük JS (defer) yüklenir; pencerenin işaretlemesi
+  <template> içinde durur (görseller ve videolar istenmez); CSS ve posterler pop-up açılmadan hemen önce, videolar
+  pop-up açılınca yüklenir (posterler JS ile verilir, rozet tek başına gösterildiğinde istenmez).
+  Form Shopify'ın müşteri formu: kişi e-posta abonesi olur, "jantifox-club" etiketiyle ayrılır.
+{%- endcomment -%}
+{%- liquid
+  assign jf_goster = settings.jfclub_aktif
+  if request.page_type == 'cart' or request.page_type == 'password' or request.page_type contains 'customers/'
+    assign jf_goster = false
+  endif
+  if customer and customer.accepts_marketing
+    assign jf_goster = false
+  endif
+  assign jf_kod = settings.jfclub_kod | default: 'CLUB15' | strip
+  assign jf_alt = settings.jfclub_alt_tutar | default: '5.000 TL ve üzeri'
+-%}
+{%- if jf_goster -%}
+<script type="application/json" id="jfclub-ayar">
+  {
+    "kod": {{ jf_kod | json }},
+    "css": {{ 'jfclub-popup.css' | asset_url | json }},
+    "v1": {{ 'jfclub-1-bekleme.mp4' | asset_url | json }},
+    "v2": {{ 'jfclub-2-acilis.mp4' | asset_url | json }},
+    "v3": {{ 'jfclub-3-acik.mp4' | asset_url | json }},
+    "p1": {{ 'jfclub-kapali.webp' | asset_url | json }},
+    "p3": {{ 'jfclub-acik.webp' | asset_url | json }}
+  }
+</script>
+<template id="jfclub-sablon">
+  <div class="jfclub" data-jfclub hidden>
+    <div class="jfclub__karartma" data-jfclub-karartma></div>
+    <div class="jfclub__kart" role="dialog" aria-modal="true" aria-label="JantiFox Club" tabindex="-1" data-jfclub-kart>
+      <div class="jfclub__tutamac" aria-hidden="true"></div>
+      <div class="jfclub__ust">
+        <span class="jfclub__cip"><img src="{{ 'jfclub-tilki.svg' | asset_url }}" alt="" width="24" height="24"><b>JantiFox Club</b><small>· Sürpriz kutusu</small></span>
+        <button type="button" class="jfclub__kapat" aria-label="Kapat" data-jfclub-kapat>×</button>
+      </div>
+      <div class="jfclub__bildirim" role="status" aria-live="polite" data-jfclub-bildirim>Kod sepetine uygulandı ✓</div>
+      <div class="jfclub__sahne" aria-hidden="true">
+        <video class="jfclub__video jfclub__video--on" data-jfclub-klip="1" muted playsinline loop preload="none"></video>
+        <video class="jfclub__video" data-jfclub-klip="2" muted playsinline preload="none"></video>
+        <video class="jfclub__video" data-jfclub-klip="3" muted playsinline loop preload="none"></video>
+      </div>
+      <div class="jfclub__paneller" data-jfclub-paneller>
+        <div class="jfclub__panel jfclub__panel--posta" data-jfclub-panel="posta">
+          <h2 class="jfclub__baslik">Sana bir sürprizimiz var!</h2>
+          <p class="jfclub__aciklama">E-posta adresini bırak, JantiFox Club'a katıl ve kutunu aç.</p>
+          {%- form 'customer', id: 'jfclub-form', class: 'jfclub__form', novalidate: 'novalidate' -%}
+            <input type="hidden" name="contact[tags]" value="newsletter,jantifox-club">
+            <input class="jfclub__eposta" type="email" name="contact[email]" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="E-posta adresin" aria-label="E-posta adresin" aria-describedby="jfclub-hata" data-jfclub-eposta>
+            <p class="jfclub__hata" id="jfclub-hata" role="alert" data-jfclub-hata></p>
+            <button class="jfclub__buton" type="submit" data-jfclub-gonder>Kutuyu aç</button>
+          {%- endform -%}
+          <p class="jfclub__mikro">Kodunu e-posta adresine göndereceğiz.</p>
+        </div>
+        <div class="jfclub__panel jfclub__panel--odul" data-jfclub-panel="odul" hidden>
+          <div class="jfclub__odul"><span class="jfclub__yuzde">%15</span><span class="jfclub__etiket">indirim<br>senin!</span></div>
+          <p class="jfclub__kosul"><b>{{ jf_alt | escape }}</b> siparişinde geçerli</p>
+          <div class="jfclub__kod-satir"><div class="jfclub__kod" data-jfclub-kod>{{ jf_kod | escape }}</div><button type="button" class="jfclub__kopyala" data-jfclub-kopyala>Kopyala</button></div>
+          <button type="button" class="jfclub__buton" data-jfclub-uygula>Sepetime uygula</button>
+          <p class="jfclub__gonderildi">✓ Kodun <b data-jfclub-adres>e-posta</b> adresine de gönderildi.</p>
+          <p class="jfclub__ince">Her müşteri bir kez kullanabilir.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="jfclub-rozet" aria-label="JantiFox Club'ı aç" data-jfclub-rozet hidden><img src="{{ 'jfclub-tilki.svg' | asset_url }}" alt="" width="38" height="38"><span class="jfclub-rozet__etiket" data-jfclub-etiket>?</span></button>
+</template>
+<script src="{{ 'jfclub-popup.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
