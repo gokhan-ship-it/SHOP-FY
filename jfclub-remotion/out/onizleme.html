@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JantiFox Club önizleme</title>
+<style>
+  :root { --zemin: #fbead6; --bordo: #59001c; --kirmizi: #bc0027; --metin: #3b2a24; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--zemin); color: var(--metin); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px 16px; }
+  .sahne { position: relative; width: 360px; height: 360px; max-width: 100%; aspect-ratio: 1; background: var(--zemin); }
+  .sahne video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; pointer-events: none; }
+  .sahne video.gorunur { opacity: 1; }
+  .butonlar { display: flex; gap: 10px; }
+  button { font: inherit; font-weight: 600; border: 0; border-radius: 999px; padding: 11px 26px; cursor: pointer; background: var(--kirmizi); color: #fff; }
+  button:disabled { opacity: .45; cursor: default; }
+  button.ikincil { background: transparent; color: var(--bordo); box-shadow: inset 0 0 0 1.5px rgba(89, 0, 28, .35); }
+  .durum { font-size: 13px; color: #6b5a52; min-height: 1.45em; text-align: center; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<main>
+  <div class="sahne" aria-label="JantiFox Club kutusu">
+    <video id="k1" src="jfclub-1-bekleme.mp4" muted playsinline loop preload="auto" class="gorunur"></video>
+    <video id="k2" src="jfclub-2-acilis.mp4" muted playsinline preload="auto"></video>
+    <video id="k3" src="jfclub-3-acik.mp4" muted playsinline loop preload="auto"></video>
+  </div>
+  <div class="butonlar">
+    <button id="ac" disabled>Aç</button>
+    <button id="bastan" class="ikincil">Baştan</button>
+  </div>
+  <div class="durum" id="durum">Videolar yükleniyor…</div>
+</main>
+<script>
+(() => {
+  const FPS = 30;
+  const k1 = document.getElementById('k1');
+  const k2 = document.getElementById('k2');
+  const k3 = document.getElementById('k3');
+  const acBtn = document.getElementById('ac');
+  const bastanBtn = document.getElementById('bastan');
+  const durumEl = document.getElementById('durum');
+
+  // Klip 1 dinlenme kareleri: 0–33 ve 53–71 (Klip 2 kare 0 ile aynı görüntü).
+  // Geçiş, hareket başlamadan önce birkaç kare pay bırakılarak bu aralıklarda yapılır.
+  const dinlenmede = (kare) => kare >= 53 || kare <= 27;
+
+  const rvfc = 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
+  let asama = 'bekleme'; // bekleme | aciliyor | acilis | acik
+  let oturum = 0;
+
+  const goster = (v) => {
+    for (const x of [k1, k2, k3]) x.classList.toggle('gorunur', x === v);
+  };
+  const durum = (metin) => { durumEl.textContent = metin; };
+
+  // Gösterilen karenin numarasını izler (rVFC varsa gerçek sunum zamanı, yoksa currentTime).
+  const kareIzle = (video, cb, id) => {
+    if (rvfc) {
+      const adim = (_now, meta) => {
+        if (id !== oturum) return;
+        if (cb(Math.round(meta.mediaTime * FPS)) !== false) video.requestVideoFrameCallback(adim);
+      };
+      video.requestVideoFrameCallback(adim);
+    } else {
+      const adim = () => {
+        if (id !== oturum) return;
+        if (cb(Math.floor(video.currentTime * FPS + 1e-3)) !== false) requestAnimationFrame(adim);
+      };
+      requestAnimationFrame(adim);
+    }
+  };
+
+  // Videoyu kare 0'a sarar; kare 0 gerçekten gösterilebilir olunca çözülür.
+  const hazirla = (v) => new Promise((coz) => {
+    v.pause();
+    const bitti = () => (v.readyState >= 2 && !v.seeking ? coz() : v.addEventListener('seeked', bitti, {once: true}));
+    if (v.currentTime !== 0) v.currentTime = 0;
+    bitti();
+  });
+
+  const baslat = () => {
+    oturum++;
+    const id = oturum;
+    asama = 'bekleme';
+    acBtn.disabled = true;
+    Promise.all([hazirla(k2), hazirla(k3)]).then(() => {
+      if (id === oturum && asama === 'bekleme') acBtn.disabled = false;
+    });
+    k1.currentTime = 0;
+    goster(k1);
+    k1.play().catch(() => {});
+    kareIzle(k1, (kare) => {
+      if (asama === 'bekleme') durum(`Klip 1 · bekleme döngüsü · kare ${kare}`);
+      return asama === 'bekleme' || asama === 'aciliyor';
+    }, id);
+  };
+
+  const acilisaGec = (id) => {
+    // Klip 2 duraklatılmış hâlde kare 0'da = Klip 1'in dinlenme görüntüsü.
+    // Önce onu görünür yap (görüntü değişmez), sonra oynat; Klip 1'i arkada durdur.
+    asama = 'acilis';
+    goster(k2);
+    k1.pause();
+    k2.play().catch(() => {});
+    kareIzle(k2, (kare) => {
+      durum(`Klip 2 · açılış · kare ${kare}`);
+      if (kare >= 59) { aciga(id); return false; }
+      return true;
+    }, id);
+    // rVFC olmayan tarayıcılar için yedek
+    k2.onended = () => { if (id === oturum && asama === 'acilis') aciga(id); };
+  };
+
+  const aciga = (id) => {
+    // Klip 3 kare 0 = Klip 2 kare 59; aynı görüntü üstüne geçilir, döngü başlar.
+    if (asama !== 'acilis') return;
+    asama = 'acik';
+    goster(k3);
+    k3.play().catch(() => {});
+    k2.pause();
+    kareIzle(k3, (kare) => { durum(`Klip 3 · açık döngü · kare ${kare}`); return true; }, id);
+  };
+
+  acBtn.addEventListener('click', () => {
+    if (asama !== 'bekleme') return;
+    asama = 'aciliyor';
+    acBtn.disabled = true;
+    const id = oturum;
+    durum('Klip 1 dinlenme anı bekleniyor…');
+    kareIzle(k1, (kare) => {
+      if (asama !== 'aciliyor') return false;
+      if (dinlenmede(kare)) { acilisaGec(id); return false; }
+      durum(`Klip 1 sallanıyor (kare ${kare}) · dinlenme anı bekleniyor…`);
+      return true;
+    }, id);
+  });
+
+  bastanBtn.addEventListener('click', baslat);
+
+  let yuklenen = 0;
+  for (const v of [k1, k2, k3]) {
+    const tamam = () => { if (++yuklenen === 3) { baslat(); } };
+    if (v.readyState >= 2) tamam(); else v.addEventListener('loadeddata', tamam, {once: true});
+    v.addEventListener('error', () => durum(`Video yüklenemedi: ${v.getAttribute('src')} (önizleme.html out/ klasöründeki videolarla aynı yerde olmalı)`));
+  }
+})();
+</script>
+</body>
+</html>
