@@ -65,7 +65,8 @@ async function baglam(o = {}) {
   await ctx.route(/\/contact(\?|#|$)/, async (r) => {
     if (r.request().method() !== 'POST') return r.continue();
     const govde = r.request().postData() || '';
-    formlar.push({ gezinme: r.request().isNavigationRequest(), eposta: (govde.match(/contact\[email\]"\r\n\r\n([^\r]*)/) || govde.match(/contact%5Bemail%5D=([^&]*)/) || [])[1], etiket: (govde.match(/contact\[tags\]"\r\n\r\n([^\r]*)/) || govde.match(/contact%5Btags%5D=([^&]*)/) || [])[1], form_type: /customer/.test(govde), jeton: (govde.match(/h-captcha-response"\r\n\r\n([^\r]*)/) || govde.match(/h-captcha-response=([^&]*)/) || [])[1] || null });
+    const coz = (x) => (x == null ? x : decodeURIComponent(String(x).replace(/\+/g, ' ')));
+    formlar.push({ gezinme: r.request().isNavigationRequest(), eposta: coz((govde.match(/contact\[email\]"\r\n\r\n([^\r]*)/) || govde.match(/contact%5Bemail%5D=([^&]*)/) || [])[1]), etiket: coz((govde.match(/contact\[tags\]"\r\n\r\n([^\r]*)/) || govde.match(/contact%5Btags%5D=([^&]*)/) || [])[1]), form_type: /customer/.test(govde), jeton: (govde.match(/h-captcha-response"\r\n\r\n([^\r]*)/) || govde.match(/h-captcha-response=([^&]*)/) || [])[1] || null });
     const kip = o.form || 'basari';
     if (kip === 'challenge') return r.fulfill({ status: 302, headers: { location: SITE + '/challenge' } });
     return r.fulfill({ status: 302, headers: { location: SITE + '/?customer_posted=true' } });
@@ -344,9 +345,14 @@ if (secim.includes('h')) {
   const { ctx, p } = await baglam({ kuponKapali: true });
   await p.goto(adres('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
   const ayar = await p.evaluate(() => ({ js: document.querySelector('script[src*="jfclub-popup.js"]').src, css: JSON.parse(document.getElementById('jfclub-ayar').textContent).css, sablon: document.getElementById('jfclub-sablon').innerHTML.length + document.getElementById('jfclub-ayar').outerHTML.length }));
-  const olc = async (u, kodlama) => { const r = await ctx.request.get(u, { headers: { 'accept-encoding': kodlama } }); return { durum: r.status(), kodlama: r.headers()['content-encoding'] || 'yok', uzunluk: r.headers()['content-length'] || null, ham: (await r.body()).length }; };
+  // Aktarım boyutu curl ile (Playwright ve fetch sıkıştırmayı kendileri açar)
+  const { execFileSync } = await import('node:child_process');
+  const olc = (u, kodlama) => {
+    const c = execFileSync('curl', ['-s', '-o', '/dev/null', '-H', `accept-encoding: ${kodlama}`, '-w', '%{http_code} %{size_download} %{content_type}', new URL(u, SITE).href]).toString().split(' ');
+    return { durum: +c[0], bayt: +c[1], tur: c[2] };
+  };
   for (const [ad, u] of [['jfclub-popup.js', ayar.js], ['jfclub-popup.css', ayar.css]]) {
-    console.log(`h) ${ad}: br ${JSON.stringify(await olc(u, 'br'))} · gzip ${JSON.stringify(await olc(u, 'gzip'))} · sıkıştırmasız ${JSON.stringify(await olc(u, 'identity'))}`);
+    console.log(`h) ${ad}: CDN'den sıkıştırmasız ${JSON.stringify(olc(u, 'identity'))} · gzip ${JSON.stringify(olc(u, 'gzip'))} · br ${JSON.stringify(olc(u, 'br'))}`);
   }
   console.log(`h) sayfaya eklenen satır içi işaretleme (ayar + şablon): ${ayar.sablon} karakter`);
   await ctx.close();
