@@ -6,7 +6,7 @@ Renk kodları onaylı görsellerden ölçüldü (`plan.json`, `renk_hex`). Edit�
 
 | Harf | Varyant adı | Görseldeki renk | Not |
 |---|---|---|---|
-| O | Mavi | Gri-mavi #5F7286 | Antrasit harflerle neredeyse aynı (Antrasit F: #5F7386). Müşteri "Mavi O" seçip gri patch alır. Görsel Rakam 0 varyantının fotoğrafı |
+| O | Mavi | ~~Gri-mavi #5F7286~~ → Mavi #80C1E9 | **2026-11-16 çözüldü.** Editör görseli yanlışlıkla Janti Rakam 0 varyantında duran koyu gri O fotoğrafından üretilmişti. Mağazadaki varyant fotoğrafı (açık mavi O) doğru; editör görseli, kontur, genişlik (4,32 cm) ve renk ona göre güncellendi |
 
 ## Aynı ad altında iki farklı ton
 
