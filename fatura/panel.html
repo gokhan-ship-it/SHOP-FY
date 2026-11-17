@@ -113,7 +113,7 @@ details ul { margin: 8px 0 4px; padding-left: 18px; font-size: 14px; }
       <h2>Elle kestiğim siparişler</h2>
       <p class="ipucu">Paraşüt'te elle fatura kestiğiniz siparişleri buraya yazın, program onlara tekrar kesmesin.</p>
       <div class="satir">
-        <label style="flex:1">Sipariş no<input id="elle-metin" placeholder="13669 veya 13700-13705"></label>
+        <label style="flex:1">Sipariş no<input id="elle-metin" placeholder="14190 veya 14190-14197"></label>
         <button id="elle-dugme">Bildir</button>
       </div>
       <p class="ipucu" id="elle-sonuc"></p>
@@ -375,7 +375,7 @@ function yeniUrunleriGoster(liste) {
       el('option', { value: '' }, '— seçin —'),
       Object.entries(kategoriler).map(([k, ad]) => el('option', u.oneri === k ? { value: k, selected: '' } : { value: k }, ad)));
     tb.append(el('tr', {},
-      el('td', {}, u.urun, ' ', u.siparisteGoruldu ? el('span', { class: 'rozet sari' }, 'siparişte var') : null, u.durum !== 'ACTIVE' ? el('span', { class: 'rozet' }, 'taslak') : null),
+      el('td', {}, u.urun, ' ', u.siparisteGoruldu ? el('span', { class: 'rozet sari' }, 'siparişte var') : null, u.durum === 'YOK' ? el('span', { class: 'rozet' }, 'Shopify\'da silinmiş') : u.durum !== 'ACTIVE' ? el('span', { class: 'rozet' }, 'taslak') : null),
       el('td', {}, u.secenek || '—'),
       el('td', { class: 'sayi' }, Number(u.fiyat).toLocaleString('tr-TR') + ' TL'),
       el('td', {}, sec, u.oneri ? el('div', { class: 'ipucu' }, `Öneri: ${u.oneriNedeni}`) : null)));

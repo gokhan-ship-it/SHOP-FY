@@ -99,7 +99,7 @@ async function katalog(env, token) {
     const veri = await sorgu(env, token,
       `query($after: String) { products(first: 50, after: $after) {
          pageInfo { hasNextPage endCursor }
-         nodes { legacyResourceId title status variants(first: 50) { nodes { legacyResourceId title price } } } } }`,
+         nodes { legacyResourceId title status tags variants(first: 50) { nodes { legacyResourceId title price } } } } }`,
       { after: imlec });
     hepsi.push(...veri.products.nodes);
     if (!veri.products.pageInfo.hasNextPage) break;

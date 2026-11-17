@@ -21,10 +21,10 @@ function ortamKur() {
 }
 
 const P = (a) => ({ shopMoney: { amount: a } });
-const kalem = (name, vid, orig, indirim = []) => ({ name, quantity: 1, currentQuantity: 1, variant: { legacyResourceId: vid }, originalTotalSet: P(orig), discountAllocations: indirim.map((x) => ({ allocatedAmountSet: P(x) })) });
+const kalem = (name, vid, orig, indirim = []) => ({ name, quantity: 1, currentQuantity: 1, variant: vid ? { legacyResourceId: vid } : null, originalTotalSet: P(orig), discountAllocations: indirim.map((x) => ({ allocatedAmountSet: P(x) })) });
 const siparis = (name, tarih, toplam, kargo, kalemler, adres = {}, ek = {}) => ({
   name, createdAt: tarih, cancelledAt: null, test: false, displayFinancialStatus: 'PAID', currencyCode: 'TRY',
-  email: `${name.slice(1)}@ornek.test`, phone: null, totalPriceSet: P(toplam), currentTotalPriceSet: P(toplam), totalRefundedSet: P('0.0'),
+  email: `${name.replace(/^#/, '')}@ornek.test`, phone: null, totalPriceSet: P(toplam), currentTotalPriceSet: P(toplam), totalRefundedSet: P('0.0'),
   billingAddress: { firstName: 'Deneme', lastName: 'Müşteri', address1: 'Örnek Mah.', city: 'Adana', province: 'Gaziantep', countryCodeV2: 'TR', ...adres },
   shippingAddress: { countryCodeV2: 'TR' }, shippingLines: { nodes: [{ title: 'Kargo', discountedPriceSet: P(kargo) }] }, lineItems: { nodes: kalemler }, ...ek,
 });
@@ -35,6 +35,9 @@ const SIPARISLER = [
   siparis('#13569', '2026-09-23T12:27:32Z', '3348.5', '0.0', [kalem('Luna', '52718585610560', '2299.0', ['1149.5', '149.35']), kalem('Aurora', '52718870888768', '2699.0', ['0.0', '350.65'])], { city: 'İstanbul', province: '', address1: 'Güzeltepe mah Eyüpsulyan apt' }),
   siparis('#13820', '2026-09-23T12:27:40Z', '5898.5', '0.0', [kalem('Infinity Glow 925', '52719080243520', '3199.0', ['1599.5', '125.0']), kalem('Vantablack 925', '52718561231168', '4799.0', ['0.0', '375.0'])]),
   siparis('#13700', '2026-09-23T10:00:00Z', '2898.0', '0.0', [kalem('Astor + Chloe Couple', '51270168052032', '2898.0')]),
+  siparis('#13703', '2026-09-23T10:30:00Z', '2399.0', '0.0', [kalem('Eski Model - 925 Ayar Gümüş', null, '2399.0')]),
+  siparis('#13704', '2026-09-23T10:40:00Z', '5097.0', '99.0', [kalem('Luna', '52718585610560', '2299.0'), kalem('Aurora', '52718870888768', '2699.0')]),
+  siparis('T714113', '2026-09-23T11:00:00Z', '1898.0', '0.0', [kalem('Luna', '52718585610560', '1898.0')]),
   siparis('#13601', '2026-09-23T09:00:00Z', '1999.0', '0.0', [kalem('Klasik', '47986362155328', '1999.0')], { city: 'Ankara', address1: 'Ankara' }),
   siparis('#13602', '2026-09-23T08:00:00Z', '2399.0', '0.0', [kalem('Noir', '52718833467712', '2399.0')], {}, { displayFinancialStatus: 'PARTIALLY_REFUNDED' }),
   siparis('#13539', '2026-09-19T08:00:00Z', '2399.0', '0.0', [kalem('Noir', '52718833467712', '2399.0')]),
@@ -103,14 +106,20 @@ test('plan: tutarlar, atlamalar, il/ilçe', async () => {
   const hazir = Object.fromEntries(plan.hazir.map((p) => [p.no, p]));
   const atlanan = Object.fromEntries(plan.atlanan.map((a) => [a.no, a]));
 
-  assert.deepStrictEqual(Object.keys(hazir).sort(), ['#13569', '#13572', '#13601']);
+  assert.deepStrictEqual(Object.keys(hazir).sort(), ['#13569', '#13572', '#13601', '#13700', '#13704', '#13820', 'T714113']);
+  // Bileklik + kolye + kargo: kargo bilekliğe eklenir, toplam tutar
+  assert.strictEqual(hazir['#13704'].tutar, 509700);
   assert.deepStrictEqual(hazir['#13572'].satirlar.map((x) => x.birim), ['79.0833', '1803.1000']); // 177 no'lu faturayla aynı
   assert.strictEqual(hazir['#13572'].musteri.il, 'Kocaeli');
   assert.strictEqual(hazir['#13572'].musteri.ilce, 'Başiskele');
   assert.strictEqual(hazir['#13569'].musteri.ilce, 'Eyüpsultan');
   assert.deepStrictEqual(hazir['#13601'].musteri.eksik, ['ilçe']);
-  assert.match(atlanan['#13820'].sebep, /1 kuruş/);
-  assert.strictEqual(atlanan['#13700'].tur, 'yeni-urun');
+  // #13820: küsuratlar denk geliyor → %20'lik satırlar 2 ondalıkla (184,33), toplam kuruşu kuruşuna
+  assert.deepStrictEqual(hazir['#13820'].satirlar.map((x) => x.birim), ['184.3300', '4202.8000', '61.4400', '1400.7700']);
+  assert.strictEqual(hazir['#13820'].tutar, 589850);
+  // Shopify'da seçeneği silinmiş ürün: adıyla "yeni ürün" olarak gelir
+  assert.strictEqual(atlanan['#13703'].tur, 'yeni-urun');
+  assert.deepStrictEqual(atlanan['#13703'].bilinmeyenler.map((x) => x.anahtar), ['ad:eski model - 925 ayar gümüş']);
   assert.match(atlanan['#13602'].sebep, /iade/);
   assert.strictEqual(atlanan['#13539'].tur, 'once');
   assert.strictEqual(kayit.fatura.length, 0, 'plan hiçbir şey yazmamalı');
@@ -120,9 +129,9 @@ test('uygula: yazar, kaydeder, tekrar kesmez; e-posta yer tutucu', async () => {
   const dir = ortamKur();
   const kayit = { musteri: [], fatura: [] };
   const { M, b } = await hazirla(dir, kayit);
-  const siparisler = await M.siparisleriGetir(b, { siparisler: ['#13572', '#13569'] });
+  const siparisler = await M.siparisleriGetir(b, { siparisler: ['#13572', '#13569', '#13820', 'T714113'] });
   const sonuc = await M.uygula(b, await M.planla(b, siparisler, 500));
-  assert.strictEqual(sonuc.tamam.length, 2);
+  assert.strictEqual(sonuc.tamam.length, 4);
   assert.ok(sonuc.tamam.every((x) => !x.uyari), 'Paraşüt toplamı Shopify ile aynı olmalı');
   assert.strictEqual(kayit.musteri[0].email, 'siparis-13572@example.com');
   assert.strictEqual(kayit.musteri[0].city, 'Kocaeli');
@@ -169,14 +178,16 @@ test('güvenlik: resmileştirme ve güncelleme engelli', async () => {
 test('yeni ürün: eşlenmemişleri bulur, kategori önerir, atama kaydeder', async () => {
   const dir = ortamKur();
   const e = JSON.parse(fs.readFileSync(path.join(dir, 'urun-kodlari.json'), 'utf8'));
-  delete e['67749162910016']; // White çelik "yeni" olsun
+  // Test için bu ürünler eşlenmemiş sayılsın
+  for (const v of ['67749162910016', '51270168052032', '51270251348288', '67663049392448', '67782524961088']) delete e[v];
   fs.writeFileSync(path.join(dir, 'urun-kodlari.json'), JSON.stringify(e));
   const { M, b } = await hazirla(dir, { musteri: [], fatura: [] });
   const yeni = Object.fromEntries((await M.yeniUrunleriBul(b)).map((u) => [u.urun + (u.secenek ? ' / ' + u.secenek : ''), u]));
   assert.deepStrictEqual(Object.keys(yeni).sort(), ['Astor + Chloe Couple Zaman Kapsülü', 'Luna + Aurora Couple Zaman Kapsülü / 316L Cerrahi Çelik', 'Noir + Chloe Charm Couple Zaman Kapsülü', 'White / 316L Çelik']);
   assert.strictEqual(yeni['Astor + Chloe Couple Zaman Kapsülü'].oneri, 'BLK');
   assert.strictEqual(yeni['Noir + Chloe Charm Couple Zaman Kapsülü'].oneri, 'BLK');
-  assert.strictEqual(yeni['Luna + Aurora Couple Zaman Kapsülü / 316L Cerrahi Çelik'].oneri, 'ELLE');
+  // Karışık set (bileklik + kolye): hesap aynı, ilk ürünün kartı önerilir
+  assert.strictEqual(yeni['Luna + Aurora Couple Zaman Kapsülü / 316L Cerrahi Çelik'].oneri, 'BLK');
   assert.strictEqual(yeni['White / 316L Çelik'].oneri, 'KLY');
   // Taslak ürün siparişte görüldüyse listelenir
   assert.ok((await M.yeniUrunleriBul(b, new Set(['67782524961088']))).some((u) => u.vid === '67782524961088'));
@@ -189,4 +200,23 @@ test('yeni ürün: eşlenmemişleri bulur, kategori önerir, atama kaydeder', as
   const plan = await M.planla(b, await M.siparisleriGetir(b, { siparisler: ['#13700'] }), 500);
   assert.strictEqual(plan.hazir.length, 1);
   assert.deepStrictEqual(plan.hazir[0].kategoriler, ['Bileklik']);
+
+  // Silinmiş seçenek: siparişte görülür, listede çıkar, adıyla atanır, sonra plana girer
+  const p2 = await M.planla(b, await M.siparisleriGetir(b, { siparisler: ['#13703'] }), 500);
+  const gorulen = new Map(p2.atlanan.flatMap((a) => (a.bilinmeyenler || []).map((x) => [x.anahtar, x])));
+  const silinmis = (await M.yeniUrunleriBul(b, gorulen)).find((u) => u.durum === 'YOK');
+  assert.strictEqual(silinmis.urun, 'Eski Model - 925 Ayar Gümüş');
+  assert.strictEqual(silinmis.fiyat, '2399.00');
+  M.kategoriAta([{ vid: silinmis.vid, kategori: 'BLK', ad: silinmis.urun }]);
+  const p3 = await M.planla(b, await M.siparisleriGetir(b, { siparisler: ['#13703'] }), 500);
+  assert.strictEqual(p3.hazir.length, 1);
+});
+
+test('sipariş no: "#" ve "T7" ön ekleri', () => {
+  const dir = ortamKur();
+  const M = require(path.join(dir, 'motor.js'));
+  assert.deepStrictEqual(M.siparisListesiCoz('14111-14114, #13565, T714200'), ['#14111', '#14112', 'T714113', 'T714114', '#13565', 'T714200']);
+  assert.strictEqual(M.siparisNo('T714113'), 14113);
+  assert.strictEqual(M.siparisNo('#14112'), 14112);
+  assert.ok(M.siparisNo('T714113') > M.siparisNo('#14112'));
 });

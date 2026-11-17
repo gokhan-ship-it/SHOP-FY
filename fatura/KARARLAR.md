@@ -46,9 +46,13 @@ CLAUDE.md'deki kurallara ek olarak kullanıcının verdiği cevaplar:
     - İl/ilçe: `adres.js` + `il-ilce.json` (81 il, 973 ilçe, posta kodu, il-içi tekil mahalle). Bulunamazsa uyarı, fatura yine oluşur.
     - Güncelleme: İndirilenler'deki en yeni SHOP-FY klasöründen program dosyaları kopyalanır, `urun-kodlari.json` birleştirilir (kullanıcı ataması korunur), kayıt dosyaları dokunulmaz.
     - Güvenlik: 127.0.0.1, oturum anahtarı, Host kontrolü; yazma sadece önizlenmiş + onaylanmış plan için (30 dk geçerli, tek kullanımlık).
+28. **Küsuratlı siparişler artık kesiliyor (17.11.2026, kullanıcı: "elle kesilecek fatura bırakıyor bana böyle bir şey istemiyorum"):** #13820 tipi 1 kuruş kayması öngörülünce sipariş atlanmaz; o faturada %20'lik satırların birim fiyatı 4 yerine 2 ondalıkla yazılır (184,3333 → 184,33). Satır KDV'si = round(matrah_2ondalık × 0,20) zaten CLAUDE.md hesap sırasının 3. adımı, gümüş satırı değişmez; toplam Shopify'a kuruşu kuruşuna eşit. Diğer siparişler eskisi gibi 4 ondalık. Kesimden sonra Paraşüt toplamı yine Shopify ile karşılaştırılır.
+29. **Sipariş no ön eki (17.11.2026):** Shopify #14112'den sonra "T714113" biçimine geçti (numara aynı sırayla devam ediyor, ön ek "T7", "#" yok). `siparisNo` ön eki atar; "Elle kestiğim siparişler" kutusu 14190, 14190-14197 veya T714190 kabul eder.
+30. **Yeni ürünler (17.11.2026):** Prizma, Prizma Couple, Fox, Fox Couple ("zaman kapsülü bileklik" etiketi) → BLK. Aynı kategoriden setler (Fox+Chloe, Prizma+Chloe, Astor+Chloe, Nova+Chloe, Noir+Chloe Charm) → BLK. Eşleme 106 varyant.
+31. **Karışık couple setleri ve kargo (17.11.2026):** Bileklik, kolye ve charm'ın fatura hesabı birebir aynı (işçilik %20 + gümüş %0, aynı oran); fark sadece Paraşüt ürün kartı. Kullanıcı Paraşüt'te model/kategori takibi yapmıyor ve elle fatura istemiyor → karışık setler ilk ürünün kartına yazılır: Luna+Aurora, Kral+Classic Ocean Blue, Kral+Infinity Charm, Luna+Infinity Charm → BLK; White+Luna, Rose Pink+Nova, Rose Pink+Prizma, Gold+Nova, Vantablack+Vera, Vantablack+Taşlı Kilit, Lumin+Charm → KLY. Birden fazla kategorili siparişte kargo aynı gerekçeyle ilk gruba (bileklik → kolye → charm) eklenir; Klasik Zaman Kapsülü başka grupla birlikteyse kargo yine atlanır.
+32. **Silinmiş ürünler (17.11.2026):** Shopify'da seçeneği silinmiş ürün siparişte seçenek numarası olmadan gelir; artık "Yeni ürün" kutusunda adıyla çıkar ve adıyla (`ad:...`) eşlenir. Öneri Shopify etiketlerinden de ("zaman kapsülü bileklik", "Kolye") çıkarılır.
 
 Henüz cevaplanmadı (bu siparişler şimdilik otomatik atlanıp raporlanıyor):
 - Kısmi iade / sonradan değiştirilmiş sipariş
-- Hazır couple setleri ("Luna + Aurora" gibi tek varyantta iki kategori)
-- Hem bileklik hem kolye olup kargo ücreti alınmış sipariş (kargo hangi gruba?)
+- Klasik Zaman Kapsülü + başka ürün + kargo ücreti olan sipariş
 - CLAUDE.md'deki belirsiz ürünler (hediye kutusu, ek paket, event, künye)

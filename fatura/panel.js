@@ -189,7 +189,7 @@ async function api(yol, govde) {
         const siparisler = await M.siparisleriGetir(b, { bas: govde.bas, bit: govde.bit }, adim);
         adim(`${siparisler.length} sipariş okundu, fatura planı hazırlanıyor`);
         const plan = await M.planla(b, siparisler, oran, adim);
-        const gorulen = new Set(plan.atlanan.flatMap((a) => a.vidler || []));
+        const gorulen = new Map(plan.atlanan.flatMap((a) => (a.bilinmeyenler || []).map((x) => [x.anahtar, x])));
         adim('Yeni ürünler kontrol ediliyor');
         const yeniUrunler = await M.yeniUrunleriBul(b, gorulen);
         sonPlan = { id: crypto.randomBytes(8).toString('hex'), zaman: Date.now(), plan, kullanildi: false, aralik: { bas: govde.bas, bit: govde.bit } };
@@ -213,7 +213,7 @@ async function api(yol, govde) {
           adim(`${i} / ${n} — ${no}: ${d === 'tamam' ? 'tamam' : d.toUpperCase()} (${mesaj})`);
         });
         M.ayarYaz({ sonOran: plan.oran / 100, sonCalisma: new Date().toISOString() });
-        const rapor = M.raporYaz({ kaynak: aralik, oran: plan.oran / 100, ...sonuc, atlanan: plan.atlanan.map(({ vidler, ...a }) => a) });
+        const rapor = M.raporYaz({ kaynak: aralik, oran: plan.oran / 100, ...sonuc, atlanan: plan.atlanan.map(({ bilinmeyenler, ...a }) => a) });
         return { ...sonuc, rapor: path.basename(rapor) };
       });
     }

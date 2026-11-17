@@ -68,4 +68,4 @@ function kendiniSina() {
   }
 }
 
-module.exports = { tlKurus, oranOku, kurusYaz, onbindeYaz, tlGoster, ozelMatrahAyir, tamKdvli, kendiniSina };
+module.exports = { yuvarlaBol, tlKurus, oranOku, kurusYaz, onbindeYaz, tlGoster, ozelMatrahAyir, tamKdvli, kendiniSina };

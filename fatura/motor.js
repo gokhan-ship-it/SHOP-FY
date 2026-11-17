@@ -39,7 +39,17 @@ const BASLANGIC_SIPARIS = 13540;
 const BASLANGIC_TARIHI = '2026-09-19';
 const EN_UZUN_ARALIK_GUN = 31;
 
-const siparisNo = (ad) => Number(String(ad).replace(/\D/g, ''));
+// Shopify sipariş adları #14112'ye kadar "#14112", sonrasında "T714113" (ön ek "T7").
+// Numara aynı sırayla devam ediyor; siparisNo ön eki atıp sıra numarasını verir.
+const ON_EK_GECIS = 14113;
+const siparisNo = (ad) => {
+  const m = String(ad).trim().match(/^(?:#|T7)?(\d+)$/i);
+  return m ? Number(m[1]) : Number(String(ad).replace(/\D/g, ''));
+};
+const siparisAdi = (n) => (n >= ON_EK_GECIS ? `T7${n}` : `#${n}`);
+// Shopify'da seçeneği silinmiş ürünler siparişte seçenek numarası olmadan gelir;
+// bunlar ürün adıyla eşlenir ("ad:astor - 316l cerrahi çelik").
+const adAnahtari = (ad) => 'ad:' + String(ad).trim().replace(/\s+/g, ' ').toLocaleLowerCase('tr-TR');
 const turkiyeTarihi = (iso) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(new Date(iso));
 const bugun = () => turkiyeTarihi(new Date().toISOString());
 const gunEkle = (t, n) => turkiyeTarihi(new Date(Date.parse(t + 'T12:00:00+03:00') + n * 86400000).toISOString());
@@ -66,15 +76,15 @@ const epostaAnahtari = (e) => crypto.createHash('sha256').update(String(e).trim(
 const takiliKayitlar = (kayit) => Object.entries(kayit).filter(([, v]) => v.durum === 'isleniyor')
   .map(([no, v]) => ({ no, zaman: v.zaman, not: v.not || 'fatura oluşup oluşmadığı bilinmiyor' }));
 
-// "13565,13566" veya "13577-13584" → ['#13565', ...]
+// "13565,13566", "14190-14197" veya "T714190" → ['#13565', 'T714190', ...]
 function siparisListesiCoz(metin) {
   const liste = [];
-  for (const parca of String(metin || '').split(',').map((x) => x.trim().replace(/#/g, '')).filter(Boolean)) {
+  for (const parca of String(metin || '').split(',').map((x) => x.trim().replace(/#/g, '').replace(/T7(?=\d{5})/gi, '')).filter(Boolean)) {
     const m = parca.match(/^(\d+)(?:\s*-\s*(\d+))?$/);
-    if (!m) hata(`Anlaşılmadı: "${parca}". Örnek: 13565,13566 veya 13577-13584`);
+    if (!m) hata(`Anlaşılmadı: "${parca}". Örnek: 14190,14191 veya 14190-14197`);
     const bas = Number(m[1]), bit = Number(m[2] || m[1]);
     if (bit < bas || bit - bas > 500) hata(`Aralık hatalı: ${parca}`);
-    for (let n = bas; n <= bit; n++) liste.push(`#${n}`);
+    for (let n = bas; n <= bit; n++) liste.push(siparisAdi(n));
   }
   if (!liste.length) hata('Sipariş numarası yazılmadı.');
   return liste;
@@ -158,29 +168,38 @@ function siparisiHesapla(s, eslesme, oran) {
 
   const gruplar = {};
   const bilinmeyen = [];
-  const bilinmeyenVid = [];
   const elle = [];
   for (const k of s.lineItems.nodes) {
     if (k.currentQuantity !== k.quantity) return { atla: `sipariş sonradan değiştirilmiş (${k.name})` };
     const vid = k.variant && k.variant.legacyResourceId;
-    const kat = vid && eslesme[vid];
+    const kat = (vid && eslesme[vid]) || eslesme[adAnahtari(k.name)];
     if (kat === 'ELLE') { elle.push(k.name); continue; }
-    if (!kat) { bilinmeyen.push(k.name); if (vid) bilinmeyenVid.push(vid); continue; }
+    if (!kat) {
+      const birim = k.quantity ? H.kurusYaz(Math.round(tutar(k.originalTotalSet) / k.quantity)) : '0.00';
+      bilinmeyen.push({ anahtar: vid || adAnahtari(k.name), ad: k.name, fiyat: birim, varyantYok: !vid });
+      continue;
+    }
     const net = tutar(k.originalTotalSet) - k.discountAllocations.reduce((t, d) => t + tutar(d.allocatedAmountSet), 0);
     if (!gruplar[kat]) gruplar[kat] = { kurus: 0, adet: 0, urunler: [] };
     gruplar[kat].kurus += net;
     gruplar[kat].adet += k.quantity;
     gruplar[kat].urunler.push(k.name);
   }
-  if (bilinmeyen.length) return { atla: `eşleme tablosunda olmayan ürün: ${bilinmeyen.join(', ')}`, bilinmeyen: true, vidler: bilinmeyenVid };
+  if (bilinmeyen.length) return { atla: `kategorisi seçilmemiş ürün: ${bilinmeyen.map((x) => x.ad).join(', ')}`, bilinmeyenler: bilinmeyen };
   if (elle.length) return { atla: `elle kesilecek ürün: ${elle.join(', ')}` };
 
   const kargo = s.shippingLines.nodes.reduce((t, k) => t + tutar(k.discountedPriceSet), 0);
   const kategoriler = Object.keys(gruplar);
   if (kargo > 0) {
-    if (kategoriler.length > 1) return { atla: `kargo (${H.tlGoster(kargo)} TL) birden fazla kategoriye nasıl dağıtılacak belli değil` };
-    gruplar[kategoriler[0]].kurus += kargo;
-    gruplar[kategoriler[0]].kargo = kargo;
+    // Bileklik/kolye/charm'ın hesabı aynı (işçilik %20 + gümüş %0): kargo ilkine eklenir.
+    // Klasik (tamamı %20) başka bir grupla birlikteyse kargonun vergisi değişir → atlanır.
+    let hedef = kategoriler[0];
+    if (kategoriler.length > 1) {
+      if (kategoriler.includes('KZK')) return { atla: `kargo (${H.tlGoster(kargo)} TL) Klasik ile diğer ürünler arasında nasıl dağıtılacak belli değil` };
+      hedef = ['BLK', 'KLY', 'CRM'].find((k) => gruplar[k]);
+    }
+    gruplar[hedef].kurus += kargo;
+    gruplar[hedef].kargo = kargo;
   }
 
   const siparisToplam = tutar(s.currentTotalPriceSet);
@@ -203,18 +222,25 @@ function siparisiHesapla(s, eslesme, oran) {
   }
 
   // Paraşüt ara toplamı satır birim fiyatlarını yuvarlamadan toplayıp sonra yuvarlıyor
-  // (#13820: 61,4417 + 184,3333 = 245,775 → 245,78; satır satır 245,77). İki işçilik
-  // satırının küsuratları böyle denk gelirse fatura 1 kuruş şaşar → sipariş atlanır.
+  // (#13820: 61,4417 + 184,3333 = 245,775 → 245,78; satır satır 245,77). Küsuratlar böyle
+  // denk gelirse %20'lik satırların birim fiyatı 2 ondalıkla yazılır (184,33). Bu durumda
+  // satır KDV'si = round(matrah_2ondalık × 0,20) — CLAUDE.md hesap sırasının 3. adımı;
+  // ara toplam ve KDV kuruşu kuruşuna aynı kalır.
+  let ikiOndalik = false;
   const yuvarlanmamisNet = Math.floor((2 * satirlar.reduce((t, x) => t + x.birimOnbinde, 0) + 100) / 200);
   if (yuvarlanmamisNet !== satirlar.reduce((t, x) => t + x.netKurus, 0)) {
-    return { atla: 'Paraşüt toplamı 1 kuruş farklı çıkar (iki işçilik satırının küsuratı denk geliyor), elle kesin' };
+    for (const x of satirlar) if (x.kdv) x.birimOnbinde = x.netKurus * 100;
+    ikiOndalik = true;
+  }
+  if (satirlar.some((x) => x.kdv && H.yuvarlaBol(x.birimOnbinde * x.kdv, 10000) !== x.kdvKurus)) {
+    return { atla: 'Paraşüt KDV yuvarlaması 1 kuruş farklı çıkabilir' };
   }
 
   const faturaToplam = satirlar.reduce((t, x) => t + x.netKurus + x.kdvKurus, 0);
   if (faturaToplam !== siparisToplam) {
     return { atla: `fatura toplamı (${H.tlGoster(faturaToplam)}) sipariş tutarını (${H.tlGoster(siparisToplam)}) tutmuyor` };
   }
-  return { gruplar, satirlar, kargo, siparisToplam, faturaToplam, tarih: turkiyeTarihi(s.createdAt) };
+  return { gruplar, satirlar, kargo, siparisToplam, faturaToplam, ikiOndalik, tarih: turkiyeTarihi(s.createdAt) };
 }
 
 function faturaJson(s, h, urunId, musteriId) {
@@ -322,7 +348,7 @@ async function planla(b, siparisler, oran, ilerleme = () => {}) {
     if (aciklamalar.some((a) => noDeseni.test(a))) { atla('Paraşüt\'te bu sipariş no ile fatura var', { tur: 'kesildi' }); continue; }
 
     const h = siparisiHesapla(s, eslesme, oran);
-    if (h.atla) { atla(h.atla, h.bilinmeyen ? { tur: 'yeni-urun', vidler: h.vidler } : { tur: 'kontrol' }); continue; }
+    if (h.atla) { atla(h.atla, h.bilinmeyenler ? { tur: 'yeni-urun', bilinmeyenler: h.bilinmeyenler } : { tur: 'kontrol' }); continue; }
     if (!s.email) { atla('siparişte e-posta yok, müşteri eşleştirilemez', { tur: 'kontrol' }); continue; }
 
     const musteriAnahtar = epostaAnahtari(s.email);
@@ -361,52 +387,92 @@ const KATEGORI_SECENEKLERI = {
   ELLE: 'Program kesmesin, elle keseceğim',
 };
 
+// Shopify etiketinden / ürün adından kategori tahmini ("zaman kapsülü bileklik" → BLK).
+function adEtiketTahmini(urun) {
+  const metin = [urun.title, ...(urun.tags || [])].join(' | ').toLocaleLowerCase('tr-TR');
+  if (/klasik zaman kaps/.test(metin)) return 'KZK';
+  if (/bileklik|zincir/.test(metin)) return 'BLK';
+  if (/kolye/.test(metin)) return 'KLY';
+  if (/charm/.test(metin)) return 'CRM';
+  return null;
+}
+
 // Ürün adından kategori önerisi. Sadece öneri; son karar kullanıcının.
 function kategoriOner(urun, katalogListesi, eslesme) {
   const ad = urun.title;
+  const kucukHarf = (x) => x.trim().toLocaleLowerCase('tr-TR');
+  const urunKategorisi = (p) => {
+    const kats = new Set(p.variants.nodes.map((v) => eslesme[v.legacyResourceId]).filter((k) => k && k !== 'ELLE'));
+    if (kats.size === 1) return [...kats][0];
+    return kats.size === 0 ? adEtiketTahmini(p) : null;
+  };
+  // "Kral" → "Kral Zincir", "Classic Ocean Blue" → "Ocean Blue"
   const urununKategorisi = (baslik) => {
-    const bulunan = katalogListesi.find((p) => p.title.trim().toLocaleLowerCase('tr-TR') === baslik.trim().toLocaleLowerCase('tr-TR'));
-    if (!bulunan) return null;
-    const kats = new Set(bulunan.variants.nodes.map((v) => eslesme[v.legacyResourceId]).filter((k) => k && k !== 'ELLE'));
-    return kats.size === 1 ? [...kats][0] : null;
+    const b = kucukHarf(baslik);
+    if (!b) return null;
+    const tekler = katalogListesi.filter((p) => !/couple|\+/i.test(p.title));
+    const bulunan = tekler.find((p) => kucukHarf(p.title) === b)
+      || tekler.find((p) => kucukHarf(p.title).split(' ')[0] === b.split(' ')[0] && kucukHarf(p.title).startsWith(b))
+      || tekler.filter((p) => b.includes(kucukHarf(p.title))).sort((x, y) => y.title.length - x.title.length)[0]
+      || tekler.find((p) => kucukHarf(p.title).split(' ')[0] === b.split(' ')[0]);
+    return bulunan ? urunKategorisi(bulunan) : null;
   };
   if (ad.includes('+')) {
-    // "Astor + Chloe Couple Zaman Kapsülü" → ["Astor", "Chloe"]; "Noir + Chloe Charm ..." → "Chloe Charm" / "Chloe"
-    const parcalar = ad.split('+').map((x) => x.replace(/couple.*$/i, '').replace(/zaman kaps[uü]l[uü].*$/i, '').trim());
-    const kats = parcalar.map((p) => urununKategorisi(p) || urununKategorisi(p.split(' ')[0]));
-    if (kats.every(Boolean) && new Set(kats).size === 1) return { kategori: kats[0], neden: `setteki iki ürün de ${KATEGORI[kats[0]].ad.toLocaleLowerCase('tr-TR')}` };
-    return { kategori: 'ELLE', neden: kats.every(Boolean) ? 'set farklı kategorilerden ürün içeriyor' : 'setin içeriği tanınamadı' };
+    // "Astor + Chloe Couple Zaman Kapsülü" → ["Astor", "Chloe"]
+    const parcalar = ad.split('+').map((x) => x.replace(/couple.*$/i, '').replace(/zaman kaps[uü]l[uü].*$/i, '').replace(/kişi\/.*$/i, '').trim());
+    const kats = parcalar.map(urununKategorisi);
+    const bilinen = kats.filter(Boolean);
+    if (!bilinen.length) return { kategori: null, neden: 'setin içeriği tanınamadı' };
+    if (new Set(bilinen).size === 1 && bilinen.length === kats.length) {
+      return { kategori: bilinen[0], neden: `setteki ürünlerin hepsi ${KATEGORI[bilinen[0]].ad.toLocaleLowerCase('tr-TR')}` };
+    }
+    // Bileklik, kolye ve charm'ın fatura hesabı aynı (işçilik %20 + gümüş %0); sadece
+    // Paraşüt'teki ürün kartı farklı. Karışık set ilk ürünün kartına yazılır.
+    return { kategori: bilinen[0], neden: `karışık set; tutar hesabı aynı, ${parcalar[kats.indexOf(bilinen[0])]} ürününün kartına yazılır` };
   }
   // Aynı ürünün başka seçeneği eşlenmişse onu öner ("Rose Pink - 316L Çelik" → Rose Pink'in gümüşü KLY)
-  const kardes = new Set(urun.variants.nodes.map((v) => eslesme[v.legacyResourceId]).filter(Boolean));
+  const kardes = new Set((urun.variants ? urun.variants.nodes : []).map((v) => eslesme[v.legacyResourceId]).filter((k) => k && k !== 'ELLE'));
   if (kardes.size === 1) return { kategori: [...kardes][0], neden: 'aynı ürünün diğer seçeneğiyle aynı' };
-  const kucuk = ad.toLocaleLowerCase('tr-TR');
-  if (/klasik zaman kaps/.test(kucuk)) return { kategori: 'KZK', neden: 'ürün adı' };
-  if (/bileklik|zincir/.test(kucuk)) return { kategori: 'BLK', neden: 'ürün adı' };
-  if (/kolye/.test(kucuk)) return { kategori: 'KLY', neden: 'ürün adı' };
-  if (/charm/.test(kucuk)) return { kategori: 'CRM', neden: 'ürün adı' };
+  const tahmin = adEtiketTahmini(urun);
+  if (tahmin) return { kategori: tahmin, neden: (urun.tags || []).length ? 'ürün adı / Shopify etiketi' : 'ürün adı' };
   const tekKelime = urununKategorisi(ad.replace(/couple/i, '').trim());
   if (tekKelime) return { kategori: tekKelime, neden: 'aynı adlı ürünle aynı' };
   return { kategori: null, neden: 'öneri yok' };
 }
 
-// Shopify kataloğunda eşleme tablosunda olmayan seçenekler.
-// Taslak/arşivdeki ürünler sadece siparişlerde görüldüyse listelenir (gorulenler: Set(vid)).
-async function yeniUrunleriBul(b, gorulenler = new Set()) {
+// Eşleme tablosunda olmayan ürünler:
+//  - Shopify kataloğundaki aktif ürün seçenekleri,
+//  - taslak/arşivdeki ürünlerden siparişte görülenler,
+//  - siparişte görülüp katalogda hiç bulunmayanlar (silinmiş ürün/seçenek; adıyla eşlenir).
+// gorulenler: Map(anahtar → { ad, fiyat }) (eski kullanım için Set(vid) de olur)
+async function yeniUrunleriBul(b, gorulenler = new Map()) {
+  if (gorulenler instanceof Set) gorulenler = new Map([...gorulenler].map((v) => [v, {}]));
   const eslesme = eslesmeOku();
   const liste = await katalog(b.env, b.stoken);
   const yeni = [];
+  const eklenen = new Set();
   for (const urun of liste) {
     for (const v of urun.variants.nodes) {
       const vid = v.legacyResourceId;
       if (eslesme[vid]) continue;
       if (urun.status !== 'ACTIVE' && !gorulenler.has(vid)) continue;
       const oneri = kategoriOner(urun, liste, eslesme);
+      eklenen.add(vid);
       yeni.push({
         vid, urun: urun.title, secenek: v.title === 'Default Title' ? '' : v.title, fiyat: v.price,
         durum: urun.status, siparisteGoruldu: gorulenler.has(vid), oneri: oneri.kategori, oneriNedeni: oneri.neden,
       });
     }
+  }
+  for (const [anahtar, bilgi] of gorulenler) {
+    if (eklenen.has(anahtar) || eslesme[anahtar]) continue;
+    const ad = bilgi.ad || anahtar;
+    const oneri = kategoriOner({ title: ad.replace(/\s+-\s+[^-]*$/, ''), tags: [] }, liste, eslesme);
+    eklenen.add(anahtar);
+    yeni.push({
+      vid: anahtar, urun: ad, secenek: '', fiyat: bilgi.fiyat || '0',
+      durum: 'YOK', siparisteGoruldu: true, oneri: oneri.kategori, oneriNedeni: oneri.neden,
+    });
   }
   return yeni;
 }
@@ -418,7 +484,7 @@ function kategoriAta(atamalar) {
   const notlar = jsonOku(DOSYA.urunNot, {});
   const sonuc = [];
   for (const { vid, kategori, ad } of atamalar) {
-    if (!/^\d+$/.test(String(vid))) hata(`Geçersiz ürün no: ${vid}`);
+    if (!/^\d+$/.test(String(vid)) && !/^ad:[^\n]{1,200}$/.test(String(vid))) hata(`Geçersiz ürün no: ${vid}`);
     if (!KATEGORI_SECENEKLERI[kategori]) hata(`Geçersiz kategori: ${kategori}`);
     if (eslesme[vid]) { sonuc.push({ vid, durum: 'zaten eşli', kategori: eslesme[vid] }); continue; }
     eslesme[vid] = kategori;
@@ -520,7 +586,7 @@ function raporYaz(veri) {
 
 module.exports = {
   KATEGORI, KATEGORI_SECENEKLERI, BASLANGIC_SIPARIS, BASLANGIC_TARIHI, DOSYA,
-  siparisNo, turkiyeTarihi, bugun, gunEkle, tarihGoster, oranGoster,
+  siparisNo, siparisAdi, adAnahtari, ON_EK_GECIS, turkiyeTarihi, bugun, gunEkle, tarihGoster, oranGoster,
   kayitOku, kayitYaz, musteriOku, eslesmeOku, ayarOku, ayarYaz, guvenliYaz, jsonOku,
   takiliKayitlar, siparisListesiCoz, elleKesildiIsaretle, tarihAraligiDogrula,
   yeniUrunleriBul, kategoriAta, kategoriOner,
