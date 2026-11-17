@@ -99,6 +99,12 @@ function durum() {
 
 // ---------------------------------------------------------------- güncelleme
 
+// Yeni sürümdeki eşleme mevcut olana eklenir mi? Panelden seçilen kategoriler korunur;
+// tek istisna "elle keseceğim" (ELLE): eski sürüm karışık couple setleri için bunu önerip
+// seçili getiriyordu. Kullanıcı elle fatura istemediği için (KARARLAR 31) yeni sürüm bir
+// kategori veriyorsa ELLE onunla değiştirilir.
+const eslemeAlinir = (mevcutKat, yeniKat) => !mevcutKat || (mevcutKat === 'ELLE' && yeniKat && yeniKat !== 'ELLE');
+
 const PROGRAM_DOSYALARI = /^(?:[\w-]+\.js|panel\.html|il-ilce\.json|KULLANIM\.md)$/;
 
 // İndirilenler'deki en yeni "SHOP-FY-..." klasörü (bu panelin kendi klasörü hariç).
@@ -128,7 +134,7 @@ function guncellemeBul() {
   let yeniUrunVar = false;
   try {
     const mevcut = M.eslesmeOku();
-    yeniUrunVar = Object.keys(JSON.parse(fs.readFileSync(path.join(kaynak, 'urun-kodlari.json'), 'utf8'))).some((v) => !mevcut[v]);
+    yeniUrunVar = Object.entries(JSON.parse(fs.readFileSync(path.join(kaynak, 'urun-kodlari.json'), 'utf8'))).some(([v, k]) => eslemeAlinir(mevcut[v], k));
   } catch { /* dosya yoksa önemli değil */ }
   const yeniMi = dosyaFarkli || yeniUrunVar;
   return yeniMi ? { klasor: path.basename(enYeni.klasor), tarih: new Date(enYeni.zaman).toISOString() } : null;
@@ -148,13 +154,18 @@ function guncellemeYukle() {
     fs.renameSync(hedef + '.yeni', hedef);
     kopyalanan.push(f);
   }
-  // Ürün eşlemesi: panelden yaptığınız atamalar korunur, yeni sürümdeki eklemeler katılır.
+  return { kopyalanan, eklenenUrun: eslemeBirlestir(kaynak) };
+}
+
+// Ürün eşlemesi: panelden yaptığınız atamalar korunur, yeni sürümdeki eklemeler katılır.
+// Yeniden başlarken de çalışır: güncellemeyi eski sürüm yaptıysa yeni kurallar da uygulansın.
+function eslemeBirlestir(kaynak) {
   const yeniEslesme = JSON.parse(fs.readFileSync(path.join(kaynak, 'urun-kodlari.json'), 'utf8'));
   const mevcut = M.eslesmeOku();
   let eklenen = 0;
-  for (const [vid, kat] of Object.entries(yeniEslesme)) if (!mevcut[vid]) { mevcut[vid] = kat; eklenen++; }
+  for (const [vid, kat] of Object.entries(yeniEslesme)) if (eslemeAlinir(mevcut[vid], kat)) { mevcut[vid] = kat; eklenen++; }
   if (eklenen) M.guvenliYaz(M.DOSYA.eslesme, mevcut);
-  return { kopyalanan, eklenenUrun: eklenen };
+  return eklenen;
 }
 
 function yenidenBaslat() {
@@ -316,6 +327,14 @@ sunucu.on('error', (e) => {
   console.error(e);
   process.exit(1);
 });
+
+// Güncellemeden sonra yeniden başlarken: ürün eşlemesini yeni kurallarla bir kez daha birleştir.
+if (process.argv.includes('--yeniden')) {
+  try {
+    const g = guncellemeBul();
+    if (g) eslemeBirlestir(path.join(os.homedir(), 'Downloads', g.klasor, 'fatura'));
+  } catch (e) { console.error('Ürün eşlemesi birleştirilemedi:', e.message); }
+}
 
 sunucu.listen(PORT, '127.0.0.1', () => {
   console.log(`Fatura Paneli çalışıyor: ${ADRES}`);
