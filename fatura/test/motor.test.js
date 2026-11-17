@@ -73,7 +73,10 @@ function sahteFetch(kayit) {
       return cevap({ data: { orders: { pageInfo: { hasNextPage: false }, nodes: SIPARISLER.filter((s) => Date.parse(s.createdAt) >= a && Date.parse(s.createdAt) < b) } } });
     }
     if (url.includes('/products?')) { const c = decodeURIComponent(url.split('filter[code]=')[1]); return cevap({ data: [{ id: 'P-' + c, attributes: { code: c } }] }); }
-    if (url.includes('/sales_invoices?')) return cevap({ meta: { total_pages: 1 }, data: [] });
+    if (url.includes('/sales_invoices?')) {
+      const gun = url.match(/filter\[issue_date\]=([\d-]+)/)[1];
+      return cevap({ meta: { total_pages: 1 }, data: kayit.fatura.map((f, i) => ({ id: 'F' + (i + 1), attributes: { description: f.data.attributes.description, net_total: '0', issue_date: f.data.attributes.issue_date } })).filter((f) => f.attributes.issue_date === gun) });
+    }
     if (opt.method === 'POST' && url.endsWith('/contacts')) { kayit.musteri.push(JSON.parse(opt.body).data.attributes); return cevap({ data: { id: 'C' + kayit.musteri.length } }, 201); }
     if (opt.method === 'POST' && url.endsWith('/sales_invoices')) {
       const b = JSON.parse(opt.body);
@@ -153,6 +156,19 @@ test('uygula: red kaydı siler, kopma "isleniyor" bırakır ve sonrakini engelle
   assert.strictEqual(k['#13572'], undefined);
   assert.strictEqual(k['#13569'].durum, 'isleniyor');
   await assert.rejects(M.uygula(b, await M.planla(b, await M.siparisleriGetir(b, { siparisler: ['#13601'] }), 500)), /Yarıda kalmış/);
+
+  // "Paraşüt'te kontrol et": #13569'un faturası (kopmadan önce gitmişti) Paraşüt'te var → kesildi sayılır.
+  // #13601 elle "isleniyor" yapılır, Paraşüt'te yok → kayıt silinir.
+  const k2 = M.kayitOku();
+  k2['#13601'] = { durum: 'isleniyor', zaman: 'x', siparis_tarihi: '2026-09-23' };
+  M.kayitYaz(k2);
+  const coz = await M.takiliCoz(b);
+  assert.deepStrictEqual(coz.map((r) => [r.no, r.durum]), [['#13569', 'parasutte-var'], ['#13601', 'parasutte-yok']]);
+  const k3 = M.kayitOku();
+  assert.strictEqual(k3['#13569'].durum, 'tamam');
+  assert.strictEqual(k3['#13601'], undefined);
+  const yeniden = await M.planla(b, await M.siparisleriGetir(b, { siparisler: ['#13569', '#13601'] }), 500);
+  assert.deepStrictEqual(yeniden.hazir.map((p) => p.no), ['#13601'], 'bulunan tekrar kesilmemeli, bulunmayan yeniden listelenmeli');
 });
 
 test('eşleme: ELLE kategorisi siparişi elle kesilecek diye atlar', async () => {

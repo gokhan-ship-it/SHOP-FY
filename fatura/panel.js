@@ -230,6 +230,13 @@ async function api(yol, govde) {
       sonPlan = null; // eşleme değişti, eski önizleme geçersiz
       return { sonuc: M.kategoriAta(govde.atamalar) };
 
+    case 'POST /api/takili-coz':
+      return isBaslat('takili', async (j, adim) => {
+        adim('Paraşüt\'te yarıda kalan faturalar aranıyor');
+        const b = await baglantiAl();
+        return { takiliSonuc: await M.takiliCoz(b, adim) };
+      });
+
     case 'POST /api/elle':
       return { sonuc: M.elleKesildiIsaretle(M.siparisListesiCoz(govde.metin)) };
 

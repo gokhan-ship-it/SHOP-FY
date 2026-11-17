@@ -305,6 +305,7 @@ function musteriJson(s) {
 // Paraşüt'te o günlerin faturalarının açıklamalarını okur (Katman 2).
 async function parasutGunleri(b, tarihler, ilerleme = () => {}) {
   const aciklamalar = [];
+  const faturalar = [];
   const gunluk = {};
   for (const t of tarihler) {
     ilerleme(`Paraşüt: ${tarihGoster(t)} faturaları kontrol ediliyor`);
@@ -316,11 +317,46 @@ async function parasutGunleri(b, tarihler, ilerleme = () => {}) {
       for (const f of v.data) {
         gunluk[t]++;
         if (f.attributes.description) aciklamalar.push(f.attributes.description);
+        faturalar.push({ id: f.id, aciklama: f.attributes.description || '', toplam: f.attributes.net_total });
       }
       sayfa++;
     } while (sayfa <= toplamSayfa);
   }
-  return { aciklamalar, gunluk };
+  return { aciklamalar, faturalar, gunluk };
+}
+
+const siparisDeseni = (no) => new RegExp(`${String(no).replace(/[^\w#]/g, '')}(?!\\d)`);
+
+// Yarıda kalmış ("isleniyor") kayıtları Paraşüt'e bakarak çözer. SADECE OKUR (GET).
+//  - Paraşüt'te o sipariş no'lu fatura varsa → kayıt "tamam" yapılır (tekrar kesilmez).
+//  - Yoksa → kayıt silinir; sipariş bir sonraki önizlemede yeniden listelenir.
+// Önizleme ayrıca Paraşüt'te aynı sipariş no'lu fatura arar, yani silinen kayıt
+// yanlışlıkla ikinci fatura doğurmaz.
+async function takiliCoz(b, ilerleme = () => {}) {
+  const kayit = kayitOku();
+  const sonuc = [];
+  for (const t of takiliKayitlar(kayit)) {
+    const k = kayit[t.no];
+    let tarih = k.siparis_tarihi;
+    if (!tarih) {
+      const s = await siparisGetir(b.env, b.stoken, t.no);
+      if (!s) { sonuc.push({ no: t.no, durum: 'bulunamadi' }); continue; }
+      tarih = turkiyeTarihi(s.createdAt);
+    }
+    // Fatura tarihi = sipariş tarihi; gece yarısı kaymasına karşı ertesi gün de bakılır.
+    const { faturalar } = await parasutGunleri(b, [tarih, gunEkle(tarih, 1)], ilerleme);
+    const desen = siparisDeseni(t.no);
+    const bulunan = faturalar.filter((f) => desen.test(f.aciklama));
+    if (bulunan.length) {
+      kayit[t.no] = { ...k, durum: 'tamam', fatura_id: bulunan[0].id, parasut_toplam: bulunan[0].toplam, not: 'bağlantı kopmuştu; fatura Paraşüt\'te bulundu' };
+      sonuc.push({ no: t.no, durum: 'parasutte-var', adet: bulunan.length, faturaId: bulunan[0].id });
+    } else {
+      delete kayit[t.no];
+      sonuc.push({ no: t.no, durum: 'parasutte-yok' });
+    }
+    kayitYaz(kayit);
+  }
+  return sonuc;
 }
 
 // Hiçbir şey yazmadan plan hazırlar.
@@ -344,7 +380,7 @@ async function planla(b, siparisler, oran, ilerleme = () => {}) {
       atla(k.durum === 'elle' ? 'elle kesildi olarak işaretli' : `daha önce kesildi${k.fatura_id ? ' (Paraşüt no ' + k.fatura_id + ')' : ''}`, { tur: 'kesildi' });
       continue;
     }
-    const noDeseni = new RegExp(`${s.name.replace(/[^\w#]/g, '')}(?!\\d)`);
+    const noDeseni = siparisDeseni(s.name);
     if (aciklamalar.some((a) => noDeseni.test(a))) { atla('Paraşüt\'te bu sipariş no ile fatura var', { tur: 'kesildi' }); continue; }
 
     const h = siparisiHesapla(s, eslesme, oran);
@@ -588,7 +624,7 @@ module.exports = {
   KATEGORI, KATEGORI_SECENEKLERI, BASLANGIC_SIPARIS, BASLANGIC_TARIHI, DOSYA,
   siparisNo, siparisAdi, adAnahtari, ON_EK_GECIS, turkiyeTarihi, bugun, gunEkle, tarihGoster, oranGoster,
   kayitOku, kayitYaz, musteriOku, eslesmeOku, ayarOku, ayarYaz, guvenliYaz, jsonOku,
-  takiliKayitlar, siparisListesiCoz, elleKesildiIsaretle, tarihAraligiDogrula,
+  takiliKayitlar, takiliCoz, siparisListesiCoz, elleKesildiIsaretle, tarihAraligiDogrula,
   yeniUrunleriBul, kategoriAta, kategoriOner,
   baglan, siparisleriGetir, siparisiHesapla, planla, planOzeti, uygula, raporYaz,
 };

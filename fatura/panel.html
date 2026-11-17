@@ -249,7 +249,9 @@ async function durumYukle() {
     temizle($('takili')).append(el('b', {}, 'Yarıda kalmış işlem var. '),
       'Önceki bir çalıştırmada bağlantı koptu. Şu siparişlerin Paraşüt\'te faturası oluşmuş olabilir: ',
       durumBilgi.takili.map((t) => t.no).join(', '),
-      '. Paraşüt\'te kontrol edip Claude\'a haber verin. Bu çözülene kadar yeni fatura kesilemez.');
+      '. Bu çözülene kadar yeni fatura kesilemez. ',
+      el('button', { class: 'kucuk', onclick: takiliCoz }, 'Paraşüt\'te kontrol et ve çöz'),
+      el('div', { id: 'takili-sonuc', class: 'ipucu' }));
     goster('takili');
   }
   if (durumBilgi.guncelleme) {
@@ -433,6 +435,24 @@ function sonucGoster(s) {
 }
 
 // ---------------------------------------------------------------- diğer
+
+// Yarıda kalanları Paraşüt'e bakarak çözer (sadece okur): faturası varsa "kesildi" sayılır,
+// yoksa kayıt silinir ve sipariş sonraki önizlemede yeniden listelenir.
+async function takiliCoz() {
+  hataGoster('');
+  dugmeler(false);
+  try {
+    await istek('/api/takili-coz', {});
+    const { takiliSonuc } = await isIzle('Paraşüt\'te yarıda kalan faturalar aranıyor', false);
+    const satir = (r) => r.durum === 'parasutte-var'
+      ? `${r.no}: faturası Paraşüt'te var, kesildi sayıldı${r.adet > 1 ? ` (DİKKAT: ${r.adet} fatura bulundu, fazlasını Paraşüt'te silin)` : ''}.`
+      : r.durum === 'parasutte-yok' ? `${r.no}: Paraşüt'te fatura yok, sonraki önizlemede yeniden kesilecekler arasında çıkacak.`
+      : `${r.no}: Shopify'da bulunamadı.`;
+    alert(takiliSonuc.map(satir).join('\n'));
+    location.reload();
+  } catch (e) { hataGoster(e.message); }
+  finally { dugmeler(true); }
+}
 
 async function elleBildir() {
   const metin = $('elle-metin').value.trim();
